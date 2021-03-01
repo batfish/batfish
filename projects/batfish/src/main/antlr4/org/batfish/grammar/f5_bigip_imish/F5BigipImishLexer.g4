@@ -25,355 +25,151 @@ tokens {
 
 // Keywords
 
-ACCESS_LIST
-:
-  'access-list'
-;
+ACCESS_LIST: 'access-list';
 
-ADDRESS
-:
-  'address'
-;
+ADDRESS: 'address';
 
-ADVERTISEMENT_INTERVAL
-:
-  'advertisement-interval'
-;
+ADVERTISEMENT_INTERVAL: 'advertisement-interval';
 
-AGGREGATE_ADDRESS
-:
-  'aggregate-address'
-;
+AGGREGATE_ADDRESS: 'aggregate-address';
 
-ALWAYS_COMPARE_MED
-:
-  'always-compare-med'
-;
+ALWAYS_COMPARE_MED: 'always-compare-med';
 
-ANY
-:
-  'any'
-;
+ANY: 'any';
 
-AREA
-:
-  'area'
-;
+AREA: 'area';
 
-AS_PATH
-:
-  'as-path'
-;
+AS_PATH: 'as-path';
 
-AS_SET
-:
-  'as-set'
-;
+AS_SET: 'as-set';
 
-BFD
-:
-  'bfd'
-;
+BFD: 'bfd';
 
-BGP
-:
-  'bgp'
-;
+BGP: 'bgp';
 
-CAPABILITY
-:
-  'capability'
-;
+CAPABILITY: 'capability';
 
-COMMUNITY
-:
-  'community'
-;
+COMMUNITY: 'community';
 
-CON
-:
-  'con'
-;
+CON: 'con';
 
-CONFEDERATION
-:
-  'confederation'
-;
+CONFEDERATION: 'confederation';
 
-DEFAULT_ORIGINATE
-:
-  'default-originate'
-;
+DEFAULT_ORIGINATE: 'default-originate';
 
-DENY
-:
-  'deny'
-;
+DENY: 'deny';
 
 DESCRIPTION
 :
   'description' -> pushMode ( M_Description )
 ;
 
-DETERMINISTIC_MED
-:
-  'deterministic-med'
-;
+DETERMINISTIC_MED: 'deterministic-med';
 
-EBGP
-:
-  'ebgp'
-;
+EBGP: 'ebgp';
 
-EGP
-:
-  'egp'
-;
+EGP: 'egp';
 
-END
-:
-  'end'
-;
+END: 'end';
 
-FALL_OVER
-:
-  'fall-over'
-;
+FALL_OVER: 'fall-over';
 
-GE
-:
-  'ge'
-;
+GE: 'ge';
 
-GRACEFUL_RESTART
-:
-  'graceful-restart'
-;
+GRACEFUL_RESTART: 'graceful-restart';
 
-IDENTIFIER
-:
-  'identifier'
-;
+IDENTIFIER: 'identifier';
 
-IGP
-:
-  'igp'
-;
+IGP: 'igp';
 
-IN
-:
-  'in'
-;
+IN: 'in';
 
-INCOMPLETE
-:
-  'incomplete'
-;
+INCOMPLETE: 'incomplete';
 
-INTERFACE
-:
-  'interface'
-;
+INTERFACE: 'interface';
 
-IP
-:
-  'ip'
-;
+IP: 'ip';
 
-KERNEL
-:
-  'kernel'
-;
+KERNEL: 'kernel';
 
-LE
-:
-  'le'
-;
+LE: 'le';
 
-LINE
-:
-  'line'
-;
+LINE: 'line';
 
-LOG_NEIGHBOR_CHANGES
-:
-  'log-neighbor-changes'
-;
+LOG_NEIGHBOR_CHANGES: 'log-neighbor-changes';
 
-LOGIN
-:
-  'login'
-;
+LOGIN: 'login';
 
-MATCH
-:
-  'match'
-;
+MATCH: 'match';
 
-MAX_PATHS
-:
-  'max-paths'
-;
+MAX_PATHS: 'max-paths';
 
-MAXIMUM_PREFIX
-:
-  'maximum-prefix'
-;
+MAXIMUM_PREFIX: 'maximum-prefix';
 
-METRIC
-:
-  'metric'
-;
+METRIC: 'metric';
 
-NEIGHBOR
-:
-  'neighbor'
-;
+NEIGHBOR: 'neighbor';
 
-NETWORK
-:
-  'network'
-;
+NETWORK: 'network';
 
-NEXT_HOP
-:
-  'next-hop'
-;
+NEXT_HOP: 'next-hop';
 
-NEXT_HOP_SELF
-:
-  'next-hop-self'
-;
+NEXT_HOP_SELF: 'next-hop-self';
 
-NO
-:
-  'no'
-;
+NO: 'no';
 
-NON_BROADCAST
-:
-  'non-broadcast'
-;
+NON_BROADCAST: 'non-broadcast';
 
-ORIGIN
-:
-  'origin'
-;
+ORIGIN: 'origin';
 
-OSPF
-:
-  'ospf'
-;
+OSPF: 'ospf';
 
-OUT
-:
-  'out'
-;
+OUT: 'out';
 
-PASSIVE_INTERFACE
-:
-  'passive-interface'
-;
+PASSIVE_INTERFACE: 'passive-interface';
 
 PASSWORD
 :
   'password' -> pushMode ( M_Description )
 ;
 
-PRIMARY
-:
-  'primary'
-;
+PRIMARY: 'primary';
 
-PEER_GROUP
-:
-  'peer-group'
-;
+PEER_GROUP: 'peer-group';
 
-PEERS
-:
-  'peers'
-;
+PEERS: 'peers';
 
-PERMIT
-:
-  'permit'
-;
+PERMIT: 'permit';
 
-PREFIX_LIST
-:
-  'prefix-list'
-;
+PREFIX_LIST: 'prefix-list';
 
-REDISTRIBUTE
-:
-  'redistribute'
-;
+REDISTRIBUTE: 'redistribute';
 
-REMOTE_AS
-:
-  'remote-as'
-;
+REMOTE_AS: 'remote-as';
 
-ROUTE
-:
-  'route'
-;
+ROUTE: 'route';
 
-ROUTE_MAP
-:
-  'route-map'
-;
+ROUTE_MAP: 'route-map';
 
-ROUTER
-:
-  'router'
-;
+ROUTER: 'router';
 
-ROUTER_ID
-:
-  'router-id'
-;
+ROUTER_ID: 'router-id';
 
-SEQ
-:
-  'seq'
-;
+SEQ: 'seq';
 
-SERVICE
-:
-  'service'
-;
+SERVICE: 'service';
 
-SET
-:
-  'set'
-;
+SET: 'set';
 
-SOFT_RECONFIGURATION
-:
-  'soft-reconfiguration'
-;
+SOFT_RECONFIGURATION: 'soft-reconfiguration';
 
-STATIC
-:
-  'static'
-;
+STATIC: 'static';
 
-SUMMARY_ONLY
-:
-  'summary-only'
-;
+SUMMARY_ONLY: 'summary-only';
 
-UPDATE_SOURCE
-:
-  'update-source'
-;
+UPDATE_SOURCE: 'update-source';
 
-VTY
-:
-  'vty'
-;
+VTY: 'vty';
 
 // Complex tokens
 
@@ -392,10 +188,7 @@ COMMENT_TAIL
   '!' F_NonNewlineChar* -> channel ( HIDDEN )
 ;
 
-CONNECTED
-:
-  'connected'
-;
+CONNECTED: 'connected';
 
 DEC
 :
@@ -422,10 +215,7 @@ IPV6_PREFIX
   F_Ipv6Prefix
 ;
 
-INBOUND
-:
-  'inbound'
-;
+INBOUND: 'inbound';
 
 NEWLINE
 :

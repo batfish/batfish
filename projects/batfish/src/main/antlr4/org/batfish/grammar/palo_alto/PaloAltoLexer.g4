@@ -13,1724 +13,716 @@ tokens {
 
 // Keywords
 
-TWO_BYTE
-:
-    '2-byte'
-;
+TWO_BYTE: '2-byte';
 
-FOUR_BYTE
-:
-    '4-byte'
-;
+FOUR_BYTE: '4-byte';
 
-ACCEPT_SUMMARY
-:
-    'accept-summary'
-;
+ACCEPT_SUMMARY: 'accept-summary';
 
-ACTION
-:
-    'action'
-;
+ACTION: 'action';
 
-ADDRESS
-:
-    'address'
-;
+ADDRESS: 'address';
 
-ADDRESS_GROUP
-:
-    'address-group'
-;
+ADDRESS_GROUP: 'address-group';
 
-ADDRESS_PREFIX
-:
-    'address-prefix'
-;
+ADDRESS_PREFIX: 'address-prefix';
 
-ADDRESS_FAMILY_IDENTIFIER
-:
-    'address-family-identifier'
-;
+ADDRESS_FAMILY_IDENTIFIER: 'address-family-identifier';
 
-ADJUST_TCP_MSS
-:
-    'adjust-tcp-mss'
-;
+ADJUST_TCP_MSS: 'adjust-tcp-mss';
 
-ADMIN_DIST
-:
-    'admin-dist'
-;
+ADMIN_DIST: 'admin-dist';
 
-ADMIN_DISTS
-:
-    'admin-dists'
-;
+ADMIN_DISTS: 'admin-dists';
 
-ADMIN_ROLE
-:
-    'admin-role'
-;
+ADMIN_ROLE: 'admin-role';
 
-ADVERTISE
-:
-    'advertise'
-;
+ADVERTISE: 'advertise';
 
-AES_128_CBC
-:
-    'aes-128-cbc'
-;
+AES_128_CBC: 'aes-128-cbc';
 
-AES_128_GCM
-:
-    'aes-128-gcm'
-;
+AES_128_GCM: 'aes-128-gcm';
 
-AES_192_CBC
-:
-    'aes-192-cbc'
-;
+AES_192_CBC: 'aes-192-cbc';
 
-AES_256_CBC
-:
-    'aes-256-cbc'
-;
+AES_256_CBC: 'aes-256-cbc';
 
-AES_256_GCM
-:
-    'aes-256-gcm'
-;
+AES_256_GCM: 'aes-256-gcm';
 
-AFTER
-:
-    'after'
-;
+AFTER: 'after';
 
-AGGREGATE
-:
-    'aggregate'
-;
+AGGREGATE: 'aggregate';
 
-AGGREGATE_ETHERNET
-:
-    'aggregate-ethernet'
-;
+AGGREGATE_ETHERNET: 'aggregate-ethernet';
 
-AGGREGATE_GROUP
-:
-    'aggregate-group'
-;
+AGGREGATE_GROUP: 'aggregate-group';
 
-AGGREGATE_MED
-:
-    'aggregate-med'
-;
+AGGREGATE_MED: 'aggregate-med';
 
-ALGORITHM
-:
-    'algorithm'
-;
+ALGORITHM: 'algorithm';
 
-ALLOW
-:
-    'allow'
-;
+ALLOW: 'allow';
 
-ALWAYS_COMPARE_MED
-:
-    'always-compare-med'
-;
+ALWAYS_COMPARE_MED: 'always-compare-med';
 
-ANY
-:
-    'any'
-;
+ANY: 'any';
 
-APPLICATION
-:
-    'application'
-;
+APPLICATION: 'application';
 
-APPLICATION_FILTER
-:
-    'application-filter'
-;
+APPLICATION_FILTER: 'application-filter';
 
-APPLICATION_GROUP
-:
-    'application-group'
-;
+APPLICATION_GROUP: 'application-group';
 
-APPLICATION_OVERRIDE
-:
-    'application-override'
-;
+APPLICATION_OVERRIDE: 'application-override';
 
-AREA
-:
-    'area'
-;
+AREA: 'area';
 
-AS_FORMAT
-:
-    'as-format'
-;
+AS_FORMAT: 'as-format';
 
-AS_PATH
-:
-    'as-path'
-;
+AS_PATH: 'as-path';
 
-AUTH
-:
-    'auth'
-;
+AUTH: 'auth';
 
-AUTH_PROFILE
-:
-    'auth-profile'
-;
+AUTH_PROFILE: 'auth-profile';
 
-AUTHENTICATION
-:
-    'authentication'
-;
+AUTHENTICATION: 'authentication';
 
-AUTHENTICATION_PROFILE
-:
-    'authentication-profile'
-;
+AUTHENTICATION_PROFILE: 'authentication-profile';
 
-AUTHENTICATION_TYPE
-:
-    'authentication-type'
-;
+AUTHENTICATION_TYPE: 'authentication-type';
 
-AUTO
-:
-    'auto'
-;
+AUTO: 'auto';
 
-BEFORE
-:
-    'before'
-;
+BEFORE: 'before';
 
-BFD
-:
-    'bfd'
-;
+BFD: 'bfd';
 
-BGP
-:
-    'bgp'
-;
+BGP: 'bgp';
 
-BOTH
-:
-    'both'
-;
+BOTH: 'both';
 
-BOTNET
-:
-    'botnet'
-;
+BOTNET: 'botnet';
 
-BOTTOM
-:
-    'bottom'
-;
+BOTTOM: 'bottom';
 
-BROADCAST
-:
-    'broadcast'
-;
+BROADCAST: 'broadcast';
 
 BSD
 :
     [Bb][Ss][Dd]
 ;
 
-CATEGORY
-:
-    'category'
-;
+CATEGORY: 'category';
 
-CERTIFICATE
-:
-    'certificate'
-;
+CERTIFICATE: 'certificate';
 
-CERTIFICATE_PROFILE
-:
-    'certificate-profile'
-;
+CERTIFICATE_PROFILE: 'certificate-profile';
 
-CLIENT
-:
-    'client'
-;
+CLIENT: 'client';
 
-COLOR
-:
-    'color'
-;
+COLOR: 'color';
 
-COMMENT
-:
-    'comment'
-;
+COMMENT: 'comment';
 
-COMMENTS
-:
-    'comments'
-;
+COMMENTS: 'comments';
 
-COMMUNITY
-:
-    'community'
-;
+COMMUNITY: 'community';
 
-CONNECT
-:
-    'connect'
-;
+CONNECT: 'connect';
 
-CONFIG
-:
-    'config'
-;
+CONFIG: 'config';
 
-CONNECTION_OPTIONS
-:
-    'connection-options'
-;
+CONNECTION_OPTIONS: 'connection-options';
 
-CONTENT_PREVIEW
-:
-    'content-preview'
-;
+CONTENT_PREVIEW: 'content-preview';
 
-CRYPTO_PROFILES
-:
-    'crypto-profiles'
-;
+CRYPTO_PROFILES: 'crypto-profiles';
 
-DAMPENING_PROFILE
-:
-    'dampening-profile'
-;
+DAMPENING_PROFILE: 'dampening-profile';
 
-DAYS
-:
-    'days'
-;
+DAYS: 'days';
 
-DEAD_COUNTS
-:
-    'dead-counts'
-;
+DEAD_COUNTS: 'dead-counts';
 
-DEFAULT
-:
-    'default'
-;
+DEFAULT: 'default';
 
-DEFAULT_GATEWAY
-:
-    'default-gateway'
-;
+DEFAULT_GATEWAY: 'default-gateway';
 
-DEFAULT_LOCAL_PREFERENCE
-:
-    'default-local-preference'
-;
+DEFAULT_LOCAL_PREFERENCE: 'default-local-preference';
 
-DEFAULT_ROUTE
-:
-    'default-route'
-;
+DEFAULT_ROUTE: 'default-route';
 
-DELETE
-:
-    'delete'
-;
+DELETE: 'delete';
 
-DENY
-:
-    'deny'
-;
+DENY: 'deny';
 
-DES
-:
-    'des'
-;
+DES: 'des';
 
 DESCRIPTION
 :
     'description' -> pushMode(M_Value)
 ;
 
-DESTINATION
-:
-    'destination'
-;
+DESTINATION: 'destination';
 
-DESTINATION_TRANSLATION
-:
-    'destination-translation'
-;
+DESTINATION_TRANSLATION: 'destination-translation';
 
-DETERMINISTIC_MED_COMPARISON
-:
-    'deterministic-med-comparison'
-;
+DETERMINISTIC_MED_COMPARISON: 'deterministic-med-comparison';
 
-DEVICES
-:
-    'devices'
-;
+DEVICES: 'devices';
 
-DEVICE_GROUP
-:
-    'device-group'
-;
+DEVICE_GROUP: 'device-group';
 
-DEVICECONFIG
-:
-    'deviceconfig'
-;
+DEVICECONFIG: 'deviceconfig';
 
-DH_GROUP
-:
-    'dh-group'
-;
+DH_GROUP: 'dh-group';
 
-DISABLE
-:
-    'disable'
-;
+DISABLE: 'disable';
 
-DISABLED
-:
-    'disabled'
-;
+DISABLED: 'disabled';
 
-DISPLAY_NAME
-:
-    'display-name'
-;
+DISPLAY_NAME: 'display-name';
 
-DNS
-:
-    'dns'
-;
+DNS: 'dns';
 
-DNS_SETTING
-:
-    'dns-setting'
-;
+DNS_SETTING: 'dns-setting';
 
-DOWN
-:
-    'down'
-;
+DOWN: 'down';
 
-DROP
-:
-    'drop'
-;
+DROP: 'drop';
 
-DYNAMIC
-:
-    'dynamic'
-;
+DYNAMIC: 'dynamic';
 
-DYNAMIC_IP_AND_PORT
-:
-    'dynamic-ip-and-port'
-;
+DYNAMIC_IP_AND_PORT: 'dynamic-ip-and-port';
 
-EBGP
-:
-    'ebgp'
-;
+EBGP: 'ebgp';
 
-ECMP
-:
-    'ecmp'
-;
+ECMP: 'ecmp';
 
-EGP
-:
-    'egp'
-;
+EGP: 'egp';
 
-ENABLE
-:
-    'enable'
-;
+ENABLE: 'enable';
 
-ENABLE_SENDER_SIDE_LOOP_DETECTION
-:
-    'enable-sender-side-loop-detection'
-;
+ENABLE_SENDER_SIDE_LOOP_DETECTION: 'enable-sender-side-loop-detection';
 
-ENCRYPTION
-:
-    'encryption'
-;
+ENCRYPTION: 'encryption';
 
-ESP
-:
-    'esp'
-;
+ESP: 'esp';
 
-EVASIVE
-:
-    'evasive'
-;
+EVASIVE: 'evasive';
 
-EXACT
-:
-    'exact'
-;
+EXACT: 'exact';
 
-EXCESSIVE_BANDWIDTH_USE
-:
-    'excessive-bandwidth-use'
-;
+EXCESSIVE_BANDWIDTH_USE: 'excessive-bandwidth-use';
 
-EXPORT
-:
-    'export'
-;
+EXPORT: 'export';
 
-EXPORT_NEXTHOP
-:
-    'export-nexthop'
-;
+EXPORT_NEXTHOP: 'export-nexthop';
 
-EXT_1
-:
-    'ext-1'
-;
+EXT_1: 'ext-1';
 
-EXT_2
-:
-    'ext-2'
-;
+EXT_2: 'ext-2';
 
-EXTENDED_COMMUNITY
-:
-    'extended-community'
-;
+EXTENDED_COMMUNITY: 'extended-community';
 
-EXTERNAL
-:
-    'external'
-;
+EXTERNAL: 'external';
 
-EXTERNAL_LIST
-:
-    'external-list'
-;
+EXTERNAL_LIST: 'external-list';
 
-ETHERNET
-:
-    'ethernet'
-;
+ETHERNET: 'ethernet';
 
-FACILITY
-:
-    'facility'
-;
+FACILITY: 'facility';
 
-FILTER
-:
-    'filter'
-;
+FILTER: 'filter';
 
-FORMAT
-:
-    'format'
-;
+FORMAT: 'format';
 
-FQDN
-:
-    'fqdn'
-;
+FQDN: 'fqdn';
 
-FROM
-:
-    'from'
-;
+FROM: 'from';
 
-FROM_PEER
-:
-    'from-peer'
-;
+FROM_PEER: 'from-peer';
 
-FULL
-:
-    'full'
-;
+FULL: 'full';
 
-GATEWAY
-:
-    'gateway'
-;
+GATEWAY: 'gateway';
 
-GLOBAL_BFD
-:
-    'global-bfd'
-;
+GLOBAL_BFD: 'global-bfd';
 
-GLOBAL_PROTECT_APP_CRYPTO_PROFILES
-:
-    'global-protect-app-crypto-profiles'
-;
+GLOBAL_PROTECT_APP_CRYPTO_PROFILES: 'global-protect-app-crypto-profiles';
 
-GR_DELAY
-:
-    'gr-delay'
-;
+GR_DELAY: 'gr-delay';
 
-GRACEFUL_RESTART
-:
-    'graceful-restart'
-;
+GRACEFUL_RESTART: 'graceful-restart';
 
-GROUP1
-:
-    'group1'
-;
+GROUP1: 'group1';
 
-GROUP2
-:
-    'group2'
-;
+GROUP2: 'group2';
 
-GROUP5
-:
-    'group5'
-;
+GROUP5: 'group5';
 
-GROUP14
-:
-    'group14'
-;
+GROUP14: 'group14';
 
-GROUP19
-:
-    'group19'
-;
+GROUP19: 'group19';
 
-GROUP20
-:
-    'group20'
-;
+GROUP20: 'group20';
 
-HALF
-:
-    'half'
-;
+HALF: 'half';
 
-HA
-:
-    'ha'
-;
+HA: 'ha';
 
-HAS_KNOWN_VULNERABILITIES
-:
-    'has-known-vulnerabilities'
-;
+HAS_KNOWN_VULNERABILITIES: 'has-known-vulnerabilities';
 
-HASH
-:
-    'hash'
-;
+HASH: 'hash';
 
-HELLO_INTERVAL
-:
-    'hello-interval'
-;
+HELLO_INTERVAL: 'hello-interval';
 
-HELPER_ENABLE
-:
-    'helper-enable'
-;
+HELPER_ENABLE: 'helper-enable';
 
-HIP_PROFILES
-:
-    'hip-profiles'
-;
+HIP_PROFILES: 'hip-profiles';
 
 HOLD_TIME:
     'hold-time'
 ;
 
-HOSTNAME
-:
-    'hostname'
-;
+HOSTNAME: 'hostname';
 
-HOURLY
-:
-    'hourly'
-;
+HOURLY: 'hourly';
 
-HOURS
-:
-    'hours'
-;
+HOURS: 'hours';
 
-IBGP
-:
-    'ibgp'
-;
+IBGP: 'ibgp';
 
-ICMP
-:
-    'icmp'
-;
+ICMP: 'icmp';
 
-IDLE_HOLD_TIME
-:
-    'idle-hold-time'
-;
+IDLE_HOLD_TIME: 'idle-hold-time';
 
 IETF
 :
     [Ii][Ee][Tt][Ff]
 ;
 
-IGP
-:
-    'igp'
-;
+IGP: 'igp';
 
-IKE
-:
-    'ike'
-;
+IKE: 'ike';
 
-IKE_CRYPTO_PROFILES
-:
-    'ike-crypto-profiles'
-;
+IKE_CRYPTO_PROFILES: 'ike-crypto-profiles';
 
-IMPORT
-:
-    'import'
-;
+IMPORT: 'import';
 
-IMPORT_NEXTHOP
-:
-    'import-nexthop'
-;
+IMPORT_NEXTHOP: 'import-nexthop';
 
-INCOMING_BGP_CONNECTION
-:
-    'incoming-bgp-connection'
-;
+INCOMING_BGP_CONNECTION: 'incoming-bgp-connection';
 
-INCOMPLETE
-:
-    'incomplete'
-;
+INCOMPLETE: 'incomplete';
 
-INSTALL_ROUTE
-:
-    'install-route'
-;
+INSTALL_ROUTE: 'install-route';
 
-INTERFACE
-:
-    'interface'
-;
+INTERFACE: 'interface';
 
-INTERZONE
-:
-    'interzone'
-;
+INTERZONE: 'interzone';
 
-INTRAZONE
-:
-    'intrazone'
-;
+INTRAZONE: 'intrazone';
 
-IP
-:
-    'ip'
-;
+IP: 'ip';
 
-IP_ADDRESS_LITERAL
-:
-    'ip-address'
-;
+IP_ADDRESS_LITERAL: 'ip-address';
 
-IP_NETMASK
-:
-    'ip-netmask'
-;
+IP_NETMASK: 'ip-netmask';
 
-IP_RANGE_LITERAL
-:
-    'ip-range'
-;
+IP_RANGE_LITERAL: 'ip-range';
 
-IPSEC_CRYPTO_PROFILES
-:
-    'ipsec-crypto-profiles'
-;
+IPSEC_CRYPTO_PROFILES: 'ipsec-crypto-profiles';
 
-IPV4
-:
-    'ipv4'
-;
+IPV4: 'ipv4';
 
-IPV6
-:
-    'ipv6'
-;
+IPV6: 'ipv6';
 
-KEEP_ALIVE_INTERVAL
-:
-    'keep-alive-interval'
-;
+KEEP_ALIVE_INTERVAL: 'keep-alive-interval';
 
-LAYER2
-:
-    'layer2'
-;
+LAYER2: 'layer2';
 
-LAYER3
-:
-    'layer3'
-;
+LAYER3: 'layer3';
 
-LIFETIME
-:
-    'lifetime'
-;
+LIFETIME: 'lifetime';
 
 LINK
 :
     'link' -> pushMode ( M_Url )
 ;
 
-LINK_DUPLEX
-:
-    'link-duplex'
-;
-
-LINK_SPEED
-:
-    'link-speed'
-;
-
-LINK_STATE
-:
-    'link-state'
-;
-
-LINK_TYPE
-:
-    'link-type'
-;
-
-LLDP
-:
-    'lldp'
-;
-
-LOCAL_ADDRESS
-:
-    'local-address'
-;
-
-LOCAL_AS
-:
-    'local-as'
-;
-
-LOCAL_PORT
-:
-    'local-port'
-;
-
-LOG_COLLECTOR
-:
-    'log-collector'
-;
-
-LOG_COLLECTOR_GROUP
-:
-    'log-collector-group'
-;
-
-LOG_END
-:
-    'log-end'
-;
-
-LOG_SETTING
-:
-    'log-setting'
-;
-
-LOG_SETTINGS
-:
-    'log-settings'
-;
-
-LOG_START
-:
-    'log-start'
-;
-
-LOOPBACK
-:
-    'loopback'
-;
-
-MATCH
-:
-    'match'
-;
-
-MAX_PATH
-:
-    'max-path'
-;
-
-MAX_PREFIXES
-:
-    'max-prefixes'
-;
-
-MD5
-:
-    'md5'
-;
-
-MED
-:
-    'med'
-;
-
-MESHED_CLIENT
-:
-    'meshed-client'
-;
-
-MIN_ROUTE_ADV_INTERVAL
-:
-    'min-route-adv-interval'
-;
-
-MINUTES
-:
-    'minutes'
-;
-
-MEMBERS
-:
-    'members'
-;
-
-METRIC
-:
-    'metric'
-;
-
-MGT_CONFIG
-:
-    'mgt-config'
-;
-
-MOVE
-:
-    'move'
-;
-
-MTU
-:
-    'mtu'
-;
-
-MULTICAST
-:
-    'multicast'
-;
-
-MULTIHOP
-:
-    'multihop'
-;
-
-NAT
-:
-    'nat'
-;
-
-NDP_PROXY
-:
-    'ndp-proxy'
-;
-
-NEGATE_DESTINATION
-:
-    'negate-destination'
-;
-
-NEGATE_SOURCE
-:
-    'negate-source'
-;
-
-NETMASK
-:
-    'netmask'
-;
-
-NETWORK
-:
-    'network'
-;
-
-NEXT_VR
-:
-  'next-vr'
-;
-
-NEXTHOP
-:
-    'nexthop'
-;
-
-NO
-:
-    'no'
-;
-
-NO_REDIST
-:
-    'no-redist'
-;
-
-NON_CLIENT
-:
-    'non-client'
-;
-
-NONE
-:
-    'none'
-;
-
-NORMAL
-:
-    'normal'
-;
-
-NSSA
-:
-    'nssa'
-;
-
-NTP_SERVER_ADDRESS
-:
-    'ntp-server-address'
-;
-
-NTP_SERVERS
-:
-    'ntp-servers'
-;
-
-NULL
-:
-    'null'
-;
-
-OPEN_DELAY_TIME
-:
-    'open-delay-time'
-;
-
-ORIGIN
-:
-    'origin'
-;
-
-ORIGINAL
-:
-    'original'
-;
-
-OSPF
-:
-    'ospf'
-;
-
-OSPF_EXT
-:
-    'ospf-ext'
-;
-
-OSPF_INT
-:
-    'ospf-int'
-;
-
-OSPFV3
-:
-    'ospfv3'
-;
-
-OSPFV3_EXT
-:
-    'ospfv3-ext'
-;
-
-OSPFV3_INT
-:
-    'ospfv3-int'
-;
-
-OUTGOING_BGP_CONNECTION
-:
-    'outgoing-bgp-connection'
-;
-
-P2P
-:
-    'p2p'
-;
-
-P2MP
-:
-    'p2mp'
-;
-
-PANORAMA
-:
-    'panorama'
-;
-
-PANORAMA_SERVER
-:
-    'panorama-server'
-;
-
-PARENT_DG
-:
-    'parent-dg'
-;
-
-PASSIVE
-:
-    'passive'
-;
-
-PASSWORD
-:
-    'password'
-;
-
-PEER
-:
-    'peer'
-;
-
-PEER_ADDRESS
-:
-    'peer-address'
-;
-
-PEER_AS
-:
-    'peer-as'
-;
-
-PEER_GROUP
-:
-    'peer-group'
-;
-
-PERVASIVE
-:
-    'pervasive'
-;
-
-POLICY
-:
-    'policy'
-;
-
-PORT
-:
-    'port'
-;
-
-POST_RULEBASE
-:
-    'post-rulebase'
-;
-
-PRE_RULEBASE
-:
-    'pre-rulebase'
-;
-
-PRIMARY
-:
-    'primary'
-;
-
-PRIMARY_NTP_SERVER
-:
-    'primary-ntp-server'
-;
-
-PRIORITY
-:
-    'priority'
-;
-
-PROFILE_GROUP
-:
-    'profile-group'
-;
-
-PROFILES
-:
-    'profiles'
-;
-
-PRONE_TO_MISUSE
-:
-    'prone-to-misuse'
-;
-
-PROTOCOL
-:
-    'protocol'
-;
-
-QOS
-:
-    'qos'
-;
-
-READONLY
-:
-    'readonly'
-;
-
-RECURRING
-:
-    'recurring'
-;
-
-REDIST
-:
-    'redist'
-;
-
-REDIST_PROFILE
-:
-    'redist-profile'
-;
-
-REDIST_RULES
-:
-    'redist-rules'
-;
-
-REFLECTOR_CLIENT
-:
-    'reflector-client'
-;
-
-REFLECTOR_CLUSTER_ID
-:
-    'reflector-cluster-id'
-;
-
-REJECT_DEFAULT_ROUTE
-:
-    'reject-default-route'
-;
-
-REMOTE_PORT
-:
-    'remote-port'
-;
-
-REMOVE_PRIVATE_AS
-:
-    'remove-private-as'
-;
-
-RESET_BOTH
-:
-    'reset-both'
-;
-
-RESET_CLIENT
-:
-    'reset-client'
-;
-
-RESET_SERVER
-:
-    'reset-server'
-;
-
-RESOLVE
-:
-    'resolve'
-;
-
-RESPONSE
-:
-    'response'
-;
-
-RESULT
-:
-    'result'
-;
-
-RETRANSMIT_INTERVAL
-:
-    'retransmit-interval'
-;
-
-RIP
-:
-    'rip'
-;
-
-RISK
-:
-    'risk'
-;
-
-ROUTE_TABLE
-:
-    'route-table'
-;
-
-ROUTER_ID
-:
-    'router-id'
-;
-
-ROUTING_OPTIONS
-:
-    'routing-options'
-;
-
-ROUTING_TABLE
-:
-    'routing-table'
-;
-
-RULE_TYPE
-:
-    'rule-type'
-;
-
-RULEBASE
-:
-    'rulebase'
-;
-
-RULES
-:
-    'rules'
-;
-
-SCTP
-:
-    'sctp'
-;
-
-SECONDARY
-:
-    'secondary'
-;
-
-SECONDARY_NTP_SERVER
-:
-    'secondary-ntp-server'
-;
-
-SECONDS
-:
-    'seconds'
-;
-
-SECURITY
-:
-    'security'
-;
-
-SERVER
-:
-    'server'
-;
-
-SERVER_PROFILE
-:
-    'server-profile'
-;
-
-SERVERS
-:
-    'servers'
-;
-
-SERVICE
-:
-    'service'
-;
-
-SERVICE_GROUP
-:
-    'service-group'
-;
-
-SET
-:
-    'set'
-;
-
-SET_ORIGIN
-:
-    'set-origin'
-;
-
-SETTING
-:
-    'setting'
-;
-
-SHA1
-:
-    'sha1'
-;
-
-SHA256
-:
-    'sha256'
-;
-
-SHA384
-:
-    'sha384'
-;
-
-SHA512
-:
-    'sha512'
-;
-
-SHARED
-:
-    'shared'
-;
-
-SHARED_GATEWAY
-:
-    'shared-gateway'
-;
-
-SOURCE
-:
-    'source'
-;
-
-SOURCE_PORT
-:
-    'source-port'
-;
-
-SOURCE_TRANSLATION
-:
-    'source-translation'
-;
-
-SOURCE_USER
-:
-    'source-user'
-;
+LINK_DUPLEX: 'link-duplex';
+
+LINK_SPEED: 'link-speed';
+
+LINK_STATE: 'link-state';
+
+LINK_TYPE: 'link-type';
+
+LLDP: 'lldp';
+
+LOCAL_ADDRESS: 'local-address';
+
+LOCAL_AS: 'local-as';
+
+LOCAL_PORT: 'local-port';
+
+LOG_COLLECTOR: 'log-collector';
+
+LOG_COLLECTOR_GROUP: 'log-collector-group';
+
+LOG_END: 'log-end';
+
+LOG_SETTING: 'log-setting';
+
+LOG_SETTINGS: 'log-settings';
+
+LOG_START: 'log-start';
+
+LOOPBACK: 'loopback';
+
+MATCH: 'match';
+
+MAX_PATH: 'max-path';
+
+MAX_PREFIXES: 'max-prefixes';
+
+MD5: 'md5';
+
+MED: 'med';
+
+MESHED_CLIENT: 'meshed-client';
+
+MIN_ROUTE_ADV_INTERVAL: 'min-route-adv-interval';
+
+MINUTES: 'minutes';
+
+MEMBERS: 'members';
+
+METRIC: 'metric';
+
+MGT_CONFIG: 'mgt-config';
+
+MOVE: 'move';
+
+MTU: 'mtu';
+
+MULTICAST: 'multicast';
+
+MULTIHOP: 'multihop';
+
+NAT: 'nat';
+
+NDP_PROXY: 'ndp-proxy';
+
+NEGATE_DESTINATION: 'negate-destination';
+
+NEGATE_SOURCE: 'negate-source';
+
+NETMASK: 'netmask';
+
+NETWORK: 'network';
+
+NEXT_VR: 'next-vr';
+
+NEXTHOP: 'nexthop';
+
+NO: 'no';
+
+NO_REDIST: 'no-redist';
+
+NON_CLIENT: 'non-client';
+
+NONE: 'none';
+
+NORMAL: 'normal';
+
+NSSA: 'nssa';
+
+NTP_SERVER_ADDRESS: 'ntp-server-address';
+
+NTP_SERVERS: 'ntp-servers';
+
+NULL: 'null';
+
+OPEN_DELAY_TIME: 'open-delay-time';
+
+ORIGIN: 'origin';
+
+ORIGINAL: 'original';
+
+OSPF: 'ospf';
+
+OSPF_EXT: 'ospf-ext';
+
+OSPF_INT: 'ospf-int';
+
+OSPFV3: 'ospfv3';
+
+OSPFV3_EXT: 'ospfv3-ext';
+
+OSPFV3_INT: 'ospfv3-int';
+
+OUTGOING_BGP_CONNECTION: 'outgoing-bgp-connection';
+
+P2P: 'p2p';
+
+P2MP: 'p2mp';
+
+PANORAMA: 'panorama';
+
+PANORAMA_SERVER: 'panorama-server';
+
+PARENT_DG: 'parent-dg';
+
+PASSIVE: 'passive';
+
+PASSWORD: 'password';
+
+PEER: 'peer';
+
+PEER_ADDRESS: 'peer-address';
+
+PEER_AS: 'peer-as';
+
+PEER_GROUP: 'peer-group';
+
+PERVASIVE: 'pervasive';
+
+POLICY: 'policy';
+
+PORT: 'port';
+
+POST_RULEBASE: 'post-rulebase';
+
+PRE_RULEBASE: 'pre-rulebase';
+
+PRIMARY: 'primary';
+
+PRIMARY_NTP_SERVER: 'primary-ntp-server';
+
+PRIORITY: 'priority';
+
+PROFILE_GROUP: 'profile-group';
+
+PROFILES: 'profiles';
+
+PRONE_TO_MISUSE: 'prone-to-misuse';
+
+PROTOCOL: 'protocol';
+
+QOS: 'qos';
+
+READONLY: 'readonly';
+
+RECURRING: 'recurring';
+
+REDIST: 'redist';
+
+REDIST_PROFILE: 'redist-profile';
+
+REDIST_RULES: 'redist-rules';
+
+REFLECTOR_CLIENT: 'reflector-client';
+
+REFLECTOR_CLUSTER_ID: 'reflector-cluster-id';
+
+REJECT_DEFAULT_ROUTE: 'reject-default-route';
+
+REMOTE_PORT: 'remote-port';
+
+REMOVE_PRIVATE_AS: 'remove-private-as';
+
+RESET_BOTH: 'reset-both';
+
+RESET_CLIENT: 'reset-client';
+
+RESET_SERVER: 'reset-server';
+
+RESOLVE: 'resolve';
+
+RESPONSE: 'response';
+
+RESULT: 'result';
+
+RETRANSMIT_INTERVAL: 'retransmit-interval';
+
+RIP: 'rip';
+
+RISK: 'risk';
+
+ROUTE_TABLE: 'route-table';
+
+ROUTER_ID: 'router-id';
+
+ROUTING_OPTIONS: 'routing-options';
+
+ROUTING_TABLE: 'routing-table';
+
+RULE_TYPE: 'rule-type';
+
+RULEBASE: 'rulebase';
+
+RULES: 'rules';
+
+SCTP: 'sctp';
+
+SECONDARY: 'secondary';
+
+SECONDARY_NTP_SERVER: 'secondary-ntp-server';
+
+SECONDS: 'seconds';
+
+SECURITY: 'security';
+
+SERVER: 'server';
+
+SERVER_PROFILE: 'server-profile';
+
+SERVERS: 'servers';
+
+SERVICE: 'service';
+
+SERVICE_GROUP: 'service-group';
+
+SET: 'set';
+
+SET_ORIGIN: 'set-origin';
+
+SETTING: 'setting';
+
+SHA1: 'sha1';
+
+SHA256: 'sha256';
+
+SHA384: 'sha384';
+
+SHA512: 'sha512';
+
+SHARED: 'shared';
+
+SHARED_GATEWAY: 'shared-gateway';
+
+SOURCE: 'source';
+
+SOURCE_PORT: 'source-port';
+
+SOURCE_TRANSLATION: 'source-translation';
+
+SOURCE_USER: 'source-user';
 
 SSL
 :
     [Ss][Ss][Ll]
 ;
 
-STATIC
-:
-    'static'
-;
+STATIC: 'static';
 
-STATIC_IPV6
-:
-    'static-ipv6'
-;
+STATIC_IPV6: 'static-ipv6';
 
-STATIC_ROUTE
-:
-    'static-route'
-;
+STATIC_ROUTE: 'static-route';
 
-STRICT_LSA_CHECKING
-:
-    'strict-LSA-checking'
-;
+STRICT_LSA_CHECKING: 'strict-LSA-checking';
 
-STUB
-:
-    'stub'
-;
+STUB: 'stub';
 
-SUBCATEGORY
-:
-    'subcategory'
-;
+SUBCATEGORY: 'subcategory';
 
-SYSLOG
-:
-    'syslog'
-;
+SYSLOG: 'syslog';
 
-SYSTEM
-:
-    'system'
-;
+SYSTEM: 'system';
 
-TAG
-:
-    'tag'
-;
+TAG: 'tag';
 
-TAP
-:
-    'tap'
-;
+TAP: 'tap';
 
-TARGET
-:
-    'target'
-;
+TARGET: 'target';
 
 TCP
 :
     [Tt][Cc][Pp]
 ;
 
-TECHNOLOGY
-:
-    'technology'
-;
+TECHNOLOGY: 'technology';
 
-TEMPLATE
-:
-    'template'
-;
+TEMPLATE: 'template';
 
-TEMPLATES
-:
-    'templates'
-;
+TEMPLATES: 'templates';
 
-TEMPLATE_STACK
-:
-    'template-stack'
-;
+TEMPLATE_STACK: 'template-stack';
 
-THREE_DES
-:
-    '3des'
-;
+THREE_DES: '3des';
 
-TIMEZONE
-:
-    'timezone'
-;
+TIMEZONE: 'timezone';
 
-TO
-:
-    'to'
-;
+TO: 'to';
 
-TOP
-:
-    'top'
-;
+TOP: 'top';
 
-TRANSFERS_FILES
-:
-    'transfers-files'
-;
+TRANSFERS_FILES: 'transfers-files';
 
-TRANSIT_DELAY
-:
-    'transit-delay'
-;
+TRANSIT_DELAY: 'transit-delay';
 
-TRANSLATED_ADDRESS
-:
-    'translated-address'
-;
+TRANSLATED_ADDRESS: 'translated-address';
 
-TRANSLATED_PORT
-:
-    'translated-port'
-;
+TRANSLATED_PORT: 'translated-port';
 
-TRANSPORT
-:
-    'transport'
-;
+TRANSPORT: 'transport';
 
-TUNNEL
-:
-    'tunnel'
-;
+TUNNEL: 'tunnel';
 
-TUNNELS_OTHER_APPS
-:
-    'tunnels-other-apps'
-;
+TUNNELS_OTHER_APPS: 'tunnels-other-apps';
 
-TYPE
-:
-    'type'
-;
+TYPE: 'type';
 
 UDP
 :
     [Uu][Dd][Pp]
 ;
 
-UNICAST
-:
-    'unicast'
-;
+UNICAST: 'unicast';
 
-UNITS
-:
-    'units'
-;
+UNITS: 'units';
 
-UNIVERSAL
-:
-    'universal'
-;
+UNIVERSAL: 'universal';
 
-UP
-:
-    'up'
-;
+UP: 'up';
 
-UPDATE
-:
-    'update'
-;
+UPDATE: 'update';
 
-UPDATE_SCHEDULE
-:
-    'update-schedule'
-;
+UPDATE_SCHEDULE: 'update-schedule';
 
-UPDATE_SERVER
-:
-    'update-server'
-;
+UPDATE_SERVER: 'update-server';
 
-URL
-:
-    'url'
-;
+URL: 'url';
 
-USE_PEER
-:
-    'use-peer'
-;
+USE_PEER: 'use-peer';
 
-USE_SELF
-:
-    'use-self'
-;
+USE_SELF: 'use-self';
 
-USED_BY
-:
-    'used-by'
-;
+USED_BY: 'used-by';
 
-USED_BY_MALWARE
-:
-    'used-by-malware'
-;
+USED_BY_MALWARE: 'used-by-malware';
 
-USERID
-:
-    'userid'
-;
+USERID: 'userid';
 
-USERNAME
-:
-    'username'
-;
+USERNAME: 'username';
 
-VIRTUAL_ROUTER
-:
-    'virtual-router'
-;
+VIRTUAL_ROUTER: 'virtual-router';
 
-VIRTUAL_WIRE
-:
-    'virtual-wire'
-;
+VIRTUAL_WIRE: 'virtual-wire';
 
-VISIBLE_VSYS
-:
-    'visible-vsys'
-;
+VISIBLE_VSYS: 'visible-vsys';
 
-VLAN
-:
-    'vlan'
-;
+VLAN: 'vlan';
 
-VSYS
-:
-    'vsys'
-;
+VSYS: 'vsys';
 
-WEIGHT
-:
-    'weight'
-;
+WEIGHT: 'weight';
 
-YES
-:
-    'yes'
-;
+YES: 'yes';
 
-ZONE
-:
-    'zone'
-;
+ZONE: 'zone';
 
 // Complex tokens
 
@@ -1744,10 +736,7 @@ COMMA
     ','
 ;
 
-DASH
-:
-    '-'
-;
+DASH: '-';
 
 DOUBLE_QUOTED_STRING
 :
@@ -1777,10 +766,7 @@ COMMENT_LINE
 ;
 
 
-NETFLOW_PROFILE
-:
-    'netflow-profile'
-;
+NETFLOW_PROFILE: 'netflow-profile';
 
 NEWLINE
 :

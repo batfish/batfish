@@ -27,622 +27,255 @@ public void emit(Token token) {
 
 // Keywords
 
-ACCESS
-:
-  'access'
-;
+ACCESS: 'access';
 
-ACTIVATE
-:
-  'activate'
-;
+ACTIVATE: 'activate';
 
-ADD
-:
-  'add'
-;
+ADD: 'add';
 
-ADDRESS
-:
-  'address'
-;
+ADDRESS: 'address';
 
-ADDRESS_VIRTUAL
-:
-  'address-virtual'
-;
+ADDRESS_VIRTUAL: 'address-virtual';
 
-ADVERTISE
-:
-  'advertise'
-;
+ADVERTISE: 'advertise';
 
-ADVERTISE_ALL_VNI
-:
-  'advertise-all-vni'
-;
+ADVERTISE_ALL_VNI: 'advertise-all-vni';
 
-ADVERTISE_DEFAULT_GW
-:
-  'advertise-default-gw'
-;
+ADVERTISE_DEFAULT_GW: 'advertise-default-gw';
 
-AGENTX
-:
-  'agentx'
-;
+AGENTX: 'agentx';
 
-ALERTS
-:
-  'alerts'
-;
+ALERTS: 'alerts';
 
 ALIAS
 :
   'alias' -> pushMode(M_Alias)
 ;
 
-ALWAYS_COMPARE_MED
-:
-  'always-compare-med'
-;
-
-ARP_ND_SUPPRESS
-:
-  'arp-nd-suppress'
-;
-
-AS_PATH
-:
-  'as-path'
-;
-
-AUTO
-:
-  'auto'
-;
-
-AUTONOMOUS_SYSTEM
-:
-  'autonomous-system'
-;
-
-BACKUP_IP
-:
-  'backup-ip'
-;
-
-BESTPATH
-:
-  'bestpath'
-;
-
-BGP
-:
-  'bgp'
-;
-
-BOND
-:
-  'bond'
-;
-
-BPDUGUARD
-:
-  'bpduguard'
-;
-
-BRIDGE
-:
-  'bridge'
-;
-
-CLAG
-:
-  'clag'
-;
-
-COMMIT
-:
-  'commit'
-;
-
-CONNECTED
-:
-  'connected'
-;
-
-CRITICAL
-:
-  'critical'
-;
-
-DATACENTER
-:
-  'datacenter'
-;
-
-DEBUGGING
-:
-  'debugging'
-;
-
-DEFAULTS
-:
-  'defaults'
-;
-
-DEL
-:
-  'del'
-;
-
-DENY
-:
-  'deny'
-;
-
-DESCRIPTION
-:
-  'description'
-;
-
-DHCP
-:
-  'dhcp'
-;
-
-DNS
-:
-  'dns'
-;
-
-DOT1X
-:
-  'dot1x'
-;
-
-EMERGENCIES
-:
-  'emergencies'
-;
-
-ERRORS
-:
-  'errors'
-;
-
-EVPN
-:
-  'evpn'
-;
-
-EXIT_VRF
-:
-  'exit-vrf'
-;
-
-EXTERNAL
-:
-  'external'
-;
-
-FORWARD
-:
-  'forward'
-;
-
-GATEWAY
-:
-  'gateway'
-;
-
-HOSTNAME
-:
-  'hostname'
-;
-
-HWADDRESS
-:
-  'hwaddress'
-;
-
-IBURST
-:
-  'iburst'
-;
-
-ID
-:
-  'id'
-;
-
-INFORMATIONAL
-:
-  'informational'
-;
-
-INTEGRATED_VTYSH_CONFIG
-:
-  'integrated-vtysh-config'
-;
-
-INTERFACE
-:
-  'interface'
-;
-
-INTERNAL
-:
-  'internal'
-;
-
-IP
-:
-  'ip'
-;
-
-IPV4
-:
-  'ipv4'
-;
-
-IPV6
-:
-  'ipv6'
-;
-
-L2VPN
-:
-  'l2vpn'
-;
-
-LACP_BYPASS_ALLOW
-:
-  'lacp-bypass-allow'
-;
-
-LEARNING
-:
-  'learning'
-;
-
-LINK
-:
-  'link'
-;
-
-LINKLOCAL
-:
-  'linklocal'
-;
-
-LO
-:
-  'lo'
-;
-
-LOCAL_TUNNELIP
-:
-  'local-tunnelip'
-;
-
-LOG
-:
-  'log'
-;
-
-LOOPBACK
-:
-  'loopback'
-;
-
-MATCH
-:
-  'match'
-;
-
-MSEC
-:
-  'msec'
-;
-
-MTU
-:
-  'mtu'
-;
-
-MULTIPATH_RELAX
-:
-  'multipath-relax'
-;
-
-NAMESERVER
-:
-  'nameserver'
-;
-
-ND
-:
-  'nd'
-;
-
-NEIGHBOR
-:
-  'neighbor'
-;
-
-NETWORK
-:
-  'network'
-;
-
-NET
-:
-  'net'
-;
-
-NO
-:
-
-  'no'
-;
-
-NOTIFICATIONS
-:
-  'notifications'
-;
-
-NTP
-:
-  'ntp'
-;
-
-OFF
-:
-  'off'
-;
-
-ON
-:
-  'on'
-;
-
-PEER_GROUP
-:
-  'peer-group'
-;
-
-PEER_IP
-:
-  'peer-ip'
-;
-
-PERMIT
-:
-  'permit'
-;
-
-PORTADMINEDGE
-:
-  'portadminedge'
-;
-
-PORTAUTOEDGE
-:
-  'portautoedge'
-;
-
-PORTBPDUFILTER
-:
-  'portbpdufilter'
-;
-
-PORTNETWORK
-:
-  'portnetwork'
-;
-
-PORTRESTROLE
-:
-  'portrestrole'
-;
-
-PORTS
-:
-  'ports'
-;
-
-PRIORITY
-:
-  'priority'
-;
-
-PTP
-:
-  'ptp'
-;
-
-PVID
-:
-  'pvid'
-;
-
-RA_INTERVAL
-:
-  'ra-interval'
-;
-
-RA_LIFETIME
-:
-  'ra-lifetime'
-;
-
-REDISTRIBUTE
-:
-  'redistribute'
-;
-
-REMOTE_AS
-:
-  'remote-as'
-;
-
-ROUTE
-:
-  'route'
-;
-
-ROUTER
-:
-  'router'
-;
-
-ROUTE_MAP
-:
-  'route-map'
-;
-
-ROUTE_REFLECTOR_CLIENT
-:
-  'route-reflector-client'
-;
-
-ROUTER_ID
-:
-  'router-id'
-;
-
-ROUTING
-:
-  'routing'
-;
-
-SERVER
-:
-  'server'
-;
-
-SERVICE
-:
-  'service'
-;
-
-SLAVES
-:
-  'slaves'
-;
-
-SNMP_SERVER
-:
-  'snmp-server'
-;
-
-SOURCE
-:
-  'source'
-;
-
-SPEED
-:
-  'speed'
-;
-
-STATIC
-:
-  'static'
-;
-
-STP
-:
-  'stp'
-;
-
-SUPPRESS_RA
-:
-  'suppress-ra'
-;
-
-
-SYS_MAC
-:
-  'sys-mac'
-;
-
-SYSLOG
-:
-  'syslog'
-;
-
-TIME
-:
-  'time'
-;
-
-UNICAST
-:
-  'unicast'
-;
-
-VIDS
-:
-  'vids'
-;
-
-VLAN
-:
-  'vlan'
-;
-
-VLAN_AWARE
-:
-  'vlan-aware'
-;
-
-VLAN_ID
-:
-  'vlan-id'
-;
-
-VLAN_RAW_DEVICE
-:
-  'vlan-raw-device'
-;
-
-VNI
-:
-  'vni'
-;
-
-VRF
-:
-  'vrf'
-;
-
-VRF_TABLE
-:
-  'vrf-table'
-;
-
-VXLAN
-:
-  'vxlan'
-;
-
-VXLAN_ANYCAST_IP
-:
-  'vxlan-anycast-ip'
-;
-
-WARNINGS
-:
-  'warnings'
-;
-
-ZONE
-:
-  'zone'
-;
+ALWAYS_COMPARE_MED: 'always-compare-med';
+
+ARP_ND_SUPPRESS: 'arp-nd-suppress';
+
+AS_PATH: 'as-path';
+
+AUTO: 'auto';
+
+AUTONOMOUS_SYSTEM: 'autonomous-system';
+
+BACKUP_IP: 'backup-ip';
+
+BESTPATH: 'bestpath';
+
+BGP: 'bgp';
+
+BOND: 'bond';
+
+BPDUGUARD: 'bpduguard';
+
+BRIDGE: 'bridge';
+
+CLAG: 'clag';
+
+COMMIT: 'commit';
+
+CONNECTED: 'connected';
+
+CRITICAL: 'critical';
+
+DATACENTER: 'datacenter';
+
+DEBUGGING: 'debugging';
+
+DEFAULTS: 'defaults';
+
+DEL: 'del';
+
+DENY: 'deny';
+
+DESCRIPTION: 'description';
+
+DHCP: 'dhcp';
+
+DNS: 'dns';
+
+DOT1X: 'dot1x';
+
+EMERGENCIES: 'emergencies';
+
+ERRORS: 'errors';
+
+EVPN: 'evpn';
+
+EXIT_VRF: 'exit-vrf';
+
+EXTERNAL: 'external';
+
+FORWARD: 'forward';
+
+GATEWAY: 'gateway';
+
+HOSTNAME: 'hostname';
+
+HWADDRESS: 'hwaddress';
+
+IBURST: 'iburst';
+
+ID: 'id';
+
+INFORMATIONAL: 'informational';
+
+INTEGRATED_VTYSH_CONFIG: 'integrated-vtysh-config';
+
+INTERFACE: 'interface';
+
+INTERNAL: 'internal';
+
+IP: 'ip';
+
+IPV4: 'ipv4';
+
+IPV6: 'ipv6';
+
+L2VPN: 'l2vpn';
+
+LACP_BYPASS_ALLOW: 'lacp-bypass-allow';
+
+LEARNING: 'learning';
+
+LINK: 'link';
+
+LINKLOCAL: 'linklocal';
+
+LO: 'lo';
+
+LOCAL_TUNNELIP: 'local-tunnelip';
+
+LOG: 'log';
+
+LOOPBACK: 'loopback';
+
+MATCH: 'match';
+
+MSEC: 'msec';
+
+MTU: 'mtu';
+
+MULTIPATH_RELAX: 'multipath-relax';
+
+NAMESERVER: 'nameserver';
+
+ND: 'nd';
+
+NEIGHBOR: 'neighbor';
+
+NETWORK: 'network';
+
+NET: 'net';
+
+NO: 'no';
+
+NOTIFICATIONS: 'notifications';
+
+NTP: 'ntp';
+
+OFF: 'off';
+
+ON: 'on';
+
+PEER_GROUP: 'peer-group';
+
+PEER_IP: 'peer-ip';
+
+PERMIT: 'permit';
+
+PORTADMINEDGE: 'portadminedge';
+
+PORTAUTOEDGE: 'portautoedge';
+
+PORTBPDUFILTER: 'portbpdufilter';
+
+PORTNETWORK: 'portnetwork';
+
+PORTRESTROLE: 'portrestrole';
+
+PORTS: 'ports';
+
+PRIORITY: 'priority';
+
+PTP: 'ptp';
+
+PVID: 'pvid';
+
+RA_INTERVAL: 'ra-interval';
+
+RA_LIFETIME: 'ra-lifetime';
+
+REDISTRIBUTE: 'redistribute';
+
+REMOTE_AS: 'remote-as';
+
+ROUTE: 'route';
+
+ROUTER: 'router';
+
+ROUTE_MAP: 'route-map';
+
+ROUTE_REFLECTOR_CLIENT: 'route-reflector-client';
+
+ROUTER_ID: 'router-id';
+
+ROUTING: 'routing';
+
+SERVER: 'server';
+
+SERVICE: 'service';
+
+SLAVES: 'slaves';
+
+SNMP_SERVER: 'snmp-server';
+
+SOURCE: 'source';
+
+SPEED: 'speed';
+
+STATIC: 'static';
+
+STP: 'stp';
+
+SUPPRESS_RA: 'suppress-ra';
+
+
+SYS_MAC: 'sys-mac';
+
+SYSLOG: 'syslog';
+
+TIME: 'time';
+
+UNICAST: 'unicast';
+
+VIDS: 'vids';
+
+VLAN: 'vlan';
+
+VLAN_AWARE: 'vlan-aware';
+
+VLAN_ID: 'vlan-id';
+
+VLAN_RAW_DEVICE: 'vlan-raw-device';
+
+VNI: 'vni';
+
+VRF: 'vrf';
+
+VRF_TABLE: 'vrf-table';
+
+VXLAN: 'vxlan';
+
+VXLAN_ANYCAST_IP: 'vxlan-anycast-ip';
+
+WARNINGS: 'warnings';
+
+ZONE: 'zone';
 
 // Complex tokens
 
@@ -671,10 +304,7 @@ COMMENT_TAIL
   '#' F_NonNewlineChar* -> channel ( HIDDEN )
 ;
 
-DASH
-:
-  '-'
-;
+DASH: '-';
 
 DEC
 :

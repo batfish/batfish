@@ -18,6 +18,13 @@
           "schema" : "String"
         },
         {
+          "description" : "The detected format of the file",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "File_Format",
+          "schema" : "String"
+        },
+        {
           "description" : "Names of nodes produced from this file",
           "isKey" : false,
           "isValue" : true,
@@ -25,12 +32,13 @@
           "schema" : "List<Node>"
         }
       ],
-      "textDesc" : "File ${File_Name} parsed with status ${Status} and produced nodes ${Nodes}"
+      "textDesc" : "File ${File_Name} detected as format ${File_Format} and parsed with status ${Status} and produced nodes ${Nodes}"
     },
     "rows" : [
       {
         "File_Name" : "configs/as1border1.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as1border1",
@@ -41,6 +49,7 @@
       {
         "File_Name" : "configs/as1border2.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as1border2",
@@ -51,6 +60,7 @@
       {
         "File_Name" : "configs/as1core1.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as1core1",
@@ -61,6 +71,7 @@
       {
         "File_Name" : "configs/as2border1.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as2border1",
@@ -71,6 +82,7 @@
       {
         "File_Name" : "configs/as2border2.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as2border2",
@@ -81,6 +93,7 @@
       {
         "File_Name" : "configs/as2core1.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as2core1",
@@ -91,6 +104,7 @@
       {
         "File_Name" : "configs/as2core2.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as2core2",
@@ -101,6 +115,7 @@
       {
         "File_Name" : "configs/as2dept1.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as2dept1",
@@ -111,6 +126,7 @@
       {
         "File_Name" : "configs/as2dist1.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as2dist1",
@@ -121,6 +137,7 @@
       {
         "File_Name" : "configs/as2dist2.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as2dist2",
@@ -131,6 +148,7 @@
       {
         "File_Name" : "configs/as3border1.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as3border1",
@@ -141,6 +159,7 @@
       {
         "File_Name" : "configs/as3border2.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as3border2",
@@ -151,6 +170,7 @@
       {
         "File_Name" : "configs/as3core1.cfg",
         "Status" : "PASSED",
+        "File_Format" : "CISCO_IOS",
         "Nodes" : [
           {
             "id" : "node-as3core1",
@@ -161,6 +181,7 @@
       {
         "File_Name" : "hosts/host1.json",
         "Status" : "PASSED",
+        "File_Format" : "HOST",
         "Nodes" : [
           {
             "id" : "node-host1",
@@ -171,6 +192,7 @@
       {
         "File_Name" : "hosts/host2.json",
         "Status" : "PASSED",
+        "File_Format" : "HOST",
         "Nodes" : [
           {
             "id" : "node-host2",
@@ -181,6 +203,7 @@
       {
         "File_Name" : "iptables/host1.iptables",
         "Status" : "PASSED",
+        "File_Format" : "IPTABLES",
         "Nodes" : [
           {
             "id" : "node-iptables/host1.iptables",
@@ -191,6 +214,7 @@
       {
         "File_Name" : "iptables/host2.iptables",
         "Status" : "PASSED",
+        "File_Format" : "IPTABLES",
         "Nodes" : [
           {
             "id" : "node-iptables/host2.iptables",

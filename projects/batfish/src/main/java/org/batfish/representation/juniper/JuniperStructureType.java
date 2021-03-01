@@ -13,6 +13,7 @@ public enum JuniperStructureType implements StructureType {
   AUTHENTICATION_KEY_CHAIN("authentication-key-chain"),
   BGP_GROUP("bgp group"),
   COMMUNITY("community"),
+  CONDITION("condition"),
   DHCP_RELAY_SERVER_GROUP("dhcp-relay server-group"),
   FIREWALL_FILTER("firewall filter"),
   FIREWALL_FILTER_TERM("firewall filter term"),

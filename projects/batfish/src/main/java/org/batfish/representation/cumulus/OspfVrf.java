@@ -1,36 +1,30 @@
 package org.batfish.representation.cumulus;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 
 /** OSPF configuration for a particular VRF. */
 public class OspfVrf implements Serializable {
 
   private final @Nonnull String _vrfName;
   private @Nullable Ip _routerId;
-  private final @Nonnull Table<Long, Prefix, OspfAreaRange> _ospfAreaRange;
+  private final @Nonnull Map<Long, OspfArea> _areas;
 
   public OspfVrf(String name) {
     _vrfName = name;
-    _ospfAreaRange = HashBasedTable.create();
+    _areas = new HashMap<>();
   }
 
-  public @Nonnull OspfAreaRange getOrCreateAreaRange(long area, @Nonnull Prefix prefix) {
-    return _ospfAreaRange.row(area).computeIfAbsent(prefix, p -> new OspfAreaRange(area, p));
+  public @Nonnull OspfArea getOrCreateArea(long area) {
+    return _areas.computeIfAbsent(area, OspfArea::new);
   }
 
-  public @Nullable OspfAreaRange getAreaRange(long area, @Nonnull Prefix prefix) {
-    return _ospfAreaRange.get(area, prefix);
-  }
-
-  public @Nonnull Collection<OspfAreaRange> getAreaRanges() {
-    return _ospfAreaRange.values();
+  public @Nullable OspfArea getArea(long area) {
+    return _areas.get(area);
   }
 
   @Nullable

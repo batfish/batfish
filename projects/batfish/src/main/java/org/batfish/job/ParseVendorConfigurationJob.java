@@ -48,6 +48,8 @@ import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
+import org.batfish.grammar.fortios.FortiosCombinedParser;
+import org.batfish.grammar.fortios.FortiosControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
 import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
@@ -224,18 +226,28 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           }
 
         case F5_BIGIP_STRUCTURED:
-          F5BigipStructuredCombinedParser parser =
-              new F5BigipStructuredCombinedParser(_fileText, _settings);
-          combinedParser = parser;
-          extractor =
-              new F5BigipStructuredControlPlaneExtractor(
-                  _fileText,
-                  parser,
-                  _warnings,
-                  _filename,
-                  _settings.getPrintParseTree() ? () -> _ptSentences : null,
-                  _settings.getPrintParseTreeLineNums());
-          break;
+          {
+            F5BigipStructuredCombinedParser parser =
+                new F5BigipStructuredCombinedParser(_fileText, _settings);
+            combinedParser = parser;
+            extractor =
+                new F5BigipStructuredControlPlaneExtractor(
+                    _fileText,
+                    parser,
+                    _warnings,
+                    _filename,
+                    _settings.getPrintParseTree() ? () -> _ptSentences : null,
+                    _settings.getPrintParseTreeLineNums());
+            break;
+          }
+
+        case FORTIOS:
+          {
+            FortiosCombinedParser parser = new FortiosCombinedParser(_fileText, _settings);
+            combinedParser = parser;
+            extractor = new FortiosControlPlaneExtractor(_fileText, parser, _warnings);
+            break;
+          }
 
         case HOST:
           try {
@@ -415,13 +427,16 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     // Handle specially some cases that will not produce a vendor configuration file.
     if (format == ConfigurationFormat.EMPTY) {
       _warnings.redFlag("Empty file: '" + _filename + "'\n");
-      return new ParseResult(null, null, _filename, _ptSentences, ParseStatus.EMPTY, _warnings);
+      return new ParseResult(
+          null, null, _filename, format, _ptSentences, ParseStatus.EMPTY, _warnings);
     } else if (format == ConfigurationFormat.IGNORED) {
       _warnings.redFlag("Ignored file: " + _filename + "\n");
-      return new ParseResult(null, null, _filename, _ptSentences, ParseStatus.IGNORED, _warnings);
+      return new ParseResult(
+          null, null, _filename, format, _ptSentences, ParseStatus.IGNORED, _warnings);
     } else if (format == ConfigurationFormat.UNKNOWN) {
       _warnings.redFlag("Unable to detect format for file: '" + _filename + "'\n");
-      return new ParseResult(null, null, _filename, _ptSentences, ParseStatus.UNKNOWN, _warnings);
+      return new ParseResult(
+          null, null, _filename, format, _ptSentences, ParseStatus.UNKNOWN, _warnings);
     } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
       String unsupportedError =
           "Unsupported configuration format: '" + format + "' for file: '" + _filename + "'\n";
@@ -430,13 +445,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             null,
             new BatfishException(unsupportedError),
             _filename,
+            format,
             _ptSentences,
             ParseStatus.FAILED,
             _warnings);
       }
       _warnings.redFlag(unsupportedError);
       return new ParseResult(
-          null, null, _filename, _ptSentences, ParseStatus.UNSUPPORTED, _warnings);
+          null, null, _filename, format, _ptSentences, ParseStatus.UNSUPPORTED, _warnings);
     }
 
     try {
@@ -444,22 +460,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       VendorConfiguration vc = parseFile(format);
       ParseStatus status =
           vc.getUnrecognized() ? ParseStatus.PARTIALLY_UNRECOGNIZED : ParseStatus.PASSED;
-      return new ParseResult(vc, null, _filename, _ptSentences, status, _warnings);
+      return new ParseResult(vc, null, _filename, format, _ptSentences, status, _warnings);
     } catch (WillNotCommitException e) {
       if (_settings.getHaltOnParseError()) {
         // Fail the job if we need to
         return new ParseResult(
-            null, e, _filename, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
+            null, e, _filename, format, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
       }
       // Otherwise just generate a warning
       _warnings.redFlag(e.getMessage());
       return new ParseResult(
-          null, null, _filename, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
+          null, null, _filename, format, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
     } catch (Exception e) {
       return new ParseResult(
           null,
           new BatfishException("Error parsing configuration file: '" + _filename + "'", e),
           _filename,
+          format,
           _ptSentences,
           ParseStatus.FAILED,
           _warnings);
@@ -472,6 +489,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           elapsed,
           _logger.getHistory(),
           _filename,
+          result.getFormat(),
           result.getConfig(),
           result.getWarnings(),
           result.getParseTreeSentences(),
@@ -482,12 +500,18 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           elapsed,
           _logger.getHistory(),
           _filename,
+          result.getFormat(),
           result.getWarnings(),
           result.getParseTreeSentences(),
           result.getFailureCause());
     } else {
       return new ParseVendorConfigurationResult(
-          elapsed, _logger.getHistory(), _filename, result.getWarnings(), result.getStatus());
+          elapsed,
+          _logger.getHistory(),
+          _filename,
+          result.getFormat(),
+          result.getWarnings(),
+          result.getStatus());
     }
   }
 

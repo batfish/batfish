@@ -2,6 +2,11 @@
   "answerElements" : [
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+      "fileFormats" : {
+        "configs/junos-srx-1.cfg" : "FLAT_JUNIPER",
+        "configs/junos-srx-2.cfg" : "FLAT_JUNIPER",
+        "configs/junos-srx-3.cfg" : "FLAT_JUNIPER"
+      },
       "fileMap" : {
         "junos-srx-1" : [
           "configs/junos-srx-1.cfg"

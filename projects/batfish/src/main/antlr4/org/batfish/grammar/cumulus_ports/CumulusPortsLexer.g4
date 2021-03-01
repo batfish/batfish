@@ -6,10 +6,7 @@ options {
 
 // Keywords
 
-DISABLED
-:
-  'disabled'
-;
+DISABLED: 'disabled';
 
 EQUALSIGN
 :

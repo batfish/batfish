@@ -291,6 +291,7 @@ public class PaloAltoSecurityRuleTest {
     Flow rule2bFlow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 179);
     Flow rule3Flow = createFlow("1.1.4.10", "1.1.1.10", IpProtocol.TCP, 0, 1234);
     Flow rule4Flow = createFlow("1.1.1.10", "1.1.4.10", IpProtocol.TCP, 0, 53);
+    Flow rule3pt5Flow = createFlow("1.1.1.10", "10.12.14.16", IpProtocol.TCP, 0, 80);
 
     IpAccessList filter = c.getIpAccessLists().get(crossZoneFilterName);
     BiFunction<String, Flow, List<TraceTree>> trace =
@@ -316,6 +317,7 @@ public class PaloAltoSecurityRuleTest {
                   isTraceTree(
                       matchDestinationAddressTraceElement(),
                       isTraceTree(matchAddressObjectTraceElement("addr2", "vsys1", filename))),
+                  isTraceTree(matchApplicationAnyTraceElement()),
                   isTraceTree(matchServiceTraceElement()))));
     }
     {
@@ -331,6 +333,7 @@ public class PaloAltoSecurityRuleTest {
                   isTraceTree(
                       matchDestinationAddressTraceElement(),
                       isTraceTree(matchAddressObjectTraceElement("addr2", "vsys1", filename))),
+                  isTraceTree(matchApplicationAnyTraceElement()),
                   isTraceTree(matchBuiltInServiceTraceElement()))));
     }
     {
@@ -386,6 +389,21 @@ public class PaloAltoSecurityRuleTest {
                       isTraceTree(matchApplicationAnyTraceElement())))));
     }
     {
+      List<TraceTree> traces = trace.apply(iface1, rule3pt5Flow);
+      assertThat(
+          traces,
+          contains(
+              isTraceTree(
+                  matchSecurityRuleTraceElement("RULE3pt5", "vsys1", filename),
+                  isTraceTree(
+                      matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
+                  isTraceTree(
+                      matchDestinationAddressTraceElement(),
+                      isTraceTree(matchAddressValueTraceElement("10.12.14.16"))),
+                  isTraceTree(matchBuiltInApplicationTraceElement("aol-messageboard-posting")),
+                  isTraceTree(matchBuiltInServiceTraceElement()))));
+    }
+    {
       List<TraceTree> traces = trace.apply(iface1, rule4Flow);
       assertThat(
           traces,
@@ -402,6 +420,7 @@ public class PaloAltoSecurityRuleTest {
                       isTraceTree(
                           matchNegatedAddressTraceElement(),
                           isTraceTree(matchAddressValueTraceElement("10.11.11.0/24")))),
+                  isTraceTree(matchApplicationAnyTraceElement()),
                   isTraceTree(matchServiceAnyTraceElement()))));
     }
   }
@@ -456,5 +475,277 @@ public class PaloAltoSecurityRuleTest {
         traces.get(flowPermitZ2).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
     assertEquals(
         traces.get(flowPermitZ4).get(0).getDisposition(), FlowDisposition.DELIVERED_TO_SUBNET);
+  }
+
+  @Test
+  public void testApplicationOverrideConditions() throws IOException {
+    String hostname = "application-override-conditions";
+    Configuration c = parseConfig(hostname);
+
+    int customApp1Port = 7653;
+    String if1name = "ethernet1/1"; // 10.0.1.1/24
+    String if3name = "ethernet1/3"; // 10.0.3.1/24
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    Flow flowPermit =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .setDstPort(customApp1Port)
+            .build();
+    Flow flowRejectPort =
+        flowPermit.toBuilder()
+            // Some dest port other than our custom app port
+            .setDstPort(customApp1Port - 1)
+            .build();
+    Flow flowRejectFromZone = flowPermit.toBuilder().setIngressInterface(if3name).build();
+    // Dest IP corresponding to a different zone (but still permitted by dest filter)
+    Flow flowRejectToZone = flowPermit.toBuilder().setDstIp(Ip.parse("10.0.1.3")).build();
+    Flow flowRejectSrc = flowPermit.toBuilder().setSrcIp(Ip.parse("10.0.1.3")).build();
+    Flow flowRejectDst = flowPermit.toBuilder().setSrcIp(Ip.parse("10.0.2.3")).build();
+    Flow flowRejectProtocol = flowPermit.toBuilder().setIpProtocol(IpProtocol.UDP).build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(
+                ImmutableSet.of(
+                    flowPermit,
+                    flowRejectPort,
+                    flowRejectFromZone,
+                    flowRejectToZone,
+                    flowRejectSrc,
+                    flowRejectDst,
+                    flowRejectProtocol),
+                false);
+
+    // Confirm flows not matching the rule are denied out
+    assertEquals(traces.get(flowRejectPort).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    assertEquals(
+        traces.get(flowRejectFromZone).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    assertEquals(traces.get(flowRejectToZone).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    assertEquals(traces.get(flowRejectSrc).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    assertEquals(traces.get(flowRejectDst).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    assertEquals(
+        traces.get(flowRejectProtocol).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+
+    // Confirm flow matching rule is successful
+    assertTrue(traces.get(flowPermit).get(0).getDisposition().isSuccessful());
+  }
+
+  @Test
+  public void testApplicationOverrideShadowing() throws IOException {
+    String hostname = "application-override-shadowing";
+    Configuration c = parseConfig(hostname);
+
+    int customApp1Port = 7653;
+    int customApp4abPort = 6542;
+    int customApp4cPort = 5431;
+    int sshPort = 22;
+    String if1name = "ethernet1/1"; // 10.0.1.1/24
+    String if3name = "ethernet1/3"; // 10.0.3.1/24
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    // Matches OVERRIDE_APP_RULE1 (app CUSTOM_APP1)
+    Flow flowCustomApp1 =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setDstPort(customApp1Port)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+    // Matches OVERRIDE_APP_RULE2 (app CUSTOM_APP2)
+    Flow flowCustomApp2 = flowCustomApp1.toBuilder().setDstPort(sshPort).build();
+    // Similar to CUSTOM_APP1, but matches OVERRIDE_APP_RULE3 (app CUSTOM_APP3) due to source addr
+    Flow flowCustomApp3 = flowCustomApp1.toBuilder().setSrcIp(Ip.parse("1.0.1.2")).build();
+    // Similar to CUSTOM_APP2, but matches app SSH due to source addr
+    Flow flowSSH = flowCustomApp2.toBuilder().setSrcIp(Ip.parse("1.0.1.2")).build();
+
+    // Match one source address for CUSTOM_APP4
+    Flow flowCustomApp4a =
+        flowCustomApp1.toBuilder()
+            .setDstPort(customApp4abPort)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .build();
+    // Match another source address for CUSTOM_APP4
+    Flow flowCustomApp4b =
+        flowCustomApp1.toBuilder()
+            .setDstPort(customApp4abPort)
+            .setSrcIp(Ip.parse("10.0.1.3"))
+            .build();
+    // Match different zone and port for CUSTOM_APP4
+    Flow flowCustomApp4c =
+        flowCustomApp1.toBuilder()
+            .setIngressInterface(if3name)
+            .setDstPort(customApp4cPort)
+            .setSrcIp(Ip.parse("10.0.3.3"))
+            .build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(
+                ImmutableSet.of(
+                    flowCustomApp1,
+                    flowCustomApp2,
+                    flowCustomApp3,
+                    flowSSH,
+                    flowCustomApp4a,
+                    flowCustomApp4b,
+                    flowCustomApp4c),
+                false);
+
+    // Test application-override rule shadowing another application-override rule
+    // Flow is flagged as CUSTOM_APP1
+    assertEquals(traces.get(flowCustomApp1).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    // Similar to CUSTOM_APP1 but w/ different source addr, so flagged as CUSTOM_APP3
+    assertTrue(traces.get(flowCustomApp3).get(0).getDisposition().isSuccessful());
+
+    // Test application-override rule shadowing a built-in application
+    // Flow is flagged as CUSTOM_APP2
+    assertEquals(traces.get(flowCustomApp2).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    // Similar to CUSTOM_APP2, but w/ different source addr, so flagged as SSH (not a custom app)
+    assertTrue(traces.get(flowSSH).get(0).getDisposition().isSuccessful());
+
+    // Confirm application definition can come from multiple application-override rules
+    // Flow matching OVERRIDE_APP_RULE4 (CUSTOM_APP4) is allowed
+    assertTrue(traces.get(flowCustomApp4a).get(0).getDisposition().isSuccessful());
+    // Flow matching OVERRIDE_APP_RULE5 (CUSTOM_APP4) is allowed, not shadowed
+    assertTrue(traces.get(flowCustomApp4b).get(0).getDisposition().isSuccessful());
+    // Flow matching OVERRIDE_APP_RULE6 (CUSTOM_APP4) is allowed, not shadowed
+    assertTrue(traces.get(flowCustomApp4c).get(0).getDisposition().isSuccessful());
+  }
+
+  @Test
+  public void testApplicationOverrideNatInteraction() throws IOException {
+    String hostname = "application-override-nat-interaction";
+    Configuration c = parseConfig(hostname);
+
+    int customAppDnatPort = 7653;
+    int customAppSnatPort = 6542;
+    String if1name = "ethernet1/1"; // 10.0.1.1/24
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    Flow flowCustomAppDnat =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setDstPort(customAppDnatPort)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.3.100"))
+            .build();
+
+    Flow flowCustomAppSnat =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setDstPort(customAppSnatPort)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(ImmutableSet.of(flowCustomAppDnat, flowCustomAppSnat), false);
+
+    // Confirm CUSTOM_APP_DNAT is recognized, matching pre-DNAT addr and post-NAT zone
+    assertTrue(traces.get(flowCustomAppDnat).get(0).getDisposition().isSuccessful());
+
+    // Confirm CUSTOM_APP_SNAT flow is recognized, matching pre-SNAT addr & post-NAT zone
+    assertTrue(traces.get(flowCustomAppSnat).get(0).getDisposition().isSuccessful());
+  }
+
+  @Test
+  public void testApplicationOverrideServiceInteraction() throws IOException {
+    String hostname = "application-override-service-interaction";
+    Configuration c = parseConfig(hostname);
+
+    int customApp7652Port = 7652;
+    int customApp7653Port = 7653;
+    String if1name = "ethernet1/1"; // 10.0.1.1/24
+    String if3name = "ethernet1/3"; // 10.0.3.1/24
+    String if4name = "ethernet1/4"; // 10.0.4.1/24
+
+    Batfish batfish = getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+
+    // z1 -> z2 flow matching application and service
+    Flow flowZ1toZ2 =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            // Arbitrary source port
+            .setSrcPort(12345)
+            .setDstPort(customApp7653Port)
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressInterface(if1name)
+            .setSrcIp(Ip.parse("10.0.1.2"))
+            .setDstIp(Ip.parse("10.0.2.2"))
+            .build();
+
+    // z3 -> z2 flow matching application, *not* service
+    Flow flowZ3toZ2MatchApp =
+        flowZ1toZ2.toBuilder()
+            .setIngressInterface(if3name)
+            .setSrcIp(Ip.parse("10.0.3.2"))
+            .setDstPort(customApp7652Port)
+            .build();
+    // z3 -> z2 flow matching service, *not* application
+    Flow flowZ3toZ2MatchService =
+        flowZ3toZ2MatchApp.toBuilder().setDstPort(customApp7653Port).build();
+
+    // z4 -> z2 flow matching service, *not* built-in application default port
+    Flow flowZ4toZ2MatchService =
+        flowZ3toZ2MatchService.toBuilder()
+            .setIngressInterface(if4name)
+            .setSrcIp(Ip.parse("10.0.4.2"))
+            .setDstPort(customApp7653Port)
+            .build();
+
+    SortedMap<Flow, List<Trace>> traces =
+        batfish
+            .getTracerouteEngine(snapshot)
+            .computeTraces(
+                ImmutableSet.of(
+                    flowZ1toZ2, flowZ3toZ2MatchApp, flowZ3toZ2MatchService, flowZ4toZ2MatchService),
+                false);
+
+    // Flow matching service and application-override rule should be permitted
+    assertTrue(traces.get(flowZ1toZ2).get(0).getDisposition().isSuccessful());
+
+    // Flow matching service should be permitted
+    // Even if it doesn't match built-in application default port
+    assertTrue(traces.get(flowZ4toZ2MatchService).get(0).getDisposition().isSuccessful());
+
+    // Flow matching service or overridden application (but not both) should not be permitted
+    assertEquals(
+        traces.get(flowZ3toZ2MatchApp).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
+    assertEquals(
+        traces.get(flowZ3toZ2MatchService).get(0).getDisposition(), FlowDisposition.DENIED_OUT);
   }
 }

@@ -1,0 +1,75 @@
+set deviceconfig system hostname application-override-service-interaction
+
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 10.0.3.1/24
+set network interface ethernet ethernet1/4 layer3 ip 10.0.4.1/24
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ethernet1/4 ]
+set zone z1 network layer3 ethernet1/1
+set zone z2 network layer3 ethernet1/2
+set zone z3 network layer3 ethernet1/3
+set zone z4 network layer3 ethernet1/4
+
+set application CUSTOM_APP_TCP_7653 category networking
+set application CUSTOM_APP_TCP_7653 subcategory remote-access
+set application CUSTOM_APP_TCP_7653 technology client-server
+set application CUSTOM_APP_TCP_7653 risk 2
+
+set application CUSTOM_APP_TCP_7652 category networking
+set application CUSTOM_APP_TCP_7652 subcategory remote-access
+set application CUSTOM_APP_TCP_7652 technology client-server
+set application CUSTOM_APP_TCP_7652 risk 2
+
+set service TCP_7653 protocol tcp
+set service TCP_7653 port 7653
+
+# Application and service match
+set rulebase security rules PERMIT_Z1_TO_Z2 action allow
+set rulebase security rules PERMIT_Z1_TO_Z2 from z1
+set rulebase security rules PERMIT_Z1_TO_Z2 to z2
+set rulebase security rules PERMIT_Z1_TO_Z2 application CUSTOM_APP_TCP_7653
+set rulebase security rules PERMIT_Z1_TO_Z2 source any
+set rulebase security rules PERMIT_Z1_TO_Z2 destination any
+set rulebase security rules PERMIT_Z1_TO_Z2 service TCP_7653
+
+# Mismatch between application and service
+set rulebase security rules PERMIT_Z3_TO_Z2 action allow
+set rulebase security rules PERMIT_Z3_TO_Z2 from z3
+set rulebase security rules PERMIT_Z3_TO_Z2 to z2
+set rulebase security rules PERMIT_Z3_TO_Z2 application CUSTOM_APP_TCP_7652
+set rulebase security rules PERMIT_Z3_TO_Z2 source any
+set rulebase security rules PERMIT_Z3_TO_Z2 destination any
+set rulebase security rules PERMIT_Z3_TO_Z2 service TCP_7653
+
+# Built-in application has soft port requirements, so traffic on different port can still match
+set rulebase security rules PERMIT_Z4_TO_Z2 action allow
+set rulebase security rules PERMIT_Z4_TO_Z2 from z4
+set rulebase security rules PERMIT_Z4_TO_Z2 to z2
+set rulebase security rules PERMIT_Z4_TO_Z2 application ssh
+set rulebase security rules PERMIT_Z4_TO_Z2 source any
+set rulebase security rules PERMIT_Z4_TO_Z2 destination any
+set rulebase security rules PERMIT_Z4_TO_Z2 service TCP_7653
+
+set rulebase security rules DENY action deny
+set rulebase security rules DENY from any
+set rulebase security rules DENY to any
+set rulebase security rules DENY application any
+set rulebase security rules DENY source any
+set rulebase security rules DENY destination any
+set rulebase security rules DENY service any
+
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7652 from z3
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7652 to z2
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7652 source any
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7652 destination any
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7652 port 7652
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7652 protocol tcp
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7652 application CUSTOM_APP_TCP_7652
+
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7653 from z1
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7653 to z2
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7653 source any
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7653 destination any
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7653 port 7653
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7653 protocol tcp
+set rulebase application-override rules OVERRIDE_CUSTOM_APP_TCP_7653 application CUSTOM_APP_TCP_7653

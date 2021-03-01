@@ -1,6 +1,7 @@
 package org.batfish.question.initialization;
 
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_FILENAME;
+import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_FILE_FORMAT;
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_NODES;
 import static org.batfish.question.initialization.FileParseStatusAnswerer.COL_PARSE_STATUS;
 import static org.hamcrest.Matchers.equalTo;
@@ -11,6 +12,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -26,9 +28,19 @@ public class FileParseStatusAnswererTest {
   @Test
   public void testGetRowWithoutHost() {
     Row expected =
-        Row.of(COL_FILENAME, "nohost", COL_PARSE_STATUS, "FAILED", COL_NODES, ImmutableList.of());
+        Row.of(
+            COL_FILENAME,
+            "nohost",
+            COL_PARSE_STATUS,
+            "FAILED",
+            COL_FILE_FORMAT,
+            "CISCO_IOS",
+            COL_NODES,
+            ImmutableList.of());
 
-    Row row = FileParseStatusAnswerer.getRow("nohost", ParseStatus.FAILED, null);
+    Row row =
+        FileParseStatusAnswerer.getRow(
+            "nohost", ParseStatus.FAILED, ConfigurationFormat.CISCO_IOS, null);
     assertThat(row, equalTo(expected));
   }
 
@@ -40,10 +52,14 @@ public class FileParseStatusAnswererTest {
             "host",
             COL_PARSE_STATUS,
             "EMPTY",
+            COL_FILE_FORMAT,
+            "EMPTY",
             COL_NODES,
             ImmutableList.of(new Node("h1")));
 
-    Row row = FileParseStatusAnswerer.getRow("host", ParseStatus.EMPTY, ImmutableList.of("h1"));
+    Row row =
+        FileParseStatusAnswerer.getRow(
+            "host", ParseStatus.EMPTY, ConfigurationFormat.EMPTY, ImmutableList.of("h1"));
     assertThat(row, equalTo(expected));
   }
 
@@ -63,6 +79,8 @@ public class FileParseStatusAnswererTest {
                         "f",
                         COL_PARSE_STATUS,
                         ParseStatus.PASSED,
+                        COL_FILE_FORMAT,
+                        "UNKNOWN",
                         COL_NODES,
                         ImmutableList.of(new Node("h"), new Node("h1"), new Node("h2"))))));
   }

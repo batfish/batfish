@@ -94,6 +94,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_comm_listContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_communityContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_local_preferenceContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metricContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_metric_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_tagContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rms_weightContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Rmsipnh_literalContext;
@@ -124,6 +125,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_noContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_activateContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
@@ -200,6 +203,7 @@ import org.batfish.representation.cumulus.IpCommunityListStandard;
 import org.batfish.representation.cumulus.IpCommunityListStandardLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfArea;
 import org.batfish.representation.cumulus.OspfAreaRange;
 import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
@@ -218,12 +222,14 @@ import org.batfish.representation.cumulus.RouteMapMatchIpAddressPrefixList;
 import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol;
 import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
 import org.batfish.representation.cumulus.RouteMapMatchTag;
+import org.batfish.representation.cumulus.RouteMapMetricType;
 import org.batfish.representation.cumulus.RouteMapSetAsPath;
 import org.batfish.representation.cumulus.RouteMapSetCommListDelete;
 import org.batfish.representation.cumulus.RouteMapSetCommunity;
 import org.batfish.representation.cumulus.RouteMapSetIpNextHopLiteral;
 import org.batfish.representation.cumulus.RouteMapSetLocalPreference;
 import org.batfish.representation.cumulus.RouteMapSetMetric;
+import org.batfish.representation.cumulus.RouteMapSetMetricType;
 import org.batfish.representation.cumulus.RouteMapSetTag;
 import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
@@ -249,7 +255,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable BgpNeighborIpv4UnicastAddressFamily _currentBgpNeighborIpv4UnicastAddressFamily;
   private @Nullable BgpNeighborL2vpnEvpnAddressFamily _currentBgpNeighborL2vpnEvpnAddressFamily;
   private @Nullable FrrInterface _currentInterface;
-  private Long _currentOspfArea;
+  private OspfArea _currentOspfArea;
   private OspfVrf _currentOspfVrf;
 
   public CumulusFrrConfigurationBuilder(
@@ -702,6 +708,40 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void enterSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
+    String name;
+    if (ctx.ipv4 != null) {
+      name = ctx.ipv4.getText();
+    } else if (ctx.name != null) {
+      name = ctx.name.getText();
+    } else if (ctx.ipv6 != null) {
+      name = ctx.ipv6.getText();
+    } else {
+      throw new BatfishException("neightbor name or address");
+    }
+
+    BgpNeighbor bgpNeighbor = _currentBgpVrf.getNeighbors().get(name);
+    if (bgpNeighbor == null) {
+      _w.addWarning(
+          ctx,
+          ctx.getStart().getText(),
+          _parser,
+          String.format("neighbor %s does not exist", name));
+    } else {
+      _currentBgpNeighborIpv4UnicastAddressFamily = bgpNeighbor.getIpv4UnicastAddressFamily();
+      if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+        _currentBgpNeighborIpv4UnicastAddressFamily = new BgpNeighborIpv4UnicastAddressFamily();
+        bgpNeighbor.setIpv4UnicastAddressFamily(_currentBgpNeighborIpv4UnicastAddressFamily);
+      }
+    }
+  }
+
+  @Override
+  public void exitSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
+    _currentBgpNeighborIpv4UnicastAddressFamily = null;
+  }
+
+  @Override
   public void exitSb_network(Sb_networkContext ctx) {
     @Nullable String routeMap = null;
     if (ctx.rm != null) {
@@ -818,7 +858,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void enterRo_area(Ro_areaContext ctx) {
-    _currentOspfArea = toLong(ctx.area);
+    long area = toLong(ctx.area);
+    _currentOspfArea = _currentOspfVrf.getOrCreateArea(area);
   }
 
   @Override
@@ -899,9 +940,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   public void exitRoa_range(Roa_rangeContext ctx) {
-    assert _currentOspfArea != null;
     Prefix pfx = toPrefix(ctx.pfx);
-    OspfAreaRange range = _currentOspfVrf.getOrCreateAreaRange(_currentOspfArea, pfx);
+    OspfAreaRange range = _currentOspfArea.getOrCreateRange(pfx);
     if (ctx.cost != null) {
       toInteger(ctx.getParent(), ctx.cost).ifPresent(range::setCost);
     }
@@ -931,6 +971,14 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       return;
     }
     _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(true);
+  }
+
+  @Override
+  public void exitSbafi_no_activate(Sbafi_no_activateContext ctx) {
+    if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
+      return;
+    }
+    _currentBgpNeighborIpv4UnicastAddressFamily.setActivated(false);
   }
 
   @Override
@@ -1426,6 +1474,21 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
+  public void exitRms_metric_type(Rms_metric_typeContext ctx) {
+    RouteMapMetricType type;
+    if (ctx.TYPE_1() != null) {
+      type = RouteMapMetricType.TYPE_1;
+    } else if (ctx.TYPE_2() != null) {
+      type = RouteMapMetricType.TYPE_2;
+    } else {
+      // assume valid but unsupported
+      todo(ctx);
+      return;
+    }
+    _currentRouteMapEntry.setSetMetricType(new RouteMapSetMetricType(type));
+  }
+
+  @Override
   public void exitRms_weight(Rms_weightContext ctx) {
     Integer val = Integer.parseInt(ctx.weight.getText());
     _currentRouteMapEntry.setSetWeight(new RouteMapSetWeight(val));
@@ -1449,13 +1512,12 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     if (old != null) {
       _w.addWarning(ctx, getFullText(ctx), _parser, "overwriting set community");
     }
+    Optional<Set<StandardCommunity>> communities = toStandardCommunitySet(ctx.communities);
+    if (!communities.isPresent()) {
+      return;
+    }
     boolean additive = ctx.ADDITIVE() != null;
-    _currentRouteMapEntry.setSetCommunity(
-        new RouteMapSetCommunity(
-            ctx.communities.stream()
-                .map(this::toStandardCommunity)
-                .collect(ImmutableList.toImmutableList()),
-            additive));
+    _currentRouteMapEntry.setSetCommunity(new RouteMapSetCommunity(communities.get(), additive));
   }
 
   @Override

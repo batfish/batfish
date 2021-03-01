@@ -96,7 +96,9 @@
     <!-- Transitive dependencies managed up for security reasons. -->
     <httpclient.version>4.3.6</httpclient.version>
     <httpcore.version>4.3.3</httpcore.version>
+    <libthrift.version>0.14.0</libthrift.version>
     <okhttp.version>3.14.8</okhttp.version>
+    <tomcat-embed-core.version>8.5.63</tomcat-embed-core.version>
 
     <!--
       Annotation paths for Eclipse. The Eclipse workspace must first have the M2_REPO classpath variable configured.
@@ -253,6 +255,11 @@
               <sourceFileExclude>**/FlatVyosParser.java</sourceFileExclude>
               <sourceFileExclude>**/FlatVyosParserBaseListener.java</sourceFileExclude>
               <sourceFileExclude>**/FlatVyosParserListener.java</sourceFileExclude>
+
+              <sourceFileExclude>**/FortiosLexer.java</sourceFileExclude>
+              <sourceFileExclude>**/FortiosParser.java</sourceFileExclude>
+              <sourceFileExclude>**/FortiosParserBaseListener.java</sourceFileExclude>
+              <sourceFileExclude>**/FortiosParserListener.java</sourceFileExclude>
 
               <sourceFileExclude>**/IptablesLexer.java</sourceFileExclude>
               <sourceFileExclude>**/IptablesParser.java</sourceFileExclude>
@@ -438,7 +445,15 @@
           <configuration>
             <skip>true</skip>
             <failBuildOnCVSS>4</failBuildOnCVSS>
+            <suppressionFiles>org/batfish/owasp/suppressions.xml</suppressionFiles>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.batfish</groupId>
+              <artifactId>build-tools</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -553,18 +568,6 @@
             <id>attach-javadocs</id>
             <goals>
               <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.owasp</groupId>
-        <artifactId>dependency-check-maven</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>check</goal>
             </goals>
           </execution>
         </executions>
@@ -970,6 +973,18 @@
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-slf4j-impl</artifactId>
         <version>${log4j.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.thrift</groupId>
+        <artifactId>libthrift</artifactId>
+        <version>${libthrift.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+        <version>${tomcat-embed-core.version}</version>
       </dependency>
 
       <dependency>

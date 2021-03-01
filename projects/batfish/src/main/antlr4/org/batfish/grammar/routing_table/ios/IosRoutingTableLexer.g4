@@ -24,15 +24,9 @@ public String printStateVariables() {
 
 // Simple tokens
 
-CODES
-:
-   'Codes'
-;
+CODES: 'Codes';
 
-GATEWAY
-:
-   'Gateway'
-;
+GATEWAY: 'Gateway';
 
 IS_DIRECTLY_CONNECTED
 :
@@ -44,20 +38,11 @@ IS_VARIABLY_SUBNETTED
    'is variably subnetted'
 ;
 
-NAME
-:
-   'name'
-;
+NAME: 'name';
 
-VIA
-:
-   'via'
-;
+VIA: 'via';
 
-VRF
-:
-   'VRF'
-;
+VRF: 'VRF';
 
 // Complex tokens
 
@@ -91,10 +76,7 @@ COMMENT
    '!' F_NonNewline+ F_Newline+ -> channel ( HIDDEN )
 ;
 
-DASH
-:
-   '-'
-;
+DASH: '-';
 
 PERCENT
 :

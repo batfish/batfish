@@ -110,6 +110,7 @@ import org.batfish.representation.cumulus.IpCommunityListExpanded;
 import org.batfish.representation.cumulus.IpCommunityListExpandedLine;
 import org.batfish.representation.cumulus.IpPrefixList;
 import org.batfish.representation.cumulus.IpPrefixListLine;
+import org.batfish.representation.cumulus.OspfArea;
 import org.batfish.representation.cumulus.OspfNetworkArea;
 import org.batfish.representation.cumulus.OspfNetworkType;
 import org.batfish.representation.cumulus.OspfVrf;
@@ -117,6 +118,7 @@ import org.batfish.representation.cumulus.RedistributionPolicy;
 import org.batfish.representation.cumulus.RouteMap;
 import org.batfish.representation.cumulus.RouteMapEntry;
 import org.batfish.representation.cumulus.RouteMapMatchSourceProtocol.Protocol;
+import org.batfish.representation.cumulus.RouteMapMetricType;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 import org.junit.Before;
@@ -282,12 +284,20 @@ public class CumulusFrrGrammarTest {
   public void testBgpAddressFamilyIpv4UnicastNo() {
     parseLines(
         "router bgp 1",
-        " address-family ipv4 unicast",
-        "  no neighbor 2001:100:1:31::2 activate",
-        " exit-address-family");
-    assertThat(
-        _warnings.getParseWarnings(),
-        contains(hasText(equalTo("no neighbor 2001:100:1:31::2 activate"))));
+        "neighbor N interface description N",
+        "address-family ipv4 unicast",
+        "redistribute connected",
+        "neighbor N activate",
+        "no neighbor N activate",
+        "exit-address-family");
+
+    assertFalse(
+        _frr.getBgpProcess()
+            .getDefaultVrf()
+            .getNeighbors()
+            .get("N")
+            .getIpv4UnicastAddressFamily()
+            .getActivated());
   }
 
   @Test
@@ -1251,6 +1261,25 @@ public class CumulusFrrGrammarTest {
   }
 
   @Test
+  public void testCumulusFrrRouteMapSetMetricType() {
+    String name = "ROUTE-MAP-NAME";
+
+    parse(
+        String.format(
+            "route-map %s permit 10\nset metric-type type-1\n"
+                + "route-map %s permit 20\nset metric-type type-2\n",
+            name, name));
+    {
+      RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
+      assertThat(entry.getSetMetricType().getMetricType(), equalTo(RouteMapMetricType.TYPE_1));
+    }
+    {
+      RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(20);
+      assertThat(entry.getSetMetricType().getMetricType(), equalTo(RouteMapMetricType.TYPE_2));
+    }
+  }
+
+  @Test
   public void testCumulusFrrVrfRouteMapSetWeight() {
     String name = "ROUTE-MAP-NAME";
 
@@ -1369,12 +1398,23 @@ public class CumulusFrrGrammarTest {
   public void testCumulusFrrVrfRouteMapSetCommunity() {
     String name = "ROUTE-MAP-NAME";
 
-    parse(String.format("route-map %s permit 10\nset community 10000:1 20000:2\n", name));
+    parse(
+        String.format(
+            "route-map %s permit 10\n"
+                + "set community 10000:1 20000:2 local-AS no-advertise no-export internet\n",
+            name));
 
     RouteMapEntry entry = _frr.getRouteMaps().get(name).getEntries().get(10);
     assertThat(
         entry.getSetCommunity().getCommunities(),
-        equalTo(ImmutableList.of(StandardCommunity.of(10000, 1), StandardCommunity.of(20000, 2))));
+        equalTo(
+            ImmutableList.of(
+                StandardCommunity.of(10000, 1),
+                StandardCommunity.of(20000, 2),
+                StandardCommunity.NO_EXPORT_SUBCONFED,
+                StandardCommunity.NO_ADVERTISE,
+                StandardCommunity.NO_EXPORT,
+                StandardCommunity.INTERNET)));
   }
 
   @Test
@@ -1833,11 +1873,14 @@ public class CumulusFrrGrammarTest {
             + " area 5 range 1.255.0.0/17\n");
     Prefix prefix = Prefix.parse("1.255.0.0/17");
     OspfVrf vrf = _frr.getOspfProcess().getDefaultVrf();
-    assertThat(vrf.getAreaRanges(), hasSize(2));
-    assertThat(vrf.getAreaRange(Ip.parse("1.1.1.0").asLong(), prefix), notNullValue());
-    assertThat(vrf.getAreaRange(Ip.parse("1.1.1.0").asLong(), prefix).getCost(), equalTo(10));
-    assertThat(vrf.getAreaRange(5L, prefix), notNullValue());
-    assertThat(vrf.getAreaRange(5L, prefix).getCost(), nullValue());
+    OspfArea area1110 = vrf.getArea(Ip.parse("1.1.1.0").asLong());
+    assertThat(area1110, notNullValue());
+    assertThat(area1110.getRanges(), hasKeys(prefix));
+    assertThat(area1110.getRange(prefix).getCost(), equalTo(10));
+    OspfArea area5 = vrf.getArea(5L);
+    assertThat(area5, notNullValue());
+    assertThat(area5.getRanges(), hasKeys(prefix));
+    assertThat(area5.getRange(prefix).getCost(), nullValue());
   }
 
   @Test

@@ -15,85 +15,37 @@ ACCESS_LIST
   'access-list' -> pushMode(M_Word)
 ;
 
-ACTIVATE
-:
-  'activate'
-;
+ACTIVATE: 'activate';
 
-ADDRESS
-:
-  'address'
-;
+ADDRESS: 'address';
 
-ADDRESS_FAMILY
-:
-  'address-family'
-;
+ADDRESS_FAMILY: 'address-family';
 
-ADDITIVE
-:
-   'additive'
-;
+ADDITIVE: 'additive';
 
-ADMINISTRATIVE
-:
-   'administrative'
-;
+ADMINISTRATIVE: 'administrative';
 
-ADVERTISE
-:
-  'advertise'
-;
+ADVERTISE: 'advertise';
 
-ADVERTISE_ALL_VNI
-:
-  'advertise-all-vni'
-;
+ADVERTISE_ALL_VNI: 'advertise-all-vni';
 
-ADVERTISE_DEFAULT_GW
-:
-   'advertise-default-gw'
-;
+ADVERTISE_DEFAULT_GW: 'advertise-default-gw';
 
-AGENTX
-:
-  'agentx'
-;
+AGENTX: 'agentx';
 
-AGGREGATE_ADDRESS
-:
-  'aggregate-address'
-;
+AGGREGATE_ADDRESS: 'aggregate-address';
 
-ALERTS
-:
-   'alerts'
-;
+ALERTS: 'alerts';
 
-ALL
-:
-  'all'
-;
+ALL: 'all';
 
-ALLOWAS_IN
-:
-  'allowas-in'
-;
+ALLOWAS_IN: 'allowas-in';
 
-ALWAYS_COMPARE_MED
-:
-  'always-compare-med'
-;
+ALWAYS_COMPARE_MED: 'always-compare-med';
 
-ANY
-:
-  'any'
-;
+ANY: 'any';
 
-AREA
-:
-  'area'
-;
+AREA: 'area';
 
 AS_PATH
 :
@@ -105,16 +57,10 @@ AS_PATH
   }
 ;
 
-AUTHENTICATION
-:
-  'authentication'
-;
+AUTHENTICATION: 'authentication';
 
 
-BESTPATH
-:
-  'bestpath'
-;
+BESTPATH: 'bestpath';
 
 BFD
 :
@@ -122,30 +68,21 @@ BFD
 ;
 
 
-BGP
-:
-  'bgp'
-;
+BGP: 'bgp';
 
 CALL
 :
   'call' -> pushMode(M_Word)
 ;
 
-CLUSTER_ID
-:
-  'cluster-id'
-;
+CLUSTER_ID: 'cluster-id';
 
 COLON
 :
   ':'
 ;
 
-COMMANDS
-:
-  'commands'
-;
+COMMANDS: 'commands';
 
 COMMENT_LINE
 :
@@ -181,65 +118,29 @@ COMMUNITY
   }
 ;
 
-COMMUNITY_LIST
-:
-  'community-list'
-;
+COMMUNITY_LIST: 'community-list';
 
-CONFEDERATION
-:
-  'confederation'
-;
+CONFEDERATION: 'confederation';
 
-CONNECTED
-:
-  'connected'
-;
+CONNECTED: 'connected';
 
-COST
-:
-  'cost'
-;
+COST: 'cost';
 
-CRITICAL
-:
-  'critical'
-;
+CRITICAL: 'critical';
 
-DATACENTER
-:
-  'datacenter'
-;
+DATACENTER: 'datacenter';
 
-DEBUGGING
-:
-  'debugging'
-;
+DEBUGGING: 'debugging';
 
-DEFAULT
-:
-  'default'
-;
+DEFAULT: 'default';
 
-DEFAULT_ORIGINATE
-:
-  'default-originate'
-;
+DEFAULT_ORIGINATE: 'default-originate';
 
-DEFAULTS
-:
-  'defaults'
-;
+DEFAULTS: 'defaults';
 
-DELETE
-:
-  'delete'
-;
+DELETE: 'delete';
 
-DENY
-:
-  'deny'
-;
+DENY: 'deny';
 
 DESCRIPTION
 :
@@ -251,125 +152,65 @@ DOUBLE_QUOTE
   '"' -> pushMode ( M_DoubleQuote )
 ;
 
-EIGRP
-:
-  'eigrp'
-;
+EIGRP: 'eigrp';
 
-EMERGENCIES
-:
-  'emergencies'
-;
+EMERGENCIES: 'emergencies';
 
-ENABLE
-:
-  'enable'
-;
+ENABLE: 'enable';
 
-END
-:
-  'end'
-;
+END: 'end';
 
-ERRORS
-:
-  'errors'
-;
+ERRORS: 'errors';
 
-EVPN
-:
-  'evpn'
-;
+EVPN: 'evpn';
 
-EXIT_ADDRESS_FAMILY
-:
-  'exit-address-family'
-;
+EXIT_ADDRESS_FAMILY: 'exit-address-family';
 
-EXIT_VRF
-:
-  'exit-vrf'
-;
+EXIT_VRF: 'exit-vrf';
 
 EXPANDED
 :
   'expanded' -> pushMode(M_Expanded)
 ;
 
-EXTENDED
-:
-  'extended'
-;
+EXTENDED: 'extended';
 
-EXTERNAL
-:
-  'external'
-;
+EXTERNAL: 'external';
 
-EBGP_MULTIHOP
-:
-  'ebgp-multihop'
-;
+EBGP_MULTIHOP: 'ebgp-multihop';
 
 FILE
 :
   'file' -> pushMode(M_Remark)
 ;
 
-FORCE
-:
-  'force'
-;
+FORCE: 'force';
 
-FORWARDING
-:
-  'forwarding'
-;
+FORWARDING: 'forwarding';
 
-FRR
-:
-  'frr'
-;
+FRR: 'frr';
 
-GE
-:
-  'ge'
-;
+GE: 'ge';
 
-GOTO
-:
-  'goto'
-;
+GOTO: 'goto';
 
 HOSTNAME
 :
   'hostname' -> pushMode(M_Word)
 ;
 
-IDENTIFIER
-:
-  'identifier'
-;
+IDENTIFIER: 'identifier';
 
 IMPORT
 :
    'import' -> pushMode(M_Import)
 ;
 
-IN
-:
-  'in'
-;
+IN: 'in';
 
-INFORMATIONAL
-:
-  'informational'
-;
+INFORMATIONAL: 'informational';
 
-INTEGRATED_VTYSH_CONFIG
-:
-  'integrated-vtysh-config'
-;
+INTEGRATED_VTYSH_CONFIG: 'integrated-vtysh-config';
 
 INTERFACE
 :
@@ -389,40 +230,19 @@ INTERFACE
   }
 ;
 
-INBOUND
-:
-  'inbound'
-;
+INBOUND: 'inbound';
 
-INTERNAL
-:
-  'internal'
-;
+INTERNAL: 'internal';
 
-INTERNET
-:
-  'internet'
-;
+INTERNET: 'internet';
 
-IP
-:
-  'ip'
-;
+IP: 'ip';
 
-IPV4
-:
-  'ipv4'
-;
+IPV4: 'ipv4';
 
-IPV4_UNICAST
-:
-  'ipv4-unicast'
-;
+IPV4_UNICAST: 'ipv4-unicast';
 
-IPV6
-:
-  'ipv6'
-;
+IPV6: 'ipv6';
 
 IP_ADDRESS
 :
@@ -444,155 +264,74 @@ IPV6_PREFIX
   F_Ipv6Prefix
 ;
 
-ISIS
-:
-  'isis'
-;
+ISIS: 'isis';
 
-KERNEL
-:
-  'kernel'
-;
+KERNEL: 'kernel';
 
-L2VPN
-:
-  'l2vpn'
-;
+L2VPN: 'l2vpn';
 
-LE
-:
-  'le'
-;
+LE: 'le';
 
 LOCAL_AS
 :
-  'local-as'
+  [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
 ;
 
-LOCAL_PREFERENCE
-:
-  'local-preference'
-;
+LOCAL_PREFERENCE: 'local-preference';
 
-LOG
-:
-  'log'
-;
+LOG: 'log';
 
-LOG_ADJACENCY_CHANGES
-:
-  'log-adjacency-changes'
-;
+LOG_ADJACENCY_CHANGES: 'log-adjacency-changes';
 
-LOG_NEIGHBOR_CHANGES
-:
-  'log-neighbor-changes'
-;
+LOG_NEIGHBOR_CHANGES: 'log-neighbor-changes';
 
-LINE
-:
-  'line'
-;
+LINE: 'line';
 
-MAXIMUM_PATHS
-:
-  'maximum-paths'
-;
+MAXIMUM_PATHS: 'maximum-paths';
 
-MAX_MED
-:
-  'max-med'
-;
+MAX_MED: 'max-med';
 
-MAX_METRIC
-:
-  'max-metric'
-;
+MAX_METRIC: 'max-metric';
 
-MESSAGE_DIGEST
-:
-  'message-digest'
-;
+MESSAGE_DIGEST: 'message-digest';
 
-MESSAGE_DIGEST_KEY
-:
-  'message-digest-key'
-;
+MESSAGE_DIGEST_KEY: 'message-digest-key';
 
 MD5
 :
   'md5' -> pushMode(M_Remark)
 ;
 
-MULTIPATH_RELAX
-:
-  'multipath-relax'
-;
+MULTIPATH_RELAX: 'multipath-relax';
 
-ND
-:
-   'nd'
-;
+ND: 'nd';
 
 NEIGHBOR
 :
   'neighbor' -> pushMode(M_Neighbor)
 ;
 
-NETWORK
-:
-  'network'
-;
+NETWORK: 'network';
 
-NEXT
-:
-  'next'
-;
+NEXT: 'next';
 
-NEXT_HOP_SELF
-:
-  'next-hop-self'
-;
+NEXT_HOP_SELF: 'next-hop-self';
 
-NO
-:
-  'no'
-;
+NO: 'no';
 
-NO_ADVERTISE
-:
-  'no-advertise'
-;
+NO_ADVERTISE: 'no-advertise';
 
-NO_EXPORT
-:
-  'no-export'
-;
+NO_EXPORT: 'no-export';
 
-NO_PREPEND
-:
-  'no-prepend'
-;
+NO_PREPEND: 'no-prepend';
 
-NOTIFICATIONS
-:
-  'notifications'
-;
+NOTIFICATIONS: 'notifications';
 
-ON_MATCH
-:
-  'on-match'
-;
+ON_MATCH: 'on-match';
 
-OSPF
-:
-  'ospf'
-;
+OSPF: 'ospf';
 
-OUT
-:
-  'out'
-;
+OUT: 'out';
 
 PASSIVE_INTERFACE
 :
@@ -604,70 +343,37 @@ PASSWORD
   'password' -> pushMode(M_Remark)
 ;
 
-PASSWORD_ENCRYPTION
-:
-  'password-encryption'
-;
+PASSWORD_ENCRYPTION: 'password-encryption';
 
 PEER_GROUP
 :
   'peer-group' -> pushMode(M_PeerGroup)
 ;
 
-PERMIT
-:
-  'permit'
-;
+PERMIT: 'permit';
 
-POINT_TO_POINT
-:
-  'point-to-point'
-;
+POINT_TO_POINT: 'point-to-point';
 
-PREFIX_LEN
-:
-  'prefix-len'
-;
+PREFIX_LEN: 'prefix-len';
 
 PREFIX_LIST
 :
   'prefix-list' -> pushMode ( M_Word )
 ;
 
-PREPEND
-:
-  'prepend'
-;
+PREPEND: 'prepend';
 
-RA_INTERVAL
-:
-   'ra-interval'
-;
+RA_INTERVAL: 'ra-interval';
 
-RANGE
-:
-   'range'
-;
+RANGE: 'range';
 
-REDISTRIBUTE
-:
-  'redistribute'
-;
+REDISTRIBUTE: 'redistribute';
 
-REMOTE_AS
-:
-  'remote-as'
-;
+REMOTE_AS: 'remote-as';
 
-REPLACE_AS
-:
-  'replace-as'
-;
+REPLACE_AS: 'replace-as';
 
-RIP
-:
-  'rip'
-;
+RIP: 'rip';
 
 ROUTE_MAP
 :
@@ -679,120 +385,62 @@ ROUTE
   'route' -> pushMode(M_Static_Route_Next_Hop)
 ;
 
-ROUTER
-:
-  'router'
-;
+ROUTER: 'router';
 
-ROUTER_ID
-:
-  'router-id'
-;
+ROUTER_ID: 'router-id';
 
-SEND_COMMUNITY
-:
-  'send-community'
-;
+SEND_COMMUNITY: 'send-community';
 
-SET
-:
-  'set'
-;
+SET: 'set';
 
-SEQ
-:
-  'seq'
-;
+SEQ: 'seq';
 
-SERVICE
-:
-  'service'
-;
+SERVICE: 'service';
 
-SHUTDOWN
-:
-  'shutdown'
-;
+SHUTDOWN: 'shutdown';
 
-SOFT_RECONFIGURATION
-:
-  'soft-reconfiguration'
-;
+SOFT_RECONFIGURATION: 'soft-reconfiguration';
 
-SOURCE_PROTOCOL
-:
-  'source-protocol'
-;
+SOURCE_PROTOCOL: 'source-protocol';
 
 STANDARD
 :
   'standard' -> pushMode ( M_Word )
 ;
 
-STATIC
-:
-  'static'
-;
+STATIC: 'static';
 
-SUMMARY_ONLY
-:
-  'summary-only'
-;
+SUMMARY_ONLY: 'summary-only';
 
-SUPPRESS_RA
-:
-  'suppress-ra'
-;
+SUPPRESS_RA: 'suppress-ra';
 
-SYSLOG
-:
-  'syslog'
-;
+SYSLOG: 'syslog';
 
-TAG
-:
-  'tag'
-;
+TAG: 'tag';
 
-TRADITIONAL
-:
-  'traditional'
-;
+TRADITIONAL: 'traditional';
 
-WARNINGS
-:
-  'warnings'
-;
+TYPE_1: 'type-1';
+TYPE_2: 'type-2';
 
-MATCH
-:
-  'match'
-;
+WARNINGS: 'warnings';
 
-METRIC
-:
-  'metric'
-;
+MATCH: 'match';
+
+METRIC: 'metric';
+
+METRIC_TYPE: 'metric-type';
 
 NEWLINE
 :
   F_Newline+
 ;
 
-NEXT_HOP
-:
-  'next-hop'
-;
+NEXT_HOP: 'next-hop';
 
-ROUTE_REFLECTOR_CLIENT
-:
-  'route-reflector-client'
-;
+ROUTE_REFLECTOR_CLIENT: 'route-reflector-client';
 
-ROUTER_LSA
-:
-  'router-lsa'
-;
+ROUTER_LSA: 'router-lsa';
 
 SUBNET_MASK
 :
@@ -824,45 +472,30 @@ USERNAME
   'username' -> pushMode(M_Words)
 ;
 
-UNICAST
-:
-  'unicast'
-;
+UNICAST: 'unicast';
 
 DEC
 :
   F_Digit+
 ;
 
-DETAIL
-:
-   'detail'
-;
+DETAIL: 'detail';
 
 VERSION
 :
   'version' -> pushMode(M_Remark)
 ;
 
-VNI
-:
-  'vni'
-;
+VNI: 'vni';
 
 VRF
 :
   'vrf' -> pushMode(M_Word)
 ;
 
-VTY
-:
-  'vty'
-;
+VTY: 'vty';
 
-WEIGHT
-:
-  'weight'
-;
+WEIGHT: 'weight';
 
 WS
 :
@@ -879,10 +512,7 @@ BLANK_LINE
     -> channel ( HIDDEN )
 ;
 
-DASH
-:
-   '-'
-;
+DASH: '-';
 
 PLUS
 :

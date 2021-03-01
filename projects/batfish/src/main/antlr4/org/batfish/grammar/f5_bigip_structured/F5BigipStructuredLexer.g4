@@ -23,1115 +23,452 @@ tokens {
 
 // Keywords
 
-ACTION
-:
-  'action'
-;
-
-ACTIVATE
-:
-  'activate'
-;
-
-ACTIVE_BONUS
-:
-  'active-bonus'
-;
-
-ACTIVE_MODULES
-:
-  'active-modules'
-;
-
-ADAPTIVE
-:
-  'adaptive'
-;
-
-ADDRESS
-:
-  'address'
-;
-
-ADDRESS_FAMILY
-:
-  'address-family'
-;
-
-ALERT_TIMEOUT
-:
-  'alert-timeout'
-;
-
-ALL
-:
-  'all'
-;
-
-ALLOW_DYNAMIC_RECORD_SIZING
-:
-  'allow-dynamic-record-sizing'
-;
-
-ALLOW_NON_SSL
-:
-  'allow-non-ssl'
-;
-
-ALLOW_SERVICE
-:
-  'allow-service'
-;
-
-ALWAYS
-:
-  'always'
-;
-
-ANALYTICS
-:
-  'analytics'
-;
-
-AND
-:
-  'and'
-;
-
-ANY
-:
-  'any'
-;
-
-APP_SERVICE
-:
-  'app-service'
-;
-
-ARP
-:
-  'arp'
-;
-
-AUTO_SYNC
-:
-  'auto-sync'
-;
-
-BASE_MAC
-:
-  'base-mac'
-;
-
-BGP
-:
-  'bgp'
-;
-
-BUILD
-:
-  'build'
-;
-
-BUNDLE
-:
-  'bundle'
-;
-
-BUNDLE_SPEED
-:
-  'bundle-speed'
-;
-
-CA_CERT
-:
-  'ca-cert'
-;
-
-CA_CERT_BUNDLE
-:
-  'ca-cert-bundle'
-;
-
-CA_DEVICES
-:
-  'ca-devices'
-;
-
-CA_KEY
-:
-  'ca-key'
-;
-
-CACHE_SIZE
-:
-  'cache-size'
-;
-
-CACHE_TIMEOUT
-:
-  'cache-timeout'
-;
-
-CAPABILITY
-:
-  'capability'
-;
-
-CERT
-:
-  'cert'
-;
-
-CERT_EXTENSION_INCLUDES
-:
-  'cert-extension-includes'
-;
-
-CERT_KEY_CHAIN
-:
-  'cert-key-chain'
-;
-
-CERT_LIFESPAN
-:
-  'cert-lifespan'
-;
-
-CERT_LOOKUP_BY_IPADDR_PORT
-:
-  'cert-lookup-by-ipaddr-port'
-;
-
-CERTIFICATE_AUTHORITY
-:
-  'certificate-authority'
-;
-
-CHAIN
-:
-  'chain'
-;
-
-CHASSIS_ID
-:
-  'chassis-id'
-;
-
-CIPHER_GROUP
-:
-  'cipher-group'
-;
-
-CIPHERLIST
-:
-  'cipherlist'
-;
-
-CIPHERS
-:
-  'ciphers'
-;
-
-CLASSIFICATION
-:
-  'classification'
-;
-
-CLIENT_LDAP
-:
-  'client-ldap'
-;
-
-CLIENT_SSL
-:
-  'client-ssl'
-;
-
-CM
-:
-  'cm'
-;
-
-COMMUNITY
-:
-  'community'
-;
-
-COMPATIBILITY
-:
-  'compatibility'
-;
-
-CONFIGSYNC_IP
-:
-  'configsync-ip'
-;
-
-COOKIE
-:
-  'cookie'
-;
-
-DATA_GROUP
-:
-  'data-group'
-;
-
-DEFAULT
-:
-  'default'
-;
-
-DEFAULT_NODE_MONITOR
-:
-  'default-node-monitor'
-;
-
-DEFAULTS_FROM
-:
-  'defaults-from'
-;
-
-DENY
-:
-  'deny'
-;
-
-DESCRIPTION
-:
-  'description'
-;
-
-DESTINATION
-:
-  'destination'
-;
-
-DEVICE
-:
-  'device'
-;
-
-DEVICE_GROUP
-:
-  'device-group'
-;
-
-DEVICES
-:
-  'devices'
-;
-
-DHCPV4
-:
-  'dhcpv4'
-;
-
-DHCPV6
-:
-  'dhcpv6'
-;
-
-DIAMETER
-:
-  'diameter'
-;
-
-DISABLED
-:
-  'disabled'
-;
-
-DNS
-:
-  'dns'
-;
-
-DNS_RESOLVER
-:
-  'dns-resolver'
-;
-
-DYNAD
-:
-  'dynad'
-;
-
-EBGP_MULTIHOP
-:
-  'ebgp-multihop'
-;
-
-EDITION
-:
-  'edition'
-;
-
-EFFECTIVE_IP
-:
-  'effective-ip'
-;
-
-EFFECTIVE_PORT
-:
-  'effective-port'
-;
-
-ENABLED
-:
-  'enabled'
-;
-
-ENTRIES
-:
-  'entries'
-;
-
-EXPIRATION
-:
-  'expiration'
-;
-
-EXTERNAL
-:
-  'external'
-;
-
-FALL_OVER
-:
-  'fall-over'
-;
-
-FALSE
-:
-  'false'
-;
-
-FASTHTTP
-:
-  'fasthttp'
-;
-
-FASTL4
-:
-  'fastl4'
-;
-
-FDB
-:
-  'fdb'
-;
-
-FEATURE_MODULE
-:
-  'feature-module'
-;
-
-FIX
-:
-  'fix'
-;
-
-FOLDER
-:
-  'folder'
-;
-
-FORTY_G
-:
-  '40G'
-;
-
-FORWARD_ERROR_CORRECTION
-:
-  'forward-error-correction'
-;
-
-FPGA
-:
-  'fpga'
-;
-
-FTP
-:
-  'ftp'
-;
-
-GATEWAY_ICMP
-:
-  'gateway-icmp'
-;
-
-GENERIC_ALERT
-:
-  'generic-alert'
-;
-
-GLOBAL_SETTINGS
-:
-  'global-settings'
-;
-
-GTP
-:
-  'gtp'
-;
-
-GUI_SECURITY_BANNER_TEXT
-:
-  'gui-security-banner-text'
-;
-
-GUI_SETUP
-:
-  'gui-setup'
-;
-
-GUID
-:
-  'guid'
-;
-
-GW
-:
-  'gw'
-;
-
-HA_GROUP
-:
-  'ha-group'
-;
-
-HANDSHAKE_TIMEOUT
-:
-  'handshake-timeout'
-;
-
-HIDDEN_LITERAL
-:
-  'hidden'
-;
-
-HOSTNAME
-:
-  'hostname'
-;
-
-HTML
-:
-  'html'
-;
-
-HTTP
-:
-  'http'
-;
-
-HTTP_COMPRESSION
-:
-  'http-compression'
-;
-
-HTTP_PROXY_CONNECT
-:
-  'http-proxy-connect'
-;
-
-HTTP2
-:
-  'http2'
-;
-
-HTTPD
-:
-  'httpd'
-;
-
-HTTPS
-:
-  'https'
-;
-
-ICAP
-:
-  'icap'
-;
-
-ICMP_ECHO
-:
-  'icmp-echo'
-;
-
-IDLE_TIMEOUT_OVERRIDE
-:
-  'idle-timeout-override'
-;
-
-IFILE
-:
-  'ifile'
-;
-
-INHERIT_CERTKEYCHAIN
-:
-  'inherit-certkeychain'
-;
-
-ILX
-:
-  'ilx'
-;
-
-INTERFACE
-:
-  'interface'
-;
-
-INTERFACES
-:
-  'interfaces'
-;
-
-INTERNAL
-:
-  'internal'
-;
-
-INTERVAL
-:
-  'interval'
-;
-
-IP
-:
-  'ip'
-;
-
-IP_DSCP
-:
-  'ip-dscp'
-;
-
-IP_FORWARD
-:
-  'ip-forward'
-;
-
-IP_PROTOCOL
-:
-  'ip-protocol'
-;
-
-IPOTHER
-:
-  'ipother'
-;
-
-IPSECALG
-:
-  'ipsecalg'
-;
-
-IPV4
-:
-  'ipv4'
-;
-
-IPV6
-:
-  'ipv6'
-;
-
-KERNEL
-:
-  'kernel'
-;
-
-KEY
-:
-  'key'
-;
-
-LACP
-:
-  'lacp'
-;
-
-LDAP
-:
-  'ldap'
-;
-
-LIMIT_TYPE
-:
-  'limit-type'
-;
-
-LLDP_ADMIN
-:
-  'lldp-admin'
-;
-
-LLDP_GLOBALS
-:
-  'lldp-globals'
-;
-
-LLDP_TLVMAP
-:
-  'lldp-tlvmap'
-;
-
-LOAD_BALANCING_MODE
-:
-  'load-balancing-mode'
-;
-
-LOCAL_AS
-:
-  'local-as'
-;
-
-LTM
-:
-  'ltm'
-;
-
-MAC
-:
-  'mac'
-;
-
-MANAGEMENT_DHCP
-:
-  'management-dhcp'
-;
-
-MANAGEMENT_IP
-:
-  'management-ip'
-;
-
-MANAGEMENT_ROUTE
-:
-  'management-route'
-;
-
-MAP_T
-:
-  'map-t'
-;
-
-MARKETING_NAME
-:
-  'marketing-name'
-;
-
-MASK
-:
-  'mask'
-;
-
-MATCH
-:
-  'match'
-;
-
-MATCH_ACROSS_POOLS
-:
-  'match-across-pools'
-;
-
-MATCH_ACROSS_SERVICES
-:
-  'match-across-services'
-;
-
-MATCH_ACROSS_VIRTUALS
-:
-  'match-across-virtuals'
-;
-
-MAX_ACTIVE_HANDSHAKES
-:
-  'max-active-handshakes'
-;
-
-MAX_AGE
-:
-  'max-age'
-;
-
-MAX_AGGREGATE_RENEGOTIATION_PER_MINUTE
-:
-  'max-aggregate-renegotiation-per-minute'
-;
-
-MAX_RENEGOTIATIONS_PER_MINUTE
-:
-  'max-renegotiations-per-minute'
-;
-
-MAX_REUSE
-:
-  'max-reuse'
-;
-
-MAX_SIZE
-:
-  'max-size'
-;
-
-MAXIMUM_PREFIX
-:
-  'maximum-prefix'
-;
-
-MAXIMUM_RECORD_SIZE
-:
-  'maximum-record-size'
-;
-
-MEMBERS
-:
-  'members'
-;
-
-MIN_ACTIVE_MEMBERS
-:
-  'min-active-members'
-;
-
-MOD_SSL_METHODS
-:
-  'mod-ssl-methods'
-;
-
-MODE
-:
-  'mode'
-;
-
-MQTT
-:
-  'mqtt'
-;
-
-MONITOR
-:
-  'monitor'
-;
-
-NEIGHBOR
-:
-  'neighbor'
-;
-
-NET
-:
-  'net'
-;
-
-NETFLOW
-:
-  'netflow'
-;
-
-NETWORK
-:
-  'network'
-;
-
-NETWORK_FAILOVER
-:
-  'network-failover'
-;
-
-NODE
-:
-  'node'
-;
-
-NTP
-:
-  'ntp'
-;
-
-OCSP_STAPLING
-:
-  'ocsp-stapling'
-;
-
-OCSP_STAPLING_PARAMS
-:
-  'ocsp-stapling-params'
-;
-
-ONE_CONNECT
-:
-  'one-connect'
-;
-
-ONE_HUNDRED_G
-:
-  '100G'
-;
+ACTION: 'action';
+
+ACTIVATE: 'activate';
+
+ACTIVE_BONUS: 'active-bonus';
+
+ACTIVE_MODULES: 'active-modules';
+
+ADAPTIVE: 'adaptive';
+
+ADDRESS: 'address';
+
+ADDRESS_FAMILY: 'address-family';
+
+ALERT_TIMEOUT: 'alert-timeout';
+
+ALL: 'all';
+
+ALLOW_DYNAMIC_RECORD_SIZING: 'allow-dynamic-record-sizing';
+
+ALLOW_NON_SSL: 'allow-non-ssl';
+
+ALLOW_SERVICE: 'allow-service';
+
+ALWAYS: 'always';
+
+ANALYTICS: 'analytics';
+
+AND: 'and';
+
+ANY: 'any';
+
+APP_SERVICE: 'app-service';
+
+ARP: 'arp';
+
+AUTO_SYNC: 'auto-sync';
+
+BASE_MAC: 'base-mac';
+
+BGP: 'bgp';
+
+BUILD: 'build';
+
+BUNDLE: 'bundle';
+
+BUNDLE_SPEED: 'bundle-speed';
+
+CA_CERT: 'ca-cert';
+
+CA_CERT_BUNDLE: 'ca-cert-bundle';
+
+CA_DEVICES: 'ca-devices';
+
+CA_KEY: 'ca-key';
+
+CACHE_SIZE: 'cache-size';
+
+CACHE_TIMEOUT: 'cache-timeout';
+
+CAPABILITY: 'capability';
+
+CERT: 'cert';
+
+CERT_EXTENSION_INCLUDES: 'cert-extension-includes';
+
+CERT_KEY_CHAIN: 'cert-key-chain';
+
+CERT_LIFESPAN: 'cert-lifespan';
+
+CERT_LOOKUP_BY_IPADDR_PORT: 'cert-lookup-by-ipaddr-port';
+
+CERTIFICATE_AUTHORITY: 'certificate-authority';
+
+CHAIN: 'chain';
+
+CHASSIS_ID: 'chassis-id';
+
+CIPHER_GROUP: 'cipher-group';
+
+CIPHERLIST: 'cipherlist';
+
+CIPHERS: 'ciphers';
+
+CLASSIFICATION: 'classification';
+
+CLIENT_LDAP: 'client-ldap';
+
+CLIENT_SSL: 'client-ssl';
+
+CM: 'cm';
+
+COMMUNITY: 'community';
+
+COMPATIBILITY: 'compatibility';
+
+CONFIGSYNC_IP: 'configsync-ip';
+
+COOKIE: 'cookie';
+
+DATA_GROUP: 'data-group';
+
+DEFAULT: 'default';
+
+DEFAULT_NODE_MONITOR: 'default-node-monitor';
+
+DEFAULTS_FROM: 'defaults-from';
+
+DENY: 'deny';
+
+DESCRIPTION: 'description';
+
+DESTINATION: 'destination';
+
+DEVICE: 'device';
+
+DEVICE_GROUP: 'device-group';
+
+DEVICES: 'devices';
+
+DHCPV4: 'dhcpv4';
+
+DHCPV6: 'dhcpv6';
+
+DIAMETER: 'diameter';
+
+DISABLED: 'disabled';
+
+DNS: 'dns';
+
+DNS_RESOLVER: 'dns-resolver';
+
+DYNAD: 'dynad';
+
+EBGP_MULTIHOP: 'ebgp-multihop';
+
+EDITION: 'edition';
+
+EFFECTIVE_IP: 'effective-ip';
+
+EFFECTIVE_PORT: 'effective-port';
+
+ENABLED: 'enabled';
+
+ENTRIES: 'entries';
+
+EXPIRATION: 'expiration';
+
+EXTERNAL: 'external';
+
+FALL_OVER: 'fall-over';
+
+FALSE: 'false';
+
+FASTHTTP: 'fasthttp';
+
+FASTL4: 'fastl4';
+
+FDB: 'fdb';
+
+FEATURE_MODULE: 'feature-module';
+
+FIX: 'fix';
+
+FOLDER: 'folder';
+
+FORTY_G: '40G';
+
+FORWARD_ERROR_CORRECTION: 'forward-error-correction';
+
+FPGA: 'fpga';
+
+FTP: 'ftp';
+
+GATEWAY_ICMP: 'gateway-icmp';
+
+GENERIC_ALERT: 'generic-alert';
+
+GLOBAL_SETTINGS: 'global-settings';
+
+GTP: 'gtp';
+
+GUI_SECURITY_BANNER_TEXT: 'gui-security-banner-text';
+
+GUI_SETUP: 'gui-setup';
+
+GUID: 'guid';
+
+GW: 'gw';
+
+HA_GROUP: 'ha-group';
+
+HANDSHAKE_TIMEOUT: 'handshake-timeout';
+
+HIDDEN_LITERAL: 'hidden';
+
+HOSTNAME: 'hostname';
+
+HTML: 'html';
+
+HTTP: 'http';
+
+HTTP_COMPRESSION: 'http-compression';
+
+HTTP_PROXY_CONNECT: 'http-proxy-connect';
+
+HTTP2: 'http2';
+
+HTTPD: 'httpd';
+
+HTTPS: 'https';
+
+ICAP: 'icap';
+
+ICMP_ECHO: 'icmp-echo';
+
+IDLE_TIMEOUT_OVERRIDE: 'idle-timeout-override';
+
+IFILE: 'ifile';
+
+INHERIT_CERTKEYCHAIN: 'inherit-certkeychain';
+
+ILX: 'ilx';
+
+INTERFACE: 'interface';
+
+INTERFACES: 'interfaces';
+
+INTERNAL: 'internal';
+
+INTERVAL: 'interval';
+
+IP: 'ip';
+
+IP_DSCP: 'ip-dscp';
+
+IP_FORWARD: 'ip-forward';
+
+IP_PROTOCOL: 'ip-protocol';
+
+IPOTHER: 'ipother';
+
+IPSECALG: 'ipsecalg';
+
+IPV4: 'ipv4';
+
+IPV6: 'ipv6';
+
+KERNEL: 'kernel';
+
+KEY: 'key';
+
+LACP: 'lacp';
+
+LDAP: 'ldap';
+
+LIMIT_TYPE: 'limit-type';
+
+LLDP_ADMIN: 'lldp-admin';
+
+LLDP_GLOBALS: 'lldp-globals';
+
+LLDP_TLVMAP: 'lldp-tlvmap';
+
+LOAD_BALANCING_MODE: 'load-balancing-mode';
+
+LOCAL_AS: 'local-as';
+
+LTM: 'ltm';
+
+MAC: 'mac';
+
+MANAGEMENT_DHCP: 'management-dhcp';
+
+MANAGEMENT_IP: 'management-ip';
+
+MANAGEMENT_ROUTE: 'management-route';
+
+MAP_T: 'map-t';
+
+MARKETING_NAME: 'marketing-name';
+
+MASK: 'mask';
+
+MATCH: 'match';
+
+MATCH_ACROSS_POOLS: 'match-across-pools';
+
+MATCH_ACROSS_SERVICES: 'match-across-services';
+
+MATCH_ACROSS_VIRTUALS: 'match-across-virtuals';
+
+MAX_ACTIVE_HANDSHAKES: 'max-active-handshakes';
+
+MAX_AGE: 'max-age';
+
+MAX_AGGREGATE_RENEGOTIATION_PER_MINUTE: 'max-aggregate-renegotiation-per-minute';
+
+MAX_RENEGOTIATIONS_PER_MINUTE: 'max-renegotiations-per-minute';
+
+MAX_REUSE: 'max-reuse';
+
+MAX_SIZE: 'max-size';
+
+MAXIMUM_PREFIX: 'maximum-prefix';
+
+MAXIMUM_RECORD_SIZE: 'maximum-record-size';
+
+MEMBERS: 'members';
+
+MIN_ACTIVE_MEMBERS: 'min-active-members';
+
+MOD_SSL_METHODS: 'mod-ssl-methods';
+
+MODE: 'mode';
+
+MQTT: 'mqtt';
+
+MONITOR: 'monitor';
+
+NEIGHBOR: 'neighbor';
+
+NET: 'net';
+
+NETFLOW: 'netflow';
+
+NETWORK: 'network';
+
+NETWORK_FAILOVER: 'network-failover';
+
+NODE: 'node';
+
+NTP: 'ntp';
+
+OCSP_STAPLING: 'ocsp-stapling';
+
+OCSP_STAPLING_PARAMS: 'ocsp-stapling-params';
+
+ONE_CONNECT: 'one-connect';
+
+ONE_HUNDRED_G: '100G';
 
 OPTIONAL_MODULES
 : 
   'optional-modules'
 ;
 
-OPTIONS
-:
-  'options'
-;
+OPTIONS: 'options';
 
-ORIGINS
-:
-  'origins'
-;
+ORIGINS: 'origins';
 
-OUT
-:
-  'out'
-;
+OUT: 'out';
 
-OVERRIDE_CONNECTION_LIMIT
-:
-  'override-connection-limit'
-;
+OVERRIDE_CONNECTION_LIMIT: 'override-connection-limit';
 
-PCP
-:
-  'pcp'
-;
+PCP: 'pcp';
 
-PASSPHRASE
-:
-  'passphrase'
-;
+PASSPHRASE: 'passphrase';
 
-PEER_NO_RENEGOTIATE_TIMEOUT
-:
-  'peer-no-renegotiate-timeout'
-;
+PEER_NO_RENEGOTIATE_TIMEOUT: 'peer-no-renegotiate-timeout';
 
-PERMIT
-:
-  'permit'
-;
+PERMIT: 'permit';
 
-PERSIST
-:
-  'persist'
-;
+PERSIST: 'persist';
 
-PERSISTENCE
-:
-  'persistence'
-;
+PERSISTENCE: 'persistence';
 
-PLATFORM_ID
-:
-  'platform-id'
-;
+PLATFORM_ID: 'platform-id';
 
-POOL
-:
-  'pool'
-;
+POOL: 'pool';
 
-POOLS
-:
-  'pools'
-;
+POOLS: 'pools';
 
-PORT
-:
-  'port'
-;
+PORT: 'port';
 
-PPTP
-:
-  'pptp'
-;
+PPTP: 'pptp';
 
-PREFIX
-:
-  'prefix'
-;
+PREFIX: 'prefix';
 
-PREFIX_LEN_RANGE
-:
-  'prefix-len-range'
-;
+PREFIX_LEN_RANGE: 'prefix-len-range';
 
-PREFIX_LIST
-:
-  'prefix-list'
-;
+PREFIX_LIST: 'prefix-list';
 
-PRIORITY_GROUP
-:
-  'priority-group'
-;
+PRIORITY_GROUP: 'priority-group';
 
-PRODUCT
-:
-  'product'
-;
+PRODUCT: 'product';
 
-PROFILE
-:
-  'profile'
-;
+PROFILE: 'profile';
 
-PROFILES
-:
-  'profiles'
-;
+PROFILES: 'profiles';
 
-PROVISION
-:
-  'provision'
-;
+PROVISION: 'provision';
 
-PROXY_CA_CERT
-:
-  'proxy-ca-cert'
-;
+PROXY_CA_CERT: 'proxy-ca-cert';
 
-PROXY_CA_KEY
-:
-  'proxy-ca-key'
-;
+PROXY_CA_KEY: 'proxy-ca-key';
 
-PROXY_SSL
-:
-  'proxy-ssl'
-;
+PROXY_SSL: 'proxy-ssl';
 
-PROXY_SSL_PASSTHROUGH
-:
-  'proxy-ssl-passthrough'
-;
+PROXY_SSL_PASSTHROUGH: 'proxy-ssl-passthrough';
 
-QOE
-:
-  'qoe'
-;
+QOE: 'qoe';
 
-RADIUS
-:
-  'radius'
-;
+RADIUS: 'radius';
 
-RECV
-:
-  'recv'
-;
+RECV: 'recv';
 
-RECV_DISABLE
-:
-  'recv-disable'
-;
+RECV_DISABLE: 'recv-disable';
 
-REDISTRIBUTE
-:
-  'redistribute'
-;
+REDISTRIBUTE: 'redistribute';
 
-REJECT
-:
-  'reject'
-;
+REJECT: 'reject';
 
-REMOTE_AS
-:
-  'remote-as'
-;
+REMOTE_AS: 'remote-as';
 
-RENEGOTIATE_MAX_RECORD_DELAY
-:
-  'renegotiate-max-record-delay'
-;
+RENEGOTIATE_MAX_RECORD_DELAY: 'renegotiate-max-record-delay';
 
-RENEGOTIATE_PERIOD
-:
-  'renegotiate-period'
-;
+RENEGOTIATE_PERIOD: 'renegotiate-period';
 
-RENEGOTIATE_SIZE
-:
-  'renegotiate-size'
-;
+RENEGOTIATE_SIZE: 'renegotiate-size';
 
-RENEGOTIATION
-:
-  'renegotiation'
-;
+RENEGOTIATION: 'renegotiation';
 
-REQUEST_ADAPT
-:
-  'request-adapt'
-;
+REQUEST_ADAPT: 'request-adapt';
 
-REQUEST_LOG
-:
-  'request-log'
-;
+REQUEST_LOG: 'request-log';
 
-RESPONDER_URL
-:
-  'responder-url'
-;
+RESPONDER_URL: 'responder-url';
 
-RESPONSE_ADAPT
-:
-  'response-adapt'
-;
+RESPONSE_ADAPT: 'response-adapt';
 
-REWRITE
-:
-  'rewrite'
-;
+REWRITE: 'rewrite';
 
-ROUTE
-:
-  'route'
-;
+ROUTE: 'route';
 
-ROUTE_ADVERTISEMENT
-:
-  'route-advertisement'
-;
+ROUTE_ADVERTISEMENT: 'route-advertisement';
 
-ROUTE_DOMAIN
-:
-  'route-domain'
-;
+ROUTE_DOMAIN: 'route-domain';
 
-ROUTE_MAP
-:
-  'route-map'
-;
+ROUTE_MAP: 'route-map';
 
-ROUTER_ID
-:
-  'router-id'
-;
+ROUTER_ID: 'router-id';
 
-ROUTING
-:
-  'routing'
-;
+ROUTING: 'routing';
 
-RTSP
-:
-  'rtsp'
-;
+RTSP: 'rtsp';
 
 RULE
 :
@@ -1144,460 +481,187 @@ RULE
   }
 ;
 
-RULES
-:
-  'rules'
-;
-
-SCTP
-:
-  'sctp'
-;
-
-SECURE_RENEGOTIATION
-:
-  'secure-renegotiation'
-;
-
-SECURITY
-:
-  'security'
-;
-
-SELECTIVE
-:
-  'selective'
-;
-
-SELF
-:
-  'self'
-;
-
-SELF_ALLOW
-:
-  'self-allow'
-;
-
-SELF_DEVICE
-:
-  'self-device'
-;
-
-SEND
-:
-  'send'
-;
-
-SERVER_LDAP
-:
-  'server-ldap'
-;
-
-SERVER_NAME
-:
-  'server-name'
-;
-
-SERVER_SSL
-:
-  'server-ssl'
-;
-
-SERVERS
-:
-  'servers'
-;
-
-SERVICE_DOWN_ACTION
-:
-  'service-down-action'
-;
-
-SESSION_MIRRORING
-:
-  'session-mirroring'
-;
-
-SESSION_TICKET
-:
-  'session-ticket'
-;
-
-SESSION_TICKET_TIMEOUT
-:
-  'session-ticket-timeout'
-;
-
-SET
-:
-  'set'
-;
-
-SET_SYNC_LEADER
-:
-  'set-sync-leader'
-;
-
-SFLOW
-:
-  'sflow'
-;
-
-SIGN_HASH
-:
-  'sign-hash'
-;
-
-SIP
-:
-  'sip'
-;
-
-SLOW_RAMP_TIME
-:
-  'slow-ramp-time'
-;
-
-SMTPS
-:
-  'smtps'
-;
-
-SNAT
-:
-  'snat'
-;
-
-SNAT_TRANSLATION
-:
-  'snat-translation'
-;
-
-SNATPOOL
-:
-  'snatpool'
-;
-
-SNI_DEFAULT
-:
-  'sni-default'
-;
-
-SNI_REQUIRE
-:
-  'sni-require'
-;
-
-SNMP
-:
-  'snmp'
-;
-
-SOCKS
-:
-  'socks'
-;
-
-SOURCE
-:
-  'source'
-;
-
-SOURCE_ADDR
-:
-  'source-addr'
-;
-
-SOURCE_ADDRESS_TRANSLATION
-:
-  'source-address-translation'
-;
-
-SOURCE_MASK
-:
-  'source-mask'
-;
-
-SPLITSESSIONCLIENT
-:
-  'splitsessionclient'
-;
-
-SPLITSESSIONSERVER
-:
-  'splitsessionserver'
-;
-
-SSL
-:
-  'ssl'
-;
-
-SSL_FORWARD_PROXY
-:
-  'ssl-forward-proxy'
-;
-
-SSL_FORWARD_PROXY_BYPASS
-:
-  'ssl-forward-proxy-bypass'
-;
-
-SSL_PROFILE
-:
-  'ssl-profile'
-;
-
-SSL_SIGN_HASH
-:
-  'ssl-sign-hash'
-;
-
-STATISTICS
-:
-  'statistics'
-;
-
-STATUS
-:
-  'status'
-;
-
-STATUS_AGE
-:
-  'status-age'
-;
-
-STP
-:
-  'stp'
-;
-
-STP_GLOBALS
-:
-  'stp-globals'
-;
-
-STREAM
-:
-  'stream'
-;
-
-STRICT_RESUME
-:
-  'strict-resume'
-;
-
-SYNC_FAILOVER
-:
-  'sync-failover'
-;
-
-SYNC_ONLY
-:
-  'sync-only'
-;
-
-SYS
-:
-  'sys'
-;
-
-TAG
-:
-  'tag'
-;
-
-TCP
-:
-  'tcp'
-;
-
-TCP_ANALYTICS
-:
-  'tcp-analytics'
-;
-
-TFTP
-:
-  'tftp'
-;
-
-TIME_UNTIL_UP
-:
-  'time-until-up'
-;
-
-TIME_ZONE
-:
-  'time-zone'
-;
-
-TIMEOUT
-:
-  'timeout'
-;
-
-TIMEZONE
-:
-  'timezone'
-;
-
-TRAFFIC_ACCELERATION
-:
-  'traffic-acceleration'
-;
-
-TRAFFIC_GROUP
-:
-  'traffic-group'
-;
-
-TRANSLATE_ADDRESS
-:
-  'translate-address'
-;
-
-TRANSLATE_PORT
-:
-  'translate-port'
-;
-
-TRUE
-:
-  'true'
-;
-
-TRUNK
-:
-  'trunk'
-;
-
-TRUNKS
-:
-  'trunks'
-;
-
-TRUST_DOMAIN
-:
-  'trust-domain'
-;
-
-TRUST_GROUP
-:
-  'trust-group'
-;
-
-TRUSTED_RESPONDERS
-:
-  'trusted-responders'
-;
-
-TUNNELS
-:
-  'tunnels'
-;
-
-TURBOFLEX
-:
-  'turboflex'
-;
-
-TYPE
-:
-  'type'
-;
-
-UDP
-:
-  'udp'
-;
-
-UNCLEAN_SHUTDOWN
-:
-  'unclean-shutdown'
-;
-
-UNICAST_ADDRESS
-:
-  'unicast-address'
-;
-
-UNIT_ID
-:
-  'unit-id'
-;
-
-UPDATE_SOURCE
-:
-  'update-source'
-;
-
-VALUE
-:
-  'value'
-;
-
-VERSION
-:
-  'version'
-;
-
-VIRTUAL
-:
-  'virtual'
-;
-
-VIRTUAL_ADDRESS
-:
-  'virtual-address'
-;
-
-VLAN
-:
-  'vlan'
-;
-
-VLANS
-:
-  'vlans'
-;
-
-VLANS_DISABLED
-:
-  'vlans-disabled'
-;
-
-VLANS_ENABLED
-:
-  'vlans-enabled'
-;
-
-WEB_ACCELERATION
-:
-  'web-acceleration'
-;
-
-WEB_SECURITY
-:
-  'web-security'
-;
-
-WEBSOCKET
-:
-  'websocket'
-;
-
-WEIGHT
-:
-  'weight'
-;
-
-XML
-:
-  'xml'
-;
+RULES: 'rules';
+
+SCTP: 'sctp';
+
+SECURE_RENEGOTIATION: 'secure-renegotiation';
+
+SECURITY: 'security';
+
+SELECTIVE: 'selective';
+
+SELF: 'self';
+
+SELF_ALLOW: 'self-allow';
+
+SELF_DEVICE: 'self-device';
+
+SEND: 'send';
+
+SERVER_LDAP: 'server-ldap';
+
+SERVER_NAME: 'server-name';
+
+SERVER_SSL: 'server-ssl';
+
+SERVERS: 'servers';
+
+SERVICE_DOWN_ACTION: 'service-down-action';
+
+SESSION_MIRRORING: 'session-mirroring';
+
+SESSION_TICKET: 'session-ticket';
+
+SESSION_TICKET_TIMEOUT: 'session-ticket-timeout';
+
+SET: 'set';
+
+SET_SYNC_LEADER: 'set-sync-leader';
+
+SFLOW: 'sflow';
+
+SIGN_HASH: 'sign-hash';
+
+SIP: 'sip';
+
+SLOW_RAMP_TIME: 'slow-ramp-time';
+
+SMTPS: 'smtps';
+
+SNAT: 'snat';
+
+SNAT_TRANSLATION: 'snat-translation';
+
+SNATPOOL: 'snatpool';
+
+SNI_DEFAULT: 'sni-default';
+
+SNI_REQUIRE: 'sni-require';
+
+SNMP: 'snmp';
+
+SOCKS: 'socks';
+
+SOURCE: 'source';
+
+SOURCE_ADDR: 'source-addr';
+
+SOURCE_ADDRESS_TRANSLATION: 'source-address-translation';
+
+SOURCE_MASK: 'source-mask';
+
+SPLITSESSIONCLIENT: 'splitsessionclient';
+
+SPLITSESSIONSERVER: 'splitsessionserver';
+
+SSL: 'ssl';
+
+SSL_FORWARD_PROXY: 'ssl-forward-proxy';
+
+SSL_FORWARD_PROXY_BYPASS: 'ssl-forward-proxy-bypass';
+
+SSL_PROFILE: 'ssl-profile';
+
+SSL_SIGN_HASH: 'ssl-sign-hash';
+
+STATISTICS: 'statistics';
+
+STATUS: 'status';
+
+STATUS_AGE: 'status-age';
+
+STP: 'stp';
+
+STP_GLOBALS: 'stp-globals';
+
+STREAM: 'stream';
+
+STRICT_RESUME: 'strict-resume';
+
+SYNC_FAILOVER: 'sync-failover';
+
+SYNC_ONLY: 'sync-only';
+
+SYS: 'sys';
+
+TAG: 'tag';
+
+TCP: 'tcp';
+
+TCP_ANALYTICS: 'tcp-analytics';
+
+TFTP: 'tftp';
+
+TIME_UNTIL_UP: 'time-until-up';
+
+TIME_ZONE: 'time-zone';
+
+TIMEOUT: 'timeout';
+
+TIMEZONE: 'timezone';
+
+TRAFFIC_ACCELERATION: 'traffic-acceleration';
+
+TRAFFIC_GROUP: 'traffic-group';
+
+TRANSLATE_ADDRESS: 'translate-address';
+
+TRANSLATE_PORT: 'translate-port';
+
+TRUE: 'true';
+
+TRUNK: 'trunk';
+
+TRUNKS: 'trunks';
+
+TRUST_DOMAIN: 'trust-domain';
+
+TRUST_GROUP: 'trust-group';
+
+TRUSTED_RESPONDERS: 'trusted-responders';
+
+TUNNELS: 'tunnels';
+
+TURBOFLEX: 'turboflex';
+
+TYPE: 'type';
+
+UDP: 'udp';
+
+UNCLEAN_SHUTDOWN: 'unclean-shutdown';
+
+UNICAST_ADDRESS: 'unicast-address';
+
+UNIT_ID: 'unit-id';
+
+UPDATE_SOURCE: 'update-source';
+
+VALUE: 'value';
+
+VERSION: 'version';
+
+VIRTUAL: 'virtual';
+
+VIRTUAL_ADDRESS: 'virtual-address';
+
+VLAN: 'vlan';
+
+VLANS: 'vlans';
+
+VLANS_DISABLED: 'vlans-disabled';
+
+VLANS_ENABLED: 'vlans-enabled';
+
+WEB_ACCELERATION: 'web-acceleration';
+
+WEB_SECURITY: 'web-security';
+
+WEBSOCKET: 'websocket';
+
+WEIGHT: 'weight';
+
+XML: 'xml';
 
 // Complex tokens
 

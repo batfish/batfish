@@ -6439,8 +6439,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       minLen = toInteger(ctx.eqpl);
       maxLen = toInteger(ctx.eqpl);
     }
+    long seq = ctx.seqnum != null ? toLong(ctx.seqnum) : _currentPrefixList.getNextSeq();
     SubRange lengthRange = new SubRange(minLen, maxLen);
-    PrefixListLine line = new PrefixListLine(action, prefix, lengthRange);
+    PrefixListLine line = new PrefixListLine(seq, action, prefix, lengthRange);
     _currentPrefixList.addLine(line);
   }
 
