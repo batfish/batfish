@@ -20,6 +20,9 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import org.batfish.common.runtime.InterfaceRuntimeData;
+import org.batfish.common.runtime.RuntimeData;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -43,6 +46,28 @@ public class CumulusConcatenatedConfigurationTest {
     assertThat(
         c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getBandwidth(),
         equalTo(DEFAULT_LOOPBACK_BANDWIDTH));
+  }
+
+  /** Test bandwidths incorporate interface runtime data. */
+  @Test
+  public void testInterfaceRuntimeData() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    InterfaceRuntimeData ifaceData = InterfaceRuntimeData.builder().setBandwidth(123456.0).build();
+    RuntimeData hostData =
+        RuntimeData.builder()
+            .setInterfaces(ImmutableMap.of(LOOPBACK_INTERFACE_NAME, ifaceData))
+            .build();
+    SnapshotRuntimeData data =
+        SnapshotRuntimeData.builder()
+            .setRuntimeData(ImmutableMap.of(c.getHostname(), hostData))
+            .build();
+    CumulusConcatenatedConfiguration.builder()
+        .setHostname("c")
+        .setSnapshotRuntimeData(data)
+        .build()
+        .initializeAllInterfaces(c);
+    assertTrue(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
+    assertThat(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getBandwidth(), equalTo(123456.0));
   }
 
   /** Test that bridge is not included as an interface */

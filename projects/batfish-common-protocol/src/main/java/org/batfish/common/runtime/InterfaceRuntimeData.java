@@ -10,7 +10,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** Represents runtime data for an interface */
 public final class InterfaceRuntimeData {
-  static final class Builder {
+  public static final class Builder {
     @Nullable private ConcreteInterfaceAddress _address;
     @Nullable private Double _bandwidth;
     @Nullable private Boolean _lineUp;
@@ -18,36 +18,36 @@ public final class InterfaceRuntimeData {
 
     private Builder() {}
 
-    InterfaceRuntimeData build() {
+    public InterfaceRuntimeData build() {
       return new InterfaceRuntimeData(_address, _bandwidth, _lineUp, _speed);
     }
 
-    Builder setAddress(@Nullable ConcreteInterfaceAddress address) {
+    public Builder setAddress(@Nullable ConcreteInterfaceAddress address) {
       _address = address;
       return this;
     }
 
-    Builder setBandwidth(@Nullable Double bandwidth) {
+    public Builder setBandwidth(@Nullable Double bandwidth) {
       _bandwidth = bandwidth;
       return this;
     }
 
-    Builder setLineUp(@Nullable Boolean lineUp) {
+    public Builder setLineUp(@Nullable Boolean lineUp) {
       _lineUp = lineUp;
       return this;
     }
 
-    Builder setSpeed(@Nullable Double speed) {
+    public Builder setSpeed(@Nullable Double speed) {
       _speed = speed;
       return this;
     }
   }
 
-  static Builder builder() {
+  public static Builder builder() {
     return new Builder();
   }
 
-  static final InterfaceRuntimeData EMPTY_INTERFACE_RUNTIME_DATA = builder().build();
+  public static final InterfaceRuntimeData EMPTY_INTERFACE_RUNTIME_DATA = builder().build();
 
   private static final String PROP_ADDRESS = "address";
   private static final String PROP_BANDWIDTH = "bandwidth";
@@ -91,7 +91,7 @@ public final class InterfaceRuntimeData {
     return _lineUp;
   }
 
-  Builder toBuilder() {
+  public Builder toBuilder() {
     return builder()
         .setAddress(_address)
         .setBandwidth(_bandwidth)

@@ -41,12 +41,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.runtime.InterfaceRuntimeData;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
@@ -492,7 +495,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     _frrConfiguration
         .getInterfaces()
         .values()
-        .forEach(iface -> initializeInterface(c, iface.getName(), iface.getVrfName()));
+        .forEach(
+            iface -> initializeInterface(c, iface.getName(), iface.getVrfName(), _runtimeData));
 
     // initialize super interfaces of sub-interfaces if needed
     Set<String> ifaceNames = ImmutableSet.copyOf(c.getAllInterfaces().keySet());
@@ -500,22 +504,34 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
         .map(InterfaceConverter::getSuperInterfaceName)
         .filter(Objects::nonNull)
         .filter(superName -> !c.getAllInterfaces().containsKey(superName))
-        .forEach(superName -> initializeInterface(c, superName, null));
+        .forEach(superName -> initializeInterface(c, superName, null, _runtimeData));
     if (!c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
-      initializeInterface(c, LOOPBACK_INTERFACE_NAME, null);
+      initializeInterface(c, LOOPBACK_INTERFACE_NAME, null, _runtimeData);
     }
   }
 
   private static void initializeInterface(
-      Configuration c, String ifaceName, @Nullable String vrfName) {
-    org.batfish.datamodel.Interface.builder()
+      Configuration c,
+      String ifaceName,
+      @Nullable String vrfName,
+      SnapshotRuntimeData snapshotRuntimeData) {
+    // Either use the provided runtime data to get the interface speed, or else default to guessing
+    // based on name.
+    Optional<InterfaceRuntimeData> runtimeData =
+        Optional.ofNullable(c.getHostname())
+            .map(snapshotRuntimeData::getRuntimeData)
+            .map(d -> d.getInterface(ifaceName));
+    double guessedBandwidth =
+        ifaceName.equals(LOOPBACK_INTERFACE_NAME)
+            ? DEFAULT_LOOPBACK_BANDWIDTH
+            : DEFAULT_PORT_BANDWIDTH;
+    double bandwidth = runtimeData.map(InterfaceRuntimeData::getBandwidth).orElse(guessedBandwidth);
+
+    Interface.builder()
         .setName(ifaceName)
         .setOwner(c)
         .setVrf(getOrCreateVrf(c, vrfName))
-        .setBandwidth(
-            ifaceName.equals(LOOPBACK_INTERFACE_NAME)
-                ? DEFAULT_LOOPBACK_BANDWIDTH
-                : DEFAULT_PORT_BANDWIDTH)
+        .setBandwidth(bandwidth)
         .build();
   }
 
@@ -699,6 +715,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
   /** Builder for {@link CumulusConcatenatedConfiguration} */
   public static final class Builder {
     private String _hostname;
+    private @Nullable SnapshotRuntimeData _snapshotRuntimeData;
     private CumulusInterfacesConfiguration _interfacesConfiguration;
     private CumulusFrrConfiguration _frrConfiguration;
     private CumulusPortsConfiguration _portsConfiguration;
@@ -747,6 +764,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
       return this;
     }
 
+    public Builder setSnapshotRuntimeData(@Nullable SnapshotRuntimeData data) {
+      _snapshotRuntimeData = data;
+      return this;
+    }
+
     public CumulusConcatenatedConfiguration build() {
       CumulusConcatenatedConfiguration cumulusConcatenatedConfiguration =
           new CumulusConcatenatedConfiguration(
@@ -754,6 +776,9 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
               firstNonNull(_frrConfiguration, new CumulusFrrConfiguration()),
               firstNonNull(_portsConfiguration, new CumulusPortsConfiguration()));
       cumulusConcatenatedConfiguration.setHostname(_hostname);
+      if (_snapshotRuntimeData != null) {
+        cumulusConcatenatedConfiguration.setRuntimeData(_snapshotRuntimeData);
+      }
       return cumulusConcatenatedConfiguration;
     }
   }
