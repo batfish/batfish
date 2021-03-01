@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.representation.cisco.CiscoIosNatUtil.toMatchExpr;
 
@@ -20,6 +21,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
@@ -114,7 +116,8 @@ public class CiscoIosStaticNat extends CiscoIosNat {
       }
     }
 
-    conjunctsToMatch.add(new MatchSrcInterface(insideInterfaces));
+    conjunctsToMatch.add(
+        or(new MatchSrcInterface(insideInterfaces), OriginatingFromDevice.INSTANCE));
     return Optional.of(Transformation.when(and(conjunctsToMatch.build())).apply(step));
   }
 

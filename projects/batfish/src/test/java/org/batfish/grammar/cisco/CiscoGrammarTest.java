@@ -22,6 +22,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.acl.TraceElements.matchedByAclLine;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
@@ -362,7 +363,7 @@ import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -5611,7 +5612,8 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(outsideIntf, notNullValue()));
     assertThat(c, hasInterface(vrfInsideIntf, notNullValue()));
     assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
-    MatchSrcInterface matchSrcInside = matchSrcInterface(insideIntf, vrfInsideIntf);
+    AclLineMatchExpr matchInsideSources =
+        or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
 
     {
       // NAT in default VRF
@@ -5641,16 +5643,16 @@ public final class CiscoGrammarTest {
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation destTransformation =
-          when(and(permittedByAcl(insideDstPoolAcl), matchSrcInside))
+          when(and(permittedByAcl(insideDstPoolAcl), matchInsideSources))
               .apply(assignDestinationIp(insideDstPoolFirst, insideDstPoolLast))
               .build();
 
       Transformation outTransformation =
-          when(and(permittedByAcl(insideSrcPoolAcl), matchSrcInside))
+          when(and(permittedByAcl(insideSrcPoolAcl), matchInsideSources))
               .apply(assignSourceIp(insideSrcPoolFirst, insideSrcPoolLast))
               .setAndThen(destTransformation)
               .setOrElse(
-                  when(and(permittedByAcl(insideSrcIfaceAcl), matchSrcInside))
+                  when(and(permittedByAcl(insideSrcIfaceAcl), matchInsideSources))
                       .apply(assignSourceIp(insideSrcIfaceAddr, insideSrcIfaceAddr))
                       .setAndThen(destTransformation)
                       .setOrElse(destTransformation)
@@ -5682,7 +5684,7 @@ public final class CiscoGrammarTest {
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation outTransformation =
-          when(and(permittedByAcl(insideAclName), matchSrcInside))
+          when(and(permittedByAcl(insideAclName), matchInsideSources))
               .apply(assignSourceIp(insidePoolFirst, insidePoolLast))
               .build();
 
@@ -5768,7 +5770,8 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(outsideIntf1, notNullValue()));
     assertThat(c, hasInterface(vrfInsideIntf, notNullValue()));
     assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
-    MatchSrcInterface matchSrcInside = matchSrcInterface(insideIntf, vrfInsideIntf);
+    AclLineMatchExpr matchInsideSources =
+        or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
 
     {
       // NAT in default VRF
@@ -5809,16 +5812,16 @@ public final class CiscoGrammarTest {
       assertNull(outside1.getIncomingTransformation());
 
       Transformation destTransformation =
-          when(and(permittedByAcl(insideDstPoolAcl), matchSrcInside))
+          when(and(permittedByAcl(insideDstPoolAcl), matchInsideSources))
               .apply(assignDestinationIp(insideDstPoolFirst, insideDstPoolLast))
               .build();
 
       Transformation outTransformation =
-          when(and(permittedByAcl(insideSrcPoolAcl), matchSrcInside))
+          when(and(permittedByAcl(insideSrcPoolAcl), matchInsideSources))
               .apply(assignSourceIp(insideSrcPoolFirst, insideSrcPoolLast))
               .setAndThen(destTransformation)
               .setOrElse(
-                  when(and(permittedByAcl(insideSrcIfaceAcl), matchSrcInside))
+                  when(and(permittedByAcl(insideSrcIfaceAcl), matchInsideSources))
                       .apply(assignSourceIp(insideSrcIfaceAddr, insideSrcIfaceAddr))
                       .setAndThen(destTransformation)
                       .setOrElse(destTransformation)
@@ -5852,7 +5855,7 @@ public final class CiscoGrammarTest {
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation outTransformation =
-          when(and(permittedByAcl(insideAclName), matchSrcInside))
+          when(and(permittedByAcl(insideAclName), matchInsideSources))
               .apply(assignSourceIp(insidePoolFirst, insidePoolLast))
               .build();
 
@@ -5871,7 +5874,8 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(insideIntf, notNullValue()));
     assertThat(c, hasInterface(outsideIntf, notNullValue()));
     assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
-    MatchSrcInterface matchSrcIfaceInside = matchSrcInterface(insideIntf, vrfInsideIntf);
+    AclLineMatchExpr matchInsideSources =
+        or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
 
     {
       // NAT in default VRF
@@ -5912,20 +5916,20 @@ public final class CiscoGrammarTest {
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation outDestinationTransformation =
-          when(and(matchDst(nat4Local), matchSrcIfaceInside))
+          when(and(matchDst(nat4Local), matchInsideSources))
               .apply(shiftDestinationIp(nat4Global))
               .build();
 
       Transformation outTransformation =
-          when(and(matchSrc(nat1Local), permittedByAcl(nat1Acl), matchSrcIfaceInside))
+          when(and(matchSrc(nat1Local), permittedByAcl(nat1Acl), matchInsideSources))
               .apply(shiftSourceIp(nat1Global))
               .setAndThen(outDestinationTransformation)
               .setOrElse(
-                  when(and(matchSrc(nat3Local), matchSrcIfaceInside))
+                  when(and(matchSrc(nat3Local), matchInsideSources))
                       .apply(shiftSourceIp(nat3Global))
                       .setAndThen(outDestinationTransformation)
                       .setOrElse(
-                          when(and(matchSrc(nat2Local), matchSrcIfaceInside))
+                          when(and(matchSrc(nat2Local), matchInsideSources))
                               .apply(shiftSourceIp(nat2Global))
                               .setAndThen(outDestinationTransformation)
                               .setOrElse(outDestinationTransformation)
@@ -5963,12 +5967,12 @@ public final class CiscoGrammarTest {
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation outDestinationTransformation =
-          when(and(matchDst(outsideLocal), matchSrcIfaceInside))
+          when(and(matchDst(outsideLocal), matchInsideSources))
               .apply(shiftDestinationIp(outsideGlobal))
               .build();
 
       Transformation outTransformation =
-          when(and(matchSrc(insideLocal), matchSrcIfaceInside))
+          when(and(matchSrc(insideLocal), matchInsideSources))
               .apply(shiftSourceIp(insideGlobal))
               .setAndThen(outDestinationTransformation)
               .setOrElse(outDestinationTransformation)
@@ -5990,14 +5994,15 @@ public final class CiscoGrammarTest {
     Ip dynamicNatEnd = Ip.parse("3.3.3.254");
 
     Interface outside = c.getAllInterfaces().get(outsideIntf);
-    MatchSrcInterface matchIface = matchSrcInterface(insideIntf);
+    AclLineMatchExpr matchInsideSources =
+        or(matchSrcInterface(insideIntf), OriginatingFromDevice.INSTANCE);
 
     // Check that the inside-to-outside transformation evaluates the static NAT first
     Transformation outTransformation =
-        when(and(matchSrc(staticNatLocal), matchIface))
+        when(and(matchSrc(staticNatLocal), matchInsideSources))
             .apply(shiftSourceIp(staticNatGlobal))
             .setOrElse(
-                when(and(permittedByAcl(dynamicNatAcl), matchIface))
+                when(and(permittedByAcl(dynamicNatAcl), matchInsideSources))
                     .apply(assignSourceIp(dynamicNatStart, dynamicNatEnd))
                     .build())
             .build();
