@@ -327,6 +327,9 @@ rec_address_family_null
       | MAXIMUM_PREFIX
       | NSF
       | OFFSET_LIST
+      | TIMERS
+      | TRAFFIC_SHARE
+      | VARIANCE
    ) null_rest_of_line
 ;
 
