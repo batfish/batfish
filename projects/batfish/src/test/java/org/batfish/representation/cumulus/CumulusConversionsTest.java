@@ -1766,9 +1766,12 @@ public final class CumulusConversionsTest {
         .getOrCreateInterface("iface")
         .getOrCreateOspf()
         .setOspfArea(1L);
+    OspfVrf vsVrf =
+        concatenatedConfiguration.getFrrConfiguration().getOrCreateOspfProcess().getDefaultVrf();
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
 
     SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(concatenatedConfiguration, ImmutableList.of("iface"));
+        computeOspfAreas(c, concatenatedConfiguration, vsVrf, ImmutableList.of("iface"));
     assertThat(
         areas,
         equalTo(
@@ -1781,9 +1784,12 @@ public final class CumulusConversionsTest {
     CumulusConcatenatedConfiguration concatenatedConfiguration =
         new CumulusConcatenatedConfiguration();
     concatenatedConfiguration.getFrrConfiguration().getOrCreateInterface("iface").getOrCreateOspf();
+    OspfVrf vsVrf =
+        concatenatedConfiguration.getFrrConfiguration().getOrCreateOspfProcess().getDefaultVrf();
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
 
     SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(concatenatedConfiguration, ImmutableList.of("iface"));
+        computeOspfAreas(c, concatenatedConfiguration, vsVrf, ImmutableList.of("iface"));
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 
@@ -1791,9 +1797,12 @@ public final class CumulusConversionsTest {
   public void testComputeOspfProcess_NoInterface() {
     CumulusConcatenatedConfiguration concatenatedConfiguration =
         new CumulusConcatenatedConfiguration();
+    OspfVrf vsVrf =
+        concatenatedConfiguration.getFrrConfiguration().getOrCreateOspfProcess().getDefaultVrf();
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
 
     SortedMap<Long, OspfArea> areas =
-        computeOspfAreas(concatenatedConfiguration, ImmutableList.of("iface"));
+        computeOspfAreas(c, concatenatedConfiguration, vsVrf, ImmutableList.of("iface"));
     assertThat(areas, equalTo(ImmutableSortedMap.of()));
   }
 

@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
-import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -24,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -82,6 +82,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Common;
@@ -200,6 +201,10 @@ public final class CumulusConversions {
 
   public static String computeOspfExportPolicyName(String vrfName) {
     return String.format("~OSPF_EXPORT_POLICY:%s~", vrfName);
+  }
+
+  public static String computeOspfAreaRangeFilterName(String vrfName, long area) {
+    return String.format("~OSPF_AREA_RANGE:%s:%s~", vrfName, area);
   }
 
   /**
@@ -1282,7 +1287,7 @@ public final class CumulusConversions {
     }
 
     addOspfInterfaces(vsConfig, vrfInterfaces, proc.getProcessId(), w);
-    proc.setAreas(computeOspfAreas(vsConfig, vrfInterfaces.keySet()));
+    proc.setAreas(computeOspfAreas(c, vsConfig, ospfVrf, vrfInterfaces.keySet()));
 
     // Handle Max Metric Router LSA
     if (firstNonNull(vsConfig.getOspfProcess().getMaxMetricRouterLsa(), Boolean.FALSE)) {
@@ -1425,7 +1430,10 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static SortedMap<Long, OspfArea> computeOspfAreas(
-      CumulusConcatenatedConfiguration vsConfig, Collection<String> vrfIfaceNames) {
+      Configuration c,
+      CumulusConcatenatedConfiguration vsConfig,
+      OspfVrf ospfVrf,
+      Collection<String> vrfIfaceNames) {
     Map<Long, List<String>> areaInterfaces =
         vrfIfaceNames.stream()
             .filter(
@@ -1438,10 +1446,60 @@ public final class CumulusConversions {
                     iface -> vsConfig.getOspfInterface(iface).get().getOspfArea(),
                     mapping(Function.identity(), Collectors.toList())));
 
-    return toImmutableSortedMap(
-        areaInterfaces,
-        Entry::getKey,
-        e -> OspfArea.builder().setNumber(e.getKey()).addInterfaces(e.getValue()).build());
+    // Ensure that the VRF-level OSPF config has each area used.
+    areaInterfaces.keySet().forEach(ospfVrf::getOrCreateArea);
+
+    // Now convert each area
+    ImmutableSortedMap.Builder<Long, OspfArea> areas = ImmutableSortedMap.naturalOrder();
+    ospfVrf
+        .getAreas()
+        .values()
+        .forEach(
+            vrfArea -> {
+              long num = vrfArea.getArea();
+              List<String> interfaces = areaInterfaces.get(num);
+              if (interfaces.isEmpty()) {
+                // No interfaces, skip area.
+                return;
+              }
+              OspfArea area = convertArea(c, ospfVrf.getVrfName(), vrfArea, interfaces);
+              areas.put(area.getAreaNumber(), area);
+            });
+    return areas.build();
+  }
+
+  private static @Nonnull OspfArea convertArea(
+      Configuration c,
+      String vrfName,
+      org.batfish.representation.cumulus.OspfArea vsArea,
+      Collection<String> interfaces) {
+    OspfArea.Builder ret = OspfArea.builder().setNumber(vsArea.getArea()).addInterfaces(interfaces);
+
+    // Handle OSPF Area Range conversion into VI OspfAreaSummary. It has two steps:
+    // 1. convert OspfAreaRange to OspfAreaSummary
+    // 2. add a RouteFilterList to force summarization and block more specific routes.
+    if (!vsArea.getRanges().isEmpty()) {
+      ImmutableList.Builder<RouteFilterLine> lines =
+          ImmutableList.builderWithExpectedSize(vsArea.getRanges().size() + 1);
+      for (OspfAreaRange range : vsArea.getRanges().values()) {
+        // OSPF costs are only 16-bit, but the VI metric is a long, for other protocols that support
+        // that. Upconvert if not null.
+        Prefix prefix = range.getRange();
+        Long cost = range.getCost() == null ? null : range.getCost().longValue();
+        OspfAreaSummary summary = new OspfAreaSummary(true, cost);
+        ret.addSummary(prefix, summary);
+        lines.add(new RouteFilterLine(LineAction.DENY, PrefixRange.moreSpecificThan(prefix)));
+      }
+      // Anything not summarized is permitted.
+      lines.add(new RouteFilterLine(LineAction.PERMIT, PrefixRange.ALL));
+      RouteFilterList summaryFilter =
+          new RouteFilterList(
+              computeOspfAreaRangeFilterName(vrfName, vsArea.getArea()), lines.build());
+      c.getRouteFilterLists().put(summaryFilter.getName(), summaryFilter);
+      ret.setSummaryFilter(summaryFilter.getName());
+    }
+
+    return ret.build();
   }
 
   @Nullable
