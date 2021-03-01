@@ -190,7 +190,7 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
    *     org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists#SOURCE_ORIGINATING_FROM_DEVICE}
    *     if the flow originates from the device.
    */
-  public boolean canSetUpSessionForFlowFrom(@Nullable String src) {
+  public boolean canSetUpSessionForFlowFrom(String src) {
     return _sources == null || _sources.contains(src);
   }
 }
