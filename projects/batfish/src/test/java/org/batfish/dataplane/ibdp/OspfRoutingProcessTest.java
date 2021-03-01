@@ -59,7 +59,6 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -579,7 +578,7 @@ public class OspfRoutingProcessTest {
     OspfInterAreaRoute route1 =
         OspfInterAreaRoute.builder()
             .setArea(1)
-            .setNetwork(Prefix.parse("1.0.0.0/8"))
+            .setNetwork(Prefix.parse("1.0.0.0/16"))
             .setMetric(42)
             .setNextHopIp(Ip.parse("8.8.8.8"))
             .build();
@@ -592,7 +591,7 @@ public class OspfRoutingProcessTest {
     // Regular conversion
     List<RouteAdvertisement<OspfInterAreaRoute>> transformed =
         filterInterAreaRoutesToPropagateAtABR(
-                delta, AREA0_CONFIG, null, neighborIp, nextHopIp, null)
+                delta, AREA0_CONFIG, ImmutableMap.of(), neighborIp, nextHopIp, null)
             .collect(Collectors.toList());
     assertThat(
         transformed,
@@ -606,7 +605,7 @@ public class OspfRoutingProcessTest {
     // Regular conversion but with custom metric
     transformed =
         filterInterAreaRoutesToPropagateAtABR(
-                delta, AREA0_CONFIG, null, neighborIp, nextHopIp, 999L)
+                delta, AREA0_CONFIG, ImmutableMap.of(), neighborIp, nextHopIp, 999L)
             .collect(Collectors.toList());
     assertThat(
         transformed,
@@ -618,20 +617,60 @@ public class OspfRoutingProcessTest {
                     hasMetric(999L)))));
 
     // Convert and filter with route filter list
+    // - Area 1 has a summarization for 1.0.0.0/8
+    // - Sending routes to area 0, should block the area 0 route (same area) and
+    //   should block the area 1 route (summarized).
     transformed =
         filterInterAreaRoutesToPropagateAtABR(
                 delta,
                 AREA0_CONFIG,
-                new RouteFilterList(
-                    "filter",
-                    ImmutableList.of(
-                        new RouteFilterLine(
-                            LineAction.DENY, Prefix.parse("1.0.0.0/8"), SubRange.singleton(8)))),
+                ImmutableMap.of(
+                    1L,
+                    new RouteFilterList(
+                        "filter",
+                        ImmutableList.of(
+                            new RouteFilterLine(
+                                LineAction.DENY,
+                                PrefixRange.moreSpecificThan(Prefix.parse("1.0.0.0/8"))),
+                            new RouteFilterLine(LineAction.PERMIT, PrefixRange.ALL)))),
                 neighborIp,
                 nextHopIp,
                 999L)
             .collect(Collectors.toList());
     assertThat(transformed, empty());
+
+    // Convert and filter with route filter list
+    // - Area 1 has a summarization for 2.0.0.0/8
+    // - Sending routes to area 0, should block the area 0 route (same area) and
+    //   should permit the area 1 route.
+    // Note that area 0's filter denies all routes, but area 1's route will still be allowed.
+    transformed =
+        filterInterAreaRoutesToPropagateAtABR(
+                delta,
+                AREA0_CONFIG,
+                ImmutableMap.of(
+                    0L,
+                    new RouteFilterList("filter0"),
+                    1L,
+                    new RouteFilterList(
+                        "filter1",
+                        ImmutableList.of(
+                            new RouteFilterLine(
+                                LineAction.DENY,
+                                PrefixRange.moreSpecificThan(Prefix.parse("2.0.0.0/8"))),
+                            new RouteFilterLine(LineAction.PERMIT, PrefixRange.ALL)))),
+                neighborIp,
+                nextHopIp,
+                null)
+            .collect(Collectors.toList());
+    assertThat(
+        transformed,
+        contains(
+            hasRoute(
+                allOf(
+                    hasPrefix(route1.getNetwork()),
+                    hasNextHopIp(equalTo(nextHopIp)),
+                    hasMetric(route1.getMetric())))));
 
     // Convert but filter because STUB and suppress type 3
     transformed =
@@ -641,7 +680,7 @@ public class OspfRoutingProcessTest {
                     .setStub(StubSettings.builder().setSuppressType3(true).build())
                     .setNumber(2)
                     .build(),
-                null,
+                ImmutableMap.of(),
                 neighborIp,
                 nextHopIp,
                 null)
@@ -656,7 +695,7 @@ public class OspfRoutingProcessTest {
                     .setNssa(NssaSettings.builder().setSuppressType3(true).build())
                     .setNumber(2)
                     .build(),
-                null,
+                ImmutableMap.of(),
                 neighborIp,
                 nextHopIp,
                 null)

@@ -5,13 +5,16 @@ import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Streams;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
@@ -78,6 +81,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull private final String _vrfName;
   /** The current known topology */
   @Nonnull private OspfTopology _topology;
+  /** The area summary filter for each area, if present. */
+  @Nonnull private final Map<Long, RouteFilterList> _areaFilters;
 
   /* Computed configuration & cached variables */
   private final boolean _useMinMetricForSummaries;
@@ -132,6 +137,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     _c = configuration;
     _vrfName = vrfName;
     _process = process;
+    _areaFilters =
+        _process.getAreas().values().stream()
+            .map(
+                a ->
+                    Optional.ofNullable(a.getSummaryFilter())
+                        .map(_c.getRouteFilterLists()::get)
+                        .map(l -> new SimpleEntry<>(a.getAreaNumber(), l))
+                        .orElse(null))
+            .filter(Objects::nonNull)
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     _topology = topology;
 
     _intraAreaRib = new OspfIntraAreaRib();
@@ -721,7 +736,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     OspfInterAreaRoute summaryRoute =
         OspfInterAreaRoute.builder()
             .setNetwork(prefix)
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setAdmin(_process.getSummaryAdminCost())
             .setMetric(firstNonNull(summary.getMetric(), computedMetric))
             .setArea(areaNumber)
@@ -883,10 +898,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
        filter list in batfish)
     */
 
-    RouteFilterList filterList = null;
-    if (areaConfig.getSummaryFilter() != null) {
-      filterList = _c.getRouteFilterLists().get(areaConfig.getSummaryFilter());
-    }
     // Note: localIp == ip2
     Ip nextHopIp = sessionProperties.getIpLink().getIp2();
 
@@ -896,7 +907,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 filterInterAreaRoutesToPropagateAtABR(
                     delta,
                     areaConfig,
-                    filterList,
+                    _areaFilters,
                     sessionProperties.getIpLink().getIp1(),
                     nextHopIp,
                     _process.getMaxMetricSummaryNetworks()),
@@ -911,7 +922,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *
    * @param delta ABR's inter- or intra- RIB delta
    * @param areaConfig area configuration at the ABR for this neighbor adjacency
-   * @param filterList route filter list defined at the ABR (to enable correct summarization)
+   * @param areaFilters per-area map of route filter list defined at the ABR (to enable correct
+   *     summarization)
    * @param neighborIp IP of the neighbor to which we're sending the route
    * @param nextHopIp next hop ip to use when creating the route.
    * @param customMetric if provided (i.e., not {@code null}) it will be used instead of the routes
@@ -921,7 +933,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   static Stream<RouteAdvertisement<OspfInterAreaRoute>> filterInterAreaRoutesToPropagateAtABR(
       RibDelta<OspfInterAreaRoute> delta,
       OspfArea areaConfig,
-      @Nullable RouteFilterList filterList,
+      Map<Long, RouteFilterList> areaFilters,
       Ip neighborIp,
       Ip nextHopIp,
       @Nullable Long customMetric) {
@@ -938,7 +950,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .filter(r -> !r.getRoute().getNextHopIp().equals(neighborIp))
         // Only propagate routes permitted by the filter list
         // Fail open. Treat missing filter list as "allow all".
-        .filter(r -> filterList == null || filterList.permits(r.getRoute().getNetwork()))
+        .filter(
+            r -> {
+              RouteFilterList areaSummaryFilter = areaFilters.get(r.getRoute().getArea());
+              if (areaSummaryFilter == null) {
+                return true;
+              }
+              return areaSummaryFilter.permits(r.getRoute().getNetwork());
+            })
         // Overwrite area on the route before sending it out
         .map(
             r ->
