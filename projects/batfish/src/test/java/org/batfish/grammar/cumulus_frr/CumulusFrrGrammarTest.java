@@ -60,6 +60,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
+import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -208,8 +209,12 @@ public class CumulusFrrGrammarTest {
     CumulusFrrConfigurationBuilder cb =
         new CumulusFrrConfigurationBuilder(_config, parser, _warnings, src);
     walker.walk(cb, tree);
+
+    // SerializationUtils.clone will clear transient state, which we save and restore.
+    // Or populate with default values for things that supplied by Batfish pre-conversion.
     Warnings w = _config.getWarnings();
     _config = SerializationUtils.clone(_config);
+    _config.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     _config.setWarnings(w);
   }
 
