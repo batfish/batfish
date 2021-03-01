@@ -27,7 +27,6 @@
             "description" : "To subnet subnet-1641fa70",
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "subnet-1641fa70"
               ]
@@ -258,7 +257,6 @@
             "description" : "To subnet subnet-7044ff16",
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "subnet-7044ff16"
               ]
@@ -504,7 +502,6 @@
             "description" : "To AWS services",
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "aws-services"
               ]
@@ -533,7 +530,6 @@
             "description" : "To AWS backbone",
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "backbone"
               ]
@@ -47379,7 +47375,6 @@
             "description" : "To subnet subnet-1641fa70",
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "test-rds-subnet-1641fa70"
               ]

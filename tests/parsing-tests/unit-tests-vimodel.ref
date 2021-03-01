@@ -23,7 +23,6 @@
             "description" : "To AWS services",
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "aws-services"
               ]
@@ -52,7 +51,6 @@
             "description" : "To AWS backbone",
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "backbone"
               ]
@@ -20200,7 +20198,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "GigabitEthernet0/1"
               ]
@@ -20231,7 +20228,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "GigabitEthernet0/2"
               ]
@@ -20262,7 +20258,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "Redundant1"
               ]
@@ -20292,7 +20287,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "Redundant2"
               ]
@@ -20327,7 +20321,6 @@
             "encapsulationVlan" : 2,
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "redundant1sub"
               ]
@@ -20364,7 +20357,6 @@
             "encapsulationVlan" : 2,
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "redundant2sub"
               ]
@@ -21409,7 +21401,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "ifname"
               ]
@@ -21641,7 +21632,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "blah"
               ]
@@ -38065,7 +38055,6 @@
             "bandwidth" : 1.0E12,
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "/Common/MYVLAN"
               ]
@@ -70722,7 +70711,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "ge-0/0/0.0"
               ]
@@ -72884,7 +72872,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "xe-0/0/0.0"
               ]
@@ -72943,7 +72930,6 @@
             ],
             "firewallSessionInterfaceInfo" : {
               "action" : "FORWARD_OUT_IFACE",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "xe-1/0/0.0"
               ]
@@ -79369,7 +79355,6 @@
             "bandwidth" : 1.0E9,
             "firewallSessionInterfaceInfo" : {
               "action" : "POST_NAT_FIB_LOOKUP",
-              "matchOriginatingFromDevice" : true,
               "sessionInterfaces" : [
                 "ethernet1/2"
               ]
