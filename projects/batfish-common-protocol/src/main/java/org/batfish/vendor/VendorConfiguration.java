@@ -236,15 +236,16 @@ public abstract class VendorConfiguration implements Serializable {
    * conflict), otherwise returns {@code true}.
    *
    * <p>The specified {@link Collection} of {@link StructureType} should contain all structure types
-   * that share the same namespace; i.e. a rename will only succeed if a defined structure exists
-   * for one of the specified types and the new name is not already in use by any structures of the
-   * specified types.
+   * that share the same namespace (including the specified structure {@code type}); i.e. a rename
+   * will only succeed if a defined structure exists for one of the specified types and the new name
+   * is not already in use by any structures of the specified types.
    */
   public boolean renameStructure(
       String origName,
       String newName,
       StructureType type,
       Collection<StructureType> sameNamespaceTypes) {
+    assert sameNamespaceTypes.contains(type);
     boolean succeeded = renameStructureDefinition(origName, newName, type, sameNamespaceTypes);
     if (succeeded) {
       renameStructureReferences(origName, newName, type);
