@@ -16,6 +16,8 @@ subnet_mask: SUBNET_MASK;
 
 ip_prefix: IP_PREFIX;
 
+ip_address_or_prefix: ip_address | ip_prefix;
+
 ipv6_address: IPV6_ADDRESS;
 
 ipv6_prefix: IPV6_PREFIX;
@@ -44,3 +46,5 @@ word: str;
 
 // can include whitespace, newlines, html tags, etc.
 str: (double_quoted_string | single_quoted_string | UNQUOTED_WORD_CHARS)*;
+
+enabled_or_disabled: ENABLED | DISABLED;

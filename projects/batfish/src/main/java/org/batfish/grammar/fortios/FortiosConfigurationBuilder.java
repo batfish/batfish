@@ -22,10 +22,13 @@ import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.fortios.FortiosParser.Cs_replacemsgContext;
 import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Device_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Double_quoted_stringContext;
+import org.batfish.grammar.fortios.FortiosParser.Interface_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
@@ -37,6 +40,7 @@ import org.batfish.grammar.fortios.FortiosParser.Uint16Context;
 import org.batfish.grammar.fortios.FortiosParser.Uint8Context;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.representation.fortios.FortiosConfiguration;
+import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Replacemsg;
 
 /**
@@ -104,6 +108,29 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsr_unset_buffer(Csr_unset_bufferContext ctx) {
     _currentReplacemsg.setBuffer(null);
+  }
+
+  @Override
+  public void enterCsi_edit(Csi_editContext ctx) {
+    // TODO ctx.csi_name()
+    String name = "foobar";
+
+    _currentInterface = _c.getInterfaces().computeIfAbsent(name, Interface::new);
+  }
+
+  @Override
+  public void exitCsi_edit(Csi_editContext ctx) {
+    _currentInterface = null;
+  }
+
+  @Override
+  public void exitCsi_set_vdom(Csi_set_vdomContext ctx) {
+    // TODO and more
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Interface_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "interface name", INTERFACE_NAME_PATTERN);
   }
 
   private @Nonnull String toString(Replacemsg_major_typeContext ctx) {
@@ -249,8 +276,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern ESCAPED_DOUBLE_QUOTED_CHAR_PATTERN =
       Pattern.compile("\\\\(['\"\\\\])");
   private static final Pattern ESCAPED_UNQUOTED_CHAR_PATTERN = Pattern.compile("\\\\([^\\r\\n])");
+  private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^ \r\n]{1,15}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
 
+  private Interface _currentInterface;
   private Replacemsg _currentReplacemsg;
   private final @Nonnull FortiosConfiguration _c;
   private final @Nonnull FortiosCombinedParser _parser;
