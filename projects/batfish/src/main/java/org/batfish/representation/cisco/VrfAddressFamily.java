@@ -18,6 +18,15 @@ public class VrfAddressFamily implements Serializable {
   public VrfAddressFamily() {}
 
   @Nullable
+  public String getExportMap() {
+    return _exportMap;
+  }
+
+  public void setExportMap(@Nullable String exportMap) {
+    _exportMap = exportMap;
+  }
+
+  @Nullable
   public String getImportMap() {
     return _importMap;
   }
@@ -67,6 +76,7 @@ public class VrfAddressFamily implements Serializable {
     }
   }
 
+  @Nullable private String _exportMap;
   @Nullable private String _importMap;
   @Nullable private Set<ExtendedCommunity> _routeTargetExport;
   @Nullable private Set<ExtendedCommunity> _routeTargetImport;
