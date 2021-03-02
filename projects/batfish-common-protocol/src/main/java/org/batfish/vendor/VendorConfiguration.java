@@ -225,8 +225,7 @@ public abstract class VendorConfiguration implements Serializable {
     SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> refsByName =
         _structureReferences.get(type);
     if (refsByName != null && refsByName.containsKey(orgName)) {
-      SortedMap<StructureUsage, SortedMultiset<Integer>> refs = refsByName.get(orgName);
-      refsByName.remove(orgName);
+      SortedMap<StructureUsage, SortedMultiset<Integer>> refs = refsByName.remove(orgName);
       refsByName.put(newName, refs);
     }
   }
@@ -247,7 +246,9 @@ public abstract class VendorConfiguration implements Serializable {
       StructureType type,
       Collection<StructureType> sameNamespaceTypes) {
     boolean succeeded = renameStructureDefinition(origName, newName, type, sameNamespaceTypes);
-    renameStructureReferences(origName, newName, type);
+    if (succeeded) {
+      renameStructureReferences(origName, newName, type);
+    }
     return succeeded;
   }
 
