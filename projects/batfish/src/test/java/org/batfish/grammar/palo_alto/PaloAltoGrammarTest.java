@@ -35,6 +35,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStru
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddressMetadata;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -107,6 +108,7 @@ import static org.batfish.representation.palo_alto.RuleEndpoint.Type.IP_RANGE;
 import static org.batfish.representation.palo_alto.RuleEndpoint.Type.REFERENCE;
 import static org.batfish.representation.palo_alto.Zone.Type.EXTERNAL;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -115,6 +117,7 @@ import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
@@ -166,6 +169,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -1334,7 +1338,7 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testInterfaceExctactionWarning() throws IOException {
+  public void testInterfaceExtractionWarning() throws IOException {
     String hostname = "interface";
     String hostnameBadLoopback = "interface-bad-loopback-addr";
 
@@ -1365,7 +1369,7 @@ public final class PaloAltoGrammarTest {
         warnBadLoopback.getRedFlagWarnings().stream()
             .map(Warning::getText)
             .collect(Collectors.toSet()),
-        contains("Loopback ip address must be /32 or without mask"));
+        contains("Loopback ip address must be /32 or without mask, not 10.10.10.10/24"));
   }
 
   @Test
@@ -1460,7 +1464,10 @@ public final class PaloAltoGrammarTest {
     assertThat(
         c,
         hasInterface(
-            eth1_7, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.11.10/32")))));
+            eth1_7,
+            allOf(
+                hasAddressMetadata(anEmptyMap()),
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.11.10/32"))))));
     // Address-group object reference is not allowed
     assertThat(c, hasInterface(eth1_8, hasAllAddresses(emptyIterable())));
     assertThat(
@@ -1469,6 +1476,13 @@ public final class PaloAltoGrammarTest {
             loopback,
             allOf(
                 hasAddress("7.7.7.7/32"),
+                hasAddressMetadata(
+                    hasEntry(
+                        ConcreteInterfaceAddress.parse("7.7.7.7/32"),
+                        ConnectedRouteMetadata.builder()
+                            .setGenerateConnectedRoute(false)
+                            .setGenerateLocalRoute(true)
+                            .build())),
                 hasAllAddresses(
                     contains(
                         ConcreteInterfaceAddress.parse("7.7.7.7/32"),
@@ -1480,11 +1494,29 @@ public final class PaloAltoGrammarTest {
     assertThat(
         cLoopbackRef,
         hasInterface(
-            loopback, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.10.10/32")))));
+            loopback,
+            allOf(
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.10.10.10/32"))),
+                hasAddressMetadata(
+                    hasEntry(
+                        ConcreteInterfaceAddress.parse("10.10.10.10/32"),
+                        ConnectedRouteMetadata.builder()
+                            .setGenerateConnectedRoute(false)
+                            .setGenerateLocalRoute(true)
+                            .build())))));
     assertThat(
         c,
         hasInterface(
-            loopback_123, hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.2.3.4/32")))));
+            loopback_123,
+            allOf(
+                hasAllAddresses(contains(ConcreteInterfaceAddress.parse("1.2.3.4/32"))),
+                hasAddressMetadata(
+                    hasEntry(
+                        ConcreteInterfaceAddress.parse("1.2.3.4/32"),
+                        ConnectedRouteMetadata.builder()
+                            .setGenerateConnectedRoute(false)
+                            .setGenerateLocalRoute(true)
+                            .build())))));
     // Bad address object references
     assertThat(cLoopbackRefInvalid, hasInterface(loopback, hasAllAddresses(emptyIterable())));
     assertThat(cLoopbackRefInvalidRange, hasInterface(loopback, hasAllAddresses(emptyIterable())));

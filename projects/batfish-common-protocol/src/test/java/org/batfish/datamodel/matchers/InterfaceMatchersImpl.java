@@ -1,9 +1,12 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
@@ -55,6 +58,23 @@ final class InterfaceMatchersImpl {
     @Override
     protected InterfaceAddress featureValueOf(Interface actual) {
       return actual.getAddress();
+    }
+  }
+
+  static final class HasAddressMetadata
+      extends FeatureMatcher<
+          Interface, SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata>> {
+    HasAddressMetadata(
+        @Nonnull
+            Matcher<? super SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata>>
+                subMatcher) {
+      super(subMatcher, "An Interface with addressMetadata:", "addressMetadata");
+    }
+
+    @Override
+    protected SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> featureValueOf(
+        Interface actual) {
+      return actual.getAddressMetadata();
     }
   }
 

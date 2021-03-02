@@ -94,6 +94,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -504,13 +505,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     ImmutableMap.Builder<String, Map<String, List<BoolExpr>>> vsysToRuleToBoolExprs =
         new ImmutableMap.Builder<>();
 
-    Vsys panorama = this.getPanorama();
+    Vsys panorama = getPanorama();
     Map<String, Transformation> panoramaTransformations =
         panorama == null ? ImmutableMap.of() : convertVsysNatRulesToTransformation(panorama);
     Map<String, List<BoolExpr>> panoramaHeaderSpaceBoolExprs =
         panorama == null ? ImmutableMap.of() : convertVsysNatRulesToHeaderSpaceBoolExprs(panorama);
 
-    for (Entry<String, Vsys> entry : this.getVirtualSystems().entrySet()) {
+    for (Entry<String, Vsys> entry : getVirtualSystems().entrySet()) {
       String vsysName = entry.getKey();
 
       // Transformations
@@ -787,7 +788,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // Note: using linked hash map to preserve insertion order
     // Note: using map to avoid duplicating rulenames (not allowed on PAN devices)
     Map<String, ExprAclLine> ruleToExprAclLine = new LinkedHashMap<>();
-    Vsys panorama = this.getPanorama();
+    Vsys panorama = getPanorama();
 
     // PreRulebase solely comes from Panorama, if it exists
     if (panorama != null) {
@@ -1962,29 +1963,56 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // It is unclear which vsys is used to start the object lookup process on multi-vsys systems,
     // since interfaces are not associated with particular vsys.
     // Assuming default vsys is good enough for now (this is the behavior for single-vsys systems).
-    ConcreteInterfaceAddress interfaceAddress =
+    ConcreteInterfaceAddress primaryInterfaceAddress =
         interfaceAddressToConcreteInterfaceAddress(
             iface.getAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME), _w);
     // No explicit address detected, fallback to runtime data
-    if (interfaceAddress == null) {
-      interfaceAddress = ifaceRuntimeData.map(InterfaceRuntimeData::getAddress).orElse(null);
+    if (primaryInterfaceAddress == null) {
+      primaryInterfaceAddress = ifaceRuntimeData.map(InterfaceRuntimeData::getAddress).orElse(null);
     }
 
-    if (interfaceAddress != null) {
-      if (iface.getType() == Interface.Type.LOOPBACK
-          && interfaceAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
-        _w.redFlag("Loopback ip address must be /32 or without mask");
-      } else {
-        newIface.setAddress(interfaceAddress);
-        newIface.setSecondaryAddresses(
-            Sets.difference(
-                iface.getAllAddresses().stream()
-                    .map(
+    if (primaryInterfaceAddress != null) {
+      Set<ConcreteInterfaceAddress> allValidAddresses =
+          Streams.concat(
+                  Stream.of(primaryInterfaceAddress), // added in case pulled from runtime data
+                  iface.getAllAddresses().stream()
+                      .map(
+                          a ->
+                              interfaceAddressToConcreteInterfaceAddress(
+                                  a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
+                      .filter(Objects::nonNull))
+              .filter(
+                  a -> {
+                    if (iface.getType() != Interface.Type.LOOPBACK) {
+                      return true;
+                    } else if (a.getPrefix().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+                      return true;
+                    }
+                    _w.redFlag("Loopback ip address must be /32 or without mask, not " + a);
+                    return false;
+                  })
+              .collect(Collectors.toSet());
+      if (allValidAddresses.contains(primaryInterfaceAddress)) {
+        // Make sure primary address is valid.
+        newIface.setAddress(primaryInterfaceAddress);
+      }
+      newIface.setSecondaryAddresses(
+          Sets.difference(allValidAddresses, ImmutableSet.of(primaryInterfaceAddress)));
+
+      if (iface.getType() == Interface.Type.LOOPBACK) {
+        // On PAN, loopback addresses are not connected routes, they are only local routes.
+        // We have already filtered down to valid addresses, all of which are /32, just populate
+        // the address metadata.
+        newIface.setAddressMetadata(
+            allValidAddresses.stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        a -> a,
                         a ->
-                            interfaceAddressToConcreteInterfaceAddress(
-                                a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
-                    .collect(Collectors.toSet()),
-                ImmutableSet.of(interfaceAddress)));
+                            ConnectedRouteMetadata.builder()
+                                .setGenerateConnectedRoute(false)
+                                .setGenerateLocalRoute(true)
+                                .build())));
       }
     }
     newIface.setActive(iface.getActive());
@@ -2964,7 +2992,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
     // Build primary config
-    Configuration primaryConfig = this.toVendorIndependentConfiguration();
+    Configuration primaryConfig = toVendorIndependentConfiguration();
     outputConfigurations.add(primaryConfig);
 
     List<PaloAltoConfiguration> managedConfigurations = getManagedConfigurations();
