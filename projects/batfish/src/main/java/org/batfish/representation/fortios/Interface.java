@@ -3,11 +3,9 @@ package org.batfish.representation.fortios;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** FortiOS datamodel component containing interface configuration */
-@ParametersAreNonnullByDefault
 public final class Interface implements Serializable {
   public enum Type {
     AGGREGATE,
@@ -24,21 +22,6 @@ public final class Interface implements Serializable {
   public static final int DEFAULT_INTERFACE_MTU = 1500;
   public static final int DEFAULT_VRF = 0;
   public static final boolean DEFAULT_STATUS = true;
-
-  @Nonnull private final String _name;
-  @Nullable private String _vdom;
-  @Nullable private ConcreteInterfaceAddress _ip;
-  @Nonnull private Type _type;
-  @Nullable private Boolean _status;
-  @Nullable private Boolean _mtuOverride;
-  @Nullable private Integer _mtu;
-  @Nullable private String _description;
-  @Nullable private Integer _vrf;
-
-  public Interface(String name) {
-    _name = name;
-    _type = Type.UNKNOWN;
-  }
 
   @Nonnull
   public String getName() {
@@ -123,4 +106,19 @@ public final class Interface implements Serializable {
   public void setVrf(int vrf) {
     _vrf = vrf;
   }
+
+  public Interface(String name) {
+    _name = name;
+    _type = Type.UNKNOWN;
+  }
+
+  @Nonnull private final String _name;
+  @Nullable private String _vdom;
+  @Nullable private ConcreteInterfaceAddress _ip;
+  @Nonnull private Type _type;
+  @Nullable private Boolean _status;
+  @Nullable private Boolean _mtuOverride;
+  @Nullable private Integer _mtu;
+  @Nullable private String _description;
+  @Nullable private Integer _vrf;
 }
