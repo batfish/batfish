@@ -180,61 +180,54 @@ public abstract class VendorConfiguration implements Serializable {
    * the rename was successful, otherwise returns {@code false}.
    *
    * <p>Update is only successful if the specified structure is defined and the new name is not
-   * already taken. Checks for a definition of any of the specified structure types.
+   * already taken. Checks for a name conflict with any of the specified structure types.
    */
   private boolean renameStructureDefinition(
-      String origName, String newName, Collection<StructureType> types) {
+      String origName,
+      String newName,
+      StructureType type,
+      Collection<StructureType> sameNamespaceTypes) {
 
-    SortedMap<String, DefinedStructureInfo> matchingDefsMap = null;
-    for (StructureType type : types) {
-      SortedMap<String, DefinedStructureInfo> defsByName =
-          _structureDefinitions.get(type.getDescription());
+    SortedMap<String, DefinedStructureInfo> defsByName =
+        _structureDefinitions.get(type.getDescription());
+    if (defsByName == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot rename structure %s (%s) to %s: %s is undefined.",
+              origName, type.getDescription(), newName, origName));
+      return false;
+    }
 
-      if (defsByName == null) {
+    for (StructureType otherType : sameNamespaceTypes) {
+      SortedMap<String, DefinedStructureInfo> otherDefsByName =
+          _structureDefinitions.get(otherType.getDescription());
+      if (otherDefsByName == null) {
         continue;
       }
 
-      // Find a matching defined structure
-      if (defsByName.containsKey(origName)) {
-        matchingDefsMap = defsByName;
-      }
-
       // Abort on *any* collision with the new name
-      if (defsByName.containsKey(newName)) {
+      if (otherDefsByName.containsKey(newName)) {
         _w.redFlag(
             String.format(
-                "Cannot rename structure %s to %s: %s is already in use.",
-                origName, newName, newName));
+                "Cannot rename structure %s (%s) to %s: %s is already in use as %s.",
+                origName, type.getDescription(), newName, newName, otherType.getDescription()));
         return false;
       }
     }
 
-    if (matchingDefsMap == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot rename structure %s to %s: %s is undefined.", origName, newName, origName));
-      return false;
-    }
-
-    DefinedStructureInfo def = matchingDefsMap.remove(origName);
-    matchingDefsMap.put(newName, def);
+    DefinedStructureInfo def = defsByName.remove(origName);
+    defsByName.put(newName, def);
     return true;
   }
 
-  /**
-   * If any references exist to the specified structure of any of the specified structure types,
-   * update them to use the new name.
-   */
-  private void renameStructureReferences(
-      String orgName, String newName, Collection<StructureType> types) {
-    for (StructureType type : types) {
-      SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> refsByName =
-          _structureReferences.get(type);
-      if (refsByName != null && refsByName.containsKey(orgName)) {
-        SortedMap<StructureUsage, SortedMultiset<Integer>> refs = refsByName.get(orgName);
-        refsByName.remove(orgName);
-        refsByName.put(newName, refs);
-      }
+  /** If any references exist to the specified structure, update them to use the new name. */
+  private void renameStructureReferences(String orgName, String newName, StructureType type) {
+    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> refsByName =
+        _structureReferences.get(type);
+    if (refsByName != null && refsByName.containsKey(orgName)) {
+      SortedMap<StructureUsage, SortedMultiset<Integer>> refs = refsByName.get(orgName);
+      refsByName.remove(orgName);
+      refsByName.put(newName, refs);
     }
   }
 
@@ -248,10 +241,14 @@ public abstract class VendorConfiguration implements Serializable {
    * for one of the specified types and the new name is not already in use by any structures of the
    * specified types.
    */
-  public boolean renameStructure(String origName, String newName, Collection<StructureType> types) {
-    boolean valid = renameStructureDefinition(origName, newName, types);
-    renameStructureReferences(origName, newName, types);
-    return valid;
+  public boolean renameStructure(
+      String origName,
+      String newName,
+      StructureType type,
+      Collection<StructureType> sameNamespaceTypes) {
+    boolean succeeded = renameStructureDefinition(origName, newName, type, sameNamespaceTypes);
+    renameStructureReferences(origName, newName, type);
+    return succeeded;
   }
 
   public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {

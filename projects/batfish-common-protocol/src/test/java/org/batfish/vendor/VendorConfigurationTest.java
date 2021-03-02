@@ -26,8 +26,8 @@ public final class VendorConfigurationTest {
   private static final String FILENAME = "filename";
 
   private enum TestStructureType implements StructureType {
-    TEST_STRUCTURE_TYPE1("structure type1"),
-    TEST_STRUCTURE_TYPE2("structure type2");
+    TEST_STRUCTURE_TYPE1("type1"),
+    TEST_STRUCTURE_TYPE2("type2");
 
     private final String _description;
 
@@ -42,7 +42,7 @@ public final class VendorConfigurationTest {
   }
 
   private enum TestStructureUsage implements StructureUsage {
-    TEST_STRUCTURE_USAGE1("structure usage1");
+    TEST_STRUCTURE_USAGE1("usage1");
 
     private final String _description;
 
@@ -95,19 +95,57 @@ public final class VendorConfigurationTest {
     String origName = "origName";
     int origLine = 1;
     String newName = "newName";
-    VendorConfiguration c = buildVendorConfiguration();
 
-    // Same-named structure, but is a different type
-    c.defineSingleLineStructure(_testStructureType2, origName, origLine);
+    // Same-named structure exists in a different namespace
+    {
+      VendorConfiguration c = buildVendorConfiguration();
 
-    // Rename an undefined structure
-    boolean succeeded = c.renameStructure(origName, newName, ImmutableList.of(_testStructureType1));
+      c.defineSingleLineStructure(_testStructureType2, origName, origLine);
 
-    // Should produce an appropriate warning and indicate the rename did not succeed
-    assertThat(
-        c.getWarnings(),
-        hasRedFlag(hasText("Cannot rename structure origName to newName: origName is undefined.")));
-    assertFalse(succeeded);
+      // Rename an undefined structure
+      boolean succeeded =
+          c.renameStructure(
+              origName, newName, _testStructureType1, ImmutableList.of(_testStructureType1));
+
+      // Should produce an appropriate warning and indicate the rename did not succeed
+      assertThat(
+          c.getWarnings(),
+          hasRedFlag(
+              hasText(
+                  "Cannot rename structure origName (type1) to newName: origName is undefined.")));
+      assertFalse(succeeded);
+    }
+
+    // Same-named structure exists in the same namespace, but is a different type
+    {
+      VendorConfiguration c = buildVendorConfiguration();
+
+      c.defineSingleLineStructure(_testStructureType2, origName, origLine);
+      c.referenceStructure(_testStructureType2, origName, _testStructureUsage, 11);
+
+      // Try to rename a structure defined in the same namespace, but of a different type
+      boolean succeeded =
+          c.renameStructure(
+              origName,
+              newName,
+              _testStructureType1,
+              ImmutableList.of(_testStructureType1, _testStructureType2));
+
+      // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
+      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+
+      // Should produce an appropriate warning and indicate the rename did not succeed
+      assertThat(
+          c.getWarnings(),
+          hasRedFlag(
+              hasText(
+                  "Cannot rename structure origName (type1) to newName: origName is undefined.")));
+      assertFalse(succeeded);
+      // Reference should be unaffected since the rename did not succeed
+      assertThat(
+          c.getAnswerElement(),
+          hasReferencedStructure(FILENAME, _testStructureType2, origName, _testStructureUsage));
+    }
   }
 
   @Test
@@ -126,12 +164,15 @@ public final class VendorConfigurationTest {
       c.defineSingleLineStructure(_testStructureType1, newName, otherLine);
 
       boolean succeeded =
-          c.renameStructure(origName, newName, ImmutableList.of(_testStructureType1));
+          c.renameStructure(
+              origName, newName, _testStructureType1, ImmutableList.of(_testStructureType1));
       // Produces appropriate warning
       assertThat(
           c.getWarnings(),
           hasRedFlag(
-              hasText("Cannot rename structure origName to newName: newName is already in use.")));
+              hasText(
+                  "Cannot rename structure origName (type1) to newName: newName is already in use"
+                      + " as type1.")));
       assertFalse(succeeded);
 
       // Both org and new structure defs persist
@@ -156,12 +197,17 @@ public final class VendorConfigurationTest {
 
       boolean succeeded =
           c.renameStructure(
-              origName, newName, ImmutableList.of(_testStructureType1, _testStructureType2));
+              origName,
+              newName,
+              _testStructureType2,
+              ImmutableList.of(_testStructureType1, _testStructureType2));
       // Produces appropriate warning
       assertThat(
           c.getWarnings(),
           hasRedFlag(
-              hasText("Cannot rename structure origName to newName: newName is already in use.")));
+              hasText(
+                  "Cannot rename structure origName (type2) to newName: newName is already in use"
+                      + " as type1.")));
       assertFalse(succeeded);
 
       // Both org and new structure defs persist
@@ -194,7 +240,8 @@ public final class VendorConfigurationTest {
       c.referenceStructure(_testStructureType1, origName, _testStructureUsage, 11);
       c.referenceStructure(_testStructureType1, unaffectedName, _testStructureUsage, 22);
       boolean succeeded =
-          c.renameStructure(origName, newName, ImmutableList.of(_testStructureType1));
+          c.renameStructure(
+              origName, newName, _testStructureType1, ImmutableList.of(_testStructureType1));
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
       c.setAnswerElement(new ConvertConfigurationAnswerElement());
 
@@ -229,7 +276,8 @@ public final class VendorConfigurationTest {
       c.referenceStructure(_testStructureType1, origName, _testStructureUsage, 11);
       c.referenceStructure(_testStructureType2, newName, _testStructureUsage, 22);
       boolean succeeded =
-          c.renameStructure(origName, newName, ImmutableList.of(_testStructureType1));
+          c.renameStructure(
+              origName, newName, _testStructureType1, ImmutableList.of(_testStructureType1));
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
       c.setAnswerElement(new ConvertConfigurationAnswerElement());
 
