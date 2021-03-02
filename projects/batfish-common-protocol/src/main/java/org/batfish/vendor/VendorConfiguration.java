@@ -237,8 +237,8 @@ public abstract class VendorConfiguration implements Serializable {
    *
    * <p>The specified {@link Collection} of {@link StructureType} should contain all structure types
    * that share the same namespace (including the specified structure {@code type}); i.e. a rename
-   * will only succeed if a defined structure exists for one of the specified types and the new name
-   * is not already in use by any structures of the specified types.
+   * will only succeed if the new name is not already in use by any structures of the specified
+   * types.
    */
   public boolean renameStructure(
       String origName,
