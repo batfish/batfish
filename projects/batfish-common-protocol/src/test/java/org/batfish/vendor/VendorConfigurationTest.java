@@ -8,6 +8,8 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStru
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyIterable;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -24,7 +26,8 @@ public final class VendorConfigurationTest {
   private static final String FILENAME = "filename";
 
   private enum TestStructureType implements StructureType {
-    TEST_STRUCTURE_TYPE1("structure type1");
+    TEST_STRUCTURE_TYPE1("structure type1"),
+    TEST_STRUCTURE_TYPE2("structure type2");
 
     private final String _description;
 
@@ -53,8 +56,12 @@ public final class VendorConfigurationTest {
     }
   }
 
-  private final TestStructureType _testStructureType = TestStructureType.TEST_STRUCTURE_TYPE1;
-  private final TestStructureUsage _testStructureUsage = TestStructureUsage.TEST_STRUCTURE_USAGE1;
+  private static final TestStructureType _testStructureType1 =
+      TestStructureType.TEST_STRUCTURE_TYPE1;
+  private static final TestStructureType _testStructureType2 =
+      TestStructureType.TEST_STRUCTURE_TYPE2;
+  private static final TestStructureUsage _testStructureUsage =
+      TestStructureUsage.TEST_STRUCTURE_USAGE1;
 
   private static final class TestVendorConfiguration extends VendorConfiguration {
     @Override
@@ -84,73 +91,167 @@ public final class VendorConfigurationTest {
   }
 
   @Test
-  public void testRenameStructure() {
-    String orgName = "orgName";
-    int orgLine = 1;
+  public void testRenameStructureUndefined() {
+    String origName = "origName";
+    int origLine = 1;
     String newName = "newName";
+    VendorConfiguration c = buildVendorConfiguration();
 
+    // Same-named structure, but is a different type
+    c.defineSingleLineStructure(_testStructureType2, origName, origLine);
+
+    // Rename an undefined structure
+    boolean succeeded = c.renameStructure(origName, newName, ImmutableList.of(_testStructureType1));
+
+    // Should produce an appropriate warning and indicate the rename did not succeed
+    assertThat(
+        c.getWarnings(),
+        hasRedFlag(hasText("Cannot rename structure origName to newName: origName is undefined.")));
+    assertFalse(succeeded);
+  }
+
+  @Test
+  public void testRenameStructureClash() {
+    String origName = "origName";
+    int origLine = 1;
+    String newName = "newName";
     int otherLine = 2;
-    String unaffectedName = "unaffectedName";
 
-    // Renaming an undefined structure
+    // Renaming is invalid if it would clash with another structure of the same type
     {
       VendorConfiguration c = buildVendorConfiguration();
 
-      c.renameStructure(_testStructureType, orgName, newName);
-      // Produce an appropriate warning
-      assertThat(
-          c.getWarnings(), hasRedFlag(hasText("Cannot rename undefined structure orgName.")));
-    }
+      // Both structures are of the same type
+      c.defineSingleLineStructure(_testStructureType1, origName, origLine);
+      c.defineSingleLineStructure(_testStructureType1, newName, otherLine);
 
-    // Renaming is invalid if it would clash with another structure
-    {
-      VendorConfiguration c = buildVendorConfiguration();
-
-      c.defineSingleLineStructure(_testStructureType, orgName, orgLine);
-      c.defineSingleLineStructure(_testStructureType, newName, otherLine);
-
-      c.renameStructure(_testStructureType, orgName, newName);
+      boolean succeeded =
+          c.renameStructure(origName, newName, ImmutableList.of(_testStructureType1));
       // Produces appropriate warning
-      assertThat(c.getWarnings(), hasRedFlag(hasText("New name newName is already in use.")));
+      assertThat(
+          c.getWarnings(),
+          hasRedFlag(
+              hasText("Cannot rename structure origName to newName: newName is already in use.")));
+      assertFalse(succeeded);
 
       // Both org and new structure defs persist
       assertThat(
           c.getAnswerElement(),
           hasDefinedStructureWithDefinitionLines(
-              FILENAME, _testStructureType, orgName, contains(orgLine)));
+              FILENAME, _testStructureType1, origName, contains(origLine)));
       assertThat(
           c.getAnswerElement(),
           hasDefinedStructureWithDefinitionLines(
-              FILENAME, _testStructureType, newName, contains(otherLine)));
+              FILENAME, _testStructureType1, newName, contains(otherLine)));
     }
+
+    // Renaming is invalid if it would clash with another structure
+    // **Even of a different type**
+    {
+      VendorConfiguration c = buildVendorConfiguration();
+
+      // Structures are different types
+      c.defineSingleLineStructure(_testStructureType2, origName, origLine);
+      c.defineSingleLineStructure(_testStructureType1, newName, otherLine);
+
+      boolean succeeded =
+          c.renameStructure(
+              origName, newName, ImmutableList.of(_testStructureType1, _testStructureType2));
+      // Produces appropriate warning
+      assertThat(
+          c.getWarnings(),
+          hasRedFlag(
+              hasText("Cannot rename structure origName to newName: newName is already in use.")));
+      assertFalse(succeeded);
+
+      // Both org and new structure defs persist
+      assertThat(
+          c.getAnswerElement(),
+          hasDefinedStructureWithDefinitionLines(
+              FILENAME, _testStructureType2, origName, contains(origLine)));
+      assertThat(
+          c.getAnswerElement(),
+          hasDefinedStructureWithDefinitionLines(
+              FILENAME, _testStructureType1, newName, contains(otherLine)));
+    }
+  }
+
+  @Test
+  public void testRenameStructureValid() {
+    String origName = "origName";
+    int origLine = 1;
+    String newName = "newName";
+
+    int otherLine = 2;
+    String unaffectedName = "unaffectedName";
 
     // Valid structure renaming
     {
       VendorConfiguration c = buildVendorConfiguration();
 
-      c.defineSingleLineStructure(_testStructureType, orgName, orgLine);
-      c.defineSingleLineStructure(_testStructureType, unaffectedName, otherLine);
-      c.referenceStructure(_testStructureType, unaffectedName, _testStructureUsage, 11);
-      c.referenceStructure(_testStructureType, orgName, _testStructureUsage, 22);
-      c.renameStructure(_testStructureType, orgName, newName);
+      c.defineSingleLineStructure(_testStructureType1, origName, origLine);
+      c.defineSingleLineStructure(_testStructureType1, unaffectedName, otherLine);
+      c.referenceStructure(_testStructureType1, origName, _testStructureUsage, 11);
+      c.referenceStructure(_testStructureType1, unaffectedName, _testStructureUsage, 22);
+      boolean succeeded =
+          c.renameStructure(origName, newName, ImmutableList.of(_testStructureType1));
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
       c.setAnswerElement(new ConvertConfigurationAnswerElement());
 
       // No warnings
       assertThat(c.getWarnings(), hasRedFlags(emptyIterable()));
+      assertTrue(succeeded);
       // Has a definition and reference for the new structure name
       assertThat(
           c.getAnswerElement(),
           hasDefinedStructureWithDefinitionLines(
-              FILENAME, _testStructureType, newName, contains(orgLine)));
+              FILENAME, _testStructureType1, newName, contains(origLine)));
       assertThat(
           c.getAnswerElement(),
-          hasReferencedStructure(FILENAME, _testStructureType, newName, _testStructureUsage));
-      // Unaffected reference should persist
+          hasReferencedStructure(FILENAME, _testStructureType1, newName, _testStructureUsage));
+      // Unaffected reference and definition should persist
+      assertThat(
+          c.getAnswerElement(),
+          hasDefinedStructureWithDefinitionLines(
+              FILENAME, _testStructureType1, unaffectedName, contains(otherLine)));
       assertThat(
           c.getAnswerElement(),
           hasReferencedStructure(
-              FILENAME, _testStructureType, unaffectedName, _testStructureUsage));
+              FILENAME, _testStructureType1, unaffectedName, _testStructureUsage));
+    }
+
+    // Structure renaming is still valid the new name is in used by a different type of structure
+    {
+      VendorConfiguration c = buildVendorConfiguration();
+
+      c.defineSingleLineStructure(_testStructureType1, origName, origLine);
+      c.defineSingleLineStructure(_testStructureType2, newName, otherLine);
+      c.referenceStructure(_testStructureType1, origName, _testStructureUsage, 11);
+      c.referenceStructure(_testStructureType2, newName, _testStructureUsage, 22);
+      boolean succeeded =
+          c.renameStructure(origName, newName, ImmutableList.of(_testStructureType1));
+      // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
+      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+
+      // No warnings
+      assertThat(c.getWarnings(), hasRedFlags(emptyIterable()));
+      assertTrue(succeeded);
+      // Has a definition and reference for the new structure name
+      assertThat(
+          c.getAnswerElement(),
+          hasDefinedStructureWithDefinitionLines(
+              FILENAME, _testStructureType1, newName, contains(origLine)));
+      assertThat(
+          c.getAnswerElement(),
+          hasReferencedStructure(FILENAME, _testStructureType1, newName, _testStructureUsage));
+      // Unaffected reference and definition should persist
+      assertThat(
+          c.getAnswerElement(),
+          hasDefinedStructureWithDefinitionLines(
+              FILENAME, _testStructureType2, newName, contains(otherLine)));
+      assertThat(
+          c.getAnswerElement(),
+          hasReferencedStructure(FILENAME, _testStructureType2, newName, _testStructureUsage));
     }
   }
 }
