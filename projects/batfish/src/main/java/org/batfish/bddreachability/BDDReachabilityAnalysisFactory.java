@@ -1182,26 +1182,25 @@ public final class BDDReachabilityAnalysisFactory {
               assert i1.getActive();
               IpAccessList acl = i1.getOutgoingFilter();
 
-              if (acl == null) {
-                return Stream.of();
-              }
-
               BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
                   _bddOutgoingOriginalFlowFilterManagers.get(node1);
               BDD originalFlowAclDenyBdd =
                   originalFlowFilterMgr.deniedByOriginalFlowEgressFilter(iface1);
               BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
-              return Stream.of(
-                  new Edge(
-                      new PreOutEdgePostNat(node1, iface1, node2, iface2),
-                      new NodeDropAclOut(node1),
-                      compose(
-                          constraint(aclDenyBDD.or(originalFlowAclDenyBdd)),
-                          removeNodeSpecificConstraints(
-                              node1,
-                              _lastHopMgr,
-                              _bddOutgoingOriginalFlowFilterManagers.get(node1),
-                              _bddSourceManagers.get(node1)))));
+              BDD denyBdd = aclDenyBDD.or(originalFlowAclDenyBdd);
+              return denyBdd.isZero()
+                  ? Stream.of()
+                  : Stream.of(
+                      new Edge(
+                          new PreOutEdgePostNat(node1, iface1, node2, iface2),
+                          new NodeDropAclOut(node1),
+                          compose(
+                              constraint(denyBdd),
+                              removeNodeSpecificConstraints(
+                                  node1,
+                                  _lastHopMgr,
+                                  _bddOutgoingOriginalFlowFilterManagers.get(node1),
+                                  _bddSourceManagers.get(node1)))));
             });
   }
 
