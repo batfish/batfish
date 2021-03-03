@@ -551,10 +551,27 @@ public final class VirtualRouter {
   private static Stream<ConnectedRoute> generateConnectedRoutes(@Nonnull Interface iface) {
     assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
+        .filter(addr -> shouldGenerateConnectedRoute(iface.getAddressMetadata().get(addr)))
         .map(
             addr ->
                 generateConnectedRoute(
                     addr, iface.getName(), iface.getAddressMetadata().get(addr)));
+  }
+
+  /**
+   * Returns true if a connected route should be generated for the provided {@link
+   * ConnectedRouteMetadata}.
+   */
+  @VisibleForTesting
+  static boolean shouldGenerateConnectedRoute(
+      @Nullable ConnectedRouteMetadata connectedRouteMetadata) {
+    if (connectedRouteMetadata != null
+        && connectedRouteMetadata.getGenerateConnectedRoute() != null) {
+      // Use the metadata if set.
+      return connectedRouteMetadata.getGenerateConnectedRoute();
+    }
+    // If the metadata are not provided or no value, generate the connected route.
+    return true;
   }
 
   /** Generate a connected route for a given address (and associated metadata). */
@@ -600,7 +617,7 @@ public final class VirtualRouter {
 
   /**
    * Generate local routes for a given active interface. Returns an empty stream if the interface
-   * generates no local routes based on {@link ConnectedRouteMetadata#getGenerateLocalRoutes()} or
+   * generates no local routes based on {@link ConnectedRouteMetadata#getGenerateLocalRoute()} or
    * Batfish policy (only addresses with network length of < /32 are considered).
    */
   @Nonnull
@@ -617,15 +634,15 @@ public final class VirtualRouter {
   }
 
   /**
-   * Returns true if local routes should always be generated for the provided {@link
-   * ConnectedRouteMetadata}
+   * Returns true if a local route should be generated for the provided {@link
+   * ConnectedRouteMetadata}.
    */
   @VisibleForTesting
   static boolean shouldGenerateLocalRoute(
       int prefixLength, @Nullable ConnectedRouteMetadata connectedRouteMetadata) {
-    if (connectedRouteMetadata != null && connectedRouteMetadata.getGenerateLocalRoutes() != null) {
+    if (connectedRouteMetadata != null && connectedRouteMetadata.getGenerateLocalRoute() != null) {
       // Use the metadata if set.
-      return connectedRouteMetadata.getGenerateLocalRoutes();
+      return connectedRouteMetadata.getGenerateLocalRoute();
     }
     // If the metadata are not provided or no value for generate local routes, use Batfish default.
     return prefixLength < Prefix.MAX_PREFIX_LENGTH;

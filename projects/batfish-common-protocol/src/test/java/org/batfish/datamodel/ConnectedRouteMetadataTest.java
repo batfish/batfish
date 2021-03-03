@@ -13,31 +13,35 @@ import org.junit.Test;
 public class ConnectedRouteMetadataTest {
   @Test
   public void testEquals() {
-    Builder builder = ConnectedRouteMetadata.builder().setTag(1);
-    ConnectedRouteMetadata crm = builder.build();
+    Builder builder = ConnectedRouteMetadata.builder();
     new EqualsTester()
-        .addEqualityGroup(crm, crm, builder.build())
-        .addEqualityGroup(builder.setTag(2).build())
-        .addEqualityGroup(builder.setTag(3).build())
-        .addEqualityGroup(builder.setAdmin(3).build())
-        .addEqualityGroup(builder.setTag(1).build())
-        .addEqualityGroup(builder.setGenerateLocalRoutes(true).build())
-        .addEqualityGroup(builder.setAdmin(1).setGenerateLocalRoutes(true))
         .addEqualityGroup(new Object())
+        .addEqualityGroup(builder.build(), builder.build())
+        .addEqualityGroup(builder.setAdmin(1).build())
+        .addEqualityGroup(builder.setGenerateLocalRoute(true).build())
+        .addEqualityGroup(builder.setGenerateLocalRoute(false).build())
+        .addEqualityGroup(builder.setTag(2).build())
+        .addEqualityGroup(builder.setGenerateConnectedRoute(true).build())
+        .addEqualityGroup(builder.setGenerateConnectedRoute(false).build())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
     ConnectedRouteMetadata crm =
-        ConnectedRouteMetadata.builder().setAdmin(2).setGenerateLocalRoutes(true).setTag(1).build();
+        ConnectedRouteMetadata.builder().setAdmin(2).setGenerateLocalRoute(true).setTag(1).build();
     assertThat(SerializationUtils.clone(crm), equalTo(crm));
   }
 
   @Test
   public void testJsonSerialization() {
     ConnectedRouteMetadata crm =
-        ConnectedRouteMetadata.builder().setAdmin(2).setGenerateLocalRoutes(true).setTag(1).build();
+        ConnectedRouteMetadata.builder()
+            .setAdmin(2)
+            .setGenerateConnectedRoute(false)
+            .setGenerateLocalRoute(true)
+            .setTag(1)
+            .build();
     assertThat(BatfishObjectMapper.clone(crm, ConnectedRouteMetadata.class), equalTo(crm));
   }
 }

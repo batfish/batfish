@@ -160,8 +160,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
                 }
                 ConcreteInterfaceAddress address = (ConcreteInterfaceAddress) a;
                 metadata.put(
-                    address,
-                    ConnectedRouteMetadata.builder().setGenerateLocalRoutes(false).build());
+                    address, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build());
               }
               i.setAddressMetadata(metadata.build());
             });

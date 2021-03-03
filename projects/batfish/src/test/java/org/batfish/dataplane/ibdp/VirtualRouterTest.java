@@ -7,6 +7,7 @@ import static org.batfish.datamodel.eigrp.EigrpTopologyUtils.initEigrpTopology;
 import static org.batfish.datamodel.isis.IsisTopology.initIsisTopology;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateConnectedRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalRoute;
+import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateConnectedRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateLocalRoute;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -848,7 +849,7 @@ public class VirtualRouterTest {
   }
 
   @Test
-  public void testAlwaysGenerateLocalRoutes() {
+  public void testShouldGenerateLocalRoute() {
     assertFalse(shouldGenerateLocalRoute(Prefix.MAX_PREFIX_LENGTH, null));
     assertFalse(
         shouldGenerateLocalRoute(
@@ -856,19 +857,31 @@ public class VirtualRouterTest {
     assertFalse(
         shouldGenerateLocalRoute(
             Prefix.MAX_PREFIX_LENGTH,
-            ConnectedRouteMetadata.builder().setGenerateLocalRoutes(false).build()));
+            ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build()));
     assertTrue(
         shouldGenerateLocalRoute(
             Prefix.MAX_PREFIX_LENGTH,
-            ConnectedRouteMetadata.builder().setGenerateLocalRoutes(true).build()));
+            ConnectedRouteMetadata.builder().setGenerateLocalRoute(true).build()));
 
     assertTrue(shouldGenerateLocalRoute(24, null));
     assertTrue(shouldGenerateLocalRoute(24, ConnectedRouteMetadata.builder().build()));
     assertFalse(
         shouldGenerateLocalRoute(
-            24, ConnectedRouteMetadata.builder().setGenerateLocalRoutes(false).build()));
+            24, ConnectedRouteMetadata.builder().setGenerateLocalRoute(false).build()));
     assertTrue(
         shouldGenerateLocalRoute(
-            24, ConnectedRouteMetadata.builder().setGenerateLocalRoutes(true).build()));
+            24, ConnectedRouteMetadata.builder().setGenerateLocalRoute(true).build()));
+  }
+
+  @Test
+  public void testShouldGenerateConnectedRoute() {
+    assertTrue(shouldGenerateConnectedRoute(null));
+    assertTrue(shouldGenerateConnectedRoute(ConnectedRouteMetadata.builder().build()));
+    assertTrue(
+        shouldGenerateConnectedRoute(
+            ConnectedRouteMetadata.builder().setGenerateConnectedRoute(true).build()));
+    assertFalse(
+        shouldGenerateConnectedRoute(
+            ConnectedRouteMetadata.builder().setGenerateConnectedRoute(false).build()));
   }
 }

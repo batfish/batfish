@@ -5,10 +5,12 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConnectedRouteMetadata;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
@@ -25,6 +27,7 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAccessVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAddress;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAddressMetadata;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
@@ -97,6 +100,15 @@ public final class InterfaceMatchers {
   public static @Nonnull Matcher<Interface> hasAddress(
       @Nonnull Matcher<? super InterfaceAddress> subMatcher) {
     return new HasAddress(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * {@link Interface#getAddressMetadata() address metadata}.
+   */
+  public static Matcher<Interface> hasAddressMetadata(
+      Matcher<? super SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata>> subMatcher) {
+    return new HasAddressMetadata(subMatcher);
   }
 
   /**
