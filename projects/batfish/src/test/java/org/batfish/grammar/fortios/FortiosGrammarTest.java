@@ -37,6 +37,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
+import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
 import org.junit.Rule;
 import org.junit.Test;
@@ -146,7 +147,7 @@ public final class FortiosGrammarTest {
     assertThat(port.getAlias(), equalTo("longest possibl alias str"));
     assertThat(port.getDescription(), equalTo("quoted description w/ spaces and more"));
     // Check defaults
-    assertThat(port.getStatus(), nullValue());
+    assertThat(port.getStatus(), equalTo(Status.UNKNOWN));
     assertTrue(port.getStatusEffective());
     assertThat(port.getMtu(), nullValue());
     assertThat(port.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
@@ -155,16 +156,17 @@ public final class FortiosGrammarTest {
     assertThat(port.getVrfEffective(), equalTo(0));
 
     assertThat(longName.getIp(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
+    assertThat(longName.getAlias(), equalTo(""));
     // Check overriding defaults
     assertTrue(longName.getStatusEffective());
-    assertThat(longName.getStatus(), equalTo(true));
+    assertThat(longName.getStatus(), equalTo(Status.UP));
     assertThat(longName.getMtuOverride(), equalTo(true));
     assertThat(longName.getMtu(), equalTo(1234));
     assertThat(longName.getMtuEffective(), equalTo(1234));
     assertThat(longName.getVrf(), equalTo(31));
     assertThat(longName.getVrfEffective(), equalTo(31));
 
-    assertThat(tunnel.getStatus(), equalTo(false));
+    assertThat(tunnel.getStatus(), equalTo(Status.DOWN));
     assertFalse(tunnel.getStatusEffective());
     assertThat(tunnel.getType(), equalTo(Type.TUNNEL));
     // MTU is set, but not used since override isn't set

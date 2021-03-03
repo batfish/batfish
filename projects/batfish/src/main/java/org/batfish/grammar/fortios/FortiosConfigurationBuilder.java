@@ -53,6 +53,7 @@ import org.batfish.grammar.fortios.FortiosParser.StrContext;
 import org.batfish.grammar.fortios.FortiosParser.Subnet_maskContext;
 import org.batfish.grammar.fortios.FortiosParser.Uint16Context;
 import org.batfish.grammar.fortios.FortiosParser.Uint8Context;
+import org.batfish.grammar.fortios.FortiosParser.Up_or_downContext;
 import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.representation.fortios.FortiosConfiguration;
@@ -164,7 +165,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCsi_set_status(Csi_set_statusContext ctx) {
-    _currentInterface.setStatus(toBoolean(ctx.status));
+    _currentInterface.setStatus(toStatus(ctx.status));
   }
 
   @Override
@@ -195,6 +196,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return false;
   }
 
+  private Interface.Status toStatus(Up_or_downContext ctx) {
+    if (ctx.UP() != null) {
+      return Interface.Status.UP;
+    }
+    assert ctx.DOWN() != null;
+    return Interface.Status.DOWN;
+  }
+
   private Interface.Type toInterfaceType(Interface_typeContext ctx) {
     if (ctx.AGGREGATE() != null) {
       return Type.AGGREGATE;
@@ -210,14 +219,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return Type.TUNNEL;
     } else if (ctx.VLAN() != null) {
       return Type.VLAN;
-    } else if (ctx.WL_MESH() != null) {
+    } else {
+      assert ctx.WL_MESH() != null;
       return Type.WL_MESH;
     }
-    _w.redFlag(
-        String.format(
-            "Unknown interface type %s for interface %s",
-            ctx.getText(), _currentInterface.getName()));
-    return Type.UNKNOWN;
   }
 
   private @Nonnull ConcreteInterfaceAddress toConcreteInterfaceAddress(

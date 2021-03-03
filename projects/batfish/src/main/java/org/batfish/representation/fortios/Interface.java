@@ -20,6 +20,12 @@ public final class Interface implements Serializable {
     WL_MESH,
   }
 
+  public enum Status {
+    UP,
+    DOWN,
+    UNKNOWN,
+  }
+
   public static final int DEFAULT_INTERFACE_MTU = 1500;
   public static final int DEFAULT_VRF = 0;
   public static final boolean DEFAULT_STATUS = true;
@@ -50,8 +56,7 @@ public final class Interface implements Serializable {
   }
 
   @VisibleForTesting
-  @Nullable
-  public Boolean getStatus() {
+  public Status getStatus() {
     return _status;
   }
 
@@ -60,7 +65,7 @@ public final class Interface implements Serializable {
    * configured. If {@code true}, that interface is up, if {@code false} the interface is down.
    */
   public boolean getStatusEffective() {
-    return _status == null ? DEFAULT_STATUS : _status;
+    return _status == Status.UNKNOWN ? DEFAULT_STATUS : _status == Status.UP;
   }
 
   @VisibleForTesting
@@ -73,7 +78,7 @@ public final class Interface implements Serializable {
    * Get the effective mtu of the interface, inferring the value even if not explicitly configured.
    */
   public int getMtuEffective() {
-    return _mtu == null || _mtuOverride == null ? DEFAULT_INTERFACE_MTU : _mtu;
+    return _mtu == null || _mtuOverride == null || !_mtuOverride ? DEFAULT_INTERFACE_MTU : _mtu;
   }
 
   @VisibleForTesting
@@ -116,7 +121,7 @@ public final class Interface implements Serializable {
     _type = type;
   }
 
-  public void setStatus(boolean status) {
+  public void setStatus(Status status) {
     _status = status;
   }
 
@@ -138,6 +143,7 @@ public final class Interface implements Serializable {
 
   public Interface(String name) {
     _name = name;
+    _status = Status.UNKNOWN;
     _type = Type.UNKNOWN;
   }
 
@@ -146,7 +152,7 @@ public final class Interface implements Serializable {
   @Nullable private String _vdom;
   @Nullable private ConcreteInterfaceAddress _ip;
   @Nonnull private Type _type;
-  @Nullable private Boolean _status;
+  @Nonnull private Status _status;
   @Nullable private Boolean _mtuOverride;
   @Nullable private Integer _mtu;
   @Nullable private String _description;

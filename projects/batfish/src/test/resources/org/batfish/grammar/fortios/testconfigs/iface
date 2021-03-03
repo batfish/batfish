@@ -13,9 +13,10 @@ config system interface
     next
     edit "longest if name"
         set vdom "root"
+        set alias ""
         # slash-prefix format
         set ip 169.254.1.1/24
-        set status enabled
+        set status up
         set type physical
         set mtu-override enabled
         set mtu 1234
@@ -23,7 +24,7 @@ config system interface
     next
     edit "tunnel"
         set vdom "root"
-        set status disabled
+        set status down
         set type tunnel
         set mtu 65535
     next

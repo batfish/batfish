@@ -51,3 +51,5 @@ word: str;
 str: (double_quoted_string | single_quoted_string | UNQUOTED_WORD_CHARS)*;
 
 enabled_or_disabled: ENABLED | DISABLED;
+
+up_or_down: UP | DOWN;
