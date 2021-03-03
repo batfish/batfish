@@ -1227,6 +1227,12 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testDomain() {
+    Configuration c = parseConfig("domain");
+    assertThat(c.getDomainName(), equalTo("domainname.com.au"));
+  }
+
+  @Test
   public void testExternalList() throws IOException {
     String hostname = "external-list";
     String filename = "configs/" + hostname;
