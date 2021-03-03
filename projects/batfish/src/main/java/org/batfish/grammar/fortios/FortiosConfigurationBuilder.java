@@ -237,7 +237,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_aliasContext ctx) {
-    return toString(messageCtx, ctx.str(), "interface name", INTERFACE_ALIAS_PATTERN);
+    return toString(messageCtx, ctx.str(), "interface alias", INTERFACE_ALIAS_PATTERN);
   }
 
   private @Nonnull String toString(Replacemsg_major_typeContext ctx) {
