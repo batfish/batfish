@@ -1227,9 +1227,15 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testDomain() {
+  public void testDomainConversion() {
     Configuration c = parseConfig("domain");
     assertThat(c.getDomainName(), equalTo("domainname.com.au"));
+  }
+
+  @Test
+  public void testDomainExtraction() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("domain");
+    assertThat(c.getDomain(), equalTo("domainname.com.au"));
   }
 
   @Test
