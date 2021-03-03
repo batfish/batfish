@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -23,7 +24,7 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
 public final class TraceDagImpl implements TraceDag {
   /** A node in the DAG contains everything needed to reconstruct traces through the node. */
   public static final class Node {
-    private final Hop _hop;
+    private final @Nonnull Hop _hop;
     private final @Nullable FirewallSessionTraceInfo _firewallSessionTraceInfo;
     private final @Nullable FlowDisposition _flowDisposition;
     private final @Nullable Flow _returnFlow;
@@ -38,11 +39,34 @@ public final class TraceDagImpl implements TraceDag {
       checkArgument(
           (flowDisposition != null && flowDisposition.isSuccessful()) == (returnFlow != null),
           "returnFlow is present iff disposition is successful");
+      checkArgument(
+          (flowDisposition != null) == successors.isEmpty(),
+          "flowDisposition is present iff successors is empty");
       _hop = hop;
       _firewallSessionTraceInfo = firewallSessionTraceInfo;
       _flowDisposition = flowDisposition;
       _returnFlow = returnFlow;
       _successors = ImmutableList.copyOf(successors);
+    }
+
+    public @Nonnull Hop getHop() {
+      return _hop;
+    }
+
+    public @Nullable FirewallSessionTraceInfo getFirewallSessionTraceInfo() {
+      return _firewallSessionTraceInfo;
+    }
+
+    public @Nullable FlowDisposition getFlowDisposition() {
+      return _flowDisposition;
+    }
+
+    public @Nullable Flow getReturnFlow() {
+      return _returnFlow;
+    }
+
+    public @Nonnull List<Integer> getSuccessors() {
+      return _successors;
     }
   }
 
@@ -52,6 +76,10 @@ public final class TraceDagImpl implements TraceDag {
   public TraceDagImpl(List<Node> nodes, List<Integer> rootIds) {
     _nodes = nodes;
     _rootIds = rootIds;
+  }
+
+  public @Nonnull List<Node> getNodes() {
+    return _nodes;
   }
 
   @Override
