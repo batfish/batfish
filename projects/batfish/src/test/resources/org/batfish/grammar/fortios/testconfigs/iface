@@ -17,7 +17,7 @@ config system interface
         # slash-prefix format
         set ip 169.254.1.1/24
         set status up
-        set type physical
+        set type vlan
         set mtu-override enabled
         set mtu 1234
         set vrf 31
