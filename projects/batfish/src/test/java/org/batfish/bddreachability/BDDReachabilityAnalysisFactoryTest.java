@@ -35,7 +35,17 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -1822,8 +1832,8 @@ public final class BDDReachabilityAnalysisFactoryTest {
   }
 
   /**
-   * For {@link BDDReachabilityAnalysisFactory::generateRules_PreOutEdgePostNat_NodeDropAclOut},
-   * test that the outgoing original flow filter is still applied if outgoing filter is null.
+   * For {@link BDDReachabilityAnalysisFactory#generateRules_PreOutEdgePostNat_NodeDropAclOut}, test
+   * that the outgoing original flow filter is still applied if outgoing filter is null.
    */
   @Test
   public void testOutgoingOriginalFlowFilterWithoutOutgoingFilter_arpSuccess() throws IOException {
@@ -1853,13 +1863,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // c2
     Configuration c2 = cb.setHostname("c2").build();
     Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
-    Interface i2 =
-        nf.interfaceBuilder()
-            .setName("i2")
-            .setOwner(c2)
-            .setVrf(v2)
-            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/24"))
-            .build();
+    nf.interfaceBuilder()
+        .setName("i2")
+        .setOwner(c2)
+        .setVrf(v2)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/24"))
+        .build();
 
     BDDReachabilityAnalysisFactory factory =
         makeBddReachabilityAnalysisFactory(
@@ -1898,7 +1907,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
   /**
    * For {@link
-   * BDDReachabilityAnalysisFactory::generateRules_PreOutInterfaceDisposition_NodeDropAclOut}, test
+   * BDDReachabilityAnalysisFactory#generateRules_PreOutInterfaceDisposition_NodeDropAclOut}, test
    * that the outgoing original flow filter is still applied if outgoing filter is null.
    */
   @Test
