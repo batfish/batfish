@@ -1,0 +1,58 @@
+config system global
+    set hostname "iface"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        # mask format
+        set ip 192.168.122.2 255.255.255.0
+        set type physical
+        set alias "longest possibl alias str"
+        set description "quoted description w/ spaces and more"
+        set snmp-index 1
+    next
+    edit "port2"
+        set vdom "root"
+        set mtu-override enable
+        set mtu 1234
+    next
+    edit "longest if name"
+        set vdom "root"
+        set alias ""
+        # slash-prefix format
+        set ip 169.254.1.1/24
+        set status up
+        set type vlan
+        set vrf 31
+    next
+    edit "tunnel"
+        set vdom "root"
+        set status down
+        set type tunnel
+        set mtu 65535
+    next
+    edit "loopback123"
+        set vdom "root"
+        set type loopback
+    next
+    edit "agg"
+        set vdom "root"
+        set type aggregate
+    next
+    edit "emac"
+        set vdom "root"
+        set type emac-vlan
+    next
+    edit "redundant"
+        set vdom "root"
+        set type redundant
+    next
+    edit "vlan"
+        set vdom "root"
+        set type vlan
+    next
+    edit "wl"
+        set vdom "root"
+        set type wl-mesh
+    next
+end

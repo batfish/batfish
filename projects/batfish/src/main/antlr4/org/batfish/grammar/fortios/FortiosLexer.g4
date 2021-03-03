@@ -20,10 +20,18 @@ ADMIN:
   }
 ;
 
+AGGREGATE: 'aggregate';
 ALERTMAIL: 'alertmail';
+ALIAS: 'alias';
 AUTH: 'auth';
 BUFFER: 'buffer' -> pushMode(M_Str);
 CONFIG: 'config';
+DESCRIPTION: 'description';
+DISABLE: 'disable';
+DOWN: 'down';
+EDIT: 'edit';
+EMAC_VLAN: 'emac-vlan';
+ENABLE: 'enable';
 END: 'end';
 FORTIGUARD_WF: 'fortiguard-wf';
 FTP: 'ftp';
@@ -31,17 +39,34 @@ GLOBAL: 'global';
 HOSTNAME: 'hostname' -> pushMode(M_Str);
 HTTP: 'http';
 ICAP: 'icap';
+INTERFACE: 'interface';
+IP: 'ip';
+LOOPBACK: 'loopback';
 MAIL: 'mail';
+MTU: 'mtu';
+MTU_OVERRIDE: 'mtu-override';
 NAC_QUAR: 'nac-quar';
+NEXT: 'next';
+PHYSICAL: 'physical';
+REDUNDANT: 'redundant';
 REPLACEMSG: 'replacemsg';
 SET: 'set';
+SNMP_INDEX: 'snmp-index';
 SPAM: 'spam';
 SSLVPN: 'sslvpn';
+STATUS: 'status';
 SYSTEM: 'system';
 TRAFFIC_QUOTA: 'traffic-quota';
+TUNNEL: 'tunnel';
+TYPE: 'type';
 UNSET: 'unset';
+UP: 'up';
 UTM: 'utm';
+VDOM: 'vdom';
+VLAN: 'vlan';
+VRF: 'vrf';
 WEBPROXY: 'webproxy';
+WL_MESH: 'wl-mesh';
 
 // Other Tokens
 
