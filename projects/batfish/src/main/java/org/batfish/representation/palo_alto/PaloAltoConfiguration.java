@@ -193,6 +193,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _dnsServerSecondary;
 
+  private String _domain;
+
   private String _hostname;
 
   /**
@@ -301,6 +303,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return cp;
   }
 
+  public @Nullable String getDomain() {
+    return _domain;
+  }
+
   @Override
   public String getHostname() {
     return _hostname;
@@ -381,6 +387,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   public void setDnsServerSecondary(String dnsServerSecondary) {
     _dnsServerSecondary = dnsServerSecondary;
+  }
+
+  public void setDomain(@Nullable String domain) {
+    _domain = domain == null ? null : domain.toLowerCase();
   }
 
   @Override
@@ -2984,6 +2994,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setDeviceModel(DeviceModel.PALO_ALTO_FIREWALL);
+    _c.setDomainName(_domain);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDnsServers(getDnsServers());

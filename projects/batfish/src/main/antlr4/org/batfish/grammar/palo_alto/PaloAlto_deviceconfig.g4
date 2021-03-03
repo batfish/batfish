@@ -27,6 +27,7 @@ sd_system
     (
         sds_default_gateway
         | sds_dns_setting
+        | sds_domain
         | sds_hostname
         | sds_ip_address
         | sds_netmask
@@ -46,6 +47,11 @@ sds_dns_setting
     (
         sdsd_servers
     )
+;
+
+sds_domain
+:
+    DOMAIN name = variable
 ;
 
 sds_hostname
