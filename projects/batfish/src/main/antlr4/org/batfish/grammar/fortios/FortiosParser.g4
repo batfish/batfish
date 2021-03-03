@@ -14,5 +14,5 @@ fortios_configuration: statement+ EOF;
 
 statement: s_config;
 
-s_config: CONFIG c_system* END NEWLINE;
+s_config: CONFIG c_system END NEWLINE;
 
