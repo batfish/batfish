@@ -6,6 +6,7 @@ options {
 
 c_system: SYSTEM (
   cs_global
+  | cs_interface
   | cs_replacemsg
 );
 

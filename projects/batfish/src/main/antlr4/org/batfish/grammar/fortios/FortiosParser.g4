@@ -2,6 +2,7 @@ parser grammar FortiosParser;
 
 import
   Fortios_common,
+  Fortios_interface,
   Fortios_system;
 
 options {
