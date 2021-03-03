@@ -1845,11 +1845,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Configuration c1 = cb.setHostname("c1").build();
     Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
 
-    Ip permittedDstIp = Ip.parse("1.1.1.1");
-
     IpAccessList originalFlowFilter =
         nf.aclBuilder()
-            .setLines(ExprAclLine.accepting(AclLineMatchExprs.matchDst(permittedDstIp)))
+            .setLines(ExprAclLine.accepting(AclLineMatchExprs.matchDst(Ip.parse("1.1.1.1"))))
             .build();
 
     Interface i1 =
@@ -1917,11 +1915,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // Create i1 on c1 with the appropriate filters
     Vrf vrf = nf.vrfBuilder().setOwner(c1).build();
 
-    Ip permittedDstIp = Ip.parse("1.1.1.1");
-
     IpAccessList originalFlowFilter =
         nf.aclBuilder()
-            .setLines(ExprAclLine.accepting(AclLineMatchExprs.matchDst(permittedDstIp)))
+            .setLines(ExprAclLine.accepting(AclLineMatchExprs.matchDst(Ip.parse("1.1.1.1"))))
             .build();
 
     Interface i1 =
