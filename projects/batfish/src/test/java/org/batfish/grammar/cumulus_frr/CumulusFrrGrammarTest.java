@@ -2166,7 +2166,7 @@ public class CumulusFrrGrammarTest {
     Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> metadata = e1.getAddressMetadata();
     assertThat(metadata, hasKey(ConcreteInterfaceAddress.parse("1.1.1.1/24")));
     ConnectedRouteMetadata e1Metadata = metadata.get(ConcreteInterfaceAddress.parse("1.1.1.1/24"));
-    assertThat(e1Metadata.getGenerateLocalRoutes(), equalTo(Boolean.FALSE));
+    assertThat(e1Metadata.getGenerateLocalRoute(), equalTo(Boolean.FALSE));
   }
 
   @Test

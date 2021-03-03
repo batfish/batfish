@@ -1859,21 +1859,21 @@ public final class CiscoNxosGrammarTest {
                   ConnectedRouteMetadata.builder()
                       .setAdmin(0)
                       .setTag(0)
-                      .setGenerateLocalRoutes(true)
+                      .setGenerateLocalRoute(true)
                       .build()),
               hasEntry(
                   ConcreteInterfaceAddress.parse("10.0.0.2/24"),
                   ConnectedRouteMetadata.builder()
                       .setAdmin(0)
                       .setTag(0)
-                      .setGenerateLocalRoutes(true)
+                      .setGenerateLocalRoute(true)
                       .build()),
               hasEntry(
                   ConcreteInterfaceAddress.parse("10.0.0.3/24"),
                   ConnectedRouteMetadata.builder()
                       .setAdmin(5)
                       .setTag(3)
-                      .setGenerateLocalRoutes(true)
+                      .setGenerateLocalRoute(true)
                       .build())));
     }
     {
