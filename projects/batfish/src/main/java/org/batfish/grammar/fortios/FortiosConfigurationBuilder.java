@@ -38,7 +38,7 @@ import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Device_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Double_quoted_stringContext;
-import org.batfish.grammar.fortios.FortiosParser.Enabled_or_disabledContext;
+import org.batfish.grammar.fortios.FortiosParser.Enable_or_disableContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_aliasContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
@@ -188,11 +188,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInteger(ctx, ctx.value).ifPresent(v -> _currentInterface.setVrf(v));
   }
 
-  private boolean toBoolean(Enabled_or_disabledContext ctx) {
-    if (ctx.ENABLED() != null) {
+  private boolean toBoolean(Enable_or_disableContext ctx) {
+    if (ctx.ENABLE() != null) {
       return true;
     }
-    assert ctx.DISABLED() != null;
+    assert ctx.DISABLE() != null;
     return false;
   }
 

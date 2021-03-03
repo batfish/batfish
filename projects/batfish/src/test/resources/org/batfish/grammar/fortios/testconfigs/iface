@@ -11,6 +11,11 @@ config system interface
         set description "quoted description w/ spaces and more"
         set snmp-index 1
     next
+    edit "port2"
+        set vdom "root"
+        set mtu-override enable
+        set mtu 1234
+    next
     edit "longest if name"
         set vdom "root"
         set alias ""
@@ -18,8 +23,6 @@ config system interface
         set ip 169.254.1.1/24
         set status up
         set type vlan
-        set mtu-override enabled
-        set mtu 1234
         set vrf 31
     next
     edit "tunnel"

@@ -51,6 +51,6 @@ word: str;
 // can include whitespace, newlines, html tags, etc.
 str: (double_quoted_string | single_quoted_string | UNQUOTED_WORD_CHARS)*;
 
-enabled_or_disabled: ENABLED | DISABLED;
+enable_or_disable: ENABLE | DISABLE;
 
 up_or_down: UP | DOWN;

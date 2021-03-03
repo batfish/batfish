@@ -34,7 +34,7 @@ csi_set_ip: IP ip = ip_address_with_mask_or_prefix NEWLINE;
 
 csi_set_mtu: MTU value = mtu NEWLINE;
 
-csi_set_mtu_override: MTU_OVERRIDE value = enabled_or_disabled NEWLINE;
+csi_set_mtu_override: MTU_OVERRIDE value = enable_or_disable NEWLINE;
 
 csi_set_status: STATUS status = up_or_down NEWLINE;
 

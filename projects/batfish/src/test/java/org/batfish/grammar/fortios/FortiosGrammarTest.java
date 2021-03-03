@@ -122,6 +122,7 @@ public final class FortiosGrammarTest {
         ifaces.keySet(),
         containsInAnyOrder(
             "port1",
+            "port2",
             "longest if name",
             "tunnel",
             "loopback123",
@@ -131,7 +132,8 @@ public final class FortiosGrammarTest {
             "vlan",
             "wl"));
 
-    Interface port = ifaces.get("port1");
+    Interface port1 = ifaces.get("port1");
+    Interface port2 = ifaces.get("port2");
     Interface longName = ifaces.get("longest if name");
     Interface tunnel = ifaces.get("tunnel");
     Interface loopback = ifaces.get("loopback123");
@@ -141,28 +143,30 @@ public final class FortiosGrammarTest {
     Interface vlan = ifaces.get("vlan");
     Interface wl = ifaces.get("wl");
 
-    assertThat(port.getVdom(), equalTo("root"));
-    assertThat(port.getIp(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
-    assertThat(port.getType(), equalTo(Type.PHYSICAL));
-    assertThat(port.getAlias(), equalTo("longest possibl alias str"));
-    assertThat(port.getDescription(), equalTo("quoted description w/ spaces and more"));
+    assertThat(port1.getVdom(), equalTo("root"));
+    assertThat(port1.getIp(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
+    assertThat(port1.getType(), equalTo(Type.PHYSICAL));
+    assertThat(port1.getAlias(), equalTo("longest possibl alias str"));
+    assertThat(port1.getDescription(), equalTo("quoted description w/ spaces and more"));
     // Check defaults
-    assertThat(port.getStatus(), equalTo(Status.UNKNOWN));
-    assertTrue(port.getStatusEffective());
-    assertThat(port.getMtu(), nullValue());
-    assertThat(port.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
-    assertThat(port.getMtuOverride(), nullValue());
-    assertThat(port.getVrf(), nullValue());
-    assertThat(port.getVrfEffective(), equalTo(0));
+    assertThat(port1.getStatus(), equalTo(Status.UNKNOWN));
+    assertTrue(port1.getStatusEffective());
+    assertThat(port1.getMtu(), nullValue());
+    assertThat(port1.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
+    assertThat(port1.getMtuOverride(), nullValue());
+    assertThat(port1.getVrf(), nullValue());
+    assertThat(port1.getVrfEffective(), equalTo(0));
+
+    // Check overriding defaults
+    assertThat(port2.getMtuOverride(), equalTo(true));
+    assertThat(port2.getMtu(), equalTo(1234));
+    assertThat(port2.getMtuEffective(), equalTo(1234));
 
     assertThat(longName.getIp(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
     assertThat(longName.getAlias(), equalTo(""));
     // Check overriding defaults
     assertTrue(longName.getStatusEffective());
     assertThat(longName.getStatus(), equalTo(Status.UP));
-    assertThat(longName.getMtuOverride(), equalTo(true));
-    assertThat(longName.getMtu(), equalTo(1234));
-    assertThat(longName.getMtuEffective(), equalTo(1234));
     assertThat(longName.getVrf(), equalTo(31));
     assertThat(longName.getVrfEffective(), equalTo(31));
 
