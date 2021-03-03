@@ -1,5 +1,6 @@
 package org.batfish.representation.fortios;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,6 +30,11 @@ public final class Interface implements Serializable {
   }
 
   @Nullable
+  public String getAlias() {
+    return _alias;
+  }
+
+  @Nullable
   public String getVdom() {
     return _vdom;
   }
@@ -43,6 +49,7 @@ public final class Interface implements Serializable {
     return _type;
   }
 
+  @VisibleForTesting
   @Nullable
   public Boolean getStatus() {
     return _status;
@@ -56,6 +63,12 @@ public final class Interface implements Serializable {
     return _status == null ? DEFAULT_STATUS : _status;
   }
 
+  @VisibleForTesting
+  @Nullable
+  public Integer getMtu() {
+    return _mtu;
+  }
+
   /**
    * Get the effective mtu of the interface, inferring the value even if not explicitly configured.
    */
@@ -63,9 +76,21 @@ public final class Interface implements Serializable {
     return _mtu == null || _mtuOverride == null ? DEFAULT_INTERFACE_MTU : _mtu;
   }
 
+  @VisibleForTesting
+  @Nullable
+  public Boolean getMtuOverride() {
+    return _mtuOverride;
+  }
+
   @Nullable
   public String getDescription() {
     return _description;
+  }
+
+  @VisibleForTesting
+  @Nullable
+  public Integer getVrf() {
+    return _vrf;
   }
 
   /**
@@ -73,6 +98,10 @@ public final class Interface implements Serializable {
    */
   public int getVrfEffective() {
     return _vrf == null ? DEFAULT_VRF : _vrf;
+  }
+
+  public void setAlias(String alias) {
+    _alias = alias;
   }
 
   public void setVdom(String vdom) {
@@ -113,6 +142,7 @@ public final class Interface implements Serializable {
   }
 
   @Nonnull private final String _name;
+  @Nullable private String _alias;
   @Nullable private String _vdom;
   @Nullable private ConcreteInterfaceAddress _ip;
   @Nonnull private Type _type;

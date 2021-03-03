@@ -46,7 +46,6 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   private String _hostname;
-  // TODO is map the best data struct for this?
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
 

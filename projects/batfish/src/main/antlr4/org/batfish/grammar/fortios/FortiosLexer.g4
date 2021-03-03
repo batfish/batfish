@@ -22,6 +22,7 @@ ADMIN:
 
 AGGREGATE: 'aggregate';
 ALERTMAIL: 'alertmail';
+ALIAS: 'alias';
 AUTH: 'auth';
 BUFFER: 'buffer' -> pushMode(M_Str);
 CONFIG: 'config';
@@ -49,6 +50,7 @@ PHYSICAL: 'physical';
 REDUNDANT: 'redundant';
 REPLACEMSG: 'replacemsg';
 SET: 'set';
+SNMP_INDEX: 'snmp-index';
 SPAM: 'spam';
 SSLVPN: 'sslvpn';
 STATUS: 'status';
@@ -60,8 +62,9 @@ UNSET: 'unset';
 UTM: 'utm';
 VDOM: 'vdom';
 VLAN: 'vlan';
+VRF: 'vrf';
 WEBPROXY: 'webproxy';
-WL_MESH: 'wl_mesh';
+WL_MESH: 'wl-mesh';
 
 // Other Tokens
 

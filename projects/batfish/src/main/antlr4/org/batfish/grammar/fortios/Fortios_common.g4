@@ -16,7 +16,10 @@ subnet_mask: SUBNET_MASK;
 
 ip_prefix: IP_PREFIX;
 
-ip_address_or_prefix: ip_address | ip_prefix;
+ip_address_with_mask_or_prefix
+:
+    (ip_address subnet_mask) | ip_prefix
+;
 
 ipv6_address: IPV6_ADDRESS;
 

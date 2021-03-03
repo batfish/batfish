@@ -9,10 +9,13 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
@@ -28,10 +31,13 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BddTestbed;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.FortiosConfiguration;
+import org.batfish.representation.fortios.Interface;
+import org.batfish.representation.fortios.Interface.Type;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -103,6 +109,75 @@ public final class FortiosGrammarTest {
                 .getWarnings()
                 .values());
     assertThat(warnings, hasParseWarning(hasComment("Illegal value for replacemsg minor type")));
+  }
+
+  @Test
+  public void testInterfaceExtraction() {
+    String hostname = "iface";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Interface> ifaces = vc.getInterfaces();
+    assertThat(
+        ifaces.keySet(),
+        containsInAnyOrder(
+            "port1",
+            "longest if name",
+            "tunnel",
+            "loopback123",
+            "agg",
+            "emac",
+            "redundant",
+            "vlan",
+            "wl"));
+
+    Interface port = ifaces.get("port1");
+    Interface longName = ifaces.get("longest if name");
+    Interface tunnel = ifaces.get("tunnel");
+    Interface loopback = ifaces.get("loopback123");
+    Interface agg = ifaces.get("agg");
+    Interface emac = ifaces.get("emac");
+    Interface redundant = ifaces.get("redundant");
+    Interface vlan = ifaces.get("vlan");
+    Interface wl = ifaces.get("wl");
+
+    assertThat(port.getVdom(), equalTo("root"));
+    assertThat(port.getIp(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
+    assertThat(port.getType(), equalTo(Type.PHYSICAL));
+    assertThat(port.getAlias(), equalTo("longest possibl alias str"));
+    assertThat(port.getDescription(), equalTo("quoted description w/ spaces and more"));
+    // Check defaults
+    assertThat(port.getStatus(), nullValue());
+    assertTrue(port.getStatusEffective());
+    assertThat(port.getMtu(), nullValue());
+    assertThat(port.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
+    assertThat(port.getMtuOverride(), nullValue());
+    assertThat(port.getVrf(), nullValue());
+    assertThat(port.getVrfEffective(), equalTo(0));
+
+    assertThat(longName.getIp(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
+    // Check overriding defaults
+    assertTrue(longName.getStatusEffective());
+    assertThat(longName.getStatus(), equalTo(true));
+    assertThat(longName.getMtuOverride(), equalTo(true));
+    assertThat(longName.getMtu(), equalTo(1234));
+    assertThat(longName.getMtuEffective(), equalTo(1234));
+    assertThat(longName.getVrf(), equalTo(31));
+    assertThat(longName.getVrfEffective(), equalTo(31));
+
+    assertThat(tunnel.getStatus(), equalTo(false));
+    assertFalse(tunnel.getStatusEffective());
+    assertThat(tunnel.getType(), equalTo(Type.TUNNEL));
+    // MTU is set, but not used since override isn't set
+    assertThat(tunnel.getMtuOverride(), nullValue());
+    assertThat(tunnel.getMtu(), equalTo(65535));
+    assertThat(tunnel.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
+
+    assertThat(loopback.getType(), equalTo(Type.LOOPBACK));
+    assertThat(agg.getType(), equalTo(Type.AGGREGATE));
+    assertThat(emac.getType(), equalTo(Type.EMAC_VLAN));
+    assertThat(redundant.getType(), equalTo(Type.REDUNDANT));
+    assertThat(vlan.getType(), equalTo(Type.VLAN));
+    assertThat(wl.getType(), equalTo(Type.WL_MESH));
   }
 
   private static final BddTestbed BDD_TESTBED =
