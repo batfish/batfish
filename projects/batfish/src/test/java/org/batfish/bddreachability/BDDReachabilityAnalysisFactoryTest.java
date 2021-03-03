@@ -165,6 +165,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   private static final IpSpaceSpecifier CONSTANT_UNIVERSE_IPSPACE_SPECIFIER =
       new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
   private static final BDD ONE = PKT.getFactory().one();
+  private static final BDD ZERO = PKT.getFactory().zero();
 
   private static final String INGRESS_NODE = "ingress_node";
   private static final String INGRESS_IFACE = "ingressIface";
@@ -1884,25 +1885,22 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .getBddOutgoingOriginalFlowFilterManagers()
             .get(c1.getHostname())
             .deniedByOriginalFlowEgressFilter(i1.getName());
-    BDD oneBdd = PKT.getFactory().one();
-    BDD zeroBdd = PKT.getFactory().zero();
 
-    List<Edge> edges =
-        factory
-            .generateRules_PreOutEdgePostNat_NodeDropAclOut()
-            .filter(
-                edge ->
-                    ((NodeDropAclOut) edge.getPostState()).getHostname().equals(c1.getHostname()))
-            .collect(Collectors.toList());
-    assertFalse("edges must not be empty", edges.isEmpty());
+    Edge edge =
+        Iterables.getOnlyElement(
+            factory
+                .generateRules_PreOutEdgePostNat_NodeDropAclOut()
+                .filter(
+                    e -> ((NodeDropAclOut) e.getPostState()).getHostname().equals(c1.getHostname()))
+                .collect(Collectors.toList()));
     assertThat(
-        edges,
-        everyItem(
+        edge,
+        hasTransition(
             allOf(
                 // every flow marked as denied can traverse this edge (and the marking is removed)
-                hasTransition(mapsForward(deniedBdd, oneBdd)),
+                mapsForward(deniedBdd, ONE),
                 // no flow marked as permitted can traverse this edge
-                hasTransition(mapsForward(permittedBdd, zeroBdd)))));
+                mapsForward(permittedBdd, ZERO))));
   }
 
   /**
@@ -1948,8 +1946,6 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .getBddOutgoingOriginalFlowFilterManagers()
             .get(c1.getHostname())
             .deniedByOriginalFlowEgressFilter(i1.getName());
-    BDD oneBdd = PKT.getFactory().one();
-    BDD zeroBdd = PKT.getFactory().zero();
 
     List<Edge> edges =
         factory
@@ -1959,11 +1955,13 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertThat(
         edges,
         everyItem(
-            allOf(
-                // every flow marked as denied can traverse this edge (and the marking is removed)
-                hasTransition(mapsForward(deniedBdd, oneBdd)),
-                // no flow marked as permitted can traverse this edge
-                hasTransition(mapsForward(permittedBdd, zeroBdd)))));
+            hasTransition(
+                allOf(
+                    // every flow marked as denied can traverse this edge (and the marking is
+                    // removed)
+                    mapsForward(deniedBdd, ONE),
+                    // no flow marked as permitted can traverse this edge
+                    mapsForward(permittedBdd, ZERO)))));
   }
 
   /** Test that PBR takes precedence over incoming filter when both are present on an interface. */
