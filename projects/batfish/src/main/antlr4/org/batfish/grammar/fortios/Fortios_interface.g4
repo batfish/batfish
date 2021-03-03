@@ -19,11 +19,11 @@ csi_set_singletons:
     | csi_set_ip
     | csi_set_mtu
     | csi_set_mtu_override
-    | csi_set_snmp_index
     | csi_set_status
     | csi_set_type
     | csi_set_vdom
     | csi_set_vrf
+    | csi_set_null
 ;
 
 csi_set_alias: ALIAS alias = interface_alias NEWLINE;
@@ -36,8 +36,6 @@ csi_set_mtu: MTU value = mtu NEWLINE;
 
 csi_set_mtu_override: MTU_OVERRIDE value = enabled_or_disabled NEWLINE;
 
-csi_set_snmp_index: SNMP_INDEX null_rest_of_line;
-
 csi_set_status: STATUS status = up_or_down NEWLINE;
 
 csi_set_type: TYPE type = interface_type NEWLINE;
@@ -45,6 +43,8 @@ csi_set_type: TYPE type = interface_type NEWLINE;
 csi_set_vdom: VDOM vdom = str NEWLINE;
 
 csi_set_vrf: VRF value = vrf NEWLINE;
+
+csi_set_null: SNMP_INDEX null_rest_of_line;
 
 // 68-65535
 mtu: uint16;
