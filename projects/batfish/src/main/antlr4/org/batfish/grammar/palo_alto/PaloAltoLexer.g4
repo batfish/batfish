@@ -187,6 +187,8 @@ DNS: 'dns';
 
 DNS_SETTING: 'dns-setting';
 
+DOMAIN: 'domain';
+
 DOWN: 'down';
 
 DROP: 'drop';

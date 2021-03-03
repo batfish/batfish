@@ -240,6 +240,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdg_parent_dgContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdgd_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_default_gatewayContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_domainContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_netmaskContext;
@@ -1648,6 +1649,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSds_default_gateway(Sds_default_gatewayContext ctx) {
     _currentConfiguration.setMgmtIfaceGateway(toIp(ctx.ip_address()));
+  }
+
+  @Override
+  public void exitSds_domain(Sds_domainContext ctx) {
+    _currentConfiguration.setDomain(getText(ctx.name));
   }
 
   @Override
