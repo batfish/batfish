@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.bddreachability.transition.Transition;
@@ -58,15 +59,19 @@ public final class BDDTracer {
   }
 
   public static final class BDDTrace {
-    private final List<BDDHop> _hops;
-    private final BDDDisposition _bddDisposition;
+    private final @Nonnull List<BDDHop> _hops;
+    private final @Nonnull BDDDisposition _bddDisposition;
 
     public BDDTrace(List<BDDHop> hops, BDDDisposition bddDisposition) {
       _hops = hops;
       _bddDisposition = bddDisposition;
     }
 
-    public List<BDDHop> getHops() {
+    public @Nonnull BDDDisposition getBddDisposition() {
+      return _bddDisposition;
+    }
+
+    public @Nonnull List<BDDHop> getHops() {
       return _hops;
     }
 
