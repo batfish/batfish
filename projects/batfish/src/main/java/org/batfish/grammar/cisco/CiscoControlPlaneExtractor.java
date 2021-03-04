@@ -302,6 +302,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -557,11 +559,16 @@ import org.batfish.grammar.cisco.CiscoParser.Dt_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_l2tp_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Ec_literalContext;
+import org.batfish.grammar.cisco.CiscoParser.Ecl_asdot_colonContext;
+import org.batfish.grammar.cisco.CiscoParser.Ecl_colonContext;
+import org.batfish.grammar.cisco.CiscoParser.Ecl_ip_colonContext;
 import org.batfish.grammar.cisco.CiscoParser.Eigrp_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Extended_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Failover_interfaceContext;
@@ -1151,6 +1158,7 @@ import org.batfish.representation.cisco.RouteMapSetCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityListLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
+import org.batfish.representation.cisco.RouteMapSetExtcommunityRtLine;
 import org.batfish.representation.cisco.RouteMapSetLine;
 import org.batfish.representation.cisco.RouteMapSetLocalPreferenceLine;
 import org.batfish.representation.cisco.RouteMapSetMetricEigrpLine;
@@ -9226,7 +9234,89 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_extcommunity_rm_stanza(Set_extcommunity_rm_stanzaContext ctx) {
-    todo(ctx);
+    if (ctx.RT() == null) {
+      todo(ctx);
+      return;
+    }
+    // RT only
+    Optional<List<ExtendedCommunity>> maybeCommunities =
+        toExtendedCommunities(ctx, ctx.communities);
+    maybeCommunities
+        .map(RouteMapSetExtcommunityRtLine::new)
+        .ifPresent(_currentRouteMapClause::addSetLine);
+  }
+
+  private @Nonnull Optional<List<ExtendedCommunity>> toExtendedCommunities(
+      ParserRuleContext messageCtx, List<Extended_communityContext> communities) {
+    ImmutableList.Builder<ExtendedCommunity> builder = ImmutableList.builder();
+    for (Extended_communityContext communityCtx : communities) {
+      Optional<ExtendedCommunity> maybeCommunity = toExtendedCommunity(messageCtx, communityCtx);
+      if (!maybeCommunity.isPresent()) {
+        return Optional.empty();
+      }
+      builder.add(maybeCommunity.get());
+    }
+    return Optional.of(builder.build());
+  }
+
+  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(
+      ParserRuleContext messageCtx, Extended_communityContext ctx) {
+    assert ctx.ec_literal() != null;
+    return toExtendedCommunity(messageCtx, ctx.ec_literal());
+  }
+
+  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(
+      ParserRuleContext messageCtx, Ec_literalContext ctx) {
+    Optional<ExtendedCommunity> maybeExtendedCommunity;
+    if (ctx.ecl_asdot_colon() != null) {
+      maybeExtendedCommunity = toExtendedCommunity(ctx.ecl_asdot_colon());
+    } else if (ctx.ecl_colon() != null) {
+      maybeExtendedCommunity = toExtendedCommunity(ctx.ecl_colon());
+    } else {
+      assert ctx.ecl_ip_colon() != null;
+      maybeExtendedCommunity = toExtendedCommunity(ctx.ecl_ip_colon());
+    }
+    if (!maybeExtendedCommunity.isPresent()) {
+      warn(messageCtx, String.format("Invalid extended community: %s", getFullText(ctx)));
+    }
+    return maybeExtendedCommunity;
+  }
+
+  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecl_asdot_colonContext ctx) {
+    Optional<Integer> maybeGaHigh16 = toUint16(ctx.ga_high16);
+    Optional<Integer> maybeGaLow16 = toUint16(ctx.ga_low16);
+    Optional<Integer> maybeLa = toUint16(ctx.la);
+    if (!maybeGaHigh16.isPresent() || !maybeGaLow16.isPresent() || !maybeLa.isPresent()) {
+      return Optional.empty();
+    }
+    long ga = (((long) maybeGaHigh16.get()) << 16) | maybeGaLow16.get();
+    return Optional.of(ExtendedCommunity.target(ga, maybeLa.get()));
+  }
+
+  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecl_colonContext ctx) {
+    Optional<Long> maybeGa = toUint32(ctx.ga);
+    Optional<Integer> maybeLa = toUint16(ctx.la);
+    if (!maybeGa.isPresent() || !maybeLa.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(ExtendedCommunity.target(maybeGa.get(), maybeLa.get()));
+  }
+
+  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecl_ip_colonContext ctx) {
+    long ga = toIp(ctx.ga).asLong();
+    Optional<Integer> maybeLa = toUint16(ctx.la);
+    if (!maybeLa.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(ExtendedCommunity.target(ga, maybeLa.get()));
+  }
+
+  private @Nonnull Optional<Integer> toUint16(Token t) {
+    return Optional.ofNullable(Ints.tryParse(t.getText())).filter(i -> i >= 0 && i <= 65535);
+  }
+
+  private @Nonnull Optional<Long> toUint32(Token t) {
+    return Optional.ofNullable(Longs.tryParse(t.getText())).filter(l -> l >= 0 && l <= 0xFFFFFFFFL);
   }
 
   @Override

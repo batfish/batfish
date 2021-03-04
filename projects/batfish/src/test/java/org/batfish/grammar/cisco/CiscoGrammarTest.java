@@ -1,6 +1,7 @@
 package org.batfish.grammar.cisco;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
@@ -234,6 +235,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.both;
@@ -284,6 +286,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.bdd.BDDMatchers;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -405,6 +408,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
@@ -439,6 +443,9 @@ import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
+import org.batfish.representation.cisco.RouteMap;
+import org.batfish.representation.cisco.RouteMapClause;
+import org.batfish.representation.cisco.RouteMapSetExtcommunityRtLine;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
 import org.batfish.representation.cisco.WildcardAddressSpecifier;
@@ -7632,5 +7639,73 @@ public final class CiscoGrammarTest {
     String hostname = "ios-nat-malformed-pool";
     // Do not crash
     parseConfig(hostname);
+  }
+
+  @Test
+  public void testIosRouteMapSetExtcommunityRtExtraction() {
+    String hostname = "ios-route-map-set-extcommunity-rt";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    assertThat(vc.getRouteMaps(), hasKeys("rm1"));
+    RouteMap rm1 = vc.getRouteMaps().get("rm1");
+    assertThat(rm1.getClauses(), aMapWithSize(1));
+    RouteMapClause c = Iterables.getOnlyElement(rm1.getClauses().values());
+    assertThat(c.getSetList(), contains(instanceOf(RouteMapSetExtcommunityRtLine.class)));
+    RouteMapSetExtcommunityRtLine line =
+        (RouteMapSetExtcommunityRtLine) Iterables.getOnlyElement(c.getSetList());
+    assertThat(
+        line.getCommunities(),
+        contains(
+            ExtendedCommunity.target(65000, 1),
+            ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+            ExtendedCommunity.target((12 << 16) | 34, 5)));
+  }
+
+  @Test
+  public void testIosRouteMapSetExtcommunityRtConversion() throws IOException {
+    String hostname = "ios-route-map-set-extcommunity-rt";
+    Configuration c = parseConfig(hostname);
+    String policyName = "rm1";
+    assertThat(c.getRoutingPolicies(), hasKey(policyName));
+    RoutingPolicy rp = c.getRoutingPolicies().get(policyName);
+    Bgpv4Route input =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setProtocol(RoutingProtocol.BGP)
+            .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+            .setCommunities(
+                CommunitySet.of(StandardCommunity.of(1L), ExtendedCommunity.target(99, 99)))
+            .build();
+    Bgpv4Route.Builder output = input.toBuilder();
+    boolean result = rp.processBgpRoute(input, output, null, Direction.IN);
+    assertTrue(result);
+    // old target community should be removed, standard community should be retained
+    assertThat(
+        output.getCommunities(),
+        containsInAnyOrder(
+            StandardCommunity.of(1L),
+            ExtendedCommunity.target(65000, 1),
+            ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+            ExtendedCommunity.target((12 << 16) | 34, 5)));
+  }
+
+  @Test
+  public void testIosRouteMapSetExtcommunityRtWarnings() throws IOException {
+    String hostname = "ios-route-map-set-extcommunity-rt";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    List<ParseWarning> parseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getParseWarnings();
+    assertThat(
+        parseWarnings,
+        containsInAnyOrder(
+            hasComment("Invalid extended community: 5000000000:1"),
+            hasComment("Invalid extended community: 1:100000"),
+            hasComment("Invalid extended community: 1.1.1.1:100000"),
+            hasComment("Invalid extended community: 100000.1:2"),
+            hasComment("Invalid extended community: 1.100000:2"),
+            hasComment("Invalid extended community: 1.1:100000")));
   }
 }

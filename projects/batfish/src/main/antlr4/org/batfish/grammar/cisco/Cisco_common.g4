@@ -86,8 +86,16 @@ dscp_type
 
 ec_literal
 :
-   DEC COLON DEC
+   ecl_asdot_colon
+   | ecl_colon
+   | ecl_ip_colon
 ;
+
+ecl_asdot_colon: ga_high16=DEC PERIOD ga_low16=DEC COLON la=DEC;
+
+ecl_colon: ga=DEC COLON la=DEC;
+
+ecl_ip_colon: ga=IP_ADDRESS COLON la=DEC;
 
 eigrp_metric
 :

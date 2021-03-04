@@ -293,7 +293,7 @@ set_extcommunity_rm_stanza
    (
       COST
       | RT
-   ) extended_community NEWLINE
+   ) communities+=extended_community+ NEWLINE
 ;
 
 set_interface_rm_stanza

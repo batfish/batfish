@@ -1,0 +1,16 @@
+!
+!
+!RANCID-CONTENT-TYPE: cisco
+hostname ios-route-map-set-extcommunity-rt
+!
+route-map rm1 permit 100
+ set extcommunity rt 65000:1 10.0.0.1:2 12.34:5
+
+ ! each line below should generate a warning and be thrown out
+ set extcommunity rt 5000000000:1
+ set extcommunity rt 1:100000
+ set extcommunity rt 1.1.1.1:100000
+ set extcommunity rt 100000.1:2
+ set extcommunity rt 1.100000:2
+ set extcommunity rt 1.1:100000
+!

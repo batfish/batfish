@@ -7890,10 +7890,14 @@ M_Extcommunity_DEC
    F_Digit+ -> type ( DEC )
 ;
 
+M_Extcommunity_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
+
 M_ExtCommunity_NEWLINE
 :
    F_Newline+ -> type ( NEWLINE ) , popMode
 ;
+
+M_Extcommunity_PERIOD: '.' -> type(PERIOD);
 
 M_Extcommunity_RT
 :
