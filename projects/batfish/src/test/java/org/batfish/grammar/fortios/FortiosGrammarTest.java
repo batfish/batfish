@@ -157,6 +157,9 @@ public final class FortiosGrammarTest {
     assertThat(port1.getVrf(), nullValue());
     assertThat(port1.getVrfEffective(), equalTo(0));
 
+    assertThat(port2.getVdom(), equalTo("root"));
+    assertThat(port2.getAlias(), equalTo("no_spaces"));
+    assertThat(port2.getDescription(), equalTo("no_spaces_descr"));
     // Check overriding defaults
     assertThat(port2.getMtuOverride(), equalTo(true));
     assertThat(port2.getMtu(), equalTo(1234));
