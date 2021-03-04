@@ -25,7 +25,9 @@ ALERTMAIL: 'alertmail';
 ALIAS: 'alias';
 AUTH: 'auth';
 BUFFER: 'buffer' -> pushMode(M_Str);
+COMMENT: 'comment';
 CONFIG: 'config';
+CUSTOM: 'custom';
 DESCRIPTION: 'description';
 DISABLE: 'disable';
 DOWN: 'down';
@@ -33,14 +35,19 @@ EDIT: 'edit';
 EMAC_VLAN: 'emac-vlan';
 ENABLE: 'enable';
 END: 'end';
+FIREWALL: 'firewall';
 FORTIGUARD_WF: 'fortiguard-wf';
 FTP: 'ftp';
 GLOBAL: 'global';
 HOSTNAME: 'hostname' -> pushMode(M_Str);
 HTTP: 'http';
 ICAP: 'icap';
+ICMP: 'ICMP';
+ICMPCODE: 'icmpcode';
+ICMPTYPE: 'icmptype';
 INTERFACE: 'interface';
 IP: 'ip';
+IP_CAPITALIZED: 'IP';
 LOOPBACK: 'loopback';
 MAIL: 'mail';
 MTU: 'mtu';
@@ -48,17 +55,23 @@ MTU_OVERRIDE: 'mtu-override';
 NAC_QUAR: 'nac-quar';
 NEXT: 'next';
 PHYSICAL: 'physical';
+PROTOCOL: 'protocol';
 REDUNDANT: 'redundant';
 REPLACEMSG: 'replacemsg';
+SCTP_PORTRANGE: 'sctp-portrange';
+SERVICE: 'service';
 SET: 'set';
 SNMP_INDEX: 'snmp-index';
 SPAM: 'spam';
 SSLVPN: 'sslvpn';
 STATUS: 'status';
 SYSTEM: 'system';
+TCP_PORTRANGE: 'tcp-portrange';
+TCP_UDP_SCTP: 'TCP/UDP/SCTP';
 TRAFFIC_QUOTA: 'traffic-quota';
 TUNNEL: 'tunnel';
 TYPE: 'type';
+UDP_PORTRANGE: 'udp-portrange';
 UNSET: 'unset';
 UP: 'up';
 UTM: 'utm';
@@ -76,6 +89,10 @@ BLANK_LINE
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
   F_Newline* -> channel(HIDDEN)
 ;
+
+COLON: ':';
+
+HYPHEN: '-';
 
 COMMENT_LINE
 :
