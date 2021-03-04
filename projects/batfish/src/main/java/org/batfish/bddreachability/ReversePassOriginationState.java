@@ -63,6 +63,11 @@ public class ReversePassOriginationState implements StateExprVisitor<StateExpr> 
   }
 
   @Override
+  public StateExpr visitBlackHole() {
+    return null;
+  }
+
+  @Override
   public StateExpr visitDropAclIn() {
     return null;
   }

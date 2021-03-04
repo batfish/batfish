@@ -54,6 +54,11 @@ public final class OriginationStateExprToLocation implements StateExprVisitor<Op
   }
 
   @Override
+  public Optional<Location> visitBlackHole() {
+    return Optional.empty();
+  }
+
+  @Override
   public Optional<Location> visitDeliveredToSubnet() {
     return Optional.empty();
   }
