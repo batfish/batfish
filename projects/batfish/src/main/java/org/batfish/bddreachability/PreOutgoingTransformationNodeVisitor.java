@@ -47,6 +47,11 @@ public class PreOutgoingTransformationNodeVisitor implements StateExprVisitor<No
   }
 
   @Override
+  public NodeInterfacePair visitBlackHole() {
+    return null;
+  }
+
+  @Override
   public NodeInterfacePair visitDropAclIn() {
     return null;
   }

@@ -84,6 +84,7 @@ import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.LocationVisitor;
 import org.batfish.symbolic.IngressLocation;
 import org.batfish.symbolic.state.Accept;
+import org.batfish.symbolic.state.BlackHole;
 import org.batfish.symbolic.state.DeliveredToSubnet;
 import org.batfish.symbolic.state.DropAclIn;
 import org.batfish.symbolic.state.DropAclOut;
@@ -751,6 +752,7 @@ public final class BDDReachabilityAnalysisFactory {
         generateRules_PbrFibLookup_InterfaceAccept(),
         generateRules_PbrFibLookup_NodeDropNoRoute(),
         generateRules_PbrFibLookup_PreOutVrf(),
+        generateRules_PreOutEdge_BlackHole(),
         generateRules_PreOutEdge_NodeDropAclOut(),
         generateRules_PreOutEdge_PreOutEdgePostNat(),
         generateRules_PreOutEdgePostNat_NodeDropAclOut(),
@@ -1102,6 +1104,37 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
+  /**
+   * Blackholes the space of possible packets that are only valid if they exit via a different edge.
+   *
+   * <p>This is a logical contradiction but is representable in the flow BDDs because of
+   * out-of-order computation.
+   */
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreOutEdge_BlackHole() {
+    return _topologyEdges.stream()
+        .flatMap(
+            edge -> {
+              String node1 = edge.getNode1();
+              String iface1 = edge.getInt1();
+              BDD notCorrespondingToIface1 =
+                  _bddOutgoingOriginalFlowFilterManagers
+                      .get(node1)
+                      .outgoingInterfaceBDD(iface1)
+                      .not();
+              if (notCorrespondingToIface1.isZero()) {
+                // Skip blackhole edges for node1 that doesn't have any impossible flows of this
+                // type.
+                return Stream.of();
+              }
+              return Stream.of(
+                  new Edge(
+                      new PreOutEdge(node1, iface1, edge.getNode2(), edge.getInt2()),
+                      BlackHole.INSTANCE,
+                      notCorrespondingToIface1));
+            });
+  }
+
   private Stream<Edge> generateRules_PreOutEdge_NodeDropAclOut() {
     if (_ignoreFilters) {
       return Stream.of();
@@ -1113,6 +1146,9 @@ public final class BDDReachabilityAnalysisFactory {
               String iface1 = edge.getInt1();
               String node2 = edge.getNode2();
               String iface2 = edge.getInt2();
+
+              BDD flowsForIface1 =
+                  _bddOutgoingOriginalFlowFilterManagers.get(node1).outgoingInterfaceBDD(iface1);
 
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
@@ -1127,6 +1163,7 @@ public final class BDDReachabilityAnalysisFactory {
                       new PreOutEdge(node1, iface1, node2, iface2),
                       new NodeDropAclOut(node1),
                       compose(
+                          constraint(flowsForIface1),
                           constraint(denyPreNat),
                           removeNodeSpecificConstraints(
                               node1,
@@ -1153,6 +1190,8 @@ public final class BDDReachabilityAnalysisFactory {
               if (aclPermit.equals(_zero)) {
                 return Stream.of();
               }
+              BDD flowsForIface1 =
+                  _bddOutgoingOriginalFlowFilterManagers.get(node1).outgoingInterfaceBDD(iface1);
               PreOutEdge preState = new PreOutEdge(node1, iface1, node2, iface2);
               PreOutEdgePostNat postState = new PreOutEdgePostNat(node1, iface1, node2, iface2);
               return Stream.of(
@@ -1160,6 +1199,7 @@ public final class BDDReachabilityAnalysisFactory {
                       preState,
                       postState,
                       compose(
+                          constraint(flowsForIface1),
                           constraint(aclPermit),
                           _bddOutgoingTransformations.get(node1).get(iface1))));
             });
@@ -1181,12 +1221,12 @@ public final class BDDReachabilityAnalysisFactory {
               Interface i1 = _configs.get(node1).getAllInterfaces().get(iface1);
               assert i1.getActive();
               IpAccessList acl = i1.getOutgoingFilter();
+              BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
 
               BDDOutgoingOriginalFlowFilterManager originalFlowFilterMgr =
                   _bddOutgoingOriginalFlowFilterManagers.get(node1);
               BDD originalFlowAclDenyBdd =
                   originalFlowFilterMgr.deniedByOriginalFlowEgressFilter(iface1);
-              BDD aclDenyBDD = ignorableAclDenyBDD(node1, acl);
               BDD denyBdd = aclDenyBDD.or(originalFlowAclDenyBdd);
               return denyBdd.isZero()
                   ? Stream.of()
@@ -1361,7 +1401,9 @@ public final class BDDReachabilityAnalysisFactory {
                   originalFlowFilterMgr.permittedByOriginalFlowEgressFilter(ifaceName);
 
               /* 1. pre-transformation filter
-               * 2. constrain to outgoing interface (applies outgoingOriginalFlowFilter)
+               * 2. outgoingOriginalFlowFilter (also constrains to interface)
+               *    can be applied in any order, so do it before transformation for
+               *    less forward work.
                * 3. outgoing transformation
                * 4. post-transformation filter
                */
