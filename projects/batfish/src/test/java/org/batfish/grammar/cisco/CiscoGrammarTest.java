@@ -191,6 +191,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeService
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborImportPolicyName;
+import static org.batfish.representation.cisco.CiscoConversions.computeVrfExportImportPolicyName;
 import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
@@ -3939,7 +3940,9 @@ public final class CiscoGrammarTest {
     assertThat(
         pvcae,
         hasParseWarning(
-            filename, containsString("Export maps for VRFs are not currently supported")));
+            filename,
+            containsString(
+                "Export into non-vpnv4/6-address-family RIBs is not currently supported")));
   }
 
   @Test
@@ -7578,14 +7581,32 @@ public final class CiscoGrammarTest {
             .setBgpLeakConfig(new BgpLeakConfig(ExtendedCommunity.target(65003, 11)));
     assertThat(
         c.getVrfs().get("DST_VRF").getVrfLeakConfigs(),
-        contains(builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build()));
+        containsInAnyOrder(
+            builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build(),
+            builder
+                .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
+                .setImportPolicy(
+                    computeVrfExportImportPolicyName("SRC_VRF_WITH_EXPORT_MAP", "DST_VRF"))
+                .build()));
     assertThat(
         c.getVrfs().get("NOT_UNDER_ROUTER_BGP").getVrfLeakConfigs(),
-        contains(builder.setImportFromVrf("SRC_VRF").setImportPolicy(null).build()));
+        containsInAnyOrder(
+            builder.setImportFromVrf("SRC_VRF").setImportPolicy(null).build(),
+            builder
+                .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
+                .setImportPolicy(
+                    computeVrfExportImportPolicyName(
+                        "SRC_VRF_WITH_EXPORT_MAP", "NOT_UNDER_ROUTER_BGP"))
+                .build()));
     assertThat(
         c.getVrfs().get("DST_IMPOSSIBLE").getVrfLeakConfigs(),
-        contains(
-            builder.setImportFromVrf("SRC_VRF").setImportPolicy("UNDEFINED~undefined").build()));
+        containsInAnyOrder(
+            builder.setImportFromVrf("SRC_VRF").setImportPolicy("UNDEFINED~undefined").build(),
+            builder
+                .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
+                .setImportPolicy(
+                    computeVrfExportImportPolicyName("SRC_VRF_WITH_EXPORT_MAP", "DST_IMPOSSIBLE"))
+                .build()));
   }
 
   @Test
@@ -7599,6 +7620,14 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
     SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>> ribs = dp.getRibs().get(hostname);
     Set<AbstractRoute> dstVrfRoutes = ribs.get("DST_VRF").getRoutes();
+    Set<AbstractRoute> dstVrfNoImportMapRoutes = ribs.get("DST_VRF_NO_IMPORT_MAP").getRoutes();
+    Matcher<AbstractRoute> leakedRouteMatcher1111 =
+        isBgpv4RouteThat(
+            allOf(
+                hasPrefix(Prefix.parse("1.1.1.1/32")),
+                hasProtocol(RoutingProtocol.BGP),
+                hasNextHop(NextHopVrf.of("SRC_VRF")),
+                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
     Matcher<AbstractRoute> leakedRouteMatcher2220 =
         isBgpv4RouteThat(
             allOf(
@@ -7606,10 +7635,27 @@ public final class CiscoGrammarTest {
                 hasProtocol(RoutingProtocol.BGP),
                 hasNextHop(NextHopVrf.of("SRC_VRF")),
                 BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
+    Matcher<AbstractRoute> leakedRouteMatcher3330 =
+        isBgpv4RouteThat(
+            allOf(
+                hasPrefix(Prefix.parse("3.3.3.0/24")),
+                hasProtocol(RoutingProtocol.BGP),
+                hasNextHop(NextHopVrf.of("SRC_VRF_WITH_EXPORT_MAP")),
+                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
     assertThat(
         dstVrfRoutes,
-        // 1.1.1.1/32 is denied by import map, only 2.2.2.0/24 is expected to be leaked.
-        contains(leakedRouteMatcher2220));
+        // 1.1.1.1/32 is denied by import map
+        // 2.2.2.0/24 is expected to be leaked from SRC_VRF
+        // 3.3.3.0/24 is expected to be leaked from SRC_VRF_WITH_EXPORT_MAP
+        // 4.4.4.0/24 has its route-target changed by export-map causing it not to be imported
+        containsInAnyOrder(leakedRouteMatcher2220, leakedRouteMatcher3330));
+    assertThat(
+        dstVrfNoImportMapRoutes,
+        // 1.1.1.1/32 is expected to be leaked from SRC_VRF
+        // 2.2.2.0/24 is expected to be leaked from SRC_VRF
+        // 3.3.3.0/24 is expected to be leaked from SRC_VRF_WITH_EXPORT_MAP
+        // 4.4.4.0/24 has its route-target changed by export-map causing it not to be imported
+        containsInAnyOrder(leakedRouteMatcher1111, leakedRouteMatcher2220, leakedRouteMatcher3330));
     // VRF not defined under router bgp should still have a process, and get both routes
     // (because no import map is defined)
     assertThat(
@@ -7622,15 +7668,7 @@ public final class CiscoGrammarTest {
         notNullValue());
     assertThat(
         ribs.get("NOT_UNDER_ROUTER_BGP").getRoutes(),
-        containsInAnyOrder(
-            leakedRouteMatcher2220,
-            isBgpv4RouteThat(
-                allOf(
-                    hasPrefix(Prefix.parse("1.1.1.1/32")),
-                    hasProtocol(RoutingProtocol.BGP),
-                    hasNextHop(NextHopVrf.of("SRC_VRF")),
-                    BgpRouteMatchers.hasCommunities(
-                        contains(ExtendedCommunity.target(65003, 11)))))));
+        containsInAnyOrder(leakedRouteMatcher1111, leakedRouteMatcher2220, leakedRouteMatcher3330));
     assertThat(ribs.get("DST_IMPOSSIBLE").getRoutes(), empty());
   }
 
