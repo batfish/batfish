@@ -16,6 +16,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   public FortiosConfiguration() {
     _interfaces = new HashMap<>();
     _replacemsgs = new HashMap<>();
+    _services = new HashMap<>();
   }
 
   @Override
@@ -45,9 +46,15 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _replacemsgs;
   }
 
+  /** name -> service */
+  public @Nonnull Map<String, Service> getServices() {
+    return _services;
+  }
+
   private String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
+  private final @Nonnull Map<String, Service> _services;
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     Configuration c = new Configuration(_hostname, ConfigurationFormat.FORTIOS);

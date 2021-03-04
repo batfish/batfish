@@ -4,6 +4,7 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
+import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
@@ -33,12 +34,15 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.Service;
+import org.batfish.representation.fortios.Service.Protocol;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -191,73 +195,146 @@ public final class FortiosGrammarTest {
     String hostname = "service_custom";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
-    Map<String, Interface> ifaces = vc.getInterfaces();
+    Map<String, Service> services = vc.getServices();
     assertThat(
-        ifaces.keySet(),
+        services.keySet(),
         containsInAnyOrder(
-            "port1",
-            "port2",
-            "longest if name",
-            "tunnel",
-            "loopback123",
-            "agg",
-            "emac",
-            "redundant",
-            "vlan",
-            "wl"));
+            "longest possible firewall service custom service name that is accepted by devic",
+            "custom_default",
+            "explicit_tcp",
+            "src_port_defaults",
+            "custom_icmp",
+            "custom_icmp6",
+            "custom_ip",
+            "change_protocol"));
 
-    Interface port1 = ifaces.get("port1");
-    Interface port2 = ifaces.get("port2");
-    Interface longName = ifaces.get("longest if name");
-    Interface tunnel = ifaces.get("tunnel");
-    Interface loopback = ifaces.get("loopback123");
-    Interface agg = ifaces.get("agg");
-    Interface emac = ifaces.get("emac");
-    Interface redundant = ifaces.get("redundant");
-    Interface vlan = ifaces.get("vlan");
-    Interface wl = ifaces.get("wl");
+    Service serviceLongName =
+        services.get(
+            "longest possible firewall service custom service name that is accepted by devic");
+    Service serviceDefault = services.get("custom_default");
+    Service serviceTcp = services.get("explicit_tcp");
+    Service serviceSrcPortDefaults = services.get("src_port_defaults");
+    Service serviceIcmp = services.get("custom_icmp");
+    Service serviceIcmp6 = services.get("custom_icmp6");
+    Service serviceIp = services.get("custom_ip");
+    Service serviceChangeProtocol = services.get("change_protocol");
 
-    assertThat(port1.getVdom(), equalTo("root"));
-    assertThat(port1.getIp(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
-    assertThat(port1.getType(), equalTo(Type.PHYSICAL));
-    assertThat(port1.getAlias(), equalTo("longest possibl alias str"));
-    assertThat(port1.getDescription(), equalTo("quoted description w/ spaces and more"));
+    assertThat(serviceLongName.getComment(), equalTo("service custom comment"));
+
+    // Check default protocol
+    assertThat(serviceDefault.getProtocol(), equalTo(Protocol.UNKNOWN));
+    assertThat(serviceDefault.getProtocolEffective(), equalTo(Service.DEFAULT_PROTOCOL));
     // Check defaults
-    assertThat(port1.getStatus(), equalTo(Status.UNKNOWN));
-    assertTrue(port1.getStatusEffective());
-    assertThat(port1.getMtu(), nullValue());
-    assertThat(port1.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
-    assertThat(port1.getMtuOverride(), nullValue());
-    assertThat(port1.getVrf(), nullValue());
-    assertThat(port1.getVrfEffective(), equalTo(0));
+    assertThat(serviceDefault.getSctpPortRangeDst(), nullValue());
+    assertThat(serviceDefault.getSctpPortRangeSrc(), nullValue());
+    assertThat(serviceDefault.getTcpPortRangeDst(), nullValue());
+    assertThat(serviceDefault.getTcpPortRangeSrc(), nullValue());
+    assertThat(serviceDefault.getUdpPortRangeDst(), nullValue());
+    assertThat(serviceDefault.getUdpPortRangeSrc(), nullValue());
 
-    // Check overriding defaults
-    assertThat(port2.getMtuOverride(), equalTo(true));
-    assertThat(port2.getMtu(), equalTo(1234));
-    assertThat(port2.getMtuEffective(), equalTo(1234));
+    // Even with dest ports configured, source ports should still show up as default
+    assertThat(serviceSrcPortDefaults.getSctpPortRangeSrc(), nullValue());
+    assertThat(
+        serviceSrcPortDefaults.getSctpPortRangeSrcEffective(),
+        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
+    assertThat(serviceSrcPortDefaults.getTcpPortRangeSrc(), nullValue());
+    assertThat(
+        serviceSrcPortDefaults.getTcpPortRangeSrcEffective(),
+        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
+    assertThat(serviceSrcPortDefaults.getUdpPortRangeSrc(), nullValue());
+    assertThat(
+        serviceSrcPortDefaults.getUdpPortRangeSrcEffective(),
+        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
 
-    assertThat(longName.getIp(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
-    assertThat(longName.getAlias(), equalTo(""));
-    // Check overriding defaults
-    assertTrue(longName.getStatusEffective());
-    assertThat(longName.getStatus(), equalTo(Status.UP));
-    assertThat(longName.getVrf(), equalTo(31));
-    assertThat(longName.getVrfEffective(), equalTo(31));
+    assertThat(serviceTcp.getProtocol(), equalTo(Protocol.TCP_UDP_SCTP));
+    assertThat(serviceTcp.getProtocolEffective(), equalTo(Protocol.TCP_UDP_SCTP));
+    // Check variety of port range syntax
+    // TCP
+    assertThat(
+        serviceTcp.getTcpPortRangeDst(),
+        equalTo(IntegerSpace.builder().including(1, 2, 10, 11, 13).build()));
+    assertThat(
+        serviceTcp.getTcpPortRangeSrc(),
+        equalTo(IntegerSpace.builder().including(3, 4, 6, 7).build()));
+    // UDP
+    assertThat(
+        serviceTcp.getUdpPortRangeDst(), equalTo(IntegerSpace.builder().including(100).build()));
+    assertThat(serviceTcp.getUdpPortRangeSrc(), nullValue());
+    // SCTP
+    assertThat(
+        serviceTcp.getSctpPortRangeDst(),
+        equalTo(IntegerSpace.builder().including(200, 201).build()));
+    assertThat(
+        serviceTcp.getSctpPortRangeSrc(), equalTo(IntegerSpace.builder().including(300).build()));
 
-    assertThat(tunnel.getStatus(), equalTo(Status.DOWN));
-    assertFalse(tunnel.getStatusEffective());
-    assertThat(tunnel.getType(), equalTo(Type.TUNNEL));
-    // MTU is set, but not used since override isn't set
-    assertThat(tunnel.getMtuOverride(), nullValue());
-    assertThat(tunnel.getMtu(), equalTo(65535));
-    assertThat(tunnel.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
+    assertThat(serviceIcmp.getProtocol(), equalTo(Protocol.ICMP));
+    assertThat(serviceIcmp.getProtocolEffective(), equalTo(Protocol.ICMP));
+    assertThat(serviceIcmp.getIcmpCode(), equalTo(255));
+    assertThat(serviceIcmp.getIcmpType(), equalTo(255));
 
-    assertThat(loopback.getType(), equalTo(Type.LOOPBACK));
-    assertThat(agg.getType(), equalTo(Type.AGGREGATE));
-    assertThat(emac.getType(), equalTo(Type.EMAC_VLAN));
-    assertThat(redundant.getType(), equalTo(Type.REDUNDANT));
-    assertThat(vlan.getType(), equalTo(Type.VLAN));
-    assertThat(wl.getType(), equalTo(Type.WL_MESH));
+    assertThat(serviceIcmp6.getProtocol(), equalTo(Protocol.ICMP6));
+    assertThat(serviceIcmp6.getProtocolEffective(), equalTo(Protocol.ICMP6));
+    // Check defaults
+    assertThat(serviceIcmp6.getIcmpCode(), nullValue());
+    assertThat(serviceIcmp6.getIcmpType(), nullValue());
+
+    assertThat(serviceIp.getProtocol(), equalTo(Protocol.IP));
+    assertThat(serviceIp.getProtocolEffective(), equalTo(Protocol.IP));
+    assertThat(serviceIp.getProtocolNumber(), equalTo(254));
+    assertThat(serviceIp.getProtocolNumberEffective(), equalTo(254));
+
+    assertThat(serviceChangeProtocol.getProtocol(), equalTo(Protocol.IP));
+    assertThat(serviceChangeProtocol.getProtocolEffective(), equalTo(Protocol.IP));
+    // Should revert to default after changing protocol
+    assertThat(serviceChangeProtocol.getProtocolNumber(), nullValue());
+    assertThat(
+        serviceChangeProtocol.getProtocolNumberEffective(),
+        equalTo(Service.DEFAULT_PROTOCOL_NUMBER));
+    // Check that other protocol's values were cleared
+    assertThat(serviceChangeProtocol.getIcmpCode(), nullValue());
+    assertThat(serviceChangeProtocol.getIcmpType(), nullValue());
+    assertThat(serviceChangeProtocol.getSctpPortRangeDst(), nullValue());
+    assertThat(serviceChangeProtocol.getSctpPortRangeSrc(), nullValue());
+    assertThat(serviceChangeProtocol.getTcpPortRangeDst(), nullValue());
+    assertThat(serviceChangeProtocol.getTcpPortRangeSrc(), nullValue());
+    assertThat(serviceChangeProtocol.getUdpPortRangeDst(), nullValue());
+    assertThat(serviceChangeProtocol.getUdpPortRangeSrc(), nullValue());
+  }
+
+  @Test
+  public void testServiceWarnings() throws IOException {
+    String hostname = "service_warnings";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Illegal value for service name"),
+                hasComment(
+                    "Cannot set IP protocol number for service setting props for wrong protocol"
+                        + " when protocol is not set to IP."),
+                hasComment(
+                    "Cannot set ICMP code for service setting props for wrong protocol when"
+                        + " protocol is not set to ICMP or ICMP6."),
+                hasComment(
+                    "Cannot set ICMP type for service setting props for wrong protocol when"
+                        + " protocol is not set to ICMP or ICMP6."),
+                hasComment(
+                    "Cannot set SCTP port range for service setting props for wrong protocol when"
+                        + " protocol is not set to TCP/UDP/SCTP."),
+                hasComment(
+                    "Cannot set TCP port range for service setting props for wrong protocol when"
+                        + " protocol is not set to TCP/UDP/SCTP."),
+                hasComment(
+                    "Cannot set UDP port range for service setting props for wrong protocol when"
+                        + " protocol is not set to TCP/UDP/SCTP."))));
   }
 
   private static final BddTestbed BDD_TESTBED =
