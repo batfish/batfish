@@ -73,6 +73,11 @@ SCTP_PORTRANGE: 'sctp-portrange';
 SELECT: 'select';
 SERVICE:
   'service'
+  {
+    if (lastTokenType() == SET || lastTokenType() == SELECT || lastTokenType() == APPEND) {
+      pushMode(M_Str);
+    }
+  }
 ;
 SET: 'set';
 SNMP_INDEX: 'snmp-index';

@@ -18,14 +18,14 @@ cfp_edit
 cfp_set_singletons
 :
     cfp_set_action
-    | cfp_set_comment
+    | cfp_set_comments
     | cfp_set_name
     | cfp_set_status
 ;
 
 cfp_set_action: ACTION action = policy_action NEWLINE;
 
-cfp_set_comment: COMMENT comment = str NEWLINE;
+cfp_set_comments: COMMENTS comments = str NEWLINE;
 
 cfp_set_name: NAME name = str NEWLINE;
 
