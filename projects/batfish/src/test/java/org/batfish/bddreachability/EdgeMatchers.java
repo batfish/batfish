@@ -22,4 +22,9 @@ public final class EdgeMatchers {
         new HasPostState(equalTo(postState)),
         new HasTransition(transitionMatcher));
   }
+
+  /** Matches {@link Edge#getTransition()}. */
+  public static Matcher<Edge> hasTransition(Matcher<Transition> transitionMatcher) {
+    return new HasTransition(transitionMatcher);
+  }
 }

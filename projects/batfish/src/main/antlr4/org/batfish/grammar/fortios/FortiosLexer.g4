@@ -22,16 +22,16 @@ ADMIN:
 
 AGGREGATE: 'aggregate';
 ALERTMAIL: 'alertmail';
-ALIAS: 'alias';
+ALIAS: 'alias' -> pushMode(M_Str);
 AUTH: 'auth';
 BUFFER: 'buffer' -> pushMode(M_Str);
 COMMENT: 'comment' -> pushMode(M_Str);
 CONFIG: 'config';
 CUSTOM: 'custom';
-DESCRIPTION: 'description';
+DESCRIPTION: 'description' -> pushMode(M_Str);
 DISABLE: 'disable';
 DOWN: 'down';
-EDIT: 'edit';
+EDIT: 'edit' -> pushMode(M_Str);
 EMAC_VLAN: 'emac-vlan';
 ENABLE: 'enable';
 END: 'end';
@@ -77,7 +77,7 @@ UDP_PORTRANGE: 'udp-portrange';
 UNSET: 'unset';
 UP: 'up';
 UTM: 'utm';
-VDOM: 'vdom';
+VDOM: 'vdom' -> pushMode(M_Str);
 VLAN: 'vlan';
 VRF: 'vrf';
 WEBPROXY: 'webproxy';

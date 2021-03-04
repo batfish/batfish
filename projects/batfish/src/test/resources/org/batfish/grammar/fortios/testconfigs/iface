@@ -11,8 +11,10 @@ config system interface
         set description "quoted description w/ spaces and more"
         set snmp-index 1
     next
-    edit "port2"
-        set vdom "root"
+    edit port2
+        set vdom root
+        set alias no_spaces
+        set description no_spaces_descr
         set mtu-override enable
         set mtu 1234
     next

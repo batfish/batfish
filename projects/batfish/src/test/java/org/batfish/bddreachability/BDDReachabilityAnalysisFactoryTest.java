@@ -1,6 +1,7 @@
 package org.batfish.bddreachability;
 
 import static org.batfish.bddreachability.EdgeMatchers.edge;
+import static org.batfish.bddreachability.EdgeMatchers.hasTransition;
 import static org.batfish.bddreachability.TransitionMatchers.mapsBackward;
 import static org.batfish.bddreachability.TransitionMatchers.mapsForward;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
@@ -38,6 +39,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -76,6 +78,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.HeaderSpace;
@@ -90,6 +93,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
@@ -161,6 +165,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   private static final IpSpaceSpecifier CONSTANT_UNIVERSE_IPSPACE_SPECIFIER =
       new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
   private static final BDD ONE = PKT.getFactory().one();
+  private static final BDD ZERO = PKT.getFactory().zero();
 
   private static final String INGRESS_NODE = "ingress_node";
   private static final String INGRESS_IFACE = "ingressIface";
@@ -1825,6 +1830,134 @@ public final class BDDReachabilityAnalysisFactoryTest {
         .build();
 
     return ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+  }
+
+  /**
+   * For {@link BDDReachabilityAnalysisFactory#generateRules_PreOutEdgePostNat_NodeDropAclOut}, test
+   * that the outgoing original flow filter is still applied if outgoing filter is null.
+   */
+  @Test
+  public void testOutgoingOriginalFlowFilterWithoutOutgoingFilter_arpSuccess() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    // c1
+    Configuration c1 = cb.setHostname("c1").build();
+    Vrf v1 = nf.vrfBuilder().setOwner(c1).build();
+
+    IpAccessList originalFlowFilter =
+        nf.aclBuilder()
+            .setLines(ExprAclLine.accepting(AclLineMatchExprs.matchDst(Ip.parse("1.1.1.1"))))
+            .build();
+
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setName("i1")
+            .setOwner(c1)
+            .setVrf(v1)
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+            .setOutgoingOriginalFlowFilter(originalFlowFilter)
+            .build();
+
+    // c2
+    Configuration c2 = cb.setHostname("c2").build();
+    Vrf v2 = nf.vrfBuilder().setOwner(c2).build();
+    nf.interfaceBuilder()
+        .setName("i2")
+        .setOwner(c2)
+        .setVrf(v2)
+        .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/24"))
+        .build();
+
+    BDDReachabilityAnalysisFactory factory =
+        makeBddReachabilityAnalysisFactory(
+            ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+
+    BDD permittedBdd =
+        factory
+            .getBddOutgoingOriginalFlowFilterManagers()
+            .get(c1.getHostname())
+            .permittedByOriginalFlowEgressFilter(i1.getName());
+    BDD deniedBdd =
+        factory
+            .getBddOutgoingOriginalFlowFilterManagers()
+            .get(c1.getHostname())
+            .deniedByOriginalFlowEgressFilter(i1.getName());
+
+    Edge edge =
+        Iterables.getOnlyElement(
+            factory
+                .generateRules_PreOutEdgePostNat_NodeDropAclOut()
+                .filter(
+                    e -> ((NodeDropAclOut) e.getPostState()).getHostname().equals(c1.getHostname()))
+                .collect(Collectors.toList()));
+    assertThat(
+        edge,
+        hasTransition(
+            allOf(
+                // every flow marked as denied can traverse this edge (and the marking is removed)
+                mapsForward(deniedBdd, ONE),
+                // no flow marked as permitted can traverse this edge
+                mapsForward(permittedBdd, ZERO))));
+  }
+
+  /**
+   * For {@link
+   * BDDReachabilityAnalysisFactory#generateRules_PreOutInterfaceDisposition_NodeDropAclOut}, test
+   * that the outgoing original flow filter is still applied if outgoing filter is null.
+   */
+  @Test
+  public void testOutgoingOriginalFlowFilterWithoutOutgoingFilter_arpFailure() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.setHostname("c1").build();
+    // Create i1 on c1 with the appropriate filters
+    Vrf vrf = nf.vrfBuilder().setOwner(c1).build();
+
+    IpAccessList originalFlowFilter =
+        nf.aclBuilder()
+            .setLines(ExprAclLine.accepting(AclLineMatchExprs.matchDst(Ip.parse("1.1.1.1"))))
+            .build();
+
+    Interface i1 =
+        nf.interfaceBuilder()
+            .setName("i1")
+            .setOwner(c1)
+            .setVrf(vrf)
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
+            .setOutgoingOriginalFlowFilter(originalFlowFilter)
+            .build();
+
+    BDDReachabilityAnalysisFactory factory =
+        makeBddReachabilityAnalysisFactory(ImmutableSortedMap.of(c1.getHostname(), c1));
+
+    BDD permittedBdd =
+        factory
+            .getBddOutgoingOriginalFlowFilterManagers()
+            .get(c1.getHostname())
+            .permittedByOriginalFlowEgressFilter(i1.getName());
+    BDD deniedBdd =
+        factory
+            .getBddOutgoingOriginalFlowFilterManagers()
+            .get(c1.getHostname())
+            .deniedByOriginalFlowEgressFilter(i1.getName());
+
+    List<Edge> edges =
+        factory
+            .generateRules_PreOutInterfaceDisposition_NodeDropAclOut()
+            .collect(Collectors.toList());
+    assertFalse("edges must not be empty", edges.isEmpty());
+    assertThat(
+        edges,
+        everyItem(
+            hasTransition(
+                allOf(
+                    // every flow marked as denied can traverse this edge (and the marking is
+                    // removed)
+                    mapsForward(deniedBdd, ONE),
+                    // no flow marked as permitted can traverse this edge
+                    mapsForward(permittedBdd, ZERO)))));
   }
 
   /** Test that PBR takes precedence over incoming filter when both are present on an interface. */
