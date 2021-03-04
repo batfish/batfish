@@ -4,6 +4,7 @@ import
   Fortios_common,
   Fortios_firewall,
   Fortios_interface,
+  Fortios_policy,
   Fortios_service,
   Fortios_system;
 

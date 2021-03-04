@@ -340,6 +340,117 @@ public final class FortiosGrammarTest {
                         + " protocol is not set to TCP/UDP/SCTP."))));
   }
 
+  @Test
+  public void testFirewallPolicyExtraction() {
+    String hostname = "firewall_policy";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Service> services = vc.getServices();
+    assertThat(
+        services.keySet(),
+        containsInAnyOrder(
+            "longest possible firewall service custom service name that is accepted by devic",
+            "custom_default",
+            "explicit_tcp",
+            "src_port_defaults",
+            "custom_icmp",
+            "custom_icmp6",
+            "custom_ip",
+            "change_protocol"));
+
+    Service serviceLongName =
+        services.get(
+            "longest possible firewall service custom service name that is accepted by devic");
+    Service serviceDefault = services.get("custom_default");
+    Service serviceTcp = services.get("explicit_tcp");
+    Service serviceSrcPortDefaults = services.get("src_port_defaults");
+    Service serviceIcmp = services.get("custom_icmp");
+    Service serviceIcmp6 = services.get("custom_icmp6");
+    Service serviceIp = services.get("custom_ip");
+    Service serviceChangeProtocol = services.get("change_protocol");
+
+    assertThat(serviceLongName.getComment(), equalTo("service custom comment"));
+
+    // Check default protocol
+    assertThat(serviceDefault.getProtocol(), equalTo(Protocol.UNKNOWN));
+    assertThat(serviceDefault.getProtocolEffective(), equalTo(Service.DEFAULT_PROTOCOL));
+    // Check defaults
+    assertThat(serviceDefault.getSctpPortRangeDst(), nullValue());
+    assertThat(serviceDefault.getSctpPortRangeSrc(), nullValue());
+    assertThat(serviceDefault.getTcpPortRangeDst(), nullValue());
+    assertThat(serviceDefault.getTcpPortRangeSrc(), nullValue());
+    assertThat(serviceDefault.getUdpPortRangeDst(), nullValue());
+    assertThat(serviceDefault.getUdpPortRangeSrc(), nullValue());
+
+    // Even with dest ports configured, source ports should still show up as default
+    assertThat(serviceSrcPortDefaults.getSctpPortRangeSrc(), nullValue());
+    assertThat(
+        serviceSrcPortDefaults.getSctpPortRangeSrcEffective(),
+        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
+    assertThat(serviceSrcPortDefaults.getTcpPortRangeSrc(), nullValue());
+    assertThat(
+        serviceSrcPortDefaults.getTcpPortRangeSrcEffective(),
+        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
+    assertThat(serviceSrcPortDefaults.getUdpPortRangeSrc(), nullValue());
+    assertThat(
+        serviceSrcPortDefaults.getUdpPortRangeSrcEffective(),
+        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
+
+    assertThat(serviceTcp.getProtocol(), equalTo(Protocol.TCP_UDP_SCTP));
+    assertThat(serviceTcp.getProtocolEffective(), equalTo(Protocol.TCP_UDP_SCTP));
+    // Check variety of port range syntax
+    // TCP
+    assertThat(
+        serviceTcp.getTcpPortRangeDst(),
+        equalTo(IntegerSpace.builder().including(1, 2, 10, 11, 13).build()));
+    assertThat(
+        serviceTcp.getTcpPortRangeSrc(),
+        equalTo(IntegerSpace.builder().including(3, 4, 6, 7).build()));
+    // UDP
+    assertThat(
+        serviceTcp.getUdpPortRangeDst(), equalTo(IntegerSpace.builder().including(100).build()));
+    assertThat(serviceTcp.getUdpPortRangeSrc(), nullValue());
+    // SCTP
+    assertThat(
+        serviceTcp.getSctpPortRangeDst(),
+        equalTo(IntegerSpace.builder().including(200, 201).build()));
+    assertThat(
+        serviceTcp.getSctpPortRangeSrc(), equalTo(IntegerSpace.builder().including(300).build()));
+
+    assertThat(serviceIcmp.getProtocol(), equalTo(Protocol.ICMP));
+    assertThat(serviceIcmp.getProtocolEffective(), equalTo(Protocol.ICMP));
+    assertThat(serviceIcmp.getIcmpCode(), equalTo(255));
+    assertThat(serviceIcmp.getIcmpType(), equalTo(255));
+
+    assertThat(serviceIcmp6.getProtocol(), equalTo(Protocol.ICMP6));
+    assertThat(serviceIcmp6.getProtocolEffective(), equalTo(Protocol.ICMP6));
+    // Check defaults
+    assertThat(serviceIcmp6.getIcmpCode(), nullValue());
+    assertThat(serviceIcmp6.getIcmpType(), nullValue());
+
+    assertThat(serviceIp.getProtocol(), equalTo(Protocol.IP));
+    assertThat(serviceIp.getProtocolEffective(), equalTo(Protocol.IP));
+    assertThat(serviceIp.getProtocolNumber(), equalTo(254));
+    assertThat(serviceIp.getProtocolNumberEffective(), equalTo(254));
+
+    assertThat(serviceChangeProtocol.getProtocol(), equalTo(Protocol.IP));
+    assertThat(serviceChangeProtocol.getProtocolEffective(), equalTo(Protocol.IP));
+    // Should revert to default after changing protocol
+    assertThat(serviceChangeProtocol.getProtocolNumber(), nullValue());
+    assertThat(
+        serviceChangeProtocol.getProtocolNumberEffective(),
+        equalTo(Service.DEFAULT_PROTOCOL_NUMBER));
+    // Check that other protocol's values were cleared
+    assertThat(serviceChangeProtocol.getIcmpCode(), nullValue());
+    assertThat(serviceChangeProtocol.getIcmpType(), nullValue());
+    assertThat(serviceChangeProtocol.getSctpPortRangeDst(), nullValue());
+    assertThat(serviceChangeProtocol.getSctpPortRangeSrc(), nullValue());
+    assertThat(serviceChangeProtocol.getTcpPortRangeDst(), nullValue());
+    assertThat(serviceChangeProtocol.getTcpPortRangeSrc(), nullValue());
+    assertThat(serviceChangeProtocol.getUdpPortRangeDst(), nullValue());
+    assertThat(serviceChangeProtocol.getUdpPortRangeSrc(), nullValue());
+  }
+
   private static final BddTestbed BDD_TESTBED =
       new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 

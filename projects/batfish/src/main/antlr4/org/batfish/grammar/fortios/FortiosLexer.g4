@@ -20,17 +20,24 @@ ADMIN:
   }
 ;
 
+ACTION: 'action';
 AGGREGATE: 'aggregate';
 ALERTMAIL: 'alertmail';
 ALIAS: 'alias' -> pushMode(M_Str);
+ALLOW: 'allow';
+APPEND: 'append';
 AUTH: 'auth';
 BUFFER: 'buffer' -> pushMode(M_Str);
 COMMENT: 'comment' -> pushMode(M_Str);
+COMMENTS: 'comments' -> pushMode(M_Str);
 CONFIG: 'config';
 CUSTOM: 'custom';
+DENY: 'deny';
 DESCRIPTION: 'description' -> pushMode(M_Str);
 DISABLE: 'disable';
 DOWN: 'down';
+DSTADDR: 'dstaddr' -> pushMode(M_Str);
+DSTINTF: 'dstintf' -> pushMode(M_Str);
 EDIT: 'edit' -> pushMode(M_Str);
 EMAC_VLAN: 'emac-vlan';
 ENABLE: 'enable';
@@ -54,17 +61,24 @@ MAIL: 'mail';
 MTU: 'mtu';
 MTU_OVERRIDE: 'mtu-override';
 NAC_QUAR: 'nac-quar';
+NAME: 'name' -> pushMode(M_Str);
 NEXT: 'next';
 PHYSICAL: 'physical';
+POLICY: 'policy';
 PROTOCOL: 'protocol';
 PROTOCOL_NUMBER: 'protocol-number';
 REDUNDANT: 'redundant';
 REPLACEMSG: 'replacemsg';
 SCTP_PORTRANGE: 'sctp-portrange';
-SERVICE: 'service';
+SELECT: 'select';
+SERVICE:
+  'service'
+;
 SET: 'set';
 SNMP_INDEX: 'snmp-index';
 SPAM: 'spam';
+SRCADDR: 'srcaddr' -> pushMode(M_Str);
+SRCINTF: 'srcintf' -> pushMode(M_Str);
 SSLVPN: 'sslvpn';
 STATUS: 'status';
 SYSTEM: 'system';
