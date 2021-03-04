@@ -1,0 +1,42 @@
+config system global
+    set hostname "firewall_policy"
+end
+config firewall service custom
+    edit "custom_tcp_11"
+        set tcp-portrange 11
+    next
+    edit "custom_tcp_11_to_12"
+        set tcp-portrange 11:12
+    next
+end
+config firewall policy
+    # Disabled rule should be ignored
+    edit 0
+        set action deny
+        set srcintf port1
+        set dstintf port2
+        set srcaddr addr1
+        set dstaddr addr2
+        set service custom_tcp_11
+        set status disable
+    next
+    edit 2
+        set name "longest allowed firewall policy nam"
+        set action deny
+        set srcintf port1
+        set dstintf port2
+        set srcaddr addr1
+        set dstaddr addr2
+        set service custom_tcp_11_to_12
+        set comments "firewall policy comments"
+    next
+    # Number doesn't indicate order, just a unique identifier
+    edit 1
+        set action allow
+        set srcintf port1
+        set dstintf port2
+        set srcaddr addr1
+        set dstaddr addr2
+        set service custom_tcp_11
+    next
+end
