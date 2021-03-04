@@ -15,47 +15,12 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.*;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
-import org.batfish.grammar.fortios.FortiosParser.Cs_replacemsgContext;
-import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_editContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_aliasContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_descriptionContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_ipContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtuContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtu_overrideContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_statusContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_typeContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
-import org.batfish.grammar.fortios.FortiosParser.Csi_set_vrfContext;
-import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
-import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
-import org.batfish.grammar.fortios.FortiosParser.Device_hostnameContext;
-import org.batfish.grammar.fortios.FortiosParser.Double_quoted_stringContext;
-import org.batfish.grammar.fortios.FortiosParser.Enable_or_disableContext;
-import org.batfish.grammar.fortios.FortiosParser.Interface_aliasContext;
-import org.batfish.grammar.fortios.FortiosParser.Interface_nameContext;
-import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
-import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
-import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefixContext;
-import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
-import org.batfish.grammar.fortios.FortiosParser.MtuContext;
-import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
-import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
-import org.batfish.grammar.fortios.FortiosParser.Single_quoted_stringContext;
-import org.batfish.grammar.fortios.FortiosParser.StrContext;
-import org.batfish.grammar.fortios.FortiosParser.Subnet_maskContext;
-import org.batfish.grammar.fortios.FortiosParser.Uint16Context;
-import org.batfish.grammar.fortios.FortiosParser.Uint8Context;
-import org.batfish.grammar.fortios.FortiosParser.Up_or_downContext;
-import org.batfish.grammar.fortios.FortiosParser.VrfContext;
-import org.batfish.grammar.fortios.FortiosParser.WordContext;
+import org.batfish.grammar.fortios.FortiosParser.*;
+import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
@@ -126,6 +91,95 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsr_unset_buffer(Csr_unset_bufferContext ctx) {
     _currentReplacemsg.setBuffer(null);
+  }
+
+  @Override
+  public void enterCfa_edit(FortiosParser.Cfa_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.address_name());
+    // TODO If name.isPresent(), add structure definition for address
+    _currentAddress =
+        name.map(n -> _c.getAddresses().computeIfAbsent(n, Address::new))
+            .orElseGet(() -> new Address(ctx.address_name().getText())); // dummy
+  }
+
+  @Override
+  public void exitCfa_edit(Cfa_editContext ctx) {
+    _currentAddress = null;
+  }
+
+  @Override
+  public void exitCfa_set_allow_routing(Cfa_set_allow_routingContext ctx) {
+    _currentAddress.setAllowRouting(toBoolean(ctx.value));
+  }
+
+  @Override
+  public void exitCfa_set_associated_interface(Cfa_set_associated_interfaceContext ctx) {
+    Optional<String> optName = toString(ctx, ctx.name);
+    if (!optName.isPresent()) {
+      return;
+    }
+    // Permitted zone names are a superset of permitted interface names, so at this point we know
+    // the name is a valid zone name, but it may or may not be a valid interface name.
+    String name = optName.get();
+
+    // TODO after zone support: If zone exists, set _currentAddress's associatedZone and return.
+
+    if (!_c.getInterfaces().containsKey(name)) {
+      warn(ctx, "No interface or zone named " + name);
+      // TODO File undefined reference to zone
+      // It's sort of arbitrary whether we consider this undefined reference to be a zone or an
+      // interface, but safer to call it a zone, because the name may not be a valid interface name.
+      return;
+    }
+
+    // TODO Add structure reference for interface
+    _currentAddress.setAssociatedInterface(name);
+  }
+
+  @Override
+  public void exitCfa_set_comment(Cfa_set_commentContext ctx) {
+    _currentAddress.setComment(toString(ctx.comment));
+  }
+
+  @Override
+  public void exitCfa_set_fabric_object(Cfa_set_fabric_objectContext ctx) {
+    _currentAddress.setFabricObject(toBoolean(ctx.value));
+  }
+
+  @Override
+  public void exitCfa_set_start_ip(Cfa_set_start_ipContext ctx) {
+    _currentAddress.getTypeSpecificFields().setStartIp(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitCfa_set_end_ip(Cfa_set_end_ipContext ctx) {
+    _currentAddress.getTypeSpecificFields().setEndIp(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitCfa_set_interface(Cfa_set_interfaceContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (name.isPresent()) {
+      if (_c.getInterfaces().containsKey(name.get())) {
+        _currentAddress.getTypeSpecificFields().setInterface(name.get());
+      }
+      // TODO Else file undefined reference to interface
+    }
+  }
+
+  @Override
+  public void exitCfa_set_subnet(Cfa_set_subnetContext ctx) {
+    _currentAddress.getTypeSpecificFields().setSubnet(toPrefix(ctx.subnet));
+  }
+
+  @Override
+  public void exitCfa_set_type(Cfa_set_typeContext ctx) {
+    _currentAddress.setType(toAddressType(ctx.type));
+  }
+
+  @Override
+  public void exitCfa_set_wildcard(Cfa_set_wildcardContext ctx) {
+    _currentAddress.getTypeSpecificFields().setWildcard(toIpWildcard(ctx.wildcard));
   }
 
   @Override
@@ -204,6 +258,28 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Interface.Status.DOWN;
   }
 
+  private Address.Type toAddressType(Address_typeContext ctx) {
+    if (ctx.INTERFACE_SUBNET() != null) {
+      return Address.Type.INTERFACE_SUBNET;
+    } else if (ctx.IPMASK() != null) {
+      return Address.Type.IPMASK;
+    } else if (ctx.IPRANGE() != null) {
+      return Address.Type.IPRANGE;
+    } else if (ctx.WILDCARD() != null) {
+      return Address.Type.WILDCARD;
+    } else {
+      // Dynamic addresses are based on SDN connectors, whose addresses aren't known statically
+      assert ctx.DYNAMIC() != null
+          // FQDN addresses are based on domain names
+          || ctx.FQDN() != null
+          // Geography-type addresses are based on countries
+          || ctx.GEOGRAPHY() != null
+          // Mac-type addresses are based on mac addresses
+          || ctx.MAC() != null;
+      return Address.Type.UNSUPPORTED;
+    }
+  }
+
   private Interface.Type toInterfaceType(Interface_typeContext ctx) {
     if (ctx.AGGREGATE() != null) {
       return Type.AGGREGATE;
@@ -235,9 +311,28 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
   }
 
+  private @Nonnull Prefix toPrefix(Ip_address_with_mask_or_prefixContext ctx) {
+    if (ctx.ip_prefix() != null) {
+      return Prefix.parse(ctx.ip_prefix().getText());
+    } else {
+      assert ctx.ip_address() != null && ctx.subnet_mask() != null;
+      return Prefix.create(toIp(ctx.ip_address()), toIp(ctx.subnet_mask()));
+    }
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Address_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "address name", ADDRESS_NAME_PATTERN);
+  }
+
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "interface name", INTERFACE_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Interface_or_zone_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "zone or interface name", ZONE_NAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(
@@ -392,10 +487,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Ip.parse(ctx.getText());
   }
 
+  private static @Nonnull IpWildcard toIpWildcard(Ip_wildcardContext ctx) {
+    return IpWildcard.ipWithWildcardMask(toIp(ctx.ip), toIp(ctx.mask));
+  }
+
   private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
     return Ip6.parse(ctx.getText());
   }
 
+  private static final Pattern ADDRESS_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
   private static final Pattern DEVICE_HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
   private static final Pattern ESCAPED_DOUBLE_QUOTED_CHAR_PATTERN =
       Pattern.compile("\\\\(['\"\\\\])");
@@ -403,10 +503,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
+  private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$"); // todo check
 
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
 
+  private Address _currentAddress;
   private Interface _currentInterface;
   private Replacemsg _currentReplacemsg;
   private final @Nonnull FortiosConfiguration _c;

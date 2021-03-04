@@ -22,6 +22,11 @@ ip_address_with_mask_or_prefix
     | ip_prefix
 ;
 
+ip_wildcard
+:
+    ip = ip_address mask = ip_address
+;
+
 ipv6_address: IPV6_ADDRESS;
 
 ipv6_prefix: IPV6_PREFIX;
