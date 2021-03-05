@@ -70,8 +70,5 @@ address_type:
     | MAC
 ;
 
-// 1-15 characters for interface, but 1-35 for zone
-interface_or_zone_name: str;
-
 // 1-79 characters
 address_name: str;

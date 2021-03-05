@@ -124,8 +124,8 @@ public final class FortiosGrammarTest {
 
     Map<String, Address> addresses = vc.getAddresses();
     assertThat(
-        addresses.keySet(),
-        containsInAnyOrder(
+        addresses,
+        hasKeys(
             "ipmask",
             "iprange",
             "fqdn",
@@ -157,10 +157,10 @@ public final class FortiosGrammarTest {
     assertThat(wildcard.getType(), equalTo(Address.Type.WILDCARD));
     assertThat(longName.getType(), equalTo(Address.Type.UNKNOWN));
     assertThat(undefinedRefs.getType(), equalTo(Address.Type.INTERFACE_SUBNET));
-    assertThat(dynamic.getType(), equalTo(Address.Type.UNSUPPORTED));
-    assertThat(fqdn.getType(), equalTo(Address.Type.UNSUPPORTED));
-    assertThat(geography.getType(), equalTo(Address.Type.UNSUPPORTED));
-    assertThat(mac.getType(), equalTo(Address.Type.UNSUPPORTED));
+    assertThat(dynamic.getType(), equalTo(Address.Type.DYNAMIC));
+    assertThat(fqdn.getType(), equalTo(Address.Type.FQDN));
+    assertThat(geography.getType(), equalTo(Address.Type.GEOGRAPHY));
+    assertThat(mac.getType(), equalTo(Address.Type.MAC));
 
     // Test that type-specific fields are populated correctly
     assertThat(ipmask.getTypeSpecificFields().getSubnet(), equalTo(Prefix.parse("1.1.1.0/24")));
@@ -173,17 +173,19 @@ public final class FortiosGrammarTest {
     assertThat(longName.getTypeSpecificFields().getSubnet(), equalTo(Prefix.parse("1.1.1.0/24")));
 
     // Test explicitly set values
-    assertTrue(ipmask.getAllowRouting());
+    assertThat(ipmask.getAllowRouting(), equalTo(true));
     assertThat(ipmask.getAssociatedInterface(), equalTo("port1"));
     assertThat(ipmask.getComment(), equalTo("Hello world"));
-    assertTrue(ipmask.getFabricObject());
+    assertThat(ipmask.getFabricObject(), equalTo(true));
 
     // Test default values
     assertThat(longName.getTypeEffective(), equalTo(Address.Type.IPMASK));
-    assertFalse(longName.getAllowRouting());
+    assertNull(longName.getAllowRouting());
+    assertFalse(longName.getAllowRoutingEffective());
     assertNull(longName.getAssociatedInterface());
     assertNull(longName.getComment());
-    assertFalse(longName.getFabricObject());
+    assertNull(longName.getFabricObject());
+    assertFalse(longName.getFabricObjectEffective());
 
     // Test that undefined structures are not added to Address object
     // TODO Also check that undefined references are filed (once they are filed)

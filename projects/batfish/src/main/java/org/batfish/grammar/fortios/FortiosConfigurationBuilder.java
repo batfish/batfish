@@ -179,9 +179,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
     if (!_c.getInterfaces().containsKey(name)) {
       warn(ctx, "No interface or zone named " + name);
-      // TODO File undefined reference to zone
-      // It's sort of arbitrary whether we consider this undefined reference to be a zone or an
-      // interface, but safer to call it a zone, because the name may not be a valid interface name.
+      // TODO File undefined reference to zone, or INTERFACE_OR_ZONE if it's a valid interface name
       return;
     }
 
@@ -201,16 +199,28 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfa_set_start_ip(Cfa_set_start_ipContext ctx) {
-    _currentAddress.getTypeSpecificFields().setStartIp(toIp(ctx.ip));
+    if (_currentAddress.getType() == Address.Type.IPRANGE) {
+      _currentAddress.getTypeSpecificFields().setStartIp(toIp(ctx.ip));
+    } else {
+      warn(ctx, "Cannot set start-ip for address type " + _currentAddress.getTypeEffective());
+    }
   }
 
   @Override
   public void exitCfa_set_end_ip(Cfa_set_end_ipContext ctx) {
-    _currentAddress.getTypeSpecificFields().setEndIp(toIp(ctx.ip));
+    if (_currentAddress.getType() == Address.Type.IPRANGE) {
+      _currentAddress.getTypeSpecificFields().setEndIp(toIp(ctx.ip));
+    } else {
+      warn(ctx, "Cannot set end-ip for address type " + _currentAddress.getTypeEffective());
+    }
   }
 
   @Override
   public void exitCfa_set_interface(Cfa_set_interfaceContext ctx) {
+    if (_currentAddress.getType() != Address.Type.INTERFACE_SUBNET) {
+      warn(ctx, "Cannot set interface for address type " + _currentAddress.getTypeEffective());
+      return;
+    }
     Optional<String> name = toString(ctx, ctx.name);
     if (name.isPresent()) {
       if (_c.getInterfaces().containsKey(name.get())) {
@@ -222,7 +232,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfa_set_subnet(Cfa_set_subnetContext ctx) {
-    _currentAddress.getTypeSpecificFields().setSubnet(toPrefix(ctx.subnet));
+    Address.Type currentType = _currentAddress.getTypeEffective();
+    if (currentType == Address.Type.IPMASK || currentType == Address.Type.INTERFACE_SUBNET) {
+      _currentAddress.getTypeSpecificFields().setSubnet(toPrefix(ctx.subnet));
+    } else {
+      warn(ctx, "Cannot set subnet for address type " + currentType);
+    }
   }
 
   @Override
@@ -232,7 +247,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfa_set_wildcard(Cfa_set_wildcardContext ctx) {
-    _currentAddress.getTypeSpecificFields().setWildcard(toIpWildcard(ctx.wildcard));
+    if (_currentAddress.getType() == Address.Type.WILDCARD) {
+      _currentAddress.getTypeSpecificFields().setWildcard(toIpWildcard(ctx.wildcard));
+    } else {
+      warn(ctx, "Cannot set wildcard for address type " + _currentAddress.getTypeEffective());
+    }
   }
 
   @Override
@@ -320,16 +339,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return Address.Type.IPRANGE;
     } else if (ctx.WILDCARD() != null) {
       return Address.Type.WILDCARD;
+    } else if (ctx.DYNAMIC() != null) {
+      return Address.Type.DYNAMIC;
+    } else if (ctx.FQDN() != null) {
+      return Address.Type.FQDN;
+    } else if (ctx.GEOGRAPHY() != null) {
+      return Address.Type.GEOGRAPHY;
     } else {
-      // Dynamic addresses are based on SDN connectors, whose addresses aren't known statically
-      assert ctx.DYNAMIC() != null
-          // FQDN addresses are based on domain names
-          || ctx.FQDN() != null
-          // Geography-type addresses are based on countries
-          || ctx.GEOGRAPHY() != null
-          // Mac-type addresses are based on mac addresses
-          || ctx.MAC() != null;
-      return Address.Type.UNSUPPORTED;
+      assert ctx.MAC() != null;
+      return Address.Type.MAC;
     }
   }
 
@@ -556,7 +574,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
-  private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$"); // todo check
+  private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
 
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
