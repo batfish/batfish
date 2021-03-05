@@ -291,10 +291,20 @@ set_extcommunity_rm_stanza
 :
    SET EXTCOMMUNITY
    (
-      COST
-      | RT
-   ) extended_community NEWLINE
+      set_extcommunity_rm_stanza_cost
+      | set_extcommunity_rm_stanza_rt
+      | set_extcommunity_rm_stanza_soo
+      | set_extcommunity_rm_stanza_vpn_distinguisher
+   )
 ;
+
+set_extcommunity_rm_stanza_cost: COST null_rest_of_line;
+
+set_extcommunity_rm_stanza_rt: RT communities += extended_community_route_target+ ADDITIVE? NEWLINE;
+
+set_extcommunity_rm_stanza_soo: SOO null_rest_of_line;
+
+set_extcommunity_rm_stanza_vpn_distinguisher: VPN_DISTINGUISHER null_rest_of_line;
 
 set_interface_rm_stanza
 :
