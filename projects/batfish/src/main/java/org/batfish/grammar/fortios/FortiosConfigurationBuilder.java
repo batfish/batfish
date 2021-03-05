@@ -252,8 +252,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     if (name.isPresent()) {
       if (_c.getInterfaces().containsKey(name.get())) {
         _currentAddress.getTypeSpecificFields().setInterface(name.get());
+      } else {
+        // TODO File undefined reference to interface
+        warn(ctx, "No interface named " + name.get());
       }
-      // TODO Else file undefined reference to interface
     }
   }
 
