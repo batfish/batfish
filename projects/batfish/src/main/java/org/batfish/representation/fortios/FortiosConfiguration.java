@@ -26,6 +26,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -117,6 +118,9 @@ public class FortiosConfiguration extends VendorConfiguration {
         _services.values().stream()
             .collect(ImmutableMap.toImmutableMap(Service::getName, this::toMatchExpr));
     _policies.values().forEach(policy -> convertPolicy(policy, c, convertedServices));
+
+    // Convert interfaces. Must happen after converting policies
+    _interfaces.values().forEach(iface -> convertInterface(iface, c));
 
     // Count structure references
     markConcreteStructure(FortiosStructureType.ADDRESS);
@@ -218,6 +222,28 @@ public class FortiosConfiguration extends VendorConfiguration {
     IpAccessList.builder().setOwner(c).setName(viName).setLines(line.build()).build();
   }
 
+  private void convertInterface(Interface iface, Configuration c) {
+    String vdom = iface.getVdom();
+    assert vdom != null; // An interface with no VDOM set should fail in extraction
+    String vrfName = computeVrfName(vdom, iface.getVrfEffective());
+    // TODO Does referencing a VRF from an interface implicitly create it?
+    Vrf vrf = c.getVrfs().get(vrfName);
+    if (vrf == null) {
+      vrf = Vrf.builder().setOwner(c).setName(vrfName).build();
+    }
+    // TODO Handle interface type
+    org.batfish.datamodel.Interface.builder()
+        .setOwner(c)
+        .setName(iface.getName())
+        .setVrf(vrf)
+        .setDescription(iface.getDescription())
+        .setActive(iface.getStatusEffective())
+        .setAddress(iface.getIp())
+        .setMtu(iface.getMtuEffective())
+        .setType(iface.getType().toViType())
+        .build();
+  }
+
   /** Computes the VI name for the given policy. */
   public static @Nonnull String computeViPolicyName(Policy policy) {
     return computeViPolicyName(policy.getName(), policy.getNumber());
@@ -228,5 +254,9 @@ public class FortiosConfiguration extends VendorConfiguration {
   public static @Nonnull String computeViPolicyName(@Nullable String name, String number) {
     // TODO: Might need to generate IpAccessList names per VRF/VDOM
     return Optional.ofNullable(name).orElseGet(() -> String.format("~UNNAMED~POLICY~%s~", number));
+  }
+
+  private static String computeVrfName(String vdom, int vrf) {
+    return String.format("%s:%s", vdom, vrf);
   }
 }
