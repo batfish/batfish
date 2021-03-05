@@ -340,6 +340,17 @@ public final class FortiosGrammarTest {
                         + " protocol is not set to TCP/UDP/SCTP."))));
   }
 
+  @Test
+  public void testSystemRecovery() throws IOException {
+    String hostname = "fortios_system_recovery";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(vc.getInterfaces(), hasKeys("port1"));
+  }
+
   private static final BddTestbed BDD_TESTBED =
       new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 
