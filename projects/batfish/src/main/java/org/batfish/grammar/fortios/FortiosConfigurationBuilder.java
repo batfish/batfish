@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -166,14 +167,23 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void enterCfa_edit(FortiosParser.Cfa_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.address_name());
-    // TODO If name.isPresent(), add structure definition for address
-    _currentAddress =
-        name.map(n -> _c.getAddresses().computeIfAbsent(n, Address::new))
-            .orElseGet(() -> new Address(ctx.address_name().getText())); // dummy
+    Address existingAddress = name.map(_c.getAddresses()::get).orElse(null);
+    if (existingAddress != null) {
+      // Make a clone to edit
+      _currentAddress = SerializationUtils.clone(existingAddress);
+    } else {
+      _currentAddress = new Address(toString(ctx.address_name().str()));
+    }
   }
 
   @Override
   public void exitCfa_edit(Cfa_editContext ctx) {
+    // If edited address is valid, add/update the entry in VS addresses map.
+    // TODO: Better validity checking
+    if (ADDRESS_NAME_PATTERN.matcher(_currentAddress.getName()).matches()) {
+      // TODO Add structure definition for address
+      _c.getAddresses().put(_currentAddress.getName(), _currentAddress);
+    }
     _currentAddress = null;
   }
 

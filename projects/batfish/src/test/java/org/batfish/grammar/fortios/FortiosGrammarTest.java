@@ -173,7 +173,7 @@ public final class FortiosGrammarTest {
     assertThat(interfaceSubnet.getTypeSpecificFields().getInterface(), equalTo("port1"));
     assertThat(
         wildcard.getTypeSpecificFields().getWildcard(),
-        equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("1.1.0.1"), Ip.parse("255.255.0.255"))));
+        equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("2.0.0.2"), Ip.parse("255.0.0.255"))));
     assertThat(longName.getTypeSpecificFields().getSubnet(), equalTo(Prefix.parse("1.1.1.0/24")));
 
     // Test explicitly set values

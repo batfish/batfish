@@ -59,3 +59,10 @@ config firewall address
         set wildcard 1.1.0.1 255.255.0.255
     next
 end
+# Another edit clause for wildcard (modeling a prospective change)
+config firewall address
+    edit "wildcard"
+        set type wildcard
+        set wildcard 2.0.0.2 255.0.0.255
+    next
+end
