@@ -10,8 +10,21 @@ vrf definition SRC_VRF
   route-target export 65003:11
  exit-address-family
 !
+vrf definition SRC_VRF_WITH_EXPORT_MAP
+ rd 65003:5
+ !
+ address-family ipv4
+  route-target export 65003:11
+  export map EXPORT_MAP
+ exit-address-family
+!
+! export these two from SRC_VRF
 ip route vrf SRC_VRF 1.1.1.1 255.255.255.255 Null0
 ip route vrf SRC_VRF 2.2.2.0 255.255.255.0 Null0
+! export only the first from SRC_VRF_WITH_EXPORT_MAP
+ip route vrf SRC_VRF_WITH_EXPORT_MAP 3.3.3.0 255.255.255.0 Null0
+! suppress the second from SRC_VRF_WITH_EXPORT_MAP by altering its route-target with export map
+ip route vrf SRC_VRF_WITH_EXPORT_MAP 4.4.4.0 255.255.255.0 Null0
 !
 vrf definition DST_VRF
  rd 65003:2
@@ -22,7 +35,14 @@ vrf definition DST_VRF
   route-target import 65003:11
  exit-address-family
 !
- vrf definition DST_IMPOSSIBLE
+vrf definition DST_VRF_NO_IMPORT_MAP
+ rd 65003:6
+ !
+ address-family ipv4
+  route-target import 65003:11
+ exit-address-family
+!
+vrf definition DST_IMPOSSIBLE
   rd 65003:3
   !
   address-family ipv4
@@ -30,7 +50,7 @@ vrf definition DST_VRF
    route-target import 65003:11
   exit-address-family
 !
- vrf definition NOT_UNDER_ROUTER_BGP
+vrf definition NOT_UNDER_ROUTER_BGP
   rd 65003:4
   address-family ipv4
    route-target import 65003:11
@@ -44,12 +64,29 @@ router bgp 65003
   redistribute static
  exit-address-family
  !
+ address-family ipv4 vrf SRC_VRF_WITH_EXPORT_MAP
+  bgp router-id 192.168.123.31
+  redistribute static
+ exit-address-family
+ !
  address-family ipv4 vrf DST_VRF
   bgp router-id 192.168.123.32
  exit-address-family
  !
+ address-family ipv4 vrf DST_VRF_NO_IMPORT_MAP
+  bgp router-id 192.168.123.32
+ exit-address-family
+ !
 !
-ip prefix-list import_pl seq 5 permit 2.2.2.0/24
+ip prefix-list import_pl seq 2 permit 2.2.2.0/24
+ip prefix-list import_pl seq 3 permit 3.3.3.0/24
+ip prefix-list import_pl seq 4 permit 4.4.4.0/24
+!
+ip prefix-list export_pl seq 4 permit 4.4.4.0/24
 !
 route-map IMPORT_MAP permit 10
  match ip address prefix-list import_pl
+route-map EXPORT_MAP permit 10
+ match ip address prefix-list export_pl
+ ! this route-target will be rejected by DST_VRF
+ set extcommunity rt 65003:1234
