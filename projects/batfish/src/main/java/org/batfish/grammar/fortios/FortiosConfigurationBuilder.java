@@ -431,7 +431,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces)
         .ifPresent(
             i -> {
-              Set<String> ifaces = _currentPolicy.getDstIntf();
+              Set<Interface> ifaces = _currentPolicy.getDstIntf();
               ifaces.clear();
               ifaces.addAll(i);
             });
@@ -442,7 +442,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces)
         .ifPresent(
             i -> {
-              Set<String> ifaces = _currentPolicy.getSrcIntf();
+              Set<Interface> ifaces = _currentPolicy.getSrcIntf();
               ifaces.clear();
               ifaces.addAll(i);
             });
@@ -484,7 +484,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces)
         .ifPresent(
             i -> {
-              Set<String> ifaces = _currentPolicy.getDstIntf();
+              Set<Interface> ifaces = _currentPolicy.getDstIntf();
               ifaces.addAll(i);
             });
   }
@@ -494,7 +494,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces)
         .ifPresent(
             i -> {
-              Set<String> ifaces = _currentPolicy.getSrcIntf();
+              Set<Interface> ifaces = _currentPolicy.getSrcIntf();
               ifaces.addAll(i);
             });
   }
@@ -652,14 +652,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Optional.of(addressesBuilder.build());
   }
 
-  private Optional<Set<String>> toInterfaces(Interface_or_zone_namesContext ctx) {
+  private Optional<Set<Interface>> toInterfaces(Interface_or_zone_namesContext ctx) {
     Map<String, Interface> ifacesMap = _c.getInterfaces();
-    ImmutableSet.Builder<String> ifaceBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<Interface> ifaceBuilder = ImmutableSet.builder();
     for (Interface_or_zone_nameContext iface : ctx.interface_or_zone_name()) {
       String name = toString(iface.str());
       // TODO Handle Policy.ANY_INTERFACE case
       if (ifacesMap.containsKey(name)) {
-        ifaceBuilder.add(name);
+        ifaceBuilder.add(ifacesMap.get(name));
       } else {
         warn(
             ctx,

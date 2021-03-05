@@ -65,12 +65,12 @@ public final class Policy implements Serializable {
   }
 
   @Nonnull
-  public Set<String> getSrcIntf() {
+  public Set<Interface> getSrcIntf() {
     return _srcIntf;
   }
 
   @Nonnull
-  public Set<String> getDstIntf() {
+  public Set<Interface> getDstIntf() {
     return _dstIntf;
   }
 
@@ -116,8 +116,8 @@ public final class Policy implements Serializable {
 
   @Nonnull private String _number;
   @Nullable private String _name;
-  @Nonnull private Set<String> _srcIntf;
-  @Nonnull private Set<String> _dstIntf;
+  @Nonnull private Set<Interface> _srcIntf;
+  @Nonnull private Set<Interface> _dstIntf;
   @Nonnull private Set<Address> _srcAddr;
   @Nonnull private Set<Address> _dstAddr;
   @Nonnull private Set<Service> _service;

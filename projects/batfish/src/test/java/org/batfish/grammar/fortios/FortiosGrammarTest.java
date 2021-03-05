@@ -431,27 +431,31 @@ public final class FortiosGrammarTest {
 
     Map<String, Policy> policies = vc.getPolicies();
     assertThat(policies, hasKeys(contains("0", "4294967294", "1")));
-    Map<String, Service> services = vc.getServices();
-    assertThat(services, hasKeys(containsInAnyOrder("custom_tcp_11", "custom_tcp_11_from_12")));
-    Map<String, Address> addresses = vc.getAddresses();
-    assertThat(addresses, hasKeys(containsInAnyOrder("addr1", "addr2")));
-
     Policy policyDisable = policies.get("0");
     Policy policyDeny = policies.get("4294967294");
     Policy policyAllow = policies.get("1");
 
+    Map<String, Service> services = vc.getServices();
+    assertThat(services, hasKeys(containsInAnyOrder("custom_tcp_11", "custom_tcp_11_from_12")));
     Service service11 = services.get("custom_tcp_11");
     Service service11From12 = services.get("custom_tcp_11_from_12");
 
+    Map<String, Address> addresses = vc.getAddresses();
+    assertThat(addresses, hasKeys(containsInAnyOrder("addr1", "addr2")));
     Address addr1 = addresses.get("addr1");
     Address addr2 = addresses.get("addr2");
+
+    Map<String, Interface> interfaces = vc.getInterfaces();
+    assertThat(interfaces, hasKeys(containsInAnyOrder("port1", "port2")));
+    Interface port1 = interfaces.get("port1");
+    Interface port2 = interfaces.get("port2");
 
     assertThat(policyDisable.getAction(), equalTo(Action.DENY));
     assertThat(policyDisable.getStatus(), equalTo(Policy.Status.DISABLE));
     assertThat(policyDisable.getStatusEffective(), equalTo(Policy.Status.DISABLE));
     assertThat(policyDisable.getService(), contains(service11));
-    assertThat(policyDisable.getSrcIntf(), contains("port1"));
-    assertThat(policyDisable.getDstIntf(), contains("port2"));
+    assertThat(policyDisable.getSrcIntf(), contains(port1));
+    assertThat(policyDisable.getDstIntf(), contains(port2));
     assertThat(policyDisable.getSrcAddr(), contains(addr1));
     assertThat(policyDisable.getDstAddr(), contains(addr2));
 
@@ -462,8 +466,8 @@ public final class FortiosGrammarTest {
     assertThat(policyDeny.getStatus(), nullValue());
     assertThat(policyDeny.getStatusEffective(), equalTo(Policy.Status.ENABLE));
     assertThat(policyDeny.getService(), contains(service11From12));
-    assertThat(policyDeny.getSrcIntf(), contains("port1"));
-    assertThat(policyDeny.getDstIntf(), contains("port2"));
+    assertThat(policyDeny.getSrcIntf(), contains(port1));
+    assertThat(policyDeny.getDstIntf(), contains(port2));
     assertThat(policyDeny.getSrcAddr(), contains(addr1));
     assertThat(policyDeny.getDstAddr(), contains(addr2));
 
@@ -471,8 +475,8 @@ public final class FortiosGrammarTest {
     assertThat(policyAllow.getStatus(), equalTo(Policy.Status.ENABLE));
     assertThat(policyAllow.getStatusEffective(), equalTo(Policy.Status.ENABLE));
     assertThat(policyAllow.getService(), containsInAnyOrder(service11, service11From12));
-    assertThat(policyAllow.getSrcIntf(), containsInAnyOrder("port1", "port2"));
-    assertThat(policyAllow.getDstIntf(), containsInAnyOrder("port1", "port2"));
+    assertThat(policyAllow.getSrcIntf(), containsInAnyOrder(port1, port2));
+    assertThat(policyAllow.getDstIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyAllow.getSrcAddr(), containsInAnyOrder(addr1, addr2));
     assertThat(policyAllow.getDstAddr(), containsInAnyOrder(addr1, addr2));
   }
