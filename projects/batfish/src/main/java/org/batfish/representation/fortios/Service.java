@@ -1,12 +1,18 @@
 package org.batfish.representation.fortios;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /** FortiOS datamodel component containing firewall service configuration */
 public final class Service implements Serializable {
@@ -197,4 +203,36 @@ public final class Service implements Serializable {
   @Nullable private IntegerSpace _udpPortRangeSrc;
   @Nullable private IntegerSpace _sctpPortRangeDst;
   @Nullable private IntegerSpace _sctpPortRangeSrc;
+
+  public @Nonnull AclLineMatchExpr toMatchExpr() {
+    // TODO Incorporate _protocolNumber, _comment; support other protocols
+    switch (getProtocolEffective()) {
+      case TCP_UDP_SCTP:
+        HeaderSpace.Builder tcp =
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
+                .setSrcPorts(getTcpPortRangeSrcEffective().getSubRanges());
+        HeaderSpace.Builder udp =
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.UDP)
+                .setSrcPorts(getUdpPortRangeSrcEffective().getSubRanges());
+        HeaderSpace.Builder sctp =
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.SCTP)
+                .setSrcPorts(getSctpPortRangeSrcEffective().getSubRanges());
+        if (_tcpPortRangeDst != null) {
+          tcp.setDstPorts(_tcpPortRangeDst.getSubRanges());
+        }
+        return or(
+            "Matched service " + _name,
+            new MatchHeaderSpace(tcp.build()),
+            new MatchHeaderSpace(udp.build()),
+            new MatchHeaderSpace(sctp.build()));
+      case ICMP:
+      case ICMP6:
+      case IP:
+      default:
+        throw new UnsupportedOperationException();
+    }
+  }
 }
