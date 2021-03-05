@@ -7,7 +7,6 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -179,8 +178,9 @@ public class If extends Statement {
       _simplified = simpleTrueStatements;
     } else if (simpleGuard.equals(BooleanExprs.FALSE)) {
       _simplified = simpleFalseStatements;
-    } else if (simpleTrueStatements.isEmpty() && simpleFalseStatements.isEmpty()) {
-      _simplified = Collections.emptyList();
+      // TODO: allow following simplification only if guard is pure
+      // } else if (simpleTrueStatements.isEmpty() && simpleFalseStatements.isEmpty()) {
+      //  _simplified = Collections.emptyList();
     } else {
       If simple = new If(getComment(), simpleGuard, simpleTrueStatements, simpleFalseStatements);
       _simplified = ImmutableList.of(simple);

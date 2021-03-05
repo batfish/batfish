@@ -32,6 +32,7 @@ COLOR: 'color';
 COMMENT: 'comment' -> pushMode(M_Str);
 CONFIG: 'config';
 COUNTRY: 'country';
+CUSTOM: 'custom';
 DESCRIPTION: 'description' -> pushMode(M_Str);
 DISABLE: 'disable';
 DOWN: 'down';
@@ -51,11 +52,16 @@ GLOBAL: 'global';
 HOSTNAME: 'hostname' -> pushMode(M_Str);
 HTTP: 'http';
 ICAP: 'icap';
+ICMP: 'ICMP';
+ICMP6: 'ICMP6';
+ICMPCODE: 'icmpcode';
+ICMPTYPE: 'icmptype';
 INTERFACE: 'interface';
 INTERFACE_SUBNET: 'interface-subnet';
 IP: 'ip';
 IPMASK: 'ipmask';
 IPRANGE: 'iprange';
+IP_UPPER: 'IP';
 LOOPBACK: 'loopback';
 MAC: 'mac';
 MAIL: 'mail';
@@ -64,9 +70,13 @@ MTU_OVERRIDE: 'mtu-override';
 NAC_QUAR: 'nac-quar';
 NEXT: 'next';
 PHYSICAL: 'physical';
+PROTOCOL: 'protocol';
+PROTOCOL_NUMBER: 'protocol-number';
 REDUNDANT: 'redundant';
 REPLACEMSG: 'replacemsg';
+SCTP_PORTRANGE: 'sctp-portrange';
 SDN: 'sdn';
+SERVICE: 'service';
 SET: 'set';
 SNMP_INDEX: 'snmp-index';
 SPAM: 'spam';
@@ -76,9 +86,12 @@ STATUS: 'status';
 SUBNET: 'subnet';
 SUB_TYPE: 'sub-type';
 SYSTEM: 'system';
+TCP_PORTRANGE: 'tcp-portrange';
+TCP_UDP_SCTP: 'TCP/UDP/SCTP';
 TRAFFIC_QUOTA: 'traffic-quota';
 TUNNEL: 'tunnel';
 TYPE: 'type';
+UDP_PORTRANGE: 'udp-portrange';
 UNSET: 'unset';
 UP: 'up';
 UTM: 'utm';
@@ -97,6 +110,10 @@ BLANK_LINE
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
   F_Newline* -> channel(HIDDEN)
 ;
+
+COLON: ':';
+
+HYPHEN: '-';
 
 COMMENT_LINE
 :

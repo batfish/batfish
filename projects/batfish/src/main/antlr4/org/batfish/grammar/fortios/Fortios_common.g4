@@ -62,3 +62,5 @@ str: (double_quoted_string | single_quoted_string | UNQUOTED_WORD_CHARS)*;
 enable_or_disable: ENABLE | DISABLE;
 
 up_or_down: UP | DOWN;
+
+port_range: port_low = uint16 (HYPHEN port_high = uint16)?;

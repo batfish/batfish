@@ -5,6 +5,7 @@ import
   Fortios_common,
   Fortios_firewall,
   Fortios_interface,
+  Fortios_service,
   Fortios_system;
 
 options {
@@ -16,8 +17,10 @@ fortios_configuration: statement+ EOF;
 
 statement: s_config;
 
-s_config: CONFIG (
-  c_firewall
-  | c_system
-) END NEWLINE;
-
+s_config
+:
+    CONFIG (
+        c_system
+        | c_firewall
+    ) END NEWLINE
+;

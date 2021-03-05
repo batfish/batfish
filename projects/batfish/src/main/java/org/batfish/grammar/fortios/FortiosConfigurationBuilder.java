@@ -37,6 +37,15 @@ import org.batfish.grammar.fortios.FortiosParser.Cfa_set_start_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_subnetContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_wildcardContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_commentContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_icmpcodeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_icmptypeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_protocolContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_protocol_numberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_sctp_portrangeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_tcp_portrangeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_udp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cs_replacemsgContext;
 import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_editContext;
@@ -60,11 +69,17 @@ import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefixContext;
+import org.batfish.grammar.fortios.FortiosParser.Ip_protocol_numberContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_wildcardContext;
 import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.MtuContext;
+import org.batfish.grammar.fortios.FortiosParser.Port_rangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Service_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Service_port_rangeContext;
+import org.batfish.grammar.fortios.FortiosParser.Service_port_rangesContext;
+import org.batfish.grammar.fortios.FortiosParser.Service_protocolContext;
 import org.batfish.grammar.fortios.FortiosParser.Single_quoted_stringContext;
 import org.batfish.grammar.fortios.FortiosParser.StrContext;
 import org.batfish.grammar.fortios.FortiosParser.Subnet_maskContext;
@@ -78,6 +93,8 @@ import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.Replacemsg;
+import org.batfish.representation.fortios.Service;
+import org.batfish.representation.fortios.Service.Protocol;
 
 /**
  * Given a parse tree, builds a {@link FortiosConfiguration} that has been prepopulated with
@@ -314,6 +331,161 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInteger(ctx, ctx.value).ifPresent(v -> _currentInterface.setVrf(v));
   }
 
+  @Override
+  public void enterCfsc_edit(Cfsc_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.service_name());
+    if (!name.isPresent()) {
+      _currentService = new Service(ctx.service_name().getText()); // dummy
+      return;
+    }
+    _currentService = _c.getServices().computeIfAbsent(name.get(), Service::new);
+  }
+
+  @Override
+  public void exitCfsc_set_comment(Cfsc_set_commentContext ctx) {
+    _currentService.setComment(toString(ctx.comment));
+  }
+
+  @Override
+  public void exitCfsc_set_icmpcode(Cfsc_set_icmpcodeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.ICMP
+        && _currentService.getProtocolEffective() != Protocol.ICMP6) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set ICMP code for service %s when protocol is not set to ICMP or ICMP6.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setIcmpCode(toInteger(ctx.code));
+  }
+
+  @Override
+  public void exitCfsc_set_icmptype(Cfsc_set_icmptypeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.ICMP
+        && _currentService.getProtocolEffective() != Protocol.ICMP6) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set ICMP type for service %s when protocol is not set to ICMP or ICMP6.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setIcmpType(toInteger(ctx.type));
+  }
+
+  @Override
+  public void exitCfsc_set_protocol(Cfsc_set_protocolContext ctx) {
+    _currentService.setProtocol(toProtocol(ctx.protocol));
+  }
+
+  @Override
+  public void exitCfsc_set_protocol_number(Cfsc_set_protocol_numberContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.IP) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set IP protocol number for service %s when protocol is not set to IP.",
+              _currentService.getName()));
+      return;
+    }
+    toInteger(ctx, ctx.ip_protocol_number()).ifPresent(_currentService::setProtocolNumber);
+  }
+
+  @Override
+  public void exitCfsc_set_sctp_portrange(Cfsc_set_sctp_portrangeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.TCP_UDP_SCTP) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set SCTP port range for service %s when protocol is not set to TCP/UDP/SCTP.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setSctpPortRangeDst(toDstIntegerSpace(ctx.service_port_ranges()));
+    _currentService.setSctpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
+  }
+
+  @Override
+  public void exitCfsc_set_tcp_portrange(Cfsc_set_tcp_portrangeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.TCP_UDP_SCTP) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set TCP port range for service %s when protocol is not set to TCP/UDP/SCTP.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setTcpPortRangeDst(toDstIntegerSpace(ctx.service_port_ranges()));
+    _currentService.setTcpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
+  }
+
+  @Override
+  public void exitCfsc_set_udp_portrange(Cfsc_set_udp_portrangeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.TCP_UDP_SCTP) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set UDP port range for service %s when protocol is not set to TCP/UDP/SCTP.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setUdpPortRangeDst(toDstIntegerSpace(ctx.service_port_ranges()));
+    _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
+  }
+
+  /**
+   * Convert specified service_port_ranges context into an IntegerSpace representing the destination
+   * ports specified by the context.
+   */
+  private @Nonnull IntegerSpace toDstIntegerSpace(Service_port_rangesContext ctx) {
+    IntegerSpace.Builder spaces = IntegerSpace.builder();
+    for (Service_port_rangeContext range : ctx.service_port_range()) {
+      assert range.dst_ports != null;
+      spaces.including(toIntegerSpace(range.dst_ports));
+    }
+    return spaces.build();
+  }
+
+  /**
+   * Convert specified service_port_ranges context into an optional IntegerSpace representing the
+   * source ports specified by the context. An IntegerSpace is only returned if a source port space
+   * is specified.
+   */
+  private Optional<IntegerSpace> toSrcIntegerSpace(Service_port_rangesContext ctx) {
+    IntegerSpace.Builder spaces = IntegerSpace.builder();
+    boolean isSet = false;
+    for (Service_port_rangeContext range : ctx.service_port_range()) {
+      if (range.src_ports != null) {
+        isSet = true;
+        spaces.including(toIntegerSpace(range.src_ports));
+      }
+    }
+    return isSet ? Optional.of(spaces.build()) : Optional.empty();
+  }
+
+  private IntegerSpace toIntegerSpace(Port_rangeContext ctx) {
+    int low = toInteger(ctx.port_low);
+    if (ctx.port_high != null) {
+      int high = toInteger(ctx.port_high);
+      return IntegerSpace.of(Range.closed(low, high));
+    }
+    return IntegerSpace.of(low);
+  }
+
+  private Service.Protocol toProtocol(Service_protocolContext ctx) {
+    if (ctx.ICMP() != null) {
+      return Protocol.ICMP;
+    } else if (ctx.ICMP6() != null) {
+      return Protocol.ICMP6;
+    } else if (ctx.IP_UPPER() != null) {
+      return Protocol.IP;
+    } else {
+      assert ctx.TCP_UDP_SCTP() != null;
+      return Protocol.TCP_UDP_SCTP;
+    }
+  }
+
   private boolean toBoolean(Enable_or_disableContext ctx) {
     if (ctx.ENABLE() != null) {
       return true;
@@ -394,6 +566,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Address_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "address name", ADDRESS_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Service_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "service name", SERVICE_NAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(
@@ -530,6 +707,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
   }
 
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Ip_protocol_numberContext num) {
+    return toIntegerInSpace(ctx, num, IP_PROTOCOL_NUMBER_SPACE, "ip protocol-number");
+  }
+
   private Optional<Integer> toInteger(ParserRuleContext ctx, MtuContext mtu) {
     return toIntegerInSpace(ctx, mtu, MTU_SPACE, "mtu");
   }
@@ -573,15 +754,19 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern ESCAPED_UNQUOTED_CHAR_PATTERN = Pattern.compile("\\\\([^\\r\\n])");
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
+  private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
   private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
 
+  private static final IntegerSpace IP_PROTOCOL_NUMBER_SPACE =
+      IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
 
   private Address _currentAddress;
   private Interface _currentInterface;
   private Replacemsg _currentReplacemsg;
+  private Service _currentService;
   private final @Nonnull FortiosConfiguration _c;
   private final @Nonnull FortiosCombinedParser _parser;
   private final @Nonnull String _text;
