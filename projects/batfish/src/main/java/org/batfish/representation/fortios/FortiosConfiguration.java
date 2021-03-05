@@ -8,6 +8,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -51,6 +52,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     Configuration c = new Configuration(_hostname, ConfigurationFormat.FORTIOS);
+    c.setDeviceModel(DeviceModel.FORTIOS_UNSPECIFIED);
     // TODO: verify
     c.setDefaultCrossZoneAction(LineAction.DENY);
     // TODO: verify
