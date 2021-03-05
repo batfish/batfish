@@ -484,6 +484,44 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testFirewallPolicyWarnings() throws IOException {
+    String hostname = "firewall_policy_warn";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Illegal value for policy number: 4294967295, must be between 0-4294967294"),
+                hasComment("Illegal value for policy number: not_a_number, must be a number"),
+                hasComment("Illegal value for policy name"),
+                hasComment(
+                    "Interface/zone port1 is undefined and cannot be added to policy 4294967295"),
+                hasComment(
+                    "Interface/zone port2 is undefined and cannot be added to policy 4294967295"),
+                hasComment(
+                    "Interface/zone port3 is undefined and cannot be added to policy 4294967295"),
+                hasComment(
+                    "Interface/zone port4 is undefined and cannot be added to policy 4294967295"),
+                hasComment(
+                    "Service service1 is undefined and cannot be added to policy 4294967295"),
+                hasComment(
+                    "Service service2 is undefined and cannot be added to policy 4294967295"),
+                hasComment("Address addr1 is undefined and cannot be added to policy 4294967295"),
+                hasComment("Address addr2 is undefined and cannot be added to policy 4294967295"),
+                hasComment("Address addr3 is undefined and cannot be added to policy 4294967295"),
+                hasComment(
+                    "Address addr4 is undefined and cannot be added to policy 4294967295"))));
+  }
+
+  @Test
   public void testSystemRecovery() throws IOException {
     String hostname = "fortios_system_recovery";
     Batfish batfish = getBatfishForConfigurationNames(hostname);

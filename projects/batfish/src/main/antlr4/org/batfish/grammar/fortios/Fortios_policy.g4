@@ -6,13 +6,15 @@ options {
 
 cf_policy: POLICY NEWLINE cfp_edit*;
 
-cfp_edit
+cfp_edit: EDIT policy_number NEWLINE cfpe* NEXT NEWLINE;
+
+cfpe
 :
-    EDIT policy_number NEWLINE (
+    (
         SET (cfp_set_singletons | cfp_set_lists)
         | APPEND cfp_append
         | SELECT cfp_set_lists
-    )* NEXT NEWLINE
+    )
 ;
 
 cfp_set_singletons

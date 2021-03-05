@@ -624,8 +624,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         warn(
             ctx,
             String.format(
-                "Service is undefined and cannot be added to policy %s",
-                _currentPolicy.getNumber()));
+                "Service %s is undefined and cannot be added to policy %s",
+                name, _currentPolicy.getNumber()));
         return Optional.empty();
       }
     }
@@ -644,8 +644,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         warn(
             ctx,
             String.format(
-                "Address is undefined and cannot be added to policy %s",
-                _currentPolicy.getNumber()));
+                "Address %s is undefined and cannot be added to policy %s",
+                name, _currentPolicy.getNumber()));
         return Optional.empty();
       }
     }
@@ -664,8 +664,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         warn(
             ctx,
             String.format(
-                "Interface/zone is undefined and cannot be added to policy %s",
-                _currentPolicy.getNumber()));
+                "Interface/zone %s is undefined and cannot be added to policy %s",
+                name, _currentPolicy.getNumber()));
         return Optional.empty();
       }
     }
@@ -830,11 +830,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         warn(
             messageCtx,
             String.format(
-                "Illegal value for policy number, must be between 0-%s", POLICY_NUMBER_MAX_VALUE));
+                "Illegal value for policy number: %s, must be between 0-%s",
+                value, POLICY_NUMBER_MAX_VALUE));
         return Optional.empty();
       }
     } catch (NumberFormatException nfe) {
-      warn(messageCtx, "Illegal value for policy number, must be a number");
+      warn(
+          messageCtx,
+          String.format("Illegal value for policy number: %s, must be a number", value));
       return Optional.empty();
     }
     return Optional.of(value);
