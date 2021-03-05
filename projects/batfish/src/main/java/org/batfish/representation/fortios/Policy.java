@@ -1,11 +1,23 @@
 package org.batfish.representation.fortios;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ExprAclLine;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 
 /** FortiOS datamodel component containing firewall policy configuration */
 public final class Policy implements Serializable {
@@ -124,4 +136,39 @@ public final class Policy implements Serializable {
   @Nullable private Status _status;
   @Nullable private String _comments;
   @Nullable private Action _action;
+
+  public IpAccessList toIpAccessList() {
+    // TODO Incorporate _name, _comments. Probably return null or empty if not enabled.
+    // TODO May need to confirm that all interfaces/addresses are defined. They were checked when
+    //  these fields  were set, but technically could have been deleted since.
+    ImmutableList.Builder<AclLineMatchExpr> matchConjuncts = ImmutableList.builder();
+
+    // Match source interfaces
+    // TODO May have to restructure to keep MatchSrcInterface separate from main IpAccessList.
+    matchConjuncts.add(new MatchSrcInterface(_srcIntf));
+    if (_srcAddr.size() > 1 || _dstAddr.size() > 1) {
+      // TODO Support using multiple src/dst addresses.
+      throw new UnsupportedOperationException();
+    }
+
+    // Match src and dst addresses
+    String srcAddr = Iterables.getOnlyElement(_srcAddr);
+    String dstAddr = Iterables.getOnlyElement(_dstAddr);
+    matchConjuncts.add(
+        new MatchHeaderSpace(
+            HeaderSpace.builder()
+                .setSrcIps(new IpSpaceReference(srcAddr))
+                .setDstIps(new IpSpaceReference(dstAddr))
+                .build()));
+
+    // Match services. TODO confirm services should be disjuncted
+    matchConjuncts.add(
+        or(_service.stream().map(Service::toMatchExpr).collect(ImmutableList.toImmutableList())));
+
+    // construct line
+    ExprAclLine.Builder line =
+        getActionEffective() == Action.ALLOW ? ExprAclLine.accepting() : ExprAclLine.rejecting();
+    line.setMatchCondition(and(matchConjuncts.build()));
+    return IpAccessList.builder().setName(_number).setLines(line.build()).build();
+  }
 }

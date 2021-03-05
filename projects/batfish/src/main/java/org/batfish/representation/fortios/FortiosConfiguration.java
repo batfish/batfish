@@ -85,6 +85,19 @@ public class FortiosConfiguration extends VendorConfiguration {
         .values()
         .forEach(address -> c.getIpSpaces().put(address.getName(), address.toIpSpace(_w)));
 
+    // Convert policies
+    _policies.values().forEach(policy -> convertPolicy(policy, c));
+
     return c;
+  }
+
+  private void convertPolicy(Policy policy, Configuration c) {
+    if (policy.getStatusEffective() == Policy.Status.DISABLE) {
+      // Ignore disabled policy
+      return;
+    }
+    // TODO: Should we incorporate policy.getName() it its name if present?
+    // TODO: Might need to generate IpAccessList names per VRF/VDOM
+    c.getIpAccessLists().put(policy.getNumber(), policy.toIpAccessList());
   }
 }
