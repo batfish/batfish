@@ -1814,18 +1814,21 @@ null_af_multicast_tail
 
 vrfd_af_export
 :
-   EXPORT
-   (
-      IPV4
-      | IPV6
-   )?
-   (
-      MULTICAST
-      | UNICAST
-   )?
-   ( prefix_limit = DEC )?
-   MAP name = variable
-   NEWLINE
+  EXPORT
+  (
+    vrfd_af_export_nonvpn
+    | vrfd_af_export_vpn
+  )
+;
+
+vrfd_af_export_nonvpn
+:
+  (IPV4 | IPV6) (MULTICAST | UNICAST) prefix_limit=DEC? MAP name = variable NEWLINE
+;
+
+vrfd_af_export_vpn
+:
+  MAP name = variable NEWLINE
 ;
 
 vrfd_af_import
