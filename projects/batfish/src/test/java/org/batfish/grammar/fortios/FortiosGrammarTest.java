@@ -432,14 +432,19 @@ public final class FortiosGrammarTest {
     Map<String, Policy> policies = vc.getPolicies();
     assertThat(policies, hasKeys(contains("0", "4294967294", "1")));
     Map<String, Service> services = vc.getServices();
-    assertThat(services, hasKeys(contains("custom_tcp_11", "custom_tcp_11_to_12")));
+    assertThat(services, hasKeys(containsInAnyOrder("custom_tcp_11", "custom_tcp_11_from_12")));
+    Map<String, Address> addresses = vc.getAddresses();
+    assertThat(addresses, hasKeys(containsInAnyOrder("addr1", "addr2")));
 
     Policy policyDisable = policies.get("0");
     Policy policyDeny = policies.get("4294967294");
     Policy policyAllow = policies.get("1");
 
     Service service11 = services.get("custom_tcp_11");
-    Service service11To12 = services.get("custom_tcp_11_to_12");
+    Service service11From12 = services.get("custom_tcp_11_from_12");
+
+    Address addr1 = addresses.get("addr1");
+    Address addr2 = addresses.get("addr2");
 
     assertThat(policyDisable.getAction(), equalTo(Action.DENY));
     assertThat(policyDisable.getStatus(), equalTo(Policy.Status.DISABLE));
@@ -447,6 +452,8 @@ public final class FortiosGrammarTest {
     assertThat(policyDisable.getService(), contains(service11));
     assertThat(policyDisable.getSrcIntf(), contains("port1"));
     assertThat(policyDisable.getDstIntf(), contains("port2"));
+    assertThat(policyDisable.getSrcAddr(), contains(addr1));
+    assertThat(policyDisable.getDstAddr(), contains(addr2));
 
     assertThat(policyDeny.getAction(), nullValue());
     assertThat(policyDeny.getActionEffective(), equalTo(Action.DENY));
@@ -454,18 +461,20 @@ public final class FortiosGrammarTest {
     assertThat(policyDeny.getName(), equalTo("longest allowed firewall policy nam"));
     assertThat(policyDeny.getStatus(), nullValue());
     assertThat(policyDeny.getStatusEffective(), equalTo(Policy.Status.ENABLE));
-    assertThat(policyDeny.getService(), contains(service11To12));
+    assertThat(policyDeny.getService(), contains(service11From12));
     assertThat(policyDeny.getSrcIntf(), contains("port1"));
     assertThat(policyDeny.getDstIntf(), contains("port2"));
+    assertThat(policyDeny.getSrcAddr(), contains(addr1));
+    assertThat(policyDeny.getDstAddr(), contains(addr2));
 
     assertThat(policyAllow.getAction(), equalTo(Action.ALLOW));
     assertThat(policyAllow.getStatus(), equalTo(Policy.Status.ENABLE));
     assertThat(policyAllow.getStatusEffective(), equalTo(Policy.Status.ENABLE));
-    assertThat(policyAllow.getService(), contains(service11));
-    assertThat(policyAllow.getSrcIntf(), contains("port1"));
-    // Multiple str doesn't work yet...
-    // assertThat(policyAllow.getDstIntf(), containsInAnyOrder("port1", "port2"));
-    assertThat(policyAllow.getDstIntf(), containsInAnyOrder("port2"));
+    assertThat(policyAllow.getService(), containsInAnyOrder(service11, service11From12));
+    assertThat(policyAllow.getSrcIntf(), containsInAnyOrder("port1", "port2"));
+    assertThat(policyAllow.getDstIntf(), containsInAnyOrder("port1", "port2"));
+    assertThat(policyAllow.getSrcAddr(), containsInAnyOrder(addr1, addr2));
+    assertThat(policyAllow.getDstAddr(), containsInAnyOrder(addr1, addr2));
   }
 
   private static final BddTestbed BDD_TESTBED =

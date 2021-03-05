@@ -15,8 +15,16 @@ config firewall service custom
     edit "custom_tcp_11"
         set tcp-portrange 11
     next
-    edit "custom_tcp_11_to_12"
+    edit "custom_tcp_11_from_12"
         set tcp-portrange 11:12
+    next
+end
+config firewall address
+    edit addr1
+        set subnet 10.0.1.0 255.255.255.0
+    next
+    edit addr2
+        set subnet 10.0.2.0 255.255.255.0
     next
 end
 config firewall policy
@@ -36,7 +44,7 @@ config firewall policy
         set dstintf port2
         set srcaddr addr1
         set dstaddr addr2
-        set service custom_tcp_11_to_12
+        set service custom_tcp_11_from_12
         set comments "firewall policy comments"
     next
     # Number doesn't indicate order, just a unique identifier
@@ -50,6 +58,10 @@ config firewall policy
         set dstaddr addr2
         set service custom_tcp_11
         set status enable
+        append srcintf port2
+        append dstintf port1
+        append srcaddr addr2
+        append dstaddr addr1
+        append service custom_tcp_11_from_12
     next
-    # TODO handle append lines
 end

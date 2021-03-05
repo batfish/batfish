@@ -46,9 +46,9 @@ cfp_set_srcaddr: SRCADDR addresses = address_names NEWLINE;
 
 cfp_set_service: SERVICE services = service_names NEWLINE;
 
-cfp_set_dstintf: DSTINTF interfaces = interface_names NEWLINE;
+cfp_set_dstintf: DSTINTF interfaces = interface_or_zone_names NEWLINE;
 
-cfp_set_srcintf: SRCINTF interfaces = interface_names NEWLINE;
+cfp_set_srcintf: SRCINTF interfaces = interface_or_zone_names NEWLINE;
 
 cfp_append
 :
@@ -65,9 +65,9 @@ cfp_append_srcaddr: SRCADDR addresses = address_names NEWLINE;
 
 cfp_append_service: SERVICE services = service_names NEWLINE;
 
-cfp_append_dstintf: DSTINTF interfaces = interface_names NEWLINE;
+cfp_append_dstintf: DSTINTF interfaces = interface_or_zone_names NEWLINE;
 
-cfp_append_srcintf: SRCINTF interfaces = interface_names NEWLINE;
+cfp_append_srcintf: SRCINTF interfaces = interface_or_zone_names NEWLINE;
 
 // 1-35
 policy_name: str;
@@ -81,9 +81,6 @@ policy_action: ALLOW | DENY | IPSEC;
 
 address_names: address_name+;
 
-// 1-79 characters
-address_name: str;
-
 service_names: service_name+;
 
-interface_names: interface_name+;
+interface_or_zone_names: interface_or_zone_name+;

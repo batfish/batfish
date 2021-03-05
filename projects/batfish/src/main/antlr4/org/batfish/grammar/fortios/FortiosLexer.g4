@@ -20,7 +20,6 @@ ADMIN:
   }
 ;
 
-
 ACTION: 'action';
 ADDRESS: 'address';
 AGGREGATE: 'aggregate';
@@ -91,7 +90,8 @@ SELECT: 'select';
 SERVICE:
   'service'
   {
-    if (lastTokenType() == SET || lastTokenType() == SELECT || lastTokenType() == APPEND) {
+    // After `firewall service`, we expect keywords, not strings
+    if (lastTokenType() != FIREWALL) {
       pushMode(M_Str);
     }
   }
