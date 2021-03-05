@@ -3,6 +3,7 @@ package org.batfish.grammar.fortios;
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
@@ -10,6 +11,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -419,6 +421,31 @@ public final class FortiosGrammarTest {
                 hasComment(
                     "Cannot set UDP port range for service setting props for wrong protocol when"
                         + " protocol is not set to TCP/UDP/SCTP."))));
+  }
+
+  @Test
+  public void testSystemRecovery() throws IOException {
+    String hostname = "fortios_system_recovery";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(vc.getInterfaces(), hasKeys("port1"));
+
+    // make sure the line was actually unrecognized
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarning(
+            allOf(
+                hasComment("This syntax is unrecognized"),
+                hasText("set APropertyThatHopefullyDoesNotExist to a bunch of garbage"))));
   }
 
   private static final BddTestbed BDD_TESTBED =
