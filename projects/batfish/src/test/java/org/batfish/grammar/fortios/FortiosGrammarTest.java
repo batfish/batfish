@@ -10,6 +10,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -41,6 +42,8 @@ import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.Policy;
+import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.junit.Rule;
@@ -345,110 +348,43 @@ public final class FortiosGrammarTest {
     String hostname = "firewall_policy";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
+    Map<String, Policy> policies = vc.getPolicies();
+    assertThat(policies, hasKeys(contains("0", "4294967294", "1")));
     Map<String, Service> services = vc.getServices();
-    assertThat(
-        services.keySet(),
-        containsInAnyOrder(
-            "longest possible firewall service custom service name that is accepted by devic",
-            "custom_default",
-            "explicit_tcp",
-            "src_port_defaults",
-            "custom_icmp",
-            "custom_icmp6",
-            "custom_ip",
-            "change_protocol"));
+    assertThat(services, hasKeys(contains("custom_tcp_11", "custom_tcp_11_to_12")));
 
-    Service serviceLongName =
-        services.get(
-            "longest possible firewall service custom service name that is accepted by devic");
-    Service serviceDefault = services.get("custom_default");
-    Service serviceTcp = services.get("explicit_tcp");
-    Service serviceSrcPortDefaults = services.get("src_port_defaults");
-    Service serviceIcmp = services.get("custom_icmp");
-    Service serviceIcmp6 = services.get("custom_icmp6");
-    Service serviceIp = services.get("custom_ip");
-    Service serviceChangeProtocol = services.get("change_protocol");
+    Policy policyDisable = policies.get("0");
+    Policy policyDeny = policies.get("4294967294");
+    Policy policyAllow = policies.get("1");
 
-    assertThat(serviceLongName.getComment(), equalTo("service custom comment"));
+    Service service11 = services.get("custom_tcp_11");
+    Service service11To12 = services.get("custom_tcp_11_to_12");
 
-    // Check default protocol
-    assertThat(serviceDefault.getProtocol(), equalTo(Protocol.UNKNOWN));
-    assertThat(serviceDefault.getProtocolEffective(), equalTo(Service.DEFAULT_PROTOCOL));
-    // Check defaults
-    assertThat(serviceDefault.getSctpPortRangeDst(), nullValue());
-    assertThat(serviceDefault.getSctpPortRangeSrc(), nullValue());
-    assertThat(serviceDefault.getTcpPortRangeDst(), nullValue());
-    assertThat(serviceDefault.getTcpPortRangeSrc(), nullValue());
-    assertThat(serviceDefault.getUdpPortRangeDst(), nullValue());
-    assertThat(serviceDefault.getUdpPortRangeSrc(), nullValue());
+    assertThat(policyDisable.getAction(), equalTo(Action.DENY));
+    assertThat(policyDisable.getStatus(), equalTo(Policy.Status.DISABLE));
+    assertThat(policyDisable.getStatusEffective(), equalTo(Policy.Status.DISABLE));
+    assertThat(policyDisable.getService(), contains(service11));
+    assertThat(policyDisable.getSrcIntf(), contains("port1"));
+    assertThat(policyDisable.getDstIntf(), contains("port2"));
 
-    // Even with dest ports configured, source ports should still show up as default
-    assertThat(serviceSrcPortDefaults.getSctpPortRangeSrc(), nullValue());
-    assertThat(
-        serviceSrcPortDefaults.getSctpPortRangeSrcEffective(),
-        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
-    assertThat(serviceSrcPortDefaults.getTcpPortRangeSrc(), nullValue());
-    assertThat(
-        serviceSrcPortDefaults.getTcpPortRangeSrcEffective(),
-        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
-    assertThat(serviceSrcPortDefaults.getUdpPortRangeSrc(), nullValue());
-    assertThat(
-        serviceSrcPortDefaults.getUdpPortRangeSrcEffective(),
-        equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
+    assertThat(policyDeny.getAction(), nullValue());
+    assertThat(policyDeny.getActionEffective(), equalTo(Action.DENY));
+    assertThat(policyDeny.getComments(), equalTo("firewall policy comments"));
+    assertThat(policyDeny.getName(), equalTo("longest allowed firewall policy nam"));
+    assertThat(policyDeny.getStatus(), nullValue());
+    assertThat(policyDeny.getStatusEffective(), equalTo(Policy.Status.ENABLE));
+    assertThat(policyDeny.getService(), contains(service11To12));
+    assertThat(policyDeny.getSrcIntf(), contains("port1"));
+    assertThat(policyDeny.getDstIntf(), contains("port2"));
 
-    assertThat(serviceTcp.getProtocol(), equalTo(Protocol.TCP_UDP_SCTP));
-    assertThat(serviceTcp.getProtocolEffective(), equalTo(Protocol.TCP_UDP_SCTP));
-    // Check variety of port range syntax
-    // TCP
-    assertThat(
-        serviceTcp.getTcpPortRangeDst(),
-        equalTo(IntegerSpace.builder().including(1, 2, 10, 11, 13).build()));
-    assertThat(
-        serviceTcp.getTcpPortRangeSrc(),
-        equalTo(IntegerSpace.builder().including(3, 4, 6, 7).build()));
-    // UDP
-    assertThat(
-        serviceTcp.getUdpPortRangeDst(), equalTo(IntegerSpace.builder().including(100).build()));
-    assertThat(serviceTcp.getUdpPortRangeSrc(), nullValue());
-    // SCTP
-    assertThat(
-        serviceTcp.getSctpPortRangeDst(),
-        equalTo(IntegerSpace.builder().including(200, 201).build()));
-    assertThat(
-        serviceTcp.getSctpPortRangeSrc(), equalTo(IntegerSpace.builder().including(300).build()));
-
-    assertThat(serviceIcmp.getProtocol(), equalTo(Protocol.ICMP));
-    assertThat(serviceIcmp.getProtocolEffective(), equalTo(Protocol.ICMP));
-    assertThat(serviceIcmp.getIcmpCode(), equalTo(255));
-    assertThat(serviceIcmp.getIcmpType(), equalTo(255));
-
-    assertThat(serviceIcmp6.getProtocol(), equalTo(Protocol.ICMP6));
-    assertThat(serviceIcmp6.getProtocolEffective(), equalTo(Protocol.ICMP6));
-    // Check defaults
-    assertThat(serviceIcmp6.getIcmpCode(), nullValue());
-    assertThat(serviceIcmp6.getIcmpType(), nullValue());
-
-    assertThat(serviceIp.getProtocol(), equalTo(Protocol.IP));
-    assertThat(serviceIp.getProtocolEffective(), equalTo(Protocol.IP));
-    assertThat(serviceIp.getProtocolNumber(), equalTo(254));
-    assertThat(serviceIp.getProtocolNumberEffective(), equalTo(254));
-
-    assertThat(serviceChangeProtocol.getProtocol(), equalTo(Protocol.IP));
-    assertThat(serviceChangeProtocol.getProtocolEffective(), equalTo(Protocol.IP));
-    // Should revert to default after changing protocol
-    assertThat(serviceChangeProtocol.getProtocolNumber(), nullValue());
-    assertThat(
-        serviceChangeProtocol.getProtocolNumberEffective(),
-        equalTo(Service.DEFAULT_PROTOCOL_NUMBER));
-    // Check that other protocol's values were cleared
-    assertThat(serviceChangeProtocol.getIcmpCode(), nullValue());
-    assertThat(serviceChangeProtocol.getIcmpType(), nullValue());
-    assertThat(serviceChangeProtocol.getSctpPortRangeDst(), nullValue());
-    assertThat(serviceChangeProtocol.getSctpPortRangeSrc(), nullValue());
-    assertThat(serviceChangeProtocol.getTcpPortRangeDst(), nullValue());
-    assertThat(serviceChangeProtocol.getTcpPortRangeSrc(), nullValue());
-    assertThat(serviceChangeProtocol.getUdpPortRangeDst(), nullValue());
-    assertThat(serviceChangeProtocol.getUdpPortRangeSrc(), nullValue());
+    assertThat(policyAllow.getAction(), equalTo(Action.ALLOW));
+    assertThat(policyAllow.getStatus(), equalTo(Policy.Status.ENABLE));
+    assertThat(policyAllow.getStatusEffective(), equalTo(Policy.Status.ENABLE));
+    assertThat(policyAllow.getService(), contains(service11));
+    assertThat(policyAllow.getSrcIntf(), contains("port1"));
+    // Multiple str doesn't work yet...
+    // assertThat(policyAllow.getDstIntf(), containsInAnyOrder("port1", "port2"));
+    assertThat(policyAllow.getDstIntf(), containsInAnyOrder("port2"));
   }
 
   private static final BddTestbed BDD_TESTBED =

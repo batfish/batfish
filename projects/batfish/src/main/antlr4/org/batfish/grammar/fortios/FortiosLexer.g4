@@ -56,6 +56,7 @@ ICMPTYPE: 'icmptype';
 INTERFACE: 'interface';
 IP: 'ip';
 IP_UPPER: 'IP';
+IPSEC: 'ipsec';
 LOOPBACK: 'loopback';
 MAIL: 'mail';
 MTU: 'mtu';

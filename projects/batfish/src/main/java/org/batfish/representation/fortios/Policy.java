@@ -16,16 +16,20 @@ public final class Policy implements Serializable {
   public enum Status {
     ENABLE,
     DISABLE,
-    UNKNOWN,
   }
 
   public enum Action {
     ALLOW,
     DENY,
-    UNKNOWN,
+    IPSEC,
   }
 
   @Nonnull
+  public String getNumber() {
+    return _number;
+  }
+
+  @Nullable
   public String getName() {
     return _name;
   }
@@ -82,21 +86,33 @@ public final class Policy implements Serializable {
     return _service;
   }
 
+  public void setAction(Action action) {
+    _action = action;
+  }
+
   public void setComments(String comments) {
     _comments = comments;
   }
 
-  public Policy(String name) {
+  public void setName(String name) {
     _name = name;
+  }
+
+  public void setStatus(Status status) {
+    _status = status;
+  }
+
+  public Policy(String number) {
+    _number = number;
     _srcIntf = new HashSet<>();
     _dstIntf = new HashSet<>();
     _srcAddr = new HashSet<>();
     _dstAddr = new HashSet<>();
     _service = new HashSet<>();
-    _action = Action.UNKNOWN;
   }
 
-  @Nonnull private String _name;
+  @Nonnull private String _number;
+  @Nullable private String _name;
   @Nonnull private Set<String> _srcIntf;
   @Nonnull private Set<String> _dstIntf;
   @Nonnull private Set<Object> _srcAddr;

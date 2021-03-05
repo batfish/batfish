@@ -2,6 +2,7 @@ package org.batfish.representation.fortios;
 
 import com.google.common.collect.ImmutableList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -15,6 +16,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public FortiosConfiguration() {
     _interfaces = new HashMap<>();
+    _policies = new LinkedHashMap<>();
     _replacemsgs = new HashMap<>();
     _services = new HashMap<>();
   }
@@ -41,6 +43,11 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
+  /** name -> policy */
+  public @Nonnull Map<String, Policy> getPolicies() {
+    return _policies;
+  }
+
   /** majorType -> minorType -> replacemsg config */
   public @Nonnull Map<String, Map<String, Replacemsg>> getReplacemsgs() {
     return _replacemsgs;
@@ -53,6 +60,8 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   private String _hostname;
   private final @Nonnull Map<String, Interface> _interfaces;
+  // Note: this is a LinkedHashMap to preserve insertion order
+  private final @Nonnull Map<String, Policy> _policies;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
   private final @Nonnull Map<String, Service> _services;
 
