@@ -1,6 +1,6 @@
 config system global
     set hostname "fortios_system_recovery"
-    set timezone 04
+    set APropertyThatHopefullyDoesNotExist to a bunch of garbage
 end
 config system interface
     edit "port1"
