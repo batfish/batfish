@@ -495,7 +495,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * Convert specified service_port_ranges context into an IntegerSpace representing the destination
    * ports specified by the context.
    */
-  private IntegerSpace toDstIntegerSpace(Service_port_rangesContext ctx) {
+  private @Nonnull IntegerSpace toDstIntegerSpace(Service_port_rangesContext ctx) {
     IntegerSpace.Builder spaces = IntegerSpace.builder();
     for (Service_port_rangeContext range : ctx.service_port_range()) {
       assert range.dst_ports != null;

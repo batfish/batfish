@@ -84,10 +84,18 @@ dscp_type
    | EF
 ;
 
-ec_literal
+ec_ga_la_literal
 :
-   DEC COLON DEC
+   ecgalal_asdot_colon
+   | ecgalal_colon
+   | ecgalal_ip_colon
 ;
+
+ecgalal_asdot_colon: ga_high16 = DEC PERIOD ga_low16 = DEC COLON la = DEC;
+
+ecgalal_colon: ga = DEC COLON la = DEC;
+
+ecgalal_ip_colon: ga = IP_ADDRESS COLON la = DEC;
 
 eigrp_metric
 :
@@ -99,9 +107,9 @@ exit_line
    EXIT NEWLINE
 ;
 
-extended_community
+extended_community_route_target
 :
-   ec_literal
+   ec_ga_la_literal
 ;
 
 icmp_object_type
