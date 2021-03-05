@@ -12,11 +12,14 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
@@ -244,6 +247,31 @@ public class FortiosConfiguration extends VendorConfiguration {
     viIface.build();
   }
 
+  private @Nullable IpAccessList generateOutgoingFilter(Interface iface, Configuration c) {
+    List<IpAccessList> viPolicies =
+        _policies.values().stream()
+            .filter(policy -> policy.getDstIntf().contains(iface.getName()))
+            .map(policy -> c.getIpAccessLists().get(computeViPolicyName(policy)))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+    if (viPolicies.isEmpty()) {
+      return null;
+    } else if (viPolicies.size() == 1) {
+      return viPolicies.get(0);
+    }
+    ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
+    viPolicies.stream()
+        .map(IpAccessList::getName)
+        .map(policyName -> new AclAclLine("Match policy " + policyName, policyName))
+        .forEach(lines::add);
+    lines.add(ExprAclLine.ACCEPT_ALL); // TODO Check default action
+    return IpAccessList.builder()
+        .setOwner(c)
+        .setName(computeOutgoingFilterName(iface.getName()))
+        .setLines(lines.build())
+        .build();
+  }
+
   /** Computes the VI name for the given policy. */
   public static @Nonnull String computeViPolicyName(Policy policy) {
     return computeViPolicyName(policy.getName(), policy.getNumber());
@@ -258,5 +286,9 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   private static String computeVrfName(String vdom, int vrf) {
     return String.format("%s:%s", vdom, vrf);
+  }
+
+  private static String computeOutgoingFilterName(String iface) {
+    return String.format("~%s~outgoing~", iface);
   }
 }
