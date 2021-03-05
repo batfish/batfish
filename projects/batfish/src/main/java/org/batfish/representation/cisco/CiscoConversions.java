@@ -1770,7 +1770,8 @@ public class CiscoConversions {
     // pre-compute RT to VRF name mapping
     for (Vrf vrf : vrfsWithoutExportMap) {
       assert vrf.getIpv4UnicastAddressFamily() != null;
-      vrf.getIpv4UnicastAddressFamily().getRouteTargetExport().stream()
+      vrf.getIpv4UnicastAddressFamily()
+          .getRouteTargetExport()
           .forEach(rt -> vrfsByExportRt.put(rt, vrf.getName()));
     }
 
