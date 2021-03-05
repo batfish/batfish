@@ -23,10 +23,10 @@ config firewall service custom
 end
 config firewall address
     edit addr1
-        set subnet 1.1.1.0 255.255.255.0
+        set subnet 10.0.1.0 255.255.255.0
     next
     edit addr2
-        set subnet 2.2.2.0 255.255.255.0
+        set subnet 10.0.2.0 255.255.255.0
     next
 end
 config firewall policy
@@ -51,6 +51,7 @@ config firewall policy
     next
     # Number doesn't indicate order, just a unique identifier
     edit 1
+        set name "Permit Custom TCP Traffic"
         set action allow
         set srcintf port1
         set dstintf port2

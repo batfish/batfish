@@ -1,6 +1,9 @@
 package org.batfish.representation.fortios;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +14,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.vendor.VendorConfiguration;
 
 public class FortiosConfiguration extends VendorConfiguration {
@@ -85,19 +89,29 @@ public class FortiosConfiguration extends VendorConfiguration {
         .values()
         .forEach(address -> c.getIpSpaces().put(address.getName(), address.toIpSpace(_w)));
 
-    // Convert policies
-    _policies.values().forEach(policy -> convertPolicy(policy, c));
+    // Convert policies. Must happen after c._ipSpaces is populated
+    Map<String, AclLineMatchExpr> convertedServices =
+        _services.values().stream()
+            .collect(ImmutableMap.toImmutableMap(Service::getName, svc -> svc.toMatchExpr(_w)));
+    _policies.values().forEach(policy -> convertPolicy(policy, c, convertedServices));
 
     return c;
   }
 
-  private void convertPolicy(Policy policy, Configuration c) {
+  private void convertPolicy(
+      Policy policy, Configuration c, Map<String, AclLineMatchExpr> convertedServices) {
     if (policy.getStatusEffective() == Policy.Status.DISABLE) {
       // Ignore disabled policy
       return;
     }
-    // TODO: Should we incorporate policy.getName() it its name if present?
     // TODO: Might need to generate IpAccessList names per VRF/VDOM
-    c.getIpAccessLists().put(policy.getNumber(), policy.toIpAccessList());
+    c.getIpAccessLists()
+        .put(computePolicyName(policy), policy.toIpAccessList(c.getIpSpaces(), convertedServices));
+  }
+
+  static String computePolicyName(Policy policy) {
+    // TODO Is this guaranteed to be unique?
+    // TODO: Might need to generate IpAccessList names per VRF/VDOM
+    return firstNonNull(policy.getName(), policy.getNumber());
   }
 }
