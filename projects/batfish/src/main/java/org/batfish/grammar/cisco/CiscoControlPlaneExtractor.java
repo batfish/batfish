@@ -1047,7 +1047,8 @@ import org.batfish.grammar.cisco.CiscoParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco.CiscoParser.Vlan_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrf_block_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_address_familyContext;
-import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_exportContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_export_nonvpnContext;
+import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_export_vpnContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_import_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
@@ -9822,14 +9823,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitVrfd_af_export(Vrfd_af_exportContext ctx) {
-    warn(ctx, "Export maps for VRFs are not currently supported");
+  public void exitVrfd_af_export_nonvpn(Vrfd_af_export_nonvpnContext ctx) {
+    warn(ctx, "Export into non-vpnv4/6-address-family RIBs is not currently supported");
+    _configuration.referenceStructure(
+        ROUTE_MAP,
+        ctx.name.getText(),
+        VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP,
+        ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitVrfd_af_export_vpn(Vrfd_af_export_vpnContext ctx) {
     assert _currentVrfAddressFamily != null;
     String name = ctx.name.getText();
-    if (ctx.MULTICAST() == null) {
-      // unicast
-      _currentVrfAddressFamily.setExportMap(name);
-    } // TODO: add else branch warning about just multicast not being supported
+    _currentVrfAddressFamily.setExportMap(name);
     _configuration.referenceStructure(
         ROUTE_MAP, name, VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP, ctx.getStart().getLine());
   }

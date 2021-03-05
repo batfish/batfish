@@ -100,6 +100,15 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -1749,12 +1758,19 @@ public class CiscoConversions {
         vrfs.stream()
             .filter(v -> v.getIpv4UnicastAddressFamily() != null)
             .collect(Collectors.toList());
+    List<Vrf> vrfsWithoutExportMap =
+        vrfsWithIpv4Af.stream()
+            .filter(v -> v.getIpv4UnicastAddressFamily().getExportMap() == null)
+            .collect(ImmutableList.toImmutableList());
+    List<Vrf> vrfsWithExportMap =
+        vrfsWithIpv4Af.stream()
+            .filter(v -> v.getIpv4UnicastAddressFamily().getExportMap() != null)
+            .collect(ImmutableList.toImmutableList());
     Multimap<ExtendedCommunity, String> vrfsByExportRt = HashMultimap.create();
     // pre-compute RT to VRF name mapping
-    for (Vrf vrf : vrfsWithIpv4Af) {
+    for (Vrf vrf : vrfsWithoutExportMap) {
       assert vrf.getIpv4UnicastAddressFamily() != null;
-      vrf.getIpv4UnicastAddressFamily()
-          .getRouteTargetExport()
+      vrf.getIpv4UnicastAddressFamily().getRouteTargetExport().stream()
           .forEach(rt -> vrfsByExportRt.put(rt, vrf.getName()));
     }
 
@@ -1765,6 +1781,8 @@ public class CiscoConversions {
       for (ExtendedCommunity importRt : ipv4uaf.getRouteTargetImport()) {
         org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(importingVrf.getName());
         assert viVrf != null;
+        // Add leak config for every exporting vrf with no export map whose export route-target
+        // matches this vrf's import route-target
         for (String exportingVrf : vrfsByExportRt.get(importRt)) {
           // Take care to prevent self-loops
           if (importingVrf.getName().equals(exportingVrf)) {
@@ -1777,8 +1795,99 @@ public class CiscoConversions {
                   .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
                   .build());
         }
+        // Add leak config for every exporting vrf with an export map, since the map can potentially
+        // alter the route-target to match the import route-target.
+        for (Vrf mapExportingVrf : vrfsWithExportMap) {
+          if (importingVrf == mapExportingVrf) {
+            // Take care to prevent self-loops
+            continue;
+          }
+          viVrf.addVrfLeakingConfig(
+              VrfLeakingConfig.builder()
+                  .setBgpLeakConfig(new BgpLeakConfig(importRt))
+                  .setImportFromVrf(mapExportingVrf.getName())
+                  .setImportPolicy(
+                      vrfExportImportPolicy(
+                          mapExportingVrf.getName(),
+                          routeMapOrRejectAll(
+                              mapExportingVrf.getIpv4UnicastAddressFamily().getExportMap(), c),
+                          mapExportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+                          importingVrf.getName(),
+                          routeMapOrRejectAll(ipv4uaf.getImportMap(), c),
+                          ipv4uaf.getRouteTargetImport(),
+                          c))
+                  .build());
+        }
       }
     }
+  }
+
+  /** Create a policy for exporting from one vrf to another in the presence of an export map. */
+  private static @Nonnull String vrfExportImportPolicy(
+      String exportingVrf,
+      String exportMap,
+      Set<ExtendedCommunity> routeTargetExport,
+      String importingVrf,
+      @Nullable String importMap,
+      Set<ExtendedCommunity> routeTargetImport,
+      Configuration c) {
+    // Implementation overview:
+    // 1. (Re)write the export route-target to intermediate BGP properties so that they can be read
+    //    later.
+    // 2. Apply the export-map if it exists. This may change properties of the route, but it may not
+    //    reject the route. If the export-map rejects, then it should not modify the route.
+    //    TODO: verify and enforce lack of side effects when export map rejects
+    // 3. Drop the route if does not have a route-target matching the importing VRF's import
+    //    route-target communities.
+    // 4. Apply the import route-map if it exists. This route-map may permit with or without further
+    //    modification, or may reject the route.
+    String policyName = computeVrfExportImportPolicyName(exportingVrf, importingVrf);
+    if (c.getRoutingPolicies().containsKey(policyName)) {
+      return policyName;
+    }
+    Statement addExportRt =
+        new SetCommunities(
+            CommunitySetUnion.of(
+                InputCommunities.instance(),
+                new LiteralCommunitySet(CommunitySet.of(routeTargetExport))));
+    Statement tryApplyExportMap =
+        new If(new CallExpr(exportMap), ImmutableList.of(), ImmutableList.of());
+    Statement filterImportRt =
+        new If(
+            new MatchCommunities(
+                InputCommunities.instance(),
+                new CommunitySetMatchAny(
+                    routeTargetImport.stream()
+                        .map(CommunityIs::new)
+                        .map(HasCommunity::new)
+                        .collect(ImmutableList.toImmutableList()))),
+            ImmutableList.of(),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    Statement applyImportMap =
+        importMap != null
+            ? new If(
+                new CallExpr(importMap),
+                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))
+            : Statements.ReturnTrue.toStaticStatement();
+    // TODO: prevent side-effects from a route-map continue that eventually rejects in export map
+    RoutingPolicy.builder()
+        .setName(policyName)
+        .addStatement(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement())
+        .addStatement(addExportRt)
+        .addStatement(tryApplyExportMap)
+        .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
+        .addStatement(filterImportRt)
+        .addStatement(applyImportMap)
+        .setOwner(c)
+        .build();
+    return policyName;
+  }
+
+  @VisibleForTesting
+  public static @Nonnull String computeVrfExportImportPolicyName(
+      String exportingVrf, String importingVrf) {
+    return String.format("~vrfExportImport~%s~%s", exportingVrf, importingVrf);
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class
