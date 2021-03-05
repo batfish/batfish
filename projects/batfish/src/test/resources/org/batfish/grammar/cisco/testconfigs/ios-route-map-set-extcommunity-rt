@@ -14,3 +14,7 @@ route-map rm1 permit 100
  set extcommunity rt 1.100000:2
  set extcommunity rt 1.1:100000
 !
+
+route-map rm2 permit 100
+ set extcommunity rt 65000:1 10.0.0.1:2 12.34:5 additive
+!

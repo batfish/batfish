@@ -5266,6 +5266,8 @@ SNR_MIN: 'snr-min';
 
 SNTP: 'sntp';
 
+SOO: 'soo';
+
 SORT_BY: 'sort-by';
 
 SPE: 'spe';
@@ -6326,6 +6328,8 @@ VPLS: 'vpls';
 VPN: 'vpn';
 
 VPN_DIALER: 'vpn-dialer';
+
+VPN_DISTINGUISHER: 'vpn-distinguisher';
 
 VPN_GROUP_POLICY: 'vpn-group-policy';
 
@@ -7879,6 +7883,8 @@ M_Execute_BRACE_RIGHT
 ;
 
 mode M_Extcommunity;
+
+M_Extcommunity_ADDITIVE: 'additive' -> type(ADDITIVE), popMode;
 
 M_Extcommunity_COLON
 :
