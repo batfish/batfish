@@ -15,6 +15,7 @@ import org.batfish.vendor.VendorConfiguration;
 public class FortiosConfiguration extends VendorConfiguration {
 
   public FortiosConfiguration() {
+    _addresses = new HashMap<>();
     _interfaces = new HashMap<>();
     _replacemsgs = new HashMap<>();
     _services = new HashMap<>();
@@ -38,6 +39,10 @@ public class FortiosConfiguration extends VendorConfiguration {
     return ImmutableList.of(toVendorIndependentConfiguration());
   }
 
+  public @Nonnull Map<String, Address> getAddresses() {
+    return _addresses;
+  }
+
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
@@ -53,6 +58,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   private String _hostname;
+  private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
   private final @Nonnull Map<String, Service> _services;
