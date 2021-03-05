@@ -4,6 +4,7 @@ import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +26,7 @@ import org.batfish.datamodel.Ip6;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.fortios.FortiosParser.Address_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
@@ -269,12 +271,24 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   // List items
   @Override
   public void exitCfp_set_dstaddr(Cfp_set_dstaddrContext ctx) {
-    // TODO
+    toAddresses(ctx, ctx.addresses)
+        .ifPresent(
+            addresses -> {
+              Set<String> addrs = _currentPolicy.getDstAddr();
+              addrs.clear();
+              addrs.addAll(addresses);
+            });
   }
 
   @Override
   public void exitCfp_set_srcaddr(Cfp_set_srcaddrContext ctx) {
-    // TODO
+    toAddresses(ctx, ctx.addresses)
+        .ifPresent(
+            addresses -> {
+              Set<String> addrs = _currentPolicy.getSrcAddr();
+              addrs.clear();
+              addrs.addAll(addresses);
+            });
   }
 
   @Override
@@ -472,11 +486,38 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Optional.of(servicesBuilder.build());
   }
 
+  private Optional<Set<String>> toAddresses(
+      ParserRuleContext messageCtx, Address_namesContext ctx) {
+    Set<String> addresses =
+        ctx.address_name().stream().map(a -> toString(a.str())).collect(Collectors.toSet());
+    if (addresses.contains(Policy.ALL_ADDRESSES)) {
+      if (addresses.size() == 1) {
+        return Optional.of(ImmutableSet.copyOf(addresses));
+      } else {
+        // When 'all' is set together with other addresses, it's removed automatically by system
+        // TODO File a warning in this case
+        addresses.remove(Policy.ALL_ADDRESSES);
+      }
+    }
+    Set<String> undefinedAddrs = Sets.difference(addresses, _c.getAddresses().keySet());
+    if (!undefinedAddrs.isEmpty()) {
+      warn(
+          messageCtx,
+          String.format(
+              "Policy %s references undefined addresses: %s",
+              _currentPolicy.getNumber(), undefinedAddrs));
+      // TODO File undefined references
+      return Optional.empty();
+    }
+    return Optional.of(ImmutableSet.copyOf(addresses));
+  }
+
   private Optional<Set<String>> toInterfaces(Interface_namesContext ctx) {
     Map<String, Interface> ifacesMap = _c.getInterfaces();
     ImmutableSet.Builder<String> ifaceBuilder = ImmutableSet.builder();
     for (Interface_nameContext iface : ctx.interface_name()) {
       String name = toString(iface.str());
+      // TODO Handle Policy.ANY_INTERFACE case
       if (ifacesMap.containsKey(name)) {
         ifaceBuilder.add(name);
       } else {

@@ -9,6 +9,8 @@ import javax.annotation.Nullable;
 
 /** FortiOS datamodel component containing firewall policy configuration */
 public final class Policy implements Serializable {
+  public static final String ALL_ADDRESSES = "all";
+  public static final String ANY_INTERFACE = "any";
 
   public static final Action DEFAULT_ACTION = Action.DENY;
   public static final Status DEFAULT_STATUS = Status.ENABLE;
@@ -72,12 +74,12 @@ public final class Policy implements Serializable {
   }
 
   @Nonnull
-  public Set<Object> getSrcAddr() {
+  public Set<String> getSrcAddr() {
     return _srcAddr;
   }
 
   @Nonnull
-  public Set<Object> getDstAddr() {
+  public Set<String> getDstAddr() {
     return _dstAddr;
   }
 
@@ -115,8 +117,8 @@ public final class Policy implements Serializable {
   @Nullable private String _name;
   @Nonnull private Set<String> _srcIntf;
   @Nonnull private Set<String> _dstIntf;
-  @Nonnull private Set<Object> _srcAddr;
-  @Nonnull private Set<Object> _dstAddr;
+  @Nonnull private Set<String> _srcAddr;
+  @Nonnull private Set<String> _dstAddr;
   @Nonnull private Set<Service> _service;
   @Nullable private Status _status;
   @Nullable private String _comments;
