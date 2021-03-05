@@ -1,0 +1,48 @@
+config system global
+    set hostname "service_custom"
+end
+config firewall service custom
+    edit "longest possible firewall service custom service name that is accepted by devic"
+        set comment "service custom comment"
+    next
+    edit "custom_default"
+        # Variety of destination and source port ranges
+    next
+    edit "explicit_tcp"
+        set protocol TCP/UDP/SCTP
+        set tcp-portrange 1-2:3-4 10-11 13:6-7
+        set udp-portrange 100
+        set sctp-portrange 200 201:300
+    next
+    edit "src_port_defaults"
+        set protocol TCP/UDP/SCTP
+        set tcp-portrange 1
+        set udp-portrange 1
+        set sctp-portrange 1
+    next
+    edit "custom_icmp"
+        set protocol ICMP
+        set icmptype 255
+        set icmpcode 255
+    next
+    edit "custom_icmp6"
+        set protocol ICMP6
+    next
+    edit "custom_ip"
+        set protocol IP
+        set protocol-number 254
+    next
+    edit "change_protocol"
+        set protocol IP
+        set protocol-number 254
+        set protocol ICMP
+        set icmpcode 254
+        set icmptype 254
+        set protocol TCP/UDP/SCTP
+        set tcp-portrange 254
+        set udp-portrange 254
+        set sctp-portrange 254
+        # Previously set protocol-values should be unset when protocol is changed
+        set protocol IP
+    next
+end

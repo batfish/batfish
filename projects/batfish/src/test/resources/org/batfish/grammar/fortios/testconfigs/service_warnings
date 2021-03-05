@@ -1,0 +1,16 @@
+config system global
+    set hostname "service_warnings"
+end
+config firewall service custom
+    edit "longer than longest possible firewall service custom service name that is accepted by device"
+    next
+    edit "setting props for wrong protocol"
+        set protocol-number 254
+        set icmpcode 254
+        set icmptype 254
+        set protocol ICMP
+        set tcp-portrange 254
+        set udp-portrange 254
+        set sctp-portrange 254
+    next
+end
