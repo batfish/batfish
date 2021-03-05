@@ -20,7 +20,6 @@ public final class Service implements Serializable {
     ICMP,
     ICMP6,
     IP,
-    UNKNOWN,
   }
 
   @Nonnull
@@ -36,7 +35,7 @@ public final class Service implements Serializable {
 
   @Nonnull
   public Protocol getProtocolEffective() {
-    if (_protocol == Protocol.UNKNOWN) {
+    if (_protocol == null) {
       return DEFAULT_PROTOCOL;
     }
     return _protocol;
@@ -183,11 +182,10 @@ public final class Service implements Serializable {
 
   public Service(String name) {
     _name = name;
-    _protocol = Protocol.UNKNOWN;
   }
 
   @Nonnull private String _name;
-  @Nonnull private Protocol _protocol;
+  @Nullable private Protocol _protocol;
   @Nullable private Integer _protocolNumber;
   @Nullable private String _comment;
   @Nullable private Integer _icmpCode;

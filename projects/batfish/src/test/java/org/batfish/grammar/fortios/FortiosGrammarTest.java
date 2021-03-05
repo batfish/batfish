@@ -225,7 +225,7 @@ public final class FortiosGrammarTest {
     assertThat(serviceLongName.getComment(), equalTo("service custom comment"));
 
     // Check default protocol
-    assertThat(serviceDefault.getProtocol(), equalTo(Protocol.UNKNOWN));
+    assertThat(serviceDefault.getProtocol(), nullValue());
     assertThat(serviceDefault.getProtocolEffective(), equalTo(Service.DEFAULT_PROTOCOL));
     // Check defaults
     assertThat(serviceDefault.getSctpPortRangeDst(), nullValue());

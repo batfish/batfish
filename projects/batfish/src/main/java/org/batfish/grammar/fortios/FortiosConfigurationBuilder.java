@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -278,7 +277,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return;
     }
     _currentService.setSctpPortRangeDst(toDstIntegerSpace(ctx.service_port_ranges()));
-    _currentService.setSctpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()));
+    _currentService.setSctpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
   }
 
   @Override
@@ -292,7 +291,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return;
     }
     _currentService.setTcpPortRangeDst(toDstIntegerSpace(ctx.service_port_ranges()));
-    _currentService.setTcpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()));
+    _currentService.setTcpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
   }
 
   @Override
@@ -306,48 +305,46 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return;
     }
     _currentService.setUdpPortRangeDst(toDstIntegerSpace(ctx.service_port_ranges()));
-    _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()));
+    _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
   }
 
   /**
    * Convert specified service_port_ranges context into an IntegerSpace representing the destination
    * ports specified by the context.
    */
-  private @Nonnull IntegerSpace toDstIntegerSpace(Service_port_rangesContext ctx) {
+  private IntegerSpace toDstIntegerSpace(Service_port_rangesContext ctx) {
     IntegerSpace.Builder spaces = IntegerSpace.builder();
     for (Service_port_rangeContext range : ctx.service_port_range()) {
-      toIntegerSpace(range.dst_ports).ifPresent(spaces::including);
+      assert range.dst_ports != null;
+      spaces.including(toIntegerSpace(range.dst_ports));
     }
     return spaces.build();
   }
 
   /**
-   * Convert specified service_port_ranges context into an IntegerSpace representing the source
-   * ports specified by the context. If no source port space is specified, then {@code null} is
-   * returned instead of an IntegerSpace.
+   * Convert specified service_port_ranges context into an optional IntegerSpace representing the
+   * source ports specified by the context. An IntegerSpace is only returned if a source port space
+   * is specified.
    */
-  private @Nullable IntegerSpace toSrcIntegerSpace(Service_port_rangesContext ctx) {
+  private Optional<IntegerSpace> toSrcIntegerSpace(Service_port_rangesContext ctx) {
     IntegerSpace.Builder spaces = IntegerSpace.builder();
     boolean isSet = false;
     for (Service_port_rangeContext range : ctx.service_port_range()) {
       if (range.src_ports != null) {
         isSet = true;
-        toIntegerSpace(range.src_ports).ifPresent(spaces::including);
+        spaces.including(toIntegerSpace(range.src_ports));
       }
     }
-    return isSet ? spaces.build() : null;
+    return isSet ? Optional.of(spaces.build()) : Optional.empty();
   }
 
-  private Optional<IntegerSpace> toIntegerSpace(@Nullable Port_rangeContext ctx) {
-    if (ctx == null) {
-      return Optional.empty();
-    }
+  private IntegerSpace toIntegerSpace(Port_rangeContext ctx) {
     int low = toInteger(ctx.port_low);
     if (ctx.port_high != null) {
       int high = toInteger(ctx.port_high);
-      return Optional.of(IntegerSpace.of(Range.closed(low, high)));
+      return IntegerSpace.of(Range.closed(low, high));
     }
-    return Optional.of(IntegerSpace.of(low));
+    return IntegerSpace.of(low);
   }
 
   private Service.Protocol toProtocol(Service_protocolContext ctx) {
