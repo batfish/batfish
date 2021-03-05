@@ -20,17 +20,23 @@ ADMIN:
   }
 ;
 
+
 ACTION: 'action';
+ADDRESS: 'address';
 AGGREGATE: 'aggregate';
 ALERTMAIL: 'alertmail';
 ALIAS: 'alias' -> pushMode(M_Str);
 ALLOW: 'allow';
+ALLOW_ROUTING: 'allow-routing';
 APPEND: 'append';
+ASSOCIATED_INTERFACE: 'associated-interface' -> pushMode(M_Str);
 AUTH: 'auth';
 BUFFER: 'buffer' -> pushMode(M_Str);
+COLOR: 'color';
 COMMENT: 'comment' -> pushMode(M_Str);
 COMMENTS: 'comments' -> pushMode(M_Str);
 CONFIG: 'config';
+COUNTRY: 'country';
 CUSTOM: 'custom';
 DENY: 'deny';
 DESCRIPTION: 'description' -> pushMode(M_Str);
@@ -39,12 +45,17 @@ DOWN: 'down';
 DSTADDR: 'dstaddr' -> pushMode(M_Str);
 DSTINTF: 'dstintf' -> pushMode(M_Str);
 EDIT: 'edit' -> pushMode(M_Str);
+DYNAMIC: 'dynamic';
 EMAC_VLAN: 'emac-vlan';
 ENABLE: 'enable';
 END: 'end';
+END_IP: 'end-ip';
+FABRIC_OBJECT: 'fabric-object';
 FIREWALL: 'firewall';
 FORTIGUARD_WF: 'fortiguard-wf';
+FQDN: 'fqdn';
 FTP: 'ftp';
+GEOGRAPHY: 'geography';
 GLOBAL: 'global';
 HOSTNAME: 'hostname' -> pushMode(M_Str);
 HTTP: 'http';
@@ -54,10 +65,14 @@ ICMP6: 'ICMP6';
 ICMPCODE: 'icmpcode';
 ICMPTYPE: 'icmptype';
 INTERFACE: 'interface';
+INTERFACE_SUBNET: 'interface-subnet';
 IP: 'ip';
+IPMASK: 'ipmask';
+IPRANGE: 'iprange';
 IP_UPPER: 'IP';
 IPSEC: 'ipsec';
 LOOPBACK: 'loopback';
+MAC: 'mac';
 MAIL: 'mail';
 MTU: 'mtu';
 MTU_OVERRIDE: 'mtu-override';
@@ -71,6 +86,7 @@ PROTOCOL_NUMBER: 'protocol-number';
 REDUNDANT: 'redundant';
 REPLACEMSG: 'replacemsg';
 SCTP_PORTRANGE: 'sctp-portrange';
+SDN: 'sdn';
 SELECT: 'select';
 SERVICE:
   'service'
@@ -86,7 +102,10 @@ SPAM: 'spam';
 SRCADDR: 'srcaddr' -> pushMode(M_Str);
 SRCINTF: 'srcintf' -> pushMode(M_Str);
 SSLVPN: 'sslvpn';
+START_IP: 'start-ip';
 STATUS: 'status';
+SUBNET: 'subnet';
+SUB_TYPE: 'sub-type';
 SYSTEM: 'system';
 TCP_PORTRANGE: 'tcp-portrange';
 TCP_UDP_SCTP: 'TCP/UDP/SCTP';
@@ -101,6 +120,7 @@ VDOM: 'vdom' -> pushMode(M_Str);
 VLAN: 'vlan';
 VRF: 'vrf';
 WEBPROXY: 'webproxy';
+WILDCARD: 'wildcard';
 WL_MESH: 'wl-mesh';
 
 // Other Tokens

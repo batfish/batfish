@@ -4,4 +4,8 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-c_firewall: FIREWALL (cf_service | cf_policy);
+c_firewall: FIREWALL (
+  cf_address
+  | cf_policy
+  | cf_service
+);
