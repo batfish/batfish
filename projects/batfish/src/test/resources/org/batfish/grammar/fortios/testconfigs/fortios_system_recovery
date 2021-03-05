@@ -1,0 +1,13 @@
+config system global
+    set hostname "fortios_system_recovery"
+    set APropertyThatHopefullyDoesNotExist to a bunch of garbage
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 192.168.122.2 255.255.255.0
+        set allowaccess ping
+        set type physical
+        set snmp-index 1
+    next
+end

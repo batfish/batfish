@@ -10,15 +10,12 @@ c_system: SYSTEM (
   | cs_replacemsg
 );
 
-cs_global
-:
-  GLOBAL NEWLINE
-  (
-    SET
-    (
-      csg_hostname
-    )
-  )*
+cs_global: GLOBAL NEWLINE csg*;
+
+csg:
+  SET (
+    csg_hostname
+  )
 ;
 
 csg_hostname: HOSTNAME host=device_hostname NEWLINE;
