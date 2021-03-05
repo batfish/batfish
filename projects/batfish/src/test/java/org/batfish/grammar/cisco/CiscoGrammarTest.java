@@ -446,6 +446,7 @@ import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
+import org.batfish.representation.cisco.RouteMapSetExtcommunityRtAdditiveLine;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtLine;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
@@ -7683,28 +7684,41 @@ public final class CiscoGrammarTest {
   public void testIosRouteMapSetExtcommunityRtExtraction() {
     String hostname = "ios-route-map-set-extcommunity-rt";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
-    assertThat(vc.getRouteMaps(), hasKeys("rm1"));
-    RouteMap rm1 = vc.getRouteMaps().get("rm1");
-    assertThat(rm1.getClauses(), aMapWithSize(1));
-    RouteMapClause c = Iterables.getOnlyElement(rm1.getClauses().values());
-    assertThat(c.getSetList(), contains(instanceOf(RouteMapSetExtcommunityRtLine.class)));
-    RouteMapSetExtcommunityRtLine line =
-        (RouteMapSetExtcommunityRtLine) Iterables.getOnlyElement(c.getSetList());
-    assertThat(
-        line.getCommunities(),
-        contains(
-            ExtendedCommunity.target(65000, 1),
-            ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
-            ExtendedCommunity.target((12 << 16) | 34, 5)));
+    assertThat(vc.getRouteMaps(), hasKeys("rm1", "rm2"));
+    {
+      RouteMap rm = vc.getRouteMaps().get("rm1");
+      assertThat(rm.getClauses(), aMapWithSize(1));
+      RouteMapClause c = Iterables.getOnlyElement(rm.getClauses().values());
+      assertThat(c.getSetList(), contains(instanceOf(RouteMapSetExtcommunityRtLine.class)));
+      RouteMapSetExtcommunityRtLine line =
+          (RouteMapSetExtcommunityRtLine) Iterables.getOnlyElement(c.getSetList());
+      assertThat(
+          line.getCommunities(),
+          contains(
+              ExtendedCommunity.target(65000, 1),
+              ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+              ExtendedCommunity.target((12 << 16) | 34, 5)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("rm2");
+      assertThat(rm.getClauses(), aMapWithSize(1));
+      RouteMapClause c = Iterables.getOnlyElement(rm.getClauses().values());
+      assertThat(c.getSetList(), contains(instanceOf(RouteMapSetExtcommunityRtAdditiveLine.class)));
+      RouteMapSetExtcommunityRtAdditiveLine line =
+          (RouteMapSetExtcommunityRtAdditiveLine) Iterables.getOnlyElement(c.getSetList());
+      assertThat(
+          line.getCommunities(),
+          contains(
+              ExtendedCommunity.target(65000, 1),
+              ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+              ExtendedCommunity.target((12 << 16) | 34, 5)));
+    }
   }
 
   @Test
   public void testIosRouteMapSetExtcommunityRtConversion() throws IOException {
     String hostname = "ios-route-map-set-extcommunity-rt";
     Configuration c = parseConfig(hostname);
-    String policyName = "rm1";
-    assertThat(c.getRoutingPolicies(), hasKey(policyName));
-    RoutingPolicy rp = c.getRoutingPolicies().get(policyName);
     Bgpv4Route input =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -7713,17 +7727,39 @@ public final class CiscoGrammarTest {
             .setCommunities(
                 CommunitySet.of(StandardCommunity.of(1L), ExtendedCommunity.target(99, 99)))
             .build();
-    Bgpv4Route.Builder output = input.toBuilder();
-    boolean result = rp.processBgpRoute(input, output, null, Direction.IN);
-    assertTrue(result);
-    // old target community should be removed, standard community should be retained
-    assertThat(
-        output.getCommunities(),
-        containsInAnyOrder(
-            StandardCommunity.of(1L),
-            ExtendedCommunity.target(65000, 1),
-            ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
-            ExtendedCommunity.target((12 << 16) | 34, 5)));
+    {
+      String policyName = "rm1";
+      assertThat(c.getRoutingPolicies(), hasKey(policyName));
+      RoutingPolicy rp = c.getRoutingPolicies().get(policyName);
+      Bgpv4Route.Builder output = input.toBuilder();
+      boolean result = rp.processBgpRoute(input, output, null, Direction.IN);
+      assertTrue(result);
+      // old target community should be removed, standard community should be retained
+      assertThat(
+          output.getCommunities(),
+          containsInAnyOrder(
+              StandardCommunity.of(1L),
+              ExtendedCommunity.target(65000, 1),
+              ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+              ExtendedCommunity.target((12 << 16) | 34, 5)));
+    }
+    {
+      String policyName = "rm2";
+      assertThat(c.getRoutingPolicies(), hasKey(policyName));
+      RoutingPolicy rp = c.getRoutingPolicies().get(policyName);
+      Bgpv4Route.Builder output = input.toBuilder();
+      boolean result = rp.processBgpRoute(input, output, null, Direction.IN);
+      assertTrue(result);
+      // all old communities should still be present
+      assertThat(
+          output.getCommunities(),
+          containsInAnyOrder(
+              StandardCommunity.of(1L),
+              ExtendedCommunity.target(99, 99),
+              ExtendedCommunity.target(65000, 1),
+              ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+              ExtendedCommunity.target((12 << 16) | 34, 5)));
+    }
   }
 
   @Test
