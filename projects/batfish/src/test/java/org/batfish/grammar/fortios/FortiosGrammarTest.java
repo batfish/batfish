@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -35,8 +36,12 @@ import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Status;
@@ -114,6 +119,82 @@ public final class FortiosGrammarTest {
                 .getWarnings()
                 .values());
     assertThat(warnings, hasParseWarning(hasComment("Illegal value for replacemsg minor type")));
+  }
+
+  @Test
+  public void testAddressExtraction() {
+    String hostname = "address";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Address> addresses = vc.getAddresses();
+    assertThat(
+        addresses,
+        hasKeys(
+            "ipmask",
+            "iprange",
+            "fqdn",
+            "dynamic",
+            "geography",
+            "interface-subnet",
+            "mac",
+            "wildcard",
+            "undefined-refs",
+            "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxy"));
+
+    Address ipmask = addresses.get("ipmask");
+    Address iprange = addresses.get("iprange");
+    Address fqdn = addresses.get("fqdn");
+    Address dynamic = addresses.get("dynamic");
+    Address geography = addresses.get("geography");
+    Address interfaceSubnet = addresses.get("interface-subnet");
+    Address undefinedRefs = addresses.get("undefined-refs");
+    Address mac = addresses.get("mac");
+    Address wildcard = addresses.get("wildcard");
+    Address longName =
+        addresses.get(
+            "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxy");
+
+    // Test types
+    assertThat(ipmask.getType(), equalTo(Address.Type.IPMASK));
+    assertThat(iprange.getType(), equalTo(Address.Type.IPRANGE));
+    assertThat(interfaceSubnet.getType(), equalTo(Address.Type.INTERFACE_SUBNET));
+    assertThat(wildcard.getType(), equalTo(Address.Type.WILDCARD));
+    assertThat(longName.getType(), equalTo(Address.Type.UNKNOWN));
+    assertThat(undefinedRefs.getType(), equalTo(Address.Type.INTERFACE_SUBNET));
+    assertThat(dynamic.getType(), equalTo(Address.Type.DYNAMIC));
+    assertThat(fqdn.getType(), equalTo(Address.Type.FQDN));
+    assertThat(geography.getType(), equalTo(Address.Type.GEOGRAPHY));
+    assertThat(mac.getType(), equalTo(Address.Type.MAC));
+
+    // Test that type-specific fields are populated correctly
+    assertThat(ipmask.getTypeSpecificFields().getSubnet(), equalTo(Prefix.parse("1.1.1.0/24")));
+    assertThat(iprange.getTypeSpecificFields().getStartIp(), equalTo(Ip.parse("1.1.1.0")));
+    assertThat(iprange.getTypeSpecificFields().getEndIp(), equalTo(Ip.parse("1.1.1.255")));
+    assertThat(interfaceSubnet.getTypeSpecificFields().getInterface(), equalTo("port1"));
+    assertThat(
+        wildcard.getTypeSpecificFields().getWildcard(),
+        equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("2.0.0.2"), Ip.parse("255.0.0.255"))));
+    assertThat(longName.getTypeSpecificFields().getSubnet(), equalTo(Prefix.parse("1.1.1.0/24")));
+
+    // Test explicitly set values
+    assertThat(ipmask.getAllowRouting(), equalTo(true));
+    assertThat(ipmask.getAssociatedInterface(), equalTo("port1"));
+    assertThat(ipmask.getComment(), equalTo("Hello world"));
+    assertThat(ipmask.getFabricObject(), equalTo(true));
+
+    // Test default values
+    assertThat(longName.getTypeEffective(), equalTo(Address.Type.IPMASK));
+    assertNull(longName.getAllowRouting());
+    assertFalse(longName.getAllowRoutingEffective());
+    assertNull(longName.getAssociatedInterface());
+    assertNull(longName.getComment());
+    assertNull(longName.getFabricObject());
+    assertFalse(longName.getFabricObjectEffective());
+
+    // Test that undefined structures are not added to Address object
+    // TODO Also check that undefined references are filed (once they are filed)
+    assertNull(undefinedRefs.getAssociatedInterface());
+    assertNull(undefinedRefs.getTypeSpecificFields().getInterface());
   }
 
   @Test

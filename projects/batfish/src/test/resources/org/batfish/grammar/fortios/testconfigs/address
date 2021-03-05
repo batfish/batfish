@@ -1,0 +1,68 @@
+config system global
+    set hostname "address"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 1.1.1.1 255.255.255.0
+    next
+end
+config firewall address
+    edit "ipmask"
+        set type ipmask
+        # mask format
+        set subnet 1.1.1.0 255.255.255.0
+        set comment "Hello world"
+        set associated-interface port1
+        set color 3
+        set allow-routing enable
+        set fabric-object enable
+    next
+    edit "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxy"
+        # prefix format (type is ipmask by default)
+        set subnet 1.1.1.0/24
+    next
+    edit "undefined-refs"
+        set associated-interface "undefined_iface"
+        set type interface-subnet
+        set interface "undefined_iface"
+    next
+    edit "iprange"
+        set type iprange
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+    next
+    edit "dynamic"
+        set type dynamic
+        set sub-type sdn
+        set sdn "foo"
+    next
+    edit "fqdn"
+        set type fqdn
+        set fqdn "google.com"
+    next
+    edit "geography"
+        set type geography
+        set country "AQ"
+    next
+    edit "interface-subnet"
+        set type interface-subnet
+        set interface "port1"
+    next
+    edit "mac"
+        set type mac
+        # type mac should have "set start-mac 11:11:11:11:11:11" and similar end-mac,
+        # but these lines are omitted because not currently parsed
+    next
+    edit "wildcard"
+        set type wildcard
+        set wildcard 1.1.0.1 255.255.0.255
+    next
+end
+# Another edit clause for wildcard (modeling a prospective change)
+config firewall address
+    edit "wildcard"
+        set type wildcard
+        set wildcard 2.0.0.2 255.0.0.255
+    next
+end

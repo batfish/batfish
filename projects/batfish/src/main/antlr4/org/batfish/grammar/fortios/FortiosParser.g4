@@ -1,6 +1,7 @@
 parser grammar FortiosParser;
 
 import
+  Fortios_address,
   Fortios_common,
   Fortios_firewall,
   Fortios_interface,
