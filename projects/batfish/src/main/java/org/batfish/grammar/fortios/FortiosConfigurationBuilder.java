@@ -371,15 +371,25 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void enterCfp_edit(Cfp_editContext ctx) {
-    Optional<String> name = toString(ctx, ctx.policy_number());
-    // TODO If name.isPresent(), add structure definition
-    _currentPolicy =
-        name.map(n -> _c.getPolicies().computeIfAbsent(n, Policy::new))
-            .orElseGet(() -> new Policy(ctx.policy_number().getText())); // dummy
+    Optional<String> number = toString(ctx, ctx.policy_number());
+    _currentPolicyValid = number.isPresent();
+    Policy existing = number.map(_c.getPolicies()::get).orElse(null);
+    if (existing != null) {
+      // Make a clone to edit
+      _currentPolicy = SerializationUtils.clone(existing);
+    } else {
+      _currentPolicy = new Policy(toString(ctx.policy_number().str()));
+    }
   }
 
   @Override
   public void exitCfp_edit(Cfp_editContext ctx) {
+    // If edited policy is valid, add/update the entry in VS map
+    // TODO: Better validity checking
+    if (_currentPolicyValid) {
+      // TODO Add structure definition
+      _c.getPolicies().put(_currentPolicy.getNumber(), _currentPolicy);
+    }
     _currentPolicy = null;
   }
 
@@ -711,7 +721,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return IntegerSpace.of(low);
   }
 
-  private Policy.Action toAction(Policy_actionContext ctx) {
+  private @Nonnull Policy.Action toAction(Policy_actionContext ctx) {
     if (ctx.ALLOW() != null) {
       return Action.ALLOW;
     } else if (ctx.DENY() != null) {
@@ -743,7 +753,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return false;
   }
 
-  private Policy.Status toStatus(Policy_statusContext ctx) {
+  private @Nonnull Policy.Status toStatus(Policy_statusContext ctx) {
     return toBoolean(ctx.enable_or_disable()) ? Status.ENABLE : Status.DISABLE;
   }
 
@@ -1047,6 +1057,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Address _currentAddress;
   private Interface _currentInterface;
   private Policy _currentPolicy;
+  private boolean _currentPolicyValid;
   private Replacemsg _currentReplacemsg;
   private Service _currentService;
   private final @Nonnull FortiosConfiguration _c;

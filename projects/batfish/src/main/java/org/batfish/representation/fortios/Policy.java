@@ -116,11 +116,11 @@ public final class Policy implements Serializable {
 
   @Nonnull private String _number;
   @Nullable private String _name;
-  @Nonnull private Set<Interface> _srcIntf;
-  @Nonnull private Set<Interface> _dstIntf;
-  @Nonnull private Set<Address> _srcAddr;
-  @Nonnull private Set<Address> _dstAddr;
-  @Nonnull private Set<Service> _service;
+  @Nonnull private final Set<Interface> _srcIntf;
+  @Nonnull private final Set<Interface> _dstIntf;
+  @Nonnull private final Set<Address> _srcAddr;
+  @Nonnull private final Set<Address> _dstAddr;
+  @Nonnull private final Set<Service> _service;
   @Nullable private Status _status;
   @Nullable private String _comments;
   @Nullable private Action _action;
