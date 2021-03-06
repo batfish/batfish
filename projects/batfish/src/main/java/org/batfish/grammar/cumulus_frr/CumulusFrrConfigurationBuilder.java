@@ -124,9 +124,6 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_aggregate_addressC
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_importContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_networkContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_noContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_activateContext;
-import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_no_neighborContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafi_redistributeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_allowas_inContext;
@@ -134,6 +131,8 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_default_originate
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_next_hop_selfContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_mapContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafin_route_reflector_clientContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafino_neighborContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafinon_activateContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_all_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_advertise_default_gwContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sbafl_neighborContext;
@@ -516,11 +515,6 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbafi_no(Sbafi_noContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void exitSbafi_import(Sbafi_importContext ctx) {
     todo(ctx);
     if (ctx.vrf_name() != null) {
@@ -708,7 +702,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void enterSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
+  public void enterSbafino_neighbor(Sbafino_neighborContext ctx) {
     String name;
     if (ctx.ipv4 != null) {
       name = ctx.ipv4.getText();
@@ -737,7 +731,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbafi_no_neighbor(Sbafi_no_neighborContext ctx) {
+  public void exitSbafino_neighbor(Sbafino_neighborContext ctx) {
     _currentBgpNeighborIpv4UnicastAddressFamily = null;
   }
 
@@ -971,7 +965,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   }
 
   @Override
-  public void exitSbafi_no_activate(Sbafi_no_activateContext ctx) {
+  public void exitSbafinon_activate(Sbafinon_activateContext ctx) {
     if (_currentBgpNeighborIpv4UnicastAddressFamily == null) {
       return;
     }
