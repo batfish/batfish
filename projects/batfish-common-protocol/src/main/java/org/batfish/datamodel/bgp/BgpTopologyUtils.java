@@ -412,7 +412,7 @@ public final class BgpTopologyUtils {
    * BGP peer
    */
   public static boolean bgpCandidateHasCompatibleAs(
-      BgpActivePeerConfig bgpActivePeerConfig, BgpPeerConfig candidate) {
+      BgpPeerConfig bgpActivePeerConfig, BgpPeerConfig candidate) {
     return computeAsPair(
             bgpActivePeerConfig.getLocalAs(),
             bgpActivePeerConfig.getConfederationAsn(),
@@ -473,14 +473,7 @@ public final class BgpTopologyUtils {
     }
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     return candidate instanceof BgpUnnumberedPeerConfig
-        && computeAsPair(
-                neighbor.getLocalAs(),
-                neighbor.getConfederationAsn(),
-                neighbor.getRemoteAsns(),
-                candidate.getLocalAs(),
-                candidate.getConfederationAsn(),
-                candidate.getRemoteAsns())
-            != null;
+        && bgpCandidateHasCompatibleAs(neighbor, candidate);
   }
 
   /**
