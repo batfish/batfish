@@ -403,28 +403,50 @@ public final class BgpTopologyUtils {
     if (candidate == null) {
       return false;
     }
-    if (computeAsPair(
-            neighbor.getLocalAs(),
-            neighbor.getConfederationAsn(),
-            neighbor.getRemoteAsns(),
+    return bgpCandidateHasCompatibleAs(neighbor, candidate)
+        && bgpCandidateHasCompatibleIpOrPrefix(neighbor, candidateId, candidate);
+  }
+
+  /**
+   * Returns if the given candidate BGP peer has a compatible AS configuration to the given active
+   * BGP peer
+   */
+  public static boolean bgpCandidateHasCompatibleAs(
+      BgpActivePeerConfig bgpActivePeerConfig, BgpPeerConfig candidate) {
+    return computeAsPair(
+            bgpActivePeerConfig.getLocalAs(),
+            bgpActivePeerConfig.getConfederationAsn(),
+            bgpActivePeerConfig.getRemoteAsns(),
             candidate.getLocalAs(),
             candidate.getConfederationAsn(),
             candidate.getRemoteAsns())
-        == null) {
-      return false;
-    }
+        != null;
+  }
+
+  /**
+   * Returns if the candidate BGP peer has compatible IP (if active) or prefix (if dynamic).
+   *
+   * @throws IllegalArgumentException if the candidate is unnumbered
+   */
+  public static boolean bgpCandidateHasCompatibleIpOrPrefix(
+      BgpActivePeerConfig bgpActivePeerConfig,
+      BgpPeerConfigId candidateId,
+      BgpPeerConfig candidate) {
     switch (candidateId.getType()) {
       case DYNAMIC:
-        return ((BgpPassivePeerConfig) candidate).hasCompatibleRemotePrefix(neighbor.getLocalIp());
+        return ((BgpPassivePeerConfig) candidate)
+            .hasCompatibleRemotePrefix(bgpActivePeerConfig.getLocalIp());
       case ACTIVE:
         // If candidate has no local IP, we can still initiate unless session is EBGP single-hop.
-        return (Objects.equals(neighbor.getPeerAddress(), candidate.getLocalIp())
+        return (Objects.equals(bgpActivePeerConfig.getPeerAddress(), candidate.getLocalIp())
                 || (candidate.getLocalIp() == null
-                    && BgpSessionProperties.getSessionType(neighbor) != SessionType.EBGP_SINGLEHOP))
+                    && BgpSessionProperties.getSessionType(bgpActivePeerConfig)
+                        != SessionType.EBGP_SINGLEHOP))
             && Objects.equals(
-                neighbor.getLocalIp(), ((BgpActivePeerConfig) candidate).getPeerAddress());
+                bgpActivePeerConfig.getLocalIp(),
+                ((BgpActivePeerConfig) candidate).getPeerAddress());
       default:
-        // Already checked it wasn't unnumbered
+        // Shouldn't be unnumbered
         throw new IllegalArgumentException(
             String.format("Unrecognized peer type: %s", candidateId.getType()));
     }
