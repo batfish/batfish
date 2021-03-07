@@ -218,7 +218,7 @@ cm_iosim_response
 
 cm_match
 :
-   num = DEC? MATCH NOT?
+   num = dec? MATCH NOT?
    (
       cmm_access_group
       | cmm_access_list
@@ -255,7 +255,7 @@ cmm_access_group
       | IPV4
    )?
    (
-      num = DEC
+      num = dec
       |
       (
          NAME name = variable
@@ -300,7 +300,7 @@ cmm_cos
 :
    COS
    (
-      DEC+
+      dec+
       | range
    ) NEWLINE
 ;
@@ -362,7 +362,7 @@ cmm_precedence
 :
    IP? PRECEDENCE IPV4?
    (
-      DEC+
+      dec+
       | name = variable
    ) NEWLINE
 ;
@@ -374,7 +374,7 @@ cmm_protocol
 
 cmm_qos_group
 :
-   QOS_GROUP DEC NEWLINE
+   QOS_GROUP dec NEWLINE
 ;
 
 cmm_redirect
@@ -605,7 +605,7 @@ ogipa_ip_addresses
       IP_ADDRESS+
       |
       (
-         num = DEC
+         num = dec
          (
             HOST IP_ADDRESS
             | IP_PREFIX
@@ -843,7 +843,7 @@ os_service
 
 pm_class
 :
-   num = DEC? CLASS
+   num = dec? CLASS
    (
       TYPE
       (
@@ -877,13 +877,13 @@ pm_event
 
 pm_event_class
 :
-   DEC CLASS
+   dec CLASS
    (
       ALWAYS
       | classname = variable
    ) DO_UNTIL_FAILURE NEWLINE
    (
-      DEC
+      dec
       (
          ACTIVATE SERVICE_TEMPLATE stname = variable
          | AUTHENTICATE
@@ -1175,7 +1175,7 @@ st_description
 
 st_inactivity_timer
 :
-   INACTIVITY_TIMER DEC NEWLINE
+   INACTIVITY_TIMER dec NEWLINE
 ;
 
 st_linksec
@@ -1194,7 +1194,7 @@ st_tag
 
 st_vlan
 :
-   VLAN DEC NEWLINE
+   VLAN dec NEWLINE
 ;
 
 st_voice_vlan

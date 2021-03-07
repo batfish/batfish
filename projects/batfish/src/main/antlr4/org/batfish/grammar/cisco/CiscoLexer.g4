@@ -6796,19 +6796,6 @@ DOLLAR
    '$'
 ;
 
-DEC
-:
-   F_Digit
-   {_enableDec}?
-
-   F_Digit*
-;
-
-DIGIT
-:
-   F_Digit
-;
-
 DOUBLE_QUOTE
 :
    '"'
@@ -6915,6 +6902,38 @@ WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ; // Fragments
+
+/////////////////////////////////////////
+// Numeric tokens, in flux between DEC and UINT*
+/////////////////////////////////////////
+UINT8
+:
+  F_Uint8 {_enableDec}?
+;
+
+UINT16
+:
+  F_Uint16 {_enableDec}?
+;
+
+UINT32
+:
+  F_Uint32 {_enableDec}?
+;
+
+// Lower priority than UINT*
+DEC
+:
+   F_Digit
+   {_enableDec}?
+
+   F_Digit*
+;
+
+DIGIT
+:
+   F_Digit
+;
 
 fragment
 F_AristaBase64Char
@@ -7199,6 +7218,16 @@ F_StandardCommunity
 ;
 
 fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
+;
+
+fragment
 F_Uint16
 :
   F_Digit
@@ -7208,6 +7237,26 @@ F_Uint16
   | '65' [0-4] F_Digit F_Digit
   | '655' [0-2] F_Digit
   | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
 ;
 
 fragment
@@ -7891,11 +7940,6 @@ M_Extcommunity_COLON
    ':' -> type ( COLON )
 ;
 
-M_Extcommunity_DEC
-:
-   F_Digit+ -> type ( DEC )
-;
-
 M_Extcommunity_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
 
 M_ExtCommunity_NEWLINE
@@ -7908,6 +7952,16 @@ M_Extcommunity_PERIOD: '.' -> type(PERIOD);
 M_Extcommunity_RT
 :
    'rt' -> type ( RT )
+;
+
+M_Extcommunity_UINT8
+:
+   F_Uint8 -> type ( UINT8 )
+;
+
+M_Extcommunity_UINT16
+:
+   F_Uint16 -> type ( UINT16 )
 ;
 
 M_Extcommunity_WS

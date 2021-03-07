@@ -10,7 +10,7 @@ c_fiber_node
 :
    FIBER_NODE
    (
-      node = DEC
+      node = dec
       | quoted_name = double_quoted_string
    ) NEWLINE
    (
@@ -39,7 +39,7 @@ c_load_balance
 
 c_modulation_profile_block
 :
-   MODULATION_PROFILE DEC NEWLINE
+   MODULATION_PROFILE dec NEWLINE
    (
       cmp_null
    )* EXIT NEWLINE
@@ -48,7 +48,7 @@ c_modulation_profile_block
 c_modulation_profile_single
 :
 // intentional + after ~NEWLINE
-   MODULATION_PROFILE DEC ~NEWLINE+ NEWLINE
+   MODULATION_PROFILE dec ~NEWLINE+ NEWLINE
 ;
 
 c_null
@@ -98,7 +98,7 @@ c_service
 
 c_tag
 :
-   TAG num = DEC NEWLINE
+   TAG num = dec NEWLINE
    (
       ct_name
       | ct_null
@@ -127,7 +127,7 @@ cfn_null
 
 clb_docsis_group
 :
-   DOCSIS_GROUP group = DEC NEWLINE
+   DOCSIS_GROUP group = dec NEWLINE
    (
       clbdg_docsis_policy
       | clbdg_null
@@ -139,7 +139,7 @@ clb_docsis_policy
    (
       DOCSIS_POLICY
       | POLICY
-   ) policy = DEC RULE rulenum = DEC NEWLINE
+   ) policy = dec RULE rulenum = dec NEWLINE
 ;
 
 clb_null
@@ -162,12 +162,12 @@ clb_null
 
 clb_rule
 :
-   RULE rulenum = DEC null_rest_of_line
+   RULE rulenum = dec null_rest_of_line
 ;
 
 clbdg_docsis_policy
 :
-   DOCSIS_POLICY policy = DEC NEWLINE
+   DOCSIS_POLICY policy = dec NEWLINE
 ;
 
 clbdg_null
@@ -222,7 +222,7 @@ cntlr_null
 
 cntlr_rf_channel
 :
-   NO? RF_CHANNEL channel = DEC
+   NO? RF_CHANNEL channel = dec
    (
       cntlrrfc_depi_tunnel
       | cntrlrrfc_null
@@ -231,7 +231,7 @@ cntlr_rf_channel
 
 cntlrrfc_depi_tunnel
 :
-   DEPI_TUNNEL name = variable TSID tsid = DEC NEWLINE
+   DEPI_TUNNEL name = variable TSID tsid = dec NEWLINE
 ;
 
 cntrlrrfc_null
@@ -285,7 +285,7 @@ cqer_service_class
 
 cs_class
 :
-   CLASS num = DEC
+   CLASS num = dec
    (
       csc_name
       | csc_null

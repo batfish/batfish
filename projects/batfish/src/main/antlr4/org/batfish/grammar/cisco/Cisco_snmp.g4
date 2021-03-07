@@ -284,7 +284,7 @@ ssc_access_control
          |
          (
             IPV6 acl6 = variable_snmp
-         ) DEC?
+         ) dec?
       )
       | acl4 = variable_snmp
    )* NEWLINE

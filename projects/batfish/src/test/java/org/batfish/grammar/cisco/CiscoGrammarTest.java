@@ -1,7 +1,6 @@
 package org.batfish.grammar.cisco;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.util.CommonUtil.sha256Digest;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
@@ -287,7 +286,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
-import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.bdd.BDDMatchers;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -7760,26 +7758,5 @@ public final class CiscoGrammarTest {
               ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
               ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
-  }
-
-  @Test
-  public void testIosRouteMapSetExtcommunityRtWarnings() throws IOException {
-    String hostname = "ios-route-map-set-extcommunity-rt";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    List<ParseWarning> parseWarnings =
-        batfish
-            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
-            .getWarnings()
-            .get("configs/" + hostname)
-            .getParseWarnings();
-    assertThat(
-        parseWarnings,
-        containsInAnyOrder(
-            hasComment("Invalid extended community: 5000000000:1"),
-            hasComment("Invalid extended community: 1:100000"),
-            hasComment("Invalid extended community: 1.1.1.1:100000"),
-            hasComment("Invalid extended community: 100000.1:2"),
-            hasComment("Invalid extended community: 1.100000:2"),
-            hasComment("Invalid extended community: 1.1:100000")));
   }
 }

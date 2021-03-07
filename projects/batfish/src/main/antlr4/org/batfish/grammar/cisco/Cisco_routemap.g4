@@ -8,13 +8,13 @@ options {
 
 as_expr
 :
-   DEC
+   dec
    | AUTO
 ;
 
 continue_rm_stanza
 :
-   CONTINUE DEC? NEWLINE
+   CONTINUE dec? NEWLINE
 ;
 
 ip_policy_list_stanza
@@ -24,7 +24,7 @@ ip_policy_list_stanza
 
 match_as_number_rm_stanza
 :
-   AS_NUMBER num = DEC NEWLINE
+   AS_NUMBER num = dec NEWLINE
 ;
 
 match_as_path_access_list_rm_stanza
@@ -37,7 +37,7 @@ match_as_path_access_list_rm_stanza
 
 match_as_rm_stanza
 :
-   MATCH AS num = DEC NEWLINE
+   MATCH AS num = dec NEWLINE
 ;
 
 match_community_list_rm_stanza
@@ -100,7 +100,7 @@ match_ip_prefix_list_rm_stanza
 
 match_ip_route_source_rm_stanza
 :
-   IP ROUTE_SOURCE src = DEC NEWLINE
+   IP ROUTE_SOURCE src = dec NEWLINE
 ;
 
 match_ipv6_prefix_list_rm_stanza
@@ -136,7 +136,7 @@ match_source_protocol_rm_stanza
        BGP (bgpasn = bgp_asn)?
        | CONNECTED
        | ISIS
-       | OSPF (area = DEC)?
+       | OSPF (area = dec)?
        | RIP
        | STATIC
    )+ NEWLINE
@@ -171,7 +171,7 @@ match_tag_rm_stanza
 :
    TAG
    (
-      tag_list += DEC
+      tag_list += dec
    )+ NEWLINE
 ;
 
@@ -208,7 +208,7 @@ rm_stanza
 
 route_map_stanza
 :
-   ROUTE_MAP name = variable rmt = access_list_action num = DEC NEWLINE
+   ROUTE_MAP name = variable rmt = access_list_action num = dec NEWLINE
    rm_stanza*
 ;
 
@@ -396,17 +396,17 @@ set_origin_rm_stanza
 
 set_tag_rm_stanza
 :
-   SET TAG tag = DEC NEWLINE
+   SET TAG tag = dec NEWLINE
 ;
 
 set_traffic_index_rm_stanza_null
 :
-   SET TRAFFIC_INDEX index = DEC NEWLINE
+   SET TRAFFIC_INDEX index = dec NEWLINE
 ;
 
 set_weight_rm_stanza
 :
-   SET WEIGHT weight = DEC NEWLINE
+   SET WEIGHT weight = dec NEWLINE
 ;
 
 set_rm_stanza

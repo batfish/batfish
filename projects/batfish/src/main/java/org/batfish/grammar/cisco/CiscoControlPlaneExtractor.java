@@ -302,8 +302,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -543,6 +541,7 @@ import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ipsec_isakmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_match_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Cs_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Csc_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.DecContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_information_originate_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_metric_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_originate_bgp_tailContext;
@@ -1030,6 +1029,7 @@ import org.batfish.grammar.cisco.CiscoParser.Track_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ts_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.U_passwordContext;
 import org.batfish.grammar.cisco.CiscoParser.U_roleContext;
+import org.batfish.grammar.cisco.CiscoParser.Uint16Context;
 import org.batfish.grammar.cisco.CiscoParser.Uint32Context;
 import org.batfish.grammar.cisco.CiscoParser.Unsuppress_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Update_source_bgp_tailContext;
@@ -1264,6 +1264,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
+  private static int toInteger(DecContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
   private static int toInteger(TerminalNode t) {
     return Integer.parseInt(t.getText());
   }
@@ -1309,6 +1313,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static Ip6 toIp6(Token t) {
     return Ip6.parse(t.getText());
+  }
+
+  private static long toLong(DecContext ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   private static long toLong(TerminalNode t) {
@@ -1930,7 +1938,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterCis_key(Cis_keyContext ctx) {
-    int encType = ctx.DEC() != null ? toInteger(ctx.DEC()) : 0;
+    int encType = ctx.dec() != null ? toInteger(ctx.dec()) : 0;
     IkeKeyType ikeKeyType;
     if (encType == 0) {
       ikeKeyType = IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED;
@@ -1976,7 +1984,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
     here */
     _configuration.referenceStructure(
-        ISAKMP_POLICY, priority.toString(), ISAKMP_POLICY_SELF_REF, ctx.priority.getLine());
+        ISAKMP_POLICY,
+        priority.toString(),
+        ISAKMP_POLICY_SELF_REF,
+        ctx.priority.getStart().getLine());
   }
 
   @Override
@@ -2030,7 +2041,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCispol_group(Cispol_groupContext ctx) {
-    int group = Integer.parseInt(ctx.DEC().getText());
+    int group = Integer.parseInt(ctx.dec().getText());
     _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.fromGroupNumber(group));
   }
 
@@ -2049,7 +2060,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCispol_lifetime(Cispol_lifetimeContext ctx) {
-    _currentIsakmpPolicy.setLifetimeSeconds(Integer.parseInt(ctx.DEC().getText()));
+    _currentIsakmpPolicy.setLifetimeSeconds(Integer.parseInt(ctx.dec().getText()));
   }
 
   @Override
@@ -2368,7 +2379,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitStandby_group_track(Standby_group_trackContext ctx) {
     String trackingGroup = ctx.group.getText();
     _configuration.referenceStructure(
-        TRACK, trackingGroup, INTERFACE_STANDBY_TRACK, ctx.group.getLine());
+        TRACK, trackingGroup, INTERFACE_STANDBY_TRACK, ctx.group.getStart().getLine());
     TrackAction trackAction = toTrackAction(ctx.track_action());
     if (trackAction == null) {
       return;
@@ -3550,7 +3561,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRo_auto_cost(Ro_auto_costContext ctx) {
-    long referenceBandwidthDec = Long.parseLong(ctx.DEC().getText());
+    long referenceBandwidthDec = Long.parseLong(ctx.dec().getText());
     long referenceBandwidth;
     if (ctx.MBPS() != null) {
       referenceBandwidth = referenceBandwidthDec * 1_000_000;
@@ -4141,8 +4152,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitCluster_id_bgp_tail(Cluster_id_bgp_tailContext ctx) {
     Ip clusterId = null;
-    if (ctx.DEC() != null) {
-      long ipAsLong = toLong(ctx.DEC());
+    if (ctx.dec() != null) {
+      long ipAsLong = toLong(ctx.dec());
       clusterId = Ip.create(ipAsLong);
     } else if (ctx.IP_ADDRESS() != null) {
       clusterId = toIp(ctx.IP_ADDRESS());
@@ -4331,7 +4342,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       line = ctx.name.getStart().getLine();
     } else {
       name = ctx.num.getText();
-      line = ctx.num.getLine();
+      line = ctx.num.getStart().getLine();
     }
     _configuration.referenceStructure(ACCESS_LIST, name, CLASS_MAP_ACCESS_GROUP, line);
   }
@@ -4381,8 +4392,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
     int statementLine = ctx.getStart().getLine();
     Integer target = null;
-    if (ctx.DEC() != null) {
-      target = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      target = toInteger(ctx.dec());
     }
     RouteMapContinue continueLine = new RouteMapContinue(target, statementLine);
     _currentRouteMapClause.setContinueLine(continueLine);
@@ -5168,7 +5179,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.NO() != null) {
       newBandwidthBps = null;
     } else {
-      newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
+      newBandwidthBps = toLong(ctx.dec()) * 1000.0D;
     }
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
@@ -5197,7 +5208,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.NO() != null) {
       newDelayPs = null;
     } else {
-      newDelayPs = toLong(ctx.DEC()) * 10_000_000;
+      newDelayPs = toLong(ctx.dec()) * 10_000_000;
     }
     _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
   }
@@ -5479,7 +5490,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_verify(If_ip_verifyContext ctx) {
     if (ctx.acl != null) {
       String acl = ctx.acl.getText();
-      int line = ctx.acl.getLine();
+      int line = ctx.acl.getStart().getLine();
       _configuration.referenceStructure(
           IPV4_ACCESS_LIST, acl, INTERFACE_IP_VERIFY_ACCESS_LIST, line);
     }
@@ -5519,7 +5530,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_mtu(If_mtuContext ctx) {
-    int mtu = toInteger(ctx.DEC());
+    int mtu = toInteger(ctx.dec());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setMtu(mtu);
     }
@@ -6930,7 +6941,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitMatch_tag_rm_stanza(Match_tag_rm_stanzaContext ctx) {
     Set<Integer> tags = new TreeSet<>();
-    for (Token t : ctx.tag_list) {
+    for (DecContext t : ctx.tag_list) {
       tags.add(toInteger(t));
     }
     RouteMapMatchTagLine line = new RouteMapMatchTagLine(tags);
@@ -9302,40 +9313,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecgalal_asdot_colonContext ctx) {
-    Optional<Integer> maybeGaHigh16 = toUint16(ctx.ga_high16);
-    Optional<Integer> maybeGaLow16 = toUint16(ctx.ga_low16);
-    Optional<Integer> maybeLa = toUint16(ctx.la);
-    if (!maybeGaHigh16.isPresent() || !maybeGaLow16.isPresent() || !maybeLa.isPresent()) {
-      return Optional.empty();
-    }
-    long ga = (((long) maybeGaHigh16.get()) << 16) | maybeGaLow16.get();
-    return Optional.of(ExtendedCommunity.target(ga, maybeLa.get()));
+    // Upcast GA to long so we can shift and combine
+    long gaHi16 = toUint16(ctx.ga_high16);
+    long gaLo16 = toUint16(ctx.ga_low16);
+    long ga = (gaHi16 << 16) | gaLo16;
+    int la = toUint16(ctx.la);
+    return Optional.of(ExtendedCommunity.target(ga, la));
   }
 
   private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecgalal_colonContext ctx) {
-    Optional<Long> maybeGa = toUint32(ctx.ga);
-    Optional<Integer> maybeLa = toUint16(ctx.la);
-    if (!maybeGa.isPresent() || !maybeLa.isPresent()) {
-      return Optional.empty();
-    }
-    return Optional.of(ExtendedCommunity.target(maybeGa.get(), maybeLa.get()));
+    long ga = toUint32(ctx.ga);
+    int la = toUint16(ctx.la);
+    return Optional.of(ExtendedCommunity.target(ga, la));
   }
 
   private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecgalal_ip_colonContext ctx) {
     long ga = toIp(ctx.ga).asLong();
-    Optional<Integer> maybeLa = toUint16(ctx.la);
-    if (!maybeLa.isPresent()) {
-      return Optional.empty();
-    }
-    return Optional.of(ExtendedCommunity.target(ga, maybeLa.get()));
+    int la = toUint16(ctx.la);
+    return Optional.of(ExtendedCommunity.target(ga, la));
   }
 
-  private @Nonnull Optional<Integer> toUint16(Token t) {
-    return Optional.ofNullable(Ints.tryParse(t.getText())).filter(i -> i >= 0 && i <= 65535);
+  private int toUint16(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
-  private @Nonnull Optional<Long> toUint32(Token t) {
-    return Optional.ofNullable(Longs.tryParse(t.getText())).filter(l -> l >= 0 && l <= 0xFFFFFFFFL);
+  private long toUint32(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   @Override
@@ -9395,7 +9398,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_weight_rm_stanza(Set_weight_rm_stanzaContext ctx) {
-    RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.DEC()));
+    RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.dec()));
     _currentRouteMapClause.addSetLine(line);
   }
 
@@ -9900,8 +9903,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private int getPortNumber(PortContext ctx) {
-    if (ctx.DEC() != null) {
-      return toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      return toInteger(ctx.dec());
     } else {
       NamedPort namedPort = toNamedPort(ctx);
       return namedPort.number();
@@ -10008,8 +10011,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private AsExpr toAsExpr(As_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      int as = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      int as = toInteger(ctx.dec());
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
       return AutoAs.instance();
@@ -10083,8 +10086,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private int toDscpType(Dscp_typeContext ctx) {
     int val;
-    if (ctx.DEC() != null) {
-      val = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      val = toInteger(ctx.dec());
     } else if (ctx.AF11() != null) {
       val = DscpType.AF11.number();
     } else if (ctx.AF12() != null) {
@@ -10346,8 +10349,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   /** Returns the given IPv4 protocol, or {@code null} if none is specified. */
   private @Nullable IpProtocol toIpProtocol(ProtocolContext ctx) {
-    if (ctx.DEC() != null) {
-      int num = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      int num = toInteger(ctx.dec());
       if (num < 0 || num > 255) {
         return convProblem(IpProtocol.class, ctx, null);
       }
@@ -10405,8 +10408,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private LongExpr toLocalPreferenceLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.dec() != null) {
+      long val = toLong(ctx.dec());
       if (ctx.PLUS() != null) {
         return new IncrementLocalPreference(val);
       } else if (ctx.DASH() != null) {
@@ -10447,8 +10450,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private String toLoggingSeverity(Logging_severityContext ctx) {
-    if (ctx.DEC() != null) {
-      int severityNum = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      int severityNum = toInteger(ctx.dec());
       return toLoggingSeverity(severityNum);
     } else {
       return ctx.getText();
@@ -10456,8 +10459,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private Integer toLoggingSeverityNum(Logging_severityContext ctx) {
-    if (ctx.DEC() != null) {
-      return toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      return toInteger(ctx.dec());
     } else if (ctx.EMERGENCIES() != null) {
       return 0;
     } else if (ctx.ALERTS() != null) {
@@ -10513,8 +10516,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.dec() != null) {
+      long val = toLong(ctx.dec());
       if (ctx.PLUS() != null) {
         return new IncrementMetric(val);
       } else if (ctx.DASH() != null) {
@@ -10992,7 +10995,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nonnull
   private RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
-    long dec = toLong(ctx.DEC());
+    long dec = toLong(ctx.dec());
     if (ctx.IP_ADDRESS() != null) {
       checkArgument(dec <= 0xFFFFL, "Invalid route distinguisher %s", ctx.getText());
       return RouteDistinguisher.from(toIp(ctx.IP_ADDRESS()), (int) dec);
@@ -11002,7 +11005,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nonnull
   private ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
-    long la = toLong(ctx.DEC());
+    long la = toLong(ctx.dec());
     if (ctx.IP_ADDRESS() != null) {
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
     }
