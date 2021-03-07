@@ -224,7 +224,7 @@ public final class BDDOutgoingOriginalFlowFilterManager {
       return ret;
     }
     return _interfaceBdds.getOrDefault(
-        iface, _interfaceBdds.get(_activeButNoOriginalFlowFilterRepresentative));
+        iface, _finiteDomain.getConstraintForValue(_activeButNoOriginalFlowFilterRepresentative));
   }
 
   /**

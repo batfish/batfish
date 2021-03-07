@@ -4,12 +4,14 @@ import static org.batfish.bddreachability.transition.Transitions.addOutgoingOrig
 import static org.batfish.bddreachability.transition.Transitions.compose;
 import static org.batfish.bddreachability.transition.Transitions.constraint;
 import static org.batfish.bddreachability.transition.Transitions.removeOutgoingInterfaceConstraints;
+import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -113,6 +115,41 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
   public void testEmpty() {
     BDDOutgoingOriginalFlowFilterManager empty = BDDOutgoingOriginalFlowFilterManager.empty(PKT);
     assertTrue(empty.isTrivial());
+  }
+
+  @Test
+  public void testOutgoingInterfaceBDD_trivial() {
+    // No interfaces/no active interfaces/etc. The constraint is true.
+    Configuration c = createConfig(new NetworkFactory(), ImmutableSet.of());
+    BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
+    assertTrue(mgr.outgoingInterfaceBDD("anything").isOne());
+  }
+
+  @Test
+  public void testOutgoingInterfaceBDD_activeAndInactive() {
+    // If one active interface with a filter is present and no other active interfaces are present,
+    // the interface's constraint BDD should be ONE.
+    {
+      Configuration c =
+          createConfig(new NetworkFactory(), ImmutableSet.of(ACTIVE_IFACE_WITH_FILTER_1));
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
+      assertThat(mgr.outgoingInterfaceBDD(ACTIVE_IFACE_WITH_FILTER_1), isOne());
+    }
+
+    // If one active interface with a filter is present and other active interfaces are also
+    // present, all interface's constraint BDDs should be nontrivial.
+    {
+      Configuration c =
+          createConfig(
+              new NetworkFactory(),
+              ImmutableSet.of(ACTIVE_IFACE_WITH_FILTER_1, ACTIVE_IFACE_NO_FILTER_1));
+      BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
+      BDD hasFilter = mgr.outgoingInterfaceBDD(ACTIVE_IFACE_WITH_FILTER_1);
+      BDD noFilter = mgr.outgoingInterfaceBDD(ACTIVE_IFACE_NO_FILTER_1);
+      assertThat(hasFilter.or(noFilter), isOne());
+      assertThat(hasFilter, not(isOne()));
+      assertThat(noFilter, not(isOne()));
+    }
   }
 
   @Test
