@@ -1268,10 +1268,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return Integer.parseInt(ctx.getText());
   }
 
-  private static int toInteger(TerminalNode t) {
-    return Integer.parseInt(t.getText());
-  }
-
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
   }
@@ -1317,10 +1313,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static long toLong(DecContext ctx) {
     return Long.parseLong(ctx.getText());
-  }
-
-  private static long toLong(TerminalNode t) {
-    return Long.parseLong(t.getText());
   }
 
   private static long toLong(Token t) {
