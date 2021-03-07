@@ -6970,16 +6970,6 @@ F_Base64String
 ;
 
 fragment
-F_DecByte
-:
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
-;
-
-fragment
 F_Digit
 :
   [0-9]
@@ -7127,7 +7117,7 @@ F_HexWordLE7
 fragment
 F_IpAddress
 :
-  F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+  F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
 ;
 
 fragment
