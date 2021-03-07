@@ -9,10 +9,12 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
 import org.batfish.symbolic.state.EdgeStateExpr;
@@ -467,6 +469,8 @@ public final class BDDFibGeneratorTest {
 
   @Test
   public void testGenerateRules_PreOutVrf_PreOutEdge() {
+    BDDFiniteDomain<String> domain =
+        new BDDFiniteDomain<>(PKT, "outgoingOrigFilter", ImmutableSet.of(IFACE1, IFACE2));
     Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>> arpTrueEdgeBDDs =
         ImmutableMap.of(
             NODE1,
@@ -491,12 +495,12 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of(),
-            (node, iface) -> ONE);
+            (node, iface) -> domain.getConstraintForValue(iface));
     Edge expectedEdge =
         new Edge(
             new TestPreOutVrf(NODE1, VRF1),
             new TestPreOutEdge(NODE1, IFACE1, NODE2, IFACE2),
-            DSTIP1);
+            DSTIP1.and(domain.getConstraintForValue(IFACE1)));
 
     assertThat(
         generator
@@ -522,6 +526,8 @@ public final class BDDFibGeneratorTest {
 
   @Test
   public void testGenerateRules_PreOutVrf_PreOutInterfaceDisposition_all() {
+    BDDFiniteDomain<String> domain =
+        new BDDFiniteDomain<>(PKT, "outgoingOrigFilter", ImmutableSet.of(IFACE1, IFACE2));
     Map<String, Map<String, Map<String, BDD>>> neighborUnreachableBDDs =
         ImmutableMap.of(
             NODE1,
@@ -558,27 +564,27 @@ public final class BDDFibGeneratorTest {
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of(),
-            (node, iface) -> ONE);
+            (node, iface) -> domain.getConstraintForValue(iface));
     Edge expectedEdgeNeighborUnreachable =
         new Edge(
             new TestPreOutVrf(NODE1, VRF1),
             new TestPreOutInterfaceNeighborUnreachable(NODE1, IFACE1),
-            DSTIP1);
+            DSTIP1.and(domain.getConstraintForValue(IFACE1)));
     Edge expectedEdgeDeliveredToSubnet =
         new Edge(
             new TestPreOutVrf(NODE1, VRF1),
             new TestPreOutInterfaceDeliveredToSubnet(NODE1, IFACE1),
-            DSTIP2);
+            DSTIP2.and(domain.getConstraintForValue(IFACE1)));
     Edge expectedEdgeExitsNetwork =
         new Edge(
             new TestPreOutVrf(NODE1, VRF1),
             new TestPreOutInterfaceExitsNetwork(NODE1, IFACE2),
-            DSTIP1);
+            DSTIP1.and(domain.getConstraintForValue(IFACE2)));
     Edge expectedInsufficientInfo =
         new Edge(
             new TestPreOutVrf(NODE1, VRF1),
             new TestPreOutInterfaceInsufficientInfo(NODE1, IFACE2),
-            DSTIP2);
+            DSTIP2.and(domain.getConstraintForValue(IFACE2)));
 
     assertThat(
         generator
