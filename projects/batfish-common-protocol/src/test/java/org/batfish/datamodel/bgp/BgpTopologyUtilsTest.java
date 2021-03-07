@@ -490,30 +490,22 @@ public class BgpTopologyUtilsTest {
 
     {
       // passive candidate case
-
-      BgpPeerConfigId passiveCandidateId = new BgpPeerConfigId("h", "v", null, true);
-
       assertTrue(
           bgpCandidateHasCompatibleIpOrPrefix(
               initiator,
-              passiveCandidateId,
               BgpPassivePeerConfig.builder().setPeerPrefix(Prefix.parse("2.2.2.0/24")).build()));
       assertFalse(
           bgpCandidateHasCompatibleIpOrPrefix(
               initiator,
-              passiveCandidateId,
               BgpPassivePeerConfig.builder().setPeerPrefix(Prefix.parse("3.3.3.0/24")).build()));
     }
     {
       // active candidate
 
-      BgpPeerConfigId activeCandidateId = new BgpPeerConfigId("h", "v", null, false);
-
       // candidate without local IP and matching peer address
       assertTrue(
           bgpCandidateHasCompatibleIpOrPrefix(
               initiator,
-              activeCandidateId,
               BgpActivePeerConfig.builder()
                   .setPeerAddress(Ip.parse("2.2.2.2"))
                   .setEbgpMultihop(true)
@@ -523,7 +515,6 @@ public class BgpTopologyUtilsTest {
       assertFalse(
           bgpCandidateHasCompatibleIpOrPrefix(
               initiator,
-              activeCandidateId,
               BgpActivePeerConfig.builder()
                   .setPeerAddress(Ip.parse("3.3.3.3"))
                   .setEbgpMultihop(true)
@@ -533,7 +524,6 @@ public class BgpTopologyUtilsTest {
       assertTrue(
           bgpCandidateHasCompatibleIpOrPrefix(
               initiator,
-              activeCandidateId,
               BgpActivePeerConfig.builder()
                   .setPeerAddress(Ip.parse("2.2.2.2"))
                   .setLocalIp(Ip.parse("4.4.4.4"))
@@ -543,7 +533,6 @@ public class BgpTopologyUtilsTest {
       assertFalse(
           bgpCandidateHasCompatibleIpOrPrefix(
               initiator,
-              activeCandidateId,
               BgpActivePeerConfig.builder()
                   .setPeerAddress(Ip.parse("2.2.2.2"))
                   .setLocalIp(Ip.parse("3.3.3.3"))
