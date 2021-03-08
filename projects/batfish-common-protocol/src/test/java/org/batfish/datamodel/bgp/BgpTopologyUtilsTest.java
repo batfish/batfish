@@ -2,6 +2,7 @@ package org.batfish.datamodel.bgp;
 
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.bgpCandidateHasCompatibleIpOrPrefix;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.computeAsPair;
 import static org.batfish.datamodel.bgp.BgpTopologyUtils.initBgpTopology;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -9,7 +10,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -475,5 +478,65 @@ public class BgpTopologyUtilsTest {
     // Compatible when ignoring confederations, but incompatible because non-matching confederations
     // are present
     assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(1), null);
+  }
+
+  @Test
+  public void testBgpCandidateHasCompatibleIpOrPrefix() {
+    BgpActivePeerConfig initiator =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(Ip.parse("2.2.2.2"))
+            .setPeerAddress(Ip.parse("4.4.4.4"))
+            .build();
+
+    {
+      // passive candidate case
+      assertTrue(
+          bgpCandidateHasCompatibleIpOrPrefix(
+              initiator,
+              BgpPassivePeerConfig.builder().setPeerPrefix(Prefix.parse("2.2.2.0/24")).build()));
+      assertFalse(
+          bgpCandidateHasCompatibleIpOrPrefix(
+              initiator,
+              BgpPassivePeerConfig.builder().setPeerPrefix(Prefix.parse("3.3.3.0/24")).build()));
+    }
+    {
+      // active candidate
+
+      // candidate without local IP and matching peer address
+      assertTrue(
+          bgpCandidateHasCompatibleIpOrPrefix(
+              initiator,
+              BgpActivePeerConfig.builder()
+                  .setPeerAddress(Ip.parse("2.2.2.2"))
+                  .setEbgpMultihop(true)
+                  .build()));
+
+      // candidate without local IP and incompatible peer address
+      assertFalse(
+          bgpCandidateHasCompatibleIpOrPrefix(
+              initiator,
+              BgpActivePeerConfig.builder()
+                  .setPeerAddress(Ip.parse("3.3.3.3"))
+                  .setEbgpMultihop(true)
+                  .build()));
+
+      // candidate with compatible local IP
+      assertTrue(
+          bgpCandidateHasCompatibleIpOrPrefix(
+              initiator,
+              BgpActivePeerConfig.builder()
+                  .setPeerAddress(Ip.parse("2.2.2.2"))
+                  .setLocalIp(Ip.parse("4.4.4.4"))
+                  .build()));
+
+      // candidate with incompatible local IP
+      assertFalse(
+          bgpCandidateHasCompatibleIpOrPrefix(
+              initiator,
+              BgpActivePeerConfig.builder()
+                  .setPeerAddress(Ip.parse("2.2.2.2"))
+                  .setLocalIp(Ip.parse("3.3.3.3"))
+                  .build()));
+    }
   }
 }
