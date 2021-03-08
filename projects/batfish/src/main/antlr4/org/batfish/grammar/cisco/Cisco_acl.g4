@@ -89,7 +89,7 @@ aruba_access_list_action
    | CAPTIVE
    |
    (
-      DST_NAT dstnat = DEC
+      DST_NAT dstnat = dec
    )
    | SRC_NAT
 ;
@@ -166,7 +166,7 @@ extended_access_list_additional_feature
    )
    |
    (
-      icmp_message_type = DEC icmp_message_code = DEC?
+      icmp_message_type = dec icmp_message_code = dec?
    )
    | ECE
    | ECHO
@@ -174,7 +174,7 @@ extended_access_list_additional_feature
    | ECHO_REQUEST
    |
    (
-      ECN ecn = DEC
+      ECN ecn = dec
    )
    | ESTABLISHED
    | FIN
@@ -197,7 +197,7 @@ extended_access_list_additional_feature
       (
          DEFAULT
          | DISABLE
-         | (level = DEC (INTERVAL secs = DEC)?)
+         | (level = dec (INTERVAL secs = dec)?)
       )?
    )
    | LOG_INPUT
@@ -241,7 +241,7 @@ extended_access_list_additional_feature
    | TRACEROUTE
    | TRACKED
    | TTL_EXCEEDED
-   | TTL EQ DEC
+   | TTL EQ dec
    | UNREACHABLE
    | URG
 ;
@@ -252,7 +252,7 @@ extended_access_list_null_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )?
    (
       (
@@ -315,10 +315,10 @@ extended_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? ala = access_list_action
    (
-      VLAN vlan = DEC vmask = HEX
+      VLAN vlan = dec vmask = HEX
    )?
    (
       prot = protocol
@@ -349,7 +349,7 @@ extended_access_list_tail
       )?
    )?
    (
-      SEQUENCE num = DEC
+      SEQUENCE num = dec
    )? NEWLINE
 ;
 
@@ -378,7 +378,7 @@ extended_ipv6_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? ala = access_list_action prot = protocol srcipr = access_list_ip6_range
    (
       alps_src = port_specifier
@@ -393,7 +393,7 @@ extended_ipv6_access_list_tail
       )?
    )?
    (
-      SEQUENCE num = DEC
+      SEQUENCE num = dec
    )? NEWLINE
 ;
 
@@ -417,7 +417,7 @@ ip_as_path_access_list_stanza
 ip_as_path_access_list_tail
 :
    (
-      SEQ DEC
+      SEQ dec
    )? action = access_list_action as_path_regex = RAW_TEXT NEWLINE
 ;
 
@@ -438,7 +438,7 @@ ip_community_list_expanded_stanza
 ip_community_list_expanded_tail
 :
    (
-      SEQ DEC
+      SEQ dec
    )? ala = access_list_action DOUBLE_QUOTE?
    (
       remainder += ~( NEWLINE | DOUBLE_QUOTE )
@@ -540,26 +540,26 @@ ip_prefix_list_null_tail
    )
    |
    (
-      NO SEQ DEC NEWLINE
+      NO SEQ dec NEWLINE
    )
 ;
 
 ip_prefix_list_tail
 :
    (
-      SEQ? seqnum = DEC
+      SEQ? seqnum = dec
    )? action = access_list_action prefix = IP_PREFIX
    (
       (
-         GE minpl = DEC
+         GE minpl = dec
       )
       |
       (
-         LE maxpl = DEC
+         LE maxpl = dec
       )
       |
       (
-         EQ eqpl = DEC
+         EQ eqpl = dec
       )
    )* NEWLINE
 ;
@@ -614,7 +614,7 @@ ipaclsession_line
    ipaclsession_service action = aruba_access_list_action
    (
       (
-         DOT1P_PRIORITY d1ppri = DEC
+         DOT1P_PRIORITY d1ppri = dec
       )
       | LOG
       |
@@ -626,7 +626,7 @@ ipaclsession_line
       )
       |
       (
-         TOS tos = DEC
+         TOS tos = dec
       )
    )* NEWLINE
 ;
@@ -687,19 +687,19 @@ ipaclsession_service6
 ipv6_prefix_list_tail
 :
    (
-      SEQ? seqnum = DEC
+      SEQ? seqnum = dec
    )? action = access_list_action prefix6 = IPV6_PREFIX
    (
       (
-         GE minpl = DEC
+         GE minpl = dec
       )
       |
       (
-         LE maxpl = DEC
+         LE maxpl = dec
       )
       |
       (
-         EQ eqpl = DEC
+         EQ eqpl = dec
       )
    )* NEWLINE
 ;
@@ -730,15 +730,15 @@ mac_access_list_additional_feature
    | LOG_ENABLE
    |
    (
-      PRIORITY priority = DEC
+      PRIORITY priority = dec
    )
    |
    (
-      PRIORITY_FORCE priority_force = DEC
+      PRIORITY_FORCE priority_force = dec
    )
    |
    (
-      PRIORITY_MAPPING priority_mapping = DEC
+      PRIORITY_MAPPING priority_mapping = dec
    )
 ;
 
@@ -794,7 +794,7 @@ netdestination6_network
 
 netservice_icmpv6_specifier
 :
-   DEC
+   dec
    | RTR_ADV
 ;
 
@@ -802,16 +802,16 @@ netservice_port_specifier
 :
    (
       (
-         start_port = DEC
+         start_port = dec
          (
-            end_port = DEC
+            end_port = dec
          )?
       )
       |
       (
          LIST DOUBLE_QUOTE
          (
-            elems += DEC
+            elems += dec
          )+ DOUBLE_QUOTE
       )
    )
@@ -880,7 +880,7 @@ s_arp_access_list_extended_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? action = access_list_action
    (
       REQUEST
@@ -902,7 +902,7 @@ s_ethernet_services
 
 s_ethernet_services_tail
 :
-   num = DEC? action = access_list_action src_mac = xr_mac_specifier dst_mac =
+   num = dec? action = access_list_action src_mac = xr_mac_specifier dst_mac =
    xr_mac_specifier NEWLINE
 ;
 
@@ -922,7 +922,7 @@ s_foundry_mac_access_list
       | dst_any = ANY
    )
    (
-      vlan = DEC
+      vlan = dec
       | vlan_any = ANY
    )
    (
@@ -932,15 +932,15 @@ s_foundry_mac_access_list
       | LOG_ENABLE
       |
       (
-         PRIORITY priority = DEC
+         PRIORITY priority = dec
       )
       |
       (
-         PRIORITY_FORCE priority_force = DEC
+         PRIORITY_FORCE priority_force = dec
       )
       |
       (
-         PRIORITY_MAPPING priority_mapping = DEC
+         PRIORITY_MAPPING priority_mapping = dec
       )
    )* NEWLINE
 ;
@@ -983,11 +983,11 @@ s_mac_access_list_extended
 s_mac_access_list_extended_tail
 :
    (
-      (SEQ | SEQUENCE)? num = DEC
+      (SEQ | SEQUENCE)? num = dec
    )?
    action = access_list_action src = access_list_mac_range dst = access_list_mac_range
    (
-      vlan = DEC
+      vlan = dec
       | vlan_any = ANY
    )? mac_access_list_additional_feature* NEWLINE
 ;
@@ -1031,7 +1031,7 @@ standard_access_list_additional_feature
    )
    |
    (
-      ECN ecn = DEC
+      ECN ecn = dec
    )
    | LOG
 ;
@@ -1042,7 +1042,7 @@ standard_access_list_null_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )?
    (
       REMARK
@@ -1111,7 +1111,7 @@ standard_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? ala = access_list_action ipr = access_list_ip_range
    (
       features += standard_access_list_additional_feature
@@ -1124,7 +1124,7 @@ standard_ipv6_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? ala = access_list_action ipr = access_list_ip6_range
    (
       features += standard_access_list_additional_feature
@@ -1133,7 +1133,7 @@ standard_ipv6_access_list_tail
 
 variable_community_list
 :
-   ~( NEWLINE | COMMUNITY_LIST_NUM_STANDARD | COMMUNITY_LIST_NUM_EXPANDED | DEC
+   ~( NEWLINE | COMMUNITY_LIST_NUM_STANDARD | COMMUNITY_LIST_NUM_EXPANDED | DEC | UINT8 | UINT16 | UINT32
    )
 ;
 

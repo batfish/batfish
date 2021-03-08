@@ -51,7 +51,7 @@ mldp_null
 
 mldp_session_protection
 :
-   SESSION PROTECTION (FOR peer = variable)? (DURATION DEC)? NEWLINE
+   SESSION PROTECTION (FOR peer = variable)? (DURATION dec)? NEWLINE
 ;
 
 mldp_router_id
@@ -148,7 +148,7 @@ s_mpls_ldp
 
 s_mpls_label_range
 :
-   MPLS LABEL RANGE DEC+ NEWLINE
+   MPLS LABEL RANGE dec+ NEWLINE
 ;
 
 s_mpls_traffic_eng

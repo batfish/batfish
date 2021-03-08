@@ -22,8 +22,8 @@ address_family_footer
 
 bgp_asn
 :
-    asn = DEC
-    | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
+    asn = dec
+    | asn4b = FLOAT // dec.dec , but this lexes as FLOAT
 ;
 
 both_export_import
@@ -45,6 +45,14 @@ community
    | uint32
 ;
 
+dec
+:
+   UINT8
+   | UINT16
+   | UINT32
+   | DEC
+;
+
 description_line
 :
    DESCRIPTION text = RAW_TEXT? NEWLINE
@@ -60,7 +68,7 @@ double_quoted_string
 
 dscp_type
 :
-   DEC
+   dec
    | AF11
    | AF12
    | AF13
@@ -91,15 +99,15 @@ ec_ga_la_literal
    | ecgalal_ip_colon
 ;
 
-ecgalal_asdot_colon: ga_high16 = DEC PERIOD ga_low16 = DEC COLON la = DEC;
+ecgalal_asdot_colon: ga_high16 = uint16 PERIOD ga_low16 = uint16 COLON la = uint16;
 
-ecgalal_colon: ga = DEC COLON la = DEC;
+ecgalal_colon: ga = uint32 COLON la = uint16;
 
-ecgalal_ip_colon: ga = IP_ADDRESS COLON la = DEC;
+ecgalal_ip_colon: ga = IP_ADDRESS COLON la = uint16;
 
 eigrp_metric
 :
-   bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+   bw_kbps = dec delay_10us = dec reliability = dec eff_bw = dec mtu = dec
 ;
 
 exit_line
@@ -114,7 +122,7 @@ extended_community_route_target
 
 icmp_object_type
 :
-   DEC
+   dec
    | ALTERNATE_ADDRESS
    | CONVERSION_ERROR
    | ECHO
@@ -166,7 +174,7 @@ int_expr
       (
          PLUS
          | DASH
-      )? DEC
+      )? dec
    )
    | IGP_COST
 ;
@@ -178,7 +186,7 @@ interface_name
     (
       (
         name_middle_parts += M_Interface_PREFIX
-      )? name_middle_parts += DEC
+      )? name_middle_parts += (DEC | UINT8 | UINT16 | UINT32)
       (
         name_middle_parts += FORWARD_SLASH
         | name_middle_parts += PERIOD
@@ -193,14 +201,14 @@ interface_name_unstructured
 :
   (
     VARIABLE
-    | variable_interface_name DEC?
+    | variable_interface_name dec?
   )
   (
     (
       COLON
       | FORWARD_SLASH
       | PERIOD
-    ) DEC
+    ) dec
   )*
 ;
 
@@ -266,12 +274,12 @@ null_rest_of_line
 ospf_route_type
 :
    (
-      EXTERNAL type = DEC?
+      EXTERNAL type = dec?
    )
    | INTERNAL
    |
    (
-      NSSA_EXTERNAL type = DEC?
+      NSSA_EXTERNAL type = dec?
    )
 ;
 
@@ -306,7 +314,7 @@ port_specifier
 
 port
 :
-   DEC
+   dec
    | ACAP
    | ACR_NEMA
    | AFPOVERTCP
@@ -518,7 +526,7 @@ protocol
 :
    AH
    | AHP
-   | DEC
+   | dec
    | EIGRP
    | ESP
    | GRE
@@ -558,20 +566,20 @@ range
 
 route_distinguisher
 :
-   (IP_ADDRESS | bgp_asn) COLON DEC
+   (IP_ADDRESS | bgp_asn) COLON dec
 ;
 
 route_target
 :
-   (IP_ADDRESS | bgp_asn) COLON DEC
+   (IP_ADDRESS | bgp_asn) COLON dec
 ;
 
 community_set_elem_half
 :
-   value = DEC
+   value = dec
    |
    (
-      BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
+      BRACKET_LEFT first = dec PERIOD PERIOD last = dec BRACKET_RIGHT
    )
    | ASTERISK
    | PRIVATE_AS
@@ -611,9 +619,9 @@ service_specifier_tcp_udp
 
 subrange
 :
-   low = DEC
+   low = dec
    (
-      DASH high = DEC
+      DASH high = dec
    )?
 ;
 
@@ -624,9 +632,22 @@ switchport_trunk_encapsulation
    | NEGOTIATE
 ;
 
+uint8
+:
+  UINT8
+;
+
+uint16
+:
+  UINT8
+  | UINT16
+;
+
 uint32
 :
-  DEC
+  UINT8
+  | UINT16
+  | UINT32
 ;
 
 variable
@@ -660,7 +681,7 @@ variable_hostname
 variable_interface_name
 :
    ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
-   NAME | NEWLINE | TAG | TRACK | VARIABLE )
+   NAME | NEWLINE | TAG | TRACK | UINT8 | UINT16 | UINT32 | VARIABLE )
 ;
 
 variable_max_metric
@@ -687,12 +708,11 @@ variable_group_id
 
 variable_vlan
 :
-   ~( NEWLINE | ACCESS_MAP | DEC )
+   ~( NEWLINE | ACCESS_MAP | DEC | UINT8 | UINT16 | UINT32 )
 ;
 
 vlan_id
 :
-  v = DEC
+  v = (DEC | UINT8 | UINT16)
   {isVlanId($v)}?
-
 ;

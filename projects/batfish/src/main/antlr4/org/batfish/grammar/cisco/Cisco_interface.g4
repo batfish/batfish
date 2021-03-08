@@ -13,7 +13,7 @@ if_autostate
 
 if_bandwidth
 :
-   NO? BANDWIDTH DEC KBPS? NEWLINE
+   NO? BANDWIDTH dec KBPS? NEWLINE
 ;
 
 if_bfd
@@ -31,7 +31,7 @@ if_bfd
 
 if_bfd_authentication
 :
-  AUTHENTICATION KEYED_SHA1 KEYID id = DEC (
+  AUTHENTICATION KEYED_SHA1 KEYID id = dec (
      HEX_KEY hex_key = variable
      | KEY ascii_key = variable
   )NEWLINE
@@ -44,12 +44,12 @@ if_bfd_echo
 
 if_bfd_echo_rx_interval
 :
-  ECHO_RX_INTERVAL ms = DEC NEWLINE
+  ECHO_RX_INTERVAL ms = dec NEWLINE
 ;
 
 if_bfd_interval
 :
-  INTERVAL tx_ms = DEC (MIN_RX | MIN_RX_VAR) tx_ms = DEC MULTIPLIER mult = DEC NEWLINE
+  INTERVAL tx_ms = dec (MIN_RX | MIN_RX_VAR) tx_ms = dec MULTIPLIER mult = dec NEWLINE
 ;
 
 if_bfd_neighbor
@@ -72,7 +72,7 @@ if_bfd_template
 
 if_channel_group
 :
-   CHANNEL_GROUP num = DEC
+   CHANNEL_GROUP num = dec
    (
       MODE
       (
@@ -106,7 +106,7 @@ if_description
 
 if_delay
 :
-   NO? DELAY DEC NEWLINE
+   NO? DELAY dec NEWLINE
 ;
 
 if_encapsulation
@@ -137,7 +137,7 @@ if_flow_sampler
 
 if_hsrp
 :
-   HSRP group = DEC NEWLINE
+   HSRP group = dec NEWLINE
    (
       if_hsrp_ip_address
       | if_hsrp_null
@@ -170,7 +170,7 @@ if_hsrp_preempt
 
 if_hsrp_priority
 :
-   NO? PRIORITY value = DEC null_rest_of_line
+   NO? PRIORITY value = dec null_rest_of_line
 ;
 
 if_hsrp_track
@@ -180,7 +180,7 @@ if_hsrp_track
 
 if_hsrp6
 :
-   HSRP group = DEC IPV6 NEWLINE
+   HSRP group = dec IPV6 NEWLINE
    (
       if_hsrp6_ip_address
       | if_hsrp_null
@@ -268,8 +268,8 @@ if_ip_address
       | prefix = IP_PREFIX
    )
    (STANDBY standby_address = IP_ADDRESS)?
-   (ROUTE_PREFERENCE pref=DEC)?
-   (TAG tag=DEC)?
+   (ROUTE_PREFERENCE pref=dec)?
+   (TAG tag=dec)?
    NEWLINE
 ;
 
@@ -303,12 +303,12 @@ if_ip_authentication
 
 if_ip_auth_key_chain
 :
-   KEY_CHAIN EIGRP asn = DEC name = variable_permissive NEWLINE
+   KEY_CHAIN EIGRP asn = dec name = variable_permissive NEWLINE
 ;
 
 if_ip_auth_mode
 :
-   MODE EIGRP asn = DEC MD5 NEWLINE
+   MODE EIGRP asn = dec MD5 NEWLINE
 ;
 
 if_ip_cef
@@ -341,7 +341,7 @@ if_ip_forward
 
 if_ip_hello_interval
 :
-   HELLO_INTERVAL EIGRP asn = DEC interval = DEC NEWLINE
+   HELLO_INTERVAL EIGRP asn = dec interval = dec NEWLINE
 ;
 
 if_ip_helper_address
@@ -351,7 +351,7 @@ if_ip_helper_address
 
 if_ip_hold_time
 :
-   HOLD_TIME EIGRP asn = DEC interval = DEC NEWLINE
+   HOLD_TIME EIGRP asn = dec interval = dec NEWLINE
 ;
 
 if_ip_inband_access_group
@@ -393,27 +393,27 @@ if_ip_nbar
 
 if_ip_ospf_area
 :
-   OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
+   OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = dec) NEWLINE
 ;
 
 if_ip_ospf_cost
 :
-   IP? OSPF COST cost = DEC NEWLINE
+   IP? OSPF COST cost = dec NEWLINE
 ;
 
 if_ip_ospf_dead_interval
 :
-   OSPF DEAD_INTERVAL seconds = DEC NEWLINE
+   OSPF DEAD_INTERVAL seconds = dec NEWLINE
 ;
 
 if_ip_ospf_dead_interval_minimal
 :
-   OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
+   OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = dec NEWLINE
 ;
 
 if_ip_ospf_hello_interval
 :
-   OSPF HELLO_INTERVAL seconds = DEC NEWLINE
+   OSPF HELLO_INTERVAL seconds = dec NEWLINE
 ;
 
 if_ip_ospf_network
@@ -442,7 +442,7 @@ if_ip_ospf_shutdown
 
 if_ip_passive_interface_eigrp
 :
-   NO? IP PASSIVE_INTERFACE EIGRP tag = DEC NEWLINE
+   NO? IP PASSIVE_INTERFACE EIGRP tag = dec NEWLINE
 ;
 
 if_ip_pim_neighbor_filter
@@ -467,7 +467,7 @@ if_ip_router_isis
 
 if_ip_router_ospf_area
 :
-   ROUTER OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
+   ROUTER OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = dec) NEWLINE
 ;
 
 if_ip_rtp
@@ -489,7 +489,7 @@ if_ip_sticky_arp
 
 if_ip_summary_address
 :
-   SUMMARY_ADDRESS EIGRP asn = DEC
+   SUMMARY_ADDRESS EIGRP asn = dec
    (
       addr = IP_ADDRESS netmask = IP_ADDRESS
       | prefix = IP_PREFIX
@@ -509,12 +509,12 @@ if_ip_tcp
 
 if_ip_tcp_adjust_mss
 :
-   ADJUST_MSS value = DEC NEWLINE
+   ADJUST_MSS value = dec NEWLINE
 ;
 
 if_ip_tcp_compression_connections
 :
-   COMPRESSION_CONNECTIONS value = DEC NEWLINE
+   COMPRESSION_CONNECTIONS value = dec NEWLINE
 ;
 
 if_ip_tcp_header_compression
@@ -527,11 +527,11 @@ if_ip_verify
    VERIFY UNICAST
    (
       (
-         NOTIFICATION THRESHOLD DEC
+         NOTIFICATION THRESHOLD dec
       )
       |
       (
-         REVERSE_PATH ALLOW_SELF_PING? acl = DEC?
+         REVERSE_PATH ALLOW_SELF_PING? acl = dec?
       )
       |
       (
@@ -544,7 +544,7 @@ if_ip_verify
             ALLOW_DEFAULT
             | ALLOW_SELF_PING
             | L2_SRC
-         )* acl = DEC?
+         )* acl = dec?
       )
    ) NEWLINE
 ;
@@ -612,12 +612,12 @@ if_isis_circuit_type
 
 if_isis_enable
 :
-   ISIS ENABLE num = DEC NEWLINE
+   ISIS ENABLE num = dec NEWLINE
 ;
 
 if_isis_hello_interval
 :
-   ISIS HELLO_INTERVAL DEC
+   ISIS HELLO_INTERVAL dec
    (
       LEVEL_1
       | LEVEL_2
@@ -626,7 +626,7 @@ if_isis_hello_interval
 
 if_isis_metric
 :
-   ISIS IPV6? METRIC metric = DEC
+   ISIS IPV6? METRIC metric = dec
    (
       LEVEL_1
       | LEVEL_2
@@ -645,12 +645,12 @@ if_isis_passive
 
 if_isis_tag
 :
-   ISIS TAG tag = DEC NEWLINE
+   ISIS TAG tag = dec NEWLINE
 ;
 
 if_load_interval
 :
-   LOAD_INTERVAL li = DEC NEWLINE
+   LOAD_INTERVAL li = dec NEWLINE
 ;
 
 if_member_interface
@@ -665,7 +665,7 @@ if_mka
 
 if_mtu
 :
-   MTU mtu_size = DEC NEWLINE
+   MTU mtu_size = dec NEWLINE
 ;
 
 if_nameif
@@ -1174,7 +1174,7 @@ if_routing_dynamic
 
 if_service_instance
 :
-   SERVICE INSTANCE id = DEC ETHERNET NEWLINE
+   SERVICE INSTANCE id = dec ETHERNET NEWLINE
    if_si_inner*
 ;
 
@@ -1190,7 +1190,7 @@ if_si_inner
 
 if_si_bridge_domain
 :
-    BRIDGE_DOMAIN id = DEC SPLIT_HORIZON? NEWLINE
+    BRIDGE_DOMAIN id = dec SPLIT_HORIZON? NEWLINE
 ;
 
 if_si_encapsulation
@@ -1205,7 +1205,7 @@ if_si_l2protocol
 
 if_si_no_bridge_domain
 :
-    NO BRIDGE_DOMAIN id = DEC NEWLINE
+    NO BRIDGE_DOMAIN id = dec NEWLINE
 ;
 
 if_si_rewrite
@@ -1235,7 +1235,7 @@ if_speed_auto
 
 if_speed_ios
 :
-   SPEED mbits = DEC NEWLINE
+   SPEED mbits = dec NEWLINE
 ;
 
 if_speed_ios_dot11radio
@@ -1359,7 +1359,7 @@ if_standby
 
 standby_group
 :
-  group = DEC
+  group = dec
   (
     standby_group_authentication
     | standby_group_ip
@@ -1389,33 +1389,33 @@ standby_group_preempt_delay
 :
   DELAY
   (
-     MINIMUM min_secs = DEC
-     | RELOAD reload_secs = DEC
-     | SYNC sync_secs = DEC
+     MINIMUM min_secs = dec
+     | RELOAD reload_secs = dec
+     | SYNC sync_secs = dec
   )+
 ;
 
 standby_group_priority
 :
-  PRIORITY priority = DEC
+  PRIORITY priority = dec
 ;
 
 standby_group_timers
 :
   TIMERS
   (
-     MSEC hello_ms = DEC
-     | hello_sec = DEC
+     MSEC hello_ms = dec
+     | hello_sec = dec
   )
   (
-     MSEC hold_ms = DEC
-     | hold_sec = DEC
+     MSEC hold_ms = dec
+     | hold_sec = dec
   )
 ;
 
 standby_group_track
 :
-  TRACK group = DEC track_action
+  TRACK group = dec track_action
 ;
 
 track_action
@@ -1425,7 +1425,7 @@ track_action
 
 track_action_decrement
 :
-  DECREMENT subtrahend = DEC
+  DECREMENT subtrahend = dec
 ;
 
 standby_version
@@ -1442,7 +1442,7 @@ if_switchport_access
 :
    SWITCHPORT ACCESS VLAN
    (
-      vlan = DEC
+      vlan = dec
       | DYNAMIC
    ) NEWLINE
 ;
@@ -1471,24 +1471,24 @@ if_switchport_mode
 
 if_switchport_mode_monitor
 :
-   MONITOR BUFFER_LIMIT limit=DEC (BYTES | KBYTES | MBYTES | PACKETS)
+   MONITOR BUFFER_LIMIT limit=dec (BYTES | KBYTES | MBYTES | PACKETS)
 ;
 
 if_switchport_private_vlan_association
 :
-   SWITCHPORT PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = DEC
-   secondary_vlan_id = DEC NEWLINE
+   SWITCHPORT PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = dec
+   secondary_vlan_id = dec NEWLINE
 ;
 
 if_switchport_private_vlan_host_association
 :
-   SWITCHPORT PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = DEC
-   secondary_vlan_id = DEC NEWLINE
+   SWITCHPORT PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = dec
+   secondary_vlan_id = dec NEWLINE
 ;
 
 if_switchport_private_vlan_mapping
 :
-   SWITCHPORT PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = DEC
+   SWITCHPORT PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = dec
    secondary_vlan_list = range NEWLINE
 ;
 
@@ -1511,7 +1511,7 @@ if_switchport_trunk_encapsulation
 
 if_switchport_trunk_native
 :
-   SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
+   SWITCHPORT TRUNK NATIVE VLAN vlan = dec NEWLINE
 ;
 
 if_tunnel
@@ -1545,7 +1545,7 @@ if_vrf_member
 
 if_vrrp
 :
-   VRRP groupnum = DEC
+   VRRP groupnum = dec
    (
       ifvrrp_advertisement
       | ifvrrp_authentication
@@ -1561,7 +1561,7 @@ if_vrrp
 
 if_vrrpno
 :
-   NO VRRP groupnum = DEC
+   NO VRRP groupnum = dec
    (
       ifvrrpno_preempt
    )
@@ -1579,7 +1579,7 @@ if_zone_member
 
 if_security_level
 :
-   SECURITY_LEVEL level = DEC NEWLINE
+   SECURITY_LEVEL level = dec NEWLINE
 ;
 
 ifdhcp_null
@@ -1699,7 +1699,7 @@ iftunnel_bandwidth
    (
       RECEIVE
       | TRANSMIT
-   ) DEC NEWLINE
+   ) dec NEWLINE
 ;
 
 
@@ -1710,14 +1710,14 @@ iftunnel_destination
 
 iftunnel_key
 :
-   KEY keynum = DEC NEWLINE
+   KEY keynum = dec NEWLINE
 ;
 
 iftunnel_mode
 :
    MODE
    (
-     | gre_id = GRE id = DEC // aruba, tunnel ID
+     | gre_id = GRE id = dec // aruba, tunnel ID
      | gre_ipv4 = GRE IPV4 // ios-xr
      | gre_multipoint = GRE MULTIPOINT
      | ipsec_ipv4 = IPSEC IPV4
@@ -1748,7 +1748,7 @@ iftunnel_source
 
 ifvrrp_advertisement
 :
-   ADVERTISEMENT INTERVAL secs = DEC NEWLINE
+   ADVERTISEMENT INTERVAL secs = dec NEWLINE
 ;
 
 ifvrrp_authentication
@@ -1782,17 +1782,17 @@ ifvrrp_preempt
    (
       MINIMUM
       | RELOAD
-   ) DEC NEWLINE
+   ) dec NEWLINE
 ;
 
 ifvrrp_priority
 :
-   PRIORITY priority = DEC NEWLINE
+   PRIORITY priority = dec NEWLINE
 ;
 
 ifvrrp_priority_level
 :
-   PRIORITY_LEVEL priority = DEC NEWLINE
+   PRIORITY_LEVEL priority = dec NEWLINE
 ;
 
 s_interface

@@ -22,7 +22,7 @@ router_hsrp_if_af
    (
       IPV4
       | IPV6
-   ) NEWLINE HSRP DEC? NEWLINE router_hsrp_if_af_tail+
+   ) NEWLINE HSRP dec? NEWLINE router_hsrp_if_af_tail+
 ;
 
 router_hsrp_if_af_tail
@@ -34,7 +34,7 @@ router_hsrp_if_af_tail
       | PRIORITY
       | TIMERS
       | TRACK OBJECT
-      | VERSION DEC
+      | VERSION dec
    ) null_rest_of_line
 ;
 
