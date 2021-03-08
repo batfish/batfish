@@ -499,7 +499,7 @@ public final class FortiosGrammarTest {
         hasParseWarnings(
             containsInAnyOrder(
                 hasComment("Expected policy number in range 0-4294967294, but got '4294967295'"),
-                hasComment("Illegal value for policy number: not_a_number, must be a number"),
+                hasComment("Expected policy number in range 0-4294967294, but got 'not_a_number'"),
                 hasComment("Illegal value for policy name"),
                 hasComment(
                     "Interface/zone port1 is undefined and cannot be added to policy 4294967295"),

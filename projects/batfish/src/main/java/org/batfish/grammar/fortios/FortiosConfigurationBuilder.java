@@ -4,6 +4,7 @@ import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.primitives.Longs;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -942,28 +943,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Policy_numberContext ctx) {
-    String value = toString(ctx.str());
-    try {
-      Long.parseLong(value);
-    } catch (NumberFormatException nfe) {
-      warn(
-          messageCtx,
-          String.format("Illegal value for policy number: %s, must be a number", value));
-      return Optional.empty();
-    }
     return toLongInSpace(messageCtx, ctx, POLICY_NUMBER_SPACE, "policy number");
   }
 
   /**
-   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
-   * decimal integer to a {@link Long} if it is contained in the provided {@code space}, or else
-   * {@link Optional#empty}.
+   * Convert a {@link ParserRuleContext} to a {@link Long} if it is contained in the provided {@code
+   * space}, or else {@link Optional#empty}.
    */
   private @Nonnull Optional<Long> toLongInSpace(
       ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
-    long num = Long.parseLong(ctx.getText());
-    if (!space.contains(num)) {
-      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+    Long num = Longs.tryParse(ctx.getText());
+    if (num == null || !space.contains(num)) {
+      warn(
+          messageCtx,
+          String.format("Expected %s in range %s, but got '%s'", name, space, ctx.getText()));
       return Optional.empty();
     }
     return Optional.of(num);
