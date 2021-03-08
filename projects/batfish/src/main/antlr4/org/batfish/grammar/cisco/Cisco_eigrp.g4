@@ -8,7 +8,7 @@ options {
 
 re_classic
 :
-   ROUTER EIGRP asnum = DEC NEWLINE
+   ROUTER EIGRP asnum = dec NEWLINE
    re_classic_tail*
 ;
 
@@ -157,7 +157,7 @@ re_redistribute_connected
 
 re_redistribute_eigrp
 :
-   REDISTRIBUTE EIGRP asn = DEC
+   REDISTRIBUTE EIGRP asn = dec
    (
       METRIC metric = eigrp_metric
       | ROUTE_MAP map = variable
@@ -178,7 +178,7 @@ re_redistribute_isis
 
 re_redistribute_ospf
 :
-   REDISTRIBUTE OSPF proc = DEC
+   REDISTRIBUTE OSPF proc = dec
    (
       MATCH ospf_route_type+
       | METRIC metric = eigrp_metric
@@ -211,7 +211,7 @@ re_topology_base
 
 re_topology_name
 :
-   TOPOLOGY topo_name = variable TID topo_num = DEC NEWLINE
+   TOPOLOGY topo_name = variable TID topo_num = dec NEWLINE
 ;
 
 reaf_interface
@@ -306,14 +306,14 @@ rec_address_family
 :
    ADDRESS_FAMILY IPV4 UNICAST? VRF vrf = variable
    (
-      AUTONOMOUS_SYSTEM asnum = DEC
+      AUTONOMOUS_SYSTEM asnum = dec
    )? NEWLINE
    rec_address_family_tail* address_family_footer
 ;
 
 re_autonomous_system
 :
-   NO? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   NO? AUTONOMOUS_SYSTEM asnum = dec NEWLINE
 ;
 
 rec_address_family_null
@@ -359,12 +359,12 @@ rec_metric
 
 rec_metric_maximum_hops
 :
-   MAXIMUM_HOPS DEC NEWLINE
+   MAXIMUM_HOPS dec NEWLINE
 ;
 
 rec_metric_weights
 :
-   WEIGHTS tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC NEWLINE
+   WEIGHTS tos = dec k1 = dec k2 = dec k3 = dec k4 = dec k5 = dec NEWLINE
 ;
 
 rec_no
@@ -465,7 +465,7 @@ ren_address_family
    )?
    (
       VRF vrf = variable
-   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   )? AUTONOMOUS_SYSTEM asnum = dec NEWLINE
    ren_address_family_tail* address_family_footer
 ;
 
@@ -502,7 +502,7 @@ ren_metric_weights
    METRIC WEIGHTS
    // Looks so far like weights are non-optional
    // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_eigrp/configuration/xe-3s/ire-xe-3s-book/ire-wid-met.pdf
-   tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC k6 = DEC NEWLINE
+   tos = dec k1 = dec k2 = dec k3 = dec k4 = dec k5 = dec k6 = dec NEWLINE
 ;
 
 ren_no
@@ -522,7 +522,7 @@ ren_service_family
    )
    (
       VRF vrf = variable
-   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   )? AUTONOMOUS_SYSTEM asnum = dec NEWLINE
    ren_service_family_tail*
    resf_footer
 ;

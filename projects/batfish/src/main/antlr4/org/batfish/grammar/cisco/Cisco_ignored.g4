@@ -544,7 +544,7 @@ null_single
          (
             (
                (
-                  DEC
+                  dec
                   | variable_aclname
                )
                (

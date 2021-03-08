@@ -109,7 +109,7 @@ aaa_accounting_delay_start
       | VRF name = variable
    )?
    (
-      EXTENDED_DELAY DEC
+      EXTENDED_DELAY dec
    )? NEWLINE
 ;
 
@@ -278,7 +278,7 @@ aaa_accounting_system_stanza
 
 aaa_accounting_update
 :
-   UPDATE NEWINFO? (PERIODIC? DEC)? NEWLINE
+   UPDATE NEWINFO? (PERIODIC? dec)? NEWLINE
 ;
 
 aaa_authentication
@@ -408,7 +408,7 @@ aaa_authentication_include
 :
    INCLUDE name = variable
    (
-      FORWARD_SLASH DEC
+      FORWARD_SLASH dec
    )? iface = variable srcip = IP_ADDRESS srcmask = IP_ADDRESS
    (
       dstip = IP_ADDRESS dstmask = IP_ADDRESS
@@ -717,7 +717,7 @@ aaa_authorization_auth_proxy
 
 aaa_authorization_commands
 :
-   COMMANDS level = DEC?
+   COMMANDS level = dec?
    (
       CONSOLE
       | DEFAULT
@@ -757,7 +757,7 @@ aaa_authorization_include
 :
    INCLUDE name = variable
    (
-      FORWARD_SLASH DEC
+      FORWARD_SLASH dec
    )? iface = variable srcip = IP_ADDRESS srcmask = IP_ADDRESS
    (
       dstip = IP_ADDRESS dstmask = IP_ADDRESS
@@ -855,7 +855,7 @@ aaa_group
 
 aaa_group_deadtime
 :
-   DEADTIME minutes = DEC NEWLINE
+   DEADTIME minutes = dec NEWLINE
 ;
 
 aaa_group_ip_tacacs
@@ -883,15 +883,15 @@ aaa_group_server
    )
    (
       (
-         ACCT_PORT acct_port = DEC
+         ACCT_PORT acct_port = dec
       )
       |
       (
-         AUTH_PORT auth_port = DEC
+         AUTH_PORT auth_port = dec
       )
       |
       (
-         PORT prt = DEC
+         PORT prt = dec
       )
    )* NEWLINE
 ;
@@ -906,30 +906,30 @@ aaa_group_server_private
    )
    (
       (
-         ACCT_PORT acct_port = DEC
+         ACCT_PORT acct_port = dec
       )
       |
       (
-         AUTH_PORT auth_port = DEC
+         AUTH_PORT auth_port = dec
       )
       |
       (
-         KEY DEC variable_secret
+         KEY dec variable_secret
       )
       |
       (
-        PORT prt= DEC
+        PORT prt= dec
       )
       |
       (
-         TIMEOUT DEC
+         TIMEOUT dec
       )
    )* NEWLINE
 ;
 
 aaa_group_source_interface
 :
-   SOURCE_INTERFACE interface_name DEC? NEWLINE
+   SOURCE_INTERFACE interface_name dec? NEWLINE
 ;
 
 aaa_group_use_vrf
@@ -1023,7 +1023,7 @@ aaa_server_client
       | name = variable
    )
    SERVER_KEY
-   DEC?
+   dec?
    variable
    NEWLINE
 ;
@@ -1039,7 +1039,7 @@ aaa_server_ignore
 
 aaa_server_port
 :
-   PORT port_num = DEC NEWLINE
+   PORT port_num = dec NEWLINE
 ;
 
 aaa_server_group

@@ -628,7 +628,7 @@ enable_null
 
 enable_password
 :
-   PASSWORD (LEVEL level = DEC)?
+   PASSWORD (LEVEL level = dec)?
    (
       ep_plaintext
       | ep_sha512
@@ -642,7 +642,7 @@ enable_secret
    SECRET
    (
       (
-         DEC pass = variable_secret
+         dec pass = variable_secret
       )
       | double_quoted_string
    ) NEWLINE
@@ -650,7 +650,7 @@ enable_secret
 
 ep_cisco_encryption
 :
-   (type = DEC)? (pass = variable_secret) (LEVEL level = DEC)? (PBKDF2 | ENCRYPTED)?
+   (type = dec)? (pass = variable_secret) (LEVEL level = dec)? (PBKDF2 | ENCRYPTED)?
 ;
 
 ep_plaintext
@@ -1171,20 +1171,20 @@ ip_route_tail
          (
             ADMIN_DIST
             | ADMIN_DISTANCE
-         )? distance = DEC
+         )? distance = dec
       )
       |
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         TAG tag = DEC
+         TAG tag = dec
       )
       | perm = PERMANENT
       |
       (
-         TRACK track = DEC
+         TRACK track = dec
       )
       |
       (
@@ -1258,7 +1258,7 @@ ip_ssh_pubkey_chain
 
 ip_ssh_version
 :
-   VERSION version = DEC NEWLINE
+   VERSION version = dec NEWLINE
 ;
 
 ipc_association
@@ -1823,7 +1823,7 @@ vrfd_af_export
 
 vrfd_af_export_nonvpn
 :
-  (IPV4 | IPV6) (MULTICAST | UNICAST) prefix_limit=DEC? MAP name = variable NEWLINE
+  (IPV4 | IPV6) (MULTICAST | UNICAST) prefix_limit=dec? MAP name = variable NEWLINE
 ;
 
 vrfd_af_export_vpn
@@ -2099,10 +2099,10 @@ route_tail
    (
       (
          (
-            distance = DEC+
+            distance = dec+
          )?
          (
-            TRACK track = DEC+
+            TRACK track = dec+
          )?
       )
       |
@@ -2314,7 +2314,7 @@ s_control_plane
 :
    CONTROL_PLANE
    (
-      SLOT DEC
+      SLOT dec
    )? NEWLINE s_control_plane_tail*
 ;
 
@@ -2543,7 +2543,7 @@ s_flow_sampler_map
 
 fsm_mode
 :
-   MODE RANDOM ONE_OUT_OF DEC NEWLINE
+   MODE RANDOM ONE_OUT_OF dec NEWLINE
 ;
 
 s_gatekeeper
@@ -2886,7 +2886,7 @@ s_monitor_session
 
 s_mtu
 :
-   MTU iface = variable bytes = DEC NEWLINE
+   MTU iface = variable bytes = dec NEWLINE
 ;
 
 s_name
@@ -2911,7 +2911,7 @@ s_no_bfd
 
 s_no_enable
 :
-   NO ENABLE PASSWORD (LEVEL level = DEC)? NEWLINE
+   NO ENABLE PASSWORD (LEVEL level = dec)? NEWLINE
 ;
 
 s_nv
@@ -2960,7 +2960,7 @@ s_privilege
 
 s_process_max_time
 :
-   NO? PROCESS_MAX_TIME DEC NEWLINE
+   NO? PROCESS_MAX_TIME dec NEWLINE
 ;
 
 s_queue_monitor
@@ -3272,7 +3272,7 @@ s_vlan_cisco
       ACCESS_MAP
       |
       (
-         variable_vlan? DEC
+         variable_vlan? dec
       )
    ) null_rest_of_line
    (
@@ -3473,7 +3473,7 @@ sntp_server
 :
    SERVER hostname = variable
    (
-      VERSION version = DEC
+      VERSION version = dec
    )? NEWLINE
 ;
 
@@ -3544,7 +3544,7 @@ spti_null
 
 srlg_interface_numeric_stanza
 :
-   DEC null_rest_of_line
+   dec null_rest_of_line
 ;
 
 srlg_interface_stanza
@@ -3594,7 +3594,7 @@ ssh_server
       | LOGGING
       |
       (
-         SESSION_LIMIT limit = DEC
+         SESSION_LIMIT limit = dec
       )
       | V2
       |
@@ -3606,7 +3606,7 @@ ssh_server
 
 ssh_timeout
 :
-   TIMEOUT DEC NEWLINE
+   TIMEOUT dec NEWLINE
 ;
 
 stanza
@@ -3936,7 +3936,7 @@ t_server_null
 
 t_key
 :
-   KEY DEC? variable_permissive NEWLINE
+   KEY dec? variable_permissive NEWLINE
 ;
 
 t_source_interface
@@ -4124,7 +4124,7 @@ tl_object
 
 tltw_object_tail
 :
-  tl_object WEIGHT DEC NEWLINE
+  tl_object WEIGHT dec NEWLINE
 ;
 
 ts_common
@@ -4185,9 +4185,9 @@ u_passphrase
 :
    PASSPHRASE
    (
-      GRACETIME gracetime = DEC
-      | LIFETIME lifetime = DEC
-      | WARNTIME warntime = DEC
+      GRACETIME gracetime = dec
+      | LIFETIME lifetime = dec
+      | WARNTIME warntime = dec
    )*
 ;
 
@@ -4229,7 +4229,7 @@ ua_null
 
 up_cisco
 :
-   DEC? up_cisco_tail
+   dec? up_cisco_tail
 ;
 
 up_cisco_tail
@@ -4272,7 +4272,7 @@ vc_null
 
 viaf_vrrp
 :
-   NO? VRRP groupnum = DEC NEWLINE
+   NO? VRRP groupnum = dec NEWLINE
    (
       viafv_address
       | viafv_null
@@ -4299,18 +4299,18 @@ viafv_preempt
 :
    PREEMPT
    (
-      DELAY delay = DEC
+      DELAY delay = dec
    ) NEWLINE
 ;
 
 viafv_priority
 :
-   PRIORITY priority = DEC NEWLINE
+   PRIORITY priority = dec NEWLINE
 ;
 
 vlan_vn_segment
 :
-   VN_SEGMENT vni = DEC NEWLINE
+   VN_SEGMENT vni = dec NEWLINE
 ;
 
 vlan_null
@@ -4699,7 +4699,7 @@ vrfd_address_family
       | UNICAST
    )?
    (
-      MAX_ROUTE DEC
+      MAX_ROUTE dec
    )? NEWLINE
    (
       vrfd_af_export
@@ -4755,7 +4755,7 @@ vrrp_interface
 
 wccp_id
 :
-   id = DEC
+   id = dec
    (
       (
          GROUP_LIST group_list = variable
@@ -4770,7 +4770,7 @@ wccp_id
       )
       |
       (
-         PASSWORD DEC? password = variable
+         PASSWORD dec? password = variable
       )
       |
       (
