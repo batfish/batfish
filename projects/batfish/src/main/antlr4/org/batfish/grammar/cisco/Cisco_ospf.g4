@@ -15,7 +15,7 @@ ro_area
 :
    AREA
    (
-      area_int = DEC
+      area_int = dec
       | area_ip = IP_ADDRESS
    ) NEWLINE
    (
@@ -31,16 +31,16 @@ ro_area_default_cost
 :
    AREA
    (
-      area_int = DEC
+      area_int = dec
       | area_ip = IP_ADDRESS
-   ) DEFAULT_COST cost = DEC NEWLINE
+   ) DEFAULT_COST cost = dec NEWLINE
 ;
 
 ro_area_filterlist
 :
    AREA
    (
-      area_int = DEC
+      area_int = dec
       | area_ip = IP_ADDRESS
    ) FILTER_LIST PREFIX list = variable
    (
@@ -53,7 +53,7 @@ ro_area_nssa
 :
    AREA
    (
-      area_int = DEC
+      area_int = dec
       | area_ip = IP_ADDRESS
    ) NSSA
    (
@@ -61,11 +61,11 @@ ro_area_nssa
          default_information_originate = DEFAULT_INFORMATION_ORIGINATE
          (
             (
-               METRIC metric = DEC
+               METRIC metric = dec
             )
             |
             (
-               METRIC_TYPE metric_type = DEC
+               METRIC_TYPE metric_type = dec
             )
          )*
       )
@@ -78,7 +78,7 @@ ro_area_range
 :
    AREA
    (
-      area_int = DEC
+      area_int = dec
       | area_ip = IP_ADDRESS
    ) RANGE
    (
@@ -92,7 +92,7 @@ ro_area_range
       | NOT_ADVERTISE
    )?
    (
-      COST cost = DEC
+      COST cost = dec
    )? NEWLINE
 ;
 
@@ -100,7 +100,7 @@ ro_area_stub
 :
    AREA
    (
-      area_int = DEC
+      area_int = dec
       | area_ip = IP_ADDRESS
    ) STUB
    (
@@ -115,7 +115,7 @@ ro_authentication
 
 ro_auto_cost
 :
-   AUTO_COST REFERENCE_BANDWIDTH DEC
+   AUTO_COST REFERENCE_BANDWIDTH dec
    (
       GBPS
       | MBPS
@@ -135,24 +135,24 @@ ro_default_information
    DEFAULT_INFORMATION ORIGINATE
    (
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         METRIC_TYPE metric_type = DEC
+         METRIC_TYPE metric_type = dec
       )
       | ALWAYS
       |
       (
          ROUTE_MAP map = VARIABLE
       )
-      | TAG DEC
+      | TAG dec
    )* NEWLINE
 ;
 
 ro_default_metric
 :
-   NO? DEFAULT_METRIC metric = DEC NEWLINE
+   NO? DEFAULT_METRIC metric = dec NEWLINE
 ;
 
 ro_distance
@@ -167,16 +167,16 @@ ro_distance
 // Overrides the distance for all protocols
 ro_distance_distance
 :
-  value = DEC NEWLINE
+  value = dec NEWLINE
 ;
 
 // Overrides the distance for specific protocols
 ro_distance_ospf
 :
   OSPF
-  (EXTERNAL ext = DEC)?
-  (INTER_AREA inter = DEC)?
-  (INTRA_AREA intra = DEC)?
+  (EXTERNAL ext = dec)?
+  (INTER_AREA inter = dec)?
+  (INTRA_AREA intra = dec)?
   NEWLINE
 ;
 
@@ -202,16 +202,16 @@ ro_max_metric
    MAX_METRIC ROUTER_LSA
    (
       (
-         external_lsa = EXTERNAL_LSA external = DEC?
+         external_lsa = EXTERNAL_LSA external = dec?
       )
       | stub = INCLUDE_STUB
       |
       (
-         on_startup = ON_STARTUP DEC?
+         on_startup = ON_STARTUP dec?
       )
       |
       (
-         summary_lsa = SUMMARY_LSA summary = DEC?
+         summary_lsa = SUMMARY_LSA summary = dec?
       )
       |
       (
@@ -228,7 +228,7 @@ ro_maximum_paths
       (
          MAXIMUM PATHS
       )
-   ) DEC NEWLINE
+   ) dec NEWLINE
 ;
 
 ro_network
@@ -241,7 +241,7 @@ ro_network
       | prefix = IP_PREFIX
    ) AREA
    (
-      area_int = DEC
+      area_int = dec
       | area_ip = IP_ADDRESS
    ) NEWLINE
 ;
@@ -254,7 +254,7 @@ ro_nssa
          DEFAULT_INFORMATION_ORIGINATE
          (
             (
-               METRIC DEC
+               METRIC dec
             )
             |
             (
@@ -354,11 +354,11 @@ ro_redistribute_bgp_cisco
    REDISTRIBUTE BGP bgp_asn
    (
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         METRIC_TYPE type = DEC
+         METRIC_TYPE type = dec
       )
       |
       (
@@ -367,7 +367,7 @@ ro_redistribute_bgp_cisco
       | subnets = SUBNETS
       |
       (
-         TAG tag = DEC
+         TAG tag = dec
       )
    )* NEWLINE
 ;
@@ -381,27 +381,27 @@ ro_redistribute_connected
    )
    (
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         METRIC_TYPE type = DEC
+         METRIC_TYPE type = dec
       )
       | ROUTE_MAP map = VARIABLE
       | subnets = SUBNETS
       |
       (
-         TAG tag = DEC
+         TAG tag = dec
       )
    )* NEWLINE
 ;
 
 ro_redistribute_eigrp
 :
-   REDISTRIBUTE EIGRP tag = DEC
+   REDISTRIBUTE EIGRP tag = dec
    (
-      METRIC metric = DEC
-      | METRIC_TYPE type = DEC
+      METRIC metric = dec
+      | METRIC_TYPE type = dec
       | ROUTE_MAP map = variable
       | SUBNETS
    )* NEWLINE
@@ -422,17 +422,17 @@ ro_redistribute_static
    REDISTRIBUTE STATIC
    (
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         METRIC_TYPE type = DEC
+         METRIC_TYPE type = dec
       )
       | ROUTE_MAP map = VARIABLE
       | subnets = SUBNETS
       |
       (
-         TAG tag = DEC
+         TAG tag = dec
       )
    )* NEWLINE
 ;
@@ -465,7 +465,7 @@ ro6_area
 
 ro6_auto_cost
 :
-   AUTO_COST REFERENCE_BANDWIDTH DEC NEWLINE
+   AUTO_COST REFERENCE_BANDWIDTH dec NEWLINE
 ;
 
 ro6_default_information
@@ -475,7 +475,7 @@ ro6_default_information
 
 ro6_distance
 :
-   DISTANCE value = DEC NEWLINE
+   DISTANCE value = dec NEWLINE
 ;
 
 ro6_distribute_list
@@ -504,7 +504,7 @@ ro6_maximum_paths
       (
          MAXIMUM PATHS
       )
-   ) DEC NEWLINE
+   ) dec NEWLINE
 ;
 
 ro6_null
@@ -532,7 +532,7 @@ ro6_redistribute
 
 roa_cost
 :
-   COST cost = DEC NEWLINE
+   COST cost = dec NEWLINE
 ;
 
 roa_interface
@@ -555,7 +555,7 @@ roa_range
       | NOT_ADVERTISE
    )?
    (
-      COST cost = DEC
+      COST cost = dec
    )? NEWLINE
 ;
 
@@ -566,7 +566,7 @@ roa_network_null
 
 roi_cost
 :
-   COST cost = DEC NEWLINE
+   COST cost = dec NEWLINE
 ;
 
 roi_network
@@ -594,7 +594,7 @@ roi_passive
 
 roi_priority
 :
-   PRIORITY DEC NEWLINE
+   PRIORITY dec NEWLINE
 ;
 
 rov3_address_family

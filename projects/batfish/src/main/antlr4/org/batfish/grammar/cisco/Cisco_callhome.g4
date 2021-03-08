@@ -72,12 +72,12 @@ callhome_destination_profile_email_addr
 
 callhome_destination_profile_message_level
 :
-   MESSAGE_LEVEL DEC NEWLINE
+   MESSAGE_LEVEL dec NEWLINE
 ;
 
 callhome_destination_profile_message_size
 :
-   MESSAGE_SIZE DEC NEWLINE
+   MESSAGE_SIZE dec NEWLINE
 ;
 
 callhome_destination_profile_format
@@ -160,7 +160,7 @@ callhome_streetaddress
 
 callhome_switch_priority
 :
-   SWITCH_PRIORITY DEC NEWLINE
+   SWITCH_PRIORITY dec NEWLINE
 ;
 
 callhome_transport
@@ -201,7 +201,7 @@ callhome_transport_email_smtp_server
    )
    (
       (
-         PORT p = DEC
+         PORT p = dec
       )
       |
       (

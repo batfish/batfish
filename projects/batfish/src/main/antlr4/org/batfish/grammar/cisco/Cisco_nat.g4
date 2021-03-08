@@ -190,7 +190,7 @@ ipnios_static_network
    NETWORK ips = ipnioss_local_global
    (
       mask = IP_ADDRESS
-      | FORWARD_SLASH prefix = DEC
+      | FORWARD_SLASH prefix = dec
    )
 ;
 
@@ -203,7 +203,7 @@ ipni_destination
 :
    DESTINATION list = ipnc_list
    // Note: other modifiers such as vrf, overload, etc are not allowed on dest NAT.
-   // TODO: (redundancy num = DEC)?
+   // TODO: (redundancy num = dec)?
    NEWLINE
 ;
 
@@ -221,13 +221,13 @@ ipn_pool_prefix
    first = IP_ADDRESS last = IP_ADDRESS
    (
       NETMASK mask = IP_ADDRESS
-      | PREFIX_LENGTH prefix_length = DEC
+      | PREFIX_LENGTH prefix_length = dec
    )? NEWLINE
 ;
 
 ipn_pool_range
 :
-   PREFIX_LENGTH prefix_length = DEC NEWLINE
+   PREFIX_LENGTH prefix_length = dec NEWLINE
    (
       RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
    )+

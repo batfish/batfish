@@ -39,15 +39,15 @@ rs_route
          BFD FAST_DETECT
          (
             (
-               MINIMUM_INTERVAL minimum_interval = DEC
+               MINIMUM_INTERVAL minimum_interval = dec
             )
             |
             (
-               MULTIPLIER multiplier = DEC
+               MULTIPLIER multiplier = dec
             )
          )*
       )
-      | distance = DEC
+      | distance = dec
       |
       (
          DESCRIPTION description = RAW_TEXT
@@ -55,7 +55,7 @@ rs_route
       | PERMANENT
       |
       (
-         TAG tag = DEC
+         TAG tag = dec
       )
       |
       (

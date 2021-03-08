@@ -21,7 +21,7 @@ logging_address
          PORT
          (
             DEFAULT
-            | DEC
+            | dec
          )
       )
       | SEVERITY severity = variable
@@ -54,7 +54,7 @@ logging_buffered
    (
       (
          DISCRIMINATOR descr = variable
-      )? size = DEC? logging_severity?
+      )? size = dec? logging_severity?
    ) NEWLINE
 ;
 
@@ -148,7 +148,7 @@ logging_host
       PORT
       (
          DEFAULT
-         | DEC
+         | dec
       )
    )?
    (
@@ -158,7 +158,7 @@ logging_host
 
 logging_message
 :
-   MESSAGE (syslog_id = DEC) (LEVEL level = variable)? STANDBY? NEWLINE
+   MESSAGE (syslog_id = dec) (LEVEL level = variable)? STANDBY? NEWLINE
 ;
 
 logging_null
@@ -209,12 +209,12 @@ logging_on
 
 logging_queue
 :
-   QUEUE (size = DEC)? NEWLINE
+   QUEUE (size = dec)? NEWLINE
 ;
 
 logging_severity
 :
-   DEC
+   dec
    | ALERTS
    | CRITICAL
    | DEBUGGING

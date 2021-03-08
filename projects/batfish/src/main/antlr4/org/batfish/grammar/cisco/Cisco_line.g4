@@ -54,13 +54,13 @@ l_accounting
 
 l_exec_timeout
 :
-   EXEC_TIMEOUT minutes = DEC seconds = DEC? NEWLINE
+   EXEC_TIMEOUT minutes = dec seconds = dec? NEWLINE
 ;
 
 l_length
 :
    (
-      LENGTH DEC NEWLINE
+      LENGTH dec NEWLINE
    )
    |
    (
@@ -176,18 +176,18 @@ s_line
    LINE line_type
    (
       (
-         slot1 = DEC FORWARD_SLASH
+         slot1 = dec FORWARD_SLASH
          (
-            port1 = DEC FORWARD_SLASH
+            port1 = dec FORWARD_SLASH
          )?
-      )? first = DEC
+      )? first = dec
       (
          (
-            slot2 = DEC FORWARD_SLASH
+            slot2 = dec FORWARD_SLASH
             (
-               port2 = DEC FORWARD_SLASH
+               port2 = dec FORWARD_SLASH
             )?
-         )? last = DEC
+         )? last = dec
       )?
    )? NEWLINE
    (
@@ -206,7 +206,7 @@ s_line
 
 s_line_cadant
 :
-   LINE line_type_cadant start_line = DEC end_line = DEC?
+   LINE line_type_cadant start_line = dec end_line = dec?
    (
       lc_null
    )

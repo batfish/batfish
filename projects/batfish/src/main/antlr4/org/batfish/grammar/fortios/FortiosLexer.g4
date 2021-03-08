@@ -20,22 +20,29 @@ ADMIN:
   }
 ;
 
+ACTION: 'action';
 ADDRESS: 'address';
 AGGREGATE: 'aggregate';
 ALERTMAIL: 'alertmail';
 ALIAS: 'alias' -> pushMode(M_Str);
+ALLOW: 'allow';
 ALLOW_ROUTING: 'allow-routing';
+APPEND: 'append';
 ASSOCIATED_INTERFACE: 'associated-interface' -> pushMode(M_Str);
 AUTH: 'auth';
 BUFFER: 'buffer' -> pushMode(M_Str);
 COLOR: 'color';
 COMMENT: 'comment' -> pushMode(M_Str);
+COMMENTS: 'comments' -> pushMode(M_Str);
 CONFIG: 'config';
 COUNTRY: 'country';
 CUSTOM: 'custom';
+DENY: 'deny';
 DESCRIPTION: 'description' -> pushMode(M_Str);
 DISABLE: 'disable';
 DOWN: 'down';
+DSTADDR: 'dstaddr' -> pushMode(M_Str);
+DSTINTF: 'dstintf' -> pushMode(M_Str);
 EDIT: 'edit' -> pushMode(M_Str);
 DYNAMIC: 'dynamic';
 EMAC_VLAN: 'emac-vlan';
@@ -62,24 +69,38 @@ IP: 'ip';
 IPMASK: 'ipmask';
 IPRANGE: 'iprange';
 IP_UPPER: 'IP';
+IPSEC: 'ipsec';
 LOOPBACK: 'loopback';
 MAC: 'mac';
 MAIL: 'mail';
 MTU: 'mtu';
 MTU_OVERRIDE: 'mtu-override';
 NAC_QUAR: 'nac-quar';
+NAME: 'name' -> pushMode(M_Str);
 NEXT: 'next';
 PHYSICAL: 'physical';
+POLICY: 'policy';
 PROTOCOL: 'protocol';
 PROTOCOL_NUMBER: 'protocol-number';
 REDUNDANT: 'redundant';
 REPLACEMSG: 'replacemsg';
 SCTP_PORTRANGE: 'sctp-portrange';
 SDN: 'sdn';
-SERVICE: 'service';
+SELECT: 'select';
+SERVICE:
+  'service'
+  {
+    // After `firewall service`, we expect keywords, not strings
+    if (lastTokenType() != FIREWALL) {
+      pushMode(M_Str);
+    }
+  }
+;
 SET: 'set';
 SNMP_INDEX: 'snmp-index';
 SPAM: 'spam';
+SRCADDR: 'srcaddr' -> pushMode(M_Str);
+SRCINTF: 'srcintf' -> pushMode(M_Str);
 SSLVPN: 'sslvpn';
 START_IP: 'start-ip';
 STATUS: 'status';

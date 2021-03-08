@@ -8,7 +8,7 @@ options {
 
 rr_default_metric
 :
-   DEFAULT_METRIC metric = DEC NEWLINE
+   DEFAULT_METRIC metric = dec NEWLINE
 ;
 
 rr_default_information
@@ -23,7 +23,7 @@ rr_default_information
 // TODO: this information is not plumbed in currently
 rr_distance
 :
-   DISTANCE distance = DEC
+   DISTANCE distance = dec
    (
       prefix = IP_ADDRESS mask = IP_ADDRESS
    )?
