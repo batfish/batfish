@@ -5,7 +5,11 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
@@ -15,13 +19,12 @@ public class Address implements Serializable {
     INTERFACE_SUBNET,
     IPMASK,
     IPRANGE,
-    UNKNOWN, // defaults to IPMASK
     WILDCARD,
     // Not supported
-    DYNAMIC, // Based on SDN connectors, whose addresses aren't known statically
-    FQDN, // Based on domain names
-    GEOGRAPHY, // Based on countries
-    MAC, // Based on MAC addresses
+    DYNAMIC,
+    FQDN,
+    GEOGRAPHY,
+    MAC,
   }
 
   // Fields that are only allowed to be set for a particular address type
@@ -95,7 +98,7 @@ public class Address implements Serializable {
   @Nullable private String _comment;
   @Nullable private Boolean _fabricObject;
   @Nonnull private final String _name;
-  @Nonnull private Type _type;
+  @Nullable private Type _type;
   @Nonnull private final TypeSpecificFields _typeSpecificFields;
 
   public static final boolean DEFAULT_ALLOW_ROUTING = false;
@@ -104,15 +107,47 @@ public class Address implements Serializable {
 
   public Address(String name) {
     _name = name;
-    _type = Type.UNKNOWN;
     _typeSpecificFields = new TypeSpecificFields();
+  }
+
+  public IpSpace toIpSpace(Warnings w) {
+    // TODO Investigate & support _allowRouting, _associatedInterface, _fabricObject
+    // TODO Support edge cases; e.g. if subnet is already set and then type is set to iprange,
+    //  device will automatically reinterpret subnet IP and mask as start and end IPs.
+    switch (getTypeEffective()) {
+      case IPMASK:
+        return getTypeSpecificFields().getSubnetEffective().toIpSpace();
+      case IPRANGE:
+        Ip startIp = getTypeSpecificFields().getStartIpEffective();
+        Ip endIp = getTypeSpecificFields().getEndIp();
+        assert endIp != null;
+        return IpRange.range(startIp, endIp);
+      case WILDCARD:
+        return getTypeSpecificFields().getWildcardEffective().toIpSpace();
+      case INTERFACE_SUBNET:
+        // TODO test what IPs this actually includes. Docs say it will:
+        //  "automatically create an address object that matches the interface subnet"
+        //  but it's unclear because it supports both "set subnet" and "set interface".
+      case DYNAMIC: // Based on SDN connectors, whose addresses aren't known statically
+      case FQDN: // Based on domain names
+      case GEOGRAPHY: // Based on countries
+      case MAC: // Based on MAC addresses
+        // Unsupported address types.
+        w.redFlag(
+            String.format(
+                "Addresses of type %s are unsupported and will be considered unmatchable.",
+                getType()));
+        return EmptyIpSpace.INSTANCE;
+      default:
+        throw new IllegalStateException("Unrecognized address type " + getTypeEffective());
+    }
   }
 
   public @Nullable Boolean getAllowRouting() {
     return _allowRouting;
   }
 
-  public @Nonnull boolean getAllowRoutingEffective() {
+  public boolean getAllowRoutingEffective() {
     return firstNonNull(_allowRouting, DEFAULT_ALLOW_ROUTING);
   }
 
@@ -129,7 +164,7 @@ public class Address implements Serializable {
     return _fabricObject;
   }
 
-  public @Nonnull boolean getFabricObjectEffective() {
+  public boolean getFabricObjectEffective() {
     return firstNonNull(_fabricObject, DEFAULT_FABRIC_OBJECT);
   }
 
@@ -137,7 +172,7 @@ public class Address implements Serializable {
     return _name;
   }
 
-  public @Nonnull Type getType() {
+  public @Nullable Type getType() {
     return _type;
   }
 
@@ -148,8 +183,8 @@ public class Address implements Serializable {
   /**
    * Get the effective type of the address, inferring the value even if not explicitly configured.
    */
-  public Type getTypeEffective() {
-    return _type == Type.UNKNOWN ? DEFAULT_TYPE : _type;
+  public @Nonnull Type getTypeEffective() {
+    return firstNonNull(_type, DEFAULT_TYPE);
   }
 
   public void setAllowRouting(boolean allowRouting) {
