@@ -9247,7 +9247,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_extcommunity_rm_stanza_rt(Set_extcommunity_rm_stanza_rtContext ctx) {
-    List<ExtendedCommunity> communities = toExtendedCommunities(ctx, ctx.communities);
+    List<ExtendedCommunity> communities = toExtendedCommunities(ctx.communities);
     RouteMapSetLine line =
         ctx.ADDITIVE() != null
             ? new RouteMapSetExtcommunityRtAdditiveLine(communities)
@@ -9267,23 +9267,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private @Nonnull List<ExtendedCommunity> toExtendedCommunities(
-      ParserRuleContext messageCtx, List<Extended_community_route_targetContext> communities) {
-    ImmutableList.Builder<ExtendedCommunity> builder = ImmutableList.builder();
+      List<Extended_community_route_targetContext> communities) {
+    ImmutableList.Builder<ExtendedCommunity> builder =
+        ImmutableList.builderWithExpectedSize(communities.size());
     for (Extended_community_route_targetContext communityCtx : communities) {
-      ExtendedCommunity community = toExtendedCommunity(messageCtx, communityCtx);
-      builder.add(community);
+      builder.add(toExtendedCommunity(communityCtx));
     }
     return builder.build();
   }
 
   private @Nonnull ExtendedCommunity toExtendedCommunity(
-      ParserRuleContext messageCtx, Extended_community_route_targetContext ctx) {
+      Extended_community_route_targetContext ctx) {
     assert ctx.ec_ga_la_literal() != null;
-    return toExtendedCommunity(messageCtx, ctx.ec_ga_la_literal());
+    return toExtendedCommunity(ctx.ec_ga_la_literal());
   }
 
-  private @Nonnull ExtendedCommunity toExtendedCommunity(
-      ParserRuleContext messageCtx, Ec_ga_la_literalContext ctx) {
+  private @Nonnull ExtendedCommunity toExtendedCommunity(Ec_ga_la_literalContext ctx) {
     if (ctx.ecgalal_asdot_colon() != null) {
       return toExtendedCommunity(ctx.ecgalal_asdot_colon());
     } else if (ctx.ecgalal_colon() != null) {
