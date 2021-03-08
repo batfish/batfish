@@ -6,5 +6,6 @@ options {
 
 c_firewall: FIREWALL (
   cf_address
+  | cf_policy
   | cf_service
 );

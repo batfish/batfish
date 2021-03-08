@@ -1,0 +1,22 @@
+config system global
+    set hostname "firewall_policy_warn"
+end
+config firewall policy
+    edit 4294967295
+        set action allow
+        set name "this name is too long to use as a firewall policy name"
+        set srcintf port1
+        set dstintf port2
+        set srcaddr addr1
+        set dstaddr addr2
+        set service service1
+        set status enable
+        append srcintf port3
+        append dstintf port4
+        append srcaddr addr3
+        append dstaddr addr4
+        append service service2
+    next
+    edit not_a_number
+    next
+end
