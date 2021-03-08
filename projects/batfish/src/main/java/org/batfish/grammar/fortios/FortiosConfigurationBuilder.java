@@ -190,6 +190,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCfa_set_allow_routing(Cfa_set_allow_routingContext ctx) {
     _currentAddress.setAllowRouting(toBoolean(ctx.value));
+    todo(ctx);
   }
 
   @Override
@@ -211,6 +212,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
 
     // TODO Add structure reference for interface
+    todo(ctx);
     _currentAddress.setAssociatedInterface(name);
   }
 
@@ -221,6 +223,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfa_set_fabric_object(Cfa_set_fabric_objectContext ctx) {
+    todo(ctx);
     _currentAddress.setFabricObject(toBoolean(ctx.value));
   }
 

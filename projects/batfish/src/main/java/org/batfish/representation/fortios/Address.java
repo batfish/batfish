@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpRange;
@@ -111,11 +112,10 @@ public class Address implements Serializable {
     _typeSpecificFields = new TypeSpecificFields();
   }
 
-  public IpSpace toIpSpace() {
+  public IpSpace toIpSpace(Warnings w) {
     // TODO Investigate & support _allowRouting, _associatedInterface, _fabricObject
     // TODO Support edge cases; e.g. if subnet is already set and then type is set to iprange,
     //  device will automatically reinterpret subnet IP and mask as start and end IPs.
-    // TODO Pass in warnings and file them as appropriate.
     switch (getTypeEffective()) {
       case IPMASK:
         return getTypeSpecificFields().getSubnetEffective().toIpSpace();
@@ -130,12 +130,15 @@ public class Address implements Serializable {
         // TODO test what IPs this actually includes. Docs say it will:
         //  "automatically create an address object that matches the interface subnet"
         //  but it's unclear because it supports both "set subnet" and "set interface".
-        throw new UnsupportedOperationException();
       case DYNAMIC: // Based on SDN connectors, whose addresses aren't known statically
       case FQDN: // Based on domain names
       case GEOGRAPHY: // Based on countries
       case MAC: // Based on MAC addresses
-        // Unsupported address types. TODO warn
+        // Unsupported address types.
+        w.redFlag(
+            String.format(
+                "Addresses of type %s are unsupported and will be considered unmatchable.",
+                getType()));
         return EmptyIpSpace.INSTANCE;
       case UNKNOWN: // should never be the effective type
       default:
