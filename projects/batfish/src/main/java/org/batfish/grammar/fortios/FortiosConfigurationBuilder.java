@@ -2,9 +2,13 @@ package org.batfish.grammar.fortios;
 
 import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.primitives.Longs;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -21,11 +25,13 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.fortios.FortiosParser.Address_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Address_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_allow_routingContext;
@@ -38,6 +44,21 @@ import org.batfish.grammar.fortios.FortiosParser.Cfa_set_start_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_subnetContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_wildcardContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstaddrContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcaddrContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcintfContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_actionContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_commentsContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_dstaddrContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_dstintfContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_serviceContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_srcaddrContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_srcintfContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_icmpcodeContext;
@@ -67,6 +88,7 @@ import org.batfish.grammar.fortios.FortiosParser.Enable_or_disableContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_aliasContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefixContext;
@@ -74,10 +96,15 @@ import org.batfish.grammar.fortios.FortiosParser.Ip_protocol_numberContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_wildcardContext;
 import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.MtuContext;
+import org.batfish.grammar.fortios.FortiosParser.Policy_actionContext;
+import org.batfish.grammar.fortios.FortiosParser.Policy_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Policy_numberContext;
+import org.batfish.grammar.fortios.FortiosParser.Policy_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Port_rangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Service_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_port_rangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_port_rangesContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_protocolContext;
@@ -93,6 +120,9 @@ import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.Policy;
+import org.batfish.representation.fortios.Policy.Action;
+import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
@@ -344,6 +374,156 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void enterCfp_edit(Cfp_editContext ctx) {
+    Optional<Long> number = toLong(ctx, ctx.policy_number());
+    _currentPolicyValid = number.isPresent();
+    Policy existing = number.map(Object::toString).map(_c.getPolicies()::get).orElse(null);
+    if (existing != null) {
+      // Make a clone to edit
+      _currentPolicy = SerializationUtils.clone(existing);
+    } else {
+      _currentPolicy = new Policy(toString(ctx.policy_number().str()));
+    }
+  }
+
+  @Override
+  public void exitCfp_edit(Cfp_editContext ctx) {
+    // If edited policy is valid, add/update the entry in VS map
+    // TODO: Better validity checking
+    if (_currentPolicyValid) {
+      // TODO Add structure definition
+      _c.getPolicies().put(_currentPolicy.getNumber(), _currentPolicy);
+    }
+    _currentPolicy = null;
+  }
+
+  @Override
+  public void exitCfp_set_action(Cfp_set_actionContext ctx) {
+    _currentPolicy.setAction(toAction(ctx.policy_action()));
+  }
+
+  @Override
+  public void exitCfp_set_comments(Cfp_set_commentsContext ctx) {
+    _currentPolicy.setComments(toString(ctx.comments));
+  }
+
+  @Override
+  public void exitCfp_set_name(Cfp_set_nameContext ctx) {
+    toString(ctx, ctx.name).ifPresent(_currentPolicy::setName);
+  }
+
+  @Override
+  public void exitCfp_set_status(Cfp_set_statusContext ctx) {
+    _currentPolicy.setStatus(toStatus(ctx.status));
+  }
+
+  // List items
+  @Override
+  public void exitCfp_set_dstaddr(Cfp_set_dstaddrContext ctx) {
+    toAddresses(ctx.addresses)
+        .ifPresent(
+            addresses -> {
+              Set<Address> addrs = _currentPolicy.getDstAddr();
+              addrs.clear();
+              addrs.addAll(addresses);
+            });
+  }
+
+  @Override
+  public void exitCfp_set_srcaddr(Cfp_set_srcaddrContext ctx) {
+    toAddresses(ctx.addresses)
+        .ifPresent(
+            addresses -> {
+              Set<Address> addrs = _currentPolicy.getSrcAddr();
+              addrs.clear();
+              addrs.addAll(addresses);
+            });
+  }
+
+  @Override
+  public void exitCfp_set_dstintf(Cfp_set_dstintfContext ctx) {
+    toInterfaces(ctx.interfaces)
+        .ifPresent(
+            i -> {
+              Set<Interface> ifaces = _currentPolicy.getDstIntf();
+              ifaces.clear();
+              ifaces.addAll(i);
+            });
+  }
+
+  @Override
+  public void exitCfp_set_srcintf(Cfp_set_srcintfContext ctx) {
+    toInterfaces(ctx.interfaces)
+        .ifPresent(
+            i -> {
+              Set<Interface> ifaces = _currentPolicy.getSrcIntf();
+              ifaces.clear();
+              ifaces.addAll(i);
+            });
+  }
+
+  @Override
+  public void exitCfp_set_service(Cfp_set_serviceContext ctx) {
+    toServices(ctx.services)
+        .ifPresent(
+            s -> {
+              Set<Service> service = _currentPolicy.getService();
+              service.clear();
+              service.addAll(s);
+            });
+  }
+
+  @Override
+  public void exitCfp_append_dstaddr(Cfp_append_dstaddrContext ctx) {
+    toAddresses(ctx.addresses)
+        .ifPresent(
+            a -> {
+              Set<Address> addrs = _currentPolicy.getDstAddr();
+              addrs.addAll(a);
+            });
+  }
+
+  @Override
+  public void exitCfp_append_srcaddr(Cfp_append_srcaddrContext ctx) {
+    toAddresses(ctx.addresses)
+        .ifPresent(
+            a -> {
+              Set<Address> addrs = _currentPolicy.getSrcAddr();
+              addrs.addAll(a);
+            });
+  }
+
+  @Override
+  public void exitCfp_append_dstintf(Cfp_append_dstintfContext ctx) {
+    toInterfaces(ctx.interfaces)
+        .ifPresent(
+            i -> {
+              Set<Interface> ifaces = _currentPolicy.getDstIntf();
+              ifaces.addAll(i);
+            });
+  }
+
+  @Override
+  public void exitCfp_append_srcintf(Cfp_append_srcintfContext ctx) {
+    toInterfaces(ctx.interfaces)
+        .ifPresent(
+            i -> {
+              Set<Interface> ifaces = _currentPolicy.getSrcIntf();
+              ifaces.addAll(i);
+            });
+  }
+
+  @Override
+  public void exitCfp_append_service(Cfp_append_serviceContext ctx) {
+    toServices(ctx.services)
+        .ifPresent(
+            s -> {
+              Set<Service> service = _currentPolicy.getService();
+              service.addAll(s);
+            });
+  }
+
+  @Override
   public void enterCfsc_edit(Cfsc_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.service_name());
     if (!name.isPresent()) {
@@ -446,6 +626,66 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
   }
 
+  private Optional<Set<Service>> toServices(Service_namesContext ctx) {
+    Map<String, Service> servicesMap = _c.getServices();
+    ImmutableSet.Builder<Service> servicesBuilder = ImmutableSet.builder();
+    // TODO handle Policy.ALL_SERVICES case
+    for (Service_nameContext service : ctx.service_name()) {
+      String name = toString(service.str());
+      if (servicesMap.containsKey(name)) {
+        servicesBuilder.add(servicesMap.get(name));
+      } else {
+        warn(
+            ctx,
+            String.format(
+                "Service %s is undefined and cannot be added to policy %s",
+                name, _currentPolicy.getNumber()));
+        return Optional.empty();
+      }
+    }
+    return Optional.of(servicesBuilder.build());
+  }
+
+  private Optional<Set<Address>> toAddresses(Address_namesContext ctx) {
+    Map<String, Address> addressesMap = _c.getAddresses();
+    ImmutableSet.Builder<Address> addressesBuilder = ImmutableSet.builder();
+    // TODO handle Policy.ALL_ADDRESSES case
+    for (Address_nameContext address : ctx.address_name()) {
+      String name = toString(address.str());
+      if (addressesMap.containsKey(name)) {
+        addressesBuilder.add(addressesMap.get(name));
+      } else {
+        warn(
+            ctx,
+            String.format(
+                "Address %s is undefined and cannot be added to policy %s",
+                name, _currentPolicy.getNumber()));
+        return Optional.empty();
+      }
+    }
+    return Optional.of(addressesBuilder.build());
+  }
+
+  private Optional<Set<Interface>> toInterfaces(Interface_or_zone_namesContext ctx) {
+    Map<String, Interface> ifacesMap = _c.getInterfaces();
+    ImmutableSet.Builder<Interface> ifaceBuilder = ImmutableSet.builder();
+    for (Interface_or_zone_nameContext iface : ctx.interface_or_zone_name()) {
+      String name = toString(iface.str());
+      // TODO Handle Policy.ANY_INTERFACE case
+      if (ifacesMap.containsKey(name)) {
+        ifaceBuilder.add(ifacesMap.get(name));
+      } else {
+        warn(
+            ctx,
+            String.format(
+                "Interface/zone %s is undefined and cannot be added to policy %s",
+                name, _currentPolicy.getNumber()));
+        return Optional.empty();
+      }
+    }
+    return Optional.of(ifaceBuilder.build());
+  }
+
   /**
    * Convert specified service_port_ranges context into an IntegerSpace representing the destination
    * ports specified by the context.
@@ -485,6 +725,17 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return IntegerSpace.of(low);
   }
 
+  private @Nonnull Policy.Action toAction(Policy_actionContext ctx) {
+    if (ctx.ALLOW() != null) {
+      return Action.ALLOW;
+    } else if (ctx.DENY() != null) {
+      return Action.DENY;
+    } else {
+      assert ctx.IPSEC() != null;
+      return Action.IPSEC;
+    }
+  }
+
   private Service.Protocol toProtocol(Service_protocolContext ctx) {
     if (ctx.ICMP() != null) {
       return Protocol.ICMP;
@@ -504,6 +755,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
     assert ctx.DISABLE() != null;
     return false;
+  }
+
+  private @Nonnull Policy.Status toStatus(Policy_statusContext ctx) {
+    return toBoolean(ctx.enable_or_disable()) ? Status.ENABLE : Status.DISABLE;
   }
 
   private Interface.Status toStatus(Up_or_downContext ctx) {
@@ -578,6 +833,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Address_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "address name", ADDRESS_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Policy_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "policy name", POLICY_NAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(
@@ -685,6 +944,26 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return ctx.text != null ? ctx.text.getText() : "";
   }
 
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Policy_numberContext ctx) {
+    return toLongInSpace(messageCtx, ctx, POLICY_NUMBER_SPACE, "policy number");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} to a {@link Long} if it is contained in the provided {@code
+   * space}, or else {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+    Long num = Longs.tryParse(ctx.getText());
+    if (num == null || !space.contains(num)) {
+      warn(
+          messageCtx,
+          String.format("Expected %s in range %s, but got '%s'", name, space, ctx.getText()));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
   /**
    * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
    * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
@@ -766,6 +1045,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern ESCAPED_UNQUOTED_CHAR_PATTERN = Pattern.compile("\\\\([^\\r\\n])");
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
+  private static final Pattern POLICY_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
   private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
   private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
@@ -773,10 +1053,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final IntegerSpace IP_PROTOCOL_NUMBER_SPACE =
       IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
+  private static final LongSpace POLICY_NUMBER_SPACE = LongSpace.of(Range.closed(0L, 4294967294L));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
 
   private Address _currentAddress;
   private Interface _currentInterface;
+  private Policy _currentPolicy;
+  private boolean _currentPolicyValid;
   private Replacemsg _currentReplacemsg;
   private Service _currentService;
   private final @Nonnull FortiosConfiguration _c;
