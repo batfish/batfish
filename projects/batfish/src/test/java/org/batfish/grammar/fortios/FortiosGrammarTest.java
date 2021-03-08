@@ -498,8 +498,7 @@ public final class FortiosGrammarTest {
         warnings,
         hasParseWarnings(
             containsInAnyOrder(
-                hasComment(
-                    "Illegal value for policy number: 4294967295, must be between 0-4294967294"),
+                hasComment("Expected policy number in range 0-4294967294, but got '4294967295'"),
                 hasComment("Illegal value for policy number: not_a_number, must be a number"),
                 hasComment("Illegal value for policy name"),
                 hasComment(

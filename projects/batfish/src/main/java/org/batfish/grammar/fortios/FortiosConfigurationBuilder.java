@@ -24,6 +24,7 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishListener;
@@ -371,9 +372,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void enterCfp_edit(Cfp_editContext ctx) {
-    Optional<String> number = toString(ctx, ctx.policy_number());
+    Optional<Long> number = toLong(ctx, ctx.policy_number());
     _currentPolicyValid = number.isPresent();
-    Policy existing = number.map(_c.getPolicies()::get).orElse(null);
+    Policy existing = number.map(Object::toString).map(_c.getPolicies()::get).orElse(null);
     if (existing != null) {
       // Make a clone to edit
       _currentPolicy = SerializationUtils.clone(existing);
@@ -831,28 +832,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toString(messageCtx, ctx.str(), "address name", ADDRESS_NAME_PATTERN);
   }
 
-  private @Nonnull Optional<String> toString(
-      ParserRuleContext messageCtx, Policy_numberContext ctx) {
-    String value = toString(ctx.str());
-    try {
-      long longValue = Long.parseUnsignedLong(value);
-      if (longValue > POLICY_NUMBER_MAX_VALUE) {
-        warn(
-            messageCtx,
-            String.format(
-                "Illegal value for policy number: %s, must be between 0-%s",
-                value, POLICY_NUMBER_MAX_VALUE));
-        return Optional.empty();
-      }
-    } catch (NumberFormatException nfe) {
-      warn(
-          messageCtx,
-          String.format("Illegal value for policy number: %s, must be a number", value));
-      return Optional.empty();
-    }
-    return Optional.of(value);
-  }
-
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Policy_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "policy name", POLICY_NAME_PATTERN);
   }
@@ -962,6 +941,34 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return ctx.text != null ? ctx.text.getText() : "";
   }
 
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Policy_numberContext ctx) {
+    String value = toString(ctx.str());
+    try {
+      Long.parseLong(value);
+    } catch (NumberFormatException nfe) {
+      warn(
+          messageCtx,
+          String.format("Illegal value for policy number: %s, must be a number", value));
+      return Optional.empty();
+    }
+    return toLongInSpace(messageCtx, ctx, POLICY_NUMBER_SPACE, "policy number");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
+   * decimal integer to a {@link Long} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+    long num = Long.parseLong(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
   /**
    * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
    * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
@@ -1044,7 +1051,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
   private static final Pattern POLICY_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
-  private static final long POLICY_NUMBER_MAX_VALUE = 4294967294L;
   private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
   private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
@@ -1052,6 +1058,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final IntegerSpace IP_PROTOCOL_NUMBER_SPACE =
       IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
+  private static final LongSpace POLICY_NUMBER_SPACE = LongSpace.of(Range.closed(0L, 4294967294L));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
 
   private Address _currentAddress;
