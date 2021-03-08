@@ -19,7 +19,6 @@ public class Address implements Serializable {
     INTERFACE_SUBNET,
     IPMASK,
     IPRANGE,
-    UNKNOWN, // defaults to IPMASK
     WILDCARD,
     // Not supported
     DYNAMIC,
@@ -99,7 +98,7 @@ public class Address implements Serializable {
   @Nullable private String _comment;
   @Nullable private Boolean _fabricObject;
   @Nonnull private final String _name;
-  @Nonnull private Type _type;
+  @Nullable private Type _type;
   @Nonnull private final TypeSpecificFields _typeSpecificFields;
 
   public static final boolean DEFAULT_ALLOW_ROUTING = false;
@@ -108,7 +107,6 @@ public class Address implements Serializable {
 
   public Address(String name) {
     _name = name;
-    _type = Type.UNKNOWN;
     _typeSpecificFields = new TypeSpecificFields();
   }
 
@@ -140,7 +138,6 @@ public class Address implements Serializable {
                 "Addresses of type %s are unsupported and will be considered unmatchable.",
                 getType()));
         return EmptyIpSpace.INSTANCE;
-      case UNKNOWN: // should never be the effective type
       default:
         throw new IllegalStateException("Unrecognized address type " + getTypeEffective());
     }
@@ -150,7 +147,7 @@ public class Address implements Serializable {
     return _allowRouting;
   }
 
-  public @Nonnull boolean getAllowRoutingEffective() {
+  public boolean getAllowRoutingEffective() {
     return firstNonNull(_allowRouting, DEFAULT_ALLOW_ROUTING);
   }
 
@@ -167,7 +164,7 @@ public class Address implements Serializable {
     return _fabricObject;
   }
 
-  public @Nonnull boolean getFabricObjectEffective() {
+  public boolean getFabricObjectEffective() {
     return firstNonNull(_fabricObject, DEFAULT_FABRIC_OBJECT);
   }
 
@@ -175,7 +172,7 @@ public class Address implements Serializable {
     return _name;
   }
 
-  public @Nonnull Type getType() {
+  public @Nullable Type getType() {
     return _type;
   }
 
@@ -186,8 +183,8 @@ public class Address implements Serializable {
   /**
    * Get the effective type of the address, inferring the value even if not explicitly configured.
    */
-  public Type getTypeEffective() {
-    return _type == Type.UNKNOWN ? DEFAULT_TYPE : _type;
+  public @Nonnull Type getTypeEffective() {
+    return firstNonNull(_type, DEFAULT_TYPE);
   }
 
   public void setAllowRouting(boolean allowRouting) {
