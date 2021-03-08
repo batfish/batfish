@@ -319,7 +319,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -9248,13 +9247,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitSet_extcommunity_rm_stanza_rt(Set_extcommunity_rm_stanza_rtContext ctx) {
-    Optional<List<ExtendedCommunity>> maybeCommunities =
-        toExtendedCommunities(ctx, ctx.communities);
-    Function<List<ExtendedCommunity>, RouteMapSetLine> constructor =
+    List<ExtendedCommunity> communities = toExtendedCommunities(ctx, ctx.communities);
+    RouteMapSetLine line =
         ctx.ADDITIVE() != null
-            ? RouteMapSetExtcommunityRtAdditiveLine::new
-            : RouteMapSetExtcommunityRtLine::new;
-    maybeCommunities.map(constructor).ifPresent(_currentRouteMapClause::addSetLine);
+            ? new RouteMapSetExtcommunityRtAdditiveLine(communities)
+            : new RouteMapSetExtcommunityRtLine(communities);
+    _currentRouteMapClause.addSetLine(line);
   }
 
   @Override
@@ -9268,61 +9266,53 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     todo(ctx);
   }
 
-  private @Nonnull Optional<List<ExtendedCommunity>> toExtendedCommunities(
+  private @Nonnull List<ExtendedCommunity> toExtendedCommunities(
       ParserRuleContext messageCtx, List<Extended_community_route_targetContext> communities) {
     ImmutableList.Builder<ExtendedCommunity> builder = ImmutableList.builder();
     for (Extended_community_route_targetContext communityCtx : communities) {
-      Optional<ExtendedCommunity> maybeCommunity = toExtendedCommunity(messageCtx, communityCtx);
-      if (!maybeCommunity.isPresent()) {
-        return Optional.empty();
-      }
-      builder.add(maybeCommunity.get());
+      ExtendedCommunity community = toExtendedCommunity(messageCtx, communityCtx);
+      builder.add(community);
     }
-    return Optional.of(builder.build());
+    return builder.build();
   }
 
-  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(
+  private @Nonnull ExtendedCommunity toExtendedCommunity(
       ParserRuleContext messageCtx, Extended_community_route_targetContext ctx) {
     assert ctx.ec_ga_la_literal() != null;
     return toExtendedCommunity(messageCtx, ctx.ec_ga_la_literal());
   }
 
-  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(
+  private @Nonnull ExtendedCommunity toExtendedCommunity(
       ParserRuleContext messageCtx, Ec_ga_la_literalContext ctx) {
-    Optional<ExtendedCommunity> maybeExtendedCommunity;
     if (ctx.ecgalal_asdot_colon() != null) {
-      maybeExtendedCommunity = toExtendedCommunity(ctx.ecgalal_asdot_colon());
+      return toExtendedCommunity(ctx.ecgalal_asdot_colon());
     } else if (ctx.ecgalal_colon() != null) {
-      maybeExtendedCommunity = toExtendedCommunity(ctx.ecgalal_colon());
+      return toExtendedCommunity(ctx.ecgalal_colon());
     } else {
       assert ctx.ecgalal_ip_colon() != null;
-      maybeExtendedCommunity = toExtendedCommunity(ctx.ecgalal_ip_colon());
+      return toExtendedCommunity(ctx.ecgalal_ip_colon());
     }
-    if (!maybeExtendedCommunity.isPresent()) {
-      warn(messageCtx, String.format("Invalid extended community: %s", getFullText(ctx)));
-    }
-    return maybeExtendedCommunity;
   }
 
-  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecgalal_asdot_colonContext ctx) {
+  private @Nonnull ExtendedCommunity toExtendedCommunity(Ecgalal_asdot_colonContext ctx) {
     // Upcast GA to long so we can shift and combine
     long gaHi16 = toUint16(ctx.ga_high16);
     long gaLo16 = toUint16(ctx.ga_low16);
     long ga = (gaHi16 << 16) | gaLo16;
     int la = toUint16(ctx.la);
-    return Optional.of(ExtendedCommunity.target(ga, la));
+    return ExtendedCommunity.target(ga, la);
   }
 
-  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecgalal_colonContext ctx) {
+  private @Nonnull ExtendedCommunity toExtendedCommunity(Ecgalal_colonContext ctx) {
     long ga = toUint32(ctx.ga);
     int la = toUint16(ctx.la);
-    return Optional.of(ExtendedCommunity.target(ga, la));
+    return ExtendedCommunity.target(ga, la);
   }
 
-  private @Nonnull Optional<ExtendedCommunity> toExtendedCommunity(Ecgalal_ip_colonContext ctx) {
+  private @Nonnull ExtendedCommunity toExtendedCommunity(Ecgalal_ip_colonContext ctx) {
     long ga = toIp(ctx.ga).asLong();
     int la = toUint16(ctx.la);
-    return Optional.of(ExtendedCommunity.target(ga, la));
+    return ExtendedCommunity.target(ga, la);
   }
 
   private int toUint16(Uint16Context ctx) {
