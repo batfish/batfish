@@ -13,17 +13,22 @@ import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -50,6 +55,7 @@ import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
+import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -197,6 +203,72 @@ public final class FortiosGrammarTest {
     // TODO Also check that undefined references are filed (once they are filed)
     assertNull(undefinedRefs.getAssociatedInterface());
     assertNull(undefinedRefs.getTypeSpecificFields().getInterface());
+  }
+
+  @Test
+  public void testAddressWarnings() throws IOException {
+    String hostname = "address_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings w =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    List<Matcher<Warnings.ParseWarning>> warningMatchers = new ArrayList<>();
+
+    // Expect warnings for each illegal name used in the config
+    Map<String, String> illegalNames =
+        ImmutableMap.of(
+            "address name",
+            "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz",
+            "zone or interface name",
+            "abcdefghijklmnopqrstuvwxyz abcdefghi",
+            "interface name",
+            "abcdefghijklmnop");
+    illegalNames.forEach(
+        (nameType, name) ->
+            warningMatchers.add(
+                allOf(hasComment("Illegal value for " + nameType), hasText(containsString(name)))));
+
+    // Expect warnings for each undefined reference in the config (in an otherwise legal context)
+    warningMatchers.add(hasComment("No interface or zone named undefined_iface"));
+    warningMatchers.add(hasComment("No interface named undefined_iface"));
+
+    // Warn on all type-specific fields set for inappropriate types
+    for (String f : ImmutableList.of("start-ip", "end-ip", "interface", "wildcard")) {
+      warningMatchers.add(
+          hasComment(String.format("Cannot set %s for address type %s", f, Address.Type.IPMASK)));
+    }
+    for (String f : ImmutableList.of("interface", "subnet", "wildcard")) {
+      warningMatchers.add(
+          hasComment(String.format("Cannot set %s for address type %s", f, Address.Type.IPRANGE)));
+    }
+    for (String f : ImmutableList.of("start-ip", "end-ip", "wildcard")) {
+      warningMatchers.add(
+          hasComment(
+              String.format(
+                  "Cannot set %s for address type %s", f, Address.Type.INTERFACE_SUBNET)));
+    }
+    for (String f : ImmutableList.of("start-ip", "end-ip", "interface", "subnet")) {
+      warningMatchers.add(
+          hasComment(String.format("Cannot set %s for address type %s", f, Address.Type.WILDCARD)));
+    }
+    for (String f : ImmutableList.of("start-ip", "end-ip", "interface", "subnet", "wildcard")) {
+      // None of the type-specific fields are settable for any of the unsupported types
+      for (Address.Type type :
+          ImmutableList.of(
+              Address.Type.DYNAMIC, Address.Type.FQDN, Address.Type.GEOGRAPHY, Address.Type.MAC)) {
+        warningMatchers.add(
+            hasComment(String.format("Cannot set %s for address type %s", f, type)));
+      }
+    }
+    assertThat(w.getParseWarnings(), hasSize(warningMatchers.size()));
+    warningMatchers.forEach(matcher -> assertThat(w, hasParseWarning(matcher)));
+
+    // TODO None of the defined addresses are valid, so none should make it into VS.
+    // Once this is correctly implemented, test that no addresses are in the VS config.
   }
 
   @Test

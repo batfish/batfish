@@ -1,0 +1,82 @@
+config system global
+    set hostname "address_warnings"
+end
+config firewall address
+    # Name is too long
+    edit "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz"
+        set type interface-subnet
+        set subnet 1.1.1.0 255.255.255.0
+        # References where name is too long (associated-interface can be a zone)
+        set associated-interface "abcdefghijklmnopqrstuvwxyz abcdefghi"
+        set interface "abcdefghijklmnop"
+        # Undefined references
+        set associated-interface "undefined_iface"
+        set interface "undefined_iface"
+        # Invalid for this type
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+        set wildcard 1.1.0.1 255.255.0.255
+    next
+    edit "ipmask"
+        set subnet 1.1.1.0 255.255.255.0
+        # Invalid for this type
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+        set interface "undefined_iface"
+        set wildcard 1.1.0.1 255.255.0.255
+    next
+    edit "iprange"
+        set type iprange
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+        # Invalid for this type
+        set interface "undefined_iface"
+        set subnet 1.1.1.0 255.255.255.0
+        set wildcard 1.1.0.1 255.255.0.255
+    next
+    edit "dynamic"
+        set type dynamic
+        # Invalid for this type
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+        set interface "undefined_iface"
+        set subnet 1.1.1.0 255.255.255.0
+        set wildcard 1.1.0.1 255.255.0.255
+    next
+    edit "fqdn"
+        set type fqdn
+        # Invalid for this type
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+        set interface "undefined_iface"
+        set subnet 1.1.1.0 255.255.255.0
+        set wildcard 1.1.0.1 255.255.0.255
+    next
+    edit "geography"
+        set type geography
+        # Invalid for this type
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+        set interface "undefined_iface"
+        set subnet 1.1.1.0 255.255.255.0
+        set wildcard 1.1.0.1 255.255.0.255
+    next
+    edit "mac"
+        set type mac
+        # Invalid for this type
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+        set interface "undefined_iface"
+        set subnet 1.1.1.0 255.255.255.0
+        set wildcard 1.1.0.1 255.255.0.255
+    next
+    edit "wildcard"
+        set type wildcard
+        set wildcard 1.1.0.1 255.255.0.255
+        # Invalid for this type
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+        set interface "undefined_iface"
+        set subnet 1.1.1.0 255.255.255.0
+    next
+end
