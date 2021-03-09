@@ -1,0 +1,27 @@
+config system global
+    set hostname "edit_recovery"
+end
+config system interface
+    edit "port1"
+        set UNDEFINED_IFACE_PROP to a bunch of garbage
+        set vdom "root"
+    next
+end
+config firewall address
+    edit "addr1"
+        set UNDEFINED_ADDR_PROP to a bunch of garbage
+        set comment "addr comment"
+    next
+end
+config firewall service custom
+    edit "service1"
+        set UNDEFINED_SERVICE_PROP to a bunch of garbage
+        set comment "service comment"
+    next
+end
+config firewall policy
+    edit 1
+        set UNDEFINED_POLICY_PROP to a bunch of garbage
+        set comments "policy comments, plural"
+    next
+end

@@ -9,10 +9,10 @@ cf_service: SERVICE cfs_custom;
 cfs_custom: CUSTOM newline cfsc_edit*;
 
 cfsc_edit:
-    EDIT service_name newline (
-        SET cfsc_set_singletons
-    )* NEXT newline
+    EDIT service_name newline cfsce* NEXT newline
 ;
+
+cfsce: SET cfsc_set_singletons;
 
 cfsc_set_singletons:
     cfsc_set_comment
