@@ -20,14 +20,10 @@ public class ServiceTest {
 
   private static final BddTestbed BDD_TESTBED =
       new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
-  private static final BDD ZERO;
-  private static final BDD ONE;
   private static final IpAccessListToBdd ACL_TO_BDD;
   private static final HeaderSpaceToBDD HS_TO_BDD;
 
   static {
-    ZERO = BDD_TESTBED.getPkt().getFactory().zero();
-    ONE = BDD_TESTBED.getPkt().getFactory().one();
     ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
     HS_TO_BDD = BDD_TESTBED.getHsToBdd();
   }
