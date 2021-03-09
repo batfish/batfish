@@ -1,10 +1,11 @@
 package org.batfish.representation.fortios;
 
-import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
@@ -13,13 +14,15 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
 
 /** FortiOS datamodel component containing firewall service configuration */
 public final class Service implements Serializable {
 
-  public static Protocol DEFAULT_PROTOCOL = Protocol.TCP_UDP_SCTP;
-  public static Integer DEFAULT_PROTOCOL_NUMBER = 0;
-  public static IntegerSpace DEFAULT_SOURCE_PORT_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+  public static final Protocol DEFAULT_PROTOCOL = Protocol.TCP_UDP_SCTP;
+  public static final int DEFAULT_PROTOCOL_NUMBER = 0;
+  public static final IntegerSpace DEFAULT_SOURCE_PORT_RANGE =
+      IntegerSpace.of(Range.closed(1, 65535));
 
   public enum Protocol {
     TCP_UDP_SCTP,
@@ -34,7 +37,7 @@ public final class Service implements Serializable {
   }
 
   @VisibleForTesting
-  @Nonnull
+  @Nullable
   public Protocol getProtocol() {
     return _protocol;
   }
@@ -73,8 +76,7 @@ public final class Service implements Serializable {
     return _protocolNumber;
   }
 
-  @Nullable
-  public Integer getProtocolNumberEffective() {
+  public int getProtocolNumberEffective() {
     return _protocolNumber == null ? DEFAULT_PROTOCOL_NUMBER : _protocolNumber;
   }
 
@@ -127,8 +129,8 @@ public final class Service implements Serializable {
   }
 
   public void setProtocol(Protocol protocol) {
-    // If protocol changes, need to clear protocol-specified fields
-    if (protocol != _protocol) {
+    // If effective protocol changes, need to clear protocol-specified fields
+    if (protocol != getProtocolEffective()) {
       _icmpCode = null;
       _icmpType = null;
       _protocolNumber = null;
@@ -190,7 +192,7 @@ public final class Service implements Serializable {
     _name = name;
   }
 
-  @Nonnull private String _name;
+  @Nonnull private final String _name;
   @Nullable private Protocol _protocol;
   @Nullable private Integer _protocolNumber;
   @Nullable private String _comment;
@@ -205,34 +207,60 @@ public final class Service implements Serializable {
   @Nullable private IntegerSpace _sctpPortRangeSrc;
 
   public @Nonnull AclLineMatchExpr toMatchExpr() {
-    // TODO Incorporate _protocolNumber, _comment; support other protocols
+    return new OrMatchExpr(
+        toHeaderSpaces().stream()
+            .map(MatchHeaderSpace::new)
+            .collect(ImmutableList.toImmutableList()),
+        getTraceElement());
+  }
+
+  private @Nonnull List<HeaderSpace> toHeaderSpaces() {
     switch (getProtocolEffective()) {
       case TCP_UDP_SCTP:
-        HeaderSpace.Builder tcp =
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.TCP)
-                .setSrcPorts(getTcpPortRangeSrcEffective().getSubRanges());
-        HeaderSpace.Builder udp =
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.UDP)
-                .setSrcPorts(getUdpPortRangeSrcEffective().getSubRanges());
-        HeaderSpace.Builder sctp =
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.SCTP)
-                .setSrcPorts(getSctpPortRangeSrcEffective().getSubRanges());
-        if (_tcpPortRangeDst != null) {
-          tcp.setDstPorts(_tcpPortRangeDst.getSubRanges());
-        }
-        return or(
-            "Matched service " + _name,
-            new MatchHeaderSpace(tcp.build()),
-            new MatchHeaderSpace(udp.build()),
-            new MatchHeaderSpace(sctp.build()));
+        return ImmutableList.of(
+            buildHeaderSpaceWithPorts(
+                IpProtocol.TCP, getTcpPortRangeSrcEffective(), getTcpPortRangeDst()),
+            buildHeaderSpaceWithPorts(
+                IpProtocol.UDP, getUdpPortRangeSrcEffective(), getUdpPortRangeDst()),
+            buildHeaderSpaceWithPorts(
+                IpProtocol.SCTP, getSctpPortRangeSrcEffective(), getSctpPortRangeDst()));
       case ICMP:
+        return ImmutableList.of(
+            buildIcmpHeaderSpace(IpProtocol.ICMP, getIcmpCode(), getIcmpType()));
       case ICMP6:
+        return ImmutableList.of(
+            buildIcmpHeaderSpace(IpProtocol.IPV6_ICMP, getIcmpCode(), getIcmpType()));
       case IP:
+        // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
+        // protocol number specifies one of those protocols
+        IpProtocol protocol = IpProtocol.fromNumber(getProtocolNumberEffective());
+        return ImmutableList.of(HeaderSpace.builder().setIpProtocols(protocol).build());
       default:
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException(
+            String.format("Unrecognized service protocol %s", getProtocolEffective()));
     }
+  }
+
+  private static HeaderSpace buildHeaderSpaceWithPorts(
+      @Nonnull IpProtocol protocol,
+      @Nullable IntegerSpace srcPorts,
+      @Nullable IntegerSpace dstPorts) {
+    HeaderSpace.Builder headerSpace = HeaderSpace.builder().setIpProtocols(protocol);
+    Optional.ofNullable(srcPorts).ifPresent(src -> headerSpace.setSrcPorts(src.getSubRanges()));
+    Optional.ofNullable(dstPorts).ifPresent(dst -> headerSpace.setDstPorts(dst.getSubRanges()));
+    return headerSpace.build();
+  }
+
+  private static HeaderSpace buildIcmpHeaderSpace(
+      IpProtocol icmpProtocol, @Nullable Integer icmpCode, @Nullable Integer icmpType) {
+    HeaderSpace.Builder headerSpace = HeaderSpace.builder().setIpProtocols(icmpProtocol);
+    Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
+    Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
+    return headerSpace.build();
+  }
+
+  private @Nonnull String getTraceElement() {
+    String baseTrace = "Matched service " + _name;
+    return _comment == null ? baseTrace : String.format("%s: %s", baseTrace, _comment);
   }
 }
