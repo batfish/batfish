@@ -6,10 +6,7 @@ options {
 
 cs_interface: INTERFACE newline csi_edit*;
 
-csi_edit
-:
-    EDIT interface_name newline csie* NEXT newline
-;
+csi_edit: EDIT interface_name newline csie* NEXT newline;
 
 csie: SET csi_set_singletons;
 

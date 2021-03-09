@@ -31,7 +31,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import net.sf.javabdd.BDD;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
@@ -45,6 +47,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
@@ -170,7 +173,7 @@ public final class FortiosGrammarTest {
     assertThat(iprange.getType(), equalTo(Address.Type.IPRANGE));
     assertThat(interfaceSubnet.getType(), equalTo(Address.Type.INTERFACE_SUBNET));
     assertThat(wildcard.getType(), equalTo(Address.Type.WILDCARD));
-    assertThat(longName.getType(), equalTo(Address.Type.UNKNOWN));
+    assertNull(longName.getType());
     assertThat(undefinedRefs.getType(), equalTo(Address.Type.INTERFACE_SUBNET));
     assertThat(dynamic.getType(), equalTo(Address.Type.DYNAMIC));
     assertThat(fqdn.getType(), equalTo(Address.Type.FQDN));
@@ -272,6 +275,45 @@ public final class FortiosGrammarTest {
 
     // TODO None of the defined addresses are valid, so none should make it into VS.
     // Once this is correctly implemented, test that no addresses are in the VS config.
+  }
+
+  @Test
+  public void testAddressConversion() throws IOException {
+    String hostname = "address";
+    Configuration c = parseConfig(hostname);
+
+    Map<String, IpSpace> ipSpaces = c.getIpSpaces();
+    String longName =
+        "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxy";
+    assertThat(
+        ipSpaces,
+        hasKeys(
+            "ipmask",
+            "iprange",
+            "fqdn",
+            "dynamic",
+            "geography",
+            "interface-subnet",
+            "mac",
+            "wildcard",
+            // TODO undefined-refs shouldn't be converted
+            "undefined-refs",
+            longName));
+
+    BDD prefix1110 = Prefix.parse("1.1.1.0/24").toIpSpace().accept(SRC_IP_BDD);
+    assertThat(ipSpaces.get("ipmask").accept(SRC_IP_BDD), equalTo(prefix1110));
+    assertThat(ipSpaces.get("iprange").accept(SRC_IP_BDD), equalTo(prefix1110));
+    assertThat(ipSpaces.get(longName).accept(SRC_IP_BDD), equalTo(prefix1110));
+    assertThat(
+        ipSpaces.get("wildcard").accept(SRC_IP_BDD),
+        equalTo(
+            IpWildcard.ipWithWildcardMask(Ip.parse("2.0.0.2"), Ip.parse("255.0.0.255"))
+                .toIpSpace()
+                .accept(SRC_IP_BDD)));
+
+    // Unsupported types
+    Stream.of("fqdn", "dynamic", "geography", "interface-subnet", "mac", "undefined-refs")
+        .forEach(t -> assertThat(ipSpaces.get(t).accept(SRC_IP_BDD), equalTo(ZERO)));
   }
 
   @Test
@@ -664,13 +706,14 @@ public final class FortiosGrammarTest {
   private static final BddTestbed BDD_TESTBED =
       new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 
+  private static final BDD ZERO;
+
   @SuppressWarnings("unused")
   private static final IpAccessListToBdd ACL_TO_BDD;
 
   @SuppressWarnings("unused")
   private static final IpSpaceToBDD DST_IP_BDD;
 
-  @SuppressWarnings("unused")
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/fortios/testconfigs/";
@@ -679,6 +722,7 @@ public final class FortiosGrammarTest {
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/fortios/snapshots/";
 
   static {
+    ZERO = BDD_TESTBED.getPkt().getFactory().zero();
     DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
     SRC_IP_BDD = BDD_TESTBED.getSrcIpBdd();
     ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
