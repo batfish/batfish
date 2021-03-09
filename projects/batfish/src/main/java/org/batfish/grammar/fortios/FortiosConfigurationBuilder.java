@@ -121,6 +121,8 @@ import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.InterfaceAny;
+import org.batfish.representation.fortios.InterfaceOrZone;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
@@ -449,7 +451,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces, false)
         .ifPresent(
             i -> {
-              Set<Interface> ifaces = _currentPolicy.getDstIntf();
+              Set<InterfaceOrZone> ifaces = _currentPolicy.getDstIntf();
               ifaces.clear();
               ifaces.addAll(i);
             });
@@ -460,7 +462,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces, true)
         .ifPresent(
             i -> {
-              Set<Interface> ifaces = _currentPolicy.getSrcIntf();
+              Set<InterfaceOrZone> ifaces = _currentPolicy.getSrcIntf();
               ifaces.clear();
               ifaces.addAll(i);
             });
@@ -502,7 +504,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces, false)
         .ifPresent(
             i -> {
-              Set<Interface> ifaces = _currentPolicy.getDstIntf();
+              Set<InterfaceOrZone> ifaces = _currentPolicy.getDstIntf();
               ifaces.addAll(i);
             });
   }
@@ -512,7 +514,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces, true)
         .ifPresent(
             i -> {
-              Set<Interface> ifaces = _currentPolicy.getSrcIntf();
+              Set<InterfaceOrZone> ifaces = _currentPolicy.getSrcIntf();
               ifaces.addAll(i);
             });
   }
@@ -686,10 +688,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * Convert specified interface or zone names context into a set of interfaces. If {@code pruneAny}
    * is true, then the special 'any' interface will be removed if specified with other interfaces.
    */
-  private Optional<Set<Interface>> toInterfaces(
+  private Optional<Set<InterfaceOrZone>> toInterfaces(
       Interface_or_zone_namesContext ctx, boolean pruneAny) {
     Map<String, Interface> ifacesMap = _c.getInterfaces();
-    ImmutableSet.Builder<Interface> ifaceBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<InterfaceOrZone> ifaceBuilder = ImmutableSet.builder();
     Set<String> ifaces =
         ctx.interface_or_zone_name().stream()
             .map(n -> toString(n.str()))
@@ -699,7 +701,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         warn(ctx, "When 'any' is set together with other interfaces, it is removed");
         continue;
       } else if (name.equals(Policy.ANY_INTERFACE)) {
-        ifaceBuilder.add(new Interface("ANY"));
+        ifaceBuilder.add(InterfaceAny.INSTANCE);
+        continue;
       }
       if (ifacesMap.containsKey(name)) {
         ifaceBuilder.add(ifacesMap.get(name));

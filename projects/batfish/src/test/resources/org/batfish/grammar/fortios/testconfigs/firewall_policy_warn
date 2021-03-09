@@ -1,6 +1,28 @@
 config system global
     set hostname "firewall_policy_warn"
 end
+config system interface
+    edit "port10"
+        set vdom "root"
+        set ip 10.0.1.1/24
+    next
+end
+config firewall service custom
+    edit "service10"
+        set tcp-portrange 10
+    next
+    edit "service20"
+        set tcp-portrange 20
+    next
+end
+config firewall address
+    edit addr10
+        set subnet 10.0.10.0 255.255.255.0
+    next
+    edit addr20
+        set subnet 10.0.20.0 255.255.255.0
+    next
+end
 config firewall policy
     edit 4294967295
         set action allow
@@ -21,15 +43,15 @@ config firewall policy
     next
     edit 1
         # any should be dropped
-        set srcintf any port1
+        set srcintf any port10
         # any should _not_ be dropped
-        set dstintf any port1
-        set service service2
+        set dstintf any port10
+        set service service20
         # Line should be rejected
-        set service service1 ALL
+        set service service10 ALL
         # all should be dropped
-        set srcaddr addr1 all
+        set srcaddr addr10 all
         # all should be dropped
-        set dstaddr addr1 all
+        set dstaddr addr20 all
     next
 end

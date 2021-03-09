@@ -57,6 +57,7 @@ import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.InterfaceAny;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Service;
@@ -597,6 +598,41 @@ public final class FortiosGrammarTest {
     assertThat(policyAllow.getDstAddr(), containsInAnyOrder(addr1, addr2));
   }
 
+  /**
+   * Test extraction of firewall policy when warnings are generated for invalid / pruned properties.
+   */
+  @Test
+  public void testFirewallPolicyExtactionWithWarnings() {
+    String hostname = "firewall_policy_warn";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Policy> policies = vc.getPolicies();
+    assertThat(policies, hasKeys(contains("1")));
+    Policy policy = policies.get("1");
+
+    Map<String, Service> services = vc.getServices();
+    assertThat(services, hasKeys(containsInAnyOrder("service10", "service20")));
+    Service service20 = services.get("service20");
+
+    Map<String, Address> addresses = vc.getAddresses();
+    assertThat(addresses, hasKeys(containsInAnyOrder("addr10", "addr20")));
+    Address addr10 = addresses.get("addr10");
+    Address addr20 = addresses.get("addr20");
+
+    Map<String, Interface> interfaces = vc.getInterfaces();
+    assertThat(interfaces, hasKeys(contains("port10")));
+    Interface port10 = interfaces.get("port10");
+
+    // Confirm invalid any/all specifiers are dropped when appropriate
+    assertThat(policy.getSrcIntf(), contains(port10));
+    assertThat(policy.getSrcAddr(), contains(addr10));
+    assertThat(policy.getDstAddr(), contains(addr20));
+    // Confirm a line with invalid ALL service is ignored; i.e. previous value isn't overwritten
+    assertThat(policy.getService(), contains(service20));
+    // Confirm a line with dstintf combining any and another interface is accepted
+    assertThat(policy.getDstIntf(), containsInAnyOrder(InterfaceAny.INSTANCE, port10));
+  }
+
   @Test
   public void testFirewallPolicyWarnings() throws IOException {
     String hostname = "firewall_policy_warn";
@@ -634,13 +670,13 @@ public final class FortiosGrammarTest {
                 hasComment("Cannot combine 'ALL' with other services"),
                 allOf(
                     hasComment("When 'all' is set together with other address(es), it is removed"),
-                    hasText("set srcaddr addr1 all")),
+                    hasText("addr10 all")),
                 allOf(
                     hasComment("When 'all' is set together with other address(es), it is removed"),
-                    hasText("set dstaddr addr1 all")),
+                    hasText("addr20 all")),
                 allOf(
                     hasComment("When 'any' is set together with other interfaces, it is removed"),
-                    hasText("set srcintf any port1")))));
+                    hasText("any port10")))));
   }
 
   @Test
