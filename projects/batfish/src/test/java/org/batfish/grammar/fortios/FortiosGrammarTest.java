@@ -588,8 +588,17 @@ public final class FortiosGrammarTest {
                 hasComment("Address addr1 is undefined and cannot be added to policy 4294967295"),
                 hasComment("Address addr2 is undefined and cannot be added to policy 4294967295"),
                 hasComment("Address addr3 is undefined and cannot be added to policy 4294967295"),
-                hasComment(
-                    "Address addr4 is undefined and cannot be added to policy 4294967295"))));
+                hasComment("Address addr4 is undefined and cannot be added to policy 4294967295"),
+                hasComment("Cannot combine 'ALL' with other services"),
+                allOf(
+                    hasComment("When 'all' is set together with other address(es), it is removed"),
+                    hasText("set srcaddr addr1 all")),
+                allOf(
+                    hasComment("When 'all' is set together with other address(es), it is removed"),
+                    hasText("set dstaddr addr1 all")),
+                allOf(
+                    hasComment("When 'any' is set together with other interfaces, it is removed"),
+                    hasText("set srcintf any port1")))));
   }
 
   @Test

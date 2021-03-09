@@ -19,4 +19,17 @@ config firewall policy
     next
     edit not_a_number
     next
+    edit 1
+        # any should be dropped
+        set srcintf any port1
+        # any should _not_ be dropped
+        set dstintf any port1
+        set service service2
+        # Line should be rejected
+        set service service1 ALL
+        # all should be dropped
+        set srcaddr addr1 all
+        # all should be dropped
+        set dstaddr addr1 all
+    next
 end
