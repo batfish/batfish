@@ -659,6 +659,50 @@ public final class FortiosGrammarTest {
                 hasText("set APropertyThatHopefullyDoesNotExist to a bunch of garbage"))));
   }
 
+  @Test
+  public void testEditRecovery() throws IOException {
+    String hostname = "edit_recovery";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(vc.getInterfaces(), hasKeys("port1"));
+    assertThat(vc.getAddresses(), hasKeys("addr1"));
+    assertThat(vc.getServices(), hasKeys("service1"));
+    assertThat(vc.getPolicies(), hasKeys("1"));
+
+    // Make sure the lines were actually unrecognized
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                allOf(
+                    hasComment("This syntax is unrecognized"),
+                    hasText("set UNDEFINED_ADDR_PROP to a bunch of garbage")),
+                allOf(
+                    hasComment("This syntax is unrecognized"),
+                    hasText("set UNDEFINED_SERVICE_PROP to a bunch of garbage")),
+                allOf(
+                    hasComment("This syntax is unrecognized"),
+                    hasText("set UNDEFINED_IFACE_PROP to a bunch of garbage")),
+                allOf(
+                    hasComment("This syntax is unrecognized"),
+                    hasText("set UNDEFINED_POLICY_PROP to a bunch of garbage")))));
+
+    // Make sure other props were still set, after the unrecognized lines
+    assertThat(vc.getInterfaces().get("port1").getVdom(), equalTo("root"));
+    assertThat(vc.getAddresses().get("addr1").getComment(), equalTo("addr comment"));
+    assertThat(vc.getServices().get("service1").getComment(), equalTo("service comment"));
+    assertThat(vc.getPolicies().get("1").getComments(), equalTo("policy comments, plural"));
+  }
+
   private static final BddTestbed BDD_TESTBED =
       new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 

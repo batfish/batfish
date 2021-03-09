@@ -6,12 +6,9 @@ options {
 
 cf_address: ADDRESS newline cfa_edit*;
 
-cfa_edit
-:
-    EDIT address_name newline (
-        SET cfa_set_singletons
-    )* NEXT newline
-;
+cfa_edit: EDIT address_name newline cfae* NEXT newline;
+
+cfae: SET cfa_set_singletons;
 
 cfa_set_singletons:
     cfa_set_allow_routing
