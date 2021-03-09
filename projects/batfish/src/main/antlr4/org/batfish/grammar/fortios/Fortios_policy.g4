@@ -4,9 +4,9 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-cf_policy: POLICY NEWLINE cfp_edit*;
+cf_policy: POLICY newline cfp_edit*;
 
-cfp_edit: EDIT policy_number NEWLINE cfpe* NEXT NEWLINE;
+cfp_edit: EDIT policy_number newline cfpe* NEXT newline;
 
 cfpe
 :
@@ -25,13 +25,13 @@ cfp_set_singletons
     | cfp_set_status
 ;
 
-cfp_set_action: ACTION action = policy_action NEWLINE;
+cfp_set_action: ACTION action = policy_action newline;
 
-cfp_set_comments: COMMENTS comments = str NEWLINE;
+cfp_set_comments: COMMENTS comments = str newline;
 
-cfp_set_name: NAME name = policy_name NEWLINE;
+cfp_set_name: NAME name = policy_name newline;
 
-cfp_set_status: STATUS status = policy_status NEWLINE;
+cfp_set_status: STATUS status = policy_status newline;
 
 cfp_set_lists
 :
@@ -42,15 +42,15 @@ cfp_set_lists
     | cfp_set_srcintf
 ;
 
-cfp_set_dstaddr: DSTADDR addresses = address_names NEWLINE;
+cfp_set_dstaddr: DSTADDR addresses = address_names newline;
 
-cfp_set_srcaddr: SRCADDR addresses = address_names NEWLINE;
+cfp_set_srcaddr: SRCADDR addresses = address_names newline;
 
-cfp_set_service: SERVICE services = service_names NEWLINE;
+cfp_set_service: SERVICE services = service_names newline;
 
-cfp_set_dstintf: DSTINTF interfaces = interface_or_zone_names NEWLINE;
+cfp_set_dstintf: DSTINTF interfaces = interface_or_zone_names newline;
 
-cfp_set_srcintf: SRCINTF interfaces = interface_or_zone_names NEWLINE;
+cfp_set_srcintf: SRCINTF interfaces = interface_or_zone_names newline;
 
 cfp_append
 :
@@ -61,15 +61,15 @@ cfp_append
     | cfp_append_srcintf
 ;
 
-cfp_append_dstaddr: DSTADDR addresses = address_names NEWLINE;
+cfp_append_dstaddr: DSTADDR addresses = address_names newline;
 
-cfp_append_srcaddr: SRCADDR addresses = address_names NEWLINE;
+cfp_append_srcaddr: SRCADDR addresses = address_names newline;
 
-cfp_append_service: SERVICE services = service_names NEWLINE;
+cfp_append_service: SERVICE services = service_names newline;
 
-cfp_append_dstintf: DSTINTF interfaces = interface_or_zone_names NEWLINE;
+cfp_append_dstintf: DSTINTF interfaces = interface_or_zone_names newline;
 
-cfp_append_srcintf: SRCINTF interfaces = interface_or_zone_names NEWLINE;
+cfp_append_srcintf: SRCINTF interfaces = interface_or_zone_names newline;
 
 // 1-35
 policy_name: str;
