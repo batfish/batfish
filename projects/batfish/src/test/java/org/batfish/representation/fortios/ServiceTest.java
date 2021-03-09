@@ -18,12 +18,12 @@ import org.junit.Test;
 
 public class ServiceTest {
 
-  private static final BddTestbed BDD_TESTBED =
-      new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+  private static final BddTestbed BDD_TESTBED;
   private static final IpAccessListToBdd ACL_TO_BDD;
   private static final HeaderSpaceToBDD HS_TO_BDD;
 
   static {
+    BDD_TESTBED = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
     ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
     HS_TO_BDD = BDD_TESTBED.getHsToBdd();
   }
