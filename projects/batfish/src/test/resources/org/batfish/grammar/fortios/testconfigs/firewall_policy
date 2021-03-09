@@ -41,7 +41,7 @@ config firewall policy
     edit 4294967294
         set name "longest allowed firewall policy nam"
         set srcintf port1
-        set dstintf port2
+        set dstintf port1 port2
         set srcaddr addr1
         set dstaddr addr2
         set service custom_tcp_11_from_12
@@ -52,8 +52,6 @@ config firewall policy
         set action allow
         set srcintf port1
         set dstintf port2
-        # Multiple items doesn't work yet...
-        # set dstintf port1 port2
         set srcaddr addr1
         set dstaddr addr2
         set service custom_tcp_11

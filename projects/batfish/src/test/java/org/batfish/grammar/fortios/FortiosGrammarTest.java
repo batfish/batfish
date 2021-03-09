@@ -583,7 +583,7 @@ public final class FortiosGrammarTest {
     assertThat(policyDeny.getStatusEffective(), equalTo(Policy.Status.ENABLE));
     assertThat(policyDeny.getService(), contains(service11From12));
     assertThat(policyDeny.getSrcIntf(), contains(port1));
-    assertThat(policyDeny.getDstIntf(), contains(port2));
+    assertThat(policyDeny.getDstIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyDeny.getSrcAddr(), contains(addr1));
     assertThat(policyDeny.getDstAddr(), contains(addr2));
 
