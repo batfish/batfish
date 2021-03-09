@@ -79,6 +79,12 @@ public class FortiosConfiguration extends VendorConfiguration {
     c.setDefaultCrossZoneAction(LineAction.DENY);
     // TODO: verify
     c.setDefaultInboundAction(LineAction.DENY);
+
+    // Convert addresses
+    _addresses
+        .values()
+        .forEach(address -> c.getIpSpaces().put(address.getName(), address.toIpSpace(_w)));
+
     return c;
   }
 }

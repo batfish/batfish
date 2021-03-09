@@ -36,6 +36,8 @@ ipv6_prefix: IPV6_PREFIX;
 
 mac_address_literal: MAC_ADDRESS_LITERAL;
 
+newline: STR_SEPARATOR? NEWLINE;
+
 null_rest_of_line: ~NEWLINE* NEWLINE;
 
 uint8: UINT8;
@@ -56,8 +58,10 @@ uint32
 // extractor should disallow whitespace, newlines
 word: str;
 
+str: STR_SEPARATOR str_content;
+
 // can include whitespace, newlines, html tags, etc.
-str: (double_quoted_string | single_quoted_string | UNQUOTED_WORD_CHARS)+;
+str_content: (double_quoted_string | single_quoted_string | UNQUOTED_WORD_CHARS)+;
 
 enable_or_disable: ENABLE | DISABLE;
 

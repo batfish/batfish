@@ -10,7 +10,7 @@ c_system: SYSTEM (
   | cs_replacemsg
 );
 
-cs_global: GLOBAL NEWLINE csg*;
+cs_global: GLOBAL newline csg*;
 
 csg:
   SET (
@@ -18,12 +18,12 @@ csg:
   )
 ;
 
-csg_hostname: HOSTNAME host=device_hostname NEWLINE;
+csg_hostname: HOSTNAME host=device_hostname newline;
 
 // [A-Za-z0-9_-]
 device_hostname: str;
 
-cs_replacemsg: REPLACEMSG major_type=replacemsg_major_type minor_type=replacemsg_minor_type NEWLINE csr*;
+cs_replacemsg: REPLACEMSG major_type=replacemsg_major_type minor_type=replacemsg_minor_type newline csr*;
 
 replacemsg_major_type:
   ADMIN
@@ -56,6 +56,6 @@ csr:
   )
 ;
 
-csr_set_buffer: BUFFER buffer=str NEWLINE;
+csr_set_buffer: BUFFER buffer=str newline;
 
-csr_unset_buffer: BUFFER NEWLINE;
+csr_unset_buffer: BUFFER newline;

@@ -6,12 +6,12 @@ options {
 
 cf_service: SERVICE cfs_custom;
 
-cfs_custom: CUSTOM NEWLINE cfsc_edit*;
+cfs_custom: CUSTOM newline cfsc_edit*;
 
 cfsc_edit:
-    EDIT service_name NEWLINE (
+    EDIT service_name newline (
         SET cfsc_set_singletons
-    )* NEXT NEWLINE
+    )* NEXT newline
 ;
 
 cfsc_set_singletons:
@@ -25,21 +25,21 @@ cfsc_set_singletons:
     | cfsc_set_udp_portrange
 ;
 
-cfsc_set_comment: COMMENT comment = str NEWLINE;
+cfsc_set_comment: COMMENT comment = str newline;
 
-cfsc_set_icmpcode: ICMPCODE code = uint8 NEWLINE;
+cfsc_set_icmpcode: ICMPCODE code = uint8 newline;
 
-cfsc_set_icmptype: ICMPTYPE type = uint8 NEWLINE;
+cfsc_set_icmptype: ICMPTYPE type = uint8 newline;
 
-cfsc_set_protocol: PROTOCOL protocol = service_protocol NEWLINE;
+cfsc_set_protocol: PROTOCOL protocol = service_protocol newline;
 
-cfsc_set_protocol_number: PROTOCOL_NUMBER number = ip_protocol_number NEWLINE;
+cfsc_set_protocol_number: PROTOCOL_NUMBER number = ip_protocol_number newline;
 
-cfsc_set_sctp_portrange: SCTP_PORTRANGE value = service_port_ranges NEWLINE;
+cfsc_set_sctp_portrange: SCTP_PORTRANGE value = service_port_ranges newline;
 
-cfsc_set_tcp_portrange: TCP_PORTRANGE value = service_port_ranges NEWLINE;
+cfsc_set_tcp_portrange: TCP_PORTRANGE value = service_port_ranges newline;
 
-cfsc_set_udp_portrange: UDP_PORTRANGE value = service_port_ranges NEWLINE;
+cfsc_set_udp_portrange: UDP_PORTRANGE value = service_port_ranges newline;
 
 // Up to 79 characters
 service_name: str;
