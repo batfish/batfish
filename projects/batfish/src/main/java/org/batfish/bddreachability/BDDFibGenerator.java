@@ -9,6 +9,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
+import org.batfish.symbolic.state.BlackHole;
 import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.NodeDropNoRoute;
 import org.batfish.symbolic.state.NodeDropNullRoute;
@@ -118,7 +120,8 @@ public final class BDDFibGenerator {
             preOutInterfaceDeliveredToSubnet,
             preOutInterfaceExitsNetwork,
             preOutInterfaceInsufficientInfo,
-            preOutInterfaceNeighborUnreachable));
+            preOutInterfaceNeighborUnreachable),
+        generateRules_PreOutVrf_BlackHole(includedNode, preOutVrf));
   }
 
   @Nonnull
@@ -265,6 +268,77 @@ public final class BDDFibGenerator {
                               preOutVrf.apply(node, vrf),
                               new NodeDropNullRoute(node),
                               nullRoutedBDD);
+                        }));
+  }
+
+  /**
+   * All edges from PreOutVrf to an interface (PreOutEdge, PreOutInterfaceDisposition) must exclude
+   * speculative flows.
+   *
+   * <p>This function collects all those speculative flows up and blackholes all of them. Doing it
+   * in one place avoids parallel edges in the graph.
+   */
+  @Nonnull
+  @VisibleForTesting
+  Stream<Edge> generateRules_PreOutVrf_BlackHole(
+      Predicate<String> includedNode, StateExprConstructor2 preOutVrf) {
+    // Sources of Vrf->Iface edges:
+    // 1. arp true -> PreOutEdge [get iface1 from edge]
+    // 2-5. arp false -> {DeliveredToSubnet,ExitsNetwork,InsufficientInfo,NeighborUnreachable}.
+    return _arpTrueEdgeBDDs.entrySet().stream()
+        .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
+        .flatMap(
+            nodeEntry ->
+                nodeEntry.getValue().entrySet().stream()
+                    .flatMap(
+                        vrfEntry -> {
+                          String node = nodeEntry.getKey();
+                          String vrf = vrfEntry.getKey();
+                          // 1. ArpTrue for edge, speculating on wrong interface
+                          Stream<BDD> arpEdgeBDDs =
+                              vrfEntry.getValue().entrySet().stream()
+                                  .map(
+                                      edgeEntry -> {
+                                        org.batfish.datamodel.Edge edge = edgeEntry.getKey();
+                                        BDD arpTrue = edgeEntry.getValue();
+                                        assert edge.getNode1().equals(node);
+                                        String iface = edge.getInt1();
+                                        BDD leavingIface1 =
+                                            _interfaceOutConstraint.apply(node, iface);
+                                        return arpTrue.diff(leavingIface1);
+                                      });
+                          // 2-5. ArpFalse for disposition, speculating on wrong interface
+                          Stream<BDD> ifaceDispositionBDDs =
+                              Stream.of(
+                                      _deliveredToSubnetBDDs.get(node).get(vrf).entrySet().stream(),
+                                      _exitsNetworkBDDs.get(node).get(vrf).entrySet().stream(),
+                                      _insufficientInfoBDDs.get(node).get(vrf).entrySet().stream(),
+                                      _neighborUnreachableBDDs
+                                          .get(node)
+                                          .get(vrf)
+                                          .entrySet()
+                                          .stream())
+                                  .flatMap(s -> s)
+                                  .map(
+                                      ifaceEntry -> {
+                                        String iface = ifaceEntry.getKey();
+                                        BDD bdd = ifaceEntry.getValue();
+                                        BDD leavingIface =
+                                            _interfaceOutConstraint.apply(node, iface);
+                                        return bdd.diff(leavingIface);
+                                      });
+                          BDD[] allWrongInterfaceBDDsInThisVrf =
+                              Stream.concat(arpEdgeBDDs, ifaceDispositionBDDs).toArray(BDD[]::new);
+                          if (allWrongInterfaceBDDsInThisVrf.length == 0) {
+                            // No BlackHole edges needed.
+                            return Stream.of();
+                          }
+                          BDDFactory factory = allWrongInterfaceBDDsInThisVrf[0].getFactory();
+                          return Stream.of(
+                              new Edge(
+                                  preOutVrf.apply(node, vrf),
+                                  BlackHole.INSTANCE,
+                                  factory.orAll(allWrongInterfaceBDDsInThisVrf)));
                         }));
   }
 
