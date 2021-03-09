@@ -1,9 +1,11 @@
 package org.batfish.grammar.fortios;
 
+import static org.batfish.grammar.fortios.FortiosLexer.STR_SEPARATOR;
 import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import java.util.HashMap;
 import java.util.Map;
@@ -317,7 +319,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void enterCsi_edit(Csi_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.interface_name());
     if (!name.isPresent()) {
-      _currentInterface = new Interface(ctx.interface_name().getText()); // dummy
+      _currentInterface = new Interface(toString(ctx.interface_name().str())); // dummy
       return;
     }
     _currentInterface = _c.getInterfaces().computeIfAbsent(name.get(), Interface::new);
@@ -527,7 +529,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void enterCfsc_edit(Cfsc_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.service_name());
     if (!name.isPresent()) {
-      _currentService = new Service(ctx.service_name().getText()); // dummy
+      _currentService = new Service(toString(ctx.service_name().str())); // dummy
       return;
     }
     _currentService = _c.getServices().computeIfAbsent(name.get(), Service::new);
@@ -915,7 +917,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
      *   A backslash followed immediately by a newline character indicates a line continuation.
      *   That is, the backslash and the newline are both stripped.
      */
-    return ctx.children.stream()
+    return ctx.str_content().children.stream()
         .map(
             child -> {
               if (child instanceof Double_quoted_stringContext) {
@@ -925,6 +927,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
               } else {
                 assert child instanceof TerminalNode;
                 int type = ((TerminalNode) child).getSymbol().getType();
+                if (type == STR_SEPARATOR) {
+                  return "";
+                }
                 assert type == UNQUOTED_WORD_CHARS;
                 return ESCAPED_UNQUOTED_CHAR_PATTERN.matcher(child.getText()).replaceAll("$1");
               }
@@ -945,34 +950,46 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Policy_numberContext ctx) {
-    return toLongInSpace(messageCtx, ctx, POLICY_NUMBER_SPACE, "policy number");
+    return toLongInSpace(messageCtx, ctx.str(), POLICY_NUMBER_SPACE, "policy number");
+  }
+
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, StrContext ctx, LongSpace space, String name) {
+    return toLongInSpace(messageCtx, toString(ctx), space, name);
   }
 
   /**
-   * Convert a {@link ParserRuleContext} to a {@link Long} if it is contained in the provided {@code
-   * space}, or else {@link Optional#empty}.
+   * Convert a {@link String} to a {@link Long} if it is contained in the provided {@code space}, or
+   * else {@link Optional#empty}.
    */
   private @Nonnull Optional<Long> toLongInSpace(
-      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
-    Long num = Longs.tryParse(ctx.getText());
+      ParserRuleContext messageCtx, String str, LongSpace space, String name) {
+    Long num = Longs.tryParse(str);
     if (num == null || !space.contains(num)) {
-      warn(
-          messageCtx,
-          String.format("Expected %s in range %s, but got '%s'", name, space, ctx.getText()));
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%s'", name, space, str));
       return Optional.empty();
     }
     return Optional.of(num);
   }
 
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, Uint8Context ctx, IntegerSpace space, String name) {
+    return toIntegerInSpace(messageCtx, ctx.getText(), space, name);
+  }
+
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, Uint16Context ctx, IntegerSpace space, String name) {
+    return toIntegerInSpace(messageCtx, ctx.getText(), space, name);
+  }
+
   /**
-   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
-   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
-   * {@link Optional#empty}.
+   * Convert a {@link String} to an {@link Integer} if it is contained in the provided {@code
+   * space}, or else {@link Optional#empty}.
    */
   private @Nonnull Optional<Integer> toIntegerInSpace(
-      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
-    int num = Integer.parseInt(ctx.getText());
-    if (!space.contains(num)) {
+      ParserRuleContext messageCtx, String str, IntegerSpace space, String name) {
+    Integer num = Ints.tryParse(str);
+    if (num == null || !space.contains(num)) {
       warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
     }
@@ -999,15 +1016,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, Ip_protocol_numberContext num) {
-    return toIntegerInSpace(ctx, num, IP_PROTOCOL_NUMBER_SPACE, "ip protocol-number");
+    return toIntegerInSpace(ctx, num.uint8(), IP_PROTOCOL_NUMBER_SPACE, "ip protocol-number");
   }
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, MtuContext mtu) {
-    return toIntegerInSpace(ctx, mtu, MTU_SPACE, "mtu");
+    return toIntegerInSpace(ctx, mtu.uint16(), MTU_SPACE, "mtu");
   }
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, VrfContext vrf) {
-    return toIntegerInSpace(ctx, vrf, VRF_SPACE, "vrf");
+    return toIntegerInSpace(ctx, vrf.uint8(), VRF_SPACE, "vrf");
   }
 
   private static int toInteger(Subnet_maskContext ctx) {
