@@ -1,6 +1,5 @@
 package org.batfish.grammar.fortios;
 
-import static org.batfish.grammar.fortios.FortiosLexer.STR_SEPARATOR;
 import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
 import com.google.common.collect.ImmutableSet;
@@ -927,9 +926,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
               } else {
                 assert child instanceof TerminalNode;
                 int type = ((TerminalNode) child).getSymbol().getType();
-                if (type == STR_SEPARATOR) {
-                  return "";
-                }
                 assert type == UNQUOTED_WORD_CHARS;
                 return ESCAPED_UNQUOTED_CHAR_PATTERN.matcher(child.getText()).replaceAll("$1");
               }
@@ -959,8 +955,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /**
-   * Convert a {@link String} to a {@link Long} if it is contained in the provided {@code space}, or
-   * else {@link Optional#empty}.
+   * Convert a {@link String} to a {@link Long} if it represents a number that is contained in the
+   * provided {@code space}, or else {@link Optional#empty}.
    */
   private @Nonnull Optional<Long> toLongInSpace(
       ParserRuleContext messageCtx, String str, LongSpace space, String name) {
@@ -983,8 +979,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /**
-   * Convert a {@link String} to an {@link Integer} if it is contained in the provided {@code
-   * space}, or else {@link Optional#empty}.
+   * Convert a {@link String} to an {@link Integer} if it represents a number that is contained in
+   * the provided {@code space}, or else {@link Optional#empty}.
    */
   private @Nonnull Optional<Integer> toIntegerInSpace(
       ParserRuleContext messageCtx, String str, IntegerSpace space, String name) {
