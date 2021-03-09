@@ -1,12 +1,16 @@
 package org.batfish.representation.fortios;
 
+import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.representation.fortios.Service.DEFAULT_PROTOCOL_NUMBER;
 import static org.batfish.representation.fortios.Service.DEFAULT_SOURCE_PORT_RANGE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDD;
+import org.batfish.common.Warnings;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.datamodel.BddTestbed;
@@ -19,57 +23,49 @@ import org.junit.Test;
 public class ServiceTest {
 
   private static final BddTestbed BDD_TESTBED;
+  private static final BDD ZERO;
   private static final IpAccessListToBdd ACL_TO_BDD;
   private static final HeaderSpaceToBDD HS_TO_BDD;
 
   static {
     BDD_TESTBED = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+    ZERO = BDD_TESTBED.getPkt().getFactory().zero();
     ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
     HS_TO_BDD = BDD_TESTBED.getHsToBdd();
   }
 
   @Test
   public void testToMatchExpr_tcpUdpSctp_defaults() {
-    // Default service matches all TCP/UDP/SCTP
-    Service service = new Service("name");
-    BDD expected =
-        HS_TO_BDD.toBDD(
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
-                .setSrcPorts(DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
-                .build());
-    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr()), equalTo(expected));
+    // Default service with no dst ports specified matches nothing and files warning
+    String svcName = "name";
+    Service service = new Service(svcName);
+    Warnings w = new Warnings(true, true, true);
+    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr(w)), equalTo(ZERO));
+    assertThat(
+        w.getRedFlagWarnings(),
+        contains(hasText(String.format("Service %s does not match any packets", svcName))));
+
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr()), equalTo(expected));
+    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr(w)), equalTo(ZERO));
   }
 
   @Test
   public void testToMatchExpr_tcpUdpSctp_oneCustom() {
-    IntegerSpace tcpSrcPorts = IntegerSpace.of(1);
-    IntegerSpace tcpDstPorts = IntegerSpace.of(2);
+    IntegerSpace tcpDstPorts = IntegerSpace.of(1);
     Service service = new Service("name");
-    service.setTcpPortRangeSrc(tcpSrcPorts);
     service.setTcpPortRangeDst(tcpDstPorts);
     BDD tcp =
         HS_TO_BDD.toBDD(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.TCP)
-                .setSrcPorts(tcpSrcPorts.getSubRanges())
+                .setSrcPorts(DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
                 .setDstPorts(tcpDstPorts.getSubRanges())
                 .build());
-    BDD expected =
-        HS_TO_BDD
-            .toBDD(
-                HeaderSpace.builder()
-                    .setIpProtocols(IpProtocol.UDP, IpProtocol.SCTP)
-                    .setSrcPorts(DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
-                    .build())
-            .or(tcp);
-    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr()), equalTo(expected));
+    assertConvertsWithoutWarnings(service, tcp);
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    //    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr()), equalTo(expected));
+    assertConvertsWithoutWarnings(service, tcp);
   }
 
   @Test
@@ -87,51 +83,45 @@ public class ServiceTest {
     service.setUdpPortRangeDst(udpDstPorts);
     service.setSctpPortRangeSrc(sctpSrcPorts);
     service.setSctpPortRangeDst(sctpDstPorts);
-    BDD tcp =
-        HS_TO_BDD.toBDD(
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.TCP)
-                .setSrcPorts(tcpSrcPorts.getSubRanges())
-                .setDstPorts(tcpDstPorts.getSubRanges())
-                .build());
-    BDD udp =
-        HS_TO_BDD.toBDD(
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.UDP)
-                .setSrcPorts(udpSrcPorts.getSubRanges())
-                .setDstPorts(udpDstPorts.getSubRanges())
-                .build());
-    BDD sctp =
-        HS_TO_BDD.toBDD(
-            HeaderSpace.builder()
-                .setIpProtocols(IpProtocol.SCTP)
-                .setSrcPorts(sctpSrcPorts.getSubRanges())
-                .setDstPorts(sctpDstPorts.getSubRanges())
-                .build());
-    BDD expected = tcp.or(udp).or(sctp);
-    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr()), equalTo(expected));
+    HeaderSpace tcp =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.TCP)
+            .setSrcPorts(tcpSrcPorts.getSubRanges())
+            .setDstPorts(tcpDstPorts.getSubRanges())
+            .build();
+    HeaderSpace udp =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.UDP)
+            .setSrcPorts(udpSrcPorts.getSubRanges())
+            .setDstPorts(udpDstPorts.getSubRanges())
+            .build();
+    HeaderSpace sctp =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.SCTP)
+            .setSrcPorts(sctpSrcPorts.getSubRanges())
+            .setDstPorts(sctpDstPorts.getSubRanges())
+            .build();
+    BDD expected = HS_TO_BDD.toBDD(tcp).or(HS_TO_BDD.toBDD(udp)).or(HS_TO_BDD.toBDD(sctp));
+    assertConvertsWithoutWarnings(service, expected);
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr()), equalTo(expected));
+    assertConvertsWithoutWarnings(service, expected);
   }
 
   @Test
   public void testToMatchExpr_icmp_defaults() {
     Service service = new Service("name");
     service.setProtocol(Service.Protocol.ICMP);
-    assertThat(
-        ACL_TO_BDD.toBdd(service.toMatchExpr()),
-        equalTo(HS_TO_BDD.toBDD(HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).build())));
+    HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).build();
+    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
   }
 
   @Test
   public void testToMatchExpr_icmp6_defaults() {
     Service service = new Service("name");
     service.setProtocol(Service.Protocol.ICMP6);
-    assertThat(
-        ACL_TO_BDD.toBdd(service.toMatchExpr()),
-        equalTo(
-            HS_TO_BDD.toBDD(HeaderSpace.builder().setIpProtocols(IpProtocol.IPV6_ICMP).build())));
+    HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.IPV6_ICMP).build();
+    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
   }
 
   @Test
@@ -142,15 +132,13 @@ public class ServiceTest {
     service.setProtocol(Service.Protocol.ICMP);
     service.setIcmpCode(icmpCode);
     service.setIcmpType(icmpType);
-    assertThat(
-        ACL_TO_BDD.toBdd(service.toMatchExpr()),
-        equalTo(
-            HS_TO_BDD.toBDD(
-                HeaderSpace.builder()
-                    .setIpProtocols(IpProtocol.ICMP)
-                    .setIcmpCodes(icmpCode)
-                    .setIcmpTypes(icmpType)
-                    .build())));
+    HeaderSpace expected =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.ICMP)
+            .setIcmpCodes(icmpCode)
+            .setIcmpTypes(icmpType)
+            .build();
+    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
   }
 
   @Test
@@ -161,28 +149,24 @@ public class ServiceTest {
     service.setProtocol(Service.Protocol.ICMP6);
     service.setIcmpCode(icmpCode);
     service.setIcmpType(icmpType);
-    assertThat(
-        ACL_TO_BDD.toBdd(service.toMatchExpr()),
-        equalTo(
-            HS_TO_BDD.toBDD(
-                HeaderSpace.builder()
-                    .setIpProtocols(IpProtocol.IPV6_ICMP)
-                    .setIcmpCodes(icmpCode)
-                    .setIcmpTypes(icmpType)
-                    .build())));
+    HeaderSpace expected =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.IPV6_ICMP)
+            .setIcmpCodes(icmpCode)
+            .setIcmpTypes(icmpType)
+            .build();
+    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
   }
 
   @Test
   public void testToMatchExpr_ip_default() {
     Service service = new Service("name");
     service.setProtocol(Service.Protocol.IP);
-    assertThat(
-        ACL_TO_BDD.toBdd(service.toMatchExpr()),
-        equalTo(
-            HS_TO_BDD.toBDD(
-                HeaderSpace.builder()
-                    .setIpProtocols(IpProtocol.fromNumber(DEFAULT_PROTOCOL_NUMBER))
-                    .build())));
+    HeaderSpace expected =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.fromNumber(DEFAULT_PROTOCOL_NUMBER))
+            .build();
+    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
   }
 
   @Test
@@ -191,28 +175,35 @@ public class ServiceTest {
     Service service = new Service("name");
     service.setProtocol(Service.Protocol.IP);
     service.setProtocolNumber(protocolNumber);
-    assertThat(
-        ACL_TO_BDD.toBdd(service.toMatchExpr()),
-        equalTo(
-            HS_TO_BDD.toBDD(
-                HeaderSpace.builder()
-                    .setIpProtocols(IpProtocol.fromNumber(protocolNumber))
-                    .build())));
+    HeaderSpace expected =
+        HeaderSpace.builder().setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build();
+    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
   }
 
   @Test
   public void testToMatchExpr_traceElement() {
     String svcName = "name";
     Service service = new Service(svcName);
+    service.setProtocol(Service.Protocol.ICMP);
     assertThat(
-        service.toMatchExpr().getTraceElement(),
+        service.toMatchExpr(new Warnings()).getTraceElement(),
         equalTo(TraceElement.of("Matched service " + svcName)));
 
     // With comment
     String comment = "you can't go there";
     service.setComment(comment);
     assertThat(
-        service.toMatchExpr().getTraceElement(),
+        service.toMatchExpr(new Warnings()).getTraceElement(),
         equalTo(TraceElement.of(String.format("Matched service %s: %s", svcName, comment))));
+  }
+
+  /**
+   * Asserts that when converted, the given {@link Service} will exactly match the provided {@link
+   * BDD}, without generating conversion warnings.
+   */
+  private void assertConvertsWithoutWarnings(Service service, BDD expected) {
+    Warnings w = new Warnings();
+    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr(w)), equalTo(expected));
+    assertThat(w.getRedFlagWarnings(), empty());
   }
 }

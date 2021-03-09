@@ -5,14 +5,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 
@@ -206,48 +210,53 @@ public final class Service implements Serializable {
   @Nullable private IntegerSpace _sctpPortRangeDst;
   @Nullable private IntegerSpace _sctpPortRangeSrc;
 
-  public @Nonnull AclLineMatchExpr toMatchExpr() {
-    return new OrMatchExpr(
-        toHeaderSpaces().stream()
-            .map(MatchHeaderSpace::new)
-            .collect(ImmutableList.toImmutableList()),
-        getTraceElement());
+  public @Nonnull AclLineMatchExpr toMatchExpr(Warnings w) {
+    List<AclLineMatchExpr> matchExprs =
+        toHeaderSpaces().map(MatchHeaderSpace::new).collect(ImmutableList.toImmutableList());
+    if (matchExprs.isEmpty()) {
+      w.redFlag(String.format("Service %s does not match any packets", _name));
+      return AclLineMatchExprs.FALSE;
+    }
+    return new OrMatchExpr(matchExprs, getTraceElement());
   }
 
-  private @Nonnull List<HeaderSpace> toHeaderSpaces() {
+  private @Nonnull Stream<HeaderSpace> toHeaderSpaces() {
     switch (getProtocolEffective()) {
       case TCP_UDP_SCTP:
-        return ImmutableList.of(
-            buildHeaderSpaceWithPorts(
-                IpProtocol.TCP, getTcpPortRangeSrcEffective(), getTcpPortRangeDst()),
-            buildHeaderSpaceWithPorts(
-                IpProtocol.UDP, getUdpPortRangeSrcEffective(), getUdpPortRangeDst()),
-            buildHeaderSpaceWithPorts(
-                IpProtocol.SCTP, getSctpPortRangeSrcEffective(), getSctpPortRangeDst()));
+        return Stream.of(
+                buildHeaderSpaceWithPorts(
+                    IpProtocol.TCP, getTcpPortRangeSrcEffective(), getTcpPortRangeDst()),
+                buildHeaderSpaceWithPorts(
+                    IpProtocol.UDP, getUdpPortRangeSrcEffective(), getUdpPortRangeDst()),
+                buildHeaderSpaceWithPorts(
+                    IpProtocol.SCTP, getSctpPortRangeSrcEffective(), getSctpPortRangeDst()))
+            .filter(Objects::nonNull);
       case ICMP:
-        return ImmutableList.of(
-            buildIcmpHeaderSpace(IpProtocol.ICMP, getIcmpCode(), getIcmpType()));
+        return Stream.of(buildIcmpHeaderSpace(IpProtocol.ICMP, getIcmpCode(), getIcmpType()));
       case ICMP6:
-        return ImmutableList.of(
-            buildIcmpHeaderSpace(IpProtocol.IPV6_ICMP, getIcmpCode(), getIcmpType()));
+        return Stream.of(buildIcmpHeaderSpace(IpProtocol.IPV6_ICMP, getIcmpCode(), getIcmpType()));
       case IP:
         // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
         // protocol number specifies one of those protocols
         IpProtocol protocol = IpProtocol.fromNumber(getProtocolNumberEffective());
-        return ImmutableList.of(HeaderSpace.builder().setIpProtocols(protocol).build());
+        return Stream.of(HeaderSpace.builder().setIpProtocols(protocol).build());
       default:
         throw new UnsupportedOperationException(
             String.format("Unrecognized service protocol %s", getProtocolEffective()));
     }
   }
 
-  private static HeaderSpace buildHeaderSpaceWithPorts(
+  /** Returns a {@link HeaderSpace} with the given ports, or null if {@code dstPorts} are null */
+  private static @Nullable HeaderSpace buildHeaderSpaceWithPorts(
       @Nonnull IpProtocol protocol,
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts) {
-    HeaderSpace.Builder headerSpace = HeaderSpace.builder().setIpProtocols(protocol);
+    if (dstPorts == null) {
+      return null;
+    }
+    HeaderSpace.Builder headerSpace =
+        HeaderSpace.builder().setIpProtocols(protocol).setDstPorts(dstPorts.getSubRanges());
     Optional.ofNullable(srcPorts).ifPresent(src -> headerSpace.setSrcPorts(src.getSubRanges()));
-    Optional.ofNullable(dstPorts).ifPresent(dst -> headerSpace.setDstPorts(dst.getSubRanges()));
     return headerSpace.build();
   }
 
