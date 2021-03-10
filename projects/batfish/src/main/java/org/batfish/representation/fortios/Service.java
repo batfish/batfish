@@ -208,9 +208,9 @@ public final class Service implements FortiosRenameableObject, Serializable {
     _sctpPortRangeSrc = sctpPortRange;
   }
 
-  public Service(String name) {
+  public Service(String name, BatfishUUID uuid) {
     _name = name;
-    _uuid = new BatfishUUID();
+    _uuid = uuid;
   }
 
   @Nonnull private String _name;

@@ -106,10 +106,10 @@ public class Address implements FortiosRenameableObject, Serializable {
   public static final boolean DEFAULT_FABRIC_OBJECT = false;
   public static final Type DEFAULT_TYPE = Type.IPMASK;
 
-  public Address(String name) {
+  public Address(String name, BatfishUUID uuid) {
     _name = name;
     _typeSpecificFields = new TypeSpecificFields();
-    _uuid = new BatfishUUID();
+    _uuid = uuid;
   }
 
   public IpSpace toIpSpace(Warnings w) {

@@ -10,17 +10,15 @@ import org.junit.Test;
 public class BatfishUUIDTest {
   @Test
   public void testJavaSerialization() {
-    BatfishUUID uuid = new BatfishUUID();
+    BatfishUUID uuid = new BatfishUUID(1);
     assertThat(SerializationUtils.clone(uuid), equalTo(uuid));
   }
 
   @Test
   public void testEquals() {
-    BatfishUUID uuid1 = new BatfishUUID();
-    BatfishUUID uuid2 = new BatfishUUID();
     new EqualsTester()
-        .addEqualityGroup(uuid1)
-        .addEqualityGroup(uuid2)
+        .addEqualityGroup(new BatfishUUID(1), new BatfishUUID(1))
+        .addEqualityGroup(new BatfishUUID(2))
         .addEqualityGroup(new Object())
         .testEquals();
   }

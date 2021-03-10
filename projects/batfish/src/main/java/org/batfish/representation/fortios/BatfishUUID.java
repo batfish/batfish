@@ -1,8 +1,6 @@
 package org.batfish.representation.fortios;
 
 import java.io.Serializable;
-import java.util.UUID;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -20,17 +18,17 @@ public class BatfishUUID implements Serializable {
       return false;
     }
     BatfishUUID that = (BatfishUUID) o;
-    return _uuid.equals(that._uuid);
+    return _uuid == that._uuid;
   }
 
   @Override
   public int hashCode() {
-    return _uuid.hashCode();
+    return _uuid;
   }
 
-  public BatfishUUID() {
-    _uuid = UUID.randomUUID();
+  public BatfishUUID(int uuid) {
+    _uuid = uuid;
   }
 
-  @Nonnull private final UUID _uuid;
+  private final int _uuid;
 }

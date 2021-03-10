@@ -148,6 +148,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _c = configuration;
   }
 
+  /** Get a new, unique BatfishUUID. */
+  public @Nonnull BatfishUUID getUUID() {
+    return new BatfishUUID(_uuidSequenceNumber++);
+  }
+
   @Override
   public String getInputText() {
     return _text;
@@ -230,7 +235,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       // Make a clone to edit
       _currentAddress = SerializationUtils.clone(existingAddress);
     } else {
-      _currentAddress = new Address(toString(ctx.address_name().str()));
+      _currentAddress = new Address(toString(ctx.address_name().str()), getUUID());
     }
   }
 
@@ -559,10 +564,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void enterCfsc_edit(Cfsc_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.service_name());
     if (!name.isPresent()) {
-      _currentService = new Service(toString(ctx.service_name().str())); // dummy
+      _currentService = new Service(toString(ctx.service_name().str()), getUUID()); // dummy
       return;
     }
-    _currentService = _c.getServices().computeIfAbsent(name.get(), Service::new);
+    _currentService = _c.getServices().computeIfAbsent(name.get(), s -> new Service(s, getUUID()));
   }
 
   @Override
@@ -1150,5 +1155,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private final @Nonnull FortiosConfiguration _c;
   private final @Nonnull FortiosCombinedParser _parser;
   private final @Nonnull String _text;
+  // Internal sequence number to generate unique UUIDs for structure that may be renamed or cloned
+  private int _uuidSequenceNumber = 0;
   private final @Nonnull Warnings _w;
 }
