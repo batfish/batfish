@@ -57,7 +57,6 @@ import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
-import org.batfish.representation.fortios.InterfaceAny;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Service;
@@ -566,9 +565,9 @@ public final class FortiosGrammarTest {
     assertThat(addresses, hasKeys(containsInAnyOrder(addr1, addr2, addrAll)));
 
     Map<String, Interface> interfaces = vc.getInterfaces();
-    assertThat(interfaces, hasKeys(containsInAnyOrder("port1", "port2")));
-    Interface port1 = interfaces.get("port1");
-    Interface port2 = interfaces.get("port2");
+    String port1 = "port1";
+    String port2 = "port2";
+    assertThat(interfaces, hasKeys(containsInAnyOrder(port1, port2)));
 
     assertThat(policyDisable.getAction(), equalTo(Action.DENY));
     assertThat(policyDisable.getStatus(), equalTo(Policy.Status.DISABLE));
@@ -603,8 +602,8 @@ public final class FortiosGrammarTest {
     assertThat(policyAny.getService(), contains(serviceAll));
     assertThat(policyAny.getSrcAddr(), contains(addrAll));
     assertThat(policyAny.getDstAddr(), contains(addrAll));
-    assertThat(policyAny.getSrcIntf(), contains(InterfaceAny.INSTANCE));
-    assertThat(policyAny.getDstIntf(), contains(InterfaceAny.INSTANCE));
+    assertThat(policyAny.getSrcIntf(), contains(Policy.ANY_INTERFACE));
+    assertThat(policyAny.getDstIntf(), contains(Policy.ANY_INTERFACE));
   }
 
   /**
@@ -630,9 +629,9 @@ public final class FortiosGrammarTest {
     assertThat(addresses, hasKeys(containsInAnyOrder(addr10, addr20)));
 
     Map<String, Interface> interfaces = vc.getInterfaces();
-    assertThat(interfaces, hasKeys(containsInAnyOrder("port10", "port20")));
-    Interface port10 = interfaces.get("port10");
-    Interface port20 = interfaces.get("port20");
+    String port10 = "port10";
+    String port20 = "port20";
+    assertThat(interfaces, hasKeys(containsInAnyOrder(port10, port20)));
 
     // Confirm invalid any/all specifiers are dropped when appropriate
     assertThat(policy.getSrcIntf(), contains(port10));
@@ -641,7 +640,7 @@ public final class FortiosGrammarTest {
     // Confirm a line with invalid ALL service is ignored; i.e. previous value isn't overwritten
     assertThat(policy.getService(), contains(service20));
     // Confirm a line with dstintf combining any and another interface is accepted
-    assertThat(policy.getDstIntf(), containsInAnyOrder(InterfaceAny.INSTANCE, port20));
+    assertThat(policy.getDstIntf(), containsInAnyOrder(Policy.ANY_INTERFACE, port20));
   }
 
   @Test
