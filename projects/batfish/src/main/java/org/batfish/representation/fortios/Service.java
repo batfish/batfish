@@ -43,7 +43,7 @@ public final class Service implements FortiosRenameableObject, Serializable {
   }
 
   @Override
-  public String getUUID() {
+  public String getBatfishUUID() {
     return _uuid;
   }
 
@@ -53,7 +53,7 @@ public final class Service implements FortiosRenameableObject, Serializable {
   }
 
   @Override
-  public void setUUID(String uuid) {
+  public void setBatfishUUID(String uuid) {
     _uuid = uuid;
   }
 

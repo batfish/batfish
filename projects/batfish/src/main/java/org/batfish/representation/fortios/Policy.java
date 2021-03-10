@@ -75,18 +75,36 @@ public final class Policy implements Serializable {
   }
 
   @Nonnull
-  public Set<Address> getSrcAddr() {
+  public Set<String> getSrcAddr() {
     return _srcAddr;
   }
 
+  /** Set of Batfish-internal UUIDs associated with srcaddr references. */
   @Nonnull
-  public Set<Address> getDstAddr() {
-    return _dstAddr;
+  public Set<String> getSrcAddrUuids() {
+    return _srcAddrUuids;
   }
 
   @Nonnull
-  public Set<Service> getService() {
+  public Set<String> getDstAddr() {
+    return _dstAddr;
+  }
+
+  /** Set of Batfish-internal UUIDs associated with dstaddr references. */
+  @Nonnull
+  public Set<String> getDstAddrUuids() {
+    return _dstAddrUuids;
+  }
+
+  @Nonnull
+  public Set<String> getService() {
     return _service;
+  }
+
+  /** Set of Batfish-internal UUIDs associated with service references. */
+  @Nonnull
+  public Set<String> getServiceUuids() {
+    return _serviceUuids;
   }
 
   public void setAction(Action action) {
@@ -112,15 +130,22 @@ public final class Policy implements Serializable {
     _srcAddr = new HashSet<>();
     _dstAddr = new HashSet<>();
     _service = new HashSet<>();
+
+    _srcAddrUuids = new HashSet<>();
+    _dstAddrUuids = new HashSet<>();
+    _serviceUuids = new HashSet<>();
   }
 
   @Nonnull private String _number;
   @Nullable private String _name;
   @Nonnull private final Set<InterfaceOrZone> _srcIntf;
   @Nonnull private final Set<InterfaceOrZone> _dstIntf;
-  @Nonnull private final Set<Address> _srcAddr;
-  @Nonnull private final Set<Address> _dstAddr;
-  @Nonnull private final Set<Service> _service;
+  @Nonnull private final Set<String> _srcAddr;
+  @Nonnull private final Set<String> _srcAddrUuids;
+  @Nonnull private final Set<String> _dstAddr;
+  @Nonnull private final Set<String> _dstAddrUuids;
+  @Nonnull private final Set<String> _service;
+  @Nonnull private final Set<String> _serviceUuids;
   @Nullable private Status _status;
   @Nullable private String _comments;
   @Nullable private Action _action;

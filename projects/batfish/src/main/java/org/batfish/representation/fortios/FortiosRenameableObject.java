@@ -3,9 +3,10 @@ package org.batfish.representation.fortios;
 public interface FortiosRenameableObject {
   String getName();
 
-  String getUUID();
+  /** Batfish-internal UUID. Persists across object rename. */
+  String getBatfishUUID();
 
   void setName(String name);
 
-  void setUUID(String uuid);
+  void setBatfishUUID(String uuid);
 }
