@@ -81,7 +81,7 @@ public final class Policy implements Serializable {
 
   /** Set of Batfish-internal UUIDs associated with srcaddr references. */
   @Nonnull
-  public Set<String> getSrcAddrUuids() {
+  public Set<BatfishUUID> getSrcAddrUUIDs() {
     return _srcAddrUuids;
   }
 
@@ -92,7 +92,7 @@ public final class Policy implements Serializable {
 
   /** Set of Batfish-internal UUIDs associated with dstaddr references. */
   @Nonnull
-  public Set<String> getDstAddrUuids() {
+  public Set<BatfishUUID> getDstAddrUUIDs() {
     return _dstAddrUuids;
   }
 
@@ -103,7 +103,7 @@ public final class Policy implements Serializable {
 
   /** Set of Batfish-internal UUIDs associated with service references. */
   @Nonnull
-  public Set<String> getServiceUuids() {
+  public Set<BatfishUUID> getServiceUUIDs() {
     return _serviceUuids;
   }
 
@@ -141,11 +141,11 @@ public final class Policy implements Serializable {
   @Nonnull private final Set<String> _srcIntf;
   @Nonnull private final Set<String> _dstIntf;
   @Nonnull private final Set<String> _srcAddr;
-  @Nonnull private final Set<String> _srcAddrUuids;
+  @Nonnull private final Set<BatfishUUID> _srcAddrUuids;
   @Nonnull private final Set<String> _dstAddr;
-  @Nonnull private final Set<String> _dstAddrUuids;
+  @Nonnull private final Set<BatfishUUID> _dstAddrUuids;
   @Nonnull private final Set<String> _service;
-  @Nonnull private final Set<String> _serviceUuids;
+  @Nonnull private final Set<BatfishUUID> _serviceUuids;
   @Nullable private Status _status;
   @Nullable private String _comments;
   @Nullable private Action _action;

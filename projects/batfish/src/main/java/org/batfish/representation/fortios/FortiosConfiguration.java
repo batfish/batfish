@@ -61,7 +61,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   /** UUID -> renameable object */
-  public @Nonnull Map<String, FortiosRenameableObject> getRenameableObjects() {
+  public @Nonnull Map<BatfishUUID, FortiosRenameableObject> getRenameableObjects() {
     return _renameableObjects;
   }
 
@@ -75,7 +75,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Interface> _interfaces;
   // Note: this is a LinkedHashMap to preserve insertion order
   private final @Nonnull Map<String, Policy> _policies;
-  private final @Nonnull Map<String, FortiosRenameableObject> _renameableObjects;
+  private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
   private final @Nonnull Map<String, Service> _services;
 

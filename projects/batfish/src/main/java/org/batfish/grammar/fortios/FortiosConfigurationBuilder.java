@@ -119,6 +119,7 @@ import org.batfish.grammar.fortios.FortiosParser.Up_or_downContext;
 import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.representation.fortios.Address;
+import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
@@ -169,19 +170,19 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       policy
           .getSrcAddr()
           .addAll(
-              policy.getSrcAddrUuids().stream()
+              policy.getSrcAddrUUIDs().stream()
                   .map(u -> _c.getRenameableObjects().get(u).getName())
                   .collect(ImmutableSet.toImmutableSet()));
       policy
           .getDstAddr()
           .addAll(
-              policy.getDstAddrUuids().stream()
+              policy.getDstAddrUUIDs().stream()
                   .map(u -> _c.getRenameableObjects().get(u).getName())
                   .collect(ImmutableSet.toImmutableSet()));
       policy
           .getService()
           .addAll(
-              policy.getServiceUuids().stream()
+              policy.getServiceUUIDs().stream()
                   .map(u -> _c.getRenameableObjects().get(u).getName())
                   .collect(ImmutableSet.toImmutableSet()));
     }
@@ -451,10 +452,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   // List items
   @Override
   public void exitCfp_set_dstaddr(Cfp_set_dstaddrContext ctx) {
-    toAddresses(ctx.addresses)
+    toAddressUUIDs(ctx.addresses)
         .ifPresent(
             addresses -> {
-              Set<String> addrs = _currentPolicy.getDstAddrUuids();
+              Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
               addrs.clear();
               addrs.addAll(addresses);
             });
@@ -462,10 +463,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_srcaddr(Cfp_set_srcaddrContext ctx) {
-    toAddresses(ctx.addresses)
+    toAddressUUIDs(ctx.addresses)
         .ifPresent(
             addresses -> {
-              Set<String> addrs = _currentPolicy.getSrcAddrUuids();
+              Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
               addrs.clear();
               addrs.addAll(addresses);
             });
@@ -495,10 +496,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_service(Cfp_set_serviceContext ctx) {
-    toServices(ctx.services)
+    toServiceUUIDs(ctx.services)
         .ifPresent(
             s -> {
-              Set<String> service = _currentPolicy.getServiceUuids();
+              Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
               service.clear();
               service.addAll(s);
             });
@@ -506,20 +507,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_dstaddr(Cfp_append_dstaddrContext ctx) {
-    toAddresses(ctx.addresses)
+    toAddressUUIDs(ctx.addresses)
         .ifPresent(
             a -> {
-              Set<String> addrs = _currentPolicy.getDstAddrUuids();
+              Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
               addrs.addAll(a);
             });
   }
 
   @Override
   public void exitCfp_append_srcaddr(Cfp_append_srcaddrContext ctx) {
-    toAddresses(ctx.addresses)
+    toAddressUUIDs(ctx.addresses)
         .ifPresent(
             a -> {
-              Set<String> addrs = _currentPolicy.getSrcAddrUuids();
+              Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
               addrs.addAll(a);
             });
   }
@@ -546,10 +547,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_service(Cfp_append_serviceContext ctx) {
-    toServices(ctx.services)
+    toServiceUUIDs(ctx.services)
         .ifPresent(
             s -> {
-              Set<String> service = _currentPolicy.getServiceUuids();
+              Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
               service.addAll(s);
             });
   }
@@ -670,9 +671,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * Generate a list of service UUIDs for the supplied Service_names context. Returns {@link
    * Optional#empty()} if invalid.
    */
-  private Optional<Set<String>> toServices(Service_namesContext ctx) {
+  private Optional<Set<BatfishUUID>> toServiceUUIDs(Service_namesContext ctx) {
     Map<String, Service> servicesMap = _c.getServices();
-    ImmutableSet.Builder<String> serviceUuidsBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<BatfishUUID> serviceUuidsBuilder = ImmutableSet.builder();
     Set<String> services =
         ctx.service_name().stream()
             .map(n -> toString(n.str()))
@@ -700,9 +701,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * Generate a list of address UUIDs for the supplied Address_names context. Returns {@link
    * Optional#empty()} if invalid.
    */
-  private Optional<Set<String>> toAddresses(Address_namesContext ctx) {
+  private Optional<Set<BatfishUUID>> toAddressUUIDs(Address_namesContext ctx) {
     Map<String, Address> addressesMap = _c.getAddresses();
-    ImmutableSet.Builder<String> addressUuidsBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<BatfishUUID> addressUuidsBuilder = ImmutableSet.builder();
     Set<String> addresses =
         ctx.address_name().stream()
             .map(n -> toString(n.str()))

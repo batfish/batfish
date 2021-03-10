@@ -3,7 +3,6 @@ package org.batfish.representation.fortios;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.io.Serializable;
-import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -99,7 +98,7 @@ public class Address implements FortiosRenameableObject, Serializable {
   @Nullable private String _comment;
   @Nullable private Boolean _fabricObject;
   @Nonnull private String _name;
-  @Nonnull private String _uuid;
+  @Nonnull private BatfishUUID _uuid;
   @Nullable private Type _type;
   @Nonnull private final TypeSpecificFields _typeSpecificFields;
 
@@ -110,7 +109,7 @@ public class Address implements FortiosRenameableObject, Serializable {
   public Address(String name) {
     _name = name;
     _typeSpecificFields = new TypeSpecificFields();
-    _uuid = UUID.randomUUID().toString();
+    _uuid = new BatfishUUID();
   }
 
   public IpSpace toIpSpace(Warnings w) {
@@ -177,7 +176,7 @@ public class Address implements FortiosRenameableObject, Serializable {
   }
 
   @Override
-  public String getBatfishUUID() {
+  public BatfishUUID getBatfishUUID() {
     return _uuid;
   }
 
@@ -187,7 +186,7 @@ public class Address implements FortiosRenameableObject, Serializable {
   }
 
   @Override
-  public void setBatfishUUID(String uuid) {
+  public void setBatfishUUID(BatfishUUID uuid) {
     _uuid = uuid;
   }
 

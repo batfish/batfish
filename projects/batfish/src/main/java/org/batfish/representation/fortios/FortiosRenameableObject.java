@@ -1,12 +1,16 @@
 package org.batfish.representation.fortios;
 
+/**
+ * Interface for FortiOS objects that may be renamed. Contains both a mutable name and an internal
+ * UUID which persists across renames and structure edits.
+ */
 public interface FortiosRenameableObject {
   String getName();
 
   /** Batfish-internal UUID. Persists across object rename. */
-  String getBatfishUUID();
+  BatfishUUID getBatfishUUID();
 
   void setName(String name);
 
-  void setBatfishUUID(String uuid);
+  void setBatfishUUID(BatfishUUID uuid);
 }

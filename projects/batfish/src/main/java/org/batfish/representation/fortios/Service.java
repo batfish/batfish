@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +42,7 @@ public final class Service implements FortiosRenameableObject, Serializable {
   }
 
   @Override
-  public String getBatfishUUID() {
+  public BatfishUUID getBatfishUUID() {
     return _uuid;
   }
 
@@ -53,7 +52,7 @@ public final class Service implements FortiosRenameableObject, Serializable {
   }
 
   @Override
-  public void setBatfishUUID(String uuid) {
+  public void setBatfishUUID(BatfishUUID uuid) {
     _uuid = uuid;
   }
 
@@ -211,11 +210,11 @@ public final class Service implements FortiosRenameableObject, Serializable {
 
   public Service(String name) {
     _name = name;
-    _uuid = UUID.randomUUID().toString();
+    _uuid = new BatfishUUID();
   }
 
   @Nonnull private String _name;
-  @Nonnull private String _uuid;
+  @Nonnull private BatfishUUID _uuid;
   @Nullable private Protocol _protocol;
   @Nullable private Integer _protocolNumber;
   @Nullable private String _comment;
