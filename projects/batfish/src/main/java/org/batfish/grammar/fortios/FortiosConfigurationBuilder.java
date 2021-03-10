@@ -121,6 +121,8 @@ import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.InterfaceAny;
+import org.batfish.representation.fortios.InterfaceOrZone;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
@@ -446,10 +448,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_dstintf(Cfp_set_dstintfContext ctx) {
-    toInterfaces(ctx.interfaces)
+    toInterfaces(ctx.interfaces, false)
         .ifPresent(
             i -> {
-              Set<Interface> ifaces = _currentPolicy.getDstIntf();
+              Set<InterfaceOrZone> ifaces = _currentPolicy.getDstIntf();
               ifaces.clear();
               ifaces.addAll(i);
             });
@@ -457,10 +459,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_srcintf(Cfp_set_srcintfContext ctx) {
-    toInterfaces(ctx.interfaces)
+    toInterfaces(ctx.interfaces, true)
         .ifPresent(
             i -> {
-              Set<Interface> ifaces = _currentPolicy.getSrcIntf();
+              Set<InterfaceOrZone> ifaces = _currentPolicy.getSrcIntf();
               ifaces.clear();
               ifaces.addAll(i);
             });
@@ -499,20 +501,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_dstintf(Cfp_append_dstintfContext ctx) {
-    toInterfaces(ctx.interfaces)
+    toInterfaces(ctx.interfaces, false)
         .ifPresent(
             i -> {
-              Set<Interface> ifaces = _currentPolicy.getDstIntf();
+              Set<InterfaceOrZone> ifaces = _currentPolicy.getDstIntf();
               ifaces.addAll(i);
             });
   }
 
   @Override
   public void exitCfp_append_srcintf(Cfp_append_srcintfContext ctx) {
-    toInterfaces(ctx.interfaces)
+    toInterfaces(ctx.interfaces, true)
         .ifPresent(
             i -> {
-              Set<Interface> ifaces = _currentPolicy.getSrcIntf();
+              Set<InterfaceOrZone> ifaces = _currentPolicy.getSrcIntf();
               ifaces.addAll(i);
             });
   }
@@ -633,9 +635,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Optional<Set<Service>> toServices(Service_namesContext ctx) {
     Map<String, Service> servicesMap = _c.getServices();
     ImmutableSet.Builder<Service> servicesBuilder = ImmutableSet.builder();
-    // TODO handle Policy.ALL_SERVICES case
-    for (Service_nameContext service : ctx.service_name()) {
-      String name = toString(service.str());
+    Set<String> services =
+        ctx.service_name().stream()
+            .map(n -> toString(n.str()))
+            .collect(ImmutableSet.toImmutableSet());
+    for (String name : services) {
+      if (name.equals(Policy.ALL_SERVICE) && services.size() > 1) {
+        warn(ctx, "Cannot combine 'ALL' with other services");
+        return Optional.empty();
+      }
       if (servicesMap.containsKey(name)) {
         servicesBuilder.add(servicesMap.get(name));
       } else {
@@ -653,9 +661,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Optional<Set<Address>> toAddresses(Address_namesContext ctx) {
     Map<String, Address> addressesMap = _c.getAddresses();
     ImmutableSet.Builder<Address> addressesBuilder = ImmutableSet.builder();
-    // TODO handle Policy.ALL_ADDRESSES case
-    for (Address_nameContext address : ctx.address_name()) {
-      String name = toString(address.str());
+    Set<String> addresses =
+        ctx.address_name().stream()
+            .map(n -> toString(n.str()))
+            .collect(ImmutableSet.toImmutableSet());
+    for (String name : addresses) {
+      if (name.equals(Policy.ALL_ADDRESSES) && addresses.size() > 1) {
+        warn(ctx, "When 'all' is set together with other address(es), it is removed");
+        continue;
+      }
       if (addressesMap.containsKey(name)) {
         addressesBuilder.add(addressesMap.get(name));
       } else {
@@ -670,13 +684,26 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Optional.of(addressesBuilder.build());
   }
 
-  private Optional<Set<Interface>> toInterfaces(Interface_or_zone_namesContext ctx) {
+  /**
+   * Convert specified interface or zone names context into a set of interfaces. If {@code pruneAny}
+   * is true, then the special 'any' interface will be removed if specified with other interfaces.
+   */
+  private Optional<Set<InterfaceOrZone>> toInterfaces(
+      Interface_or_zone_namesContext ctx, boolean pruneAny) {
     Map<String, Interface> ifacesMap = _c.getInterfaces();
-    ImmutableSet.Builder<Interface> ifaceBuilder = ImmutableSet.builder();
-    for (Interface_or_zone_nameContext iface : ctx.interface_or_zone_name()) {
-      String name = toString(iface.str());
-      // TODO Handle Policy.ANY_INTERFACE case
-      if (ifacesMap.containsKey(name)) {
+    ImmutableSet.Builder<InterfaceOrZone> ifaceBuilder = ImmutableSet.builder();
+    Set<String> ifaces =
+        ctx.interface_or_zone_name().stream()
+            .map(n -> toString(n.str()))
+            .collect(ImmutableSet.toImmutableSet());
+    for (String name : ifaces) {
+      if (name.equals(Policy.ANY_INTERFACE)) {
+        if (pruneAny && ifaces.size() > 1) {
+          warn(ctx, "When 'any' is set together with other interfaces, it is removed");
+          continue;
+        }
+        ifaceBuilder.add(InterfaceAny.INSTANCE);
+      } else if (ifacesMap.containsKey(name)) {
         ifaceBuilder.add(ifacesMap.get(name));
       } else {
         warn(
