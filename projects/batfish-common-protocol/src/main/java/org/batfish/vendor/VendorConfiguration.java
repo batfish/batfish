@@ -339,8 +339,6 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
-    //    addStructureReference(
-    //        _answerElement.getUndefinedReferences(), structureType, name, usage, line);
     addStructureReferenceToTypeMap(_undefinedReferences, structureType, name, usage, line);
   }
 
