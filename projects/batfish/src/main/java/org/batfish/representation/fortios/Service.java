@@ -51,11 +51,6 @@ public final class Service implements FortiosRenameableObject, Serializable {
     _name = name;
   }
 
-  @Override
-  public void setBatfishUUID(BatfishUUID uuid) {
-    _uuid = uuid;
-  }
-
   @VisibleForTesting
   @Nullable
   public Protocol getProtocol() {
@@ -214,7 +209,7 @@ public final class Service implements FortiosRenameableObject, Serializable {
   }
 
   @Nonnull private String _name;
-  @Nonnull private BatfishUUID _uuid;
+  @Nonnull private final BatfishUUID _uuid;
   @Nullable private Protocol _protocol;
   @Nullable private Integer _protocolNumber;
   @Nullable private String _comment;

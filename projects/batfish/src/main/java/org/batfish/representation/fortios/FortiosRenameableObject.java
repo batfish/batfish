@@ -11,6 +11,4 @@ public interface FortiosRenameableObject {
   BatfishUUID getBatfishUUID();
 
   void setName(String name);
-
-  void setBatfishUUID(BatfishUUID uuid);
 }

@@ -98,7 +98,7 @@ public class Address implements FortiosRenameableObject, Serializable {
   @Nullable private String _comment;
   @Nullable private Boolean _fabricObject;
   @Nonnull private String _name;
-  @Nonnull private BatfishUUID _uuid;
+  @Nonnull private final BatfishUUID _uuid;
   @Nullable private Type _type;
   @Nonnull private final TypeSpecificFields _typeSpecificFields;
 
@@ -183,11 +183,6 @@ public class Address implements FortiosRenameableObject, Serializable {
   @Override
   public void setName(String name) {
     _name = name;
-  }
-
-  @Override
-  public void setBatfishUUID(BatfishUUID uuid) {
-    _uuid = uuid;
   }
 
   public @Nullable Type getType() {
