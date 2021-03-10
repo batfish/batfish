@@ -547,20 +547,24 @@ public final class FortiosGrammarTest {
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
     Map<String, Policy> policies = vc.getPolicies();
-    assertThat(policies, hasKeys(contains("0", "4294967294", "1")));
+    assertThat(policies, hasKeys(contains("0", "4294967294", "1", "2")));
     Policy policyDisable = policies.get("0");
     Policy policyDeny = policies.get("4294967294");
     Policy policyAllow = policies.get("1");
+    Policy policyAny = policies.get("2");
 
     Map<String, Service> services = vc.getServices();
-    assertThat(services, hasKeys(containsInAnyOrder("custom_tcp_11", "custom_tcp_11_from_12")));
+    assertThat(
+        services, hasKeys(containsInAnyOrder("custom_tcp_11", "custom_tcp_11_from_12", "ALL")));
     Service service11 = services.get("custom_tcp_11");
     Service service11From12 = services.get("custom_tcp_11_from_12");
+    Service serviceAll = services.get("ALL");
 
     Map<String, Address> addresses = vc.getAddresses();
-    assertThat(addresses, hasKeys(containsInAnyOrder("addr1", "addr2")));
+    assertThat(addresses, hasKeys(containsInAnyOrder("addr1", "addr2", "all")));
     Address addr1 = addresses.get("addr1");
     Address addr2 = addresses.get("addr2");
+    Address addrAll = addresses.get("all");
 
     Map<String, Interface> interfaces = vc.getInterfaces();
     assertThat(interfaces, hasKeys(containsInAnyOrder("port1", "port2")));
@@ -596,6 +600,12 @@ public final class FortiosGrammarTest {
     assertThat(policyAllow.getDstIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyAllow.getSrcAddr(), containsInAnyOrder(addr1, addr2));
     assertThat(policyAllow.getDstAddr(), containsInAnyOrder(addr1, addr2));
+
+    assertThat(policyAny.getService(), contains(serviceAll));
+    assertThat(policyAny.getSrcAddr(), contains(addrAll));
+    assertThat(policyAny.getDstAddr(), contains(addrAll));
+    assertThat(policyAny.getSrcIntf(), contains(InterfaceAny.INSTANCE));
+    assertThat(policyAny.getDstIntf(), contains(InterfaceAny.INSTANCE));
   }
 
   /**
@@ -620,8 +630,9 @@ public final class FortiosGrammarTest {
     Address addr20 = addresses.get("addr20");
 
     Map<String, Interface> interfaces = vc.getInterfaces();
-    assertThat(interfaces, hasKeys(contains("port10")));
+    assertThat(interfaces, hasKeys(containsInAnyOrder("port10", "port20")));
     Interface port10 = interfaces.get("port10");
+    Interface port20 = interfaces.get("port20");
 
     // Confirm invalid any/all specifiers are dropped when appropriate
     assertThat(policy.getSrcIntf(), contains(port10));
@@ -630,7 +641,7 @@ public final class FortiosGrammarTest {
     // Confirm a line with invalid ALL service is ignored; i.e. previous value isn't overwritten
     assertThat(policy.getService(), contains(service20));
     // Confirm a line with dstintf combining any and another interface is accepted
-    assertThat(policy.getDstIntf(), containsInAnyOrder(InterfaceAny.INSTANCE, port10));
+    assertThat(policy.getDstIntf(), containsInAnyOrder(InterfaceAny.INSTANCE, port20));
   }
 
   @Test

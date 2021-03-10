@@ -697,14 +697,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             .map(n -> toString(n.str()))
             .collect(ImmutableSet.toImmutableSet());
     for (String name : ifaces) {
-      if (pruneAny && name.equals(Policy.ANY_INTERFACE) && ifaces.size() > 1) {
-        warn(ctx, "When 'any' is set together with other interfaces, it is removed");
-        continue;
-      } else if (name.equals(Policy.ANY_INTERFACE)) {
+      if (name.equals(Policy.ANY_INTERFACE)) {
+        if (pruneAny && ifaces.size() > 1) {
+          warn(ctx, "When 'any' is set together with other interfaces, it is removed");
+          continue;
+        }
         ifaceBuilder.add(InterfaceAny.INSTANCE);
-        continue;
-      }
-      if (ifacesMap.containsKey(name)) {
+      } else if (ifacesMap.containsKey(name)) {
         ifaceBuilder.add(ifacesMap.get(name));
       } else {
         warn(

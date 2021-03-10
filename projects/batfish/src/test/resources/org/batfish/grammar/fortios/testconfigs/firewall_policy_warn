@@ -4,7 +4,11 @@ end
 config system interface
     edit "port10"
         set vdom "root"
-        set ip 10.0.1.1/24
+        set ip 10.0.10.1/24
+    next
+    edit "port20"
+        set vdom "root"
+        set ip 10.0.20.1/24
     next
 end
 config firewall service custom
@@ -45,7 +49,7 @@ config firewall policy
         # any should be dropped
         set srcintf any port10
         # any should _not_ be dropped
-        set dstintf any port10
+        set dstintf any port20
         set service service20
         # Line should be rejected
         set service service10 ALL
