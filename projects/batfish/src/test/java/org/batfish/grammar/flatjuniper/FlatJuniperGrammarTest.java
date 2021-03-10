@@ -963,6 +963,22 @@ public final class FlatJuniperGrammarTest {
     assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.IBGP), equalTo(140));
   }
 
+  /** For https://github.com/batfish/batfish/issues/6710 */
+  @Test
+  public void testBgpRoutingOptionsAutonomousSystemGH6710() {
+    Configuration c = parseConfig("bgp-routing-options-as-gh-6710");
+    Vrf def = c.getDefaultVrf();
+    assertThat(def.getBgpProcess(), notNullValue());
+    // Peer in group_a should pick up local-as
+    assertThat(
+        def.getBgpProcess().getActiveNeighbors(),
+        hasEntry(equalTo(Prefix.parse("10.255.16.23/32")), hasLocalAs(64611L)));
+    // Peer in group_b should pick up routing-options autonomous-system
+    assertThat(
+        def.getBgpProcess().getActiveNeighbors(),
+        hasEntry(equalTo(Prefix.parse("10.255.42.23/32")), hasLocalAs(1111L)));
+  }
+
   @Test
   public void testBgpMultipathMultipleAs() throws IOException {
     String testrigName = "multipath-multiple-as";
