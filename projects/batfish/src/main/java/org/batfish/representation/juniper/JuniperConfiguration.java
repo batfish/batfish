@@ -475,7 +475,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (!ibgp) {
         // Do not include iBGP peer [groups] in this computation: multiple-as only matters for
         // eBGP multipath (in iBGP, the next AS is always the same, and iBGP routes are always
-        // worse than eBGP routes).org.batfish.grammar.flatjuniper.FlatJuniperGrammarTest
+        // worse than eBGP routes).
         //
         // As the iBGP setting does not matter, don't look for conflicts with it. We have seen
         // it set 'inconsistently' in real configs.
@@ -630,6 +630,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (ig.getLocalAs() == null) {
         _w.redFlag("Missing local-as for neighbor: " + ig.getRemoteAddress());
         continue;
+      }
+
+      // Warn if configured to prepend global-as, plus global-as and local-as both exist
+      boolean prependGlobalAs = !ibgp && !firstNonNull(ig.getNoPrependGlobalAs(), Boolean.FALSE);
+      if (prependGlobalAs
+          && mg.getLocalAs() != null
+          && mg.getLocalAs().longValue() != ig.getLocalAs().longValue()) {
+        _w.redFlag("Unimplemented: prepending both local-as and global-as for BGP routes");
       }
 
       /* Inherit multipath */
