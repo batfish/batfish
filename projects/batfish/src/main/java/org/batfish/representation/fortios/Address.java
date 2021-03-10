@@ -14,7 +14,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
 /** FortiOS datamodel component containing address configuration */
-public class Address implements Serializable {
+public class Address implements FortiosRenameableObject, Serializable {
   public enum Type {
     INTERFACE_SUBNET,
     IPMASK,
@@ -97,7 +97,8 @@ public class Address implements Serializable {
   @Nullable private String _associatedInterface;
   @Nullable private String _comment;
   @Nullable private Boolean _fabricObject;
-  @Nonnull private final String _name;
+  @Nonnull private String _name;
+  @Nonnull private final BatfishUUID _uuid;
   @Nullable private Type _type;
   @Nonnull private final TypeSpecificFields _typeSpecificFields;
 
@@ -105,9 +106,10 @@ public class Address implements Serializable {
   public static final boolean DEFAULT_FABRIC_OBJECT = false;
   public static final Type DEFAULT_TYPE = Type.IPMASK;
 
-  public Address(String name) {
+  public Address(String name, BatfishUUID uuid) {
     _name = name;
     _typeSpecificFields = new TypeSpecificFields();
+    _uuid = uuid;
   }
 
   public IpSpace toIpSpace(Warnings w) {
@@ -168,8 +170,19 @@ public class Address implements Serializable {
     return firstNonNull(_fabricObject, DEFAULT_FABRIC_OBJECT);
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
+  }
+
+  @Override
+  public BatfishUUID getBatfishUUID() {
+    return _uuid;
+  }
+
+  @Override
+  public void setName(String name) {
+    _name = name;
   }
 
   public @Nullable Type getType() {

@@ -21,7 +21,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 
 /** FortiOS datamodel component containing firewall service configuration */
-public final class Service implements Serializable {
+public final class Service implements FortiosRenameableObject, Serializable {
 
   public static final Protocol DEFAULT_PROTOCOL = Protocol.TCP_UDP_SCTP;
   public static final int DEFAULT_PROTOCOL_NUMBER = 0;
@@ -35,9 +35,20 @@ public final class Service implements Serializable {
     IP,
   }
 
+  @Override
   @Nonnull
   public String getName() {
     return _name;
+  }
+
+  @Override
+  public BatfishUUID getBatfishUUID() {
+    return _uuid;
+  }
+
+  @Override
+  public void setName(String name) {
+    _name = name;
   }
 
   @VisibleForTesting
@@ -192,11 +203,13 @@ public final class Service implements Serializable {
     _sctpPortRangeSrc = sctpPortRange;
   }
 
-  public Service(String name) {
+  public Service(String name, BatfishUUID uuid) {
     _name = name;
+    _uuid = uuid;
   }
 
-  @Nonnull private final String _name;
+  @Nonnull private String _name;
+  @Nonnull private final BatfishUUID _uuid;
   @Nullable private Protocol _protocol;
   @Nullable private Integer _protocolNumber;
   @Nullable private String _comment;
