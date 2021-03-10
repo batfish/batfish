@@ -4,6 +4,8 @@ public interface StateExprVisitor<R> {
 
   R visitAccept();
 
+  R visitBlackHole();
+
   R visitDeliveredToSubnet();
 
   R visitDropAclIn();

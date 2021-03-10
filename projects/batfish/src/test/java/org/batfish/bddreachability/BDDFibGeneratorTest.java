@@ -1,10 +1,13 @@
 package org.batfish.bddreachability;
 
+import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -17,6 +20,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
+import org.batfish.symbolic.state.BlackHole;
 import org.batfish.symbolic.state.EdgeStateExpr;
 import org.batfish.symbolic.state.InterfaceAccept;
 import org.batfish.symbolic.state.InterfaceStateExpr;
@@ -120,12 +124,18 @@ public final class BDDFibGeneratorTest {
   private static final BDDPacket PKT = new BDDPacket();
   private static final BDD DSTIP1;
   private static final BDD DSTIP2;
+  private static final BDD DSTIP3;
+  private static final BDD DSTIP4;
+  private static final BDD DSTIP5;
   private static final BDD ONE;
   private static final BDD ZERO;
 
   static {
     DSTIP1 = PKT.getDstIp().value(Ip.parse("10.0.0.1").asLong());
     DSTIP2 = PKT.getDstIp().value(Ip.parse("10.0.0.2").asLong());
+    DSTIP3 = PKT.getDstIp().value(Ip.parse("10.0.0.3").asLong());
+    DSTIP4 = PKT.getDstIp().value(Ip.parse("10.0.0.4").asLong());
+    DSTIP5 = PKT.getDstIp().value(Ip.parse("10.0.0.5").asLong());
     ONE = PKT.getFactory().one();
     ZERO = PKT.getFactory().zero();
   }
@@ -483,13 +493,16 @@ public final class BDDFibGeneratorTest {
                 VRF1,
                 ImmutableMap.of(
                     org.batfish.datamodel.Edge.of(NODE2, IFACE2, NODE1, IFACE1), DSTIP2)));
+    // Needed to not NPE computing blackhole edges [based on _arpTrue entries].
+    Map<String, Map<String, Map<String, BDD>>> emptyDispositionBDDs =
+        ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of()));
     BDDFibGenerator generator =
         new BDDFibGenerator(
             arpTrueEdgeBDDs,
-            ImmutableMap.of(),
-            ImmutableMap.of(),
-            ImmutableMap.of(),
-            ImmutableMap.of(),
+            emptyDispositionBDDs,
+            emptyDispositionBDDs,
+            emptyDispositionBDDs,
+            emptyDispositionBDDs,
             ImmutableMap.of(),
             ImmutableMap.of(),
             ImmutableMap.of(),
@@ -643,6 +656,79 @@ public final class BDDFibGeneratorTest {
                 new TestPreOutVrf(NODE1, VRF1),
                 new TestPreOutInterfaceExitsNetwork(NODE1, IFACE1),
                 DSTIP1)));
+  }
+
+  @Test
+  public void testGenerateRules_PreOutVrf_BlackHole() {
+    BDDFiniteDomain<String> domain =
+        new BDDFiniteDomain<>(PKT, "outgoingOrigFilter", ImmutableSet.of(IFACE1, IFACE2));
+    Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>> arpTrueEdgeBDDs =
+        ImmutableMap.of(
+            NODE1,
+            ImmutableMap.of(
+                VRF1,
+                ImmutableMap.of(
+                    org.batfish.datamodel.Edge.of(NODE1, IFACE1, NODE2, IFACE2), DSTIP1)));
+    Map<String, Map<String, Map<String, BDD>>> neighborUnreachableBDDs =
+        ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(IFACE1, DSTIP2)));
+    Map<String, Map<String, Map<String, BDD>>> deliveredToSubnetBDDs =
+        ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(IFACE2, DSTIP3)));
+    Map<String, Map<String, Map<String, BDD>>> exitsNetworkBDDs =
+        ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(IFACE1, DSTIP4)));
+    Map<String, Map<String, Map<String, BDD>>> insufficientInfoBDDs =
+        ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(IFACE2, DSTIP5)));
+    BDDFibGenerator generator =
+        new BDDFibGenerator(
+            arpTrueEdgeBDDs,
+            neighborUnreachableBDDs,
+            deliveredToSubnetBDDs,
+            exitsNetworkBDDs,
+            insufficientInfoBDDs,
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            ImmutableMap.of(),
+            (node, iface) -> domain.getConstraintForValue(iface));
+    // Should blackhole the wrong interface for each contributor.
+    BDD expectedBDD =
+        PKT.getFactory()
+            .orAll(
+                // ArpTrue, but wrong iface
+                DSTIP1.and(domain.getConstraintForValue(IFACE2)),
+                // Neighbor Unreachable, but wrong iface
+                DSTIP2.and(domain.getConstraintForValue(IFACE2)),
+                // Delivered to Subnet, but wrong iface
+                DSTIP3.and(domain.getConstraintForValue(IFACE1)),
+                // Exits Network, but wrong iface
+                DSTIP4.and(domain.getConstraintForValue(IFACE2)),
+                // Insufficient info, but wrong iface
+                DSTIP5.and(domain.getConstraintForValue(IFACE1)));
+    // Sanitch check text: non-trivial
+    assertThat(expectedBDD, not(isZero()));
+    assertThat(expectedBDD, not(isOne()));
+
+    Edge expectedEdge = new Edge(new TestPreOutVrf(NODE1, VRF1), BlackHole.INSTANCE, expectedBDD);
+
+    assertThat(
+        generator
+            .generateRules_PreOutVrf_BlackHole(NODE1::equals, TestPreOutVrf::new)
+            .collect(ImmutableList.toImmutableList()),
+        contains(expectedEdge));
+    // ensure edge is produced by top-level generation function
+    assertThat(
+        generator
+            .generateForwardingEdges(
+                NODE1::equals,
+                TestPostInVrf::new,
+                TestPreOutEdge::new,
+                TestPreOutVrf::new,
+                TestPreOutInterfaceDeliveredToSubnet::new,
+                TestPreOutInterfaceExitsNetwork::new,
+                TestPreOutInterfaceInsufficientInfo::new,
+                TestPreOutInterfaceNeighborUnreachable::new)
+            .collect(ImmutableList.toImmutableList()),
+        hasItem(expectedEdge));
   }
 
   private static Map<String, Map<String, BDD>> toVrfAcceptBdds(
