@@ -214,7 +214,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.BandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiu_rib_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_aliasContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_no_prepend_global_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
@@ -3824,10 +3826,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitBl_alias(Bl_aliasContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitBl_loops(Bl_loopsContext ctx) {
     todo(ctx);
     int loops = toInt(ctx.dec());
     _currentBgpGroup.setLoops(loops);
+  }
+
+  @Override
+  public void exitBl_no_prepend_global_as(Bl_no_prepend_global_asContext ctx) {
+    _currentBgpGroup.setNoPrependGlobalAs(true);
   }
 
   @Override
