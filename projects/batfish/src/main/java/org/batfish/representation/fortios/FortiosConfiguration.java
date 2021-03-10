@@ -23,6 +23,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _addresses = new HashMap<>();
     _interfaces = new HashMap<>();
     _policies = new LinkedHashMap<>();
+    _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
     _services = new HashMap<>();
   }
@@ -63,6 +64,11 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _replacemsgs;
   }
 
+  /** UUID -> renameable object */
+  public @Nonnull Map<BatfishUUID, FortiosRenameableObject> getRenameableObjects() {
+    return _renameableObjects;
+  }
+
   /** name -> service */
   public @Nonnull Map<String, Service> getServices() {
     return _services;
@@ -73,6 +79,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Interface> _interfaces;
   // Note: this is a LinkedHashMap to preserve insertion order
   private final @Nonnull Map<String, Policy> _policies;
+  private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
   private final @Nonnull Map<String, Service> _services;
 

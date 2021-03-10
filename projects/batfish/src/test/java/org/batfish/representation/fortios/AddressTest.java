@@ -19,7 +19,7 @@ import org.junit.Test;
 public class AddressTest {
   @Test
   public void testToIpSpace_ipmask() {
-    Address address = new Address("name");
+    Address address = new Address("name", new BatfishUUID(1));
     Prefix prefix = Prefix.parse("1.1.1.0/24");
     address.getTypeSpecificFields().setSubnet(prefix);
     assertConvertsWithoutWarnings(address, prefix.toIpSpace());
@@ -27,7 +27,7 @@ public class AddressTest {
 
   @Test
   public void testToIpSpace_iprange() {
-    Address address = new Address("name");
+    Address address = new Address("name", new BatfishUUID(1));
     address.setType(Address.Type.IPRANGE);
     Ip startIp = Ip.parse("1.1.1.0");
     Ip endIp = Ip.parse("1.1.1.255");
@@ -38,7 +38,7 @@ public class AddressTest {
 
   @Test
   public void testToIpSpace_wildcard() {
-    Address address = new Address("name");
+    Address address = new Address("name", new BatfishUUID(1));
     address.setType(Address.Type.WILDCARD);
     IpWildcard wildcard =
         IpWildcard.ipWithWildcardMask(Ip.parse("1.1.1.1"), Ip.parse("255.0.255.128"));
@@ -56,7 +56,7 @@ public class AddressTest {
             Address.Type.MAC)
         .forEach(
             unsupportedType -> {
-              Address address = new Address("name");
+              Address address = new Address("name", new BatfishUUID(1));
               address.setType(unsupportedType);
               Warnings w = new Warnings(true, true, true);
               assertThat(address.toIpSpace(w), equalTo(EmptyIpSpace.INSTANCE));

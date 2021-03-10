@@ -54,6 +54,11 @@ public class OriginationStateToTerminationState implements StateExprVisitor<List
   }
 
   @Override
+  public List<StateExpr> visitBlackHole() {
+    return null;
+  }
+
+  @Override
   public List<StateExpr> visitDropAclIn() {
     return null;
   }

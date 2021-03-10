@@ -20,6 +20,9 @@ config firewall service custom
     edit "custom_tcp_11_from_12"
         set tcp-portrange 11:12
     next
+    edit ALL
+        set protocol IP
+    next
 end
 config firewall address
     edit addr1
@@ -27,6 +30,8 @@ config firewall address
     next
     edit addr2
         set subnet 10.0.2.0 255.255.255.0
+    next
+    edit all
     next
 end
 config firewall policy
@@ -64,5 +69,13 @@ config firewall policy
         append srcaddr addr2
         append dstaddr addr1
         append service custom_tcp_11_from_12
+    next
+    edit 2
+        set action allow
+        set srcintf any
+        set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service ALL
     next
 end

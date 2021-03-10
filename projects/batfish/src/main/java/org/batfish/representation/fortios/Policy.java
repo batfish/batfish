@@ -82,28 +82,46 @@ public final class Policy implements Serializable {
   }
 
   @Nonnull
-  public Set<Interface> getSrcIntf() {
+  public Set<String> getSrcIntf() {
     return _srcIntf;
   }
 
   @Nonnull
-  public Set<Interface> getDstIntf() {
+  public Set<String> getDstIntf() {
     return _dstIntf;
   }
 
   @Nonnull
-  public Set<Address> getSrcAddr() {
+  public Set<String> getSrcAddr() {
     return _srcAddr;
   }
 
+  /** Set of Batfish-internal UUIDs associated with srcaddr references. */
   @Nonnull
-  public Set<Address> getDstAddr() {
-    return _dstAddr;
+  public Set<BatfishUUID> getSrcAddrUUIDs() {
+    return _srcAddrUuids;
   }
 
   @Nonnull
-  public Set<Service> getService() {
+  public Set<String> getDstAddr() {
+    return _dstAddr;
+  }
+
+  /** Set of Batfish-internal UUIDs associated with dstaddr references. */
+  @Nonnull
+  public Set<BatfishUUID> getDstAddrUUIDs() {
+    return _dstAddrUuids;
+  }
+
+  @Nonnull
+  public Set<String> getService() {
     return _service;
+  }
+
+  /** Set of Batfish-internal UUIDs associated with service references. */
+  @Nonnull
+  public Set<BatfishUUID> getServiceUUIDs() {
+    return _serviceUuids;
   }
 
   public void setAction(Action action) {
@@ -129,15 +147,22 @@ public final class Policy implements Serializable {
     _srcAddr = new HashSet<>();
     _dstAddr = new HashSet<>();
     _service = new HashSet<>();
+
+    _srcAddrUuids = new HashSet<>();
+    _dstAddrUuids = new HashSet<>();
+    _serviceUuids = new HashSet<>();
   }
 
   @Nonnull private String _number;
   @Nullable private String _name;
-  @Nonnull private final Set<Interface> _srcIntf;
-  @Nonnull private final Set<Interface> _dstIntf;
-  @Nonnull private final Set<Address> _srcAddr;
-  @Nonnull private final Set<Address> _dstAddr;
-  @Nonnull private final Set<Service> _service;
+  @Nonnull private final Set<String> _srcIntf;
+  @Nonnull private final Set<String> _dstIntf;
+  @Nonnull private final Set<String> _srcAddr;
+  @Nonnull private final Set<BatfishUUID> _srcAddrUuids;
+  @Nonnull private final Set<String> _dstAddr;
+  @Nonnull private final Set<BatfishUUID> _dstAddrUuids;
+  @Nonnull private final Set<String> _service;
+  @Nonnull private final Set<BatfishUUID> _serviceUuids;
   @Nullable private Status _status;
   @Nullable private String _comments;
   @Nullable private Action _action;

@@ -38,7 +38,7 @@ public class ServiceTest {
   public void testToMatchExpr_tcpUdpSctp_defaults() {
     // Default service with no dst ports specified matches nothing and files warning
     String svcName = "name";
-    Service service = new Service(svcName);
+    Service service = new Service(svcName, new BatfishUUID(1));
     Warnings w = new Warnings(true, true, true);
     assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr(w)), equalTo(ZERO));
     assertThat(
@@ -53,7 +53,7 @@ public class ServiceTest {
   @Test
   public void testToMatchExpr_tcpUdpSctp_oneCustom() {
     IntegerSpace tcpDstPorts = IntegerSpace.of(1);
-    Service service = new Service("name");
+    Service service = new Service("name", new BatfishUUID(1));
     service.setTcpPortRangeDst(tcpDstPorts);
     BDD tcp =
         HS_TO_BDD.toBDD(
@@ -76,7 +76,7 @@ public class ServiceTest {
     IntegerSpace udpDstPorts = IntegerSpace.of(4);
     IntegerSpace sctpSrcPorts = IntegerSpace.of(5);
     IntegerSpace sctpDstPorts = IntegerSpace.of(6);
-    Service service = new Service("name");
+    Service service = new Service("name", new BatfishUUID(1));
     service.setTcpPortRangeSrc(tcpSrcPorts);
     service.setTcpPortRangeDst(tcpDstPorts);
     service.setUdpPortRangeSrc(udpSrcPorts);
@@ -110,7 +110,7 @@ public class ServiceTest {
 
   @Test
   public void testToMatchExpr_icmp_defaults() {
-    Service service = new Service("name");
+    Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP);
     HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).build();
     assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
@@ -118,7 +118,7 @@ public class ServiceTest {
 
   @Test
   public void testToMatchExpr_icmp6_defaults() {
-    Service service = new Service("name");
+    Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP6);
     HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.IPV6_ICMP).build();
     assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
@@ -128,7 +128,7 @@ public class ServiceTest {
   public void testToMatchExpr_icmp_custom() {
     int icmpCode = 1;
     int icmpType = 2;
-    Service service = new Service("name");
+    Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP);
     service.setIcmpCode(icmpCode);
     service.setIcmpType(icmpType);
@@ -145,7 +145,7 @@ public class ServiceTest {
   public void testToMatchExpr_icmp6_custom() {
     int icmpCode = 1;
     int icmpType = 2;
-    Service service = new Service("name");
+    Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP6);
     service.setIcmpCode(icmpCode);
     service.setIcmpType(icmpType);
@@ -160,7 +160,7 @@ public class ServiceTest {
 
   @Test
   public void testToMatchExpr_ip_default() {
-    Service service = new Service("name");
+    Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.IP);
     HeaderSpace expected =
         HeaderSpace.builder()
@@ -172,7 +172,7 @@ public class ServiceTest {
   @Test
   public void testToMatchExpr_ip_custom() {
     int protocolNumber = 88;
-    Service service = new Service("name");
+    Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.IP);
     service.setProtocolNumber(protocolNumber);
     HeaderSpace expected =
@@ -183,7 +183,7 @@ public class ServiceTest {
   @Test
   public void testToMatchExpr_traceElement() {
     String svcName = "name";
-    Service service = new Service(svcName);
+    Service service = new Service(svcName, new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP);
     assertThat(
         service.toMatchExpr(new Warnings()).getTraceElement(),

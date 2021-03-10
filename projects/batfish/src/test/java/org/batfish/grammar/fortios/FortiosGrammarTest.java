@@ -546,25 +546,28 @@ public final class FortiosGrammarTest {
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
     Map<String, Policy> policies = vc.getPolicies();
-    assertThat(policies, hasKeys(contains("0", "4294967294", "1")));
+    assertThat(policies, hasKeys(contains("0", "4294967294", "1", "2")));
     Policy policyDisable = policies.get("0");
     Policy policyDeny = policies.get("4294967294");
     Policy policyAllow = policies.get("1");
+    Policy policyAny = policies.get("2");
 
     Map<String, Service> services = vc.getServices();
-    assertThat(services, hasKeys(containsInAnyOrder("custom_tcp_11", "custom_tcp_11_from_12")));
-    Service service11 = services.get("custom_tcp_11");
-    Service service11From12 = services.get("custom_tcp_11_from_12");
+    String service11 = "custom_tcp_11";
+    String service11From12 = "custom_tcp_11_from_12";
+    String serviceAll = "ALL";
+    assertThat(services, hasKeys(containsInAnyOrder(service11, service11From12, serviceAll)));
 
     Map<String, Address> addresses = vc.getAddresses();
-    assertThat(addresses, hasKeys(containsInAnyOrder("addr1", "addr2")));
-    Address addr1 = addresses.get("addr1");
-    Address addr2 = addresses.get("addr2");
+    String addr1 = "addr1";
+    String addr2 = "addr2";
+    String addrAll = "all";
+    assertThat(addresses, hasKeys(containsInAnyOrder(addr1, addr2, addrAll)));
 
     Map<String, Interface> interfaces = vc.getInterfaces();
-    assertThat(interfaces, hasKeys(containsInAnyOrder("port1", "port2")));
-    Interface port1 = interfaces.get("port1");
-    Interface port2 = interfaces.get("port2");
+    String port1 = "port1";
+    String port2 = "port2";
+    assertThat(interfaces, hasKeys(containsInAnyOrder(port1, port2)));
 
     assertThat(policyDisable.getAction(), equalTo(Action.DENY));
     assertThat(policyDisable.getStatus(), equalTo(Policy.Status.DISABLE));
@@ -595,6 +598,49 @@ public final class FortiosGrammarTest {
     assertThat(policyAllow.getDstIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyAllow.getSrcAddr(), containsInAnyOrder(addr1, addr2));
     assertThat(policyAllow.getDstAddr(), containsInAnyOrder(addr1, addr2));
+
+    assertThat(policyAny.getService(), contains(serviceAll));
+    assertThat(policyAny.getSrcAddr(), contains(addrAll));
+    assertThat(policyAny.getDstAddr(), contains(addrAll));
+    assertThat(policyAny.getSrcIntf(), contains(Policy.ANY_INTERFACE));
+    assertThat(policyAny.getDstIntf(), contains(Policy.ANY_INTERFACE));
+  }
+
+  /**
+   * Test extraction of firewall policy when warnings are generated for invalid / pruned properties.
+   */
+  @Test
+  public void testFirewallPolicyExtactionWithWarnings() {
+    String hostname = "firewall_policy_warn";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Policy> policies = vc.getPolicies();
+    assertThat(policies, hasKeys(contains("1")));
+    Policy policy = policies.get("1");
+
+    Map<String, Service> services = vc.getServices();
+    String service10 = "service10";
+    String service20 = "service20";
+    assertThat(services, hasKeys(containsInAnyOrder(service10, service20)));
+
+    Map<String, Address> addresses = vc.getAddresses();
+    String addr10 = "addr10";
+    String addr20 = "addr20";
+    assertThat(addresses, hasKeys(containsInAnyOrder(addr10, addr20)));
+
+    Map<String, Interface> interfaces = vc.getInterfaces();
+    String port10 = "port10";
+    String port20 = "port20";
+    assertThat(interfaces, hasKeys(containsInAnyOrder(port10, port20)));
+
+    // Confirm invalid any/all specifiers are dropped when appropriate
+    assertThat(policy.getSrcIntf(), contains(port10));
+    assertThat(policy.getSrcAddr(), contains(addr10));
+    assertThat(policy.getDstAddr(), contains(addr20));
+    // Confirm a line with invalid ALL service is ignored; i.e. previous value isn't overwritten
+    assertThat(policy.getService(), contains(service20));
+    // Confirm a line with dstintf combining any and another interface is accepted
+    assertThat(policy.getDstIntf(), containsInAnyOrder(Policy.ANY_INTERFACE, port20));
   }
 
   @Test
@@ -630,8 +676,17 @@ public final class FortiosGrammarTest {
                 hasComment("Address addr1 is undefined and cannot be added to policy 4294967295"),
                 hasComment("Address addr2 is undefined and cannot be added to policy 4294967295"),
                 hasComment("Address addr3 is undefined and cannot be added to policy 4294967295"),
-                hasComment(
-                    "Address addr4 is undefined and cannot be added to policy 4294967295"))));
+                hasComment("Address addr4 is undefined and cannot be added to policy 4294967295"),
+                hasComment("Cannot combine 'ALL' with other services"),
+                allOf(
+                    hasComment("When 'all' is set together with other address(es), it is removed"),
+                    hasText("addr10 all")),
+                allOf(
+                    hasComment("When 'all' is set together with other address(es), it is removed"),
+                    hasText("addr20 all")),
+                allOf(
+                    hasComment("When 'any' is set together with other interfaces, it is removed"),
+                    hasText("any port10")))));
   }
 
   @Test

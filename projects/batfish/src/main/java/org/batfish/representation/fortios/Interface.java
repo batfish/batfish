@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** FortiOS datamodel component containing interface configuration */
-public final class Interface implements Serializable {
+public final class Interface implements InterfaceOrZone, Serializable {
   public enum Type {
     AGGREGATE,
     EMAC_VLAN,
@@ -30,6 +30,7 @@ public final class Interface implements Serializable {
   public static final int DEFAULT_VRF = 0;
   public static final boolean DEFAULT_STATUS = true;
 
+  @Override
   @Nonnull
   public String getName() {
     return _name;
