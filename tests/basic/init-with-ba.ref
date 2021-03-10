@@ -2137,6 +2137,12 @@
         }
       },
       "undefinedReferences" : {
+        "configs/as1border1.cfg" : { },
+        "configs/as1border2.cfg" : { },
+        "configs/as1core1.cfg" : { },
+        "configs/as2border1.cfg" : { },
+        "configs/as2border2.cfg" : { },
+        "configs/as2core1.cfg" : { },
         "configs/as2core2.cfg" : {
           "route-map" : {
             "filter-bogons" : {
@@ -2145,7 +2151,15 @@
               ]
             }
           }
-        }
+        },
+        "configs/as2dept1.cfg" : { },
+        "configs/as2dist1.cfg" : { },
+        "configs/as2dist2.cfg" : { },
+        "configs/as3border1.cfg" : { },
+        "configs/as3border2.cfg" : { },
+        "configs/as3core1.cfg" : { },
+        "hosts/host1.json" : { },
+        "hosts/host2.json" : { }
       },
       "version" : "0.36.0",
       "warnings" : {
