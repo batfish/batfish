@@ -7,11 +7,11 @@ import static org.batfish.representation.fortios.FortiosConfiguration.computePol
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -91,8 +91,7 @@ public final class Policy implements Serializable {
     return _dstIntf;
   }
 
-  @Nonnull
-  public Set<String> getSrcAddr() {
+  public @Nullable Set<String> getSrcAddr() {
     return _srcAddr;
   }
 
@@ -102,8 +101,7 @@ public final class Policy implements Serializable {
     return _srcAddrUuids;
   }
 
-  @Nonnull
-  public Set<String> getDstAddr() {
+  public @Nullable Set<String> getDstAddr() {
     return _dstAddr;
   }
 
@@ -113,9 +111,12 @@ public final class Policy implements Serializable {
     return _dstAddrUuids;
   }
 
-  @Nonnull
-  public Set<String> getService() {
+  public @Nullable Set<String> getService() {
     return _service;
+  }
+
+  public void setDstAddr(Set<String> dstAddr) {
+    _dstAddr = ImmutableSet.copyOf(dstAddr);
   }
 
   /** Set of Batfish-internal UUIDs associated with service references. */
@@ -134,6 +135,14 @@ public final class Policy implements Serializable {
 
   public void setName(String name) {
     _name = name;
+  }
+
+  public void setService(Set<String> service) {
+    _service = ImmutableSet.copyOf(service);
+  }
+
+  public void setSrcAddr(Set<String> srcAddr) {
+    _srcAddr = ImmutableSet.copyOf(srcAddr);
   }
 
   public void setStatus(Status status) {
@@ -157,11 +166,11 @@ public final class Policy implements Serializable {
   @Nullable private String _name;
   @Nonnull private final Set<String> _srcIntf;
   @Nonnull private final Set<String> _dstIntf;
-  @Nonnull private final Set<String> _srcAddr;
+  @Nullable private Set<String> _srcAddr;
   @Nonnull private final Set<BatfishUUID> _srcAddrUuids;
-  @Nonnull private final Set<String> _dstAddr;
+  @Nullable private Set<String> _dstAddr;
   @Nonnull private final Set<BatfishUUID> _dstAddrUuids;
-  @Nonnull private final Set<String> _service;
+  @Nullable private Set<String> _service;
   @Nonnull private final Set<BatfishUUID> _serviceUuids;
   @Nullable private Status _status;
   @Nullable private String _comments;
@@ -169,6 +178,9 @@ public final class Policy implements Serializable {
 
   public IpAccessList toIpAccessList(
       Map<String, IpSpace> namedIpSpaces, Map<String, AclLineMatchExpr> convertedServices) {
+    // Make sure references were finalized
+    assert _srcAddr != null && _dstAddr != null && _service != null;
+
     // TODO Incorporate _name, _comments. Probably return null or empty if not enabled.
     // TODO May need to confirm that all interfaces/addresses are defined. They were checked when
     //  these fields  were set, but technically could have been deleted since.
@@ -176,37 +188,27 @@ public final class Policy implements Serializable {
 
     // Match source interfaces
     // TODO May have to restructure to keep MatchSrcInterface separate from main IpAccessList.
-    matchConjuncts.add(
-        new MatchSrcInterface(
-            _srcIntf.stream().map(Interface::getName).collect(ImmutableSet.toImmutableSet())));
+    matchConjuncts.add(new MatchSrcInterface(_srcIntf));
 
     // Match src and dst addresses
     ImmutableList.Builder<AclLineMatchExpr> srcAddrExprs = ImmutableList.builder();
     ImmutableList.Builder<AclLineMatchExpr> dstAddrExprs = ImmutableList.builder();
-    for (Address src : _srcAddr) {
-      if (!namedIpSpaces.containsKey(src.getName())) {
-        continue;
-      }
-      HeaderSpace hs = HeaderSpace.builder().setSrcIps(new IpSpaceReference(src.getName())).build();
-      srcAddrExprs.add(
-          new MatchHeaderSpace(hs, String.format("Match source address %s", src.getName())));
+    for (String src : Sets.intersection(_srcAddr, namedIpSpaces.keySet())) {
+      HeaderSpace hs = HeaderSpace.builder().setSrcIps(new IpSpaceReference(src)).build();
+      srcAddrExprs.add(new MatchHeaderSpace(hs, String.format("Match source address %s", src)));
     }
-    for (Address dst : _dstAddr) {
-      if (!namedIpSpaces.containsKey(dst.getName())) {
-        continue;
-      }
-      HeaderSpace hs = HeaderSpace.builder().setDstIps(new IpSpaceReference(dst.getName())).build();
+    for (String dst : Sets.intersection(_dstAddr, namedIpSpaces.keySet())) {
+      HeaderSpace hs = HeaderSpace.builder().setDstIps(new IpSpaceReference(dst)).build();
       dstAddrExprs.add(
-          new MatchHeaderSpace(hs, String.format("Match destination address %s", dst.getName())));
+          new MatchHeaderSpace(hs, String.format("Match destination address %s", dst)));
     }
     matchConjuncts.add(or(srcAddrExprs.build()));
     matchConjuncts.add(or(dstAddrExprs.build()));
 
     // Match services. TODO confirm services should be disjuncted
     List<AclLineMatchExpr> svcExprs =
-        _service.stream()
-            .map(svc -> convertedServices.get(svc.getName()))
-            .filter(Objects::nonNull)
+        Sets.intersection(_service, convertedServices.keySet()).stream()
+            .map(convertedServices::get)
             .collect(ImmutableList.toImmutableList());
     matchConjuncts.add(or(svcExprs));
 

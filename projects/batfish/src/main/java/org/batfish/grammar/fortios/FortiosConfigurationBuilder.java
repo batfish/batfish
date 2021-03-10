@@ -172,24 +172,18 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitFortios_configuration(Fortios_configurationContext ctx) {
     // After renaming is complete, generate object names from UUIDs
     for (Policy policy : _c.getPolicies().values()) {
-      policy
-          .getSrcAddr()
-          .addAll(
-              policy.getSrcAddrUUIDs().stream()
-                  .map(u -> _c.getRenameableObjects().get(u).getName())
-                  .collect(ImmutableSet.toImmutableSet()));
-      policy
-          .getDstAddr()
-          .addAll(
-              policy.getDstAddrUUIDs().stream()
-                  .map(u -> _c.getRenameableObjects().get(u).getName())
-                  .collect(ImmutableSet.toImmutableSet()));
-      policy
-          .getService()
-          .addAll(
-              policy.getServiceUUIDs().stream()
-                  .map(u -> _c.getRenameableObjects().get(u).getName())
-                  .collect(ImmutableSet.toImmutableSet()));
+      policy.setSrcAddr(
+          policy.getSrcAddrUUIDs().stream()
+              .map(u -> _c.getRenameableObjects().get(u).getName())
+              .collect(ImmutableSet.toImmutableSet()));
+      policy.setDstAddr(
+          policy.getDstAddrUUIDs().stream()
+              .map(u -> _c.getRenameableObjects().get(u).getName())
+              .collect(ImmutableSet.toImmutableSet()));
+      policy.setService(
+          policy.getServiceUUIDs().stream()
+              .map(u -> _c.getRenameableObjects().get(u).getName())
+              .collect(ImmutableSet.toImmutableSet()));
     }
   }
 
