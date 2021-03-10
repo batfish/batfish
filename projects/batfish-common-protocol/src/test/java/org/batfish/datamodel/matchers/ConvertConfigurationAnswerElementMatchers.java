@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -226,6 +227,52 @@ final class ConvertConfigurationAnswerElementMatchers {
                 "File '%s' has no undefined references to structures of type '%s' named '%s'",
                 _filename, _type, _structureName));
         return false;
+      }
+      return true;
+    }
+  }
+
+  static final class HasNoUndefinedReferences
+      extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
+
+    HasNoUndefinedReferences() {}
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(
+          "A ConvertConfigurationAnswerElement which has no undefined references");
+    }
+
+    @Override
+    protected boolean matchesSafely(
+        ConvertConfigurationAnswerElement item, Description mismatchDescription) {
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+          byFile = item.getUndefinedReferences();
+      if (byFile.isEmpty()) {
+        return true;
+      }
+
+      for (Entry<
+              String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+          fileToTypeMap : byFile.entrySet()) {
+        for (Entry<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
+            typeToStructNameMap : fileToTypeMap.getValue().entrySet()) {
+          for (Entry<String, SortedMap<String, SortedSet<Integer>>> structNameToUsageMap :
+              typeToStructNameMap.getValue().entrySet()) {
+            SortedMap<String, SortedSet<Integer>> structUsageMap = structNameToUsageMap.getValue();
+            if (!structUsageMap.isEmpty()) {
+              mismatchDescription.appendText(
+                  String.format(
+                      "ConvertConfigurationAnswerElement has undefined references, including for"
+                          + " file '%s', structure type '%s', named '%s', with usage '%s'",
+                      fileToTypeMap.getKey(),
+                      typeToStructNameMap.getKey(),
+                      structNameToUsageMap.getKey(),
+                      structUsageMap.firstKey()));
+              return false;
+            }
+          }
+        }
       }
       return true;
     }

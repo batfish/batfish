@@ -28,6 +28,9 @@
           "node1"
         ]
       },
+      "undefinedReferences" : {
+        "configs/node1" : { }
+      },
       "version" : "0.36.0",
       "warnings" : {
         "internet" : { }

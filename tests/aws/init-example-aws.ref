@@ -416,6 +416,10 @@
         }
       }
     },
+    "undefinedReferences" : {
+      "aws_configs" : { },
+      "configs/lhr-border-02.cfg" : { }
+    },
     "version" : "0.36.0",
     "warnings" : {
       "internet" : { }

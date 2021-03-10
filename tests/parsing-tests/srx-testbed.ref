@@ -7231,6 +7231,11 @@
           }
         }
       },
+      "undefinedReferences" : {
+        "configs/junos-srx-1.cfg" : { },
+        "configs/junos-srx-2.cfg" : { },
+        "configs/junos-srx-3.cfg" : { }
+      },
       "version" : "0.36.0",
       "warnings" : {
         "internet" : { }

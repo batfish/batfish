@@ -335,6 +335,18 @@
           }
         }
       },
+      "undefinedReferences" : {
+        "configs/r1.cfg" : { },
+        "configs/r2.cfg" : { },
+        "configs/r3.cfg" : { },
+        "configs/z1-firewall.cfg" : { },
+        "configs/z2-firewall.cfg" : { },
+        "hosts/internet-host.json" : { },
+        "hosts/z1-host1.json" : { },
+        "hosts/z1-host2.json" : { },
+        "hosts/z2-host1.json" : { },
+        "hosts/z2-host2.json" : { }
+      },
       "version" : "0.36.0",
       "warnings" : {
         "internet" : { }
