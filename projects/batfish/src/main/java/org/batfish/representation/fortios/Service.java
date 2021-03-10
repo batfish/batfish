@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,7 +22,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 
 /** FortiOS datamodel component containing firewall service configuration */
-public final class Service implements Serializable {
+public final class Service implements FortiosRenameableObject, Serializable {
 
   public static final Protocol DEFAULT_PROTOCOL = Protocol.TCP_UDP_SCTP;
   public static final int DEFAULT_PROTOCOL_NUMBER = 0;
@@ -35,9 +36,25 @@ public final class Service implements Serializable {
     IP,
   }
 
+  @Override
   @Nonnull
   public String getName() {
     return _name;
+  }
+
+  @Override
+  public String getUUID() {
+    return _uuid;
+  }
+
+  @Override
+  public void setName(String name) {
+    _name = name;
+  }
+
+  @Override
+  public void setUUID(String uuid) {
+    _uuid = uuid;
   }
 
   @VisibleForTesting
@@ -194,9 +211,11 @@ public final class Service implements Serializable {
 
   public Service(String name) {
     _name = name;
+    _uuid = UUID.randomUUID().toString();
   }
 
-  @Nonnull private final String _name;
+  @Nonnull private String _name;
+  @Nonnull private String _uuid;
   @Nullable private Protocol _protocol;
   @Nullable private Integer _protocolNumber;
   @Nullable private String _comment;

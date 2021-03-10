@@ -3,6 +3,7 @@ package org.batfish.representation.fortios;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.io.Serializable;
+import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -14,7 +15,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 
 /** FortiOS datamodel component containing address configuration */
-public class Address implements Serializable {
+public class Address implements FortiosRenameableObject, Serializable {
   public enum Type {
     INTERFACE_SUBNET,
     IPMASK,
@@ -97,7 +98,8 @@ public class Address implements Serializable {
   @Nullable private String _associatedInterface;
   @Nullable private String _comment;
   @Nullable private Boolean _fabricObject;
-  @Nonnull private final String _name;
+  @Nonnull private String _name;
+  @Nonnull private String _uuid;
   @Nullable private Type _type;
   @Nonnull private final TypeSpecificFields _typeSpecificFields;
 
@@ -108,6 +110,7 @@ public class Address implements Serializable {
   public Address(String name) {
     _name = name;
     _typeSpecificFields = new TypeSpecificFields();
+    _uuid = UUID.randomUUID().toString();
   }
 
   public IpSpace toIpSpace(Warnings w) {
@@ -168,8 +171,24 @@ public class Address implements Serializable {
     return firstNonNull(_fabricObject, DEFAULT_FABRIC_OBJECT);
   }
 
+  @Override
   public @Nonnull String getName() {
     return _name;
+  }
+
+  @Override
+  public String getUUID() {
+    return _uuid;
+  }
+
+  @Override
+  public void setName(String name) {
+    _name = name;
+  }
+
+  @Override
+  public void setUUID(String uuid) {
+    _uuid = uuid;
   }
 
   public @Nullable Type getType() {
