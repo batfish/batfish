@@ -345,6 +345,14 @@ public final class DataModelMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has
+   * no undefined references.
+   */
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasNoUndefinedReferences() {
+    return new ConvertConfigurationAnswerElementMatchers.HasNoUndefinedReferences();
+  }
+
+  /**
    * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
    * reference in {@code filename} to a structure of type {@code type} named {@code structureName}
    * of usage type {@code usage}.
