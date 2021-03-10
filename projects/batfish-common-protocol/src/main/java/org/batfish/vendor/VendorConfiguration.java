@@ -49,12 +49,19 @@ public abstract class VendorConfiguration implements Serializable {
   private VendorConfiguration _overlayConfiguration;
 
   // Type description -> Name -> DefinedStructureInfo
+  @Nonnull
   protected final SortedMap<String, SortedMap<String, DefinedStructureInfo>> _structureDefinitions;
 
   // StructureType -> Name -> StructureUsage
+  @Nonnull
   protected final SortedMap<
           StructureType, SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>>>
       _structureReferences;
+
+  // structType -> structName -> usage -> lines
+  @Nonnull
+  protected final SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
+      _undefinedReferences;
 
   private transient boolean _unrecognized;
 
@@ -64,6 +71,7 @@ public abstract class VendorConfiguration implements Serializable {
     _runtimeData = SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA;
     _structureDefinitions = new TreeMap<>();
     _structureReferences = new TreeMap<>();
+    _undefinedReferences = new TreeMap<>();
   }
 
   public String canonicalizeInterfaceName(String name) {
@@ -270,6 +278,7 @@ public abstract class VendorConfiguration implements Serializable {
                                         name,
                                         usage,
                                         line)))));
+    _answerElement.getUndefinedReferences().put(getFilename(), _undefinedReferences);
   }
 
   public void setFilename(String filename) {
@@ -310,9 +319,19 @@ public abstract class VendorConfiguration implements Serializable {
     String filename = getFilename();
     SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byType =
         referenceMap.computeIfAbsent(filename, k -> new TreeMap<>());
+    addStructureReferenceToTypeMap(byType, structureType, name, usage, line);
+  }
+
+  private void addStructureReferenceToTypeMap(
+      SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
+          referenceMapByType,
+      StructureType structureType,
+      String name,
+      StructureUsage usage,
+      int line) {
     String type = structureType.getDescription();
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> byName =
-        byType.computeIfAbsent(type, k -> new TreeMap<>());
+        referenceMapByType.computeIfAbsent(type, k -> new TreeMap<>());
     SortedMap<String, SortedSet<Integer>> byUsage =
         byName.computeIfAbsent(name, k -> new TreeMap<>());
     String usageStr = usage.getDescription();
@@ -320,8 +339,9 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   public void undefined(StructureType structureType, String name, StructureUsage usage, int line) {
-    addStructureReference(
-        _answerElement.getUndefinedReferences(), structureType, name, usage, line);
+    //    addStructureReference(
+    //        _answerElement.getUndefinedReferences(), structureType, name, usage, line);
+    addStructureReferenceToTypeMap(_undefinedReferences, structureType, name, usage, line);
   }
 
   /* Recursively process children to find all relevant definition lines for the specified context */

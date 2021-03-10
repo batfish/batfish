@@ -54,6 +54,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
@@ -162,7 +163,6 @@ import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -1310,7 +1310,7 @@ public final class FlatJuniperGrammarTest {
     /*
      * Confirm there are no undefined references
      */
-    assertThat(undefinedReferences.keySet(), emptyIterable());
+    assertThat(ccae, hasNoUndefinedReferences());
 
     /*
      * Confirm acl with explicit application constraints accepts http and https flows and rejects
