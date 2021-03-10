@@ -119,6 +119,8 @@ import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.FortiosConfiguration;
+import org.batfish.representation.fortios.FortiosStructureType;
+import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.InterfaceAny;
@@ -215,6 +217,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     // TODO: Better validity checking
     if (ADDRESS_NAME_PATTERN.matcher(_currentAddress.getName()).matches()) {
       // TODO Add structure definition for address
+      _c.defineStructure(FortiosStructureType.ADDRESS, _currentAddress.getName(), ctx);
       _c.getAddresses().put(_currentAddress.getName(), _currentAddress);
     }
     _currentAddress = null;
@@ -331,6 +334,16 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCsi_edit(Csi_editContext ctx) {
+    // TODO better validation
+    String name = _currentInterface.getName();
+    if (INTERFACE_NAME_PATTERN.matcher(name).matches()) {
+      _c.defineStructure(FortiosStructureType.INTERFACE, name, ctx);
+      _c.referenceStructure(
+          FortiosStructureType.INTERFACE,
+          name,
+          FortiosStructureUsage.INTERFACE_SELF_REF,
+          ctx.start.getLine());
+    }
     _currentInterface = null;
   }
 
@@ -396,9 +409,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfp_edit(Cfp_editContext ctx) {
     // If edited policy is valid, add/update the entry in VS map
     // TODO: Better validity checking
+    String number = _currentPolicy.getNumber();
     if (_currentPolicyValid) {
-      // TODO Add structure definition
-      _c.getPolicies().put(_currentPolicy.getNumber(), _currentPolicy);
+      _c.defineStructure(FortiosStructureType.POLICY, number, ctx);
+      _c.getPolicies().put(number, _currentPolicy);
     }
     _currentPolicy = null;
   }
@@ -426,7 +440,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   // List items
   @Override
   public void exitCfp_set_dstaddr(Cfp_set_dstaddrContext ctx) {
-    toAddresses(ctx.addresses)
+    toAddresses(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR)
         .ifPresent(
             addresses -> {
               Set<Address> addrs = _currentPolicy.getDstAddr();
@@ -437,7 +451,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_srcaddr(Cfp_set_srcaddrContext ctx) {
-    toAddresses(ctx.addresses)
+    toAddresses(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR)
         .ifPresent(
             addresses -> {
               Set<Address> addrs = _currentPolicy.getSrcAddr();
@@ -448,7 +462,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_dstintf(Cfp_set_dstintfContext ctx) {
-    toInterfaces(ctx.interfaces, false)
+    toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
         .ifPresent(
             i -> {
               Set<InterfaceOrZone> ifaces = _currentPolicy.getDstIntf();
@@ -459,7 +473,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_srcintf(Cfp_set_srcintfContext ctx) {
-    toInterfaces(ctx.interfaces, true)
+    toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
         .ifPresent(
             i -> {
               Set<InterfaceOrZone> ifaces = _currentPolicy.getSrcIntf();
@@ -470,7 +484,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_service(Cfp_set_serviceContext ctx) {
-    toServices(ctx.services)
+    toServices(ctx.services, FortiosStructureUsage.POLICY_SERVICE)
         .ifPresent(
             s -> {
               Set<Service> service = _currentPolicy.getService();
@@ -481,7 +495,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_dstaddr(Cfp_append_dstaddrContext ctx) {
-    toAddresses(ctx.addresses)
+    toAddresses(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR)
         .ifPresent(
             a -> {
               Set<Address> addrs = _currentPolicy.getDstAddr();
@@ -491,7 +505,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_srcaddr(Cfp_append_srcaddrContext ctx) {
-    toAddresses(ctx.addresses)
+    toAddresses(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR)
         .ifPresent(
             a -> {
               Set<Address> addrs = _currentPolicy.getSrcAddr();
@@ -501,7 +515,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_dstintf(Cfp_append_dstintfContext ctx) {
-    toInterfaces(ctx.interfaces, false)
+    toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
         .ifPresent(
             i -> {
               Set<InterfaceOrZone> ifaces = _currentPolicy.getDstIntf();
@@ -511,7 +525,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_srcintf(Cfp_append_srcintfContext ctx) {
-    toInterfaces(ctx.interfaces, true)
+    toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
         .ifPresent(
             i -> {
               Set<InterfaceOrZone> ifaces = _currentPolicy.getSrcIntf();
@@ -521,7 +535,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_service(Cfp_append_serviceContext ctx) {
-    toServices(ctx.services)
+    toServices(ctx.services, FortiosStructureUsage.POLICY_SERVICE)
         .ifPresent(
             s -> {
               Set<Service> service = _currentPolicy.getService();
@@ -537,6 +551,16 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return;
     }
     _currentService = _c.getServices().computeIfAbsent(name.get(), Service::new);
+  }
+
+  @Override
+  public void exitCfsc_edit(Cfsc_editContext ctx) {
+    String name = _currentService.getName();
+    // TODO better validation
+    if (SERVICE_NAME_PATTERN.matcher(name).matches()) {
+      _c.defineStructure(FortiosStructureType.SERVICE_CUSTOM, name, ctx);
+    }
+    _currentService = null;
   }
 
   @Override
@@ -632,7 +656,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
   }
 
-  private Optional<Set<Service>> toServices(Service_namesContext ctx) {
+  private Optional<Set<Service>> toServices(Service_namesContext ctx, FortiosStructureUsage usage) {
+    int line = ctx.start.getLine();
     Map<String, Service> servicesMap = _c.getServices();
     ImmutableSet.Builder<Service> servicesBuilder = ImmutableSet.builder();
     Set<String> services =
@@ -646,7 +671,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       }
       if (servicesMap.containsKey(name)) {
         servicesBuilder.add(servicesMap.get(name));
+        _c.referenceStructure(FortiosStructureType.SERVICE_CUSTOM, name, usage, line);
       } else {
+        _c.undefined(FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP, name, usage, line);
         warn(
             ctx,
             String.format(
@@ -658,7 +685,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Optional.of(servicesBuilder.build());
   }
 
-  private Optional<Set<Address>> toAddresses(Address_namesContext ctx) {
+  private Optional<Set<Address>> toAddresses(
+      Address_namesContext ctx, FortiosStructureUsage usage) {
+    int line = ctx.start.getLine();
     Map<String, Address> addressesMap = _c.getAddresses();
     ImmutableSet.Builder<Address> addressesBuilder = ImmutableSet.builder();
     Set<String> addresses =
@@ -672,7 +701,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       }
       if (addressesMap.containsKey(name)) {
         addressesBuilder.add(addressesMap.get(name));
+        _c.referenceStructure(FortiosStructureType.ADDRESS, name, usage, line);
       } else {
+        _c.undefined(FortiosStructureType.ADDRESS_OR_ADDRGRP, name, usage, line);
         warn(
             ctx,
             String.format(
@@ -689,7 +720,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * is true, then the special 'any' interface will be removed if specified with other interfaces.
    */
   private Optional<Set<InterfaceOrZone>> toInterfaces(
-      Interface_or_zone_namesContext ctx, boolean pruneAny) {
+      Interface_or_zone_namesContext ctx, FortiosStructureUsage usage, boolean pruneAny) {
+    int line = ctx.start.getLine();
     Map<String, Interface> ifacesMap = _c.getInterfaces();
     ImmutableSet.Builder<InterfaceOrZone> ifaceBuilder = ImmutableSet.builder();
     Set<String> ifaces =
@@ -705,7 +737,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         ifaceBuilder.add(InterfaceAny.INSTANCE);
       } else if (ifacesMap.containsKey(name)) {
         ifaceBuilder.add(ifacesMap.get(name));
+        _c.referenceStructure(FortiosStructureType.INTERFACE, name, usage, line);
       } else {
+        _c.undefined(FortiosStructureType.INTERFACE_OR_ZONE, name, usage, line);
         warn(
             ctx,
             String.format(

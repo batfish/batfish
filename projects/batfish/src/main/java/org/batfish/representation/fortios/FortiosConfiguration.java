@@ -85,6 +85,10 @@ public class FortiosConfiguration extends VendorConfiguration {
         .values()
         .forEach(address -> c.getIpSpaces().put(address.getName(), address.toIpSpace(_w)));
 
+    // Generate structure reference counts
+    markConcreteStructure(FortiosStructureType.ADDRESS);
+    markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
+    markConcreteStructure(FortiosStructureType.INTERFACE);
     return c;
   }
 }

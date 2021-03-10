@@ -8,6 +8,9 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -50,10 +53,13 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.FortiosConfiguration;
+import org.batfish.representation.fortios.FortiosStructureType;
+import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
@@ -713,6 +719,80 @@ public final class FortiosGrammarTest {
             allOf(
                 hasComment("This syntax is unrecognized"),
                 hasText("set APropertyThatHopefullyDoesNotExist to a bunch of garbage"))));
+  }
+
+  @Test
+  public void testPolicyDefinitionsAndReferences() throws IOException {
+    String hostname = "policy_defs_refs";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.INTERFACE, "port1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.INTERFACE, "port2"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.INTERFACE, "port3"));
+    assertThat(
+        ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "service1"));
+    assertThat(
+        ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "service2"));
+    assertThat(
+        ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "service3"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr2"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr3"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.POLICY, "1"));
+
+    // Confirm reference count is correct for used structure
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr1", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr2", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr3", 1));
+    // Interface refs include self-refs
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port1", 3));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port2", 3));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port3", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service1", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service2", 1));
+
+    // Confirm undefined references are detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.INTERFACE_OR_ZONE,
+            "UNDEFINED",
+            FortiosStructureUsage.POLICY_DSTINTF));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.INTERFACE_OR_ZONE,
+            "UNDEFINED",
+            FortiosStructureUsage.POLICY_SRCINTF));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.ADDRESS_OR_ADDRGRP,
+            "UNDEFINED",
+            FortiosStructureUsage.POLICY_DSTADDR));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.ADDRESS_OR_ADDRGRP,
+            "UNDEFINED",
+            FortiosStructureUsage.POLICY_SRCADDR));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP,
+            "UNDEFINED",
+            FortiosStructureUsage.POLICY_SERVICE));
+
+    // TODO all/any?
   }
 
   @Test
