@@ -53,6 +53,11 @@ final class SessionCreationNodeVisitor implements StateExprVisitor<NodeInterface
   }
 
   @Override
+  public NodeInterfacePair visitBlackHole() {
+    return null;
+  }
+
+  @Override
   public NodeInterfacePair visitDropAclIn() {
     return null;
   }
