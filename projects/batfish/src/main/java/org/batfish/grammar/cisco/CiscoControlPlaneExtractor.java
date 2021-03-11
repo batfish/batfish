@@ -153,8 +153,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.FAILOVER_LAN_INTERFACE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.FAILOVER_LINK_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
@@ -544,11 +542,7 @@ import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_community_route_targetContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_ipv6_access_list_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Failover_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.Failover_linkContext;
 import org.batfish.grammar.cisco.CiscoParser.Filter_list_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Flan_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.Flan_unitContext;
 import org.batfish.grammar.cisco.CiscoParser.Icmp_inline_object_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Icmp_object_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
@@ -4862,31 +4856,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitFailover_interface(Failover_interfaceContext ctx) {
-    String name = ctx.name.getText();
-    Ip primaryIp = toIp(ctx.pip);
-    Ip primaryMask = toIp(ctx.pmask);
-    Ip standbyIp = toIp(ctx.sip);
-    ConcreteInterfaceAddress primaryAddress =
-        ConcreteInterfaceAddress.create(primaryIp, primaryMask);
-    ConcreteInterfaceAddress standbyAddress =
-        ConcreteInterfaceAddress.create(standbyIp, primaryMask);
-    _configuration.getFailoverPrimaryAddresses().put(name, primaryAddress);
-    _configuration.getFailoverStandbyAddresses().put(name, standbyAddress);
-  }
-
-  @Override
-  public void exitFailover_link(Failover_linkContext ctx) {
-    String alias = ctx.name.getText();
-    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, FAILOVER_LINK_INTERFACE, ctx.iface.getStart().getLine());
-    _configuration.getFailoverInterfaces().put(alias, ifaceName);
-    _configuration.setFailoverStatefulSignalingInterfaceAlias(alias);
-    _configuration.setFailoverStatefulSignalingInterface(ifaceName);
-  }
-
-  @Override
   public void exitFilter_list_bgp_tail(Filter_list_bgp_tailContext ctx) {
     String filterList = ctx.num.getText();
     _configuration.referenceStructure(
@@ -4896,28 +4865,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.getStart().getLine());
     // TODO: Handle filter-list in batfish
     todo(ctx);
-  }
-
-  @Override
-  public void exitFlan_interface(Flan_interfaceContext ctx) {
-    String alias = ctx.name.getText();
-    String ifaceName = getCanonicalInterfaceName(ctx.iface.getText());
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, FAILOVER_LAN_INTERFACE, ctx.iface.getStart().getLine());
-    _configuration.getFailoverInterfaces().put(alias, ifaceName);
-    _configuration.setFailoverCommunicationInterface(ifaceName);
-    _configuration.setFailoverCommunicationInterfaceAlias(alias);
-  }
-
-  @Override
-  public void exitFlan_unit(Flan_unitContext ctx) {
-    if (ctx.PRIMARY() != null) {
-      _configuration.setFailoverSecondary(false);
-    } else if (ctx.SECONDARY() != null) {
-      _configuration.setFailoverSecondary(true);
-      _configuration.setHostname(_configuration.getHostname() + "-FAILOVER-SECONDARY");
-    }
-    _configuration.setFailover(true);
   }
 
   @Override

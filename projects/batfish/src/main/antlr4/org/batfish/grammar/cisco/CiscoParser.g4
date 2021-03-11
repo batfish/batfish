@@ -607,42 +607,6 @@ event_null
    ) null_rest_of_line
 ;
 
-failover_lan
-:
-   LAN failover_lan_tail
-;
-
-failover_lan_tail
-:
-   flan_interface
-   | flan_unit
-;
-
-failover_link
-:
-   LINK name = variable iface = interface_name_unstructured NEWLINE
-;
-
-failover_interface
-:
-   INTERFACE IP name = variable pip = IP_ADDRESS pmask = IP_ADDRESS STANDBY sip
-   = IP_ADDRESS NEWLINE
-;
-
-flan_interface
-:
-   INTERFACE name = variable iface = interface_name_unstructured NEWLINE
-;
-
-flan_unit
-:
-   UNIT
-   (
-      PRIMARY
-      | SECONDARY
-   ) NEWLINE
-;
-
 flow_null
 :
    NO?
@@ -1731,11 +1695,6 @@ no_aaa_group_server_stanza
    NO AAA GROUP SERVER null_rest_of_line
 ;
 
-no_failover
-:
-   NO FAILOVER NEWLINE
-;
-
 no_ip_access_list_stanza
 :
    NO IP ACCESS_LIST null_rest_of_line
@@ -2408,19 +2367,6 @@ s_event_handler
 s_event_monitor
 :
    EVENT_MONITOR NEWLINE
-;
-
-s_failover
-:
-   FAILOVER s_failover_tail
-;
-
-s_failover_tail
-:
-   NEWLINE
-   | failover_lan
-   | failover_link
-   | failover_interface
 ;
 
 s_flow
@@ -3521,7 +3467,6 @@ stanza
    | ipx_sap_access_list_stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
-   | no_failover
    | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
@@ -3579,7 +3524,6 @@ stanza
    | s_event
    | s_event_handler
    | s_event_monitor
-   | s_failover
    | s_flow
    | s_flow_sampler_map
    | s_foundry_mac_access_list

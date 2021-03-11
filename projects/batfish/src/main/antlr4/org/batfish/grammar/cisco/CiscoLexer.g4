@@ -2039,8 +2039,6 @@ FAILED: 'failed';
 
 FAILED_LIST: 'failed-list';
 
-FAILOVER: 'failover';
-
 FAILURE: 'failure';
 
 FAIL_OVER: 'fail-over';

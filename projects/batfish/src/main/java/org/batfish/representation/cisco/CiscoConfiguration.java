@@ -399,24 +399,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
 
-  private boolean _failover;
-
-  private String _failoverCommunicationInterface;
-
-  private String _failoverCommunicationInterfaceAlias;
-
-  private final Map<String, String> _failoverInterfaces;
-
-  private final Map<String, ConcreteInterfaceAddress> _failoverPrimaryAddresses;
-
-  private boolean _failoverSecondary;
-
-  private final Map<String, ConcreteInterfaceAddress> _failoverStandbyAddresses;
-
-  private String _failoverStatefulSignalingInterface;
-
-  private String _failoverStatefulSignalingInterfaceAlias;
-
   private String _hostname;
 
   private final Map<String, InspectClassMap> _inspectClassMaps;
@@ -511,9 +493,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _expandedCommunityLists = new TreeMap<>();
     _extendedAccessLists = new TreeMap<>();
     _extendedIpv6AccessLists = new TreeMap<>();
-    _failoverInterfaces = new TreeMap<>();
-    _failoverPrimaryAddresses = new TreeMap<>();
-    _failoverStandbyAddresses = new TreeMap<>();
     _isakmpKeys = new ArrayList<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
@@ -705,42 +684,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, ExtendedIpv6AccessList> getExtendedIpv6Acls() {
     return _extendedIpv6AccessLists;
-  }
-
-  public boolean getFailover() {
-    return _failover;
-  }
-
-  public String getFailoverCommunicationInterface() {
-    return _failoverCommunicationInterface;
-  }
-
-  public String getFailoverCommunicationInterfaceAlias() {
-    return _failoverCommunicationInterfaceAlias;
-  }
-
-  public Map<String, String> getFailoverInterfaces() {
-    return _failoverInterfaces;
-  }
-
-  public Map<String, ConcreteInterfaceAddress> getFailoverPrimaryAddresses() {
-    return _failoverPrimaryAddresses;
-  }
-
-  public boolean getFailoverSecondary() {
-    return _failoverSecondary;
-  }
-
-  public Map<String, ConcreteInterfaceAddress> getFailoverStandbyAddresses() {
-    return _failoverStandbyAddresses;
-  }
-
-  public String getFailoverStatefulSignalingInterface() {
-    return _failoverStatefulSignalingInterface;
-  }
-
-  public String getFailoverStatefulSignalingInterfaceAlias() {
-    return _failoverStatefulSignalingInterfaceAlias;
   }
 
   @Override
@@ -971,89 +914,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private void processFailoverSettings() {
-    if (!_failover) {
-      return;
-    }
-
-    if (_failoverCommunicationInterface == null
-        || _failoverCommunicationInterfaceAlias == null
-        || _failoverStatefulSignalingInterface == null
-        || _failoverStatefulSignalingInterfaceAlias == null) {
-      _w.redFlag(
-          "Unable to process failover configuration: one of failover communication or stateful"
-              + " signaling interfaces is unset");
-      return;
-    }
-
-    Interface commIface = _interfaces.get(_failoverCommunicationInterface);
-    Interface sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
-    if (commIface == null) {
-      _w.redFlag(
-          String.format(
-              "Unable to process failover configuration: communication interface %s is not present",
-              _failoverCommunicationInterface));
-      return;
-    }
-    if (sigIface == null) {
-      _w.redFlag(
-          String.format(
-              "Unable to process failover configuration: stateful signaling interface %s is not"
-                  + " present",
-              _failoverStatefulSignalingInterface));
-      return;
-    }
-
-    ConcreteInterfaceAddress commAddress;
-    ConcreteInterfaceAddress sigAddress;
-
-    if (_failoverSecondary) {
-      commAddress = _failoverStandbyAddresses.get(_failoverCommunicationInterfaceAlias);
-      sigAddress = _failoverStandbyAddresses.get(_failoverStatefulSignalingInterfaceAlias);
-      for (Interface iface : _interfaces.values()) {
-        iface.setAddress(iface.getStandbyAddress());
-      }
-    } else {
-      commAddress = _failoverPrimaryAddresses.get(_failoverCommunicationInterfaceAlias);
-      sigAddress = _failoverPrimaryAddresses.get(_failoverStatefulSignalingInterfaceAlias);
-    }
-    commIface.setAddress(commAddress);
-    commIface.setActive(true);
-    sigIface.setAddress(sigAddress);
-    sigIface.setActive(true);
-  }
-
   public void setDnsSourceInterface(String dnsSourceInterface) {
     _dnsSourceInterface = dnsSourceInterface;
   }
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
-  }
-
-  public void setFailover(boolean failover) {
-    _failover = failover;
-  }
-
-  public void setFailoverCommunicationInterface(String failoverCommunicationInterface) {
-    _failoverCommunicationInterface = failoverCommunicationInterface;
-  }
-
-  public void setFailoverCommunicationInterfaceAlias(String failoverCommunicationInterfaceAlias) {
-    _failoverCommunicationInterfaceAlias = failoverCommunicationInterfaceAlias;
-  }
-
-  public void setFailoverSecondary(boolean failoverSecondary) {
-    _failoverSecondary = failoverSecondary;
-  }
-
-  public void setFailoverStatefulSignalingInterface(String failoverStatefulSignalingInterface) {
-    _failoverStatefulSignalingInterface = failoverStatefulSignalingInterface;
-  }
-
-  public void setFailoverStatefulSignalingInterfaceAlias(
-      String failoverStatefulSignalingInterfaceAlias) {
-    _failoverStatefulSignalingInterfaceAlias = failoverStatefulSignalingInterfaceAlias;
   }
 
   @Override
@@ -2639,8 +2505,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     c.setSnmpSourceInterface(_snmpSourceInterface);
 
-    processFailoverSettings();
-
     // remove line login authentication lists if they don't exist
     for (Line line : _cf.getLines().values()) {
       String list = line.getLoginAuthentication();
@@ -3206,8 +3070,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
         CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
         CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE,
-        CiscoStructureUsage.FAILOVER_LAN_INTERFACE,
-        CiscoStructureUsage.FAILOVER_LINK_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
         CiscoStructureUsage.IP_NAT_INSIDE_SOURCE,
         CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,

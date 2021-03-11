@@ -98,8 +98,6 @@ public enum CiscoStructureUsage implements StructureUsage {
       "extended access-list protocol or service object-group"),
   EXTENDED_ACCESS_LIST_SERVICE_OBJECT("extended access-list service object"),
   EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP("extended access-list service object-group"),
-  FAILOVER_LAN_INTERFACE("failover lan interface"),
-  FAILOVER_LINK_INTERFACE("failover link interface"),
   ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT("object-group icmp-type group-object"),
   ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT("object-group icmp-type icmp-object object"),
   INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP("class-map type inspect match access-group"),
