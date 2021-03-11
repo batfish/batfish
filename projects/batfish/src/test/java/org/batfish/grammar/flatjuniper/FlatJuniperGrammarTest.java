@@ -63,7 +63,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLis
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReferenceWithReferenceLines;
-import static org.batfish.datamodel.matchers.GeneratedRouteMatchers.isDiscard;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
@@ -122,7 +121,6 @@ import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
-import static org.batfish.datamodel.matchers.VrfMatchers.hasGeneratedRoutes;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
@@ -159,6 +157,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
+import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anything;
@@ -2527,6 +2526,15 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testOspfSummaryDiscardMetric() {
+    String hostname = "ospf-reference-bandwidth";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c.getDefaultVrf().getOspfProcesses().get(DEFAULT_VRF_NAME).getSummaryDiscardMetric(),
+        equalTo(OSPF_INTERNAL_SUMMARY_DISCARD_METRIC));
+  }
+
+  @Test
   public void testOspfReferenceBandwidth() {
     String hostname = "ospf-reference-bandwidth";
     Configuration c = parseConfig(hostname);
@@ -4647,11 +4655,6 @@ public final class FlatJuniperGrammarTest {
   public void testOspfSummaries() {
     Configuration c = parseConfig(("ospf-abr-with-summaries"));
 
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasGeneratedRoutes(
-                hasItem(allOf(hasPrefix(Prefix.parse("10.0.1.0/24")), isDiscard())))));
     assertThat(
         c,
         hasDefaultVrf(

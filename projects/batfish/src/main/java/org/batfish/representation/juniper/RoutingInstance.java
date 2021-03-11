@@ -20,6 +20,7 @@ import org.batfish.datamodel.SnmpServer;
 
 public class RoutingInstance implements Serializable {
 
+  public static final long OSPF_INTERNAL_SUMMARY_DISCARD_METRIC = 0x00FFFFFFL;
   private static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 1E9;
   private static final String MASTER_INTERFACE_NAME = "MASTER_INTERFACE";
 

@@ -15,6 +15,7 @@ import static org.batfish.representation.juniper.NatPacketLocation.interfaceLoca
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
+import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -1101,6 +1102,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setSummaryAdminCost(
                 RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat()))
             .setRouterId(ospfRouterId)
+            .setSummaryDiscardMetric(OSPF_INTERNAL_SUMMARY_DISCARD_METRIC)
             .build();
     String vrfName = routingInstance.getName();
     // export policies
@@ -3437,15 +3439,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         OspfProcess oproc = createOspfProcess(ri);
         if (oproc != null) {
           vrf.setOspfProcesses(ImmutableSortedMap.of(oproc.getProcessId(), oproc));
-          // add discard routes for OSPF summaries
-          oproc.getAreas().values().stream()
-              .flatMap(a -> a.getSummaries().entrySet().stream())
-              .forEach(
-                  summaryEntry ->
-                      vrf.getGeneratedRoutes()
-                          .add(
-                              ospfSummaryToAggregateRoute(
-                                  summaryEntry.getKey(), summaryEntry.getValue())));
         }
       }
 
