@@ -568,9 +568,9 @@ public final class FortiosGrammarTest {
 
     Map<String, Service> services = vc.getServices();
     String service11 = "custom_tcp_11";
-    String service11From12 = "custom_tcp_11_from_12";
+    String service12From11 = "custom_tcp_12_from_11";
     String serviceAll = "ALL";
-    assertThat(services, hasKeys(containsInAnyOrder(service11, service11From12, serviceAll)));
+    assertThat(services, hasKeys(containsInAnyOrder(service11, service12From11, serviceAll)));
 
     Map<String, Address> addresses = vc.getAddresses();
     String addr1 = "addr1";
@@ -598,7 +598,7 @@ public final class FortiosGrammarTest {
     assertThat(policyDeny.getName(), equalTo("longest allowed firewall policy nam"));
     assertThat(policyDeny.getStatus(), nullValue());
     assertThat(policyDeny.getStatusEffective(), equalTo(Policy.Status.ENABLE));
-    assertThat(policyDeny.getService(), contains(service11From12));
+    assertThat(policyDeny.getService(), contains(service12From11));
     assertThat(policyDeny.getSrcIntf(), contains(port1));
     assertThat(policyDeny.getDstIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyDeny.getSrcAddr(), contains(addr1));
@@ -607,7 +607,7 @@ public final class FortiosGrammarTest {
     assertThat(policyAllow.getAction(), equalTo(Action.ALLOW));
     assertThat(policyAllow.getStatus(), equalTo(Policy.Status.ENABLE));
     assertThat(policyAllow.getStatusEffective(), equalTo(Policy.Status.ENABLE));
-    assertThat(policyAllow.getService(), containsInAnyOrder(service11, service11From12));
+    assertThat(policyAllow.getService(), containsInAnyOrder(service11, service12From11));
     assertThat(policyAllow.getSrcIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyAllow.getDstIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyAllow.getSrcAddr(), containsInAnyOrder(addr1, addr2));
@@ -653,22 +653,22 @@ public final class FortiosGrammarTest {
                 .setSrcPorts(Service.DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
                 .setDstPorts(SubRange.singleton(11))
                 .build());
-    BDD service11From12 =
+    BDD service12From11 =
         BDD_TESTBED.toBDD(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.TCP)
-                .setSrcPorts(SubRange.singleton(12))
-                .setDstPorts(SubRange.singleton(11))
+                .setSrcPorts(SubRange.singleton(11))
+                .setDstPorts(SubRange.singleton(12))
                 .build());
     {
-      // Deny service custom_tcp_11_from_12 from addr1 to addr2
+      // Deny service custom_tcp_12_from_11 from addr1 to addr2
       PermitAndDenyBdds expected =
-          new PermitAndDenyBdds(ZERO, addr1AsSrc.and(addr2AsDst).and(service11From12));
+          new PermitAndDenyBdds(ZERO, addr1AsSrc.and(addr2AsDst).and(service12From11));
       assertThat(aclToBdd.toPermitAndDenyBdds(deny), equalTo(expected));
     }
     {
       // Allow services custom_tcp_11, custom_tcp_11_from_12 from addr1, addr2 to addr1, addr2
-      BDD services = service11.or(service11From12);
+      BDD services = service11.or(service12From11);
       BDD srcAddrs = addr1AsSrc.or(addr2AsSrc);
       BDD dstAddrs = addr1AsDst.or(addr2AsDst);
       PermitAndDenyBdds expected =
