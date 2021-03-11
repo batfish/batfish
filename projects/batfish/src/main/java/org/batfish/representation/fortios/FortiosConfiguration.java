@@ -8,17 +8,16 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
-import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -34,6 +33,9 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.DeniedByAcl;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
@@ -244,32 +246,54 @@ public class FortiosConfiguration extends VendorConfiguration {
     // TODO Is this the right VI field for interface alias?
     Optional.ofNullable(iface.getAlias())
         .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
+    // TODO Check whether FortiOS should use outgoing filter or outgoing original flow filter
+    //  (i.e. whether policies act on post-NAT or original flows)
+    generateOutgoingFilter(iface, c).ifPresent(viIface::setOutgoingFilter);
     viIface.build();
   }
 
-  private @Nullable IpAccessList generateOutgoingFilter(Interface iface, Configuration c) {
-    List<IpAccessList> viPolicies =
-        _policies.values().stream()
-            .filter(policy -> policy.getDstIntf().contains(iface.getName()))
-            .map(policy -> c.getIpAccessLists().get(computeViPolicyName(policy)))
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList());
-    if (viPolicies.isEmpty()) {
-      return null;
-    } else if (viPolicies.size() == 1) {
-      return viPolicies.get(0);
+  private @Nonnull Optional<IpAccessList> generateOutgoingFilter(Interface iface, Configuration c) {
+    List<AclLine> lines = new ArrayList<>();
+    for (Policy policy : _policies.values()) {
+      if (!policy.getDstIntf().contains(iface.getName())) {
+        continue; // policy doesn't apply to traffic out this interface
+      }
+      String viPolicyName = computeViPolicyName(policy);
+      if (!c.getIpAccessLists().containsKey(viPolicyName)) {
+        continue; // policy didn't convert
+      }
+
+      // Policy applies to traffic out this iface. Match traffic from its specified source ifaces.
+      AclLineMatchExpr matchSources = new MatchSrcInterface(policy.getSrcIntf());
+
+      // Each policy can only either allow or deny, so no need to create separate lines to match
+      // permitted and denied traffic. (Ideally would use an AclAclLine, but can't AND that with the
+      // matchSources expr.)
+      boolean policyPermits = policy.getActionEffective() == Policy.Action.ALLOW;
+      AclLineMatchExpr policyMatches =
+          policyPermits ? new PermittedByAcl(viPolicyName) : new DeniedByAcl(viPolicyName);
+      VendorStructureId vsi =
+          new VendorStructureId(
+              _filename, FortiosStructureType.POLICY.getDescription(), viPolicyName);
+      AclLineMatchExpr matchExpr =
+          and(TraceElement.builder().add("Match policy", vsi).build(), matchSources, policyMatches);
+      lines.add(
+          policyPermits ? ExprAclLine.accepting(matchExpr) : ExprAclLine.rejecting(matchExpr));
     }
-    ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
-    viPolicies.stream()
-        .map(IpAccessList::getName)
-        .map(policyName -> new AclAclLine("Match policy " + policyName, policyName))
-        .forEach(lines::add);
+
+    if (lines.isEmpty()) {
+      // No policies affect traffic exiting this interface.
+      // TODO Check default action (no egress filter implies default action PERMIT)
+      return Optional.empty();
+    }
+
     lines.add(ExprAclLine.ACCEPT_ALL); // TODO Check default action
-    return IpAccessList.builder()
-        .setOwner(c)
-        .setName(computeOutgoingFilterName(iface.getName()))
-        .setLines(lines.build())
-        .build();
+    return Optional.of(
+        IpAccessList.builder()
+            .setOwner(c)
+            .setName(computeOutgoingFilterName(iface.getName()))
+            .setLines(lines)
+            .build());
   }
 
   /** Computes the VI name for the given policy. */
@@ -284,11 +308,13 @@ public class FortiosConfiguration extends VendorConfiguration {
     return Optional.ofNullable(name).orElseGet(() -> String.format("~UNNAMED~POLICY~%s~", number));
   }
 
-  private static String computeVrfName(String vdom, int vrf) {
+  /** Computes the VI name for a VRF in the given VDOM with the given VRF number. */
+  private static @Nonnull String computeVrfName(String vdom, int vrf) {
     return String.format("%s:%s", vdom, vrf);
   }
 
-  private static String computeOutgoingFilterName(String iface) {
+  /** Computes the VI name for the given interface's outgoing filter. */
+  public static @Nonnull String computeOutgoingFilterName(String iface) {
     return String.format("~%s~outgoing~", iface);
   }
 }

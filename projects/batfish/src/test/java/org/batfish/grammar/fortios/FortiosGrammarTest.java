@@ -14,6 +14,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.fortios.FortiosConfiguration.computeOutgoingFilterName;
 import static org.batfish.representation.fortios.FortiosConfiguration.computeViPolicyName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -632,7 +633,14 @@ public final class FortiosGrammarTest {
     String denyName = computeViPolicyName("longest allowed firewall policy nam", "4294967294");
     String allowName = computeViPolicyName("Permit Custom TCP Traffic", "1");
     String anyName = computeViPolicyName(null, "2");
-    assertThat(acls, hasKeys(denyName, allowName, anyName));
+    assertThat(
+        acls,
+        hasKeys(
+            denyName,
+            allowName,
+            anyName,
+            computeOutgoingFilterName("port1"),
+            computeOutgoingFilterName("port2")));
     IpAccessList deny = acls.get(denyName);
     IpAccessList allow = acls.get(allowName);
     IpAccessList any = acls.get(anyName);
