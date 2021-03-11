@@ -64,6 +64,7 @@ import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.OspfExternalType1Rib;
 import org.batfish.dataplane.rib.OspfExternalType2Rib;
 import org.batfish.dataplane.rib.OspfInterAreaRib;
+import org.batfish.dataplane.rib.OspfInternalSummaryRib;
 import org.batfish.dataplane.rib.OspfIntraAreaRib;
 import org.batfish.dataplane.rib.OspfRib;
 import org.batfish.dataplane.rib.RibDelta;
@@ -93,6 +94,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /* Internal RIBs */
   @Nonnull private final OspfIntraAreaRib _intraAreaRib;
   @Nonnull private final OspfInterAreaRib _interAreaRib;
+  @Nonnull private final OspfInternalSummaryRib _internalSummaryRib;
   @Nonnull private final OspfExternalType1Rib _type1Rib;
   @Nonnull private final OspfExternalType2Rib _type2Rib;
   @Nonnull private final OspfRib _ospfRib;
@@ -152,6 +154,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
     _intraAreaRib = new OspfIntraAreaRib();
     _interAreaRib = new OspfInterAreaRib();
+    _internalSummaryRib = new OspfInternalSummaryRib();
     _type1Rib = new OspfExternalType1Rib(_c.getHostname());
     _type2Rib = new OspfExternalType2Rib(_c.getHostname());
     _ospfRib = new OspfRib();
@@ -720,7 +723,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             prefix ->
                 computeInternalSummaryRoute(prefix, area.getAreaNumber())
                     // TODO: support withdrawals
-                    .ifPresent(r -> deltaBuilder.add(r)));
+                    .ifPresent(r -> deltaBuilder.from(_internalSummaryRib.mergeRouteGetDelta(r))));
     return deltaBuilder.build();
   }
 
@@ -1618,7 +1621,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             // Deltas
             _activatedGeneratedRoutes.getActions(),
             // RIB state
-            Stream.of(_intraAreaRib, _interAreaRib, _type1Rib, _type2Rib)
+            Stream.of(_intraAreaRib, _interAreaRib, _internalSummaryRib, _type1Rib, _type2Rib)
                 .map(AbstractRib::getTypedRoutes))
         .collect(toOrderedHashCode());
   }

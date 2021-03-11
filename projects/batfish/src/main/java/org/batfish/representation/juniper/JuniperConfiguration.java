@@ -1609,39 +1609,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return String.format("~ISIS_EXPORT_POLICY:%s~", routingInstanceName);
   }
 
-  private org.batfish.datamodel.GeneratedRoute ospfSummaryToAggregateRoute(
-      Prefix prefix, OspfAreaSummary summary) {
-    int prefixLength = prefix.getPrefixLength();
-    String policyNameSuffix = prefix.toString().replace('/', '_').replace('.', '_');
-    String policyName = "~SUMMARY" + policyNameSuffix + "~";
-    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, _c);
-    If routingPolicyConditional = new If();
-    routingPolicy.getStatements().add(routingPolicyConditional);
-    routingPolicyConditional.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
-    routingPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
-    String rflName = "~SUMMARY" + policyNameSuffix + "_RF~";
-    MatchPrefixSet isContributingRoute =
-        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
-    routingPolicyConditional.setGuard(isContributingRoute);
-    RouteFilterList rfList = new RouteFilterList(rflName);
-    rfList.addLine(
-        new org.batfish.datamodel.RouteFilterLine(
-            LineAction.PERMIT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
-    org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        org.batfish.datamodel.GeneratedRoute.builder();
-    newRoute.setNetwork(prefix);
-    newRoute.setAdmin(
-        RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER));
-    if (summary.getMetric() != null) {
-      newRoute.setMetric(summary.getMetric());
-    }
-    newRoute.setDiscard(true);
-    newRoute.setGenerationPolicy(policyName);
-    _c.getRoutingPolicies().put(policyName, routingPolicy);
-    _c.getRouteFilterLists().put(rflName, rfList);
-    return newRoute.build();
-  }
-
   /**
    * Converts {@link IkePolicy} to {@link IkePhase1Policy} and puts the used pre-shared key as a
    * {@link IkePhase1Key} in the passed-in {@code ikePhase1Keys}

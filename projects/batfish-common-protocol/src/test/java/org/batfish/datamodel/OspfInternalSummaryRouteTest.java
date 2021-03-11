@@ -17,26 +17,35 @@ public class OspfInternalSummaryRouteTest {
         OspfInternalSummaryRoute.builder().setArea(0).setNetwork(Prefix.ZERO);
     OspfInternalSummaryRoute r = builder.build();
     new EqualsTester()
-        .addEqualityGroup(r, r, builder.build())
+        .addEqualityGroup(r, builder.build())
         .addEqualityGroup(builder.setNetwork(Prefix.parse("1.1.1.1/32")).build())
         .addEqualityGroup(builder.setAdmin(1000).build())
         .addEqualityGroup(builder.setArea(2L).build())
         .addEqualityGroup(builder.setMetric(20L).build())
-        .addEqualityGroup(new Object())
         .testEquals();
   }
 
   @Test
   public void testJavaSerialization() {
     OspfInternalSummaryRoute r =
-        OspfInternalSummaryRoute.builder().setArea(0).setNetwork(Prefix.ZERO).build();
+        OspfInternalSummaryRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setAdmin(1000)
+            .setArea(0)
+            .setMetric(1L)
+            .build();
     assertThat(SerializationUtils.clone(r), equalTo(r));
   }
 
   @Test
   public void testJsonSerialization() {
     OspfInternalSummaryRoute r =
-        OspfInternalSummaryRoute.builder().setArea(0).setNetwork(Prefix.ZERO).build();
+        OspfInternalSummaryRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setAdmin(1000)
+            .setArea(0)
+            .setMetric(1L)
+            .build();
     assertThat(BatfishObjectMapper.clone(r, OspfInternalSummaryRoute.class), equalTo(r));
   }
 
@@ -45,8 +54,9 @@ public class OspfInternalSummaryRouteTest {
     OspfInternalSummaryRoute r =
         OspfInternalSummaryRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setMetric(1L)
+            .setAdmin(1000)
             .setArea(2L)
+            .setMetric(1L)
             .build();
     assertThat(r.toBuilder().build(), equalTo(r));
   }
