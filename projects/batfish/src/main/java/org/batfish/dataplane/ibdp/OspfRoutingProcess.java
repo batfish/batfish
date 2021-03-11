@@ -343,6 +343,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .values()
         .forEach(area -> intraAreaBuilder.from(initializeRoutesByArea(area)));
     RibDelta<OspfIntraAreaRoute> intraAreaDelta = intraAreaBuilder.build();
+    RibDelta<OspfInterAreaRoute> interAreaDelta = initializeInterAreaRoutes(intraAreaDelta);
+    _initializationDelta = new InternalDelta(intraAreaDelta, interAreaDelta, RibDelta.empty());
+    _changeset.from(RibDelta.importRibDelta(_ospfRib, intraAreaDelta));
+  }
+
+  /** Initialize inter-area routes based the initial intra-area routes. */
+  @VisibleForTesting
+  @Nonnull
+  RibDelta<OspfInterAreaRoute> initializeInterAreaRoutes(
+      RibDelta<OspfIntraAreaRoute> intraAreaDelta) {
     RibDelta.Builder<OspfInterAreaRoute> interAreaBuilder = RibDelta.builder();
     if (isABR()) {
       // If we are an ABR, also do conversion to IA routes here.
@@ -361,10 +371,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
           .forEach(
               r -> interAreaBuilder.add(OspfInterAreaRoute.builder(r).setNonRouting(true).build()));
     }
-
-    _initializationDelta =
-        new InternalDelta(intraAreaDelta, interAreaBuilder.build(), RibDelta.empty());
-    _changeset.from(RibDelta.importRibDelta(_ospfRib, intraAreaDelta));
+    return interAreaBuilder.build();
   }
 
   /**

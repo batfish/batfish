@@ -363,6 +363,29 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
+  public void testInitializeInterAreaRoutes() {
+    OspfIntraAreaRoute notSummarized =
+        OspfIntraAreaRoute.builder()
+            .setArea(0)
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(Ip.parse("8.8.8.8"))
+            .build();
+    OspfIntraAreaRoute summarized =
+        OspfIntraAreaRoute.builder()
+            .setArea(0)
+            .setNetwork(Prefix.parse("10.10.10.10/32"))
+            .setNextHopIp(Ip.parse("8.8.8.8"))
+            .build();
+    RibDelta<OspfIntraAreaRoute> delta =
+        RibDelta.<OspfIntraAreaRoute>builder().add(notSummarized).add(summarized).build();
+
+    // Only the notSummarized network should be added to the inter-area delta.
+    assertThat(
+        _routingProcess.initializeInterAreaRoutes(delta).getPrefixes().collect(Collectors.toList()),
+        contains(notSummarized.getNetwork()));
+  }
+
+  @Test
   public void testGetIncrementalCost() {
     // Default behavior
     assertThat(_routingProcess.getIncrementalCost(ACTIVE_IFACE_NAME, false), equalTo(10L));
