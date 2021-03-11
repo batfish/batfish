@@ -790,8 +790,6 @@ public final class FortiosGrammarTest {
             FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP,
             "UNDEFINED",
             FortiosStructureUsage.POLICY_SERVICE));
-
-    // TODO all/any?
   }
 
   @Test

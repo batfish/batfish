@@ -246,7 +246,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     // If edited address is valid, add/update the entry in VS addresses map.
     // TODO: Better validity checking
     if (ADDRESS_NAME_PATTERN.matcher(_currentAddress.getName()).matches()) {
-      // TODO Add structure definition for address
       _c.defineStructure(FortiosStructureType.ADDRESS, _currentAddress.getName(), ctx);
       _c.getAddresses().put(_currentAddress.getName(), _currentAddress);
       _c.getRenameableObjects().put(_currentAddress.getBatfishUUID(), _currentAddress);
@@ -443,6 +442,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     String number = _currentPolicy.getNumber();
     if (_currentPolicyValid) {
       _c.defineStructure(FortiosStructureType.POLICY, number, ctx);
+      _c.referenceStructure(
+          FortiosStructureType.POLICY,
+          number,
+          FortiosStructureUsage.POLICY_SELF_REF,
+          ctx.start.getLine());
       _c.getPolicies().put(number, _currentPolicy);
     }
     _currentPolicy = null;
@@ -777,6 +781,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         }
         ifaceNameBuilder.add(Policy.ANY_INTERFACE);
       } else if (ifacesMap.containsKey(name)) {
+        ifaceNameBuilder.add(name);
         _c.referenceStructure(FortiosStructureType.INTERFACE, name, usage, line);
       } else {
         _c.undefined(FortiosStructureType.INTERFACE_OR_ZONE, name, usage, line);
