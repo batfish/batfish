@@ -256,7 +256,13 @@ public final class Policy implements Serializable {
     return Optional.of(IpAccessList.builder().setName(viName).setLines(line.build()).build());
   }
 
+  /** Computes the VI name for this policy. */
+  public @Nonnull String computeViName() {
+    return computeViName(_name, _number);
+  }
+
   /** Computes the VI name for a policy with the given name and number. */
+  @VisibleForTesting
   public static @Nonnull String computeViName(@Nullable String name, String number) {
     // TODO: Might need to generate IpAccessList names per VRF/VDOM
     return Optional.ofNullable(name).orElseGet(() -> String.format("~UNNAMED~POLICY~%s~", number));
