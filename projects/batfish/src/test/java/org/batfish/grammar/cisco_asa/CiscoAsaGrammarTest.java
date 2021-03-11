@@ -1184,6 +1184,7 @@ public final class CiscoAsaGrammarTest {
   public void testAsaServiceObjectInline() throws IOException {
     String hostname = "asa-service-object-inline";
     Configuration c = parseConfig(hostname);
+    assertThat(c, hasConfigurationFormat(ConfigurationFormat.CISCO_ASA));
 
     String icmpAclName = "ACL_ICMP";
     String ospfAclName = "ACL_OSPF";

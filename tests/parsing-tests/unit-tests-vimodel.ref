@@ -29031,7 +29031,6 @@
               "networkType" : "BROADCAST",
               "passive" : false
             },
-            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~inside~",
             "prefix" : "192.168.0.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
@@ -29105,61 +29104,6 @@
             "name" : "abc",
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
-          },
-          "~COMBINED_OUTGOING_ACL~inside~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                      "srcInterfaces" : [
-                        "inside"
-                      ],
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "same-security-traffic permit intra-interface is not set"
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "same-security-traffic permit inter-interface is not set"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.FalseExpr"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~COMBINED_OUTGOING_ACL~inside~"
           },
           "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~" : {
             "lines" : [

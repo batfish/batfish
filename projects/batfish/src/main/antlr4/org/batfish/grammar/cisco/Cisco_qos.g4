@@ -433,7 +433,6 @@ o_network
       on_description
       | on_fqdn
       | on_host
-      | on_nat
       | on_range
       | on_subnet
    )*
@@ -705,13 +704,8 @@ ogs_service_object
 :
    SERVICE_OBJECT
    (
-      (
-         service_specifier
-      )
-      |
-      (
-         OBJECT (predef = asa_predefined_service | name = variable)
-      )
+      service_specifier
+      | OBJECT name = variable
    ) NEWLINE
 ;
 
@@ -773,15 +767,6 @@ on_host
    ) NEWLINE
 ;
 
-on_nat
-:
-   NAT asa_nat_ifaces?
-   (
-      onn_dynamic
-      | onn_static
-   ) NEWLINE
-;
-
 on_range
 :
    RANGE start = IP_ADDRESS end = IP_ADDRESS NEWLINE
@@ -801,34 +786,6 @@ on_subnet
 on_group
 :
    GROUP_OBJECT name = variable_permissive NEWLINE
-;
-
-onn_dynamic
-:
-   DYNAMIC
-   (
-      (
-         (
-            mapped_iface = INTERFACE
-            | host_ip = IP_ADDRESS
-            | obj = variable
-         )
-         mapped_iface_after = INTERFACE?
-      )
-      | asa_nat_pat_pool
-   ) DNS?
-;
-
-onn_static
-:
-   STATIC
-   (
-      INTERFACE
-      | host_ip = IP_ADDRESS
-      | obj = variable
-   )
-   asa_nat_optional_args*
-   asa_object_nat_service?
 ;
 
 os_description

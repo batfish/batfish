@@ -9,8 +9,6 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
@@ -136,7 +134,6 @@ import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
@@ -193,7 +190,6 @@ import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
-import org.batfish.representation.cisco.CiscoAsaNat.Section;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -502,8 +498,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _natOutside;
 
-  private final List<CiscoAsaNat> _ciscoAsaNats;
-
   private final List<CiscoIosNat> _ciscoIosNats;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
@@ -597,7 +591,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _namedVlans = new HashMap<>();
     _natInside = new TreeSet<>();
     _natOutside = new TreeSet<>();
-    _ciscoAsaNats = new ArrayList<>();
     _ciscoIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
@@ -866,10 +859,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _natOutside;
   }
 
-  public List<CiscoAsaNat> getCiscoAsaNats() {
-    return _ciscoAsaNats;
-  }
-
   public List<CiscoIosNat> getCiscoIosNats() {
     return _ciscoIosNats;
   }
@@ -905,15 +894,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       return null;
     }
     return zoneName;
-  }
-
-  @Nullable
-  private String getASASecurityLevelZoneName(Interface iface) {
-    Integer level = iface.getSecurityLevel();
-    if (level == null) {
-      return null;
-    }
-    return computeASASecurityLevelZoneName(level);
   }
 
   public SnmpServer getSnmpServer() {
@@ -1913,13 +1893,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * Currently, only static NATs have both incoming and outgoing transformations
      */
 
-    List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
     List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
-    if (!ciscoAsaNats.isEmpty() && !ciscoIosNats.isEmpty()) {
-      _w.redFlag("Multiple NAT types should not be present in same configuration.");
-    } else if (!ciscoAsaNats.isEmpty()) {
-      generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
-    } else if (!ciscoIosNats.isEmpty()) {
+    if (!ciscoIosNats.isEmpty()) {
       generateCiscoIosNatTransformations(ifaceName, vrfName, newIface, c);
     }
 
@@ -1928,19 +1903,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setRoutingPolicy(routingPolicyName);
     }
 
-    if (_vendor == ConfigurationFormat.CISCO_ASA) {
-      newIface.setPostTransformationIncomingFilter(newIface.getIncomingFilter());
-      newIface.setPreTransformationOutgoingFilter(newIface.getOutgoingFilter());
-      newIface.setIncomingFilter(null);
-      newIface.setOutgoingFilter(null);
-
-      // Assume each interface has its own session info (sessions are not shared by interfaces).
-      // That is, return flows can only enter the interface the forward flow exited in order to
-      // match the session setup by the forward flow.
-      newIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(
-              Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
-    }
     // For IOS and XR, FirewallSessionInterfaceInfo is created once for all NAT interfaces.
     return newIface;
   }
@@ -1980,39 +1942,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     } else {
       throw new IllegalArgumentException("Invalid EIGRP process mode: " + mode);
     }
-  }
-
-  private void generateCiscoAsaNatTransformations(
-      String ifaceName, org.batfish.datamodel.Interface newIface, List<CiscoAsaNat> ciscoAsaNats) {
-
-    if (!ciscoAsaNats.stream().map(CiscoAsaNat::getSection).allMatch(Section.OBJECT::equals)) {
-      _w.unimplemented("No support for Twice NAT");
-    }
-
-    // ASA places incoming and outgoing object NATs as transformations on the outside interface.
-    // Each NAT rule specifies an outside interface or ANY_INTERFACE
-    SortedSet<CiscoAsaNat> objectNats =
-        ciscoAsaNats.stream()
-            .filter(nat -> nat.getSection().equals(Section.OBJECT))
-            .filter(
-                nat ->
-                    nat.getOutsideInterface().equals(CiscoAsaNat.ANY_INTERFACE)
-                        || nat.getOutsideInterface().equals(ifaceName))
-            .collect(Collectors.toCollection(TreeSet::new));
-
-    newIface.setIncomingTransformation(
-        objectNats.stream()
-            .map(nat -> nat.toIncomingTransformation(_networkObjects, _w))
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
-
-    newIface.setOutgoingTransformation(
-        objectNats.stream()
-            .map(nat -> nat.toOutgoingTransformation(_networkObjects, _w))
-            .collect(
-                Collectors.collectingAndThen(
-                    Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
   }
 
   private void generateCiscoIosNatTransformations(
@@ -2062,8 +1991,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
     if (getIOSSecurityZoneName(iface) != null) {
       applyIOSSecurityZoneFilter(iface, newIface, c);
-    } else if (getASASecurityLevelZoneName(iface) != null) {
-      applyASASecurityLevelFilter(iface, newIface, c);
     }
   }
 
@@ -2109,178 +2036,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .build()))
             .build();
     newIface.setOutgoingFilter(combinedOutgoingAcl);
-  }
-
-  private void applyASASecurityLevelFilter(
-      Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
-    String zoneName =
-        checkNotNull(
-            getASASecurityLevelZoneName(iface),
-            "interface %s is not in a security level",
-            iface.getName());
-    String interSecurityLevelAclName = computeZoneOutgoingAclName(zoneName);
-    IpAccessList interSecurityLevelAcl = c.getIpAccessLists().get(interSecurityLevelAclName);
-    if (interSecurityLevelAcl == null) {
-      return;
-    }
-    IpAccessList oldOutgoingFilter = newIface.getOutgoingFilter();
-    String oldOutgoingFilterName = oldOutgoingFilter == null ? null : oldOutgoingFilter.getName();
-
-    // Construct a new ACL that:
-    // 1) rejects if the (inter- or intra-) security-level policy rejects
-    // 2) rejects if both of the following are true:
-    //    a) the (inter- or intra-) security-level policy permits
-    //    b) the interface outbound filter REJECTS
-    // 3) permits if both of the following are true:
-    //    a) the (inter- or intra-) security-level policy permits
-    //    b) the interface outbound filter permits
-    //
-    // NOTE: step 3 is mutually exclusive with each of steps 1 and 2. We do steps
-    // 1 and 2 to produce better traces than we would with step 3 alone (letting the flows
-    // that would be matched by steps 1 and 2 be denied by the default no-match semantics).
-
-    ImmutableList.Builder<AclLine> lineBuilder = ImmutableList.builder();
-
-    // Step 1.
-    // 1a. intra-security-level
-    lineBuilder.add(ExprAclLine.rejecting(getAsaIntraSecurityLevelDenyExpr(iface, newIface)));
-    // 1b. inter-security-level
-    lineBuilder.addAll(getAsaInterSecurityLevelDenyAclLines(iface.getSecurityLevel()));
-
-    AclLineMatchExpr securityLevelPolicies =
-        or(
-            new PermittedByAcl(interSecurityLevelAclName),
-            getAsaIntraSecurityLevelPermitExpr(iface, newIface));
-
-    // Step 2.
-    if (oldOutgoingFilterName != null) {
-      lineBuilder.add(
-          ExprAclLine.rejecting()
-              .setMatchCondition(
-                  and(
-                      securityLevelPolicies,
-                      new DeniedByAcl(
-                          oldOutgoingFilterName,
-                          asaDeniedByOutputFilterTraceElement(
-                              _filename, c.getIpAccessLists().get(oldOutgoingFilterName)))))
-              .build());
-    }
-
-    // Step 3.
-
-    if (oldOutgoingFilterName != null) {
-      lineBuilder.add(
-          ExprAclLine.accepting()
-              .setMatchCondition(
-                  new AndMatchExpr(
-                      ImmutableList.of(
-                          securityLevelPolicies,
-                          new PermittedByAcl(
-                              oldOutgoingFilterName,
-                              asaPermittedByOutputFilterTraceElement(
-                                  _filename, c.getIpAccessLists().get(oldOutgoingFilterName))))))
-              .build());
-    } else {
-      lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());
-    }
-    newIface.setOutgoingFilter(
-        IpAccessList.builder()
-            .setOwner(c)
-            .setName(computeCombinedOutgoingAclName(newIface.getName()))
-            .setLines(lineBuilder.build())
-            .build());
-  }
-
-  /**
-   * Drop outbound traffic from interfaces with lower security levels if that interface does not
-   * have an inbound ACL. Note: this could be shared among out-interfaces in the same security
-   * level, but for now we're recomputing it for each one.
-   */
-  @Nonnull
-  private List<ExprAclLine> getAsaInterSecurityLevelDenyAclLines(int level) {
-    return _interfacesBySecurityLevel.keySet().stream()
-        .filter(l -> l < level)
-        .map(
-            l -> {
-              List<String> denySrcInterfaces =
-                  _interfacesBySecurityLevel.get(l).stream()
-                      .filter(inIface -> inIface.getIncomingFilter() == null)
-                      .map(this::getNewInterfaceName)
-                      .collect(Collectors.toList());
-              if (denySrcInterfaces.isEmpty()) {
-                return null;
-              }
-              return ExprAclLine.rejecting()
-                  .setName("Traffic from security level " + l + " without inbound filter")
-                  .setTraceElement(asaRejectLowerSecurityLevelTraceElement(l))
-                  .setMatchCondition(new MatchSrcInterface(denySrcInterfaces))
-                  .build();
-            })
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * Construct an {@link AclLineMatchExpr} that matches traffic NOT allowed to exit the specified
-   * {@code iface} after entering the same interface or another interface in the same security
-   * level. Only for Cisco ASA devices.
-   */
-  private AclLineMatchExpr getAsaIntraSecurityLevelDenyExpr(
-      Interface iface, org.batfish.datamodel.Interface newIface) {
-    checkNotNull(iface.getSecurityLevel(), "interface %s not in a security level", iface.getName());
-    ImmutableList.Builder<AclLineMatchExpr> disjuncts = ImmutableList.builder();
-
-    if (!_sameSecurityTrafficIntra) {
-      // reject traffic received on the outgoing interface (hairpinning)
-      disjuncts.add(
-          new MatchSrcInterface(
-              ImmutableList.of(newIface.getName()),
-              DENY_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT));
-    }
-
-    if (!_sameSecurityTrafficInter) {
-      // reject traffic received on another interface in the same security level
-      disjuncts.add(
-          new MatchSrcInterface(
-              _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
-                  .filter(other -> !other.equals(iface))
-                  .map(this::getNewInterfaceName)
-                  .collect(ImmutableList.toImmutableList()),
-              DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT));
-    }
-    return or(disjuncts.build()); // no trace element for the or
-  }
-
-  /**
-   * Construct an {@link AclLineMatchExpr} that matches traffic allowed to exit the specified {@code
-   * iface} after entering the same interface or another interface in the same security level. Only
-   * for Cisco ASA devices.
-   */
-  private AclLineMatchExpr getAsaIntraSecurityLevelPermitExpr(
-      Interface iface, org.batfish.datamodel.Interface newIface) {
-    checkNotNull(iface.getSecurityLevel(), "interface %s not in a security level", iface.getName());
-    ImmutableList.Builder<AclLineMatchExpr> exprs = ImmutableList.builder();
-
-    // handle traffic received on the outgoing interface (hairpinning)
-    if (_sameSecurityTrafficIntra) {
-      exprs.add(
-          new MatchSrcInterface(
-              ImmutableList.of(newIface.getName()),
-              PERMIT_SAME_SECURITY_TRAFFIC_INTRA_TRACE_ELEMENT));
-    }
-
-    // handle traffic received on another interface in the same security level
-    if (_sameSecurityTrafficInter) {
-      exprs.add(
-          new MatchSrcInterface(
-              _interfacesBySecurityLevel.get(iface.getSecurityLevel()).stream()
-                  .filter(other -> !other.equals(iface))
-                  .map(this::getNewInterfaceName)
-                  .collect(ImmutableList.toImmutableList()),
-              PERMIT_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT));
-    }
-
-    return or(exprs.build()); // no trace element for the or
   }
 
   public static String computeCombinedOutgoingAclName(String interfaceName) {
@@ -3047,33 +2802,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     /*
      * Consolidate info about networkObjects
      * - Associate networkObjects with their Info
-     * - Associate ASA Object NATs with their object (needed for sorting)
-     * - Removes ASA Object NATs that were created without a valid network object
      */
     _networkObjectInfos.forEach(
         (name, info) -> {
           if (_networkObjects.containsKey(name)) {
             _networkObjects.get(name).setInfo(info);
           }
-        });
-    _ciscoAsaNats.removeIf(
-        nat -> {
-          if (nat.getSection() != Section.OBJECT) {
-            return false;
-          }
-          String objectName = ((NetworkObjectAddressSpecifier) nat.getRealSource()).getName();
-          NetworkObject object = _networkObjects.get(objectName);
-          if (object == null) {
-            // Network object has a NAT but no addresses
-            _w.redFlag("Invalid reference for object NAT " + objectName + ".");
-            return true;
-          }
-          if (object.getStart() == null) {
-            // Unsupported network object type, already warned
-            return true;
-          }
-          nat.setRealSourceObject(object);
-          return false;
         });
 
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
