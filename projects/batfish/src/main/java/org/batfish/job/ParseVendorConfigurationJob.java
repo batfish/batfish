@@ -32,6 +32,8 @@ import org.batfish.grammar.arista.AristaCombinedParser;
 import org.batfish.grammar.arista.AristaControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
+import org.batfish.grammar.cisco_asa.AsaCombinedParser;
+import org.batfish.grammar.cisco_asa.AsaControlPlaneExtractor;
 import org.batfish.grammar.cisco_nxos.CiscoNxosCombinedParser;
 import org.batfish.grammar.cisco_nxos.NxosControlPlaneExtractor;
 import org.batfish.grammar.cisco_xr.CiscoXrCombinedParser;
@@ -173,7 +175,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
         case ARUBAOS:
         case CADANT:
-        case CISCO_ASA:
         case CISCO_IOS:
         case FORCE10:
         case FOUNDRY:
@@ -181,6 +182,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText, _settings, format);
             combinedParser = ciscoParser;
             extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser, format, _warnings);
+            break;
+          }
+        case CISCO_ASA:
+          {
+            AsaCombinedParser asaParser = new AsaCombinedParser(_fileText, _settings, format);
+            combinedParser = asaParser;
+            extractor = new AsaControlPlaneExtractor(_fileText, asaParser, format, _warnings);
             break;
           }
 
