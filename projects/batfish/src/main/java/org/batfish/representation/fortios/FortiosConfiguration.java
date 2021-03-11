@@ -110,7 +110,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private void convertPolicy(
       Policy policy, Configuration c, Map<String, AclLineMatchExpr> convertedServices) {
     policy
-        .toIpAccessList(c.getIpSpaces(), convertedServices)
+        .toIpAccessList(c.getIpSpaces(), convertedServices, _w)
         .ifPresent(acl -> c.getIpAccessLists().put(acl.getName(), acl));
   }
 }

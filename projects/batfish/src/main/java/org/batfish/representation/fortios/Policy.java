@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
@@ -176,7 +177,9 @@ public final class Policy implements Serializable {
   @Nullable private Action _action;
 
   public @Nonnull Optional<IpAccessList> toIpAccessList(
-      Map<String, IpSpace> namedIpSpaces, Map<String, AclLineMatchExpr> convertedServices) {
+      Map<String, IpSpace> namedIpSpaces,
+      Map<String, AclLineMatchExpr> convertedServices,
+      Warnings w) {
     if (getStatusEffective() != Status.ENABLE) {
       return Optional.empty();
     }
@@ -188,26 +191,60 @@ public final class Policy implements Serializable {
     // Note that src/dst interface filtering will be done in generated export policies.
     ImmutableList.Builder<AclLineMatchExpr> matchConjuncts = ImmutableList.builder();
 
-    // Match src and dst addresses
-    ImmutableList.Builder<AclLineMatchExpr> srcAddrExprs = ImmutableList.builder();
-    ImmutableList.Builder<AclLineMatchExpr> dstAddrExprs = ImmutableList.builder();
-    for (String src : Sets.intersection(_srcAddr, namedIpSpaces.keySet())) {
-      HeaderSpace hs = HeaderSpace.builder().setSrcIps(new IpSpaceReference(src)).build();
-      srcAddrExprs.add(new MatchHeaderSpace(hs, String.format("Match source address %s", src)));
+    // Match src addresses
+    List<AclLineMatchExpr> srcAddrExprs =
+        Sets.intersection(_srcAddr, namedIpSpaces.keySet()).stream()
+            .map(
+                addr -> {
+                  HeaderSpace hs =
+                      HeaderSpace.builder().setSrcIps(new IpSpaceReference(addr)).build();
+                  return new MatchHeaderSpace(hs, String.format("Match source address %s", addr));
+                })
+            .collect(ImmutableList.toImmutableList());
+    if (srcAddrExprs.isEmpty()) {
+      String numAndName = _name == null ? _number : String.format("%s (%s)", _number, _name);
+      w.redFlag(
+          String.format(
+              "Policy %s will not match any packets because none of its source addresses were"
+                  + " successfully converted",
+              numAndName));
     }
-    for (String dst : Sets.intersection(_dstAddr, namedIpSpaces.keySet())) {
-      HeaderSpace hs = HeaderSpace.builder().setDstIps(new IpSpaceReference(dst)).build();
-      dstAddrExprs.add(
-          new MatchHeaderSpace(hs, String.format("Match destination address %s", dst)));
-    }
-    matchConjuncts.add(or(srcAddrExprs.build()));
-    matchConjuncts.add(or(dstAddrExprs.build()));
+    matchConjuncts.add(or(srcAddrExprs));
 
-    // Match services. TODO confirm services should be disjuncted
+    // Match dst addresses
+    List<AclLineMatchExpr> dstAddrExprs =
+        Sets.intersection(_dstAddr, namedIpSpaces.keySet()).stream()
+            .map(
+                addr -> {
+                  HeaderSpace hs =
+                      HeaderSpace.builder().setDstIps(new IpSpaceReference(addr)).build();
+                  return new MatchHeaderSpace(
+                      hs, String.format("Match destination address %s", addr));
+                })
+            .collect(ImmutableList.toImmutableList());
+    if (dstAddrExprs.isEmpty()) {
+      String numAndName = _name == null ? _number : String.format("%s (%s)", _number, _name);
+      w.redFlag(
+          String.format(
+              "Policy %s will not match any packets because none of its destination addresses were"
+                  + " successfully converted",
+              numAndName));
+    }
+    matchConjuncts.add(or(dstAddrExprs));
+
+    // Match services. TODO confirm services should be disjoined
     List<AclLineMatchExpr> svcExprs =
         Sets.intersection(_service, convertedServices.keySet()).stream()
             .map(convertedServices::get)
             .collect(ImmutableList.toImmutableList());
+    if (svcExprs.isEmpty()) {
+      String numAndName = _name == null ? _number : String.format("%s (%s)", _number, _name);
+      w.redFlag(
+          String.format(
+              "Policy %s will not match any packets because none of its services were successfully"
+                  + " converted",
+              numAndName));
+    }
     matchConjuncts.add(or(svcExprs));
 
     // construct line
@@ -219,7 +256,8 @@ public final class Policy implements Serializable {
     return Optional.of(IpAccessList.builder().setName(viName).setLines(line.build()).build());
   }
 
-  public static String computeViName(@Nullable String name, String number) {
+  /** Computes the VI name for a policy with the given name and number. */
+  public static @Nonnull String computeViName(@Nullable String name, String number) {
     // TODO: Might need to generate IpAccessList names per VRF/VDOM
     return Optional.ofNullable(name).orElseGet(() -> String.format("~UNNAMED~POLICY~%s~", number));
   }
