@@ -4898,8 +4898,6 @@ RXSPEED: 'rxspeed';
 
 SA_FILTER: 'sa-filter';
 
-SAME_SECURITY_TRAFFIC: 'same-security-traffic';
-
 SAMPLER: 'sampler';
 
 SAMPLER_MAP: 'sampler-map';
@@ -4961,8 +4959,6 @@ SECURE_MAC_ADDRESS: 'secure-mac-address';
 SECURITY: 'security';
 
 SECURITY_ASSOCIATION: 'security-association';
-
-SECURITY_LEVEL: 'security-level';
 
 SELECT: 'select';
 

@@ -687,7 +687,6 @@ if_no
     | if_no_mka
     | if_no_nameif
     | if_no_routing_dynamic
-    | if_no_security_level
     | if_no_synchronous
   )
 ;
@@ -738,11 +737,6 @@ if_no_nameif
 if_no_routing_dynamic
 :
    ROUTING DYNAMIC NEWLINE
-;
-
-if_no_security_level
-:
-   SECURITY_LEVEL NEWLINE
 ;
 
 if_no_synchronous
@@ -1577,11 +1571,6 @@ if_zone_member
    ZONE_MEMBER SECURITY? name = variable_permissive NEWLINE
 ;
 
-if_security_level
-:
-   SECURITY_LEVEL level = dec NEWLINE
-;
-
 ifdhcp_null
 :
    (
@@ -1884,7 +1873,6 @@ if_inner
    | if_vrrp
    | if_vrrpno
    | if_zone_member
-   | if_security_level
    // do not rearrange items below
  
    | if_null_single

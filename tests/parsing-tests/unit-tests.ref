@@ -25689,12 +25689,6 @@
             "            INSIDE:'inside')",
             "          NEWLINE:'\\n'))",
             "      (if_inner",
-            "        (if_security_level",
-            "          SECURITY_LEVEL:'security-level'",
-            "          level = (dec",
-            "            UINT8:'100')",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
@@ -25723,12 +25717,6 @@
             "          NO:'no'",
             "          (if_no_nameif",
             "            NAMEIF:'nameif'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_no",
-            "          NO:'no'",
-            "          (if_no_security_level",
-            "            SECURITY_LEVEL:'security-level'",
             "            NEWLINE:'\\n')))",
             "      (if_inner",
             "        (if_no",
@@ -78620,13 +78608,13 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 313,
+              "Line" : 311,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre ipv4"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 314,
+              "Line" : 312,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -80970,71 +80958,71 @@
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
-              "definitionLines" : "342-343",
+              "definitionLines" : "340-341",
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
-              "definitionLines" : "291-295",
+              "definitionLines" : "291-294",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : "297-300",
+              "definitionLines" : "296-298",
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
-              "definitionLines" : "302",
+              "definitionLines" : "300",
               "numReferrers" : 1
             },
             "Null0" : {
-              "definitionLines" : "304",
+              "definitionLines" : "302",
               "numReferrers" : 1
             },
             "Tunnel0" : {
-              "definitionLines" : "308-319",
+              "definitionLines" : "306-317",
               "numReferrers" : 1
             },
             "Vlan1" : {
-              "definitionLines" : "322",
-              "numReferrers" : 1
-            },
-            "Vlan1005" : {
-              "definitionLines" : "328",
-              "numReferrers" : 1
-            },
-            "Vlan1006" : {
-              "definitionLines" : "330",
-              "numReferrers" : 1
-            },
-            "Vlan111" : {
               "definitionLines" : "320",
               "numReferrers" : 1
             },
-            "Vlan1234" : {
-              "definitionLines" : "332",
-              "numReferrers" : 1
-            },
-            "Vlan2" : {
-              "definitionLines" : "324",
-              "numReferrers" : 1
-            },
-            "Vlan3" : {
+            "Vlan1005" : {
               "definitionLines" : "326",
               "numReferrers" : 1
             },
+            "Vlan1006" : {
+              "definitionLines" : "328",
+              "numReferrers" : 1
+            },
+            "Vlan111" : {
+              "definitionLines" : "318",
+              "numReferrers" : 1
+            },
+            "Vlan1234" : {
+              "definitionLines" : "330",
+              "numReferrers" : 1
+            },
+            "Vlan2" : {
+              "definitionLines" : "322",
+              "numReferrers" : 1
+            },
+            "Vlan3" : {
+              "definitionLines" : "324",
+              "numReferrers" : 1
+            },
             "Vlan4094" : {
-              "definitionLines" : "334",
+              "definitionLines" : "332",
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
-              "definitionLines" : "336",
+              "definitionLines" : "334",
               "numReferrers" : 1
             },
             "Wlan-GigabitEthernet0" : {
-              "definitionLines" : "340",
+              "definitionLines" : "338",
               "numReferrers" : 1
             },
             "Wlan-ap0" : {
-              "definitionLines" : "338",
+              "definitionLines" : "336",
               "numReferrers" : 1
             },
             "inside" : {
@@ -81042,7 +81030,7 @@
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
-              "definitionLines" : "306",
+              "definitionLines" : "304",
               "numReferrers" : 1
             }
           }
@@ -86307,7 +86295,7 @@
             },
             "Cellular0" : {
               "tunnel source" : [
-                317
+                315
               ]
             },
             "Crypto-Engine1/2/3" : {
@@ -86325,7 +86313,7 @@
                 7
               ],
               "tunnel source" : [
-                318
+                316
               ]
             },
             "Ethernet1/11" : {
@@ -86335,7 +86323,7 @@
             },
             "Ethernet1/12" : {
               "interface" : [
-                342
+                340
               ]
             },
             "GigabitEthernet0/0" : {
@@ -86345,77 +86333,77 @@
             },
             "Loopback0" : {
               "interface" : [
-                297
+                296
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                302
+                300
               ]
             },
             "Null0" : {
               "interface" : [
-                304
+                302
               ]
             },
             "Tunnel0" : {
               "interface" : [
-                308
+                306
               ]
             },
             "Vlan1" : {
               "interface" : [
-                322
+                320
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                328
+                326
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                330
+                328
               ]
             },
             "Vlan111" : {
               "interface" : [
-                320
+                318
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                332
+                330
               ]
             },
             "Vlan2" : {
               "interface" : [
-                324
+                322
               ]
             },
             "Vlan3" : {
               "interface" : [
-                326
+                324
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                334
+                332
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                336
+                334
               ]
             },
             "Wlan-GigabitEthernet0" : {
               "interface" : [
-                340
+                338
               ]
             },
             "Wlan-ap0" : {
               "interface" : [
-                338
+                336
               ]
             },
             "inside" : {
@@ -86425,7 +86413,7 @@
             },
             "tunnel-ip6" : {
               "interface" : [
-                306
+                304
               ]
             }
           },

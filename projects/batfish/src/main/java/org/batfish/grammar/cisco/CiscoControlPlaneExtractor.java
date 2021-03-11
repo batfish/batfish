@@ -590,8 +590,6 @@ import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_member_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
-import org.batfish.grammar.cisco.CiscoParser.If_no_security_levelContext;
-import org.batfish.grammar.cisco.CiscoParser.If_security_levelContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_si_service_policyContext;
@@ -908,7 +906,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
 import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
-import org.batfish.grammar.cisco.CiscoParser.S_same_security_trafficContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_policy_globalContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_policy_interfaceContext;
@@ -5260,11 +5257,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private static final String TRUST_SECURITY_LEVEL_ALIAS = "inside";
-  private static final int TRUST_SECURITY_LEVEL = 100;
-  private static final String NO_TRUST_SECURITY_LEVEL_ALIAS = "outside";
-  private static final int NO_TRUST_SECURITY_LEVEL = 0;
-
   @Override
   public void exitIf_member_interface(If_member_interfaceContext ctx) {
     if (_currentInterfaces.size() != 1) {
@@ -5300,39 +5292,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               .add(alias)
               .build());
       iface.setAlias(alias);
-
-      // Only set level to default if it is not already set
-      if (iface.getSecurityLevel() == null) {
-        switch (alias) {
-          case TRUST_SECURITY_LEVEL_ALIAS:
-            iface.setSecurityLevel(TRUST_SECURITY_LEVEL);
-            break;
-          case NO_TRUST_SECURITY_LEVEL_ALIAS:
-            iface.setSecurityLevel(NO_TRUST_SECURITY_LEVEL);
-            break;
-          default:
-            // don't set a level
-        }
-      }
     }
-  }
-
-  @Override
-  public void exitIf_no_security_level(If_no_security_levelContext ctx) {
-    if (_currentInterfaces.size() != 1) {
-      warn(ctx, "Security level can only be configured in single-interface context");
-      return;
-    }
-    _currentInterfaces.get(0).setSecurityLevel(0);
-  }
-
-  @Override
-  public void exitIf_security_level(If_security_levelContext ctx) {
-    if (_currentInterfaces.size() != 1) {
-      warn(ctx, "Security level can only be configured in single-interface context");
-      return;
-    }
-    _currentInterfaces.get(0).setSecurityLevel(toInteger(ctx.level));
   }
 
   @Override
@@ -8558,16 +8518,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_router_rip(S_router_ripContext ctx) {
     _currentRipProcess = null;
-  }
-
-  @Override
-  public void exitS_same_security_traffic(S_same_security_trafficContext ctx) {
-    if (ctx.INTER_INTERFACE() != null) {
-      _configuration.setSameSecurityTrafficInter(true);
-    }
-    if (ctx.INTRA_INTERFACE() != null) {
-      _configuration.setSameSecurityTrafficIntra(true);
-    }
   }
 
   @Override

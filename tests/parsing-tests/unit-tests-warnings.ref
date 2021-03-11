@@ -345,14 +345,14 @@
       },
       {
         "Filename" : "configs/cisco_interface",
-        "Line" : 313,
+        "Line" : 311,
         "Text" : "mode gre ipv4",
         "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_interface",
-        "Line" : 314,
+        "Line" : 312,
         "Text" : "mode gre multipoint",
         "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"

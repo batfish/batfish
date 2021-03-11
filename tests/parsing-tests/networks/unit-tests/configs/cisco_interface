@@ -290,13 +290,11 @@ interface ethernet 1/11
 !
 interface GigabitEthernet0/0
  nameif inside
- security-level 100
  ip address 192.168.0.1 255.255.255.0
  ospf cost 60
 !
 interface Loopback0
  no nameif
- no security-level
  no ip address
 !
 interface Modular-Cable1/2/3:4

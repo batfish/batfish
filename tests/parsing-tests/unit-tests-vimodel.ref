@@ -29066,27 +29066,6 @@
             "name" : "abc",
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
-          },
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                },
-                "name" : "Allow traffic originating from this device",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched traffic originating from this device"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
           }
         },
         "vendorFamily" : {
@@ -29103,14 +29082,6 @@
           },
           "default" : {
             "name" : "default"
-          }
-        },
-        "zones" : {
-          "SECURITY_LEVEL_100" : {
-            "name" : "SECURITY_LEVEL_100",
-            "interfaces" : [
-              "inside"
-            ]
           }
         }
       },

@@ -236,8 +236,6 @@ public class Interface implements Serializable {
 
   private String _securityZone;
 
-  @Nullable private Integer _securityLevel;
-
   private @Nullable Double _speed;
 
   /**
@@ -535,11 +533,6 @@ public class Interface implements Serializable {
     return _tunnel;
   }
 
-  @Nullable
-  public Integer getSecurityLevel() {
-    return _securityLevel;
-  }
-
   public String getVrf() {
     return _vrf;
   }
@@ -719,9 +712,5 @@ public class Interface implements Serializable {
 
   public void setHsrpVersion(String hsrpVersion) {
     _hsrpVersion = hsrpVersion;
-  }
-
-  public void setSecurityLevel(@Nullable Integer level) {
-    _securityLevel = level;
   }
 }
