@@ -251,8 +251,14 @@ public final class Service implements FortiosRenameableObject, Serializable {
       case IP:
         // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
         // protocol number specifies one of those protocols
-        IpProtocol protocol = IpProtocol.fromNumber(getProtocolNumberEffective());
-        return Stream.of(HeaderSpace.builder().setIpProtocols(protocol).build());
+        int protocolNumber = getProtocolNumberEffective();
+        HeaderSpace.Builder hs = HeaderSpace.builder();
+        // Protocol number 0 indicates all protocols.
+        // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
+        return Stream.of(
+            protocolNumber == 0
+                ? hs.build()
+                : hs.setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build());
       default:
         throw new UnsupportedOperationException(
             String.format("Unrecognized service protocol %s", getProtocolEffective()));

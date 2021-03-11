@@ -1,7 +1,6 @@
 package org.batfish.representation.fortios;
 
 import static org.batfish.common.matchers.WarningMatchers.hasText;
-import static org.batfish.representation.fortios.Service.DEFAULT_PROTOCOL_NUMBER;
 import static org.batfish.representation.fortios.Service.DEFAULT_SOURCE_PORT_RANGE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -24,12 +23,14 @@ public class ServiceTest {
 
   private static final BddTestbed BDD_TESTBED;
   private static final BDD ZERO;
+  private static final BDD ONE;
   private static final IpAccessListToBdd ACL_TO_BDD;
   private static final HeaderSpaceToBDD HS_TO_BDD;
 
   static {
     BDD_TESTBED = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
     ZERO = BDD_TESTBED.getPkt().getFactory().zero();
+    ONE = BDD_TESTBED.getPkt().getFactory().one();
     ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
     HS_TO_BDD = BDD_TESTBED.getHsToBdd();
   }
@@ -162,11 +163,7 @@ public class ServiceTest {
   public void testToMatchExpr_ip_default() {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.IP);
-    HeaderSpace expected =
-        HeaderSpace.builder()
-            .setIpProtocols(IpProtocol.fromNumber(DEFAULT_PROTOCOL_NUMBER))
-            .build();
-    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
+    assertConvertsWithoutWarnings(service, ONE);
   }
 
   @Test
