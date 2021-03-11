@@ -14,6 +14,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.fortios.FortiosConfiguration.computeViPolicyName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -628,9 +629,9 @@ public final class FortiosGrammarTest {
     Map<String, IpAccessList> acls = c.getIpAccessLists();
 
     // Policy 0 should not be converted because it's disabled
-    String denyName = Policy.computeViName("longest allowed firewall policy nam", "4294967294");
-    String allowName = Policy.computeViName("Permit Custom TCP Traffic", "1");
-    String anyName = Policy.computeViName(null, "2");
+    String denyName = computeViPolicyName("longest allowed firewall policy nam", "4294967294");
+    String allowName = computeViPolicyName("Permit Custom TCP Traffic", "1");
+    String anyName = computeViPolicyName(null, "2");
     assertThat(acls, hasKeys(denyName, allowName, anyName));
     IpAccessList deny = acls.get(denyName);
     IpAccessList allow = acls.get(allowName);
