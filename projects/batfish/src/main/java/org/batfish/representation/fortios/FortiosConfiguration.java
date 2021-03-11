@@ -94,7 +94,7 @@ public class FortiosConfiguration extends VendorConfiguration {
         .values()
         .forEach(address -> c.getIpSpaces().put(address.getName(), address.toIpSpace(_w)));
 
-    // Convert policies. Must happen after c._ipSpaces is populated
+    // Convert policies. Must happen after c._ipSpaces is populated (addresses are converted)
     Map<String, AclLineMatchExpr> convertedServices =
         _services.values().stream()
             .collect(ImmutableMap.toImmutableMap(Service::getName, svc -> svc.toMatchExpr(_w)));
