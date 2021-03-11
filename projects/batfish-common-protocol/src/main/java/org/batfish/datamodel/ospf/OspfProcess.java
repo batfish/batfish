@@ -1,5 +1,6 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Optional.ofNullable;
@@ -45,6 +46,8 @@ public final class OspfProcess implements Serializable {
   /** Builder for {@link OspfProcess} */
   public static class Builder {
 
+    private static final long DEFAULT_SUMMARY_DISCARD_METRIC = 0L;
+
     @Nullable private Map<RoutingProtocol, Integer> _adminCosts;
     @Nullable private String _exportPolicy;
     @Nullable private Long _maxMetricExternalNetworks;
@@ -62,6 +65,7 @@ public final class OspfProcess implements Serializable {
     @Nullable private Boolean _rfc1583Compatible;
     @Nullable private Ip _routerId;
     @Nullable private Integer _summaryAdminCost;
+    @Nullable private Long _summaryDiscardMetric;
 
     private Builder(@Nullable Supplier<String> processIdGenerator) {
       // Default to Cisco IOS values
@@ -104,7 +108,8 @@ public final class OspfProcess implements Serializable {
               _referenceBandwidth,
               _rfc1583Compatible,
               _routerId,
-              _summaryAdminCost);
+              _summaryAdminCost,
+              firstNonNull(_summaryDiscardMetric, DEFAULT_SUMMARY_DISCARD_METRIC));
       if (_vrf != null) {
         _vrf.setOspfProcesses(
             Streams.concat(_vrf.getOspfProcesses().values().stream(), Stream.of(ospfProcess)));
@@ -204,6 +209,11 @@ public final class OspfProcess implements Serializable {
       _summaryAdminCost = admin;
       return this;
     }
+
+    public Builder setSummaryDiscardMetric(long summaryDiscardMetric) {
+      _summaryDiscardMetric = summaryDiscardMetric;
+      return this;
+    }
   }
 
   private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
@@ -212,6 +222,7 @@ public final class OspfProcess implements Serializable {
       EnumSet.of(
           RoutingProtocol.OSPF,
           RoutingProtocol.OSPF_IA,
+          RoutingProtocol.OSPF_IS,
           RoutingProtocol.OSPF_E1,
           RoutingProtocol.OSPF_E2);
 
@@ -230,6 +241,7 @@ public final class OspfProcess implements Serializable {
   private static final String PROP_ROUTER_ID = "routerId";
   private static final String PROP_RFC1583 = "rfc1583Compatible";
   private static final String PROP_SUMMARY_ADMIN = "summaryAdminCost";
+  private static final String PROP_SUMMARY_DISCARD_METRIC = "summaryDiscardMetric";
 
   public static @Nonnull Builder builder(@Nullable Supplier<String> processIdGenerator) {
     return new Builder(processIdGenerator);
@@ -258,6 +270,7 @@ public final class OspfProcess implements Serializable {
   @Nullable private Boolean _rfc1583Compatible;
   @Nonnull private Ip _routerId;
   private int _summaryAdminCost;
+  private long _summaryDiscardMetric;
 
   private OspfProcess(
       Map<RoutingProtocol, Integer> adminCosts,
@@ -274,7 +287,8 @@ public final class OspfProcess implements Serializable {
       Double referenceBandwidth,
       @Nullable Boolean rfc1583Compatible,
       Ip routerId,
-      Integer summaryAdminCost) {
+      Integer summaryAdminCost,
+      long summaryDiscardMetric) {
     _adminCosts = adminCosts;
     _areas = areas;
     _exportPolicy = exportPolicy;
@@ -290,6 +304,7 @@ public final class OspfProcess implements Serializable {
     _rfc1583Compatible = rfc1583Compatible;
     _routerId = routerId;
     _summaryAdminCost = summaryAdminCost;
+    _summaryDiscardMetric = summaryDiscardMetric;
 
     // transient
     _ospfNeighbors = new TreeMap<>();
@@ -310,7 +325,8 @@ public final class OspfProcess implements Serializable {
       @Nullable @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth,
       @Nullable @JsonProperty(PROP_RFC1583) Boolean rfc1583Compatible,
       @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
-      @Nullable @JsonProperty(PROP_SUMMARY_ADMIN) Integer summaryAdminCost) {
+      @Nullable @JsonProperty(PROP_SUMMARY_ADMIN) Integer summaryAdminCost,
+      @Nullable @JsonProperty(PROP_SUMMARY_DISCARD_METRIC) Long summaryDiscardMetric) {
     OspfProcess.Builder builder = builder();
     checkArgument(processId != null, "Missing %s", PROP_PROCESS_ID);
     builder.setProcessId(processId);
@@ -505,6 +521,11 @@ public final class OspfProcess implements Serializable {
   /** Return the admin cost assigned to inter-area summaries */
   public int getSummaryAdminCost() {
     return _summaryAdminCost;
+  }
+
+  /** Return the metric for internal summary discard routes */
+  public long getSummaryDiscardMetric() {
+    return _summaryDiscardMetric;
   }
 
   /** Initialize interface costs for all interfaces that belong to this process */

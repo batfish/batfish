@@ -15,6 +15,7 @@ import static org.batfish.representation.juniper.NatPacketLocation.interfaceLoca
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
+import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -1101,6 +1102,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setSummaryAdminCost(
                 RoutingProtocol.OSPF_IA.getSummaryAdministrativeCost(_c.getConfigurationFormat()))
             .setRouterId(ospfRouterId)
+            .setSummaryDiscardMetric(OSPF_INTERNAL_SUMMARY_DISCARD_METRIC)
             .build();
     String vrfName = routingInstance.getName();
     // export policies
@@ -1605,39 +1607,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static String computeIsisExportPolicyName(String routingInstanceName) {
     return String.format("~ISIS_EXPORT_POLICY:%s~", routingInstanceName);
-  }
-
-  private org.batfish.datamodel.GeneratedRoute ospfSummaryToAggregateRoute(
-      Prefix prefix, OspfAreaSummary summary) {
-    int prefixLength = prefix.getPrefixLength();
-    String policyNameSuffix = prefix.toString().replace('/', '_').replace('.', '_');
-    String policyName = "~SUMMARY" + policyNameSuffix + "~";
-    RoutingPolicy routingPolicy = new RoutingPolicy(policyName, _c);
-    If routingPolicyConditional = new If();
-    routingPolicy.getStatements().add(routingPolicyConditional);
-    routingPolicyConditional.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
-    routingPolicyConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
-    String rflName = "~SUMMARY" + policyNameSuffix + "_RF~";
-    MatchPrefixSet isContributingRoute =
-        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(rflName));
-    routingPolicyConditional.setGuard(isContributingRoute);
-    RouteFilterList rfList = new RouteFilterList(rflName);
-    rfList.addLine(
-        new org.batfish.datamodel.RouteFilterLine(
-            LineAction.PERMIT, prefix, new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH)));
-    org.batfish.datamodel.GeneratedRoute.Builder newRoute =
-        org.batfish.datamodel.GeneratedRoute.builder();
-    newRoute.setNetwork(prefix);
-    newRoute.setAdmin(
-        RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(ConfigurationFormat.JUNIPER));
-    if (summary.getMetric() != null) {
-      newRoute.setMetric(summary.getMetric());
-    }
-    newRoute.setDiscard(true);
-    newRoute.setGenerationPolicy(policyName);
-    _c.getRoutingPolicies().put(policyName, routingPolicy);
-    _c.getRouteFilterLists().put(rflName, rfList);
-    return newRoute.build();
   }
 
   /**
@@ -3437,15 +3406,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         OspfProcess oproc = createOspfProcess(ri);
         if (oproc != null) {
           vrf.setOspfProcesses(ImmutableSortedMap.of(oproc.getProcessId(), oproc));
-          // add discard routes for OSPF summaries
-          oproc.getAreas().values().stream()
-              .flatMap(a -> a.getSummaries().entrySet().stream())
-              .forEach(
-                  summaryEntry ->
-                      vrf.getGeneratedRoutes()
-                          .add(
-                              ospfSummaryToAggregateRoute(
-                                  summaryEntry.getKey(), summaryEntry.getValue())));
         }
       }
 

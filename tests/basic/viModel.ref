@@ -1277,7 +1277,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -1295,7 +1296,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -2747,7 +2749,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -2765,7 +2768,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.2.2.2",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -3227,7 +3231,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -3246,7 +3251,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.10.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -4593,7 +4599,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -4612,7 +4619,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "aggregateRoutes" : [
@@ -5941,7 +5949,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -5960,7 +5969,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.1.2",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "aggregateRoutes" : [
@@ -6628,7 +6638,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -6649,7 +6660,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.2.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -7252,7 +7264,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -7273,7 +7286,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.2.2",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -9312,7 +9326,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -9331,7 +9346,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.3.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -10162,7 +10178,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -10181,7 +10198,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.1.3.2",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -11527,7 +11545,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -11545,7 +11564,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "3.1.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -12816,7 +12836,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -12834,7 +12855,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "3.2.2.2",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -13580,7 +13602,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -13599,7 +13622,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "3.10.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {

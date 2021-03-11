@@ -21767,7 +21767,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "0" : {
@@ -21784,7 +21785,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "192.168.1.0",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             }
           }
@@ -31200,7 +31202,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "0" : {
@@ -31241,7 +31244,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             }
           }
@@ -31489,7 +31493,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "0" : {
@@ -31530,27 +31535,31 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               },
               "abcdefg" : {
                 "adminCosts" : {
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "processId" : "abcdefg",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               },
               "ignored" : {
                 "adminCosts" : {
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "0" : {
@@ -31579,7 +31588,8 @@
                 "processId" : "ignored",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             }
           }
@@ -38799,7 +38809,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "0" : {
@@ -38812,7 +38823,8 @@
                 "processId" : "65001",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "10.0.1.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "bgpProcess" : {
@@ -39802,7 +39814,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "0" : {
@@ -39820,7 +39833,8 @@
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.130.0.1",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             }
           }
@@ -40749,7 +40763,8 @@
                   "ospf" : 10,
                   "ospfE1" : 150,
                   "ospfE2" : 150,
-                  "ospfIA" : 10
+                  "ospfIA" : 10,
+                  "ospfIS" : 10
                 },
                 "areas" : {
                   "0" : {
@@ -40767,7 +40782,8 @@
                 "processId" : "default",
                 "referenceBandwidth" : 1.0E9,
                 "routerId" : "10.1.2.3",
-                "summaryAdminCost" : 10
+                "summaryAdminCost" : 10,
+                "summaryDiscardMetric" : 0
               }
             }
           }
@@ -42698,7 +42714,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "0" : {
@@ -42751,7 +42768,8 @@
                 "processId" : "2",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "169.232.1.4",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             }
           }
@@ -66992,16 +67010,6 @@
               }
             ],
             "name" : "~OSPF_SUMMARY_FILTER:default:66051~"
-          },
-          "~SUMMARY1_2_0_0_16_RF~" : {
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "ipWildcard" : "1.2.0.0/16",
-                "lengthRange" : "17-32"
-              }
-            ],
-            "name" : "~SUMMARY1_2_0_0_16_RF~"
           }
         },
         "routingPolicies" : {
@@ -67030,36 +67038,6 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                 "type" : "ExitReject"
-              }
-            ]
-          },
-          "~SUMMARY1_2_0_0_16~" : {
-            "name" : "~SUMMARY1_2_0_0_16~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "~SUMMARY1_2_0_0_16_RF~"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
               }
             ]
           }
@@ -67106,7 +67084,8 @@
                   "ospf" : 10,
                   "ospfE1" : 150,
                   "ospfE2" : 150,
-                  "ospfIA" : 10
+                  "ospfIA" : 10,
+                  "ospfIS" : 10
                 },
                 "areas" : {
                   "66051" : {
@@ -67132,23 +67111,10 @@
                 "processId" : "default",
                 "referenceBandwidth" : 1.0E9,
                 "routerId" : "1.1.1.1",
-                "summaryAdminCost" : 10
+                "summaryAdminCost" : 10,
+                "summaryDiscardMetric" : 0
               }
-            },
-            "aggregateRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.GeneratedRoute",
-                "administrativeCost" : 10,
-                "asPath" : [ ],
-                "discard" : true,
-                "generationPolicy" : "~SUMMARY1_2_0_0_16~",
-                "metric" : 100,
-                "network" : "1.2.0.0/16",
-                "nextHopInterface" : "null_interface",
-                "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
-              }
-            ]
+            }
           }
         }
       },
@@ -71106,7 +71072,8 @@
                   "ospf" : 10,
                   "ospfE1" : 150,
                   "ospfE2" : 150,
-                  "ospfIA" : 10
+                  "ospfIA" : 10,
+                  "ospfIS" : 10
                 },
                 "areas" : {
                   "7" : {
@@ -71134,7 +71101,8 @@
                 "processId" : "default",
                 "referenceBandwidth" : 1.0E9,
                 "routerId" : "1.1.1.1",
-                "summaryAdminCost" : 10
+                "summaryAdminCost" : 10,
+                "summaryDiscardMetric" : 0
               }
             }
           }
@@ -76520,7 +76488,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "areas" : {
                   "1" : {
@@ -76541,21 +76510,24 @@
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               },
               "ignored" : {
                 "adminCosts" : {
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "maxMetricExternalNetworks" : 65535,
                 "maxMetricTransitLinks" : 65535,
                 "processId" : "ignored",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "5.6.7.8",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             }
           },
@@ -76567,36 +76539,42 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               },
               "100" : {
                 "adminCosts" : {
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "processId" : "100",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "0.0.0.0",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               },
               "ignored" : {
                 "adminCosts" : {
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "processId" : "ignored",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "5.6.7.8",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             },
             "snmpServer" : { }
@@ -76609,7 +76587,8 @@
                   "ospf" : 110,
                   "ospfE1" : 110,
                   "ospfE2" : 110,
-                  "ospfIA" : 110
+                  "ospfIA" : 110,
+                  "ospfIS" : 110
                 },
                 "maxMetricExternalNetworks" : 65535,
                 "maxMetricSummaryNetworks" : 65535,
@@ -76617,7 +76596,8 @@
                 "processId" : "100",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "0.0.0.0",
-                "summaryAdminCost" : 254
+                "summaryAdminCost" : 254,
+                "summaryDiscardMetric" : 0
               }
             }
           },

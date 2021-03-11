@@ -122,6 +122,8 @@ public class OspfRoutingProcessTest {
       ImmutableMap.of(
           RoutingProtocol.OSPF,
           100,
+          RoutingProtocol.OSPF_IS,
+          150,
           RoutingProtocol.OSPF_IA,
           200,
           RoutingProtocol.OSPF_E1,
