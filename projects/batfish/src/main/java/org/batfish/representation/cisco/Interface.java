@@ -145,8 +145,6 @@ public class Interface implements Serializable {
 
   private boolean _active;
 
-  private String _alias;
-
   @Nullable private IntegerSpace _allowedVlans;
 
   private boolean _autoState;
@@ -333,10 +331,6 @@ public class Interface implements Serializable {
 
   public boolean getActive() {
     return _active;
-  }
-
-  public String getAlias() {
-    return _alias;
   }
 
   @Nullable
@@ -543,10 +537,6 @@ public class Interface implements Serializable {
 
   public void setActive(boolean active) {
     _active = active;
-  }
-
-  public void setAlias(String alias) {
-    _alias = alias;
   }
 
   public void setAutoState(boolean autoState) {

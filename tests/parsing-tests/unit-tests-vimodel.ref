@@ -28613,6 +28613,43 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "GigabitEthernet0/0" : {
+            "name" : "GigabitEthernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "192.168.0.1/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfSettings" : {
+              "cost" : 60,
+              "deadInterval" : 40,
+              "enabled" : false,
+              "helloInterval" : 10,
+              "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
+              "passive" : false
+            },
+            "prefix" : "192.168.0.1/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "Loopback0" : {
             "name" : "Loopback0",
             "active" : true,
@@ -28965,44 +29002,6 @@
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "UNKNOWN",
-            "vrf" : "default"
-          },
-          "inside" : {
-            "name" : "inside",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "192.168.0.1/24"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet0/0",
-              "inside"
-            ],
-            "mtu" : 1500,
-            "ospfSettings" : {
-              "cost" : 60,
-              "deadInterval" : 40,
-              "enabled" : false,
-              "helloInterval" : 10,
-              "helloMultiplier" : 0,
-              "networkType" : "BROADCAST",
-              "passive" : false
-            },
-            "prefix" : "192.168.0.1/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "speed" : 1.0E9,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "tunnel-ip6" : {

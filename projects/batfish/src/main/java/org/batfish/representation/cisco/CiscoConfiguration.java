@@ -743,10 +743,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _ciscoIosNats;
   }
 
-  private String getNewInterfaceName(Interface iface) {
-    return firstNonNull(iface.getAlias(), iface.getName());
-  }
-
   public String getNtpSourceInterface() {
     return _ntpSourceInterface;
   }
@@ -1563,7 +1559,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       boolean passive =
           eigrpProcess
               .getInterfacePassiveStatus()
-              .getOrDefault(getNewInterfaceName(iface), eigrpProcess.getPassiveInterfaceDefault());
+              .getOrDefault(iface.getName(), eigrpProcess.getPassiveInterfaceDefault());
 
       // Export distribute lists
       String exportPolicyName =
@@ -1940,14 +1936,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
        * proceed down to inference based on network addresses.
        */
       Interface vsIface = _interfaces.get(iface.getName());
-      if (vsIface == null) {
-        // Need to look at aliases because in ASA the VI model iface will be named using the alias
-        vsIface =
-            _interfaces.values().stream()
-                .filter(i -> iface.getName().equals(i.getAlias()))
-                .findFirst()
-                .get();
-      }
       if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
         continue;
       }
@@ -2713,7 +2701,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _interfaces.forEach(
         (ifaceName, iface) -> {
           // Handle renaming interfaces for ASA devices
-          String newIfaceName = getNewInterfaceName(iface);
+          String newIfaceName = iface.getName();
           org.batfish.datamodel.Interface newInterface = toInterface(newIfaceName, iface, c);
           String vrfName = iface.getVrf();
           if (vrfName == null) {
@@ -2782,10 +2770,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             String parentInterfaceName = m.group(1);
             Interface parentInterface = _interfaces.get(parentInterfaceName);
             if (parentInterface != null) {
-              org.batfish.datamodel.Interface viIface =
-                  iface.getAlias() != null
-                      ? c.getAllInterfaces().get(iface.getAlias())
-                      : c.getAllInterfaces().get(ifaceName);
+              org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(ifaceName);
               if (viIface != null) {
                 viIface.addDependency(new Dependency(parentInterfaceName, DependencyType.BIND));
               }
@@ -3012,9 +2997,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
      * (e.g. has OSPF settings but no associated OSPF process, common in show run all)
      */
     _interfaces.forEach(
-        (key, vsIface) -> {
-          // Check alias first to handle ASA using alias as VI interface name
-          String ifaceName = firstNonNull(vsIface.getAlias(), key);
+        (ifaceName, vsIface) -> {
           org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
           if (iface == null) {
             // Should never get here

@@ -252,8 +252,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
-import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
@@ -583,7 +581,6 @@ import org.batfish.grammar.cisco.CiscoParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_member_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
-import org.batfish.grammar.cisco.CiscoParser.If_nameifContext;
 import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_si_service_policyContext;
@@ -893,7 +890,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.S_loggingContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.S_mac_access_list_extendedContext;
-import org.batfish.grammar.cisco.CiscoParser.S_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
@@ -902,7 +898,6 @@ import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_policy_globalContext;
-import org.batfish.grammar.cisco.CiscoParser.S_service_policy_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.S_snmp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_sntpContext;
@@ -5220,29 +5215,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitIf_nameif(If_nameifContext ctx) {
-    String alias = ctx.name.getText();
-    Map<String, Interface> ifaces = _configuration.getInterfaces();
-    if (ifaces.containsKey(alias)) {
-      warn(ctx, String.format("Interface alias '%s' is already in use.", alias));
-    } else if (_currentInterfaces.size() > 1) {
-      warn(ctx, "Parse assertion failed for _currentInterfaces");
-    } else {
-      // Define the alias as an interface to make ref tracking easier
-      _configuration.defineStructure(INTERFACE, alias, ctx);
-      _configuration.referenceStructure(
-          INTERFACE, alias, INTERFACE_SELF_REF, ctx.getStart().getLine());
-      Interface iface = _currentInterfaces.get(0);
-      iface.setDeclaredNames(
-          ImmutableSortedSet.<String>naturalOrder()
-              .addAll(iface.getDeclaredNames())
-              .add(alias)
-              .build());
-      iface.setAlias(alias);
-    }
-  }
-
-  @Override
   public void exitIf_service_policy(If_service_policyContext ctx) {
     // TODO: do something with this.
     String mapname = ctx.policy_map.getText();
@@ -8432,18 +8404,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitS_mtu(S_mtuContext ctx) {
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(ctx, String.format("mtu refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-    iface.setMtu(toInteger(ctx.bytes));
-  }
-
-  @Override
   public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
     String name = ctx.ACL_NUM_EXTENDED().getText();
     _configuration.getExtendedAcls().remove(name);
@@ -8489,27 +8449,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitS_service_policy_global(S_service_policy_globalContext ctx) {
     _configuration.referenceStructure(
         POLICY_MAP, ctx.name.getText(), SERVICE_POLICY_GLOBAL, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitS_service_policy_interface(S_service_policy_interfaceContext ctx) {
-    _configuration.referenceStructure(
-        POLICY_MAP,
-        ctx.name.getText(),
-        SERVICE_POLICY_INTERFACE_POLICY,
-        ctx.name.getStart().getLine());
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(
-          ctx,
-          String.format("service-policy refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-
-    _configuration.referenceStructure(
-        INTERFACE, iface.getName(), SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -9360,14 +9299,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       return null;
     }
-  }
-
-  @Nullable
-  private Interface getAsaInterfaceByAlias(String alias) {
-    return _configuration.getInterfaces().values().stream()
-        .filter(i -> alias.equals(i.getAlias()))
-        .findFirst()
-        .orElse(null);
   }
 
   private String getCanonicalInterfaceName(String ifaceName) {

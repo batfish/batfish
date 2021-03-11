@@ -3631,8 +3631,6 @@ NAME_SERVER: 'name-server';
 
 NAMED_KEY: 'named-key';
 
-NAMEIF: 'nameif';
-
 NAMESPACE: 'namespace';
 
 NAMES: 'names';
