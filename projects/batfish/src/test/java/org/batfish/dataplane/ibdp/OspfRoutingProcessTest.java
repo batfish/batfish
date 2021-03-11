@@ -102,6 +102,8 @@ public class OspfRoutingProcessTest {
       ConcreteInterfaceAddress.parse("2.2.2.4/24");
   private static final ConcreteInterfaceAddress ACTIVE_ADDR_2 =
       ConcreteInterfaceAddress.parse("3.3.3.3/24");
+  private static final ConcreteInterfaceAddress ACTIVE_ADDR_3_SUMMARIZED =
+      ConcreteInterfaceAddress.parse("10.10.10.10/24");
   private static final ConcreteInterfaceAddress PASSIVE_ADDR =
       ConcreteInterfaceAddress.parse("4.4.4.4/24");
   private static final ConcreteInterfaceAddress OSPF_DISABLED_ADDR =
@@ -158,7 +160,7 @@ public class OspfRoutingProcessTest {
     ib.setActive(true);
     Interface activeIface =
         ib.setName(ACTIVE_IFACE_NAME)
-            .setAddresses(ACTIVE_ADDR_1, ACTIVE_ADDR_2)
+            .setAddresses(ACTIVE_ADDR_1, ACTIVE_ADDR_2, ACTIVE_ADDR_3_SUMMARIZED)
             .setOspfSettings(ospf.setNetworkType(OspfNetworkType.POINT_TO_POINT).build())
             .build();
     Interface passiveIface =
@@ -176,6 +178,14 @@ public class OspfRoutingProcessTest {
                     .setEnabled(false)
                     .build())
             .build();
+    RouteFilterList summarize10_8 =
+        new RouteFilterList(
+            "summarize 10.0.0.0/8",
+            ImmutableList.of(
+                new RouteFilterLine(
+                    LineAction.DENY, PrefixRange.moreSpecificThan(Prefix.parse("10.0.0.0/8"))),
+                new RouteFilterLine(LineAction.PERMIT, PrefixRange.ALL)));
+    _c.getRouteFilterLists().put(summarize10_8.getName(), summarize10_8);
     AREA0_CONFIG =
         OspfArea.builder()
             .setNumber(0)
@@ -186,6 +196,7 @@ public class OspfRoutingProcessTest {
                     passiveIface.getName(),
                     ospfDisabled.getName(),
                     "NonExistent"))
+            .setSummaryFilter(summarize10_8.getName())
             .build();
 
     OspfArea area1Config = OspfArea.builder().setNumber(1).build();
@@ -340,14 +351,15 @@ public class OspfRoutingProcessTest {
     - Must skip inactive interface
     - Must skip OSPF disabled interface
     - Must include OSPF passive interface
-    - Must include all addresses from active interface
+    - Must include all addresses from active interface, even if they would be summarized
     */
     assertThat(
         delta.getRoutesStream().collect(Collectors.toList()),
         containsInAnyOrder(
             hasPrefix(PASSIVE_ADDR.getPrefix()),
             hasPrefix(ACTIVE_ADDR_1.getPrefix()),
-            hasPrefix(ACTIVE_ADDR_2.getPrefix())));
+            hasPrefix(ACTIVE_ADDR_2.getPrefix()),
+            hasPrefix(ACTIVE_ADDR_3_SUMMARIZED.getPrefix())));
   }
 
   @Test
@@ -592,8 +604,7 @@ public class OspfRoutingProcessTest {
 
     // Regular conversion
     List<RouteAdvertisement<OspfInterAreaRoute>> transformed =
-        filterInterAreaRoutesToPropagateAtABR(
-                delta, AREA0_CONFIG, ImmutableMap.of(), neighborIp, nextHopIp, null)
+        filterInterAreaRoutesToPropagateAtABR(delta, AREA0_CONFIG, neighborIp, nextHopIp, null)
             .collect(Collectors.toList());
     assertThat(
         transformed,
@@ -606,8 +617,7 @@ public class OspfRoutingProcessTest {
 
     // Regular conversion but with custom metric
     transformed =
-        filterInterAreaRoutesToPropagateAtABR(
-                delta, AREA0_CONFIG, ImmutableMap.of(), neighborIp, nextHopIp, 999L)
+        filterInterAreaRoutesToPropagateAtABR(delta, AREA0_CONFIG, neighborIp, nextHopIp, 999L)
             .collect(Collectors.toList());
     assertThat(
         transformed,
@@ -618,62 +628,6 @@ public class OspfRoutingProcessTest {
                     hasNextHopIp(equalTo(nextHopIp)),
                     hasMetric(999L)))));
 
-    // Convert and filter with route filter list
-    // - Area 1 has a summarization for 1.0.0.0/8
-    // - Sending routes to area 0, should block the area 0 route (same area) and
-    //   should block the area 1 route (summarized).
-    transformed =
-        filterInterAreaRoutesToPropagateAtABR(
-                delta,
-                AREA0_CONFIG,
-                ImmutableMap.of(
-                    1L,
-                    new RouteFilterList(
-                        "filter",
-                        ImmutableList.of(
-                            new RouteFilterLine(
-                                LineAction.DENY,
-                                PrefixRange.moreSpecificThan(Prefix.parse("1.0.0.0/8"))),
-                            new RouteFilterLine(LineAction.PERMIT, PrefixRange.ALL)))),
-                neighborIp,
-                nextHopIp,
-                999L)
-            .collect(Collectors.toList());
-    assertThat(transformed, empty());
-
-    // Convert and filter with route filter list
-    // - Area 1 has a summarization for 2.0.0.0/8
-    // - Sending routes to area 0, should block the area 0 route (same area) and
-    //   should permit the area 1 route.
-    // Note that area 0's filter denies all routes, but area 1's route will still be allowed.
-    transformed =
-        filterInterAreaRoutesToPropagateAtABR(
-                delta,
-                AREA0_CONFIG,
-                ImmutableMap.of(
-                    0L,
-                    new RouteFilterList("filter0"),
-                    1L,
-                    new RouteFilterList(
-                        "filter1",
-                        ImmutableList.of(
-                            new RouteFilterLine(
-                                LineAction.DENY,
-                                PrefixRange.moreSpecificThan(Prefix.parse("2.0.0.0/8"))),
-                            new RouteFilterLine(LineAction.PERMIT, PrefixRange.ALL)))),
-                neighborIp,
-                nextHopIp,
-                null)
-            .collect(Collectors.toList());
-    assertThat(
-        transformed,
-        contains(
-            hasRoute(
-                allOf(
-                    hasPrefix(route1.getNetwork()),
-                    hasNextHopIp(equalTo(nextHopIp)),
-                    hasMetric(route1.getMetric())))));
-
     // Convert but filter because STUB and suppress type 3
     transformed =
         filterInterAreaRoutesToPropagateAtABR(
@@ -682,7 +636,6 @@ public class OspfRoutingProcessTest {
                     .setStub(StubSettings.builder().setSuppressType3(true).build())
                     .setNumber(2)
                     .build(),
-                ImmutableMap.of(),
                 neighborIp,
                 nextHopIp,
                 null)
@@ -697,7 +650,6 @@ public class OspfRoutingProcessTest {
                     .setNssa(NssaSettings.builder().setSuppressType3(true).build())
                     .setNumber(2)
                     .build(),
-                ImmutableMap.of(),
                 neighborIp,
                 nextHopIp,
                 null)
@@ -1218,9 +1170,12 @@ public class OspfRoutingProcessTest {
   }
 
   @Test
-  public void testProcessIntraAreaAdvertisement() {
+  public void testProcessIntraAreaAdvertisementSummaries() {
     RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
+    Prefix notSummarized = Prefix.parse("1.1.1.1/29");
+    Prefix summarized = Prefix.parse("10.1.1.1/29");
+    // Not summarized
     _routingProcess.processIntraAreaAdvertisement(
         intraAreaDelta,
         interAreaDelta,
@@ -1230,14 +1185,33 @@ public class OspfRoutingProcessTest {
             .setRoute(
                 OspfIntraAreaRoute.builder()
                     .setArea(0)
-                    .setNetwork(Prefix.parse("1.1.1.1/29"))
+                    .setNetwork(notSummarized)
                     .setNextHop(NextHopIp.of(Ip.parse("9.9.9.9")))
                     .setMetric(1)
                     .build())
             .build());
-
-    // Both deltas should have the route at ABR
-    assertFalse(intraAreaDelta.isEmpty());
-    assertFalse(interAreaDelta.isEmpty());
+    // Summarized by 10.0.0.0/8
+    _routingProcess.processIntraAreaAdvertisement(
+        intraAreaDelta,
+        interAreaDelta,
+        ACTIVE_IFACE_NAME,
+        10,
+        RouteAdvertisement.<OspfIntraAreaRoute>builder()
+            .setRoute(
+                OspfIntraAreaRoute.builder()
+                    .setArea(0)
+                    .setNetwork(summarized)
+                    .setNextHop(NextHopIp.of(Ip.parse("9.9.9.9")))
+                    .setMetric(1)
+                    .build())
+            .build());
+    // Intra-area delta has both
+    assertThat(
+        intraAreaDelta.build().getPrefixes().collect(ImmutableList.toImmutableList()),
+        contains(notSummarized, summarized));
+    // Inter-area delta has only the 1.1.1.1/29 prefix.
+    assertThat(
+        interAreaDelta.build().getPrefixes().collect(ImmutableList.toImmutableList()),
+        contains(notSummarized));
   }
 }

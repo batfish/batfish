@@ -348,6 +348,16 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       // If we are an ABR, also do conversion to IA routes here.
       intraAreaDelta
           .getRoutesStream()
+          .filter(
+              intraAreaRoute -> {
+                // If this area has summaries, make sure we only convert the non-summarized-routes
+                // to inter-area routes.
+                RouteFilterList areaFilter = _areaFilters.get(intraAreaRoute.getArea());
+                if (areaFilter == null) {
+                  return true;
+                }
+                return areaFilter.permits(intraAreaRoute.getNetwork());
+              })
           .forEach(
               r -> interAreaBuilder.add(OspfInterAreaRoute.builder(r).setNonRouting(true).build()));
     }
@@ -638,15 +648,20 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     into our inter-area RIB. Note these non-routing because intra-area specific routes should always be preferred.
     */
     if (isABR()) {
-      OspfInterAreaRoute interAreaRoute =
-          OspfInterAreaRoute.builder(intraAreaRoute).setNonRouting(true).build();
-      interAreaDelta.from(
-          processRouteAdvertisement(
-              RouteAdvertisement.<OspfInterAreaRoute>builder()
-                  .setReason(routeAdvertisement.getReason())
-                  .setRoute(interAreaRoute)
-                  .build(),
-              _interAreaRib));
+      // If this area has summaries, make sure we only convert the non-summarized-routes to
+      // inter-area routes.
+      RouteFilterList areaFilter = _areaFilters.get(intraAreaRoute.getArea());
+      if (areaFilter == null || areaFilter.permits(intraAreaRoute.getNetwork())) {
+        OspfInterAreaRoute interAreaRoute =
+            OspfInterAreaRoute.builder(intraAreaRoute).setNonRouting(true).build();
+        interAreaDelta.from(
+            processRouteAdvertisement(
+                RouteAdvertisement.<OspfInterAreaRoute>builder()
+                    .setReason(routeAdvertisement.getReason())
+                    .setRoute(interAreaRoute)
+                    .build(),
+                _interAreaRib));
+      }
     }
   }
 
@@ -993,7 +1008,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 filterInterAreaRoutesToPropagateAtABR(
                     delta,
                     areaConfig,
-                    _areaFilters,
                     sessionProperties.getIpLink().getIp1(),
                     nextHopIp,
                     _process.getMaxMetricSummaryNetworks()),
@@ -1003,13 +1017,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /**
    * Return the routes that can be propagated from an ABR to a different OSPF neighbor, based on the
-   * STUB settings for the area and the filter list defined for that area. May return an empty
-   * stream if no routes need to be sent.
+   * STUB settings for the area. May return an empty stream if no routes need to be sent.
    *
    * @param delta ABR's inter- or intra- RIB delta
    * @param areaConfig area configuration at the ABR for this neighbor adjacency
-   * @param areaFilters per-area map of route filter list defined at the ABR (to enable correct
-   *     summarization)
    * @param neighborIp IP of the neighbor to which we're sending the route
    * @param nextHopIp next hop ip to use when creating the route.
    * @param customMetric if provided (i.e., not {@code null}) it will be used instead of the routes
@@ -1019,7 +1030,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   static Stream<RouteAdvertisement<OspfInterAreaRoute>> filterInterAreaRoutesToPropagateAtABR(
       RibDelta<OspfInterAreaRoute> delta,
       OspfArea areaConfig,
-      Map<Long, RouteFilterList> areaFilters,
       Ip neighborIp,
       Ip nextHopIp,
       @Nullable Long customMetric) {
@@ -1034,16 +1044,6 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         .filter(r -> r.getRoute().getArea() != areaConfig.getAreaNumber())
         /* Do not send the route to the neighbor that has sent it to us originally. (split horizon) */
         .filter(r -> !r.getRoute().getNextHopIp().equals(neighborIp))
-        // Only propagate routes permitted by the filter list
-        // Fail open. Treat missing filter list as "allow all".
-        .filter(
-            r -> {
-              RouteFilterList areaSummaryFilter = areaFilters.get(r.getRoute().getArea());
-              if (areaSummaryFilter == null) {
-                return true;
-              }
-              return areaSummaryFilter.permits(r.getRoute().getNetwork());
-            })
         // Overwrite area on the route before sending it out
         .map(
             r ->
