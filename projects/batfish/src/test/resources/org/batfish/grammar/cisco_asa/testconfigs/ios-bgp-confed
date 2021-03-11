@@ -1,0 +1,10 @@
+!
+hostname ios-bgp-confed
+!
+router bgp 65112
+ bgp confederation identifier 65100
+ bgp confederation peers 65134
+ network 192.168.122.0
+ neighbor 192.168.123.2 remote-as 65112
+ neighbor 192.168.123.3 remote-as 65134
+ neighbor 192.168.123.3 ebgp-multihop 2

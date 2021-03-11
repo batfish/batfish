@@ -1,0 +1,8 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa_banner
+!
+banner exec ^C
+banner exec Above not actually a delimiter. This text is added.
+!

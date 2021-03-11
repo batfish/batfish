@@ -1,0 +1,16 @@
+version 15.2
+!
+hostname ios-isis
+!
+interface Loopback0
+  description router-id
+  ip address 172.20.20.1 255.255.255.255
+  ip router isis CORE
+!
+interface Loopback100
+  ip address 153.56.0.1 255.255.255.255
+!
+router isis CORE
+  net 49.0001.1722.0020.0001.00
+  is-type level-2-only
+  metric-style wide level-2

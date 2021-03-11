@@ -1,0 +1,29 @@
+!
+hostname ios-interface-delay
+!
+interface GigabitEthernet0/0
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/1
+ ip address 10.0.1.1 255.255.255.0
+ no shutdown
+ delay 1000
+!
+interface Port-channel1
+ ip address 10.0.3.1 255.255.255.0
+ no shutdown
+!
+interface FastEthernet0/1
+ ip address 10.0.2.1 255.255.255.0
+ no shutdown
+!
+interface Loopback0
+ ip address 10.0.3.1 255.255.255.255
+!
+interface Tunnel0
+ ip address 10.0.4.1 255.255.255.0
+!
+router eigrp 1
+ network 10.0.0.0 
+!

@@ -1,0 +1,14 @@
+!
+hostname ios-orphan-interface-ospf-settings
+!
+! Interface in process 1, area 0
+interface Ethernet0/0
+ ip address 10.0.0.0 255.255.255.0
+ ip ospf network point-to-point
+!
+! Orphaned interface, not in a process or area
+interface Ethernet0/1
+ ip ospf network broadcast
+!
+router ospf 1
+ network 10.0.0.0 0.0.0.255 area 0

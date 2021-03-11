@@ -1,0 +1,12 @@
+!
+!
+!RANCID-CONTENT-TYPE: cisco
+hostname ios-route-map-set-extcommunity-rt
+!
+route-map rm1 permit 100
+ set extcommunity rt 65000:1 10.0.0.1:2 12.34:5
+!
+
+route-map rm2 permit 100
+ set extcommunity rt 65000:1 10.0.0.1:2 12.34:5 additive
+!

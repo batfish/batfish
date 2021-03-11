@@ -1,0 +1,27 @@
+!
+hostname ios-eigrp-named
+!
+interface Ethernet3
+ ip address 10.0.3.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet4
+ ip address 10.0.4.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet5
+ ip address 10.0.5.1 255.255.255.0
+ no shutdown
+!
+router eigrp virtual-name
+ address-family ipv4 autonomous-system 2
+  network 10.0.3.0 0.0.0.255
+  network 10.0.4.0 0.0.0.255
+  network 10.0.5.0 0.0.0.255
+  no passive-interface Ethernet3
+  af-interface default
+   passive-interface
+  exit-af-interface
+  af-interface Ethernet4
+   no passive-interface
+!

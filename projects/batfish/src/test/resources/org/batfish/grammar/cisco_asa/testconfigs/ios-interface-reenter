@@ -1,0 +1,16 @@
+!
+hostname ios-interface-reenter
+!
+! FastEthernet0/0 is parsed as a range
+interface FastEthernet0/0
+  mtu 2000
+!
+interface FastEthernet0/0
+  ip address 1.1.1.1 255.255.255.254
+!
+! Ethernet0 is parsed as a single interface
+interface Ethernet0
+  mtu 3000
+!
+interface Ethernet0
+  ip address 1.1.1.2 255.255.255.254

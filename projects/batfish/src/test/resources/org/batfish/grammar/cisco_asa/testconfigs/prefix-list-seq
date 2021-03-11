@@ -1,0 +1,17 @@
+!
+version 15.1
+hostname prefix-list-seq
+!
+ip prefix-list NOSEQ permit 10.0.0.0/8
+!
+ip prefix-list NOSEQ_THEN_SEQ permit 10.0.0.0/8
+ip prefix-list NOSEQ_THEN_SEQ seq 20 permit 20.0.0.0/8
+!
+ip prefix-list SEQ_NO_SEQ seq 15 permit 10.0.0.0/8
+ip prefix-list SEQ_NO_SEQ permit 20.0.0.0/8
+ip prefix-list SEQ_NO_SEQ seq 30 permit 30.0.0.0/8
+!
+ip prefix-list OUT_OF_ORDER seq 10 permit 10.0.0.0/8
+ip prefix-list OUT_OF_ORDER seq 30 permit 30.0.0.0/8
+ip prefix-list OUT_OF_ORDER seq 20 permit 20.0.0.0/8
+!

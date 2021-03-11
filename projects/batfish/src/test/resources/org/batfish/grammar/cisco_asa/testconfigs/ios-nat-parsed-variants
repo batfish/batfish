@@ -1,0 +1,86 @@
+!
+hostname ios-nat-parsed-variants
+!
+!
+! inside source static variants
+!
+route-map ipniss permit 10
+  match ip address 1.2.3.4
+!
+ip nat inside source static 1.1.1.1 2.2.2.2
+ip nat inside source static 1.1.1.1 2.2.2.2 extendable
+ip nat inside source static 1.1.1.1 2.2.2.2 redundancy rg
+ip nat inside source static 1.1.1.1 2.2.2.2 no-alias
+ip nat inside source static 1.1.1.1 2.2.2.2 no-payload
+ip nat inside source static 1.1.1.1 2.2.2.2 no-alias no-payload
+!
+!! with route-map
+!
+ip nat inside source static 1.1.1.1 2.2.2.2 route-map ipniss
+ip nat inside source static 1.1.1.1 2.2.2.2 route-map ipniss redundancy rg
+!
+!! vrf and route-map
+!
+ip nat inside source static 1.1.1.1 2.2.2.2 vrf v1
+ip nat inside source static 1.1.1.1 2.2.2.2 vrf v1 redundancy 3
+ip nat inside source static 1.1.1.1 2.2.2.2 vrf v1 route-map ipniss
+ip nat inside source static 1.1.1.1 2.2.2.2 vrf v1 route-map ipniss redundancy rg
+!
+! outside source static variants
+!
+ip nat outside source static 1.1.1.1 2.2.2.2
+ip nat outside source static 1.1.1.1 2.2.2.2 add-route
+ip nat outside source static 1.1.1.1 2.2.2.2 extendable
+ip nat outside source static 1.1.1.1 2.2.2.2 no-alias
+ip nat outside source static 1.1.1.1 2.2.2.2 no-payload
+ip nat outside source static 1.1.1.1 2.2.2.2 redundancy rg no-alias
+!
+!! with vrf
+!
+ip nat outside source static 1.1.1.1 2.2.2.2 vrf v1
+ip nat outside source static 1.1.1.1 2.2.2.2 vrf v1 add-route
+!
+!
+! inside source route-map
+!
+route-map ipnisr permit 10
+  match ip address 1.2.3.4
+!
+interface GigabitEthernet0/0
+!
+ip nat inside source route-map ipnisr interface GigabitEthernet0/0
+ip nat inside source route-map ipnisr interface GigabitEthernet0/0 vrf v1
+ip nat inside source route-map ipnisr interface GigabitEthernet0/0 vrf v1 overload
+ip nat inside source route-map ipnisr interface GigabitEthernet0/0 overload
+!
+ip nat inside source route-map ipnisr pool p1
+ip nat inside source route-map ipnisr pool p1 vrf v1
+ip nat inside source route-map ipnisr pool p1 vrf v1 overload
+ip nat inside source route-map ipnisr pool p1 overload
+!
+! outside source route-map
+!
+route-map ipnosr permit 10
+  match ip address 1.2.3.4
+!
+ip nat pool p1 3.3.3.1 3.3.3.254 prefix-length 24
+!
+ip nat outside source route-map ipnosr pool p1
+ip nat outside source route-map ipnosr pool p1 vrf v1
+ip nat outside source route-map ipnosr pool p1 vrf v1 add-route
+ip nat outside source route-map ipnosr pool p1 add-route
+!
+! inside list
+!
+access-list 10 permit any
+!
+ip nat inside source list 10 pool p1
+ip nat inside source list 10 pool p1 overload
+!
+ip nat inside source list 10 interface GigabitEthernet0/0
+ip nat inside source list 10 interface GigabitEthernet0/0 overload
+!
+! outside list
+!
+ip nat outside source list 10 pool p1
+ip nat outside source list 10 pool p1 add-route

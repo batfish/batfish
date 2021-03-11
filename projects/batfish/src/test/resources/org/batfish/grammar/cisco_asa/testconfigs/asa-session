@@ -1,0 +1,17 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-session
+!
+!
+interface GigabitEthernet0/1
+ nameif inside
+ security-level 50
+ ip address 1.1.1.1 255.255.255.0
+!
+interface GigabitEthernet0/2
+ nameif outside
+ security-level 0
+ ip address 2.2.2.2 255.255.255.0
+!
+!

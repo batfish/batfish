@@ -1,0 +1,19 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-filters-global
+!
+!
+interface GigabitEthernet0/1
+ nameif name1
+ security-level 50
+ ip address 192.168.1.1 255.255.255.0
+!
+interface GigabitEthernet0/2
+ nameif name2
+ security-level 0
+ ip address 192.168.2.1 255.255.255.0
+!
+access-group FILTER_GLOBAL global
+!
+access-list FILTER_GLOBAL extended permit tcp any any eq 123

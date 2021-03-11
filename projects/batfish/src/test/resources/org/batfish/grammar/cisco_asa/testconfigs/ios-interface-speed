@@ -1,0 +1,24 @@
+!
+hostname ios-interface-speed
+!
+interface GigabitEthernet0/0
+!
+interface GigabitEthernet0/1
+ speed 1000
+!
+interface GigabitEthernet0/2
+ speed 100
+!
+interface Loopback0
+!
+interface Tunnel0
+!
+interface TwoGigabitEthernet1
+!
+interface tw2
+!
+! Numbered 3 and 4 to enforce disambiguation from TwoGigabitEthernet variants above
+interface TwentyFiveGigE3
+!
+interface twe4
+!

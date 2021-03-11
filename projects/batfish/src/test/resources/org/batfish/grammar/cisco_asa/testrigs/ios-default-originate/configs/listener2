@@ -1,0 +1,13 @@
+!
+hostname listener2
+!
+interface Loopback0
+ ip address 3.3.3.3 255.255.255.255
+!
+interface FastEthernet0/0
+  ip address 10.2.2.2 255.255.255.0
+!
+router bgp 2
+  bgp router-id 3.3.3.3
+  neighbor 10.2.2.1 remote-as 1
+!

@@ -1,0 +1,6 @@
+!
+hostname ios-bgp-undeclared-peer
+!
+router bgp 3
+  neighbor PG ebgp-multihop 2
+!

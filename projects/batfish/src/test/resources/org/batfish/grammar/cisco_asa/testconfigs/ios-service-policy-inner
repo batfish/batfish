@@ -1,0 +1,12 @@
+!
+version 15.3
+!
+hostname ios-service-policy
+!
+policy-map PM
+!
+interface GigabitEthernet1
+  service instance 1111 ethernet
+    service-policy input PM
+    service-policy output PM
+!

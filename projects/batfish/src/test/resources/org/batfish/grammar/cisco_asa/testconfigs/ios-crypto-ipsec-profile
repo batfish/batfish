@@ -1,0 +1,42 @@
+!
+hostname ios-crypto-ipsec-profile
+!
+crypto keyring ISAKMP-KEYRING
+  pre-shared-key address 1.2.3.4 key psk1
+  local-address 2.3.4.6
+!
+crypto isakmp profile ISAKMP-PROFILE
+  keyring ISAKMP-KEYRING
+  match identity address 1.2.3.4 255.255.255.255
+  keepalive 10 retry 3
+  local-address 2.3.4.6
+!
+crypto ipsec transform-set TRANSFORM-SET1 esp-aes 256 esp-md5-hmac
+  mode tunnel
+!
+crypto ipsec transform-set TRANSFORM-SET2 esp-aes 256 esp-sha-hmac
+  mode tunnel
+!
+crypto ipsec profile IPSEC-PROFILE1
+  set transform-set TRANSFORM-SET1 TRANSFORM-SET2
+  set isakmp-profile ISAKMP-PROFILE
+  set pfs group14
+!
+crypto ipsec profile IPSEC-PROFILE2
+  set pfs group15
+!
+crypto ipsec profile IPSEC-PROFILE3
+  set pfs group16
+!
+crypto ipsec profile IPSEC-PROFILE4
+  set pfs group19
+!
+crypto ipsec profile IPSEC-PROFILE5
+  set pfs group21
+!
+crypto ipsec profile IPSEC-PROFILE6
+  set pfs group5
+!
+interface TenGigabitEthernet0/0
+  ip address 2.3.4.6 255.255.255.0
+!

@@ -1,0 +1,11 @@
+!
+hostname ios-vrfd-address-family-export-map
+!
+route-map RT_MAP permit 10
+!
+vrf definition vrf1
+   address-family ipv4
+      export map RT_MAP
+      export ipv4 unicast 500 map RT_MAP
+   exit-address-family
+!

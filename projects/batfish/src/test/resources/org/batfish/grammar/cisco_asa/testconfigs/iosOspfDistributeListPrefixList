@@ -1,0 +1,21 @@
+!
+hostname iosOspfDistributeListPrefixList
+!
+interface GigabitEthernet0/0
+ ip address 10.1.1.0 255.255.255.0
+!
+interface GigabitEthernet1/0
+ ip address 10.1.1.1 255.255.255.0
+!
+router ospf 1
+  network 10.1.1.0 0.0.0.255 area 1
+  distribute-list prefix filter_1 in GigabitEthernet0/0
+  distribute-list prefix filter_1 in GigabitEthernet1/0
+  distribute-list prefix filter_2 in
+!
+ip prefix-list filter_1 seq 5 deny 1.1.1.0/24
+ip prefix-list filter_1 seq 10 permit 0.0.0.0/0 le 32
+!
+ip prefix-list filter_2 seq 5 deny 2.2.2.0/24
+ip prefix-list filter_2 seq 10 permit 0.0.0.0/0 le 32
+!

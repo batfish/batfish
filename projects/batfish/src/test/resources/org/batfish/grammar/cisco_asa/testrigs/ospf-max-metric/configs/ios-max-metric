@@ -1,0 +1,9 @@
+!
+hostname ios-max-metric
+!
+router ospf 1
+ router-id 1.1.1.1
+ max-metric router-lsa include-stub summary-lsa external-lsa
+!
+!
+

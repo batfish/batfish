@@ -1,0 +1,18 @@
+!
+hostname ios-prefix-list
+!
+router bgp 64904
+ router-id 11.11.11.11
+ neighbor 1.2.3.4 remote-as 1234
+ neighbor 1.2.3.4 prefix-list pre_list in
+ neighbor 1.2.3.4 prefix-list pre_list out
+!
+! For testing undefined prefix-list in BGP neighbor context
+ neighbor 5.6.7.8 prefix-list pre_list_undef1 out
+!
+route-map STATIC_ONLY permit 10
+  match ip address prefix-list pre_list
+  match ip address prefix-list pre_list_undef2
+!
+ip prefix-list pre_list seq 5 permit 10.1.1.0/24
+ip prefix-list pre_list_unused seq 10 permit 10.2.2.0/24

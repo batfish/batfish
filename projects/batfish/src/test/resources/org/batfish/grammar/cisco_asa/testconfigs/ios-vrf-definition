@@ -1,0 +1,26 @@
+!
+hostname ios-vrf-definition
+!
+route-map RT_IMPORT_MAP permit 10
+!
+route-map RT_EXPORT_MAP permit 10
+!
+vrf definition vrf1
+   rd 1111:11
+   route-target import 2222:22
+   route-target export 2222:23
+   address-family ipv4
+      import map RT_IMPORT_MAP
+      export map RT_EXPORT_MAP
+      export ipv4 unicast 500 map RT_EXPORT_MAP
+      route-target both 3333:31
+      route-target import 3333:32
+      route-target export 3333:33
+   exit-address-family
+
+vrf definition vrf2
+   rd 2222:22
+   route-target both 2222:77
+   address-family ipv4
+   exit-address-family
+!

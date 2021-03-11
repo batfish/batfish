@@ -1,0 +1,57 @@
+!
+hostname ios-eigrp-distribute-list-refs-and-warnings
+!
+access-list 1 permit 172.21.30.0 0.0.0.255
+!
+access-list 2 permit 172.21.30.0 0.0.0.255
+!
+access-list 3 permit 172.21.30.0 0.0.0.255
+!
+access-list 4 permit 172.21.30.0 0.0.0.255
+!
+interface GigabitEthernet0/0
+ ip address 2.2.2.2 255.255.255.0
+!
+router eigrp 1
+  distribute-list 1 out GigabitEthernet0/0
+  distribute-list 2 out
+
+  distribute-list 3 in GigabitEthernet0/0
+  distribute-list 4 in
+!
+!
+ip prefix-list PL_IN permit 0.0.0.0/0 le 32
+!
+ip prefix-list PL_OUT permit 0.0.0.0/0 le 32
+!
+ip prefix-list PL_GW_IN permit 0.0.0.0/0 le 32
+!
+ip prefix-list PL_GW_OUT permit 0.0.0.0/0 le 32
+!
+router eigrp 2
+  distribute-list prefix PL_IN in
+  distribute-list prefix PL_IN gateway PL_GW_IN in
+  distribute-list prefix PL_IN in GigabitEthernet0/0
+
+  distribute-list gateway PL_GW_IN in
+  distribute-list gateway PL_GW_IN in GigabitEthernet0/0
+
+  distribute-list prefix PL_OUT out
+  distribute-list prefix PL_OUT gateway PL_GW_OUT out
+  distribute-list prefix PL_OUT out GigabitEthernet0/0
+
+  distribute-list gateway PL_GW_OUT out
+  distribute-list gateway PL_GW_OUT out GigabitEthernet0/0
+!
+!
+route-map RM_IN permit 10
+!
+route-map RM_OUT permit 10
+!
+router eigrp 3
+  distribute-list route-map RM_IN in
+  distribute-list route-map RM_IN in GigabitEthernet0/0
+
+  distribute-list route-map RM_OUT out
+  distribute-list route-map RM_OUT out GigabitEthernet0/0
+!

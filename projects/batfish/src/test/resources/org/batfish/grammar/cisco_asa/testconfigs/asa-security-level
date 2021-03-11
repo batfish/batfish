@@ -1,0 +1,27 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-security-level
+!
+interface GigabitEthernet0/1
+  nameif all-trust
+  description explicit level of 100
+  security-level 100
+  ip address 3.0.0.2 255.255.255.0 standby 3.0.0.3
+!
+interface GigabitEthernet0/2
+  nameif inside
+  description implicit level of 100
+  ip address 3.0.1.2 255.255.255.0 standby 3.0.1.3
+!
+interface GigabitEthernet0/3
+  nameif some-trust
+  description explicit level of 45
+  security-level 45
+  ip address 3.0.2.2 255.255.255.0 standby 3.0.2.3
+!
+interface GigabitEthernet0/4
+  nameif outside
+  description implicit level of 0, explicit 1
+  security-level 1
+  ip address 3.0.3.2 255.255.255.0 standby 3.0.3.3

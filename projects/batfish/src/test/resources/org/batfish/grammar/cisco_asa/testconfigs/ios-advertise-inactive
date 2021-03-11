@@ -1,0 +1,9 @@
+!
+!
+!RANCID-CONTENT-TYPE: cisco
+hostname ios-advertise-inactive
+!
+router bgp 1
+ ! advertise-inactive is the default behavior
+ neighbor 1.1.1.1 remote-as 1
+!

@@ -1,0 +1,23 @@
+!
+hostname ios-eigrp-classic
+!
+interface Ethernet0
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet1
+ ip address 10.0.1.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet2
+ ip address 10.0.2.1 255.255.255.0
+ no shutdown
+!
+router eigrp 1
+ network 10.0.0.0 0.0.0.255
+ network 10.0.1.0 0.0.0.255
+ network 10.0.2.0 0.0.0.255
+ passive-interface default
+ no passive-interface Ethernet0
+ no passive-interface Ethernet1
+!

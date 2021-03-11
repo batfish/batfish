@@ -1,0 +1,18 @@
+!
+hostname ios-eigrp-distribute-list
+!
+access-list 2 permit 172.21.30.0 0.0.0.255
+!
+route-map redist permit 10
+ match ip address 2
+!
+interface GigabitEthernet0/0
+ ip address 2.2.2.2 255.255.255.0
+!
+router eigrp 1
+  redistribute eigrp 2
+  distribute-list 2 out GigabitEthernet0/0
+  network 2.2.2.2 0.0.0.255
+!
+router eigrp 2
+ network 10.0.0.0 0.0.0.255

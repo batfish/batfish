@@ -1,0 +1,26 @@
+!
+hostname ios-track
+!
+interface Ethernet0
+ standby 1001 track 1 decrement 20
+ standby 1 track 4 decrement 20
+!
+interface Ethernet1
+ standby 1002 track 3 decrement 20
+!
+interface Tunnel1
+!
+interface Tunnel2
+!
+track 1 interface Tunnel1 line-protocol
+track 2 interface Tunnel2 line-protocol
+!
+track 4 ip route 0.0.0.0 0.0.0.0 reachability
+!
+track 5 ip route 0.0.0.0 0.0.0.0 reachability
+  delay down 10 up 10
+!
+track 6 ip sla 1
+  default delay
+!
+track 7 interface Dialer1 ip routing

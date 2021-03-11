@@ -1,0 +1,80 @@
+!
+hostname ios-crypto-map
+!
+crypto keyring KEYRING
+  pre-shared-key address 1.2.3.4 key psk1
+  local-address 2.3.4.6
+!
+crypto keyring KEYRING_MATCHED
+  pre-shared-key address 3.4.5.6 key psk2
+  local-address 2.3.4.6
+!
+crypto isakmp profile ISAKMP-PROFILE
+   keyring KEYRING
+   match identity address 1.2.3.4 255.255.255.255
+   keepalive 10 retry 3
+   local-address 2.3.4.6
+!
+crypto isakmp profile ISAKMP-PROFILE-MATCHED
+   keyring KEYRING_MATCHED
+   match identity address 3.4.5.6 255.255.255.255
+   keepalive 10 retry 3
+   local-address 2.3.4.6
+!
+crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
+ mode tunnel
+!
+crypto ipsec transform-set ts2 esp-aes 256 esp-sha-hmac
+ mode tunnel
+!
+crypto ipsec profile IPSEC-PROFILE1
+  set transform-set ts1 ts2
+  set isakmp-profile ISAKMP-PROFILE
+  set pfs group14
+!
+crypto map mymap 10 ipsec-isakmp
+ match address ACL
+ set transform-set ts1
+ set isakmp-profile ISAKMP-PROFILE
+ set peer 1.2.3.4
+ set pfs group14
+!
+crypto map mymap 20 ipsec-isakmp
+ match address ACL
+ set transform-set ts1
+ set peer 3.4.5.6
+crypto map mymap 30 ipsec-isakmp dynamic mydynamicmap
+!
+crypto dynamic-map mydynamicmap 5
+ match address ACL
+ set transform-set ts1
+ set pfs group2
+!
+crypto dynamic-map mydynamicmap 15
+ match address ACL
+ set transform-set ts2
+!
+ip access-list extended ACL
+ permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0
+!
+interface TenGigabitEthernet0/0
+ ip address 2.3.4.6 255.255.255.0
+ crypto map mymap
+!
+interface TenGigabitEthernet0/1
+ no ip address
+ crypto map mymap
+!
+interface Tunnel1
+ ip address 6.7.8.9 255.255.255.252
+ tunnel source TenGigabitEthernet0/0
+ tunnel destination 1.2.3.4
+ tunnel mode ipsec ipv4
+ tunnel protection ipsec profile IPSEC-PROFILE1
+!
+interface Tunnel2
+ ip address 6.7.8.10 255.255.255.252
+ tunnel source TenGigabitEthernet0/0
+ tunnel destination 1.2.3.4
+ tunnel protection ipsec profile IPSEC-PROFILE1
+!

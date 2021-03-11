@@ -1,0 +1,41 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-filters
+!
+!
+interface GigabitEthernet0/1
+ nameif name1
+ security-level 50
+ ip address 192.168.1.1 255.255.255.0
+!
+interface GigabitEthernet0/2
+ nameif name2
+ security-level 0
+ ip address 192.168.2.1 255.255.255.0
+!
+interface GigabitEthernet0/3
+ nameif name3
+ security-level 50
+ ip address 192.168.3.1 255.255.255.0
+!
+interface GigabitEthernet0/4
+ nameif name4
+ security-level 0
+ ip address 192.168.4.1 255.255.255.0
+!
+interface GigabitEthernet0/5
+ nameif name5
+ security-level 0
+ ip address 192.168.5.1 255.255.255.0
+!
+access-group FILTER_IN in interface name1
+access-group FILTER_IN4 in interface name4
+access-group FILTER_OUT out interface name1
+access-group FILTER_OUT5 out interface name5
+access-group FILTER_UNDEF out interface name2
+!
+access-list FILTER_IN extended permit ip any any
+access-list FILTER_IN4 extended permit tcp any any eq 123
+access-list FILTER_OUT extended permit tcp any any eq 123
+access-list FILTER_OUT5 extended permit tcp any any eq 123

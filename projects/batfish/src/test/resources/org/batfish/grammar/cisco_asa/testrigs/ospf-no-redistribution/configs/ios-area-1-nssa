@@ -1,0 +1,10 @@
+!
+hostname ios-area-1-nssa
+!
+interface Ethernet1
+ ip address 1.1.1.2 255.255.255.0
+!
+router ospf 1
+ network 1.1.0.0 0.0.255.255 area 1
+ area 1 nssa
+!

@@ -1,0 +1,22 @@
+!
+hostname iosOspfDistributeList
+!
+router ospf 1
+ distribute-list prefix block_1 in GigabitEthernet0/0
+ distribute-list prefix block_2 in GigabitEthernet1/0
+ distribute-list prefix block_3 out GigabitEthernet0/0
+ distribute-list prefix block_4 out GigabitEthernet1/0
+ distribute-list prefix block_5 in
+ distribute-list prefix block_6 out
+!
+router ospf 2
+ distribute-list route-map rm1 in
+ distribute-list route-map rm2 out
+!
+router ospf 3
+ distribute-list acl1 in GigabitEthernet0/0
+ distribute-list acl2 out GigabitEthernet0/0
+ distribute-list acl3 in
+ distribute-list acl4 out
+
+

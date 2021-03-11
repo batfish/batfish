@@ -1,0 +1,12 @@
+!
+hostname ios
+!
+interface Eth0/0
+!
+interface Ethernet0/0
+!
+interface e0/0
+!
+interface ether0/0-1
+!
+!

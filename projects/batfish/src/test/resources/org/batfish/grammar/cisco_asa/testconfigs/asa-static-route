@@ -1,0 +1,11 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-static-route
+!
+interface GigabitEthernet0/1
+  nameif ifname
+  ip address 3.0.0.2 255.255.255.0
+!
+route ifname 0.0.0.0 0.0.0.0 3.0.0.1 2
+route ifname 1.0.0.0 255.0.0.0 3.0.0.2 3 track 7

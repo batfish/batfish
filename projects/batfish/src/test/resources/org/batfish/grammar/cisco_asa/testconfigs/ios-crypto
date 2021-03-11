@@ -1,0 +1,49 @@
+!
+hostname ios-crypto
+!
+crypto isakmp policy 20
+!
+crypto isakmp policy 10
+  hash md5
+  group 1
+  encr aes
+  authentication rsa-sig
+  lifetime 14400
+!
+crypto isakmp policy 30
+  authentication rsa-encr
+!
+crypto isakmp key 6 FLgBaJHXdYY_AcHZZMgQ_RhTDJXHUBAAB address 2.2.2.2
+!
+crypto isakmp key psk1 address 1.1.1.1 255.255.255.0
+!
+crypto keyring ISAKMP-KEYRING-ADDRESS
+  pre-shared-key address 1.2.3.4 key psk1
+  local-address 2.3.4.6
+!
+crypto keyring ISAKMP-KEYRING-INTERFACE
+  pre-shared-key address 1.2.3.4 key psk1
+  local-address TenGigabitEthernet0/0
+!
+crypto isakmp profile ISAKMP-PROFILE-ADDRESS
+   keyring ISAKMP-KEYRING-ADDRESS
+   self-identity 2.3.4.6
+   match identity address 1.2.3.4 255.255.255.255
+   keepalive 10 retry 3
+   local-address 2.3.4.6
+!
+crypto isakmp profile ISAKMP-PROFILE-INTERFACE
+   keyring ISAKMP-KEYRING-INTERFACE
+   self-identity 2.3.4.6
+   match identity address 1.2.3.4 255.255.255.255
+   keepalive 10 retry 3
+   local-address TenGigabitEthernet0/0
+!
+interface TenGigabitEthernet0/0
+ ip address 2.3.4.6 255.255.255.0
+!
+interface Tunnel1
+ ip address 6.7.8.9 255.255.255.252
+ tunnel source TenGigabitEthernet0/0
+ tunnel destination 1.2.3.4
+!

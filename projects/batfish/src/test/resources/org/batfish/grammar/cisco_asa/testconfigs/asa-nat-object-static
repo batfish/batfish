@@ -1,0 +1,41 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-nat-object-static
+!
+interface GigabitEthernet0/0
+ nameif inside
+ security-level 100
+ ip address 1.0.0.1 255.255.255.0
+!
+interface GigabitEthernet0/1
+ nameif outside
+ security-level 0
+ ip address 2.0.0.1 255.255.255.0
+!
+interface GigabitEthernet0/2
+ nameif other
+ ip address 3.0.0.1 255.255.255.0
+!
+object network source-real-1
+ host 1.1.1.1
+object network source-real-2
+ subnet 2.2.2.0 255.255.255.248
+object network source-real-3
+ host 3.3.3.3
+object network source-real-4
+ subnet 4.4.4.0 255.255.255.0
+object network source-mapped-1
+ host 192.168.1.1
+object network source-mapped-2
+ subnet 192.168.2.0 255.255.255.248
+!
+object network source-real-1
+ nat (inside,outside) static source-mapped-1
+object network source-real-2
+ nat (outside,inside) static source-mapped-2
+object network source-real-3
+ nat (inside,any) static 192.168.3.0
+object network source-real-4
+ nat (any,any) static 192.168.4.111
+!

@@ -1,0 +1,11 @@
+hostname ios-nat-malformed-pool
+
+interface Ethernet1
+  ip nat outside
+  ip address 3.3.3.3 255.255.255.248
+
+ip access-list standard LIST
+ permit 1.1.1.1 0.0.0.255
+! Note the pool is not a valid range
+ip nat pool SNOOKER 10.1.1.10 10.1.1.5 netmask 255.255.255.0
+ip nat outside source list LIST pool SNOOKER

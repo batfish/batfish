@@ -1,0 +1,23 @@
+!
+hostname ios-eigrp-address-family
+!
+ip vrf vrf-name
+!
+interface Ethernet0
+ ip address 10.0.0.1 255.255.255.0
+ no shutdown
+!
+interface Ethernet1
+ ip address 10.0.1.1 255.255.255.0
+ ip vrf forwarding vrf-name
+ no shutdown
+!
+router eigrp 1
+ network 10.0.0.0 0.0.0.255
+ address-family ipv4 vrf vrf-name autonomous-system 2
+  ! make sure null lines are part of address-family
+  timers active-time 3
+  timers graceful-restart purge-time 240
+  traffic-share balanced
+  network 10.0.1.0 0.0.0.255
+!

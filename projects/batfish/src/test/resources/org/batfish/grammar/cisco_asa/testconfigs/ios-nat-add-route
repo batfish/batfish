@@ -1,0 +1,24 @@
+!
+hostname ios-nat-add-route
+!
+ip vrf vrf1
+!
+interface Ethernet1
+ ip nat inside
+!
+interface Ethernet2
+ ip address 10.10.10.1 255.255.255.0
+ ip nat outside
+!
+interface Ethernet3
+ ip vrf forwarding vrf1
+ ip nat inside
+!
+interface Ethernet4
+ ip address 11.11.11.1 255.255.255.0
+ ip vrf forwarding vrf1
+ ip nat outside
+!
+ip nat outside source static 10.10.10.10 1.1.1.1 add-route
+ip nat outside source static 2.2.2.2 3.3.3.3 add-route
+ip nat outside source static 11.11.11.11 4.4.4.4 vrf vrf1 add-route

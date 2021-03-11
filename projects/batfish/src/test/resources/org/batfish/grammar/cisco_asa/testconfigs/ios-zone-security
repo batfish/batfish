@@ -1,0 +1,18 @@
+!
+hostname ios-zone-security
+!
+zone security z1
+zone security z2
+zone security zunreferenced
+zone security zempty
+!
+zone-pair security zp12 source z1 destination z2
+zone-pair security zpempty source z1 destination zempty
+zone-pair security zpundefined source z1 destination zundefined
+!
+interface Ethernet1
+ zone-member security z1
+!
+interface Ethernet2
+ zone-member security z2
+!

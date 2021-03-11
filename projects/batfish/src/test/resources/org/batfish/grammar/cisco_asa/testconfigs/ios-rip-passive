@@ -1,0 +1,17 @@
+!
+hostname ios-rip-passive
+!
+interface Ethernet0
+ ip address 1.0.0.1/8
+ no shutdown
+!
+interface Ethernet1
+ ip address 2.0.0.1/8
+ no shutdown
+!
+router rip
+ network 1.0.0.0
+ network 2.0.0.0
+ passive-interface Ethernet0
+!
+!

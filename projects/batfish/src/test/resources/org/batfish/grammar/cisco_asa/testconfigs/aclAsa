@@ -1,0 +1,7 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname aclAsa
+!
+access-list acl extended permit ip 1.2.3.4 255.255.255.0 4.3.2.1 255.255.0.0
+!

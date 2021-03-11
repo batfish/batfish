@@ -1,0 +1,11 @@
+!
+hostname ios-originator-2
+!
+! To R1
+interface Ethernet0
+ ip address 1.1.1.2 255.255.255.0
+!
+router ospf 1
+ network 1.1.0.0 0.0.255.255 area 0
+ default-information originate
+!

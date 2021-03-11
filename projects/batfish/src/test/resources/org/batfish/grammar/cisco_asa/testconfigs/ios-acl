@@ -1,0 +1,34 @@
+!
+hostname ios-acl
+!
+!
+access-list AL extended permit ip any any
+access-list 10 deny any
+!
+ipv6 access-list standard AL6_UNUSED
+  deny any
+ipv6 access-list extended AL6
+  deny ipv6 any any
+!
+route-map RM permit 100
+  match ip address AL
+  match ipv6 address AL6
+  match ip address AL_UNDEF
+  match ipv6 address AL6_UNDEF
+!
+class-map type inspect match-all CM
+ match access-group name AL
+!
+!
+!
+access-list AL_IF extended permit ip any any
+!
+interface Ethernet1
+ ip address 1.1.1.1 255.255.255.255
+ ip access-group AL_IF in
+ ip access-group AL_IF out
+!
+interface Ethernet2
+ ip access-group AL_IF_UNDEF in
+ ip access-group AL_IF_UNDEF out
+!

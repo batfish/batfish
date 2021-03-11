@@ -1,0 +1,10 @@
+!
+hostname ios-class-map-inspect
+!
+class-map type inspect match-all cm1
+ match access-group name acldefined
+ match access-group name aclundefined
+!
+ip access-list extended acldefined
+ip access-list extended aclunused
+!

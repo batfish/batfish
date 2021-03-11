@@ -1,0 +1,23 @@
+!
+ hostname ios-tunnel-mode
+ !
+ interface TenGigabitEthernet0/0
+  ip address 2.3.4.6 255.255.255.0
+ !
+ interface Tunnel1
+  ip address 1.1.1.1 255.255.255.0
+  tunnel source TenGigabitEthernet0/0
+  tunnel destination 1.2.3.4
+ !
+ interface Tunnel2
+  ip address 2.2.2.2 255.255.255.0
+  tunnel source TenGigabitEthernet0/0
+  tunnel destination 1.2.3.5
+  tunnel mode gre multipoint
+ !
+ interface Tunnel3
+  ip address 3.3.3.3 255.255.255.0
+  tunnel source TenGigabitEthernet0/0
+  tunnel destination 1.2.3.6
+  tunnel mode ipsec ipv4
+ !

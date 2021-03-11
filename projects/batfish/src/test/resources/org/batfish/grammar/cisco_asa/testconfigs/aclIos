@@ -1,0 +1,8 @@
+!!!!!! trick Batfish into recognizing this as an IOS device. !!!!!!
+! exit-address-family
+!!!!!! trick Batfish into recognizing this as an IOS device. !!!!!!
+!
+hostname aclIos
+!
+access-list acl extended permit ip 1.2.3.4 0.0.0.255 4.3.2.1 0.0.255.255
+!

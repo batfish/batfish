@@ -1,0 +1,21 @@
+!
+hostname ios-policy-map-inspect
+!
+policy-map type inspect pmiunused
+policy-map type inspect pmidefined
+ class type inspect cmdefined
+  inspect
+ class type inspect cmundefined
+  inspect
+ class class-default
+  drop log
+!
+class-map type inspect cmdefined
+!
+class-map type inspect cmunused
+!
+zone-pair security zp1 source z1 destination z2
+ service-policy type inspect pmidefined
+zone-pair security zpundefined source z1 destination z2
+ service-policy type inspect pmiundefined
+

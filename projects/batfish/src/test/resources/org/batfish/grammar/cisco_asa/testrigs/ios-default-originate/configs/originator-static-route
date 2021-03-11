@@ -1,0 +1,44 @@
+!
+hostname originator-static-route
+!
+interface Loopback0
+ ip address 1.1.1.1 255.255.255.255
+!
+! To listener 1
+interface Ethernet1
+ ip address 10.1.1.1 255.255.255.0
+!
+! To listener 2
+interface Ethernet2
+ ip address 10.2.2.1 255.255.255.0
+!
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ redistribute static route-map SET_COMMUNITY_50
+ !
+ ! Neither peer will generate default route because PERMIT_1234 will prevent generation.
+ !
+ ! Listener 1: no export policy; should redistribute static default route
+ neighbor 10.1.1.2 remote-as 2
+ neighbor 10.1.1.2 default-originate route-map PERMIT_1234
+ !
+ ! Listener 2: export policy should block redistribution of static route
+ neighbor 10.2.2.2 remote-as 2
+ neighbor 10.2.2.2 default-originate route-map PERMIT_1234
+ neighbor 10.2.2.2 route-map DENY_DEFAULT out
+!
+!
+route-map SET_COMMUNITY_50 permit 10
+ set community 50
+!
+route-map DENY_DEFAULT deny 10
+ match ip address ip prefix-list PREFIX_ZERO
+!
+route-map PERMIT_1234 permit 10
+ match ip address ip prefix-list PREFIX_1234
+!
+ip prefix-list PREFIX_ZERO seq 10 permit 0.0.0.0/0
+ip prefix-list PREFIX_1234 seq 10 permit 1.2.3.4/32
+!
+ip route 0.0.0.0 0.0.0.0 Null0
