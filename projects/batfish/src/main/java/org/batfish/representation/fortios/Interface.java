@@ -1,5 +1,7 @@
 package org.batfish.representation.fortios;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
@@ -16,7 +18,6 @@ public final class Interface implements InterfaceOrZone, Serializable {
     PHYSICAL,
     REDUNDANT,
     TUNNEL,
-    UNKNOWN,
     VLAN,
     WL_MESH;
 
@@ -36,10 +37,10 @@ public final class Interface implements InterfaceOrZone, Serializable {
         case EMAC_VLAN:
         case VLAN:
           return InterfaceType.VLAN;
-        case UNKNOWN:
-        case WL_MESH:
+        case WL_MESH: // TODO Support this type
         default:
-          throw new IllegalStateException("Do not know about this interface type");
+          throw new UnsupportedOperationException(
+              String.format("Unsupported interface type %s", this));
       }
     }
   }
@@ -52,6 +53,7 @@ public final class Interface implements InterfaceOrZone, Serializable {
 
   public static final int DEFAULT_INTERFACE_MTU = 1500;
   public static final int DEFAULT_VRF = 0;
+  public static final Type DEFAULT_TYPE = Type.VLAN;
   public static final boolean DEFAULT_STATUS = true;
 
   @Override
@@ -75,9 +77,12 @@ public final class Interface implements InterfaceOrZone, Serializable {
     return _ip;
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nullable Type getType() {
     return _type;
+  }
+
+  public @Nonnull Type getTypeEffective() {
+    return firstNonNull(_type, DEFAULT_TYPE);
   }
 
   @VisibleForTesting
@@ -169,14 +174,13 @@ public final class Interface implements InterfaceOrZone, Serializable {
   public Interface(String name) {
     _name = name;
     _status = Status.UNKNOWN;
-    _type = Type.UNKNOWN;
   }
 
   @Nonnull private final String _name;
   @Nullable private String _alias;
   @Nullable private String _vdom;
   @Nullable private ConcreteInterfaceAddress _ip;
-  @Nonnull private Type _type;
+  @Nullable private Type _type;
   @Nonnull private Status _status;
   @Nullable private Boolean _mtuOverride;
   @Nullable private Integer _mtu;

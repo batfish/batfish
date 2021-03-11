@@ -226,22 +226,22 @@ public class FortiosConfiguration extends VendorConfiguration {
     String vdom = iface.getVdom();
     assert vdom != null; // An interface with no VDOM set should fail in extraction
     String vrfName = computeVrfName(vdom, iface.getVrfEffective());
-    // TODO Does referencing a VRF from an interface implicitly create it?
-    Vrf vrf = c.getVrfs().get(vrfName);
-    if (vrf == null) {
-      vrf = Vrf.builder().setOwner(c).setName(vrfName).build();
-    }
-    // TODO Handle interface type
-    org.batfish.datamodel.Interface.builder()
-        .setOwner(c)
-        .setName(iface.getName())
-        .setVrf(vrf)
-        .setDescription(iface.getDescription())
-        .setActive(iface.getStatusEffective())
-        .setAddress(iface.getIp())
-        .setMtu(iface.getMtuEffective())
-        .setType(iface.getType().toViType())
-        .build();
+    // Referencing a VRF in an interface implicitly creates it
+    Vrf vrf = c.getVrfs().computeIfAbsent(vrfName, name -> Vrf.builder().setName(name).build());
+    org.batfish.datamodel.Interface.Builder viIface =
+        org.batfish.datamodel.Interface.builder()
+            .setOwner(c)
+            .setName(iface.getName())
+            .setVrf(vrf)
+            .setDescription(iface.getDescription())
+            .setActive(iface.getStatusEffective())
+            .setAddress(iface.getIp())
+            .setMtu(iface.getMtuEffective())
+            .setType(iface.getTypeEffective().toViType());
+    // TODO Is this the right VI field for interface alias?
+    Optional.ofNullable(iface.getAlias())
+        .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
+    viIface.build();
   }
 
   /** Computes the VI name for the given policy. */
