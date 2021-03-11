@@ -15,8 +15,8 @@ config firewall service custom
     edit "custom_tcp_11"
         set tcp-portrange 11
     next
-    edit "custom_tcp_11_from_12"
-        set tcp-portrange 11:12
+    edit "custom_tcp_12_from_11"
+        set tcp-portrange 12:11
     next
     edit ALL
         set protocol IP
@@ -49,11 +49,12 @@ config firewall policy
         set dstintf port1 port2
         set srcaddr addr1
         set dstaddr addr2
-        set service custom_tcp_11_from_12
+        set service custom_tcp_12_from_11
         set comments "firewall policy comments"
     next
     # Number doesn't indicate order, just a unique identifier
     edit 1
+        set name "Permit Custom TCP Traffic"
         set action allow
         set srcintf port1
         set dstintf port2
@@ -65,7 +66,7 @@ config firewall policy
         append dstintf port1
         append srcaddr addr2
         append dstaddr addr1
-        append service custom_tcp_11_from_12
+        append service custom_tcp_12_from_11
     next
     edit 2
         set action allow

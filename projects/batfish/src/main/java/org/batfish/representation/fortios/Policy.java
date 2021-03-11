@@ -1,6 +1,7 @@
 package org.batfish.representation.fortios;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -74,8 +75,7 @@ public final class Policy implements Serializable {
     return _dstIntf;
   }
 
-  @Nonnull
-  public Set<String> getSrcAddr() {
+  public @Nullable Set<String> getSrcAddr() {
     return _srcAddr;
   }
 
@@ -85,8 +85,7 @@ public final class Policy implements Serializable {
     return _srcAddrUuids;
   }
 
-  @Nonnull
-  public Set<String> getDstAddr() {
+  public @Nullable Set<String> getDstAddr() {
     return _dstAddr;
   }
 
@@ -96,9 +95,12 @@ public final class Policy implements Serializable {
     return _dstAddrUuids;
   }
 
-  @Nonnull
-  public Set<String> getService() {
+  public @Nullable Set<String> getService() {
     return _service;
+  }
+
+  public void setDstAddr(Set<String> dstAddr) {
+    _dstAddr = ImmutableSet.copyOf(dstAddr);
   }
 
   /** Set of Batfish-internal UUIDs associated with service references. */
@@ -117,6 +119,14 @@ public final class Policy implements Serializable {
 
   public void setName(String name) {
     _name = name;
+  }
+
+  public void setService(Set<String> service) {
+    _service = ImmutableSet.copyOf(service);
+  }
+
+  public void setSrcAddr(Set<String> srcAddr) {
+    _srcAddr = ImmutableSet.copyOf(srcAddr);
   }
 
   public void setStatus(Status status) {
@@ -140,11 +150,11 @@ public final class Policy implements Serializable {
   @Nullable private String _name;
   @Nonnull private final Set<String> _srcIntf;
   @Nonnull private final Set<String> _dstIntf;
-  @Nonnull private final Set<String> _srcAddr;
+  @Nullable private Set<String> _srcAddr;
   @Nonnull private final Set<BatfishUUID> _srcAddrUuids;
-  @Nonnull private final Set<String> _dstAddr;
+  @Nullable private Set<String> _dstAddr;
   @Nonnull private final Set<BatfishUUID> _dstAddrUuids;
-  @Nonnull private final Set<String> _service;
+  @Nullable private Set<String> _service;
   @Nonnull private final Set<BatfishUUID> _serviceUuids;
   @Nullable private Status _status;
   @Nullable private String _comments;
