@@ -2,7 +2,6 @@ package org.batfish.representation.fortios;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-import static org.batfish.representation.fortios.FortiosConfiguration.computePolicyName;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -12,6 +11,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,7 +22,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
 
 /** FortiOS datamodel component containing firewall policy configuration */
 public final class Policy implements Serializable {
@@ -176,19 +175,18 @@ public final class Policy implements Serializable {
   @Nullable private String _comments;
   @Nullable private Action _action;
 
-  public IpAccessList toIpAccessList(
+  public @Nonnull Optional<IpAccessList> toIpAccessList(
       Map<String, IpSpace> namedIpSpaces, Map<String, AclLineMatchExpr> convertedServices) {
+    if (getStatusEffective() != Status.ENABLE) {
+      return Optional.empty();
+    }
+
     // Make sure references were finalized
     assert _srcAddr != null && _dstAddr != null && _service != null;
 
-    // TODO Incorporate _name, _comments. Probably return null or empty if not enabled.
-    // TODO May need to confirm that all interfaces/addresses are defined. They were checked when
-    //  these fields  were set, but technically could have been deleted since.
+    // TODO Incorporate _comments
+    // Note that src/dst interface filtering will be done in generated export policies.
     ImmutableList.Builder<AclLineMatchExpr> matchConjuncts = ImmutableList.builder();
-
-    // Match source interfaces
-    // TODO May have to restructure to keep MatchSrcInterface separate from main IpAccessList.
-    matchConjuncts.add(new MatchSrcInterface(_srcIntf));
 
     // Match src and dst addresses
     ImmutableList.Builder<AclLineMatchExpr> srcAddrExprs = ImmutableList.builder();
@@ -216,6 +214,13 @@ public final class Policy implements Serializable {
     ExprAclLine.Builder line =
         getActionEffective() == Action.ALLOW ? ExprAclLine.accepting() : ExprAclLine.rejecting();
     line.setMatchCondition(and(matchConjuncts.build()));
-    return IpAccessList.builder().setName(computePolicyName(this)).setLines(line.build()).build();
+
+    String viName = computeViName(_name, _number);
+    return Optional.of(IpAccessList.builder().setName(viName).setLines(line.build()).build());
+  }
+
+  public static String computeViName(@Nullable String name, String number) {
+    // TODO: Might need to generate IpAccessList names per VRF/VDOM
+    return Optional.ofNullable(name).orElseGet(() -> String.format("~UNNAMED~POLICY~%s~", number));
   }
 }

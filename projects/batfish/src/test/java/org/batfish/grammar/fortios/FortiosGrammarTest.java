@@ -41,18 +41,26 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -612,6 +620,68 @@ public final class FortiosGrammarTest {
     assertThat(policyAny.getDstIntf(), contains(Policy.ANY_INTERFACE));
   }
 
+  @Test
+  public void testFirewallPolicyConversion() throws IOException {
+    String hostname = "firewall_policy";
+    Configuration c = parseConfig(hostname);
+
+    Map<String, IpAccessList> acls = c.getIpAccessLists();
+
+    // Policy 0 should not be converted because it's disabled
+    String denyName = Policy.computeViName("longest allowed firewall policy nam", "4294967294");
+    String allowName = Policy.computeViName("Permit Custom TCP Traffic", "1");
+    String anyName = Policy.computeViName(null, "2");
+    assertThat(acls, hasKeys(denyName, allowName, anyName));
+    IpAccessList deny = acls.get(denyName);
+    IpAccessList allow = acls.get(allowName);
+    IpAccessList any = acls.get(anyName);
+
+    // Create IpAccessListToBdd to convert ACLs. Can't use ACL_TO_BDD because we need IpSpaces
+    IpAccessListToBdd aclToBdd =
+        new IpAccessListToBddImpl(
+            PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), c.getIpSpaces());
+
+    // Make BDDs representing components of defined policies
+    BDD addr1AsSrc = SRC_IP_BDD.toBDD(Prefix.parse("10.0.1.0/24"));
+    BDD addr2AsSrc = SRC_IP_BDD.toBDD(Prefix.parse("10.0.2.0/24"));
+    BDD addr1AsDst = DST_IP_BDD.toBDD(Prefix.parse("10.0.1.0/24"));
+    BDD addr2AsDst = DST_IP_BDD.toBDD(Prefix.parse("10.0.2.0/24"));
+    BDD service11 =
+        BDD_TESTBED.toBDD(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
+                .setSrcPorts(Service.DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
+                .setDstPorts(SubRange.singleton(11))
+                .build());
+    BDD service11From12 =
+        BDD_TESTBED.toBDD(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
+                .setSrcPorts(SubRange.singleton(12))
+                .setDstPorts(SubRange.singleton(11))
+                .build());
+    {
+      // Deny service custom_tcp_11_from_12 from addr1 to addr2
+      PermitAndDenyBdds expected =
+          new PermitAndDenyBdds(ZERO, addr1AsSrc.and(addr2AsDst).and(service11From12));
+      assertThat(aclToBdd.toPermitAndDenyBdds(deny), equalTo(expected));
+    }
+    {
+      // Allow services custom_tcp_11, custom_tcp_11_from_12 from addr1, addr2 to addr1, addr2
+      BDD services = service11.or(service11From12);
+      BDD srcAddrs = addr1AsSrc.or(addr2AsSrc);
+      BDD dstAddrs = addr1AsDst.or(addr2AsDst);
+      PermitAndDenyBdds expected =
+          new PermitAndDenyBdds(services.and(srcAddrs).and(dstAddrs), ZERO);
+      assertThat(aclToBdd.toPermitAndDenyBdds(allow), equalTo(expected));
+    }
+    {
+      // Allow all
+      PermitAndDenyBdds expected = new PermitAndDenyBdds(ONE, ZERO);
+      assertThat(aclToBdd.toPermitAndDenyBdds(any), equalTo(expected));
+    }
+  }
+
   /**
    * Test extraction of firewall policy when warnings are generated for invalid / pruned properties.
    */
@@ -838,15 +908,14 @@ public final class FortiosGrammarTest {
 
   private static final BddTestbed BDD_TESTBED =
       new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
-
   private static final BDD ZERO;
+  private static final BDD ONE;
+  private static final BDDPacket PKT;
 
   @SuppressWarnings("unused")
   private static final IpAccessListToBdd ACL_TO_BDD;
 
-  @SuppressWarnings("unused")
   private static final IpSpaceToBDD DST_IP_BDD;
-
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/fortios/testconfigs/";
@@ -856,6 +925,8 @@ public final class FortiosGrammarTest {
 
   static {
     ZERO = BDD_TESTBED.getPkt().getFactory().zero();
+    ONE = BDD_TESTBED.getPkt().getFactory().one();
+    PKT = BDD_TESTBED.getPkt();
     DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
     SRC_IP_BDD = BDD_TESTBED.getSrcIpBdd();
     ACL_TO_BDD = BDD_TESTBED.getAclToBdd();

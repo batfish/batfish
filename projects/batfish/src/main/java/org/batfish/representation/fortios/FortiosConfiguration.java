@@ -1,7 +1,5 @@
 package org.batfish.representation.fortios;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.HashMap;
@@ -111,18 +109,8 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   private void convertPolicy(
       Policy policy, Configuration c, Map<String, AclLineMatchExpr> convertedServices) {
-    if (policy.getStatusEffective() == Policy.Status.DISABLE) {
-      // Ignore disabled policy
-      return;
-    }
-    // TODO: Might need to generate IpAccessList names per VRF/VDOM
-    c.getIpAccessLists()
-        .put(computePolicyName(policy), policy.toIpAccessList(c.getIpSpaces(), convertedServices));
-  }
-
-  static String computePolicyName(Policy policy) {
-    // TODO Is this guaranteed to be unique?
-    // TODO: Might need to generate IpAccessList names per VRF/VDOM
-    return firstNonNull(policy.getName(), policy.getNumber());
+    policy
+        .toIpAccessList(c.getIpSpaces(), convertedServices)
+        .ifPresent(acl -> c.getIpAccessLists().put(acl.getName(), acl));
   }
 }
