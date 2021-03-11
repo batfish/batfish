@@ -102,6 +102,10 @@ public class FortiosConfiguration extends VendorConfiguration {
             .collect(ImmutableMap.toImmutableMap(Service::getName, svc -> svc.toMatchExpr(_w)));
     _policies.values().forEach(policy -> convertPolicy(policy, c, convertedServices));
 
+    // Count structure references
+    markConcreteStructure(FortiosStructureType.ADDRESS);
+    markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
+    markConcreteStructure(FortiosStructureType.INTERFACE);
     return c;
   }
 

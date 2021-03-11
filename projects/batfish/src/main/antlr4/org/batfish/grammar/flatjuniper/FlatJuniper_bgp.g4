@@ -449,12 +449,18 @@ bl_common
 :
    bl_alias
    | bl_loops
+   | bl_no_prepend_global_as
    | bl_private
 ;
 
 bl_loops
 :
    LOOPS dec
+;
+
+bl_no_prepend_global_as
+:
+   NO_PREPEND_GLOBAL_AS
 ;
 
 bl_number

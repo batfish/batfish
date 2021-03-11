@@ -91055,6 +91055,15 @@
         }
       },
       "undefinedReferences" : {
+        "aws_configs" : { },
+        "configs/aaa_accounting" : { },
+        "configs/aaa_authentication_login_default_tacacs_local" : { },
+        "configs/aaa_group_server_source_interface" : { },
+        "configs/access_list" : { },
+        "configs/address_family" : { },
+        "configs/arista-event-handler" : { },
+        "configs/arista-logging" : { },
+        "configs/arista_acl" : { },
         "configs/arista_bgp" : {
           "bgp peer-group" : {
             "UNDEFINED_PEER_GROUP" : {
@@ -91071,6 +91080,8 @@
             }
           }
         },
+        "configs/arista_bgp_asn" : { },
+        "configs/arista_dhcp_relay" : { },
         "configs/arista_interface" : {
           "policy-map" : {
             "pbr-pmap" : {
@@ -91092,6 +91103,7 @@
             }
           }
         },
+        "configs/arista_ip_route" : { },
         "configs/arista_misc" : {
           "ipv4 acl" : {
             "abc" : {
@@ -91101,6 +91113,14 @@
             }
           }
         },
+        "configs/arista_nat" : { },
+        "configs/arista_ospf" : { },
+        "configs/arista_queue_monitor" : { },
+        "configs/arista_username" : { },
+        "configs/arista_vrf" : { },
+        "configs/aruba_aaa" : { },
+        "configs/aruba_acl" : { },
+        "configs/aruba_airgroup" : { },
         "configs/aruba_crypto" : {
           "crypto ipsec transform-set" : {
             "\"" : {
@@ -91125,6 +91145,18 @@
             }
           }
         },
+        "configs/aruba_dhcp" : { },
+        "configs/aruba_interface" : { },
+        "configs/aruba_logging" : { },
+        "configs/aruba_misc" : { },
+        "configs/aruba_net" : { },
+        "configs/aruba_snmp" : { },
+        "configs/aruba_time_range" : { },
+        "configs/aruba_user_role" : { },
+        "configs/aruba_vlan" : { },
+        "configs/aruba_voice" : { },
+        "configs/aruba_vpn" : { },
+        "configs/as_path_prepend" : { },
         "configs/asa_acl" : {
           "object-group network" : {
             "drawbridge_hosts" : {
@@ -91134,6 +91166,7 @@
             }
           }
         },
+        "configs/asa_banner" : { },
         "configs/asa_interface" : {
           "policy-map" : {
             "some-interface-policy" : {
@@ -91220,6 +91253,9 @@
             }
           }
         },
+        "configs/asa_object_groups" : { },
+        "configs/asa_ospf" : { },
+        "configs/asa_ssh" : { },
         "configs/bgp_address_family" : {
           "interface" : {
             "Loopback0" : {
@@ -91286,6 +91322,7 @@
             }
           }
         },
+        "configs/bgp_nsr" : { },
         "configs/bgp_route_policy" : {
           "bgp neighbor-group" : {
             "EBGP-PEER-SVL-PNI" : {
@@ -91307,6 +91344,8 @@
             }
           }
         },
+        "configs/cadant_acl" : { },
+        "configs/cadant_banner" : { },
         "configs/cadant_bgp" : {
           "interface" : {
             "Loopback15" : {
@@ -91329,6 +91368,7 @@
             }
           }
         },
+        "configs/cadant_cable" : { },
         "configs/cadant_interface" : {
           "ipv4/6 acl" : {
             "fleep-acl" : {
@@ -91350,6 +91390,7 @@
             }
           }
         },
+        "configs/cadant_ip_route" : { },
         "configs/cadant_isis" : {
           "ipv4/6 acl" : {
             "blah-acl-99" : {
@@ -91364,6 +91405,8 @@
             }
           }
         },
+        "configs/cadant_line" : { },
+        "configs/cadant_logging" : { },
         "configs/cadant_misc" : {
           "interface" : {
             "Loopback0" : {
@@ -91376,6 +91419,8 @@
             }
           }
         },
+        "configs/cadant_prefix_list" : { },
+        "configs/cadant_qos" : { },
         "configs/cadant_rip" : {
           "ipv4/6 acl" : {
             "blah-std-acl" : {
@@ -91417,6 +91462,8 @@
             }
           }
         },
+        "configs/cisco_aaa" : { },
+        "configs/cisco_acl" : { },
         "configs/cisco_additional_paths" : {
           "undeclared bgp peer" : {
             "1.2.3.4" : {
@@ -91427,6 +91474,8 @@
             }
           }
         },
+        "configs/cisco_asa/asa-interface-redundant" : { },
+        "configs/cisco_authentication" : { },
         "configs/cisco_bgp" : {
           "as-path access-list" : {
             "40" : {
@@ -91490,6 +91539,7 @@
             }
           }
         },
+        "configs/cisco_bgp_confederation" : { },
         "configs/cisco_cable" : {
           "cable service-class" : {
             "barfoo" : {
@@ -91518,6 +91568,7 @@
             }
           }
         },
+        "configs/cisco_callhome" : { },
         "configs/cisco_control_plane" : {
           "policy-map" : {
             "copp-policy" : {
@@ -91532,6 +91583,7 @@
             }
           }
         },
+        "configs/cisco_controller" : { },
         "configs/cisco_crypto" : {
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5-trans" : {
@@ -91649,6 +91701,7 @@
             }
           }
         },
+        "configs/cisco_dhcp" : { },
         "configs/cisco_domain" : {
           "interface" : {
             "Loopback666" : {
@@ -91658,6 +91711,10 @@
             }
           }
         },
+        "configs/cisco_dot11" : { },
+        "configs/cisco_dot1x" : { },
+        "configs/cisco_dscpfarm" : { },
+        "configs/cisco_dynamic_access_policy_record" : { },
         "configs/cisco_eigrp" : {
           "interface" : {
             "FastEthernet0/1" : {
@@ -91724,6 +91781,10 @@
             }
           }
         },
+        "configs/cisco_enable" : { },
+        "configs/cisco_flow" : { },
+        "configs/cisco_hardware" : { },
+        "configs/cisco_hsrp" : { },
         "configs/cisco_interface" : {
           "ipv4 acl" : {
             "167" : {
@@ -91787,6 +91848,7 @@
             }
           }
         },
+        "configs/cisco_ios_neighbor" : { },
         "configs/cisco_ip" : {
           "ipv4/6 acl" : {
             "wccp-cachelist" : {
@@ -91801,6 +91863,7 @@
             }
           }
         },
+        "configs/cisco_ip_nat" : { },
         "configs/cisco_ip_route" : {
           "interface" : {
             "Dialer1" : {
@@ -91845,6 +91908,9 @@
             }
           }
         },
+        "configs/cisco_ipsla" : { },
+        "configs/cisco_ipv6" : { },
+        "configs/cisco_ipv6_access_list" : { },
         "configs/cisco_isis" : {
           "route-map" : {
             "connected-to-isis" : {
@@ -91864,6 +91930,7 @@
             }
           }
         },
+        "configs/cisco_l2tp" : { },
         "configs/cisco_line" : {
           "ipv4 acl" : {
             "40" : {
@@ -91891,6 +91958,8 @@
             }
           }
         },
+        "configs/cisco_logging" : { },
+        "configs/cisco_mac_acl" : { },
         "configs/cisco_misc" : {
           "class-map" : {
             "ICMP-cmap" : {
@@ -91929,6 +91998,12 @@
             }
           }
         },
+        "configs/cisco_monitor" : { },
+        "configs/cisco_mpls" : { },
+        "configs/cisco_multicast" : { },
+        "configs/cisco_noipns" : { },
+        "configs/cisco_nomaskreply" : { },
+        "configs/cisco_nosnmp" : { },
         "configs/cisco_ntp" : {
           "interface" : {
             "Loopback0" : {
@@ -91945,6 +92020,7 @@
             }
           }
         },
+        "configs/cisco_opsfv3" : { },
         "configs/cisco_ospf" : {
           "ipv4 prefix-list" : {
             "plin" : {
@@ -92013,6 +92089,7 @@
             }
           }
         },
+        "configs/cisco_ospf_multi_process" : { },
         "configs/cisco_pim" : {
           "ipv4 acl" : {
             "foobar" : {
@@ -92027,6 +92104,8 @@
             }
           }
         },
+        "configs/cisco_platform" : { },
+        "configs/cisco_privilege" : { },
         "configs/cisco_qos" : {
           "acl" : {
             "boop" : {
@@ -92149,6 +92228,8 @@
             }
           }
         },
+        "configs/cisco_queue_monitor" : { },
+        "configs/cisco_redundancy" : { },
         "configs/cisco_rip" : {
           "ipv4/6 acl" : {
             "some-ACL" : {
@@ -92161,6 +92242,7 @@
             }
           }
         },
+        "configs/cisco_role" : { },
         "configs/cisco_route_map" : {
           "as-path access-list" : {
             "AS_PATH_UNDEF" : {
@@ -92189,6 +92271,7 @@
             }
           }
         },
+        "configs/cisco_sccp" : { },
         "configs/cisco_snmp" : {
           "interface" : {
             "Loopback0" : {
@@ -92279,6 +92362,11 @@
             }
           }
         },
+        "configs/cisco_spanning_tree" : { },
+        "configs/cisco_ssh" : { },
+        "configs/cisco_stcapp" : { },
+        "configs/cisco_style_acl1" : { },
+        "configs/cisco_style_acl2" : { },
         "configs/cisco_system" : {
           "policy-map" : {
             "POLICY" : {
@@ -92302,6 +92390,13 @@
             }
           }
         },
+        "configs/cisco_username" : { },
+        "configs/cisco_username_without_password" : { },
+        "configs/cisco_vdc" : { },
+        "configs/cisco_vlan" : { },
+        "configs/cisco_voice" : { },
+        "configs/cisco_vpdn" : { },
+        "configs/cisco_vpn" : { },
         "configs/cisco_vrrp" : {
           "interface" : {
             "GigabitEthernet0/0/0/19" : {
@@ -92321,6 +92416,8 @@
             }
           }
         },
+        "configs/cisco_webvpn" : { },
+        "configs/cisco_wsma" : { },
         "configs/cisco_zone" : {
           "policy-map type inspect" : {
             "p1" : {
@@ -92339,6 +92436,24 @@
             }
           }
         },
+        "configs/community_list_named" : { },
+        "configs/community_name_numbers" : { },
+        "configs/community_name_numbers_dos" : { },
+        "configs/community_set" : { },
+        "configs/cumulus_nclu" : { },
+        "configs/cumulus_nclu_bgp" : { },
+        "configs/cumulus_nclu_bgp_no_address_family" : { },
+        "configs/cumulus_nclu_bgp_no_remote_as" : { },
+        "configs/cumulus_nclu_bgp_no_router_id" : { },
+        "configs/cumulus_nclu_bgp_no_router_id_or_loopback_ip" : { },
+        "configs/cumulus_nclu_bond" : { },
+        "configs/cumulus_nclu_interface" : { },
+        "configs/cumulus_nclu_invalid_bonds" : { },
+        "configs/cumulus_nclu_invalid_interfaces" : { },
+        "configs/cumulus_nclu_invalid_vrfs" : { },
+        "configs/cumulus_nclu_invalid_vxlans" : { },
+        "configs/cumulus_nclu_routing" : { },
+        "configs/cumulus_nclu_stp" : { },
         "configs/eos_mlag" : {
           "interface" : {
             "Vlan4094" : {
@@ -92348,6 +92463,7 @@
             }
           }
         },
+        "configs/eos_trunk_group" : { },
         "configs/f5_bigip/f5_bigip_imish_malformed" : {
           "route-map" : {
             "rm1" : {
@@ -92459,6 +92575,8 @@
             }
           }
         },
+        "configs/f5_bigip/f5_bigip_structured_malformed" : { },
+        "configs/f5_bigip/f5_bigip_structured_net" : { },
         "configs/f5_bigip/f5_bigip_structured_net_routing_bgp" : {
           "route-map" : {
             "/Common/MY_IPV4_OUT" : {
@@ -92486,6 +92604,7 @@
             }
           }
         },
+        "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list" : { },
         "configs/f5_bigip/f5_bigip_structured_net_routing_route_map" : {
           "prefix-list" : {
             "/Common/MY_PREFIX_LIST" : {
@@ -92500,6 +92619,7 @@
             }
           }
         },
+        "configs/f5_bigip/f5_bigip_structured_sys" : { },
         "configs/f5_bigip/f5_bigip_structured_sys_ha_group" : {
           "pool" : {
             "/Common/p1" : {
@@ -92523,6 +92643,7 @@
             }
           }
         },
+        "configs/foundry_access_list" : { },
         "configs/foundry_bgp" : {
           "interface" : {
             "Loopback1" : {
@@ -92532,6 +92653,7 @@
             }
           }
         },
+        "configs/foundry_interface" : { },
         "configs/foundry_misc" : {
           "interface" : {
             "Ethernet13/10" : {
@@ -92555,6 +92677,17 @@
             }
           }
         },
+        "configs/foundry_vlan_group" : { },
+        "configs/gh-2658-juniper-vrf-import-export.cfg" : { },
+        "configs/host2" : { },
+        "configs/if_tag_is" : { },
+        "configs/interface_exit" : { },
+        "configs/interface_name" : { },
+        "configs/interface_sdr" : { },
+        "configs/ios-xe/ios-xe-bgp-vrf" : { },
+        "configs/ios_banner" : { },
+        "configs/ios_banner_dos" : { },
+        "configs/ios_bfd" : { },
         "configs/ios_bgp" : {
           "ipv6 prefix-list" : {
             "VPNV6_PL" : {
@@ -92590,6 +92723,7 @@
             }
           }
         },
+        "configs/ios_bgp_aggregate_address" : { },
         "configs/ios_interface" : {
           "policy-map" : {
             "FOOBAR" : {
@@ -92599,6 +92733,9 @@
             }
           }
         },
+        "configs/ios_interface_eigrp_settings" : { },
+        "configs/ios_interface_ip_autentication" : { },
+        "configs/ios_interface_ip_tcp" : { },
         "configs/ios_standby" : {
           "track" : {
             "1" : {
@@ -92609,6 +92746,7 @@
             }
           }
         },
+        "configs/ios_template" : { },
         "configs/ios_xe_bgp" : {
           "bgp template peer-policy" : {
             "FOO-BAR_BAZ:QUX" : {
@@ -92632,6 +92770,7 @@
             }
           }
         },
+        "configs/ios_xr_acl" : { },
         "configs/ios_xr_bgp" : {
           "route-policy" : {
             "ADDITIONAL_PATHS_POLICY" : {
@@ -92705,6 +92844,12 @@
             }
           }
         },
+        "configs/ios_xr_class_map" : { },
+        "configs/ios_xr_community_set" : { },
+        "configs/ios_xr_isis" : { },
+        "configs/ios_xr_l2vpn" : { },
+        "configs/ios_xr_logging" : { },
+        "configs/ios_xr_misc" : { },
         "configs/ios_xr_multicast" : {
           "ipv4 access-list" : {
             "MSDP_filter" : {
@@ -92717,6 +92862,7 @@
             }
           }
         },
+        "configs/ios_xr_multicast_routing" : { },
         "configs/ios_xr_multipart" : {
           "ipv4 access-list" : {
             "GNS-VTY-ACCESS" : {
@@ -92726,6 +92872,7 @@
             }
           }
         },
+        "configs/ios_xr_ntp" : { },
         "configs/ios_xr_ospf" : {
           "interface" : {
             "Bundle-Ether101" : {
@@ -92775,6 +92922,7 @@
             }
           }
         },
+        "configs/ios_xr_prefix_set" : { },
         "configs/ios_xr_route_policy" : {
           "as-path-set" : {
             "chill-as-path" : {
@@ -92977,6 +93125,16 @@
             }
           }
         },
+        "configs/ios_xr_taskgroup" : { },
+        "configs/ip_default_route_classless" : { },
+        "configs/ip_prefix_list_single_line" : { },
+        "configs/isr_crypto" : { },
+        "configs/isr_voip" : { },
+        "configs/juniper-interfaces" : { },
+        "configs/juniper-tcpflags" : { },
+        "configs/juniper_application" : { },
+        "configs/juniper_apply_macro" : { },
+        "configs/juniper_as_path_group" : { },
         "configs/juniper_bgp" : {
           "policy-statement" : {
             "someexportpolicy" : {
@@ -92997,6 +93155,7 @@
             }
           }
         },
+        "configs/juniper_bgp_allow" : { },
         "configs/juniper_bgp_authentication" : {
           "authentication-key-chain" : {
             "bgp-auth1" : {
@@ -93006,6 +93165,11 @@
             }
           }
         },
+        "configs/juniper_bgp_disable" : { },
+        "configs/juniper_bgp_enforce_fist_as" : { },
+        "configs/juniper_bgp_remove_private_as" : { },
+        "configs/juniper_extended_community" : { },
+        "configs/juniper_firewall" : { },
         "configs/juniper_forwarding_options" : {
           "dhcp-relay server-group" : {
             "site-dhcp" : {
@@ -93049,6 +93213,8 @@
             }
           }
         },
+        "configs/juniper_isis" : { },
+        "configs/juniper_l2_learning" : { },
         "configs/juniper_misc" : {
           "interface" : {
             "lo0.0" : {
@@ -93058,6 +93224,8 @@
             }
           }
         },
+        "configs/juniper_nat" : { },
+        "configs/juniper_ntp" : { },
         "configs/juniper_ospf" : {
           "interface" : {
             "ae16.0" : {
@@ -93090,6 +93258,9 @@
             }
           }
         },
+        "configs/juniper_ospf_disable" : { },
+        "configs/juniper_ospf_stub_areas" : { },
+        "configs/juniper_passwords" : { },
         "configs/juniper_policy_statement" : {
           "routing-instance" : {
             "FORWARDING" : {
@@ -93113,6 +93284,10 @@
             }
           }
         },
+        "configs/juniper_reth_interfaces" : { },
+        "configs/juniper_rib_groups" : { },
+        "configs/juniper_route_filter" : { },
+        "configs/juniper_routing_options" : { },
         "configs/juniper_routing_policy" : {
           "interface" : {
             "ge-0/0/0.99" : {
@@ -93122,6 +93297,7 @@
             }
           }
         },
+        "configs/juniper_security" : { },
         "configs/juniper_snmp" : {
           "prefix-list" : {
             "bippetyboo" : {
@@ -93131,6 +93307,7 @@
             }
           }
         },
+        "configs/juniper_syslog" : { },
         "configs/juniper_system" : {
           "logical-system" : {
             "ls905" : {
@@ -93140,6 +93317,8 @@
             }
           }
         },
+        "configs/juniper_tacplus" : { },
+        "configs/juniper_trailing_space" : { },
         "configs/juniper_vlan" : {
           "interface" : {
             "vlan.30" : {
@@ -93154,6 +93333,11 @@
             }
           }
         },
+        "configs/local_v6_addr" : { },
+        "configs/mac_access_list" : { },
+        "configs/mos_interface" : { },
+        "configs/mos_misc" : { },
+        "configs/msdp_originator_id" : { },
         "configs/named_and_numbered_lists" : {
           "ipv4 acl" : {
             "1" : {
@@ -93198,6 +93382,11 @@
             }
           }
         },
+        "configs/neighbor_mix" : { },
+        "configs/network6" : { },
+        "configs/nexus" : { },
+        "configs/no_aaa_group_server" : { },
+        "configs/non_nexus_neighbor_af" : { },
         "configs/nxos/nxos_bgp" : {
           "route-map" : {
             "BLIB" : {
@@ -93227,6 +93416,9 @@
             }
           }
         },
+        "configs/nxos/nxos_interface" : { },
+        "configs/nxos/nxos_misc" : { },
+        "configs/nxos/nxos_ntp" : { },
         "configs/nxos/nxos_ospf" : {
           "route-map" : {
             "RM_OSPF_DIRECT" : {
@@ -93242,6 +93434,8 @@
             }
           }
         },
+        "configs/nxos/nxos_route_map_continue" : { },
+        "configs/nxos/nxos_ssh" : { },
         "configs/nxos/nxos_system" : {
           "policy-map type network-qos" : {
             "jumbo" : {
@@ -93251,6 +93445,11 @@
             }
           }
         },
+        "configs/nxos/nxos_vrf" : { },
+        "configs/nxos_acl" : { },
+        "configs/openflow" : { },
+        "configs/palo_alto/applications" : { },
+        "configs/palo_alto/interfaces" : { },
         "configs/palo_alto/nat" : {
           "zone" : {
             "FROM_1~panorama" : {
@@ -93282,6 +93481,7 @@
             }
           }
         },
+        "configs/palo_alto/policy" : { },
         "configs/palo_alto/virtual-routers" : {
           "interface" : {
             "dummy" : {
@@ -93291,6 +93491,10 @@
             }
           }
         },
+        "configs/palo_alto/zones" : { },
+        "configs/pim" : { },
+        "configs/pim_snooping" : { },
+        "configs/prefix_list_ipv4" : { },
         "configs/route_policy_as_path" : {
           "community-set" : {
             "13979:90" : {
@@ -93378,6 +93582,13 @@
             }
           }
         },
+        "configs/router_msdp" : { },
+        "configs/set_inline_community" : { },
+        "configs/statistics" : { },
+        "configs/switchport_range" : { },
+        "configs/syslog_source_interface" : { },
+        "configs/taskgroup" : { },
+        "configs/tcpflags" : { },
         "configs/underscore_variable" : {
           "ipv4 prefix-list" : {
             "ABC_DEF" : {
@@ -93418,7 +93629,8 @@
               ]
             }
           }
-        }
+        },
+        "hosts/host1.json" : { }
       },
       "version" : "0.36.0",
       "warnings" : {
