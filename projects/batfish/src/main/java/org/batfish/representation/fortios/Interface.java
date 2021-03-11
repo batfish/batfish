@@ -7,7 +7,6 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.InterfaceType;
 
 /** FortiOS datamodel component containing interface configuration */
 public final class Interface implements InterfaceOrZone, Serializable {
@@ -20,29 +19,6 @@ public final class Interface implements InterfaceOrZone, Serializable {
     TUNNEL,
     VLAN,
     WL_MESH;
-
-    // TODO verify and finish
-    public InterfaceType toViType() {
-      switch (this) {
-        case AGGREGATE:
-          return InterfaceType.AGGREGATED;
-        case LOOPBACK:
-          return InterfaceType.LOOPBACK;
-        case PHYSICAL:
-          return InterfaceType.PHYSICAL;
-        case REDUNDANT:
-          return InterfaceType.REDUNDANT;
-        case TUNNEL:
-          return InterfaceType.TUNNEL;
-        case EMAC_VLAN:
-        case VLAN:
-          return InterfaceType.VLAN;
-        case WL_MESH: // TODO Support this type
-        default:
-          throw new UnsupportedOperationException(
-              String.format("Unsupported interface type %s", this));
-      }
-    }
   }
 
   public enum Status {

@@ -24,6 +24,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
@@ -228,6 +229,14 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   private void convertInterface(Interface iface, Configuration c) {
+    InterfaceType type = toViType(iface.getTypeEffective());
+    if (type == null) {
+      _w.redFlag(
+          String.format(
+              "Interface %s has unsupported type %s and will not be converted",
+              iface.getName(), iface.getTypeEffective()));
+      return;
+    }
     String vdom = iface.getVdom();
     assert vdom != null; // An interface with no VDOM set should fail in extraction
     String vrfName = computeVrfName(vdom, iface.getVrfEffective());
@@ -242,7 +251,7 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setActive(iface.getStatusEffective())
             .setAddress(iface.getIp())
             .setMtu(iface.getMtuEffective())
-            .setType(iface.getTypeEffective().toViType());
+            .setType(type);
     // TODO Is this the right VI field for interface alias?
     Optional.ofNullable(iface.getAlias())
         .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
@@ -250,6 +259,27 @@ public class FortiosConfiguration extends VendorConfiguration {
     //  (i.e. whether policies act on post-NAT or original flows)
     generateOutgoingFilter(iface, c).ifPresent(viIface::setOutgoingFilter);
     viIface.build();
+  }
+
+  private @Nullable InterfaceType toViType(Interface.Type vsType) {
+    switch (vsType) {
+      case AGGREGATE:
+        return InterfaceType.AGGREGATED;
+      case LOOPBACK:
+        return InterfaceType.LOOPBACK;
+      case PHYSICAL:
+        return InterfaceType.PHYSICAL;
+      case REDUNDANT:
+        return InterfaceType.REDUNDANT;
+      case TUNNEL:
+        return InterfaceType.TUNNEL;
+      case EMAC_VLAN:
+      case VLAN:
+        return InterfaceType.VLAN;
+      case WL_MESH: // TODO Support this type
+      default:
+        return null;
+    }
   }
 
   private @Nonnull Optional<IpAccessList> generateOutgoingFilter(Interface iface, Configuration c) {
