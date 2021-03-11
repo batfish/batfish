@@ -1,0 +1,34 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+  host-name bgp-routing-options-as-gh-6710;
+}
+#
+routing-options {
+    router-id 111.0.0.1;
+    autonomous-system 1111 loops 3;
+}
+groups {
+  replace:
+  mesh_bgp{
+    protocols {
+      bgp {
+        group group_a {
+          type external;
+          local-as 64611 private no-prepend-global-as;
+          neighbor 10.255.16.23 {
+            description group_a-to_1;
+            peer-as 64616;
+          }
+        }
+        group group_b {
+          type external;
+          neighbor 10.255.42.23 {
+            description group_b-to_1;
+            peer-as 64642;
+          }
+        }
+      }
+    }
+  }
+}
+apply-groups mesh_bgp;

@@ -86,6 +86,7 @@ import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Device_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Double_quoted_stringContext;
 import org.batfish.grammar.fortios.FortiosParser.Enable_or_disableContext;
+import org.batfish.grammar.fortios.FortiosParser.Fortios_configurationContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_aliasContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_nameContext;
@@ -118,13 +119,12 @@ import org.batfish.grammar.fortios.FortiosParser.Up_or_downContext;
 import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.representation.fortios.Address;
+import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
-import org.batfish.representation.fortios.InterfaceAny;
-import org.batfish.representation.fortios.InterfaceOrZone;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
@@ -150,6 +150,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _c = configuration;
   }
 
+  /** Get a new, unique BatfishUUID. */
+  public @Nonnull BatfishUUID getUUID() {
+    return new BatfishUUID(_uuidSequenceNumber++);
+  }
+
   @Override
   public String getInputText() {
     return _text;
@@ -163,6 +168,31 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public Warnings getWarnings() {
     return _w;
+  }
+
+  @Override
+  public void exitFortios_configuration(Fortios_configurationContext ctx) {
+    // After renaming is complete, generate object names from UUIDs
+    for (Policy policy : _c.getPolicies().values()) {
+      policy
+          .getSrcAddr()
+          .addAll(
+              policy.getSrcAddrUUIDs().stream()
+                  .map(u -> _c.getRenameableObjects().get(u).getName())
+                  .collect(ImmutableSet.toImmutableSet()));
+      policy
+          .getDstAddr()
+          .addAll(
+              policy.getDstAddrUUIDs().stream()
+                  .map(u -> _c.getRenameableObjects().get(u).getName())
+                  .collect(ImmutableSet.toImmutableSet()));
+      policy
+          .getService()
+          .addAll(
+              policy.getServiceUUIDs().stream()
+                  .map(u -> _c.getRenameableObjects().get(u).getName())
+                  .collect(ImmutableSet.toImmutableSet()));
+    }
   }
 
   @Override
@@ -207,7 +237,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       // Make a clone to edit
       _currentAddress = SerializationUtils.clone(existingAddress);
     } else {
-      _currentAddress = new Address(toString(ctx.address_name().str()));
+      _currentAddress = new Address(toString(ctx.address_name().str()), getUUID());
     }
   }
 
@@ -219,6 +249,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       // TODO Add structure definition for address
       _c.defineStructure(FortiosStructureType.ADDRESS, _currentAddress.getName(), ctx);
       _c.getAddresses().put(_currentAddress.getName(), _currentAddress);
+      _c.getRenameableObjects().put(_currentAddress.getBatfishUUID(), _currentAddress);
     }
     _currentAddress = null;
   }
@@ -440,10 +471,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   // List items
   @Override
   public void exitCfp_set_dstaddr(Cfp_set_dstaddrContext ctx) {
-    toAddresses(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR)
+    toAddressUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR)
         .ifPresent(
             addresses -> {
-              Set<Address> addrs = _currentPolicy.getDstAddr();
+              Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
               addrs.clear();
               addrs.addAll(addresses);
             });
@@ -451,10 +482,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_srcaddr(Cfp_set_srcaddrContext ctx) {
-    toAddresses(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR)
+    toAddressUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR)
         .ifPresent(
             addresses -> {
-              Set<Address> addrs = _currentPolicy.getSrcAddr();
+              Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
               addrs.clear();
               addrs.addAll(addresses);
             });
@@ -465,7 +496,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
         .ifPresent(
             i -> {
-              Set<InterfaceOrZone> ifaces = _currentPolicy.getDstIntf();
+              Set<String> ifaces = _currentPolicy.getDstIntf();
               ifaces.clear();
               ifaces.addAll(i);
             });
@@ -476,7 +507,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
         .ifPresent(
             i -> {
-              Set<InterfaceOrZone> ifaces = _currentPolicy.getSrcIntf();
+              Set<String> ifaces = _currentPolicy.getSrcIntf();
               ifaces.clear();
               ifaces.addAll(i);
             });
@@ -484,10 +515,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_service(Cfp_set_serviceContext ctx) {
-    toServices(ctx.services, FortiosStructureUsage.POLICY_SERVICE)
+    toServiceUUIDs(ctx.services, FortiosStructureUsage.POLICY_SERVICE)
         .ifPresent(
             s -> {
-              Set<Service> service = _currentPolicy.getService();
+              Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
               service.clear();
               service.addAll(s);
             });
@@ -495,20 +526,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_dstaddr(Cfp_append_dstaddrContext ctx) {
-    toAddresses(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR)
+    toAddressUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR)
         .ifPresent(
             a -> {
-              Set<Address> addrs = _currentPolicy.getDstAddr();
+              Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
               addrs.addAll(a);
             });
   }
 
   @Override
   public void exitCfp_append_srcaddr(Cfp_append_srcaddrContext ctx) {
-    toAddresses(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR)
+    toAddressUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR)
         .ifPresent(
             a -> {
-              Set<Address> addrs = _currentPolicy.getSrcAddr();
+              Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
               addrs.addAll(a);
             });
   }
@@ -518,7 +549,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
         .ifPresent(
             i -> {
-              Set<InterfaceOrZone> ifaces = _currentPolicy.getDstIntf();
+              Set<String> ifaces = _currentPolicy.getDstIntf();
               ifaces.addAll(i);
             });
   }
@@ -528,17 +559,17 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
         .ifPresent(
             i -> {
-              Set<InterfaceOrZone> ifaces = _currentPolicy.getSrcIntf();
+              Set<String> ifaces = _currentPolicy.getSrcIntf();
               ifaces.addAll(i);
             });
   }
 
   @Override
   public void exitCfp_append_service(Cfp_append_serviceContext ctx) {
-    toServices(ctx.services, FortiosStructureUsage.POLICY_SERVICE)
+    toServiceUUIDs(ctx.services, FortiosStructureUsage.POLICY_SERVICE)
         .ifPresent(
             s -> {
-              Set<Service> service = _currentPolicy.getService();
+              Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
               service.addAll(s);
             });
   }
@@ -547,10 +578,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void enterCfsc_edit(Cfsc_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.service_name());
     if (!name.isPresent()) {
-      _currentService = new Service(toString(ctx.service_name().str())); // dummy
+      _currentService = new Service(toString(ctx.service_name().str()), getUUID()); // dummy
       return;
     }
-    _currentService = _c.getServices().computeIfAbsent(name.get(), Service::new);
+    _currentService = _c.getServices().computeIfAbsent(name.get(), s -> new Service(s, getUUID()));
   }
 
   @Override
@@ -558,6 +589,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     String name = _currentService.getName();
     // TODO better validation
     if (SERVICE_NAME_PATTERN.matcher(name).matches()) {
+      _c.getRenameableObjects().put(_currentService.getBatfishUUID(), _currentService);
       _c.defineStructure(FortiosStructureType.SERVICE_CUSTOM, name, ctx);
     }
     _currentService = null;
@@ -656,10 +688,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
   }
 
-  private Optional<Set<Service>> toServices(Service_namesContext ctx, FortiosStructureUsage usage) {
+  /**
+   * Generate a list of service UUIDs for the supplied Service_names context. Returns {@link
+   * Optional#empty()} if invalid.
+   */
+  private Optional<Set<BatfishUUID>> toServiceUUIDs(
+      Service_namesContext ctx, FortiosStructureUsage usage) {
     int line = ctx.start.getLine();
     Map<String, Service> servicesMap = _c.getServices();
-    ImmutableSet.Builder<Service> servicesBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<BatfishUUID> serviceUuidsBuilder = ImmutableSet.builder();
     Set<String> services =
         ctx.service_name().stream()
             .map(n -> toString(n.str()))
@@ -670,7 +707,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         return Optional.empty();
       }
       if (servicesMap.containsKey(name)) {
-        servicesBuilder.add(servicesMap.get(name));
+        serviceUuidsBuilder.add(servicesMap.get(name).getBatfishUUID());
         _c.referenceStructure(FortiosStructureType.SERVICE_CUSTOM, name, usage, line);
       } else {
         _c.undefined(FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP, name, usage, line);
@@ -682,14 +719,18 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         return Optional.empty();
       }
     }
-    return Optional.of(servicesBuilder.build());
+    return Optional.of(serviceUuidsBuilder.build());
   }
 
-  private Optional<Set<Address>> toAddresses(
+  /**
+   * Generate a list of address UUIDs for the supplied Address_names context. Returns {@link
+   * Optional#empty()} if invalid.
+   */
+  private Optional<Set<BatfishUUID>> toAddressUUIDs(
       Address_namesContext ctx, FortiosStructureUsage usage) {
     int line = ctx.start.getLine();
     Map<String, Address> addressesMap = _c.getAddresses();
-    ImmutableSet.Builder<Address> addressesBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<BatfishUUID> addressUuidsBuilder = ImmutableSet.builder();
     Set<String> addresses =
         ctx.address_name().stream()
             .map(n -> toString(n.str()))
@@ -700,7 +741,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         continue;
       }
       if (addressesMap.containsKey(name)) {
-        addressesBuilder.add(addressesMap.get(name));
+        addressUuidsBuilder.add(addressesMap.get(name).getBatfishUUID());
         _c.referenceStructure(FortiosStructureType.ADDRESS, name, usage, line);
       } else {
         _c.undefined(FortiosStructureType.ADDRESS_OR_ADDRGRP, name, usage, line);
@@ -712,18 +753,18 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         return Optional.empty();
       }
     }
-    return Optional.of(addressesBuilder.build());
+    return Optional.of(addressUuidsBuilder.build());
   }
 
   /**
-   * Convert specified interface or zone names context into a set of interfaces. If {@code pruneAny}
-   * is true, then the special 'any' interface will be removed if specified with other interfaces.
+   * Convert specified interface or zone names context into a set of names. If {@code pruneAny} is
+   * true, then the special 'any' interface will be removed if specified with other interfaces.
    */
-  private Optional<Set<InterfaceOrZone>> toInterfaces(
+  private Optional<Set<String>> toInterfaces(
       Interface_or_zone_namesContext ctx, FortiosStructureUsage usage, boolean pruneAny) {
     int line = ctx.start.getLine();
     Map<String, Interface> ifacesMap = _c.getInterfaces();
-    ImmutableSet.Builder<InterfaceOrZone> ifaceBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<String> ifaceNameBuilder = ImmutableSet.builder();
     Set<String> ifaces =
         ctx.interface_or_zone_name().stream()
             .map(n -> toString(n.str()))
@@ -734,9 +775,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           warn(ctx, "When 'any' is set together with other interfaces, it is removed");
           continue;
         }
-        ifaceBuilder.add(InterfaceAny.INSTANCE);
+        ifaceNameBuilder.add(Policy.ANY_INTERFACE);
       } else if (ifacesMap.containsKey(name)) {
-        ifaceBuilder.add(ifacesMap.get(name));
         _c.referenceStructure(FortiosStructureType.INTERFACE, name, usage, line);
       } else {
         _c.undefined(FortiosStructureType.INTERFACE_OR_ZONE, name, usage, line);
@@ -748,7 +788,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         return Optional.empty();
       }
     }
-    return Optional.of(ifaceBuilder.build());
+    return Optional.of(ifaceNameBuilder.build());
   }
 
   /**
@@ -1142,5 +1182,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private final @Nonnull FortiosConfiguration _c;
   private final @Nonnull FortiosCombinedParser _parser;
   private final @Nonnull String _text;
+  // Internal sequence number to generate unique UUIDs for structure that may be renamed or cloned
+  private int _uuidSequenceNumber = 0;
   private final @Nonnull Warnings _w;
 }
