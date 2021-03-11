@@ -1,0 +1,60 @@
+config system global
+    set hostname "rename"
+end
+config firewall service custom
+    edit "old_service1"
+        set tcp-portrange 1
+    next
+    edit "old_service2"
+        set tcp-portrange 2
+    next
+    # Rename before it is ever referenced
+    rename "old_service1" to "new"_service1
+end
+config firewall address
+    edit "old_addr1"
+        set subnet 10.0.1.0 255.255.255.0
+    next
+    edit "old_addr2"
+        set subnet 10.0.2.0 255.255.255.0
+    next
+    # Rename before it is ever referenced
+    rename old_addr1 to new_addr1
+end
+config firewall policy
+    edit 0
+        set action deny
+        set srcintf any
+        set dstintf any
+        set srcaddr new_addr1
+        set dstaddr old_addr2
+        set service new_service1 old_service2
+    next
+    # Undefined references
+    #   1. Using new names before the structure is renamed
+    #   2. Using old names after the structure is renamed
+    edit 1
+        set action deny
+        set srcintf any
+        set dstintf any
+        set srcaddr old_addr1
+        set dstaddr new_addr2
+        set service old_service1
+        set service new_service2
+    next
+end
+
+# Rename some objects after they're been referenced
+config firewall service custom
+    rename old_service2 to new_service2
+end
+config firewall address
+    rename old_addr2 to new_addr2
+end
+# Renaming a non-existent object should fail with a warning
+config firewall service custom
+    rename undefined to other
+end
+config firewall address
+    rename undefined to other
+end

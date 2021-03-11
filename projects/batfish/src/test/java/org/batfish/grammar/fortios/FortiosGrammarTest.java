@@ -721,6 +721,97 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testRename() throws IOException {
+    String hostname = "rename";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    // batfish.getSettings().setDisableUnrecognized(false);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPolicies(), hasKeys("0", "1"));
+    assertThat(vc.getAddresses(), hasKeys("new_addr1", "new_addr2"));
+    assertThat(vc.getServices(), hasKeys("new_service1", "new_service2"));
+
+    Policy policy = vc.getPolicies().get("0");
+    // Policy should be using renamed structures
+    // Whether or not they were renamed after initial reference
+    assertThat(policy.getSrcAddr(), contains("new_addr1"));
+    assertThat(policy.getDstAddr(), contains("new_addr2"));
+    assertThat(policy.getService(), containsInAnyOrder("new_service1", "new_service2"));
+  }
+
+  @Test
+  public void testRenameWarnings() throws IOException {
+    String hostname = "rename";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    // Should get warnings when trying to use a renamed structure
+    // Or trying to use an undefined structure that will be defined (renamed) later
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Address old_addr1 is undefined and cannot be added to policy 1"),
+                hasComment("Address new_addr2 is undefined and cannot be added to policy 1"),
+                hasComment("Service old_service1 is undefined and cannot be added to policy 1"),
+                hasComment("Service new_service2 is undefined and cannot be added to policy 1"),
+                hasComment("Cannot rename non-existent address undefined"),
+                hasComment("Cannot rename non-existent service undefined"))));
+  }
+
+  @Test
+  public void testRenameReferences() throws IOException {
+    String hostname = "rename";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Should have definitions for the renamed structures
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "new_addr1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "new_addr2"));
+    assertThat(
+        ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service1"));
+    assertThat(
+        ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2"));
+
+    // Should have references for the renamed structures, even if the renaming happened after the
+    // reference
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "new_addr1", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "new_addr2", 1));
+    assertThat(
+        ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service1", 1));
+    assertThat(
+        ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", 1));
+
+    // Should have undefined references where either:
+    //   1. New names are used before the structure is renamed
+    //   2. Old names are used after the structure is renamed
+    assertThat(
+        ccae,
+        hasUndefinedReference(filename, FortiosStructureType.ADDRESS_OR_ADDRGRP, "old_addr1"));
+    assertThat(
+        ccae,
+        hasUndefinedReference(filename, FortiosStructureType.ADDRESS_OR_ADDRGRP, "new_addr2"));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP, "old_service1"));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP, "new_service2"));
+  }
+
+  @Test
   public void testPolicyDefinitionsAndReferences() throws IOException {
     String hostname = "policy_defs_refs";
     String filename = "configs/" + hostname;

@@ -7,6 +7,7 @@ options {
 tokens {
   QUOTED_TEXT,
   STR_SEPARATOR,
+  TO,
   UNQUOTED_WORD_CHARS
 }
 
@@ -84,6 +85,7 @@ POLICY: 'policy';
 PROTOCOL: 'protocol';
 PROTOCOL_NUMBER: 'protocol-number';
 REDUNDANT: 'redundant';
+RENAME: 'rename' -> pushMode(M_Rename);
 REPLACEMSG: 'replacemsg';
 SCTP_PORTRANGE: 'sctp-portrange';
 SDN: 'sdn';
@@ -554,3 +556,31 @@ M_Str_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> type(UNQUOTE
 M_Str_WS: F_Whitespace+ -> type(STR_SEPARATOR);
 
 M_Str_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+
+mode M_Rename;
+
+M_Rename_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_RenameName);
+
+M_Rename_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+
+mode M_RenameName;
+
+M_RenameName_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+
+M_RenameName_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+
+M_RenameName_LINE_CONTINUATION: F_LineContinuation -> skip;
+
+M_RenameName_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> type(UNQUOTED_WORD_CHARS);
+
+M_RenameName_WS: F_Whitespace+ -> skip, mode(M_RenameTo);
+
+M_RenameName_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+
+mode M_RenameTo;
+
+M_RenameTo_TO: 't' 'o' -> type(TO);
+
+M_RenameTo_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_RenameName);
+
+M_RenameTo_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
