@@ -26,10 +26,16 @@ public enum RoutingProtocol {
   LISP("lisp"),
   LOCAL("local"),
   MSDP("msdp"),
+  /** OSPF Intra-area */
   OSPF("ospf"),
+  /** OSPF External type 1 */
   OSPF_E1("ospfE1"),
+  /** OSPF External type 2 */
   OSPF_E2("ospfE2"),
+  /** OSPF Inter-area */
   OSPF_IA("ospfIA"),
+  /** OSPF Internal summary */
+  OSPF_IS("ospfIS"),
   OSPF3("ospf3"),
   RIP("rip"),
   RSVP("rsvp"),
@@ -586,6 +592,48 @@ public enum RoutingProtocol {
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
             return 111;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
+          case CISCO_ASA:
+          case CISCO_IOS:
+          case CISCO_IOS_XR:
+          case CISCO_NX:
+          case FORCE10:
+          case FOUNDRY:
+            return 110;
+          case FLAT_JUNIPER:
+          case JUNIPER:
+          case JUNIPER_SWITCH:
+            return 10;
+          case FLAT_VYOS:
+          case VYOS:
+            return 110;
+          case EMPTY:
+          case IGNORED:
+          case BLADENETWORK:
+          case F5:
+          case HOST:
+          case IPTABLES:
+          case MRV:
+          case MRV_COMMANDS:
+          case MSS:
+          case UNKNOWN:
+          case VXWORKS:
+            break;
+          default:
+            break;
+        }
+        break;
+
+      case OSPF_IS:
+        switch (vendor) {
+          case ALCATEL_AOS:
+            break;
+          case ARISTA:
+            return 110;
+          case AWS:
+            return 110;
+          case CADANT: // TODO: verify
+            return 110;
           case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:

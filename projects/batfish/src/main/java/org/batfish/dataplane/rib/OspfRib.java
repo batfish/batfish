@@ -24,11 +24,14 @@ public class OspfRib extends AbstractRib<OspfRoute> {
       case OSPF:
         return 0;
       case OSPF_E1:
-        return 2;
-      case OSPF_E2:
         return 3;
+      case OSPF_E2:
+        return 4;
       case OSPF_IA:
+        return 2;
+      case OSPF_IS:
         return 1;
+
         // $CASES-OMITTED$
       default:
         throw new BatfishException("Invalid OSPF protocol: '" + protocol + "'");

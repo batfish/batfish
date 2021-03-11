@@ -2707,7 +2707,8 @@
                 "ospf" : 110,
                 "ospfE1" : 110,
                 "ospfE2" : 110,
-                "ospfIA" : 110
+                "ospfIA" : 110,
+                "ospfIS" : 110
               },
               "areas" : {
                 "1" : {
@@ -2725,7 +2726,8 @@
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "1.1.1.1",
-              "summaryAdminCost" : 254
+              "summaryAdminCost" : 254,
+              "summaryDiscardMetric" : 0
             }
           },
           "bgpProcess" : {
