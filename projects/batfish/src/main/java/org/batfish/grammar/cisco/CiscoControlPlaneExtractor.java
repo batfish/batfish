@@ -68,7 +68,6 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
@@ -425,7 +424,6 @@ import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_localContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authenticationContext;
-import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_asaContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_methodContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_listContext;
@@ -445,9 +443,6 @@ import org.batfish.grammar.cisco.CiscoParser.Allowas_in_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Always_compare_med_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Asa_ag_globalContext;
-import org.batfish.grammar.cisco.CiscoParser.Asa_ag_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.Asa_banner_headerContext;
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Bgp_asnContext;
@@ -882,7 +877,6 @@ import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
 import org.batfish.grammar.cisco.CiscoParser.S_access_lineContext;
-import org.batfish.grammar.cisco.CiscoParser.S_banner_asaContext;
 import org.batfish.grammar.cisco.CiscoParser.S_banner_cadantContext;
 import org.batfish.grammar.cisco.CiscoParser.S_banner_iosContext;
 import org.batfish.grammar.cisco.CiscoParser.S_bfd_templateContext;
@@ -965,7 +959,6 @@ import org.batfish.grammar.cisco.CiscoParser.Ss_communityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_enable_trapsContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_file_transferContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_group_v3Context;
-import org.batfish.grammar.cisco.CiscoParser.Ss_host_asaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_host_genericContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ss_tftp_server_listContext;
@@ -1620,35 +1613,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterAaa_authentication_login(Aaa_authentication_loginContext ctx) {
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
-    }
-  }
-
-  @Override
-  public void enterAaa_authentication_asa(Aaa_authentication_asaContext ctx) {
-    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
-      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
-    }
-    ArrayList<AuthenticationMethod> methods = new ArrayList<>();
-    if (ctx.aaa_authentication_asa_console().group != null) {
-      methods.add(AuthenticationMethod.GROUP_USER_DEFINED);
-    }
-    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
-      methods.add(AuthenticationMethod.LOCAL_CASE);
-    }
-    if (!methods.isEmpty()) {
-      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
-      String name = ctx.linetype.getText();
-      AaaAuthenticationLoginList authList = new AaaAuthenticationLoginList(methods);
-
-      _configuration
-          .getCf()
-          .getLines()
-          .computeIfAbsent(name, Line::new)
-          .setAaaAuthenticationLoginList(authList);
-
-      // not allowed to specify multiple login lists for a given linetype so use computeIfAbsent
-      // rather than put so we only accept the first login list
-      _currentAaaAuthenticationLoginList = login.getLists().computeIfAbsent(name, k -> authList);
     }
   }
 
@@ -3575,28 +3539,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitSs_host_asa(Ss_host_asaContext ctx) {
-    String sourceInterface = ctx.source_interface.getText();
-    _configuration.setSnmpSourceInterface(sourceInterface);
-    _configuration.referenceStructure(
-        INTERFACE,
-        sourceInterface,
-        SNMP_SERVER_SOURCE_INTERFACE,
-        ctx.source_interface.getStart().getLine());
-    String hostname;
-    if (ctx.ip4 != null) {
-      hostname = ctx.ip4.getText();
-    } else if (ctx.ip6 != null) {
-      hostname = ctx.ip6.getText();
-    } else if (ctx.host != null) {
-      hostname = ctx.host.getText();
-    } else {
-      throw new BatfishException("Invalid host");
-    }
-    _configuration.getSnmpServer().getHosts().computeIfAbsent(hostname, SnmpHost::new);
-  }
-
-  @Override
   public void enterStandard_access_list_stanza(Standard_access_list_stanzaContext ctx) {
     String name;
     if (ctx.name != null) {
@@ -3850,33 +3792,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
     todo(ctx);
-  }
-
-  @Override
-  public void exitS_banner_asa(S_banner_asaContext ctx) {
-    String bannerType = toBannerType(ctx.banner_header);
-    if (bannerType == null) {
-      warn(ctx, String.format("Unsupported ASA banner header: %s", ctx.banner_header.getText()));
-      return;
-    }
-    String body = ctx.body != null ? ctx.body.getText() : "";
-    _configuration
-        .getCf()
-        .getBanners()
-        .compute(bannerType, (k, v) -> v == null ? body : v + "\n" + body);
-  }
-
-  private static @Nullable String toBannerType(Asa_banner_headerContext ctx) {
-    if (ctx.BANNER_ASDM_ASA() != null) {
-      return "asdm";
-    } else if (ctx.BANNER_EXEC_ASA() != null) {
-      return "exec";
-    } else if (ctx.BANNER_LOGIN_ASA() != null) {
-      return "login";
-    } else if (ctx.BANNER_MOTD_ASA() != null) {
-      return "motd";
-    }
-    return null;
   }
 
   @Override
@@ -5059,7 +4974,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
     switch (format) {
-      case CISCO_ASA:
       case FORCE10:
       case CISCO_IOS:
         return String.format("Port-channel%d", num);
@@ -5068,40 +4982,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
         return null;
     }
-  }
-
-  @Override
-  public void exitAsa_ag_interface(Asa_ag_interfaceContext ctx) {
-    String ifaceName = ctx.iface.getText(); // Note: Interface alias is not canonicalized.
-    Interface iface = getAsaInterfaceByAlias(ifaceName);
-    if (iface == null) {
-      // Should never get here with valid config, ASA prevents referencing a nonexistent iface here
-      warn(
-          ctx,
-          String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
-      return;
-    }
-    CiscoStructureUsage usage = null;
-    String aclName = ctx.name.getText();
-    if (ctx.IN() != null) {
-      iface.setIncomingFilter(aclName);
-      usage = INTERFACE_INCOMING_FILTER;
-    } else if (ctx.OUT() != null) {
-      iface.setOutgoingFilter(aclName);
-      usage = INTERFACE_OUTGOING_FILTER;
-    }
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, aclName, usage, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitAsa_ag_global(Asa_ag_globalContext ctx) {
-    String aclName = ctx.name.getText();
-    for (Interface iface : _configuration.getInterfaces().values()) {
-      iface.setIncomingFilter(aclName);
-    }
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, aclName, ACCESS_GROUP_GLOBAL_FILTER, ctx.name.getStart().getLine());
   }
 
   @Override

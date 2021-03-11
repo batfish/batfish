@@ -192,7 +192,6 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
-import org.batfish.vendor.VendorStructureId;
 
 public final class CiscoConfiguration extends VendorConfiguration {
   public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
@@ -216,28 +215,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @VisibleForTesting
   public static final TraceElement DENY_SAME_SECURITY_TRAFFIC_INTER_TRACE_ELEMENT =
       TraceElement.of("same-security-traffic permit inter-interface is not set");
-
-  @VisibleForTesting
-  public static TraceElement asaDeniedByOutputFilterTraceElement(
-      String filename, IpAccessList filter) {
-    return TraceElement.builder()
-        .add("Denied by output filter ")
-        .add(
-            filter.getName(),
-            new VendorStructureId(filename, filter.getSourceType(), filter.getSourceName()))
-        .build();
-  }
-
-  @VisibleForTesting
-  public static TraceElement asaPermittedByOutputFilterTraceElement(
-      String filename, IpAccessList filter) {
-    return TraceElement.builder()
-        .add("Permitted by output filter ")
-        .add(
-            filter.getName(),
-            new VendorStructureId(filename, filter.getSourceType(), filter.getSourceName()))
-        .build();
-  }
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
@@ -2688,7 +2665,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
     // Only set CISCO_UNSPECIFIED if the device is actually a cisco device
-    if (_vendor == ConfigurationFormat.CISCO_ASA || _vendor == ConfigurationFormat.CISCO_IOS) {
+    if (_vendor == ConfigurationFormat.CISCO_IOS) {
       c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     }
     c.getVendorFamily().setCisco(_cf);
@@ -2952,12 +2929,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
           c.getAllInterfaces().put(newIfaceName, newInterface);
         });
     /*
-     * If this isn't ASA, add a single FirewallSessionInterfaceInfo for all inside interfaces and a
+     * On IOS, add a single FirewallSessionInterfaceInfo for all inside interfaces and a
      * single FirewallSessionInterfaceInfo for all outside interfaces. This way, when an outgoing
      * flow exits an [inside|outside] interface, return flows will match the session if they enter
      * any [inside|outside] interface.
      */
-    if (_vendor == ConfigurationFormat.CISCO_IOS || _vendor == ConfigurationFormat.CISCO_IOS_XR) {
+    if (_vendor == ConfigurationFormat.CISCO_IOS) {
       // IOS does FIB lookups with the original dst IP for flows from inside to outside, but the
       // transformed dst IP for flows from outside to inside.
       if (!getNatInside().isEmpty()) {

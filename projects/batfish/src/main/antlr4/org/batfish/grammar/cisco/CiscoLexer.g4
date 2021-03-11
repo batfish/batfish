@@ -424,8 +424,6 @@ AS_PATH_SET: 'as-path-set';
 
 AS_SET: 'as-set';
 
-ASA: 'ASA';
-
 ASCENDING: 'ascending';
 
 ASCII_AUTHENTICATION: 'ascii-authentication';
@@ -612,19 +610,9 @@ BANNER_IOS
   'banner' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
-BANNER_ASDM_ASA
-:
-  'banner' F_Whitespace+ 'asdm' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
-;
-
 BANNER_CONFIG_SAVE_IOS
 :
   'banner' F_Whitespace+ 'config-save' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_EXEC_ASA
-:
-  'banner' F_Whitespace+ 'exec' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
 ;
 
 BANNER_EXEC_IOS
@@ -637,19 +625,9 @@ BANNER_INCOMING_IOS
   'banner' F_Whitespace+ 'incoming' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
 ;
 
-BANNER_LOGIN_ASA
-:
-  'banner' F_Whitespace+ 'login' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
-;
-
 BANNER_LOGIN_IOS
 :
   'banner' F_Whitespace+ 'login' F_Whitespace+ {isIos()}? -> pushMode(M_BannerIosDelimiter)
-;
-
-BANNER_MOTD_ASA
-:
-  'banner' F_Whitespace+ 'motd' F_Whitespace? {isAsa()}? -> pushMode(M_BannerAsa)
 ;
 
 BANNER_MOTD_IOS
@@ -2749,7 +2727,7 @@ INTERCEPT: 'intercept';
 INTERFACE
 :
    'int' 'erface'?
-   { _enableIpv6Address = false; if (!isAsa() || lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
+   { _enableIpv6Address = false; pushMode(M_Interface);}
 
 ;
 
@@ -3085,8 +3063,6 @@ LOCAL_AS
 :
    [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
 ;
-
-LOCAL_ASA: 'LOCAL';
 
 LOCAL_CASE: 'local-case';
 
@@ -5585,11 +5561,6 @@ TACACS_PLUS
    'tacacs+'
 ;
 
-TACACS_PLUS_ASA
-:
-   'TACACS+'
-;
-
 TACACS_SERVER: 'tacacs-server';
 
 TAC_PLUS: 'tac_plus';
@@ -7675,20 +7646,6 @@ M_AuthenticationUsernamePromptText_RAW_TEXT
 M_AuthenticationUsernamePromptText_DOUBLE_QUOTE
 :
    '"' -> type ( DOUBLE_QUOTE ) , popMode
-;
-
-mode M_BannerAsa;
-// Initial whitespace character after banner type should have been consumed if present.
-// Further whitespace is part of body.
-
-M_BannerAsa_BANNER_BODY
-:
-  F_NonNewline+ -> type(BANNER_BODY)
-;
-
-M_BannerAsa_NEWLINE
-:
-  F_Newline+ -> type(NEWLINE), popMode
 ;
 
 mode M_BannerCadant;

@@ -25027,18 +25027,6 @@
                       "methods" : [
                         "LINE"
                       ]
-                    },
-                    "http" : {
-                      "methods" : [
-                        "GROUP_USER_DEFINED",
-                        "LOCAL_CASE"
-                      ]
-                    },
-                    "telnet" : {
-                      "methods" : [
-                        "GROUP_USER_DEFINED",
-                        "LOCAL_CASE"
-                      ]
                     }
                   },
                   "privilegeMode" : true
@@ -25047,32 +25035,6 @@
               "newModel" : false
             },
             "hostname" : "cisco_aaa",
-            "lines" : {
-              "http" : {
-                "name" : "http",
-                "aaaAuthenticationLoginList" : {
-                  "methods" : [
-                    "GROUP_USER_DEFINED",
-                    "LOCAL_CASE"
-                  ]
-                },
-                "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0,
-                "lineType" : "HTTP"
-              },
-              "telnet" : {
-                "name" : "telnet",
-                "aaaAuthenticationLoginList" : {
-                  "methods" : [
-                    "GROUP_USER_DEFINED",
-                    "LOCAL_CASE"
-                  ]
-                },
-                "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0,
-                "lineType" : "TELNET"
-              }
-            },
             "logging" : {
               "on" : true
             }

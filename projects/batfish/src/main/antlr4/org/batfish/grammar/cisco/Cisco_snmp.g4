@@ -117,11 +117,7 @@ ss_group_v3
 
 ss_host
 :
-   HOST
-   (
-     {isAsa()}? ss_host_asa
-     | {!isAsa()}? ss_host_generic
-   )
+   HOST ss_host_generic
 ;
 
 ss_host_generic
@@ -153,21 +149,6 @@ ss_host_generic
          | ss_host_version
       )+
    ) NEWLINE
-;
-
-ss_host_asa
-:
-   source_interface = variable
-   (
-      ip4 = IP_ADDRESS
-      | ip6 = IPV6_ADDRESS
-      | host = variable_snmp_host
-   )
-   event_type = (TRAP | POLL)?
-   (COMMUNITY comm = variable_snmp_host)?
-   (VERSION version = variable_snmp_host (username = variable_snmp_host)?)?
-   (UDP_PORT port)?
-   NEWLINE
 ;
 
 ss_host_informs

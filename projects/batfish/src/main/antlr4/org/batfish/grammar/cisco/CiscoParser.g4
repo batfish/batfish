@@ -198,11 +198,6 @@ archive_null
    ) null_rest_of_line
 ;
 
-asa_comment_stanza
-:
-   COLON null_rest_of_line
-;
-
 av_null
 :
    NO?
@@ -2153,19 +2148,6 @@ s_authentication
    AUTHENTICATION null_rest_of_line
 ;
 
-s_banner_asa
-:
-  banner_header = asa_banner_header body = BANNER_BODY? NEWLINE
-;
-
-asa_banner_header
-:
-  BANNER_ASDM_ASA
-  | BANNER_EXEC_ASA
-  | BANNER_LOGIN_ASA
-  | BANNER_MOTD_ASA
-;
-
 s_banner_cadant
 :
   BANNER type = cadant_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
@@ -3535,8 +3517,6 @@ ssh_timeout
 stanza
 :
    appletalk_access_list_stanza
-   | asa_comment_stanza
-   | asa_access_group
    | del_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
@@ -3572,7 +3552,6 @@ stanza
    | s_archive
    | s_arp_access_list_extended
    | s_authentication
-   | s_banner_asa
    | s_banner_cadant
    | s_banner_ios
    | s_bfd
@@ -3732,8 +3711,8 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | { !isAsa() }? s_vlan_cisco
-   | { !isAsa() }? s_vlan_internal_cisco
+   | s_vlan_cisco
+   | s_vlan_internal_cisco
    | s_vlan_name
    | s_voice
    | s_voice_card
