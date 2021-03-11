@@ -14,6 +14,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedRefer
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.fortios.FortiosConfiguration.computeViPolicyName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -41,18 +42,26 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.BDDPacket;
+import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -560,9 +569,9 @@ public final class FortiosGrammarTest {
 
     Map<String, Service> services = vc.getServices();
     String service11 = "custom_tcp_11";
-    String service11From12 = "custom_tcp_11_from_12";
+    String service12From11 = "custom_tcp_12_from_11";
     String serviceAll = "ALL";
-    assertThat(services, hasKeys(containsInAnyOrder(service11, service11From12, serviceAll)));
+    assertThat(services, hasKeys(containsInAnyOrder(service11, service12From11, serviceAll)));
 
     Map<String, Address> addresses = vc.getAddresses();
     String addr1 = "addr1";
@@ -590,7 +599,7 @@ public final class FortiosGrammarTest {
     assertThat(policyDeny.getName(), equalTo("longest allowed firewall policy nam"));
     assertThat(policyDeny.getStatus(), nullValue());
     assertThat(policyDeny.getStatusEffective(), equalTo(Policy.Status.ENABLE));
-    assertThat(policyDeny.getService(), contains(service11From12));
+    assertThat(policyDeny.getService(), contains(service12From11));
     assertThat(policyDeny.getSrcIntf(), contains(port1));
     assertThat(policyDeny.getDstIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyDeny.getSrcAddr(), contains(addr1));
@@ -599,7 +608,7 @@ public final class FortiosGrammarTest {
     assertThat(policyAllow.getAction(), equalTo(Action.ALLOW));
     assertThat(policyAllow.getStatus(), equalTo(Policy.Status.ENABLE));
     assertThat(policyAllow.getStatusEffective(), equalTo(Policy.Status.ENABLE));
-    assertThat(policyAllow.getService(), containsInAnyOrder(service11, service11From12));
+    assertThat(policyAllow.getService(), containsInAnyOrder(service11, service12From11));
     assertThat(policyAllow.getSrcIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyAllow.getDstIntf(), containsInAnyOrder(port1, port2));
     assertThat(policyAllow.getSrcAddr(), containsInAnyOrder(addr1, addr2));
@@ -610,6 +619,68 @@ public final class FortiosGrammarTest {
     assertThat(policyAny.getDstAddr(), contains(addrAll));
     assertThat(policyAny.getSrcIntf(), contains(Policy.ANY_INTERFACE));
     assertThat(policyAny.getDstIntf(), contains(Policy.ANY_INTERFACE));
+  }
+
+  @Test
+  public void testFirewallPolicyConversion() throws IOException {
+    String hostname = "firewall_policy";
+    Configuration c = parseConfig(hostname);
+
+    Map<String, IpAccessList> acls = c.getIpAccessLists();
+
+    // Policy 0 should not be converted because it's disabled
+    String denyName = computeViPolicyName("longest allowed firewall policy nam", "4294967294");
+    String allowName = computeViPolicyName("Permit Custom TCP Traffic", "1");
+    String anyName = computeViPolicyName(null, "2");
+    assertThat(acls, hasKeys(denyName, allowName, anyName));
+    IpAccessList deny = acls.get(denyName);
+    IpAccessList allow = acls.get(allowName);
+    IpAccessList any = acls.get(anyName);
+
+    // Create IpAccessListToBdd to convert ACLs. Can't use ACL_TO_BDD because we need IpSpaces
+    IpAccessListToBdd aclToBdd =
+        new IpAccessListToBddImpl(
+            PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), c.getIpSpaces());
+
+    // Make BDDs representing components of defined policies
+    BDD addr1AsSrc = SRC_IP_BDD.toBDD(Prefix.parse("10.0.1.0/24"));
+    BDD addr2AsSrc = SRC_IP_BDD.toBDD(Prefix.parse("10.0.2.0/24"));
+    BDD addr1AsDst = DST_IP_BDD.toBDD(Prefix.parse("10.0.1.0/24"));
+    BDD addr2AsDst = DST_IP_BDD.toBDD(Prefix.parse("10.0.2.0/24"));
+    BDD service11 =
+        BDD_TESTBED.toBDD(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
+                .setSrcPorts(Service.DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
+                .setDstPorts(SubRange.singleton(11))
+                .build());
+    BDD service12From11 =
+        BDD_TESTBED.toBDD(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
+                .setSrcPorts(SubRange.singleton(11))
+                .setDstPorts(SubRange.singleton(12))
+                .build());
+    {
+      // Deny service custom_tcp_12_from_11 from addr1 to addr2
+      PermitAndDenyBdds expected =
+          new PermitAndDenyBdds(ZERO, addr1AsSrc.and(addr2AsDst).and(service12From11));
+      assertThat(aclToBdd.toPermitAndDenyBdds(deny), equalTo(expected));
+    }
+    {
+      // Allow services custom_tcp_11, custom_tcp_11_from_12 from addr1, addr2 to addr1, addr2
+      BDD services = service11.or(service12From11);
+      BDD srcAddrs = addr1AsSrc.or(addr2AsSrc);
+      BDD dstAddrs = addr1AsDst.or(addr2AsDst);
+      PermitAndDenyBdds expected =
+          new PermitAndDenyBdds(services.and(srcAddrs).and(dstAddrs), ZERO);
+      assertThat(aclToBdd.toPermitAndDenyBdds(allow), equalTo(expected));
+    }
+    {
+      // Allow all
+      PermitAndDenyBdds expected = new PermitAndDenyBdds(ONE, ZERO);
+      assertThat(aclToBdd.toPermitAndDenyBdds(any), equalTo(expected));
+    }
   }
 
   /**
@@ -838,15 +909,14 @@ public final class FortiosGrammarTest {
 
   private static final BddTestbed BDD_TESTBED =
       new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
-
   private static final BDD ZERO;
+  private static final BDD ONE;
+  private static final BDDPacket PKT;
 
   @SuppressWarnings("unused")
   private static final IpAccessListToBdd ACL_TO_BDD;
 
-  @SuppressWarnings("unused")
   private static final IpSpaceToBDD DST_IP_BDD;
-
   private static final IpSpaceToBDD SRC_IP_BDD;
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/fortios/testconfigs/";
@@ -856,6 +926,8 @@ public final class FortiosGrammarTest {
 
   static {
     ZERO = BDD_TESTBED.getPkt().getFactory().zero();
+    ONE = BDD_TESTBED.getPkt().getFactory().one();
+    PKT = BDD_TESTBED.getPkt();
     DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
     SRC_IP_BDD = BDD_TESTBED.getSrcIpBdd();
     ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
