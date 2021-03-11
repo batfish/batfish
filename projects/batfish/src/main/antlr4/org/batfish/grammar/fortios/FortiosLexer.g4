@@ -7,7 +7,6 @@ options {
 tokens {
   QUOTED_TEXT,
   STR_SEPARATOR,
-  TO,
   UNQUOTED_WORD_CHARS
 }
 
@@ -85,7 +84,7 @@ POLICY: 'policy';
 PROTOCOL: 'protocol';
 PROTOCOL_NUMBER: 'protocol-number';
 REDUNDANT: 'redundant';
-RENAME: 'rename' -> pushMode(M_Rename);
+RENAME: 'rename' -> pushMode(M_SingleStr);
 REPLACEMSG: 'replacemsg';
 SCTP_PORTRANGE: 'sctp-portrange';
 SDN: 'sdn';
@@ -112,6 +111,7 @@ SUB_TYPE: 'sub-type';
 SYSTEM: 'system';
 TCP_PORTRANGE: 'tcp-portrange';
 TCP_UDP_SCTP: 'TCP/UDP/SCTP';
+TO: 'to' -> pushMode(M_SingleStr);
 TRAFFIC_QUOTA: 'traffic-quota';
 TUNNEL: 'tunnel';
 TYPE: 'type';
@@ -557,30 +557,22 @@ M_Str_WS: F_Whitespace+ -> type(STR_SEPARATOR);
 
 M_Str_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
 
-mode M_Rename;
+mode M_SingleStr;
 
-M_Rename_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_RenameName);
+M_SingleStr_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_SingleStrValue);
 
-M_Rename_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_SingleStr_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
 
-mode M_RenameName;
+mode M_SingleStrValue;
 
-M_RenameName_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+M_SingleStrValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
 
-M_RenameName_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
+M_SingleStrValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 
-M_RenameName_LINE_CONTINUATION: F_LineContinuation -> skip;
+M_SingleStrValue_LINE_CONTINUATION: F_LineContinuation -> skip;
 
-M_RenameName_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> type(UNQUOTED_WORD_CHARS);
+M_SingleStrValue_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> type(UNQUOTED_WORD_CHARS);
 
-M_RenameName_WS: F_Whitespace+ -> skip, mode(M_RenameTo);
+M_SingleStrValue_WS: F_Whitespace+ -> skip, popMode;
 
-M_RenameName_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
-
-mode M_RenameTo;
-
-M_RenameTo_TO: 't' 'o' -> type(TO);
-
-M_RenameTo_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_RenameName);
-
-M_RenameTo_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_SingleStrValue_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
