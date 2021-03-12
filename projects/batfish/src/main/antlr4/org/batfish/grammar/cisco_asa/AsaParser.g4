@@ -16,7 +16,6 @@ Cisco_isis,
 Cisco_line,
 Cisco_logging,
 Cisco_mpls,
-Cisco_nat,
 Cisco_ntp,
 Cisco_ospf,
 Cisco_pim,
@@ -3734,7 +3733,6 @@ stanza
    | s_ip_domain
    | s_ip_domain_name
    | s_ip_name_server
-   | s_ip_nat
    | s_ip_nbar
    | s_ip_pim
    | s_ip_probe

@@ -52,7 +52,6 @@ import static org.batfish.representation.cisco_asa.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco_asa.CiscoStructureType.L2TP_CLASS;
 import static org.batfish.representation.cisco_asa.CiscoStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco_asa.CiscoStructureType.NAMED_RSA_PUB_KEY;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.NAT_POOL;
 import static org.batfish.representation.cisco_asa.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco_asa.CiscoStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco_asa.CiscoStructureType.POLICY_MAP;
@@ -185,13 +184,6 @@ import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IPSEC_PRO
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IPV6_LOCAL_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_LOCAL_POLICY_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_NAT_DESTINATION_POOL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_NAT_INSIDE_SOURCE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_NAT_INSIDE_SOURCE_STATIC;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_NAT_OUTSIDE_SOURCE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_NAT_SOURCE_POOL;
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_ROUTE_NHINT;
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ISAKMP_POLICY_SELF_REF;
@@ -302,7 +294,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -311,7 +302,6 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
@@ -679,25 +669,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Ip_route_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_route_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_ssh_versionContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ipl_policyContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipn_insideContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipn_outsideContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipn_poolContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipn_pool_prefixContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipn_pool_rangeContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnc_listContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipni_destinationContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnios_static_addrContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnios_static_networkContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnios_vrfContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnioss_local_globalContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipniossm_extendableContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnis_listContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnis_route_mapContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnis_staticContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnos_listContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnos_route_mapContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnos_staticContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ipnosm_add_routeContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ipsec_authenticationContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ipsec_encryptionContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ipsec_encryption_arubaContext;
@@ -1067,11 +1038,6 @@ import org.batfish.representation.cisco_asa.BgpPeerGroup;
 import org.batfish.representation.cisco_asa.BgpProcess;
 import org.batfish.representation.cisco_asa.BgpRedistributionPolicy;
 import org.batfish.representation.cisco_asa.CiscoAsaNat;
-import org.batfish.representation.cisco_asa.CiscoIosDynamicNat;
-import org.batfish.representation.cisco_asa.CiscoIosNat;
-import org.batfish.representation.cisco_asa.CiscoIosNat.Direction;
-import org.batfish.representation.cisco_asa.CiscoIosNat.RuleAction;
-import org.batfish.representation.cisco_asa.CiscoIosStaticNat;
 import org.batfish.representation.cisco_asa.CiscoStructureType;
 import org.batfish.representation.cisco_asa.CiscoStructureUsage;
 import org.batfish.representation.cisco_asa.CryptoMapEntry;
@@ -1120,7 +1086,6 @@ import org.batfish.representation.cisco_asa.MasterBgpPeerGroup;
 import org.batfish.representation.cisco_asa.MatchSemantics;
 import org.batfish.representation.cisco_asa.NamedBgpPeerGroup;
 import org.batfish.representation.cisco_asa.NamedRsaPubKey;
-import org.batfish.representation.cisco_asa.NatPool;
 import org.batfish.representation.cisco_asa.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco_asa.NetworkObjectGroup;
 import org.batfish.representation.cisco_asa.NetworkObjectGroupAddressSpecifier;
@@ -1314,14 +1279,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     return Long.parseLong(ctx.getText());
   }
 
-  private static long toLong(Token t) {
-    return Long.parseLong(t.getText());
-  }
-
-  private static Prefix toPrefix(Token t) {
-    return Prefix.parse(t.getText());
-  }
-
   private static List<SubRange> toRange(RangeContext ctx) {
     List<SubRange> range = new ArrayList<>();
     for (SubrangeContext sc : ctx.range_list) {
@@ -1339,31 +1296,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     } else {
       return SubRange.singleton(low);
     }
-  }
-
-  /** Create a dynamic NAT and reference appropriate config structures. */
-  CiscoIosDynamicNat toIosDynamicNat(Ipnc_listContext ctx, RuleAction ruleAction) {
-    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
-    String acl = ctx.acl.getText();
-    int aclLine = ctx.acl.getStart().getLine();
-    nat.setAclName(acl);
-    _configuration.referenceStructure(
-        IPV4_ACCESS_LIST,
-        acl,
-        ruleAction == RuleAction.DESTINATION_INSIDE
-            ? IP_NAT_DESTINATION_ACCESS_LIST
-            : IP_NAT_SOURCE_ACCESS_LIST,
-        aclLine);
-    String pool = ctx.pool.getText();
-    int poolLine = ctx.pool.getStart().getLine();
-    nat.setNatPool(pool);
-    _configuration.referenceStructure(
-        NAT_POOL,
-        pool,
-        ruleAction == RuleAction.DESTINATION_INSIDE ? IP_NAT_DESTINATION_POOL : IP_NAT_SOURCE_POOL,
-        poolLine);
-    nat.setAction(ruleAction);
-    return nat;
   }
 
   private static String unquote(String text) {
@@ -1403,8 +1335,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
-  private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
-
   @Nullable private String _currentEigrpInterface;
 
   @Nullable private EigrpProcess _currentEigrpProcess;
@@ -1441,10 +1371,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   private MacAccessList _currentMacAccessList;
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
-
-  private CiscoIosNat.Direction _currentIosNatDirection;
-
-  private CiscoIosNat _currentIosSourceNat;
 
   private String _currentIosNatPoolName;
 
@@ -3964,7 +3890,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     } else if (_currentIpPeerGroup != null
         || _currentIpv6PeerGroup != null
         || _currentDynamicIpPeerGroup != null
-        || _currentDynamicIpv6PeerGroup != null
         || _currentNamedPeerGroup != null) {
       throw new BatfishException("unexpected occurrence in peer group/neighbor context");
 
@@ -6147,289 +6072,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     String name = ctx.name.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, IPV6_LOCAL_POLICY_ROUTE_MAP, ctx.name.start.getLine());
-  }
-
-  @Override
-  public void enterIpn_pool(Ipn_poolContext ctx) {
-    _currentIosNatPoolName = ctx.name.getText();
-  }
-
-  @Override
-  public void exitIpn_pool(Ipn_poolContext ctx) {
-    _currentIosNatPoolName = null;
-  }
-
-  @Override
-  public void exitIpn_pool_prefix(Ipn_pool_prefixContext ctx) {
-    String name = _currentIosNatPoolName;
-    Ip first = toIp(ctx.first);
-    Ip last = toIp(ctx.last);
-    if (first.compareTo(last) > 0) {
-      warn(ctx, String.format("Skipping malformed NAT pool %s. First IP > End Ip", name));
-      return;
-    }
-    if (ctx.mask != null) {
-      Prefix subnet = IpWildcard.ipWithWildcardMask(first, toIp(ctx.mask).inverted()).toPrefix();
-      createNatPool(name, first, last, subnet, ctx);
-    } else if (ctx.prefix_length != null) {
-      Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
-      createNatPool(name, first, last, subnet, ctx);
-    } else {
-      _configuration.getNatPools().put(name, new NatPool(first, last));
-    }
-    _configuration.defineStructure(NAT_POOL, name, ctx);
-  }
-
-  @Override
-  public void exitIpn_pool_range(Ipn_pool_rangeContext ctx) {
-    String name = _currentIosNatPoolName;
-    Ip first = toIp(ctx.first);
-    Ip last = toIp(ctx.last);
-    if (first.compareTo(last) > 0) {
-      warn(ctx, String.format("Skipping malformed NAT pool %s. First IP > End Ip", name));
-      return;
-    }
-    if (ctx.prefix_length != null) {
-      Prefix subnet = Prefix.create(first, Integer.parseInt(ctx.prefix_length.getText()));
-      createNatPool(name, first, last, subnet, ctx);
-    } else {
-      _configuration.getNatPools().put(name, new NatPool(first, last));
-    }
-    _configuration.defineStructure(NAT_POOL, name, ctx);
-  }
-
-  /**
-   * Check that the pool IPs are contained in the subnet, and warn if not. Then create the pool,
-   * while excluding the network/broadcast IPs. This means that if specified first pool IP is
-   * numerically less than the first host IP in the subnet, use the first host IP instead.
-   * Similarly, if the specified last pool IP is greater than the last host IP in the subnet, use
-   * the last host IP instead.
-   */
-  private void createNatPool(String name, Ip first, Ip last, Prefix subnet, ParserRuleContext ctx) {
-    if (!subnet.containsIp(first)) {
-      warn(ctx, String.format("Subnet of NAT pool %s does not contain first pool IP", name));
-    }
-    if (!subnet.containsIp(last)) {
-      warn(ctx, String.format("Subnet of NAT pool %s does not contain last pool IP", name));
-    }
-
-    Ip firstHostIp = subnet.getFirstHostIp();
-    Ip lastHostIp = subnet.getLastHostIp();
-
-    _configuration
-        .getNatPools()
-        .put(
-            name,
-            new NatPool(
-                first.asLong() < firstHostIp.asLong() ? firstHostIp : first,
-                last.asLong() > lastHostIp.asLong() ? lastHostIp : last));
-  }
-
-  @Override
-  public void enterIpn_inside(Ipn_insideContext ctx) {
-    _currentIosNatDirection = Direction.INSIDE;
-  }
-
-  @Override
-  public void exitIpn_inside(Ipn_insideContext ctx) {
-    _currentIosNatDirection = null;
-  }
-
-  @Override
-  public void enterIpn_outside(Ipn_outsideContext ctx) {
-    _currentIosNatDirection = Direction.OUTSIDE;
-  }
-
-  @Override
-  public void exitIpn_outside(Ipn_outsideContext ctx) {
-    _currentIosNatDirection = null;
-  }
-
-  @Override
-  public void exitIpni_destination(Ipni_destinationContext ctx) {
-    _configuration.getCiscoIosNats().add(toIosDynamicNat(ctx.list, RuleAction.DESTINATION_INSIDE));
-  }
-
-  @Override
-  public void enterIpnis_list(Ipnis_listContext ctx) {
-    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
-    nat.setAction(RuleAction.SOURCE_INSIDE);
-    String acl = ctx.acl.getText();
-    _configuration.referenceStructure(
-        IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, ctx.getStart().getLine());
-    nat.setAclName(ctx.acl.getText());
-    if (ctx.iname != null) {
-      String iname = getCanonicalInterfaceName(ctx.iname.getText());
-      _configuration.referenceStructure(
-          INTERFACE, iname, IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
-      nat.setInterface(iname);
-    } else {
-      String pool = ctx.pool.getText();
-      _configuration.referenceStructure(
-          NAT_POOL, ctx.pool.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
-      nat.setNatPool(pool);
-    }
-    nat.setOverload(ctx.OVERLOAD() != null);
-    _currentIosSourceNat = nat;
-    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
-  }
-
-  @Override
-  public void exitIpnis_list(Ipnis_listContext ctx) {
-    _currentIosSourceNat = null;
-  }
-
-  @Override
-  public void enterIpnos_list(Ipnos_listContext ctx) {
-    _currentIosSourceNat = toIosDynamicNat(ctx.acl_pool, RuleAction.SOURCE_OUTSIDE);
-    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
-  }
-
-  @Override
-  public void exitIpnos_list(Ipnos_listContext ctx) {
-    _currentIosSourceNat = null;
-  }
-
-  /** Return entry containing (local, global) IPs for IOS NAT */
-  Entry<Ip, Ip> toIosNatLocalGlobalIps(Ipnioss_local_globalContext ctx) {
-    Ip local = toIp(ctx.local);
-    Ip global = toIp(ctx.global);
-    if (_currentIosNatDirection == Direction.OUTSIDE) {
-      // local and global reversed for outside
-      Ip tmp = local;
-      local = global;
-      global = tmp;
-    }
-    return new SimpleEntry<>(local, global);
-  }
-
-  @Override
-  public void exitIpnios_static_addr(Ipnios_static_addrContext ctx) {
-    assert _currentIosSourceNat instanceof CiscoIosStaticNat;
-    CiscoIosStaticNat staticNat = (CiscoIosStaticNat) _currentIosSourceNat;
-    Entry<Ip, Ip> e = toIosNatLocalGlobalIps(ctx.ips);
-    staticNat.setLocalNetwork(Prefix.create(e.getKey(), Prefix.MAX_PREFIX_LENGTH));
-    staticNat.setGlobalNetwork(Prefix.create(e.getValue(), Prefix.MAX_PREFIX_LENGTH));
-    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
-  }
-
-  @Override
-  public void exitIpnios_static_network(Ipnios_static_networkContext ctx) {
-    assert _currentIosSourceNat instanceof CiscoIosStaticNat;
-    CiscoIosStaticNat staticNat = (CiscoIosStaticNat) _currentIosSourceNat;
-    int prefixLength;
-    if (ctx.mask != null) {
-      Ip mask = toIp(ctx.mask);
-      prefixLength = mask.numSubnetBits();
-    } else {
-      prefixLength = toInteger(ctx.prefix);
-    }
-    Entry<Ip, Ip> e = toIosNatLocalGlobalIps(ctx.ips);
-    staticNat.setLocalNetwork(Prefix.create(e.getKey(), prefixLength));
-    staticNat.setGlobalNetwork(Prefix.create(e.getValue(), prefixLength));
-    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
-  }
-
-  @Override
-  public void exitIpnios_vrf(Ipnios_vrfContext ctx) {
-    assert _currentIosSourceNat != null;
-    _currentIosSourceNat.setVrf(ctx.vrfname.getText());
-  }
-
-  @Override
-  public void exitIpnosm_add_route(Ipnosm_add_routeContext ctx) {
-    assert _currentIosSourceNat != null;
-    _currentIosSourceNat.setAddRoute(true);
-    if (_currentIosSourceNat instanceof CiscoIosDynamicNat) {
-      todo(ctx);
-    }
-  }
-
-  @Override
-  public void exitIpniossm_extendable(Ipniossm_extendableContext ctx) {
-    // Translating to multiple public IPs is not currently supported
-    // https://networklessons.com/uncategorized/nat-extendable-on-cisco-ios
-    todo(ctx);
-  }
-
-  @Override
-  public void enterIpnis_route_map(Ipnis_route_mapContext ctx) {
-    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
-    nat.setAction(RuleAction.SOURCE_INSIDE);
-    String routeMap = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, ctx.mapname.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
-    nat.setRouteMap(routeMap);
-    if (ctx.iname != null) {
-      String iname = getCanonicalInterfaceName(ctx.iname.getText());
-      _configuration.referenceStructure(
-          INTERFACE, iname, IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
-      nat.setInterface(iname);
-    } else {
-      String pool = ctx.pool.getText();
-      _configuration.referenceStructure(
-          NAT_POOL, ctx.pool.getText(), IP_NAT_INSIDE_SOURCE, ctx.getStart().getLine());
-      nat.setNatPool(pool);
-    }
-    nat.setOverload(ctx.OVERLOAD() != null);
-    _currentIosSourceNat = nat;
-    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
-  }
-
-  @Override
-  public void exitIpnis_route_map(Ipnis_route_mapContext ctx) {
-    _currentIosSourceNat = null;
-  }
-
-  @Override
-  public void enterIpnis_static(Ipnis_staticContext ctx) {
-    // Note that this NAT is not added to the configuration until its local & global IPs are set
-    _currentIosSourceNat = new CiscoIosStaticNat();
-    _currentIosSourceNat.setAction(RuleAction.SOURCE_INSIDE);
-  }
-
-  @Override
-  public void exitIpnis_static(Ipnis_staticContext ctx) {
-    if (ctx.ROUTE_MAP() != null) {
-      String rmName = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, rmName, IP_NAT_INSIDE_SOURCE_STATIC, ctx.getStart().getLine());
-      _currentIosSourceNat.setRouteMap(rmName);
-    }
-    _currentIosSourceNat = null;
-  }
-
-  @Override
-  public void enterIpnos_route_map(Ipnos_route_mapContext ctx) {
-    CiscoIosDynamicNat nat = new CiscoIosDynamicNat();
-    nat.setAction(RuleAction.SOURCE_OUTSIDE);
-    String routeMap = ctx.mapname.getText();
-    _configuration.referenceStructure(
-        ROUTE_MAP, ctx.mapname.getText(), IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
-    nat.setRouteMap(routeMap);
-    String pool = ctx.pname.getText();
-    _configuration.referenceStructure(
-        NAT_POOL, pool, IP_NAT_OUTSIDE_SOURCE, ctx.getStart().getLine());
-    nat.setNatPool(pool);
-    _currentIosSourceNat = nat;
-    _configuration.getCiscoIosNats().add(_currentIosSourceNat);
-  }
-
-  @Override
-  public void exitIpnos_route_map(Ipnos_route_mapContext ctx) {
-    _currentIosSourceNat = null;
-  }
-
-  @Override
-  public void enterIpnos_static(Ipnos_staticContext ctx) {
-    // Note that this NAT is not added to the configuration until its local & global IPs are set
-    _currentIosSourceNat = new CiscoIosStaticNat();
-    _currentIosSourceNat.setAction(RuleAction.SOURCE_OUTSIDE);
-  }
-
-  @Override
-  public void exitIpnos_static(Ipnos_staticContext ctx) {
-    _currentIosSourceNat = null;
   }
 
   @Override

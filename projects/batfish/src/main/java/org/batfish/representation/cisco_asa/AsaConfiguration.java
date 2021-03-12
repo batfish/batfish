@@ -188,7 +188,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
-import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
@@ -504,8 +503,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private final List<CiscoAsaNat> _ciscoAsaNats;
 
-  private final List<CiscoIosNat> _ciscoIosNats;
-
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
   private final Map<String, NetworkObjectInfo> _networkObjectInfos;
@@ -598,7 +595,6 @@ public final class AsaConfiguration extends VendorConfiguration {
     _natInside = new TreeSet<>();
     _natOutside = new TreeSet<>();
     _ciscoAsaNats = new ArrayList<>();
-    _ciscoIosNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
     _networkObjects = new TreeMap<>();
@@ -870,10 +866,6 @@ public final class AsaConfiguration extends VendorConfiguration {
     return _ciscoAsaNats;
   }
 
-  public List<CiscoIosNat> getCiscoIosNats() {
-    return _ciscoIosNats;
-  }
-
   private String getNewInterfaceName(Interface iface) {
     return firstNonNull(iface.getAlias(), iface.getName());
   }
@@ -892,19 +884,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   public Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
-  }
-
-  @Nullable
-  private String getIOSSecurityZoneName(Interface iface) {
-    String zoneName = iface.getSecurityZone();
-    if (zoneName == null) {
-      return null;
-    }
-    SecurityZone securityZone = _securityZones.get(zoneName);
-    if (securityZone == null) {
-      return null;
-    }
-    return zoneName;
   }
 
   @Nullable
@@ -1914,13 +1893,8 @@ public final class AsaConfiguration extends VendorConfiguration {
      */
 
     List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
-    List<CiscoIosNat> ciscoIosNats = firstNonNull(_ciscoIosNats, ImmutableList.of());
-    if (!ciscoAsaNats.isEmpty() && !ciscoIosNats.isEmpty()) {
-      _w.redFlag("Multiple NAT types should not be present in same configuration.");
-    } else if (!ciscoAsaNats.isEmpty()) {
+    if (!ciscoAsaNats.isEmpty()) {
       generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
-    } else if (!ciscoIosNats.isEmpty()) {
-      generateCiscoIosNatTransformations(ifaceName, vrfName, newIface, c);
     }
 
     String routingPolicyName = iface.getRoutingPolicy();
@@ -1928,20 +1902,17 @@ public final class AsaConfiguration extends VendorConfiguration {
       newIface.setRoutingPolicy(routingPolicyName);
     }
 
-    if (_vendor == ConfigurationFormat.CISCO_ASA) {
-      newIface.setPostTransformationIncomingFilter(newIface.getIncomingFilter());
-      newIface.setPreTransformationOutgoingFilter(newIface.getOutgoingFilter());
-      newIface.setIncomingFilter(null);
-      newIface.setOutgoingFilter(null);
+    newIface.setPostTransformationIncomingFilter(newIface.getIncomingFilter());
+    newIface.setPreTransformationOutgoingFilter(newIface.getOutgoingFilter());
+    newIface.setIncomingFilter(null);
+    newIface.setOutgoingFilter(null);
 
-      // Assume each interface has its own session info (sessions are not shared by interfaces).
-      // That is, return flows can only enter the interface the forward flow exited in order to
-      // match the session setup by the forward flow.
-      newIface.setFirewallSessionInterfaceInfo(
-          new FirewallSessionInterfaceInfo(
-              Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
-    }
-    // For IOS and XR, FirewallSessionInterfaceInfo is created once for all NAT interfaces.
+    // Assume each interface has its own session info (sessions are not shared by interfaces).
+    // That is, return flows can only enter the interface the forward flow exited in order to
+    // match the session setup by the forward flow.
+    newIface.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(
+            Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of(newIface.getName()), null, null));
     return newIface;
   }
 
@@ -2015,100 +1986,11 @@ public final class AsaConfiguration extends VendorConfiguration {
                     Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
   }
 
-  private void generateCiscoIosNatTransformations(
-      String ifaceName, String vrfName, org.batfish.datamodel.Interface newIface, Configuration c) {
-    if (!getNatOutside().contains(ifaceName)) {
-      return;
-    }
-
-    // Convert the IOS NATs to a mapping of transformations. Each field (source or destination)
-    // can be modified independently but not jointly. A single CiscoIosNat can represent an incoming
-    // NAT, an outgoing NAT, or both.
-    Map<CiscoIosNat, Transformation.Builder> convertedIncomingNats = new HashMap<>();
-    Map<CiscoIosNat, Transformation.Builder> convertedOutgoingNats = new HashMap<>();
-    for (CiscoIosNat nat : getCiscoIosNats()) {
-      // Filter to NAT rules in this interface's VRF
-      if (!firstNonNull(nat.getVrf(), Configuration.DEFAULT_VRF_NAME).equals(vrfName)) {
-        continue;
-      }
-      nat.toIncomingTransformation(
-              ifaceName, c.getIpAccessLists(), _routeMaps, _natPools, _interfaces, _w)
-          .ifPresent(incoming -> convertedIncomingNats.put(nat, incoming));
-      nat.toOutgoingTransformation(
-              ifaceName, _routeMaps, _natPools, getNatInside(), _interfaces, c, _w)
-          .ifPresent(outgoing -> convertedOutgoingNats.put(nat, outgoing));
-    }
-
-    if (!convertedIncomingNats.isEmpty()) {
-      newIface.setIncomingTransformation(
-          CiscoIosNatUtil.toIncomingTransformationChain(convertedIncomingNats));
-    }
-    if (!convertedOutgoingNats.isEmpty()) {
-      newIface.setOutgoingTransformation(
-          CiscoIosNatUtil.toOutgoingTransformationChain(convertedOutgoingNats));
-    }
-  }
-
-  private List<org.batfish.datamodel.StaticRoute> generateIosNatAddRouteRoutes() {
-    return getCiscoIosNats().stream()
-        .map(CiscoIosNat::toRoute)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .map(CiscoConversions::toStaticRoute)
-        .collect(ImmutableList.toImmutableList());
-  }
-
   private void applyZoneFilter(
       Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
-    if (getIOSSecurityZoneName(iface) != null) {
-      applyIOSSecurityZoneFilter(iface, newIface, c);
-    } else if (getASASecurityLevelZoneName(iface) != null) {
+    if (getASASecurityLevelZoneName(iface) != null) {
       applyASASecurityLevelFilter(iface, newIface, c);
     }
-  }
-
-  private void applyIOSSecurityZoneFilter(
-      Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
-    String zoneName =
-        checkNotNull(
-            getIOSSecurityZoneName(iface),
-            "interface %s is not in a security zone name",
-            iface.getName());
-    String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
-    IpAccessList zoneOutgoingAcl = c.getIpAccessLists().get(zoneOutgoingAclName);
-    if (zoneOutgoingAcl == null) {
-      return;
-    }
-    IpAccessList oldOutgoingFilter = newIface.getOutgoingFilter();
-    if (oldOutgoingFilter == null) {
-      // No interface outbound filter
-      newIface.setOutgoingFilter(zoneOutgoingAcl);
-      return;
-    }
-
-    // Construct a new ACL that combines filters, i.e. 1 AND 2
-    // 1) the interface outbound filter, if it exists
-    // 2) the zone filter
-    String oldOutgoingFilterName = oldOutgoingFilter.getName();
-    IpAccessList combinedOutgoingAcl =
-        IpAccessList.builder()
-            .setOwner(c)
-            .setName(computeCombinedOutgoingAclName(newIface.getName()))
-            .setLines(
-                ImmutableList.of(
-                    ExprAclLine.accepting()
-                        .setMatchCondition(
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    new PermittedByAcl(zoneOutgoingAclName),
-                                    new PermittedByAcl(oldOutgoingFilterName)),
-                                String.format(
-                                    "Permit if permitted by policy for zone '%s' and permitted by"
-                                        + " outgoing filter '%s'",
-                                    zoneName, oldOutgoingFilterName)))
-                        .build()))
-            .build();
-    newIface.setOutgoingFilter(combinedOutgoingAcl);
   }
 
   private void applyASASecurityLevelFilter(
@@ -3452,10 +3334,6 @@ public final class AsaConfiguration extends VendorConfiguration {
           // convert static routes
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
             newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(staticRoute));
-          }
-          // For the default VRF, also convert static routes created by add-route in NAT rules
-          if (vrf == getDefaultVrf()) {
-            newVrf.getStaticRoutes().addAll(generateIosNatAddRouteRoutes());
           }
 
           // convert rip process
