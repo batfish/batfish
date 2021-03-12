@@ -1266,14 +1266,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return Long.parseLong(ctx.getText());
   }
 
-  private static long toLong(Token t) {
-    return Long.parseLong(t.getText());
-  }
-
-  private static Prefix toPrefix(Token t) {
-    return Prefix.parse(t.getText());
-  }
-
   private static List<SubRange> toRange(RangeContext ctx) {
     List<SubRange> range = new ArrayList<>();
     for (SubrangeContext sc : ctx.range_list) {
@@ -1352,8 +1344,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private NamedRsaPubKey _currentNamedRsaPubKey;
 
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
-
-  private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
 
   @Nullable private String _currentEigrpInterface;
 
@@ -3745,7 +3735,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (_currentIpPeerGroup != null
         || _currentIpv6PeerGroup != null
         || _currentDynamicIpPeerGroup != null
-        || _currentDynamicIpv6PeerGroup != null
         || _currentNamedPeerGroup != null) {
       throw new BatfishException("unexpected occurrence in peer group/neighbor context");
 

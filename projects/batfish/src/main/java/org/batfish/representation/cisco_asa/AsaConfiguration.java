@@ -491,8 +491,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private final Map<String, MacAccessList> _macAccessLists;
 
-  private final @Nonnull Map<String, NatPool> _natPools;
-
   private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
 
   private final Map<String, IntegerSpace> _namedVlans;
@@ -587,7 +585,6 @@ public final class AsaConfiguration extends VendorConfiguration {
     _ipsecProfiles = new TreeMap<>();
     _keyrings = new TreeMap<>();
     _macAccessLists = new TreeMap<>();
-    _natPools = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
     _natInside = new TreeSet<>();
@@ -842,10 +839,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   public Map<String, MacAccessList> getMacAccessLists() {
     return _macAccessLists;
-  }
-
-  public @Nonnull Map<String, NatPool> getNatPools() {
-    return _natPools;
   }
 
   public Map<String, IntegerSpace> getNamedVlans() {

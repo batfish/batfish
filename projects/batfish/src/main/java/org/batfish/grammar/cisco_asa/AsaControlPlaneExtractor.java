@@ -1364,8 +1364,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
 
-  private String _currentIosNatPoolName;
-
   private Long _currentOspfArea;
 
   private String _currentOspfInterface;

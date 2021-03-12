@@ -177,11 +177,7 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link AsaParser} and {@link AsaControlPlaneExtractor}. */
 public final class CiscoAsaGrammarTest {
 
-  // TODO: confirm, link
-  private static final String DEFAULT_VRF_NAME = "default";
-
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_asa/testconfigs/";
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cisco_asa/testrigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

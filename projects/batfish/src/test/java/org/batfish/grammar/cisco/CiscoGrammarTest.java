@@ -416,34 +416,10 @@ public final class CiscoGrammarTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
-    Bgpv4Route.Builder builder = route.toBuilder();
-    assertTrue(routingPolicy.process(route, builder, Direction.IN));
-    return builder.build();
-  }
-
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
-  }
-
-  private Flow createFlow(IpProtocol protocol, int srcPort, int dstPort) {
-    return Flow.builder()
-        .setIngressNode("")
-        .setIpProtocol(protocol)
-        .setSrcPort(srcPort)
-        .setDstPort(dstPort)
-        .build();
-  }
-
-  private Flow createIcmpFlow(Integer icmpType) {
-    return Flow.builder()
-        .setIngressNode("")
-        .setIpProtocol(IpProtocol.ICMP)
-        .setIcmpType(icmpType)
-        .setIcmpCode(0)
-        .build();
   }
 
   private CiscoConfiguration parseCiscoConfig(String hostname, ConfigurationFormat format) {
