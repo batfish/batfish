@@ -6,7 +6,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
-import static org.batfish.representation.cisco_asa.CiscoAsaNat.ANY_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaNat.ANY_INTERFACE;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -24,12 +24,12 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
-import org.batfish.representation.cisco_asa.CiscoAsaNat.Section;
+import org.batfish.representation.cisco_asa.AsaNat.Section;
 
-/** Utility methods related to {@link CiscoAsaNat}. */
+/** Utility methods related to {@link AsaNat}. */
 @ParametersAreNonnullByDefault
-final class CiscoAsaNatUtil {
-  private CiscoAsaNatUtil() {}
+final class AsaNatUtil {
+  private AsaNatUtil() {}
 
   @Nullable
   static Transformation.Builder dynamicTransformation(
@@ -123,7 +123,7 @@ final class CiscoAsaNatUtil {
    */
   @Nullable
   static Boolean isIdentityObjectNat(
-      CiscoAsaNat nat, Map<String, NetworkObject> networkObjects, Warnings w) {
+      AsaNat nat, Map<String, NetworkObject> networkObjects, Warnings w) {
     checkArgument(nat.getSection().equals(Section.OBJECT), "Only supports object NATs.");
 
     if (nat.getDynamic()) {

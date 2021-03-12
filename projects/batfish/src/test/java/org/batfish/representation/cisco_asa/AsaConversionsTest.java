@@ -1,17 +1,17 @@
 package org.batfish.representation.cisco_asa;
 
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL;
-import static org.batfish.representation.cisco_asa.CiscoConversions.DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
-import static org.batfish.representation.cisco_asa.CiscoConversions.DEFAULT_OSPF_HELLO_INTERVAL;
-import static org.batfish.representation.cisco_asa.CiscoConversions.DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
-import static org.batfish.representation.cisco_asa.CiscoConversions.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
-import static org.batfish.representation.cisco_asa.CiscoConversions.createAclWithSymmetricalLines;
-import static org.batfish.representation.cisco_asa.CiscoConversions.getMatchingPsk;
-import static org.batfish.representation.cisco_asa.CiscoConversions.sanityCheckDistributeList;
-import static org.batfish.representation.cisco_asa.CiscoConversions.sanityCheckEigrpDistributeList;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toOspfDeadInterval;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toOspfHelloInterval;
+import static org.batfish.representation.cisco_asa.AsaConversions.DEFAULT_OSPF_DEAD_INTERVAL;
+import static org.batfish.representation.cisco_asa.AsaConversions.DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST;
+import static org.batfish.representation.cisco_asa.AsaConversions.DEFAULT_OSPF_HELLO_INTERVAL;
+import static org.batfish.representation.cisco_asa.AsaConversions.DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+import static org.batfish.representation.cisco_asa.AsaConversions.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
+import static org.batfish.representation.cisco_asa.AsaConversions.createAclWithSymmetricalLines;
+import static org.batfish.representation.cisco_asa.AsaConversions.getMatchingPsk;
+import static org.batfish.representation.cisco_asa.AsaConversions.sanityCheckDistributeList;
+import static org.batfish.representation.cisco_asa.AsaConversions.sanityCheckEigrpDistributeList;
+import static org.batfish.representation.cisco_asa.AsaConversions.toOspfDeadInterval;
+import static org.batfish.representation.cisco_asa.AsaConversions.toOspfHelloInterval;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -39,9 +39,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link CiscoConversions} class */
+/** Tests for {@link AsaConversions} class */
 @RunWith(JUnit4.class)
-public class CiscoConversionsTest {
+public class AsaConversionsTest {
 
   private static final String IKE_PHASE1_KEY = "IKE_Phase1_Key";
   private NetworkFactory _nf;
@@ -344,7 +344,7 @@ public class CiscoConversionsTest {
   @Test
   public void testToOspfNetworkType() {
     assertThat(
-        CiscoConversions.toOspfNetworkType(null, new Warnings()),
+        AsaConversions.toOspfNetworkType(null, new Warnings()),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
   }
 }

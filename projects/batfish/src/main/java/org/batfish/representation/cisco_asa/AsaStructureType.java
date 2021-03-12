@@ -2,7 +2,7 @@ package org.batfish.representation.cisco_asa;
 
 import org.batfish.vendor.StructureType;
 
-public enum CiscoStructureType implements StructureType {
+public enum AsaStructureType implements StructureType {
   ACCESS_LIST("acl"),
   AS_PATH_ACCESS_LIST("as-path access-list"),
   BFD_TEMPLATE("bfd-template"),
@@ -70,7 +70,7 @@ public enum CiscoStructureType implements StructureType {
 
   private final String _description;
 
-  CiscoStructureType(String description) {
+  AsaStructureType(String description) {
     _description = description;
   }
 

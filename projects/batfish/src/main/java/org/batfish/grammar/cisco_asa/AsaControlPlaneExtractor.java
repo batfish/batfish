@@ -5,287 +5,287 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
-import static org.batfish.representation.cisco_asa.CiscoAsaNat.ANY_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BFD_TEMPLATE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BGP_AF_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BGP_NEIGHBOR_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BGP_PEER_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BGP_SESSION_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BGP_TEMPLATE_PEER_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BGP_UNDECLARED_PEER;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.BGP_UNDECLARED_PEER_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.CLASS_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.COMMUNITY_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.COMMUNITY_LIST_EXPANDED;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.COMMUNITY_LIST_STANDARD;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.CRYPTO_MAP_SET;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.DEPI_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.DEPI_TUNNEL;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.DOCSIS_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.DOCSIS_POLICY_RULE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.EXTCOMMUNITY_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.EXTCOMMUNITY_LIST_EXPANDED;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.INSPECT_CLASS_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.INSPECT_POLICY_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPSEC_PROFILE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPSEC_TRANSFORM_SET;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPV4_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPV6_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IP_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.ISAKMP_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.ISAKMP_PROFILE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.KEYRING;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.L2TP_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.MAC_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.NAMED_RSA_PUB_KEY;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.POLICY_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.PREFIX6_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.PREFIX_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.SECURITY_ZONE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.SECURITY_ZONE_PAIR;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.SERVICE_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.SERVICE_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.SERVICE_TEMPLATE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.TRACK;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.TRAFFIC_ZONE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_INHERITED_PEER_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_INHERITED_SESSION;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_USE_AF_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_USE_SESSION_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CLASS_MAP_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_ISAKMP_PROFILE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CRYPTO_DYNAMIC_MAP_TRANSFORM_SET;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.CRYPTO_MAP_MATCH_ADDRESS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_AF_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EIGRP_STUB_LEAK_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.FAILOVER_LAN_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.FAILOVER_LINK_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_IP_VRF_SITEMAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_SELF_REF;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_SERVICE_INSTANCE_SERVICE_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_STANDBY_TRACK;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IPV6_LOCAL_POLICY_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_LOCAL_POLICY_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_ROUTE_NHINT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ISAKMP_POLICY_SELF_REF;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.MSDP_PEER_SA_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.NTP_ACCESS_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.NTP_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OBJECT_NAT_MAPPED_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OBJECT_NAT_REAL_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_AREA_FILTER_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_AREA_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_PREFIX_PRIORITY_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PIM_ACCEPT_RP_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PIM_RP_ADDRESS_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PIM_RP_CANDIDATE_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.POLICY_MAP_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTER_STATIC_ROUTE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTER_VRRP_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS_IPV6;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SSH_IPV4_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SSH_IPV6_ACL;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TACACS_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TRACK_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TRACK_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TUNNEL_SOURCE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_MAPPED_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_IMPORT_MAP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.WCCP_GROUP_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.WCCP_REDIRECT_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.WCCP_SERVICE_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
+import static org.batfish.representation.cisco_asa.AsaNat.ANY_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BFD_TEMPLATE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BGP_AF_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BGP_NEIGHBOR_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BGP_PEER_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BGP_SESSION_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BGP_TEMPLATE_PEER_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BGP_TEMPLATE_PEER_SESSION;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BGP_UNDECLARED_PEER;
+import static org.batfish.representation.cisco_asa.AsaStructureType.BGP_UNDECLARED_PEER_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.CLASS_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.COMMUNITY_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.COMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.cisco_asa.AsaStructureType.COMMUNITY_LIST_STANDARD;
+import static org.batfish.representation.cisco_asa.AsaStructureType.CRYPTO_DYNAMIC_MAP_SET;
+import static org.batfish.representation.cisco_asa.AsaStructureType.CRYPTO_MAP_SET;
+import static org.batfish.representation.cisco_asa.AsaStructureType.DEPI_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureType.DEPI_TUNNEL;
+import static org.batfish.representation.cisco_asa.AsaStructureType.DOCSIS_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureType.DOCSIS_POLICY_RULE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.EXTCOMMUNITY_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.EXTCOMMUNITY_LIST_EXPANDED;
+import static org.batfish.representation.cisco_asa.AsaStructureType.EXTCOMMUNITY_LIST_STANDARD;
+import static org.batfish.representation.cisco_asa.AsaStructureType.ICMP_TYPE_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.INSPECT_CLASS_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.INSPECT_POLICY_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPSEC_PROFILE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPSEC_TRANSFORM_SET;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPV4_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPV6_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPV6_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPV6_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IP_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.ISAKMP_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureType.ISAKMP_PROFILE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.KEYRING;
+import static org.batfish.representation.cisco_asa.AsaStructureType.L2TP_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureType.MAC_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.NAMED_RSA_PUB_KEY;
+import static org.batfish.representation.cisco_asa.AsaStructureType.NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureType.NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.POLICY_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.PREFIX6_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.PREFIX_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.PROTOCOL_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.SECURITY_ZONE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.SECURITY_ZONE_PAIR;
+import static org.batfish.representation.cisco_asa.AsaStructureType.SERVICE_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureType.SERVICE_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.SERVICE_TEMPLATE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.TRACK;
+import static org.batfish.representation.cisco_asa.AsaStructureType.TRAFFIC_ZONE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ACCESS_GROUP_GLOBAL_FILTER;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_INBOUND_PREFIX6_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_INBOUND_PREFIX_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_INBOUND_ROUTE6_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_INBOUND_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_INHERITED_PEER_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_INHERITED_SESSION;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NEIGHBOR_STATEMENT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_REDISTRIBUTE_RIP_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_ROUTE_MAP_ADVERTISE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_USE_AF_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_USE_NEIGHBOR_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_USE_SESSION_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CLASS_MAP_ACCESS_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CLASS_MAP_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CONTROLLER_DEPI_TUNNEL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.COPS_LISTENER_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CRYPTO_DYNAMIC_MAP_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CRYPTO_DYNAMIC_MAP_ISAKMP_PROFILE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CRYPTO_DYNAMIC_MAP_TRANSFORM_SET;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.CRYPTO_MAP_MATCH_ADDRESS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.DEPI_TUNNEL_DEPI_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.DEPI_TUNNEL_L2TP_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_AF_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_PASSIVE_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_REDISTRIBUTE_BGP_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_REDISTRIBUTE_EIGRP_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_REDISTRIBUTE_ISIS_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_REDISTRIBUTE_OSPF_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_REDISTRIBUTE_RIP_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EIGRP_STUB_LEAK_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.FAILOVER_LAN_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.FAILOVER_LINK_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_BFD_TEMPLATE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_INCOMING_FILTER;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_IP_VRF_SITEMAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_OUTGOING_FILTER;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_SELF_REF;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_SERVICE_INSTANCE_SERVICE_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_SERVICE_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_STANDBY_TRACK;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_TRAFFIC_ZONE_MEMBER;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.INTERFACE_ZONE_MEMBER;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.IPV6_LOCAL_POLICY_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.IP_LOCAL_POLICY_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.IP_ROUTE_NHINT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.IP_TACACS_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ISAKMP_POLICY_SELF_REF;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ISAKMP_PROFILE_KEYRING;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ISAKMP_PROFILE_SELF_REF;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.LINE_ACCESS_CLASS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.LINE_ACCESS_CLASS_LIST6;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.MSDP_PEER_SA_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.NTP_ACCESS_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.NTP_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OBJECT_NAT_MAPPED_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OBJECT_NAT_REAL_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_AREA_FILTER_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_AREA_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_PREFIX_PRIORITY_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PIM_ACCEPT_REGISTER_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PIM_ACCEPT_RP_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PIM_RP_ADDRESS_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PIM_RP_ANNOUNCE_FILTER;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PIM_RP_CANDIDATE_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PIM_SPT_THRESHOLD_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.POLICY_MAP_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.POLICY_MAP_EVENT_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.RIP_DISTRIBUTE_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_STATIC_ROUTE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_VRRP_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_SET_COMMUNITY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SERVICE_POLICY_GLOBAL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SERVICE_POLICY_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS_IPV6;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SNMP_SERVER_TRAP_SOURCE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SSH_IPV4_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SSH_IPV6_ACL;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.SYSTEM_SERVICE_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TACACS_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TRACK_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TRACK_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_MAPPED_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_REAL_INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_IMPORT_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.WCCP_GROUP_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.WCCP_REDIRECT_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.WCCP_SERVICE_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ZONE_PAIR_DESTINATION_ZONE;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.ZONE_PAIR_SOURCE_ZONE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -1020,7 +1020,10 @@ import org.batfish.grammar.cisco_asa.AsaParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.cisco_asa.AccessListAddressSpecifier;
 import org.batfish.representation.cisco_asa.AccessListServiceSpecifier;
 import org.batfish.representation.cisco_asa.AsaConfiguration;
+import org.batfish.representation.cisco_asa.AsaNat;
 import org.batfish.representation.cisco_asa.AsaPredefinedServiceObject;
+import org.batfish.representation.cisco_asa.AsaStructureType;
+import org.batfish.representation.cisco_asa.AsaStructureUsage;
 import org.batfish.representation.cisco_asa.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco_asa.BgpAggregateIpv6Network;
 import org.batfish.representation.cisco_asa.BgpNetwork;
@@ -1028,9 +1031,6 @@ import org.batfish.representation.cisco_asa.BgpNetwork6;
 import org.batfish.representation.cisco_asa.BgpPeerGroup;
 import org.batfish.representation.cisco_asa.BgpProcess;
 import org.batfish.representation.cisco_asa.BgpRedistributionPolicy;
-import org.batfish.representation.cisco_asa.CiscoAsaNat;
-import org.batfish.representation.cisco_asa.CiscoStructureType;
-import org.batfish.representation.cisco_asa.CiscoStructureUsage;
 import org.batfish.representation.cisco_asa.CryptoMapEntry;
 import org.batfish.representation.cisco_asa.CryptoMapSet;
 import org.batfish.representation.cisco_asa.DistributeList;
@@ -1311,7 +1311,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
-  @Nullable private CiscoAsaNat _currentAsaNat;
+  @Nullable private AsaNat _currentAsaNat;
 
   private IpAsPathAccessList _currentAsPathAcl;
 
@@ -2891,7 +2891,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Override
   public void enterOn_nat(On_natContext ctx) {
-    CiscoAsaNat nat = new CiscoAsaNat();
+    AsaNat nat = new AsaNat();
 
     nat.setRealSource(new NetworkObjectAddressSpecifier(_currentNetworkObjectName));
     _configuration.referenceStructure(
@@ -2900,7 +2900,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
         OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
         ctx.getStart().getLine());
 
-    nat.setSection(CiscoAsaNat.Section.OBJECT);
+    nat.setSection(AsaNat.Section.OBJECT);
     natInterfaces(
         nat, ctx.asa_nat_ifaces(), OBJECT_NAT_REAL_INTERFACE, OBJECT_NAT_MAPPED_INTERFACE);
 
@@ -4245,7 +4245,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Override
   public void exitCp_service_policy(Cp_service_policyContext ctx) {
-    CiscoStructureUsage usage =
+    AsaStructureUsage usage =
         ctx.INPUT() != null
             ? CONTROL_PLANE_SERVICE_POLICY_INPUT
             : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
@@ -4369,7 +4369,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
     String name = ctx.list_name.getText();
     int line = ctx.list_name.getStart().getLine();
-    CiscoStructureUsage usage;
+    AsaStructureUsage usage;
     if (_inIpv6BgpPeer) {
       // TODO Support IPv6 access lists in BGP distribute-lists
       if (ctx.IN() != null) {
@@ -4390,7 +4390,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
         throw new BatfishException("Invalid direction for BGP distribute-list");
       }
     }
-    CiscoStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    AsaStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
     _configuration.referenceStructure(type, name, usage, line);
   }
 
@@ -5056,7 +5056,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
           String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
       return;
     }
-    CiscoStructureUsage usage = null;
+    AsaStructureUsage usage = null;
     String aclName = ctx.name.getText();
     if (ctx.IN() != null) {
       iface.setIncomingFilter(aclName);
@@ -5082,7 +5082,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
-    CiscoStructureUsage usage = null;
+    AsaStructureUsage usage = null;
     if (ctx.IN() != null || ctx.INGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setIncomingFilter(name);
@@ -5319,7 +5319,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Override
   public void exitIf_ipv6_traffic_filter(If_ipv6_traffic_filterContext ctx) {
-    CiscoStructureUsage usage =
+    AsaStructureUsage usage =
         ctx.IN() != null ? INTERFACE_IPV6_TRAFFIC_FILTER_IN : INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
     _configuration.referenceStructure(
         IPV6_ACCESS_LIST, ctx.acl.getText(), usage, ctx.acl.getStart().getLine());
@@ -5356,7 +5356,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     _configuration.referenceStructure(
         INTERFACE,
         member,
-        CiscoStructureUsage.INTERFACE_MEMBER_INTERFACE,
+        AsaStructureUsage.INTERFACE_MEMBER_INTERFACE,
         ctx.name.getStart().getLine());
     _currentInterfaces.get(0).getMemberInterfaces().add(member);
   }
@@ -6090,8 +6090,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     String name = ctx.name.getText();
     int nameLine = ctx.name.getStart().getLine();
     BiConsumer<Line, String> setter;
-    CiscoStructureType structureType;
-    CiscoStructureUsage structureUsage;
+    AsaStructureType structureType;
+    AsaStructureUsage structureUsage;
     if (ctx.OUT() != null || ctx.EGRESS() != null) {
       if (ipv6) {
         setter = Line::setOutputIpv6AccessList;
@@ -7235,7 +7235,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
     String listName = ctx.list_name.getText();
     int line = ctx.list_name.getLine();
-    CiscoStructureUsage usage;
+    AsaStructureUsage usage;
     if (_inIpv6BgpPeer) {
       // TODO Support IPv6 prefix-lists in BGP
       if (ctx.IN() != null) {
@@ -7256,7 +7256,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
         throw new BatfishException("Invalid direction for BGP prefix-list");
       }
     }
-    CiscoStructureType type = _inIpv6BgpPeer ? PREFIX6_LIST : PREFIX_LIST;
+    AsaStructureType type = _inIpv6BgpPeer ? PREFIX6_LIST : PREFIX_LIST;
     _configuration.referenceStructure(type, listName, usage, line);
   }
 
@@ -7747,8 +7747,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     boolean in = ctx.IN() != null;
-    CiscoStructureType type;
-    CiscoStructureUsage usage;
+    AsaStructureType type;
+    AsaStructureUsage usage;
     DistributeListFilterType filterType;
     if (ctx.PREFIX() != null) {
       type = PREFIX_LIST;
@@ -7995,7 +7995,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     boolean in = ctx.IN() != null;
-    CiscoStructureUsage usage =
+    AsaStructureUsage usage =
         in ? OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN : OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
     _configuration.referenceStructure(PREFIX6_LIST, name, usage, line);
 
@@ -8042,7 +8042,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
     String mapName = ctx.name.getText();
     boolean ipv6 = _inIpv6BgpPeer || _currentIpv6PeerGroup != null;
-    CiscoStructureUsage usage;
+    AsaStructureUsage usage;
     if (ctx.IN() != null) {
       if (ipv6) {
         _currentPeerGroup.setInboundRoute6Map(mapName);
@@ -8316,10 +8316,10 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   private void natInterfaces(
-      CiscoAsaNat nat,
+      AsaNat nat,
       Asa_nat_ifacesContext ctx,
-      CiscoStructureUsage realStructure,
-      CiscoStructureUsage mappedStructure) {
+      AsaStructureUsage realStructure,
+      AsaStructureUsage mappedStructure) {
     if (ctx == null) {
       nat.setInsideInterface(ANY_INTERFACE);
       nat.setOutsideInterface(ANY_INTERFACE);
@@ -8340,7 +8340,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Override
   public void exitS_asa_twice_nat(S_asa_twice_natContext ctx) {
-    CiscoAsaNat nat = new CiscoAsaNat();
+    AsaNat nat = new AsaNat();
 
     natInterfaces(nat, ctx.asa_nat_ifaces(), TWICE_NAT_REAL_INTERFACE, TWICE_NAT_MAPPED_INTERFACE);
 
@@ -8425,9 +8425,9 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     // Choose section for this NAT
     boolean afterAuto = ctx.AFTER_AUTO() != null;
     if (afterAuto) {
-      nat.setSection(CiscoAsaNat.Section.AFTER);
+      nat.setSection(AsaNat.Section.AFTER);
     } else {
-      nat.setSection(CiscoAsaNat.Section.BEFORE);
+      nat.setSection(AsaNat.Section.BEFORE);
     }
 
     // Check options. INACTIVE means rule is ignored. Other options are not handled.
@@ -9476,10 +9476,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
    * @return Address specifier for this reference
    */
   private AccessListAddressSpecifier referenceNetworkObjectOrGroup(
-      String name,
-      CiscoStructureUsage objectStructure,
-      CiscoStructureUsage groupStructure,
-      int line) {
+      String name, AsaStructureUsage objectStructure, AsaStructureUsage groupStructure, int line) {
     if (name.equals(ANY_INTERFACE)) {
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     }

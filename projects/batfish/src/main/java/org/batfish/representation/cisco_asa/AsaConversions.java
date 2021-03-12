@@ -134,7 +134,7 @@ import org.batfish.representation.cisco_asa.DistributeList.DistributeListFilterT
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
-public class CiscoConversions {
+public class AsaConversions {
 
   // Defaults from
   // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
@@ -541,7 +541,7 @@ public class CiscoConversions {
   static CommunityList toCommunityList(ExpandedCommunityList ecList) {
     List<CommunityListLine> cllList =
         ecList.getLines().stream()
-            .map(CiscoConversions::toCommunityListLine)
+            .map(AsaConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(ecList.getName(), cllList, false);
   }
@@ -549,7 +549,7 @@ public class CiscoConversions {
   public static CommunityList toCommunityList(StandardCommunityList scList) {
     List<CommunityListLine> cllList =
         scList.getLines().stream()
-            .map(CiscoConversions::toCommunityListLine)
+            .map(AsaConversions::toCommunityListLine)
             .collect(ImmutableList.toImmutableList());
     return new CommunityList(scList.getName(), cllList, false);
   }
@@ -761,8 +761,8 @@ public class CiscoConversions {
             .collect(ImmutableList.toImmutableList());
     String sourceType =
         eaList.getParent() != null
-            ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
-            : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
+            ? AsaStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
+            : AsaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
     String name = eaList.getName();
     return IpAccessList.builder()
         .setName(name)
@@ -781,7 +781,7 @@ public class CiscoConversions {
                     .build()))
         .setName(computeIcmpObjectGroupAclName(icmpTypeObjectGroup.getName()))
         .setSourceName(icmpTypeObjectGroup.getName())
-        .setSourceType(CiscoStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
+        .setSourceType(AsaStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
         .build();
   }
 
@@ -794,7 +794,7 @@ public class CiscoConversions {
                     .build()))
         .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
         .setSourceName(protocolObjectGroup.getName())
-        .setSourceType(CiscoStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
+        .setSourceType(AsaStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
         .build();
   }
 
@@ -811,7 +811,7 @@ public class CiscoConversions {
                     .build()))
         .setName(computeServiceObjectAclName(serviceObject.getName()))
         .setSourceName(serviceObject.getName())
-        .setSourceType(CiscoStructureType.SERVICE_OBJECT.getDescription())
+        .setSourceType(AsaStructureType.SERVICE_OBJECT.getDescription())
         .build();
   }
 
@@ -828,7 +828,7 @@ public class CiscoConversions {
                     .build()))
         .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
         .setSourceName(serviceObjectGroup.getName())
-        .setSourceType(CiscoStructureType.SERVICE_OBJECT_GROUP.getDescription())
+        .setSourceType(AsaStructureType.SERVICE_OBJECT_GROUP.getDescription())
         .build();
   }
 
@@ -1300,7 +1300,7 @@ public class CiscoConversions {
     String name = eaList.getName();
     List<Route6FilterLine> lines =
         eaList.getLines().stream()
-            .map(CiscoConversions::toRoute6FilterLine)
+            .map(AsaConversions::toRoute6FilterLine)
             .collect(ImmutableList.toImmutableList());
     return new Route6FilterList(name, lines);
   }
@@ -1309,7 +1309,7 @@ public class CiscoConversions {
     String name = eaList.getName();
     List<Route6FilterLine> lines =
         eaList.getLines().stream()
-            .map(CiscoConversions::toRoute6FilterLine)
+            .map(AsaConversions::toRoute6FilterLine)
             .collect(ImmutableList.toImmutableList());
     return new Route6FilterList(name, lines);
   }
@@ -1325,7 +1325,7 @@ public class CiscoConversions {
   static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
     List<RouteFilterLine> lines =
         eaList.getLines().stream()
-            .map(CiscoConversions::toRouteFilterLine)
+            .map(AsaConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(eaList.getName(), lines);
   }
@@ -1333,7 +1333,7 @@ public class CiscoConversions {
   static RouteFilterList toRouteFilterList(StandardAccessList saList) {
     List<RouteFilterLine> lines =
         saList.getLines().stream()
-            .map(CiscoConversions::toRouteFilterLine)
+            .map(AsaConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(saList.getName(), lines);
   }
@@ -1891,5 +1891,5 @@ public class CiscoConversions {
     return String.format("~vrfExportImport~%s~%s", exportingVrf, importingVrf);
   }
 
-  private CiscoConversions() {} // prevent instantiation of utility class
+  private AsaConversions() {} // prevent instantiation of utility class
 }

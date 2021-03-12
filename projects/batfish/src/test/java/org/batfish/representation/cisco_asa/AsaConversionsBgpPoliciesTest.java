@@ -5,8 +5,8 @@ import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
-import static org.batfish.representation.cisco_asa.CiscoConversions.generateBgpExportPolicy;
-import static org.batfish.representation.cisco_asa.CiscoConversions.generateBgpImportPolicy;
+import static org.batfish.representation.cisco_asa.AsaConversions.generateBgpExportPolicy;
+import static org.batfish.representation.cisco_asa.AsaConversions.generateBgpImportPolicy;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,9 +44,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Tests for {@link CiscoConversions} class */
+/** Tests for {@link AsaConversions} class */
 @RunWith(JUnit4.class)
-public class CiscoConversionsBgpPoliciesTest {
+public class AsaConversionsBgpPoliciesTest {
 
   private static final Ip PEER_ADDRESS = Ip.parse("1.2.3.4");
   private static final String PREFIX_LIST_NAME = "PREFIX_LIST";

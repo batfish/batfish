@@ -15,30 +15,30 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco_asa.CiscoConversions.computeDistributeListPolicies;
-import static org.batfish.representation.cisco_asa.CiscoConversions.convertCryptoMapSet;
-import static org.batfish.representation.cisco_asa.CiscoConversions.convertVrfLeakingConfig;
-import static org.batfish.representation.cisco_asa.CiscoConversions.generateBgpExportPolicy;
-import static org.batfish.representation.cisco_asa.CiscoConversions.generateBgpImportPolicy;
-import static org.batfish.representation.cisco_asa.CiscoConversions.generateEigrpPolicy;
-import static org.batfish.representation.cisco_asa.CiscoConversions.getIsakmpKeyGeneratedName;
-import static org.batfish.representation.cisco_asa.CiscoConversions.getRsaPubKeyGeneratedName;
-import static org.batfish.representation.cisco_asa.CiscoConversions.matchOwnAsn;
-import static org.batfish.representation.cisco_asa.CiscoConversions.resolveIsakmpProfileIfaceNames;
-import static org.batfish.representation.cisco_asa.CiscoConversions.resolveKeyringIfaceNames;
-import static org.batfish.representation.cisco_asa.CiscoConversions.resolveTunnelIfaceNames;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toCommunityList;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toIkePhase1Key;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toIkePhase1Policy;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toIkePhase1Proposal;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toIpAccessList;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toIpSpace;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toIpsecPeerConfig;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toIpsecPhase2Policy;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toIpsecPhase2Proposal;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toOspfDeadInterval;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toOspfHelloInterval;
-import static org.batfish.representation.cisco_asa.CiscoConversions.toOspfNetworkType;
+import static org.batfish.representation.cisco_asa.AsaConversions.computeDistributeListPolicies;
+import static org.batfish.representation.cisco_asa.AsaConversions.convertCryptoMapSet;
+import static org.batfish.representation.cisco_asa.AsaConversions.convertVrfLeakingConfig;
+import static org.batfish.representation.cisco_asa.AsaConversions.generateBgpExportPolicy;
+import static org.batfish.representation.cisco_asa.AsaConversions.generateBgpImportPolicy;
+import static org.batfish.representation.cisco_asa.AsaConversions.generateEigrpPolicy;
+import static org.batfish.representation.cisco_asa.AsaConversions.getIsakmpKeyGeneratedName;
+import static org.batfish.representation.cisco_asa.AsaConversions.getRsaPubKeyGeneratedName;
+import static org.batfish.representation.cisco_asa.AsaConversions.matchOwnAsn;
+import static org.batfish.representation.cisco_asa.AsaConversions.resolveIsakmpProfileIfaceNames;
+import static org.batfish.representation.cisco_asa.AsaConversions.resolveKeyringIfaceNames;
+import static org.batfish.representation.cisco_asa.AsaConversions.resolveTunnelIfaceNames;
+import static org.batfish.representation.cisco_asa.AsaConversions.toCommunityList;
+import static org.batfish.representation.cisco_asa.AsaConversions.toIkePhase1Key;
+import static org.batfish.representation.cisco_asa.AsaConversions.toIkePhase1Policy;
+import static org.batfish.representation.cisco_asa.AsaConversions.toIkePhase1Proposal;
+import static org.batfish.representation.cisco_asa.AsaConversions.toIpAccessList;
+import static org.batfish.representation.cisco_asa.AsaConversions.toIpSpace;
+import static org.batfish.representation.cisco_asa.AsaConversions.toIpsecPeerConfig;
+import static org.batfish.representation.cisco_asa.AsaConversions.toIpsecPhase2Policy;
+import static org.batfish.representation.cisco_asa.AsaConversions.toIpsecPhase2Proposal;
+import static org.batfish.representation.cisco_asa.AsaConversions.toOspfDeadInterval;
+import static org.batfish.representation.cisco_asa.AsaConversions.toOspfHelloInterval;
+import static org.batfish.representation.cisco_asa.AsaConversions.toOspfNetworkType;
 import static org.batfish.representation.cisco_asa.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -192,7 +192,7 @@ import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
-import org.batfish.representation.cisco_asa.CiscoAsaNat.Section;
+import org.batfish.representation.cisco_asa.AsaNat.Section;
 import org.batfish.representation.cisco_asa.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -495,7 +495,7 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private final Map<String, IntegerSpace> _namedVlans;
 
-  private final List<CiscoAsaNat> _ciscoAsaNats;
+  private final List<AsaNat> _nats;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
 
@@ -583,7 +583,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
-    _ciscoAsaNats = new ArrayList<>();
+    _nats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
     _networkObjects = new TreeMap<>();
@@ -839,8 +839,8 @@ public final class AsaConfiguration extends VendorConfiguration {
     return _namedVlans;
   }
 
-  public List<CiscoAsaNat> getCiscoAsaNats() {
-    return _ciscoAsaNats;
+  public List<AsaNat> getCiscoAsaNats() {
+    return _nats;
   }
 
   private String getNewInterfaceName(Interface iface) {
@@ -957,52 +957,52 @@ public final class AsaConfiguration extends VendorConfiguration {
     return _vrrpGroups;
   }
 
-  private void markAcls(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markAcls(AsaStructureUsage... usages) {
+    for (AsaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.IP_ACCESS_LIST,
+          AsaStructureType.IP_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
-              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+              AsaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AsaStructureType.IPV4_ACCESS_LIST_EXTENDED,
+              AsaStructureType.IPV6_ACCESS_LIST_STANDARD,
+              AsaStructureType.IPV6_ACCESS_LIST_EXTENDED));
     }
   }
 
-  private void markIpOrMacAcls(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markIpOrMacAcls(AsaStructureUsage... usages) {
+    for (AsaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.ACCESS_LIST,
+          AsaStructureType.ACCESS_LIST,
           usage,
           Arrays.asList(
-              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
-              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED,
-              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-              CiscoStructureType.MAC_ACCESS_LIST));
+              AsaStructureType.IPV4_ACCESS_LIST_EXTENDED,
+              AsaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AsaStructureType.IPV6_ACCESS_LIST_EXTENDED,
+              AsaStructureType.IPV6_ACCESS_LIST_STANDARD,
+              AsaStructureType.MAC_ACCESS_LIST));
     }
   }
 
-  private void markIpv4Acls(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markIpv4Acls(AsaStructureUsage... usages) {
+    for (AsaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.IPV4_ACCESS_LIST,
+          AsaStructureType.IPV4_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED));
+              AsaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AsaStructureType.IPV4_ACCESS_LIST_EXTENDED));
     }
   }
 
-  private void markIpv6Acls(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markIpv6Acls(AsaStructureUsage... usages) {
+    for (AsaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.IPV6_ACCESS_LIST,
+          AsaStructureType.IPV6_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+              AsaStructureType.IPV6_ACCESS_LIST_STANDARD,
+              AsaStructureType.IPV6_ACCESS_LIST_EXTENDED));
     }
   }
 
@@ -1686,7 +1686,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     newIface.setCryptoMap(iface.getCryptoMap());
     newIface.setHsrpGroups(
         CollectionUtil.toImmutableMap(
-            iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
+            iface.getHsrpGroups(), Entry::getKey, e -> AsaConversions.toHsrpGroup(e.getValue())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
@@ -1857,9 +1857,9 @@ public final class AsaConfiguration extends VendorConfiguration {
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
 
-    List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
-    if (!ciscoAsaNats.isEmpty()) {
-      generateCiscoAsaNatTransformations(ifaceName, newIface, ciscoAsaNats);
+    List<AsaNat> nats = firstNonNull(_nats, ImmutableList.of());
+    if (!nats.isEmpty()) {
+      generateCiscoAsaNatTransformations(ifaceName, newIface, nats);
     }
 
     String routingPolicyName = iface.getRoutingPolicy();
@@ -1923,20 +1923,20 @@ public final class AsaConfiguration extends VendorConfiguration {
   }
 
   private void generateCiscoAsaNatTransformations(
-      String ifaceName, org.batfish.datamodel.Interface newIface, List<CiscoAsaNat> ciscoAsaNats) {
+      String ifaceName, org.batfish.datamodel.Interface newIface, List<AsaNat> nats) {
 
-    if (!ciscoAsaNats.stream().map(CiscoAsaNat::getSection).allMatch(Section.OBJECT::equals)) {
+    if (!nats.stream().map(AsaNat::getSection).allMatch(Section.OBJECT::equals)) {
       _w.unimplemented("No support for Twice NAT");
     }
 
     // ASA places incoming and outgoing object NATs as transformations on the outside interface.
     // Each NAT rule specifies an outside interface or ANY_INTERFACE
-    SortedSet<CiscoAsaNat> objectNats =
-        ciscoAsaNats.stream()
+    SortedSet<AsaNat> objectNats =
+        nats.stream()
             .filter(nat -> nat.getSection().equals(Section.OBJECT))
             .filter(
                 nat ->
-                    nat.getOutsideInterface().equals(CiscoAsaNat.ANY_INTERFACE)
+                    nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)
                         || nat.getOutsideInterface().equals(ifaceName))
             .collect(Collectors.toCollection(TreeSet::new));
 
@@ -1945,14 +1945,14 @@ public final class AsaConfiguration extends VendorConfiguration {
             .map(nat -> nat.toIncomingTransformation(_networkObjects, _w))
             .collect(
                 Collectors.collectingAndThen(
-                    Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
+                    Collectors.toList(), AsaNatUtil::toTransformationChain)));
 
     newIface.setOutgoingTransformation(
         objectNats.stream()
             .map(nat -> nat.toOutgoingTransformation(_networkObjects, _w))
             .collect(
                 Collectors.collectingAndThen(
-                    Collectors.toList(), CiscoAsaNatUtil::toTransformationChain)));
+                    Collectors.toList(), AsaNatUtil::toTransformationChain)));
   }
 
   private void applyZoneFilter(
@@ -2198,7 +2198,7 @@ public final class AsaConfiguration extends VendorConfiguration {
       OspfProcess proc, String vrfName, Configuration c, AsaConfiguration oldConfig) {
     Ip routerId = proc.getRouterId();
     if (routerId == null) {
-      routerId = CiscoConversions.getHighestIp(oldConfig.getInterfaces());
+      routerId = AsaConversions.getHighestIp(oldConfig.getInterfaces());
       if (routerId == Ip.ZERO) {
         _w.redFlag("No candidates for OSPF router-id");
         return null;
@@ -2729,9 +2729,9 @@ public final class AsaConfiguration extends VendorConfiguration {
           if (continueTargetPolicy == null) {
             String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
             undefined(
-                CiscoStructureType.ROUTE_MAP_CLAUSE,
+                AsaStructureType.ROUTE_MAP_CLAUSE,
                 name,
-                CiscoStructureUsage.ROUTE_MAP_CONTINUE,
+                AsaStructureUsage.ROUTE_MAP_CONTINUE,
                 continueStatement.getStatementLine());
             continueStatement = null;
           }
@@ -2846,7 +2846,7 @@ public final class AsaConfiguration extends VendorConfiguration {
 
     // convert as path access lists to vendor independent format
     for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
-      AsPathAccessList apList = CiscoConversions.toAsPathAccessList(pathList);
+      AsPathAccessList apList = AsaConversions.toAsPathAccessList(pathList);
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
@@ -2862,13 +2862,13 @@ public final class AsaConfiguration extends VendorConfiguration {
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
-      RouteFilterList newRouteFilterList = CiscoConversions.toRouteFilterList(prefixList);
+      RouteFilterList newRouteFilterList = AsaConversions.toRouteFilterList(prefixList);
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
     // convert ipv6 prefix lists to route6 filter lists
     for (Prefix6List prefixList : _prefix6Lists.values()) {
-      Route6FilterList newRouteFilterList = CiscoConversions.toRoute6FilterList(prefixList);
+      Route6FilterList newRouteFilterList = AsaConversions.toRoute6FilterList(prefixList);
       c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
@@ -2876,7 +2876,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     // lists
     for (StandardAccessList saList : _standardAccessLists.values()) {
       if (isAclUsedForRouting(saList.getName())) {
-        RouteFilterList rfList = CiscoConversions.toRouteFilterList(saList);
+        RouteFilterList rfList = AsaConversions.toRouteFilterList(saList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
@@ -2884,7 +2884,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
-        RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
+        RouteFilterList rfList = AsaConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);
@@ -2903,7 +2903,7 @@ public final class AsaConfiguration extends VendorConfiguration {
             _networkObjects.get(name).setInfo(info);
           }
         });
-    _ciscoAsaNats.removeIf(
+    _nats.removeIf(
         nat -> {
           if (nat.getSection() != Section.OBJECT) {
             return false;
@@ -2934,7 +2934,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription())));
+                            name, AsaStructureType.NETWORK_OBJECT_GROUP.getDescription())));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
@@ -2945,7 +2945,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT.getDescription())));
+                            name, AsaStructureType.NETWORK_OBJECT.getDescription())));
 
     // convert each IcmpTypeGroup to IpAccessList
     _icmpTypeObjectGroups.forEach(
@@ -2978,20 +2978,18 @@ public final class AsaConfiguration extends VendorConfiguration {
     // lists
     for (StandardIpv6AccessList saList : _standardIpv6AccessLists.values()) {
       if (isAclUsedForRoutingv6(saList.getName())) {
-        Route6FilterList rfList = CiscoConversions.toRoute6FilterList(saList);
+        Route6FilterList rfList = AsaConversions.toRoute6FilterList(saList);
         c.getRoute6FilterLists().put(rfList.getName(), rfList);
       }
       c.getIp6AccessLists()
-          .put(
-              saList.getName(),
-              CiscoConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
+          .put(saList.getName(), AsaConversions.toIp6AccessList(saList.toExtendedIpv6AccessList()));
     }
     for (ExtendedIpv6AccessList eaList : _extendedIpv6AccessLists.values()) {
       if (isAclUsedForRoutingv6(eaList.getName())) {
-        Route6FilterList rfList = CiscoConversions.toRoute6FilterList(eaList);
+        Route6FilterList rfList = AsaConversions.toRoute6FilterList(eaList);
         c.getRoute6FilterLists().put(rfList.getName(), rfList);
       }
-      Ip6AccessList ipaList = CiscoConversions.toIp6AccessList(eaList);
+      Ip6AccessList ipaList = AsaConversions.toIp6AccessList(eaList);
       c.getIp6AccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -3262,7 +3260,7 @@ public final class AsaConfiguration extends VendorConfiguration {
 
           // convert static routes
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(staticRoute));
+            newVrf.getStaticRoutes().add(AsaConversions.toStaticRoute(staticRoute));
           }
 
           // convert rip process
@@ -3280,7 +3278,7 @@ public final class AsaConfiguration extends VendorConfiguration {
 
           // convert eigrp processes
           vrf.getEigrpProcesses().values().stream()
-              .map(proc -> CiscoConversions.toEigrpProcess(proc, vrfName, c, this))
+              .map(proc -> AsaConversions.toEigrpProcess(proc, vrfName, c, this))
               .filter(Objects::nonNull)
               .forEach(newVrf::addEigrpProcess);
 
@@ -3288,7 +3286,7 @@ public final class AsaConfiguration extends VendorConfiguration {
           IsisProcess isisProcess = vrf.getIsisProcess();
           if (isisProcess != null) {
             org.batfish.datamodel.isis.IsisProcess newIsisProcess =
-                CiscoConversions.toIsisProcess(isisProcess, c, this);
+                AsaConversions.toIsisProcess(isisProcess, c, this);
             newVrf.setIsisProcess(newIsisProcess);
           }
 
@@ -3343,294 +3341,290 @@ public final class AsaConfiguration extends VendorConfiguration {
     // references.
     Optional<Integer> firstRefToNull0 =
         _structureReferences
-            .getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+            .getOrDefault(AsaStructureType.INTERFACE, ImmutableSortedMap.of())
             .getOrDefault("Null0", ImmutableSortedMap.of())
             .entrySet()
             .stream()
             .flatMap(e -> e.getValue().stream())
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
-      defineSingleLineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());
+      defineSingleLineStructure(AsaStructureType.INTERFACE, "Null0", firstRefToNull0.get());
     }
 
-    markConcreteStructure(
-        CiscoStructureType.BFD_TEMPLATE, CiscoStructureUsage.INTERFACE_BFD_TEMPLATE);
+    markConcreteStructure(AsaStructureType.BFD_TEMPLATE, AsaStructureUsage.INTERFACE_BFD_TEMPLATE);
 
     markConcreteStructure(
-        CiscoStructureType.SECURITY_ZONE_PAIR, CiscoStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
+        AsaStructureType.SECURITY_ZONE_PAIR, AsaStructureUsage.SECURITY_ZONE_PAIR_SELF_REF);
 
     markConcreteStructure(
-        CiscoStructureType.INTERFACE,
-        CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
-        CiscoStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
-        CiscoStructureUsage.EIGRP_AF_INTERFACE,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoStructureUsage.EIGRP_PASSIVE_INTERFACE,
-        CiscoStructureUsage.FAILOVER_LAN_INTERFACE,
-        CiscoStructureUsage.FAILOVER_LINK_INTERFACE,
-        CiscoStructureUsage.INTERFACE_SELF_REF,
-        CiscoStructureUsage.IP_NAT_INSIDE_SOURCE,
-        CiscoStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
-        CiscoStructureUsage.IP_ROUTE_NHINT,
-        CiscoStructureUsage.IP_TACACS_SOURCE_INTERFACE,
-        CiscoStructureUsage.NTP_SOURCE_INTERFACE,
-        CiscoStructureUsage.OBJECT_NAT_MAPPED_INTERFACE,
-        CiscoStructureUsage.OBJECT_NAT_REAL_INTERFACE,
-        CiscoStructureUsage.OSPF_AREA_INTERFACE,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
-        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
-        CiscoStructureUsage.ROUTER_STATIC_ROUTE,
-        CiscoStructureUsage.ROUTER_VRRP_INTERFACE,
-        CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
-        CiscoStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
-        CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE,
-        CiscoStructureUsage.TACACS_SOURCE_INTERFACE,
-        CiscoStructureUsage.TRACK_INTERFACE,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_INTERFACE,
-        CiscoStructureUsage.TWICE_NAT_REAL_INTERFACE,
-        CiscoStructureUsage.VXLAN_SOURCE_INTERFACE);
+        AsaStructureType.INTERFACE,
+        AsaStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
+        AsaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE,
+        AsaStructureUsage.EIGRP_AF_INTERFACE,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
+        AsaStructureUsage.EIGRP_PASSIVE_INTERFACE,
+        AsaStructureUsage.FAILOVER_LAN_INTERFACE,
+        AsaStructureUsage.FAILOVER_LINK_INTERFACE,
+        AsaStructureUsage.INTERFACE_SELF_REF,
+        AsaStructureUsage.IP_NAT_INSIDE_SOURCE,
+        AsaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
+        AsaStructureUsage.IP_ROUTE_NHINT,
+        AsaStructureUsage.IP_TACACS_SOURCE_INTERFACE,
+        AsaStructureUsage.NTP_SOURCE_INTERFACE,
+        AsaStructureUsage.OBJECT_NAT_MAPPED_INTERFACE,
+        AsaStructureUsage.OBJECT_NAT_REAL_INTERFACE,
+        AsaStructureUsage.OSPF_AREA_INTERFACE,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_IN,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_MAP_OUT,
+        AsaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AsaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AsaStructureUsage.ROUTE_MAP_MATCH_INTERFACE,
+        AsaStructureUsage.ROUTER_STATIC_ROUTE,
+        AsaStructureUsage.ROUTER_VRRP_INTERFACE,
+        AsaStructureUsage.SERVICE_POLICY_INTERFACE,
+        AsaStructureUsage.SNMP_SERVER_SOURCE_INTERFACE,
+        AsaStructureUsage.SNMP_SERVER_TRAP_SOURCE,
+        AsaStructureUsage.TACACS_SOURCE_INTERFACE,
+        AsaStructureUsage.TRACK_INTERFACE,
+        AsaStructureUsage.TWICE_NAT_MAPPED_INTERFACE,
+        AsaStructureUsage.TWICE_NAT_REAL_INTERFACE,
+        AsaStructureUsage.VXLAN_SOURCE_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
-        CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
+        AsaStructureUsage.CLASS_MAP_ACCESS_GROUP, AsaStructureUsage.CLASS_MAP_ACCESS_LIST);
     markIpv4Acls(
-        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
-        CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
-        CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
-        CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
-        CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
-        CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
-        CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
-        CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
-        CiscoStructureUsage.LINE_ACCESS_CLASS_LIST,
-        CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
-        CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
-        CiscoStructureUsage.MSDP_PEER_SA_LIST,
-        CiscoStructureUsage.NTP_ACCESS_GROUP,
-        CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL,
-        CiscoStructureUsage.PIM_ACCEPT_RP_ACL,
-        CiscoStructureUsage.PIM_RP_ADDRESS_ACL,
-        CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER,
-        CiscoStructureUsage.PIM_RP_CANDIDATE_ACL,
-        CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
-        CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
-        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
-        CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS,
-        CiscoStructureUsage.SSH_IPV4_ACL);
+        AsaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        AsaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        AsaStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
+        AsaStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
+        AsaStructureUsage.INTERFACE_INCOMING_FILTER,
+        AsaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
+        AsaStructureUsage.INTERFACE_OUTGOING_FILTER,
+        AsaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
+        AsaStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
+        AsaStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
+        AsaStructureUsage.LINE_ACCESS_CLASS_LIST,
+        AsaStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
+        AsaStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
+        AsaStructureUsage.MSDP_PEER_SA_LIST,
+        AsaStructureUsage.NTP_ACCESS_GROUP,
+        AsaStructureUsage.PIM_ACCEPT_REGISTER_ACL,
+        AsaStructureUsage.PIM_ACCEPT_RP_ACL,
+        AsaStructureUsage.PIM_RP_ADDRESS_ACL,
+        AsaStructureUsage.PIM_RP_ANNOUNCE_FILTER,
+        AsaStructureUsage.PIM_RP_CANDIDATE_ACL,
+        AsaStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
+        AsaStructureUsage.PIM_SPT_THRESHOLD_ACL,
+        AsaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
+        AsaStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
+        AsaStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS,
+        AsaStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
-        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
-        CiscoStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT,
-        CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6,
-        CiscoStructureUsage.NTP_ACCESS_GROUP,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
-        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
-        CiscoStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS_IPV6,
-        CiscoStructureUsage.SSH_IPV6_ACL,
-        CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
-        CiscoStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT);
+        AsaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN,
+        AsaStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT,
+        AsaStructureUsage.LINE_ACCESS_CLASS_LIST6,
+        AsaStructureUsage.NTP_ACCESS_GROUP,
+        AsaStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
+        AsaStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
+        AsaStructureUsage.SNMP_SERVER_GROUP_V3_ACCESS_IPV6,
+        AsaStructureUsage.SSH_IPV6_ACL,
+        AsaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
+        AsaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT);
     markAcls(
-        CiscoStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
-        CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
-        CiscoStructureUsage.CRYPTO_MAP_MATCH_ADDRESS,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
-        CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
-        CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
-        CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
-        CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
-        CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoStructureUsage.RIP_DISTRIBUTE_LIST,
-        CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
-        CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
-        CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
-        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
-        CiscoStructureUsage.SSH_ACL,
-        CiscoStructureUsage.WCCP_GROUP_LIST,
-        CiscoStructureUsage.WCCP_REDIRECT_LIST,
-        CiscoStructureUsage.WCCP_SERVICE_LIST);
+        AsaStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
+        AsaStructureUsage.COPS_LISTENER_ACCESS_LIST,
+        AsaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
+        AsaStructureUsage.CRYPTO_MAP_MATCH_ADDRESS,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        AsaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
+        AsaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
+        AsaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
+        AsaStructureUsage.INTERFACE_INCOMING_FILTER,
+        AsaStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
+        AsaStructureUsage.INTERFACE_OUTGOING_FILTER,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
+        AsaStructureUsage.RIP_DISTRIBUTE_LIST,
+        AsaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
+        AsaStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
+        AsaStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
+        AsaStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
+        AsaStructureUsage.SSH_ACL,
+        AsaStructureUsage.WCCP_GROUP_LIST,
+        AsaStructureUsage.WCCP_REDIRECT_LIST,
+        AsaStructureUsage.WCCP_SERVICE_LIST);
 
     markCommunityLists(
-        CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY,
-        CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
-        CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY);
+        AsaStructureUsage.ROUTE_MAP_ADD_COMMUNITY,
+        AsaStructureUsage.ROUTE_MAP_DELETE_COMMUNITY,
+        AsaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
+        AsaStructureUsage.ROUTE_MAP_SET_COMMUNITY);
 
-    markExtcommunityLists(CiscoStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY);
+    markExtcommunityLists(AsaStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY);
 
     markConcreteStructure(
-        CiscoStructureType.PREFIX_LIST,
-        CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
-        CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
+        AsaStructureType.PREFIX_LIST,
+        AsaStructureUsage.BGP_INBOUND_PREFIX_LIST,
+        AsaStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_IN,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_GATEWAY_OUT,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AsaStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AsaStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AsaStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
     markConcreteStructure(
-        CiscoStructureType.PREFIX6_LIST,
-        CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST,
-        CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
-        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
-        CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
+        AsaStructureType.PREFIX6_LIST,
+        AsaStructureUsage.BGP_INBOUND_PREFIX6_LIST,
+        AsaStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
+        AsaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN,
+        AsaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT,
+        AsaStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
 
     // mark references to route-maps
-    markConcreteStructure(CiscoStructureType.ROUTE_MAP);
+    markConcreteStructure(AsaStructureType.ROUTE_MAP);
 
     // Cable
-    markConcreteStructure(CiscoStructureType.DEPI_CLASS);
-    markConcreteStructure(CiscoStructureType.DEPI_TUNNEL);
-    markConcreteStructure(CiscoStructureType.DOCSIS_POLICY);
-    markConcreteStructure(CiscoStructureType.DOCSIS_POLICY_RULE);
+    markConcreteStructure(AsaStructureType.DEPI_CLASS);
+    markConcreteStructure(AsaStructureType.DEPI_TUNNEL);
+    markConcreteStructure(AsaStructureType.DOCSIS_POLICY);
+    markConcreteStructure(AsaStructureType.DOCSIS_POLICY_RULE);
     markConcreteStructure(
-        CiscoStructureType.SERVICE_CLASS, CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
+        AsaStructureType.SERVICE_CLASS, AsaStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
 
     // L2tp
-    markConcreteStructure(CiscoStructureType.L2TP_CLASS);
+    markConcreteStructure(AsaStructureType.L2TP_CLASS);
 
     // Crypto, Isakmp, and IPSec
-    markConcreteStructure(CiscoStructureType.CRYPTO_DYNAMIC_MAP_SET);
-    markConcreteStructure(CiscoStructureType.ISAKMP_PROFILE);
-    markConcreteStructure(CiscoStructureType.ISAKMP_POLICY);
-    markConcreteStructure(CiscoStructureType.IPSEC_PROFILE);
-    markConcreteStructure(CiscoStructureType.IPSEC_TRANSFORM_SET);
-    markConcreteStructure(CiscoStructureType.KEYRING, CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
+    markConcreteStructure(AsaStructureType.CRYPTO_DYNAMIC_MAP_SET);
+    markConcreteStructure(AsaStructureType.ISAKMP_PROFILE);
+    markConcreteStructure(AsaStructureType.ISAKMP_POLICY);
+    markConcreteStructure(AsaStructureType.IPSEC_PROFILE);
+    markConcreteStructure(AsaStructureType.IPSEC_TRANSFORM_SET);
+    markConcreteStructure(AsaStructureType.KEYRING, AsaStructureUsage.ISAKMP_PROFILE_KEYRING);
     markConcreteStructure(
-        CiscoStructureType.NAMED_RSA_PUB_KEY, CiscoStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);
+        AsaStructureType.NAMED_RSA_PUB_KEY, AsaStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF);
 
     // class-map
     markConcreteStructure(
-        CiscoStructureType.INSPECT_CLASS_MAP, CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
+        AsaStructureType.INSPECT_CLASS_MAP, AsaStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
     markConcreteStructure(
-        CiscoStructureType.CLASS_MAP,
-        CiscoStructureUsage.POLICY_MAP_CLASS,
-        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS);
+        AsaStructureType.CLASS_MAP,
+        AsaStructureUsage.POLICY_MAP_CLASS,
+        AsaStructureUsage.POLICY_MAP_EVENT_CLASS);
 
     // policy-map
     markConcreteStructure(
-        CiscoStructureType.INSPECT_POLICY_MAP,
-        CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
-    markConcreteStructure(CiscoStructureType.POLICY_MAP);
+        AsaStructureType.INSPECT_POLICY_MAP, AsaStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
+    markConcreteStructure(AsaStructureType.POLICY_MAP);
 
     // object-group
     markConcreteStructure(
-        CiscoStructureType.ICMP_TYPE_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_ICMP_TYPE_OBJECT_GROUP,
-        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
+        AsaStructureType.ICMP_TYPE_OBJECT_GROUP,
+        AsaStructureUsage.EXTENDED_ACCESS_LIST_ICMP_TYPE_OBJECT_GROUP,
+        AsaStructureUsage.ICMP_TYPE_OBJECT_GROUP_GROUP_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
-        CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP);
+        AsaStructureType.NETWORK_OBJECT_GROUP,
+        AsaStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
+        AsaStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
+        AsaStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+        AsaStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP,
+        AsaStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT_GROUP,
+        AsaStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT_GROUP,
+        AsaStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT_GROUP);
     markConcreteStructure(
-        CiscoStructureType.PROTOCOL_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
-        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
+        AsaStructureType.PROTOCOL_OBJECT_GROUP,
+        AsaStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,
+        AsaStructureUsage.PROTOCOL_OBJECT_GROUP_GROUP_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.SERVICE_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
-        CiscoStructureUsage.SERVICE_OBJECT_GROUP_GROUP_OBJECT);
+        AsaStructureType.SERVICE_OBJECT_GROUP,
+        AsaStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+        AsaStructureUsage.SERVICE_OBJECT_GROUP_GROUP_OBJECT);
     markAbstractStructure(
-        CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+        AsaStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+        AsaStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         ImmutableList.of(
-            CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureType.SERVICE_OBJECT_GROUP));
+            AsaStructureType.PROTOCOL_OBJECT_GROUP, AsaStructureType.SERVICE_OBJECT_GROUP));
 
     // objects
     markConcreteStructure(
-        CiscoStructureType.ICMP_TYPE_OBJECT,
-        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
+        AsaStructureType.ICMP_TYPE_OBJECT, AsaStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.NETWORK_OBJECT,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
-        CiscoStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-        CiscoStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
-        CiscoStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
-        CiscoStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
-        CiscoStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT);
+        AsaStructureType.NETWORK_OBJECT,
+        AsaStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
+        AsaStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
+        AsaStructureUsage.OBJECT_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+        AsaStructureUsage.OBJECT_NAT_REAL_SOURCE_NETWORK_OBJECT,
+        AsaStructureUsage.TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT,
+        AsaStructureUsage.TWICE_NAT_MAPPED_SOURCE_NETWORK_OBJECT,
+        AsaStructureUsage.TWICE_NAT_REAL_DESTINATION_NETWORK_OBJECT,
+        AsaStructureUsage.TWICE_NAT_REAL_SOURCE_NETWORK_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.SERVICE_OBJECT,
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,
-        CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
+        AsaStructureType.SERVICE_OBJECT,
+        AsaStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,
+        AsaStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
     markConcreteStructure(
-        CiscoStructureType.PROTOCOL_OBJECT,
-        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
+        AsaStructureType.PROTOCOL_OBJECT, AsaStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
 
     // service template
     markConcreteStructure(
-        CiscoStructureType.SERVICE_TEMPLATE,
-        CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
-        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
-        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+        AsaStructureType.SERVICE_TEMPLATE,
+        AsaStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
+        AsaStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
+        AsaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
 
     // track
-    markConcreteStructure(CiscoStructureType.TRACK);
+    markConcreteStructure(AsaStructureType.TRACK);
 
     // VXLAN
-    markConcreteStructure(CiscoStructureType.VXLAN, CiscoStructureUsage.VXLAN_SELF_REF);
+    markConcreteStructure(AsaStructureType.VXLAN, AsaStructureUsage.VXLAN_SELF_REF);
 
     // zone
     markConcreteStructure(
-        CiscoStructureType.SECURITY_ZONE,
-        CiscoStructureUsage.INTERFACE_ZONE_MEMBER,
-        CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
-        CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
+        AsaStructureType.SECURITY_ZONE,
+        AsaStructureUsage.INTERFACE_ZONE_MEMBER,
+        AsaStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
+        AsaStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
-    markConcreteStructure(CiscoStructureType.NAT_POOL);
+    markConcreteStructure(AsaStructureType.NAT_POOL);
     markConcreteStructure(
-        CiscoStructureType.AS_PATH_ACCESS_LIST,
-        CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
+        AsaStructureType.AS_PATH_ACCESS_LIST,
+        AsaStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
+        AsaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
 
     // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
-    markConcreteStructure(CiscoStructureType.BGP_AF_GROUP, CiscoStructureUsage.BGP_USE_AF_GROUP);
+    markConcreteStructure(AsaStructureType.BGP_AF_GROUP, AsaStructureUsage.BGP_USE_AF_GROUP);
     markConcreteStructure(
-        CiscoStructureType.BGP_NEIGHBOR_GROUP, CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP);
+        AsaStructureType.BGP_NEIGHBOR_GROUP, AsaStructureUsage.BGP_USE_NEIGHBOR_GROUP);
     markConcreteStructure(
-        CiscoStructureType.BGP_PEER_GROUP,
-        CiscoStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP,
-        CiscoStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
-        CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT);
+        AsaStructureType.BGP_PEER_GROUP,
+        AsaStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP,
+        AsaStructureUsage.BGP_NEIGHBOR_PEER_GROUP,
+        AsaStructureUsage.BGP_NEIGHBOR_STATEMENT);
     markConcreteStructure(
-        CiscoStructureType.BGP_SESSION_GROUP, CiscoStructureUsage.BGP_USE_SESSION_GROUP);
+        AsaStructureType.BGP_SESSION_GROUP, AsaStructureUsage.BGP_USE_SESSION_GROUP);
     markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER_POLICY, CiscoStructureUsage.BGP_INHERITED_PEER_POLICY);
+        AsaStructureType.BGP_TEMPLATE_PEER_POLICY, AsaStructureUsage.BGP_INHERITED_PEER_POLICY);
     markConcreteStructure(
-        CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
+        AsaStructureType.BGP_TEMPLATE_PEER_SESSION, AsaStructureUsage.BGP_INHERITED_SESSION);
     markConcreteStructure(
-        CiscoStructureType.BGP_UNDECLARED_PEER, CiscoStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS);
+        AsaStructureType.BGP_UNDECLARED_PEER, AsaStructureUsage.BGP_NEIGHBOR_WITHOUT_REMOTE_AS);
     markConcreteStructure(
-        CiscoStructureType.BGP_UNDECLARED_PEER_GROUP,
-        CiscoStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
+        AsaStructureType.BGP_UNDECLARED_PEER_GROUP,
+        AsaStructureUsage.BGP_PEER_GROUP_REFERENCED_BEFORE_DEFINED);
 
     return ImmutableList.of(c);
   }
@@ -3666,7 +3660,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                   ImmutableList.of(
                       ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
               .setSourceName(inspectClassMapName)
-              .setSourceType(CiscoStructureType.INSPECT_CLASS_MAP.getDescription())
+              .setSourceType(AsaStructureType.INSPECT_CLASS_MAP.getDescription())
               .build();
         });
   }
@@ -3738,7 +3732,7 @@ public final class AsaConfiguration extends VendorConfiguration {
               .setName(inspectPolicyMapAclName)
               .setLines(policyMapAclLines.build())
               .setSourceName(inspectPolicyMapName)
-              .setSourceType(CiscoStructureType.INSPECT_POLICY_MAP.getDescription())
+              .setSourceType(AsaStructureType.INSPECT_POLICY_MAP.getDescription())
               .build();
         });
   }
@@ -3879,7 +3873,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                             srcZoneName, inspectPolicyMapName))
                     .build()))
         .setSourceName(zonePair.getName())
-        .setSourceType(CiscoStructureType.SECURITY_ZONE_PAIR.getDescription())
+        .setSourceType(AsaStructureType.SECURITY_ZONE_PAIR.getDescription())
         .build();
     return Optional.of(
         ExprAclLine.accepting()
@@ -4118,25 +4112,24 @@ public final class AsaConfiguration extends VendorConfiguration {
     return false;
   }
 
-  private void markCommunityLists(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markCommunityLists(AsaStructureUsage... usages) {
+    for (AsaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.COMMUNITY_LIST,
+          AsaStructureType.COMMUNITY_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.COMMUNITY_LIST_EXPANDED,
-              CiscoStructureType.COMMUNITY_LIST_STANDARD));
+              AsaStructureType.COMMUNITY_LIST_EXPANDED, AsaStructureType.COMMUNITY_LIST_STANDARD));
     }
   }
 
-  private void markExtcommunityLists(CiscoStructureUsage... usages) {
-    for (CiscoStructureUsage usage : usages) {
+  private void markExtcommunityLists(AsaStructureUsage... usages) {
+    for (AsaStructureUsage usage : usages) {
       markAbstractStructure(
-          CiscoStructureType.EXTCOMMUNITY_LIST,
+          AsaStructureType.EXTCOMMUNITY_LIST,
           usage,
           ImmutableList.of(
-              CiscoStructureType.EXTCOMMUNITY_LIST_EXPANDED,
-              CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD));
+              AsaStructureType.EXTCOMMUNITY_LIST_EXPANDED,
+              AsaStructureType.EXTCOMMUNITY_LIST_STANDARD));
     }
   }
 

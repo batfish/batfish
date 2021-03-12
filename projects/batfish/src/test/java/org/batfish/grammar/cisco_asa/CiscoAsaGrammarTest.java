@@ -78,17 +78,17 @@ import static org.batfish.representation.cisco_asa.AsaConfiguration.computeIcmpO
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeProtocolObjectGroupAclName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeServiceObjectAclName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeServiceObjectGroupAclName;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.ICMP_TYPE_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.INTERFACE;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.IP_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.NETWORK_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.SERVICE_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureType.SERVICE_OBJECT_GROUP;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_asa.CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureType.ICMP_TYPE_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.INTERFACE;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco_asa.AsaStructureType.IP_ACCESS_LIST;
+import static org.batfish.representation.cisco_asa.AsaStructureType.NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureType.NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.PROTOCOL_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.SERVICE_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
@@ -161,8 +161,8 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_asa.AsaConfiguration;
-import org.batfish.representation.cisco_asa.CiscoAsaNat;
-import org.batfish.representation.cisco_asa.CiscoAsaNat.Section;
+import org.batfish.representation.cisco_asa.AsaNat;
+import org.batfish.representation.cisco_asa.AsaNat.Section;
 import org.batfish.representation.cisco_asa.EigrpProcess;
 import org.batfish.representation.cisco_asa.NetworkObject;
 import org.batfish.representation.cisco_asa.NetworkObjectAddressSpecifier;
@@ -1680,14 +1680,14 @@ public final class CiscoAsaGrammarTest {
     config.setAnswerElement(new ConvertConfigurationAnswerElement());
     config.toVendorIndependentConfigurations();
 
-    List<CiscoAsaNat> nats = config.getCiscoAsaNats();
+    List<AsaNat> nats = config.getCiscoAsaNats();
 
     // CiscoAsaNats are comparable
     Collections.sort(nats);
 
     // Check that NATs are sorted by section
     assertThat(
-        nats.stream().map(CiscoAsaNat::getSection).collect(Collectors.toList()),
+        nats.stream().map(AsaNat::getSection).collect(Collectors.toList()),
         contains(
             Section.BEFORE,
             Section.BEFORE,
@@ -1704,24 +1704,24 @@ public final class CiscoAsaGrammarTest {
     assertThat(
         nats.stream()
             .filter(nat2 -> nat2.getSection().equals(Section.BEFORE))
-            .map(CiscoAsaNat::getLine)
+            .map(AsaNat::getLine)
             .collect(Collectors.toList()),
         contains(2, 3));
     assertThat(
         nats.stream()
             .filter(nat1 -> nat1.getSection().equals(Section.AFTER))
-            .map(CiscoAsaNat::getLine)
+            .map(AsaNat::getLine)
             .collect(Collectors.toList()),
         contains(1, 4));
 
-    List<CiscoAsaNat> objectNats =
+    List<AsaNat> objectNats =
         nats.stream()
             .filter(nat -> nat.getSection().equals(Section.OBJECT))
             .collect(Collectors.toList());
 
     // Check that object NATs are sorted static and then dynamic
     assertThat(
-        objectNats.stream().map(CiscoAsaNat::getDynamic).collect(Collectors.toList()),
+        objectNats.stream().map(AsaNat::getDynamic).collect(Collectors.toList()),
         contains(false, false, false, false, false, true));
 
     // Check that object NATs of a particular type (static) are sorted by their network objects
@@ -1730,7 +1730,7 @@ public final class CiscoAsaGrammarTest {
     assertThat(
         objectNats.stream()
             .filter(nat -> !nat.getDynamic())
-            .map(CiscoAsaNat::getRealSourceObject)
+            .map(AsaNat::getRealSourceObject)
             .map(NetworkObject::getName)
             .collect(Collectors.toList()),
         contains(
@@ -1757,11 +1757,11 @@ public final class CiscoAsaGrammarTest {
     Prefix mappedDestination = Prefix.parse("3.3.3.3/32");
     Prefix realDestination = Prefix.parse("4.4.4.4/32");
 
-    List<CiscoAsaNat> nats = config.getCiscoAsaNats();
+    List<AsaNat> nats = config.getCiscoAsaNats();
     assertThat(nats, hasSize(4));
 
     // dynamic source NAT, subnet -> range
-    CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
+    AsaNat nat = config.getCiscoAsaNats().get(0);
     Optional<Transformation.Builder> builder =
         nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
     assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
@@ -1813,10 +1813,10 @@ public final class CiscoAsaGrammarTest {
     String hostname = "asa-nat-twice-static";
     AsaConfiguration config = parseVendorConfig(hostname);
 
-    List<CiscoAsaNat> nats = config.getCiscoAsaNats();
+    List<AsaNat> nats = config.getCiscoAsaNats();
     assertThat(nats, hasSize(9));
 
-    CiscoAsaNat nat = nats.get(0);
+    AsaNat nat = nats.get(0);
     assertThat(nat.getDynamic(), equalTo(false));
     assertThat(nat.getInsideInterface(), equalTo("inside"));
     assertThat(
@@ -1838,8 +1838,8 @@ public final class CiscoAsaGrammarTest {
     nat = nats.get(2);
     assertThat(nat.getDynamic(), equalTo(false));
     assertThat(nat.getTwice(), equalTo(false));
-    assertThat(nat.getInsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
-    assertThat(nat.getOutsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
+    assertThat(nat.getInsideInterface(), equalTo(AsaNat.ANY_INTERFACE));
+    assertThat(nat.getOutsideInterface(), equalTo(AsaNat.ANY_INTERFACE));
     assertThat(
         nat.getRealSource(), equalTo(new NetworkObjectGroupAddressSpecifier("source-real-group")));
     assertThat(
@@ -1849,10 +1849,10 @@ public final class CiscoAsaGrammarTest {
     nat = nats.get(3);
     assertTrue("NAT is active", nat.getInactive());
     assertThat(nat.getInsideInterface(), equalTo("inside"));
-    assertThat(nat.getOutsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
+    assertThat(nat.getOutsideInterface(), equalTo(AsaNat.ANY_INTERFACE));
 
     nat = nats.get(4);
-    assertThat(nat.getInsideInterface(), equalTo(CiscoAsaNat.ANY_INTERFACE));
+    assertThat(nat.getInsideInterface(), equalTo(AsaNat.ANY_INTERFACE));
     assertThat(nat.getOutsideInterface(), equalTo("outside"));
 
     nat = nats.get(5);
@@ -1882,7 +1882,7 @@ public final class CiscoAsaGrammarTest {
     Prefix mappedSourceSubnet = Prefix.parse("6.6.6.0/24");
 
     // Host source NAT outgoing
-    CiscoAsaNat nat = config.getCiscoAsaNats().get(1);
+    AsaNat nat = config.getCiscoAsaNats().get(1);
     Optional<Transformation.Builder> builder =
         nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
     assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));
@@ -1985,7 +1985,7 @@ public final class CiscoAsaGrammarTest {
     Prefix mappedDestination = Prefix.parse("3.3.3.3/32");
     Prefix realDestination = Prefix.parse("4.4.4.4/32");
 
-    CiscoAsaNat nat = config.getCiscoAsaNats().get(0);
+    AsaNat nat = config.getCiscoAsaNats().get(0);
     Optional<Transformation.Builder> builder =
         nat.toOutgoingTransformation(config.getNetworkObjects(), new Warnings());
     assertThat("No outgoing transformation", builder.isPresent(), equalTo(true));

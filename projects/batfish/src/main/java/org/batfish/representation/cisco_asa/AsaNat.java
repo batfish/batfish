@@ -1,9 +1,9 @@
 package org.batfish.representation.cisco_asa;
 
-import static org.batfish.representation.cisco_asa.CiscoAsaNatUtil.dynamicTransformation;
-import static org.batfish.representation.cisco_asa.CiscoAsaNatUtil.isIdentityObjectNat;
-import static org.batfish.representation.cisco_asa.CiscoAsaNatUtil.secondTransformation;
-import static org.batfish.representation.cisco_asa.CiscoAsaNatUtil.staticTransformation;
+import static org.batfish.representation.cisco_asa.AsaNatUtil.dynamicTransformation;
+import static org.batfish.representation.cisco_asa.AsaNatUtil.isIdentityObjectNat;
+import static org.batfish.representation.cisco_asa.AsaNatUtil.secondTransformation;
+import static org.batfish.representation.cisco_asa.AsaNatUtil.staticTransformation;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
@@ -19,7 +19,7 @@ import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.Transformation;
 
 @ParametersAreNonnullByDefault
-public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable {
+public final class AsaNat implements Comparable<AsaNat>, Serializable {
   public static final String ANY_INTERFACE = "any";
 
   /** If true, this NAT rule is inactive and will not be used. */
@@ -171,10 +171,10 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
   }
 
   @Override
-  public int compareTo(CiscoAsaNat o) {
+  public int compareTo(AsaNat o) {
     // Different sections have different sorting rules
     if (_section != o._section) {
-      return Comparator.comparing(CiscoAsaNat::getSection).compare(this, o);
+      return Comparator.comparing(AsaNat::getSection).compare(this, o);
     }
     /*
      * Twice NATs are in the BEFORE or AFTER section. Within those sections, they are sorted
@@ -209,10 +209,10 @@ public final class CiscoAsaNat implements Comparable<CiscoAsaNat>, Serializable 
     if (this == o) {
       return true;
     }
-    if (!(o instanceof CiscoAsaNat)) {
+    if (!(o instanceof AsaNat)) {
       return false;
     }
-    CiscoAsaNat other = (CiscoAsaNat) o;
+    AsaNat other = (AsaNat) o;
     return _dynamic == other._dynamic
         && _inactive == other._inactive
         && Objects.equals(_insideInterface, other._insideInterface)
