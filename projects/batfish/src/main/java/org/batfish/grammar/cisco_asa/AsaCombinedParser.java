@@ -20,7 +20,6 @@ public class AsaCombinedParser extends BatfishCombinedParser<AsaParser, AsaLexer
         settings,
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
-    _parser.setMultilineBgpNeighbors(false);
   }
 
   @Override
