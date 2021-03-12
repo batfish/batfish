@@ -121,9 +121,6 @@ public enum AsaStructureUsage implements StructureUsage {
   INTERFACE_ZONE_MEMBER("interface zone-member security"),
   IP_DOMAIN_LOOKUP_INTERFACE("ip domain lookup interface"),
   IP_ROUTE_NHINT("ip route next-hop interface"),
-  IP_NAT_DESTINATION_ACCESS_LIST("ip nat destination acl"),
-  IP_NAT_INSIDE_SOURCE("ip nat inside source"),
-  IP_NAT_SOURCE_ACCESS_LIST("ip nat source dynamic access-list"),
   IP_LOCAL_POLICY_ROUTE_MAP("ip local policy route-map"),
   IPV6_LOCAL_POLICY_ROUTE_MAP("ipv6 local policy route-map"),
   IP_TACACS_SOURCE_INTERFACE("ip tacacs source-interface"),
@@ -237,8 +234,6 @@ public enum AsaStructureUsage implements StructureUsage {
   WCCP_SERVICE_LIST("ip wccp service-list"),
   VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP("vrf definition address-family export map"),
   VRF_DEFINITION_ADDRESS_FAMILY_IMPORT_MAP("vrf definition address-family import map"),
-  VXLAN_SOURCE_INTERFACE("vxlan source-interface"),
-  VXLAN_SELF_REF("vxlan"),
   ZONE_PAIR_DESTINATION_ZONE("zone-pair security destination"),
   ZONE_PAIR_INSPECT_SERVICE_POLICY("zone-pair service-policy type inspect"),
   ZONE_PAIR_SOURCE_ZONE("zone-pair security source");

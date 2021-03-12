@@ -3373,7 +3373,6 @@ public final class AsaConfiguration extends VendorConfiguration {
         AsaStructureUsage.FAILOVER_LAN_INTERFACE,
         AsaStructureUsage.FAILOVER_LINK_INTERFACE,
         AsaStructureUsage.INTERFACE_SELF_REF,
-        AsaStructureUsage.IP_NAT_INSIDE_SOURCE,
         AsaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE,
         AsaStructureUsage.IP_ROUTE_NHINT,
         AsaStructureUsage.IP_TACACS_SOURCE_INTERFACE,
@@ -3398,8 +3397,7 @@ public final class AsaConfiguration extends VendorConfiguration {
         AsaStructureUsage.TACACS_SOURCE_INTERFACE,
         AsaStructureUsage.TRACK_INTERFACE,
         AsaStructureUsage.TWICE_NAT_MAPPED_INTERFACE,
-        AsaStructureUsage.TWICE_NAT_REAL_INTERFACE,
-        AsaStructureUsage.VXLAN_SOURCE_INTERFACE);
+        AsaStructureUsage.TWICE_NAT_REAL_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -3413,8 +3411,6 @@ public final class AsaConfiguration extends VendorConfiguration {
         AsaStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
         AsaStructureUsage.INTERFACE_OUTGOING_FILTER,
         AsaStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
-        AsaStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
-        AsaStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
         AsaStructureUsage.LINE_ACCESS_CLASS_LIST,
         AsaStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
         AsaStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
@@ -3588,9 +3584,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
     // track
     markConcreteStructure(AsaStructureType.TRACK);
-
-    // VXLAN
-    markConcreteStructure(AsaStructureType.VXLAN, AsaStructureUsage.VXLAN_SELF_REF);
 
     // zone
     markConcreteStructure(
