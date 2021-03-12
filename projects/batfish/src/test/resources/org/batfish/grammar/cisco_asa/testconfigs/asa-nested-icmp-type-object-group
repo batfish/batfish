@@ -1,0 +1,32 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-nested-icmp-type-object-group
+!
+object-group icmp-type echo_group
+ description blah blah blah
+ icmp-object echo-reply
+ icmp-object echo
+!
+object-group icmp-type unreachable_group
+ icmp-object unreachable
+!
+object-group icmp-type redirect_group
+ icmp-object redirect
+!
+object-group group icmp-type services
+ group-object echo_group
+ group-object unreachable_group
+ group-object redirect_group
+!
+object-group icmp-type mask_reply_group
+ icmp-object mask-reply
+!
+object-group icmp-type mixed_group
+ icmp-object mask-reply
+ group-object mask_reply_group
+ group-object UNDEFINED_GROUP_MIXED
+!
+object-group group icmp-type services_undef
+ group-object UNDEFINED_GROUP
+!

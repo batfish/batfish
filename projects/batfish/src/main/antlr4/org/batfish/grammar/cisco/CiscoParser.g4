@@ -198,72 +198,6 @@ archive_null
    ) null_rest_of_line
 ;
 
-asa_comment_stanza
-:
-   COLON null_rest_of_line
-;
-
-asa_nat_ifaces
-:
-   PAREN_LEFT real_if = variable COMMA mapped_if = variable PAREN_RIGHT
-;
-
-asa_nat_optional_args
-:
-   DNS
-   | INACTIVE
-   | NO_PROXY_ARP
-   | ROUTE_LOOKUP
-   | UNIDIRECTIONAL
-;
-
-asa_nat_pat_pool
-:
-   PAT_POOL pat_obj = variable?
-   (
-       BLOCK_ALLOCATION
-       | EXTENDED
-       | (FLAT INCLUDE_RESERVE?)
-       | INTERFACE
-       | ROUND_ROBIN
-   )*
-;
-
-asa_twice_nat_destination
-:
-   DESTINATION STATIC
-   (
-      mapped_dst = variable
-      | mapped_dst_iface = INTERFACE
-   )
-   real_dst = variable
-;
-
-asa_twice_nat_dynamic
-:
-   DYNAMIC real_src = variable
-   (
-      (mapped_src = variable mapped_src_iface = INTERFACE?)
-      | mapped_src_iface = INTERFACE
-      | asa_nat_pat_pool
-   )
-;
-
-asa_twice_nat_service
-:
-   SERVICE svc_obj1 = variable svc_obj2 = variable
-;
-
-asa_twice_nat_static
-:
-   STATIC
-   real_src = variable
-   (
-      mapped_src = variable
-      | mapped_src_iface = INTERFACE
-   )
-;
-
 av_null
 :
    NO?
@@ -671,42 +605,6 @@ event_null
       | EVENT
       | SET
    ) null_rest_of_line
-;
-
-failover_lan
-:
-   LAN failover_lan_tail
-;
-
-failover_lan_tail
-:
-   flan_interface
-   | flan_unit
-;
-
-failover_link
-:
-   LINK name = variable iface = interface_name_unstructured NEWLINE
-;
-
-failover_interface
-:
-   INTERFACE IP name = variable pip = IP_ADDRESS pmask = IP_ADDRESS STANDBY sip
-   = IP_ADDRESS NEWLINE
-;
-
-flan_interface
-:
-   INTERFACE name = variable iface = interface_name_unstructured NEWLINE
-;
-
-flan_unit
-:
-   UNIT
-   (
-      PRIMARY
-      | SECONDARY
-   ) NEWLINE
 ;
 
 flow_null
@@ -1797,11 +1695,6 @@ no_aaa_group_server_stanza
    NO AAA GROUP SERVER null_rest_of_line
 ;
 
-no_failover
-:
-   NO FAILOVER NEWLINE
-;
-
 no_ip_access_list_stanza
 :
    NO IP ACCESS_LIST null_rest_of_line
@@ -2214,35 +2107,6 @@ s_authentication
    AUTHENTICATION null_rest_of_line
 ;
 
-s_asa_twice_nat
-:
-   NAT asa_nat_ifaces? AFTER_AUTO? SOURCE
-   (
-      asa_twice_nat_dynamic
-      | asa_twice_nat_static
-   )
-   asa_twice_nat_destination?
-   asa_twice_nat_service?
-   asa_nat_optional_args*
-   (
-      description_line
-      | NEWLINE
-   )
-;
-
-s_banner_asa
-:
-  banner_header = asa_banner_header body = BANNER_BODY? NEWLINE
-;
-
-asa_banner_header
-:
-  BANNER_ASDM_ASA
-  | BANNER_EXEC_ASA
-  | BANNER_LOGIN_ASA
-  | BANNER_MOTD_ASA
-;
-
 s_banner_cadant
 :
   BANNER type = cadant_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
@@ -2503,19 +2367,6 @@ s_event_handler
 s_event_monitor
 :
    EVENT_MONITOR NEWLINE
-;
-
-s_failover
-:
-   FAILOVER s_failover_tail
-;
-
-s_failover_tail
-:
-   NEWLINE
-   | failover_lan
-   | failover_link
-   | failover_interface
 ;
 
 s_flow
@@ -2884,11 +2735,6 @@ s_monitor_session
    )*
 ;
 
-s_mtu
-:
-   MTU iface = variable bytes = dec NEWLINE
-;
-
 s_name
 :
    NAME variable variable null_rest_of_line
@@ -3027,15 +2873,6 @@ s_router_vrrp
    )*
 ;
 
-s_same_security_traffic
-:
-  SAME_SECURITY_TRAFFIC PERMIT
-  (
-     INTER_INTERFACE
-     | INTRA_INTERFACE
-  ) NEWLINE
-;
-
 s_sccp
 :
    NO? SCCP null_rest_of_line
@@ -3055,11 +2892,6 @@ s_service
 s_service_policy_global
 :
    SERVICE_POLICY name = variable GLOBAL NEWLINE
-;
-
-s_service_policy_interface
-:
-   SERVICE_POLICY name = variable INTERFACE iface = interface_name_unstructured NEWLINE
 ;
 
 s_sip_ua
@@ -3612,8 +3444,6 @@ ssh_timeout
 stanza
 :
    appletalk_access_list_stanza
-   | asa_comment_stanza
-   | asa_access_group
    | del_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
@@ -3627,7 +3457,6 @@ stanza
    | ipx_sap_access_list_stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
-   | no_failover
    | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
@@ -3648,9 +3477,7 @@ stanza
    | s_application_var
    | s_archive
    | s_arp_access_list_extended
-   | s_asa_twice_nat
    | s_authentication
-   | s_banner_asa
    | s_banner_cadant
    | s_banner_ios
    | s_bfd
@@ -3687,7 +3514,6 @@ stanza
    | s_event
    | s_event_handler
    | s_event_monitor
-   | s_failover
    | s_flow
    | s_flow_sampler_map
    | s_foundry_mac_access_list
@@ -3749,7 +3575,6 @@ stanza
    | s_mpls_label_range
    | s_mpls_ldp
    | s_mpls_traffic_eng
-   | s_mtu
    | s_name
    | s_netdestination
    | s_netdestination6
@@ -3783,11 +3608,9 @@ stanza
    | s_router_rip
    | s_router_static
    | s_router_vrrp
-   | s_same_security_traffic
    | s_sccp
    | s_service
    | s_service_policy_global
-   | s_service_policy_interface
    | s_service_template
    | s_sip_ua
    | s_snmp_server
@@ -3810,8 +3633,8 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | { !isAsa() }? s_vlan_cisco
-   | { !isAsa() }? s_vlan_internal_cisco
+   | s_vlan_cisco
+   | s_vlan_internal_cisco
    | s_vlan_name
    | s_voice
    | s_voice_card

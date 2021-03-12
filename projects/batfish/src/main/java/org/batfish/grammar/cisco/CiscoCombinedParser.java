@@ -22,11 +22,9 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
     boolean cadant = format == ConfigurationFormat.CADANT;
-    _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _lexer.setCadant(cadant);
     _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
     _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
-    _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
     _parser.setCadant(cadant);
     _parser.setMultilineBgpNeighbors(false);
   }

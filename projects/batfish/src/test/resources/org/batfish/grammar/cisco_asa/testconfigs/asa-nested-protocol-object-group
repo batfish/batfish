@@ -1,0 +1,32 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-nested-protocol-object-group
+!
+object-group protocol proto1
+ description blah blah blah
+ protocol-object 2
+ protocol-object tcp
+!
+object-group protocol proto2
+ protocol-object ospf
+!
+object-group protocol proto3
+ protocol-object tcp
+!
+object-group group protocol protocols
+ group-object proto1
+ group-object proto2
+ group-object proto3
+!
+object-group protocol proto4
+ protocol-object gre
+!
+object-group protocol mixed_group
+ protocol-object igmp
+ group-object proto4
+ group-object UNDEFINED_GROUP_MIXED
+!
+object-group group protocol protocol_undef
+ group-object UNDEFINED_GROUP
+!

@@ -1,0 +1,18 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-gh-5875
+! test for https://github.com/batfish/batfish/issues/5875
+!
+object-group service IP_GROUP
+ ! This should mean any ip packet, and not crash.
+ service-object ip
+!
+object-group service TCP_GROUP
+ ! This should mean any tcp packet, and not crash.
+ service-object tcp
+!
+object-group service AH_GROUP
+ ! This should mean any AH packet, and not crash.
+ service-object ah
+!

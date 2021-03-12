@@ -96,7 +96,6 @@ public class OspfProcess implements Serializable {
     switch (format) {
       case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
       case CADANT: // Internet claims they use the Cisco defaults.
-      case CISCO_ASA: // ASA uses 100 Mbps, switches to 40 Gbps for OSPF v3
       case CISCO_IOS: // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/command/iro-cr-book/ospf-a1.html#wp3271966058
       case FORCE10: // http://www.dell.com/support/manuals/us/en/19/force10-s4810/s4810_9.9.0.0_cli_pub/auto-cost
       case FOUNDRY: // http://www.brocade.com/content/html/en/command-reference-guide/FI_08030_CMDREF/GUID-D7109E43-D368-46FE-95AF-D522B203E501.html
@@ -115,7 +114,6 @@ public class OspfProcess implements Serializable {
     switch (format) {
       case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
       case CADANT: // Vetted IOS; assuming the rest use IOS defaults.
-      case CISCO_ASA:
       case CISCO_IOS:
       case FORCE10:
       case FOUNDRY:

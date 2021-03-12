@@ -1,0 +1,28 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-service-object
+!
+object service OS_TCPUDP
+ description blah blah blah
+ service tcp-udp source eq 65535
+!
+object service OS_ICMP
+ service icmp echo
+!
+object-group service OGS1
+ service-object object OS_TCPUDP
+ service-object udp destination eq 1234
+ service-object udp eq 1235              ! destination is optional on command entry
+ service-object udp source eq 3 eq 1236  ! .. even if source is present
+ service-object udp source eq cifs
+!
+object-group service OGS_UNDEF_OS
+ service-object object OS_UNDEFINED
+!
+object-group service OGS_UNDEF_OGS
+ group-object OGS_UNDEFINED
+!
+object-group service OGS_BUILTIN_REF
+ service-object object icmp
+!

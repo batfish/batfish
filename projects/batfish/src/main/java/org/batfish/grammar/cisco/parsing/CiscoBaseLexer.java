@@ -26,10 +26,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
     }
   }
 
-  public void setAsa(boolean asa) {
-    _asa = asa;
-  }
-
   public void setCadant(boolean cadant) {
     _cadant = cadant;
   }
@@ -40,10 +36,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
 
   public void setIos(boolean ios) {
     _ios = ios;
-  }
-
-  protected final boolean isAsa() {
-    return _asa;
   }
 
   protected final boolean isCadant() {
@@ -100,7 +92,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
 
   protected boolean _inAccessList = false;
 
-  private boolean _asa = false;
   private boolean _cadant = false;
   private boolean _foundry = false;
   private boolean _ios = false;
@@ -112,7 +103,6 @@ public abstract class CiscoBaseLexer extends BatfishLexer {
   @Override
   public @Nonnull String printStateVariables() {
     StringBuilder sb = new StringBuilder();
-    sb.append("_asa: " + _asa + "\n");
     sb.append("_cadant: " + _cadant + "\n");
     sb.append("_foundry: " + _foundry + "\n");
     sb.append("_ios: " + _ios + "\n");

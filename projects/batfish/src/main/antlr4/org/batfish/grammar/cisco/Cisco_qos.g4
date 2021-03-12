@@ -6,167 +6,6 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-asa_object_nat_service
-:
-   SERVICE (SCTP | TCP | UDP) real_port = port mapped_port = port
-;
-
-asa_predefined_service
-:
-  AH
-  | EIGRP
-  | ESP
-  | GRE
-  | ICMP
-  | ICMP6
-  | IGMP
-  | IGRP
-  | IP
-  | IPINIP
-  | IPSEC
-  | NOS
-  | OSPF
-  | PCP
-  | PIM
-  | PPTP
-  | SNP
-  | TCP
-  | UDP
-  | TCP_AOL
-  | TCP_BGP
-  | TCP_CHARGEN
-  | TCP_CIFS
-  | TCP_CITRIX_ICA
-  | TCP_CTIQBE
-  | TCP_DAYTIME
-  | TCP_DISCARD
-  | TCP_DOMAIN
-  | TCP_ECHO
-  | TCP_EXEC
-  | TCP_FINGER
-  | TCP_FTP
-  | TCP_FTP_DATA
-  | TCP_GOPHER
-  | TCP_IDENT
-  | TCP_IMAP4
-  | TCP_IRC
-  | TCP_HOSTNAME
-  | TCP_KERBEROS
-  | TCP_KLOGIN
-  | TCP_KSHELL
-  | TCP_LDAP
-  | TCP_LDAPS
-  | TCP_LOGIN
-  | TCP_LOTUSNOTES
-  | TCP_NFS
-  | TCP_NETBIOS_SSN
-  | TCP_WHOIS
-  | TCP_NNTP
-  | TCP_PCANYWHERE_DATA
-  | TCP_PIM_AUTO_RP
-  | TCP_POP2
-  | TCP_POP3
-  | TCP_PPTP
-  | TCP_LPD
-  | TCP_RSH
-  | TCP_RTSP
-  | TCP_SIP
-  | TCP_SMTP
-  | TCP_SSH
-  | TCP_SUNRPC
-  | TCP_TACACS
-  | TCP_TALK
-  | TCP_TELNET
-  | TCP_UUCP
-  | TCP_WWW
-  | TCP_HTTP
-  | TCP_HTTPS
-  | TCP_CMD
-  | TCP_SQLNET
-  | TCP_H323
-  | TCP_UDP_CIFS
-  | TCP_UDP_DISCARD
-  | TCP_UDP_DOMAIN
-  | TCP_UDP_ECHO
-  | TCP_UDP_KERBEROS
-  | TCP_UDP_NFS
-  | TCP_UDP_PIM_AUTO_RP
-  | TCP_UDP_SIP
-  | TCP_UDP_SUNRPC
-  | TCP_UDP_TACACS
-  | TCP_UDP_WWW
-  | TCP_UDP_HTTP
-  | TCP_UDP_TALK
-  | UDP_BIFF
-  | UDP_BOOTPC
-  | UDP_BOOTPS
-  | UDP_CIFS
-  | UDP_DISCARD
-  | UDP_DOMAIN
-  | UDP_DNSIX
-  | UDP_ECHO
-  | UDP_WWW
-  | UDP_HTTP
-  | UDP_NAMESERVER
-  | UDP_KERBEROS
-  | UDP_MOBILE_IP
-  | UDP_NFS
-  | UDP_NETBIOS_NS
-  | UDP_NETBIOS_DGM
-  | UDP_NTP
-  | UDP_PCANYWHERE_STATUS
-  | UDP_PIM_AUTO_RP
-  | UDP_RADIUS
-  | UDP_RADIUS_ACCT
-  | UDP_RIP
-  | UDP_SECUREID_UDP
-  | UDP_SIP
-  | UDP_SNMP
-  | UDP_SNMPTRAP
-  | UDP_SUNRPC
-  | UDP_SYSLOG
-  | UDP_TACACS
-  | UDP_TALK
-  | UDP_TFTP
-  | UDP_TIME
-  | UDP_WHO
-  | UDP_XDMCP
-  | UDP_ISAKMP
-  | ICMP6_UNREACHABLE
-  | ICMP6_PACKET_TOO_BIG
-  | ICMP6_TIME_EXCEEDED
-  | ICMP6_PARAMETER_PROBLEM
-  | ICMP6_ECHO
-  | ICMP6_ECHO_REPLY
-  | ICMP6_MEMBERSHIP_QUERY
-  | ICMP6_MEMBERSHIP_REPORT
-  | ICMP6_MEMBERSHIP_REDUCTION
-  | ICMP6_ROUTER_RENUMBERING
-  | ICMP6_ROUTER_SOLICITATION
-  | ICMP6_ROUTER_ADVERTISEMENT
-  | ICMP6_NEIGHBOR_SOLICITATION
-  | ICMP6_NEIGHBOR_ADVERTISEMENT
-  | ICMP6_NEIGHBOR_REDIRECT
-  | ICMP_ECHO
-  | ICMP_ECHO_REPLY
-  | ICMP_UNREACHABLE
-  | ICMP_SOURCE_QUENCH
-  | ICMP_REDIRECT
-  | ICMP_ALTERNATE_ADDRESS
-  | ICMP_ROUTER_ADVERTISEMENT
-  | ICMP_ROUTER_SOLICITATION
-  | ICMP_TIME_EXCEEDED
-  | ICMP_PARAMETER_PROBLEM
-  | ICMP_TIMESTAMP_REQUEST
-  | ICMP_TIMESTAMP_REPLY
-  | ICMP_INFORMATION_REQUEST
-  | ICMP_INFORMATION_REPLY
-  | ICMP_MASK_REQUEST
-  | ICMP_MASK_REPLY
-  | ICMP_TRACEROUTE
-  | ICMP_CONVERSION_ERROR
-  | ICMP_MOBILE_REDIRECT
-;
 
 cm_end_class_map
 :
@@ -433,7 +272,6 @@ o_network
       on_description
       | on_fqdn
       | on_host
-      | on_nat
       | on_range
       | on_subnet
    )*
@@ -705,13 +543,8 @@ ogs_service_object
 :
    SERVICE_OBJECT
    (
-      (
-         service_specifier
-      )
-      |
-      (
-         OBJECT (predef = asa_predefined_service | name = variable)
-      )
+      service_specifier
+      | OBJECT name = variable
    ) NEWLINE
 ;
 
@@ -773,15 +606,6 @@ on_host
    ) NEWLINE
 ;
 
-on_nat
-:
-   NAT asa_nat_ifaces?
-   (
-      onn_dynamic
-      | onn_static
-   ) NEWLINE
-;
-
 on_range
 :
    RANGE start = IP_ADDRESS end = IP_ADDRESS NEWLINE
@@ -801,34 +625,6 @@ on_subnet
 on_group
 :
    GROUP_OBJECT name = variable_permissive NEWLINE
-;
-
-onn_dynamic
-:
-   DYNAMIC
-   (
-      (
-         (
-            mapped_iface = INTERFACE
-            | host_ip = IP_ADDRESS
-            | obj = variable
-         )
-         mapped_iface_after = INTERFACE?
-      )
-      | asa_nat_pat_pool
-   ) DNS?
-;
-
-onn_static
-:
-   STATIC
-   (
-      INTERFACE
-      | host_ip = IP_ADDRESS
-      | obj = variable
-   )
-   asa_nat_optional_args*
-   asa_object_nat_service?
 ;
 
 os_description
