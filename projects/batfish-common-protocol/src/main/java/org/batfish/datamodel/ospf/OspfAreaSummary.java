@@ -1,6 +1,9 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
@@ -10,28 +13,59 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Represents the information about a route summary at an OSPF Area Border Router. */
 @ParametersAreNonnullByDefault
 public final class OspfAreaSummary implements Serializable {
-  private static final String PROP_ADVERTISE = "advertise";
-  private static final String PROP_METRIC = "metric";
+  /** Describes which routes should be advertised and/or installed locally when summarizing. */
+  public enum SummaryRouteBehavior {
+    /**
+     * Advertise the inter-area summary and install a discard route to prevent loops. This is the
+     * Cisco-like and Juniper-like default.
+     */
+    ADVERTISE_AND_INSTALL_DISCARD,
+    /**
+     * Do not advertise the inter-area summary, but still install a discard route. This is like
+     * Juniper "restrict" mode.
+     */
+    NOT_ADVERTISE_AND_INSTALL_DISCARD,
+    /**
+     * Do not advertise the inter-area summary and do not install a discard route. This is like
+     * Cisco "no-advertise" mode.
+     */
+    NOT_ADVERTISE_AND_NO_DISCARD,
+  }
 
-  private final boolean _advertised;
+  private static final String PROP_METRIC = "metric";
+  private static final String PROP_BEHAVIOR = "behavior";
+
+  private final SummaryRouteBehavior _behavior;
   @Nullable private final Long _metric;
 
   @JsonCreator
   private static OspfAreaSummary create(
-      @JsonProperty(PROP_ADVERTISE) boolean advertised,
+      @JsonProperty(PROP_BEHAVIOR) @Nullable SummaryRouteBehavior behavior,
       @JsonProperty(PROP_METRIC) @Nullable Long metric) {
-    return new OspfAreaSummary(advertised, metric);
+    checkArgument(behavior != null, "Missing %s", PROP_BEHAVIOR);
+    return new OspfAreaSummary(behavior, metric);
   }
 
-  public OspfAreaSummary(boolean advertised, @Nullable Long metric) {
-    _advertised = advertised;
+  @JsonIgnore
+  public boolean isAdvertised() {
+    return _behavior == SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD;
+  }
+
+  @JsonIgnore
+  public boolean installsDiscard() {
+    return _behavior == SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
+        || _behavior == SummaryRouteBehavior.NOT_ADVERTISE_AND_INSTALL_DISCARD;
+  }
+
+  public OspfAreaSummary(SummaryRouteBehavior behavior, @Nullable Long metric) {
+    _behavior = behavior;
     _metric = metric;
   }
 
-  /** Returns true if the summarized route should be advertised externally. */
-  @JsonProperty(PROP_ADVERTISE)
-  public boolean getAdvertised() {
-    return _advertised;
+  /** Returns the {@link SummaryRouteBehavior} for this prefix. */
+  @JsonProperty(PROP_BEHAVIOR)
+  public SummaryRouteBehavior getBehavior() {
+    return _behavior;
   }
 
   /**
@@ -53,11 +87,11 @@ public final class OspfAreaSummary implements Serializable {
       return false;
     }
     OspfAreaSummary that = (OspfAreaSummary) o;
-    return getAdvertised() == that.getAdvertised() && Objects.equals(getMetric(), that.getMetric());
+    return getBehavior() == that.getBehavior() && Objects.equals(getMetric(), that.getMetric());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_advertised, _metric);
+    return Objects.hash(_behavior.ordinal(), _metric);
   }
 }

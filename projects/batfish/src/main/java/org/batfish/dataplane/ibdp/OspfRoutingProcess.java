@@ -735,17 +735,19 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     return deltaBuilder.build();
   }
 
-  /** Compute internal summaries for a single area. */
+  /** Compute the discard routes corresponding to area summaries. */
   @Nonnull
   private RibDelta<OspfInternalSummaryRoute> computeInternalSummariesForArea(OspfArea area) {
     RibDelta.Builder<OspfInternalSummaryRoute> deltaBuilder = RibDelta.builder();
     area.getSummaries()
-        .keySet()
         .forEach(
-            prefix ->
+            (prefix, summary) -> {
+              if (summary.installsDiscard()) {
                 computeInternalSummaryRoute(prefix, area.getAreaNumber())
                     // TODO: support withdrawals
-                    .ifPresent(r -> deltaBuilder.from(_internalSummaryRib.mergeRouteGetDelta(r))));
+                    .ifPresent(r -> deltaBuilder.from(_internalSummaryRib.mergeRouteGetDelta(r)));
+              }
+            });
     return deltaBuilder.build();
   }
 
@@ -764,7 +766,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull
   private Optional<OspfInterAreaRoute> computeInterAreaSummaryRoute(
       Prefix prefix, OspfAreaSummary summary, long areaNumber) {
-    if (!summary.getAdvertised()) {
+    if (!summary.isAdvertised()) {
       return Optional.empty();
     }
     /*

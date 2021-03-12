@@ -114,6 +114,7 @@ import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.installsDiscard;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
@@ -2499,8 +2500,7 @@ public final class FlatJuniperGrammarTest {
             .get(1L)
             .getSummaries()
             .get(Prefix.parse("10.0.0.0/16"));
-    assertThat(summary, not(isAdvertised()));
-    assertThat(summary, hasMetric(123L));
+    assertThat(summary, allOf(not(isAdvertised()), installsDiscard(), hasMetric(123L)));
 
     // Defaults
     summary =
@@ -2512,8 +2512,7 @@ public final class FlatJuniperGrammarTest {
             .get(2L)
             .getSummaries()
             .get(Prefix.parse("10.0.0.0/16"));
-    assertThat(summary, isAdvertised());
-    assertThat(summary, hasMetric(nullValue()));
+    assertThat(summary, allOf(isAdvertised(), installsDiscard(), hasMetric(nullValue())));
 
     // Interface override
     assertThat(config, hasInterface("fe-1/0/1.0", hasOspfCost(equalTo(17))));
