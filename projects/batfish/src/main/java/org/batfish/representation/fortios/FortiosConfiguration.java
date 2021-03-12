@@ -2,6 +2,7 @@ package org.batfish.representation.fortios;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -137,18 +138,7 @@ public class FortiosConfiguration extends VendorConfiguration {
       _w.redFlag(String.format("Service %s does not match any packets", service.getName()));
       return AclLineMatchExprs.FALSE;
     }
-    TraceElement.Builder te = TraceElement.builder();
-    te.add("Matched service custom")
-        .add(
-            service.getName(),
-            new VendorStructureId(
-                _filename,
-                FortiosStructureType.SERVICE_CUSTOM.getDescription(),
-                service.getName()));
-    if (service.getComment() != null) {
-      te.add(String.format("(%s)", service.getComment()));
-    }
-    return new OrMatchExpr(matchExprs, te.build());
+    return new OrMatchExpr(matchExprs, matchServiceTraceElement(service, _filename));
   }
 
   private void convertPolicy(

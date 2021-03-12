@@ -191,7 +191,7 @@ public class FortiosConfigurationTest {
     service.setProtocol(Service.Protocol.ICMP);
     TraceElement.Builder expectedTe =
         TraceElement.builder()
-            .add("Matched service custom")
+            .add("Matched service ")
             .add(
                 service.getName(),
                 new VendorStructureId(
@@ -203,7 +203,7 @@ public class FortiosConfigurationTest {
     // With comment
     String comment = "you can't go there";
     service.setComment(comment);
-    expectedTe.add(comment);
+    expectedTe.add(String.format("(%s)", comment));
     assertThat(c.toMatchExpr(service).getTraceElement(), equalTo(expectedTe.build()));
   }
 
