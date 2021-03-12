@@ -241,12 +241,6 @@ line_type
    | VTY
 ;
 
-line_type_cadant
-:
-   CONSOLE
-   | VTY
-;
-
 netservice_alg
 :
    DHCP

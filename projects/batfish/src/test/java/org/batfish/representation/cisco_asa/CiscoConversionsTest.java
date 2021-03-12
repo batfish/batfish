@@ -267,16 +267,16 @@ public class CiscoConversionsTest {
                 + " dist-list will allow everything"));
   }
 
-  private static AsaConfiguration basicCiscoConfig() {
+  private static AsaConfiguration basicAsaConfig() {
     AsaConfiguration c = new AsaConfiguration();
     c.setHostname("cisco_conf");
-    c.setVendor(ConfigurationFormat.CISCO_IOS);
+    c.setVendor(ConfigurationFormat.CISCO_ASA);
     return c;
   }
 
   @Test
   public void testToOspfDeadIntervalExplicit() {
-    AsaConfiguration c = basicCiscoConfig();
+    AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
     iface.setOspfDeadInterval(7);
     // Explicitly set dead interval should be preferred over inference
@@ -287,7 +287,7 @@ public class CiscoConversionsTest {
 
   @Test
   public void testToOspfDeadIntervalFromHello() {
-    AsaConfiguration c = basicCiscoConfig();
+    AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
     int helloInterval = 1;
@@ -300,7 +300,7 @@ public class CiscoConversionsTest {
 
   @Test
   public void testToOspfDeadIntervalFromType() {
-    AsaConfiguration c = basicCiscoConfig();
+    AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
     // Since the dead interval and hello interval are not set, it should be inferred from the
@@ -316,7 +316,7 @@ public class CiscoConversionsTest {
 
   @Test
   public void testToOspfHelloIntervalExplicit() {
-    AsaConfiguration c = basicCiscoConfig();
+    AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
     iface.setOspfHelloInterval(7);
@@ -328,7 +328,7 @@ public class CiscoConversionsTest {
 
   @Test
   public void testToOspfHelloIntervalFromType() {
-    AsaConfiguration c = basicCiscoConfig();
+    AsaConfiguration c = basicAsaConfig();
     Interface iface = new Interface("FastEthernet0/0", c);
 
     // Since the hello interval is not set, it should be inferred from the network type

@@ -28,7 +28,7 @@ import org.junit.runners.JUnit4;
 public class CiscoOspfRedistributionTest {
   private static AsaConfiguration makeConfig() {
     AsaConfiguration config = new AsaConfiguration();
-    config.setVendor(ConfigurationFormat.CISCO_IOS);
+    config.setVendor(ConfigurationFormat.CISCO_ASA);
     return config;
   }
 
@@ -37,7 +37,7 @@ public class CiscoOspfRedistributionTest {
 
   @Before
   public void before() {
-    _proc = new OspfProcess("10", ConfigurationFormat.CISCO_IOS);
+    _proc = new OspfProcess("10");
     _config = makeConfig();
   }
 

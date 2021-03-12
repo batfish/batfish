@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco_asa;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
@@ -11,7 +12,6 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -549,8 +549,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private String _tacacsSourceInterface;
 
-  private ConfigurationFormat _vendor;
-
   private final Map<String, Vrf> _vrfs;
 
   private final SortedMap<String, VrrpInterface> _vrrpGroups;
@@ -972,10 +970,6 @@ public final class AsaConfiguration extends VendorConfiguration {
     return updateSource;
   }
 
-  public ConfigurationFormat getVendor() {
-    return _vendor;
-  }
-
   public Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
@@ -1154,7 +1148,7 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   @Override
   public void setVendor(ConfigurationFormat format) {
-    _vendor = format;
+    checkArgument(format == ConfigurationFormat.CISCO_ASA);
   }
 
   private org.batfish.datamodel.BgpProcess toBgpProcess(
@@ -1927,21 +1921,25 @@ public final class AsaConfiguration extends VendorConfiguration {
   @Nonnull
   private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
     Long bw =
-        Stream.of(iface.getBandwidth(), Interface.getDefaultBandwidth(iface.getName(), _vendor))
+        Stream.of(
+                iface.getBandwidth(),
+                Interface.getDefaultBandwidth(iface.getName(), ConfigurationFormat.CISCO_ASA))
             .filter(Objects::nonNull)
             .findFirst()
             .map(bandwidth -> bandwidth.longValue() / 1000) // convert to kbps
             .orElse(null);
     // Bandwidth can be null for port-channels (will be calculated later).
     if (bw == null) {
-      InterfaceType ifaceType = computeInterfaceType(iface.getName(), _vendor);
+      InterfaceType ifaceType =
+          computeInterfaceType(iface.getName(), ConfigurationFormat.CISCO_ASA);
       assert ifaceType == InterfaceType.AGGREGATED || ifaceType == InterfaceType.AGGREGATE_CHILD;
     }
     EigrpMetricValues values =
         EigrpMetricValues.builder()
             .setDelay(
                 firstNonNull(
-                    iface.getDelay(), Interface.getDefaultDelay(iface.getName(), _vendor, bw)))
+                    iface.getDelay(),
+                    Interface.getDefaultDelay(iface.getName(), ConfigurationFormat.CISCO_ASA, bw)))
             .setBandwidth(bw)
             .build();
     if (mode == EigrpProcessMode.CLASSIC) {
@@ -2198,8 +2196,7 @@ public final class AsaConfiguration extends VendorConfiguration {
 
     // Set the metric type and value.
     ospfExportStatements.add(new SetOspfMetricType(policy.getMetricType()));
-    long metric =
-        policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(_vendor, protocol);
+    long metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(protocol);
     ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
 
     // If only classful routes should be redistributed, filter to classful routes.
@@ -2813,11 +2810,8 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
-    Configuration c = new Configuration(_hostname, _vendor);
-    // Only set CISCO_UNSPECIFIED if the device is actually a cisco device
-    if (_vendor == ConfigurationFormat.CISCO_ASA || _vendor == ConfigurationFormat.CISCO_IOS) {
-      c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
-    }
+    Configuration c = new Configuration(_hostname, ConfigurationFormat.CISCO_ASA);
+    c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     c.getVendorFamily().setCisco(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
@@ -3099,42 +3093,6 @@ public final class AsaConfiguration extends VendorConfiguration {
           }
           c.getAllInterfaces().put(newIfaceName, newInterface);
         });
-    /*
-     * If this isn't ASA, add a single FirewallSessionInterfaceInfo for all inside interfaces and a
-     * single FirewallSessionInterfaceInfo for all outside interfaces. This way, when an outgoing
-     * flow exits an [inside|outside] interface, return flows will match the session if they enter
-     * any [inside|outside] interface.
-     */
-    if (_vendor == ConfigurationFormat.CISCO_IOS || _vendor == ConfigurationFormat.CISCO_IOS_XR) {
-      // IOS does FIB lookups with the original dst IP for flows from inside to outside, but the
-      // transformed dst IP for flows from outside to inside.
-      if (!getNatInside().isEmpty()) {
-        // Flows to inside interfaces should undergo NAT if they come from an outside interface
-        FirewallSessionInterfaceInfo insideIfaceInfo =
-            new FirewallSessionInterfaceInfo(
-                Action.PRE_NAT_FIB_LOOKUP, getNatInside(), getNatOutside(), null, null);
-        getNatInside().stream()
-            .map(c.getAllInterfaces()::get)
-            .forEach(iface -> iface.setFirewallSessionInterfaceInfo(insideIfaceInfo));
-      }
-      if (!getNatOutside().isEmpty()) {
-        FirewallSessionInterfaceInfo outsideIfaceInfo =
-            new FirewallSessionInterfaceInfo(
-                Action.POST_NAT_FIB_LOOKUP,
-                getNatOutside(),
-                // Flows to outside interfaces should undergo NAT if they come from an inside
-                // interface or originate on device
-                ImmutableSet.<String>builder()
-                    .addAll(getNatInside())
-                    .add(SOURCE_ORIGINATING_FROM_DEVICE)
-                    .build(),
-                null,
-                null);
-        getNatOutside().stream()
-            .map(c.getAllInterfaces()::get)
-            .forEach(iface -> iface.setFirewallSessionInterfaceInfo(outsideIfaceInfo));
-      }
-    }
 
     /*
      * Second pass over the interfaces to set dependency pointers correctly for:

@@ -228,7 +228,6 @@ import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ISAKMP_PR
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY;
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_asa.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
-import static org.batfish.representation.cisco_asa.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
@@ -487,13 +486,13 @@ public final class CiscoAsaGrammarTest {
         .build();
   }
 
-  private AsaConfiguration parseCiscoConfig(String hostname, ConfigurationFormat format) {
+  private AsaConfiguration parseCiscoConfig(String hostname) {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     AsaCombinedParser asaParser = new AsaCombinedParser(src, settings);
     AsaControlPlaneExtractor extractor =
-        new AsaControlPlaneExtractor(src, asaParser, format, new Warnings());
+        new AsaControlPlaneExtractor(src, asaParser, new Warnings());
     ParserRuleContext tree =
         Batfish.parse(asaParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
@@ -815,7 +814,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testAsaEigrpNetwork() {
-    AsaConfiguration config = parseCiscoConfig("asa-eigrp", ConfigurationFormat.CISCO_ASA);
+    AsaConfiguration config = parseCiscoConfig("asa-eigrp");
 
     // ASN is 1
     EigrpProcess eigrpProcess = config.getDefaultVrf().getEigrpProcesses().get(1L);
@@ -832,7 +831,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testAsaFailoverExtraction() {
-    AsaConfiguration config = parseCiscoConfig("asa-failover", ConfigurationFormat.CISCO_ASA);
+    AsaConfiguration config = parseCiscoConfig("asa-failover");
     assertThat(config.getFailover(), equalTo(true));
     assertThat(config.getFailoverSecondary(), equalTo(false));
     assertThat(config.getFailoverCommunicationInterface(), equalTo("GigabitEthernet0/2"));
@@ -858,8 +857,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testAsaInterfaceRedundantExtraction() {
-    AsaConfiguration config =
-        parseCiscoConfig("asa-interface-redundant", ConfigurationFormat.CISCO_ASA);
+    AsaConfiguration config = parseCiscoConfig("asa-interface-redundant");
 
     assertThat(
         config.getInterfaces(),
@@ -934,7 +932,8 @@ public final class CiscoAsaGrammarTest {
     Configuration defaults = parseConfig("asaOspfCostDefaults");
     assertThat(
         defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
-        equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_ASA)));
+        equalTo(
+            org.batfish.representation.cisco_asa.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH_100_MBPS));
   }
 
   @Test
@@ -1346,16 +1345,8 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
-  public void testCadantBanner() throws IOException {
-    Configuration c = parseConfig("cadant_banner");
-    assertThat(
-        c.getVendorFamily().getCisco().getBanners().get("login"),
-        equalTo("Some text\nSome more text\n"));
-  }
-
-  @Test
   public void testIosBgpExtcommunityParsing() throws IOException {
-    AsaConfiguration c = parseCiscoConfig("ios-bgp-extcommunity", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration c = parseCiscoConfig("ios-bgp-extcommunity");
     ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
     c.setAnswerElement(ccae);
     c.setWarnings(new Warnings(true, true, true));
@@ -1385,12 +1376,12 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testIosLineParsing() {
-    assertNotNull(parseCiscoConfig("ios-line", null));
+    assertNotNull(parseCiscoConfig("ios-line"));
   }
 
   @Test
   public void testIosEncapsulationVlanExtraction() {
-    AsaConfiguration vc = parseCiscoConfig("ios-encapsulation-vlan", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration vc = parseCiscoConfig("ios-encapsulation-vlan");
     assertThat(
         vc.getInterfaces().get("GigabitEthernet0/1.203").getEncapsulationVlan(), equalTo(203));
   }
@@ -1597,7 +1588,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testIosBgpConfedExtraction() {
-    AsaConfiguration c = parseCiscoConfig("ios-bgp-confed", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration c = parseCiscoConfig("ios-bgp-confed");
     org.batfish.representation.cisco_asa.BgpProcess p = c.getDefaultVrf().getBgpProcess();
     assertThat(p, notNullValue());
     assertThat(p.getConfederation(), equalTo(65100L));
@@ -1629,22 +1620,19 @@ public final class CiscoAsaGrammarTest {
   @Test
   public void testIosBgpEnforceAsExtraction() {
     {
-      AsaConfiguration c =
-          parseCiscoConfig("ios-bgp-enforce-first-as-disabled", ConfigurationFormat.CISCO_IOS);
+      AsaConfiguration c = parseCiscoConfig("ios-bgp-enforce-first-as-disabled");
       org.batfish.representation.cisco_asa.BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
       assertThat(p.getEnforceFirstAs(), equalTo(Boolean.FALSE));
     }
     {
-      AsaConfiguration c =
-          parseCiscoConfig("ios-bgp-enforce-first-as-explicit", ConfigurationFormat.CISCO_IOS);
+      AsaConfiguration c = parseCiscoConfig("ios-bgp-enforce-first-as-explicit");
       org.batfish.representation.cisco_asa.BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
       assertThat(p.getEnforceFirstAs(), equalTo(Boolean.TRUE));
     }
     {
-      AsaConfiguration c =
-          parseCiscoConfig("ios-bgp-enforce-first-as-default", ConfigurationFormat.CISCO_IOS);
+      AsaConfiguration c = parseCiscoConfig("ios-bgp-enforce-first-as-default");
       org.batfish.representation.cisco_asa.BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
       assertThat(p.getEnforceFirstAs(), nullValue());
@@ -2863,8 +2851,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testIosEigrpDistributeList() {
-    AsaConfiguration c =
-        parseCiscoConfig("ios-eigrp-distribute-list", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration c = parseCiscoConfig("ios-eigrp-distribute-list");
 
     assertThat(
         c.getDefaultVrf().getEigrpProcesses().get(1L).getOutboundInterfaceDistributeLists(),
@@ -3012,7 +2999,7 @@ public final class CiscoAsaGrammarTest {
   @Test
   public void testIosEigrpDistributeListWithPrefixListExtraction() {
     String hostname = "ios-eigrp-distribute-list-prefix-list";
-    AsaConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration vc = parseCiscoConfig(hostname);
     EigrpProcess proc = vc.getDefaultVrf().getEigrpProcesses().get(1L);
     assertThat(
         proc.getInboundGlobalDistributeList(),
@@ -3134,7 +3121,7 @@ public final class CiscoAsaGrammarTest {
   @Test
   public void testIosEigrpDistributeListWithRouteMapExtraction() {
     String hostname = "ios-eigrp-distribute-list-routemap";
-    AsaConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration vc = parseCiscoConfig(hostname);
     EigrpProcess proc = vc.getDefaultVrf().getEigrpProcesses().get(1L);
     assertThat(
         proc.getInboundGlobalDistributeList(),
@@ -3311,7 +3298,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testIosOspfDistributeList() {
-    AsaConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration c = parseCiscoConfig("iosOspfDistributeList");
     DistributeList globalInPrefix =
         new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
     DistributeList globalOutPrefix =
@@ -3571,7 +3558,8 @@ public final class CiscoAsaGrammarTest {
     Configuration defaults = parseConfig("iosOspfCostDefaults");
     assertThat(
         defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
-        equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
+        equalTo(
+            org.batfish.representation.cisco_asa.OspfProcess.DEFAULT_REFERENCE_BANDWIDTH_100_MBPS));
   }
 
   @Test
@@ -3934,7 +3922,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testIosVrfDefinition() {
-    AsaConfiguration vc = parseCiscoConfig("ios-vrf-definition", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration vc = parseCiscoConfig("ios-vrf-definition");
     {
       org.batfish.representation.cisco_asa.Vrf vrf = vc.getVrfs().get("vrf1");
       assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.from(1111, 11L)));
@@ -4142,7 +4130,7 @@ public final class CiscoAsaGrammarTest {
   public void testIosXeEigrpToBgpRedistExtraction() throws IOException {
     String hostname = "ios-xe-eigrp-to-bgp";
     String redistRmName = "redist_eigrp";
-    AsaConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration vc = parseCiscoConfig(hostname);
     org.batfish.representation.cisco_asa.BgpProcess bgpProc = vc.getDefaultVrf().getBgpProcess();
     assert bgpProc != null;
     BgpRedistributionPolicy eigrpRedist =
@@ -4409,7 +4397,7 @@ public final class CiscoAsaGrammarTest {
   /** Tests that we can append more BGP config at the bottom of a file. */
   @Test
   public void testBgpReentrantVrf() {
-    AsaConfiguration c = parseCiscoConfig("ios-bgp-reentrant-vrf", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration c = parseCiscoConfig("ios-bgp-reentrant-vrf");
     // Simple test that default VRF was parsed
     org.batfish.representation.cisco_asa.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
     assertThat(defBgp.getProcnum(), equalTo(1L));
@@ -4723,7 +4711,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testTunnelMode() {
-    AsaConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration c = parseCiscoConfig("ios-tunnel-mode");
 
     assertThat(
         c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE_MULTIPOINT));
@@ -5279,7 +5267,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testCiscoOspfNetworkTypes() {
-    AsaConfiguration config = parseCiscoConfig("ospf-network-types", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration config = parseCiscoConfig("ospf-network-types");
 
     String eth0 = "Ethernet0/0";
     String eth1 = "Ethernet0/1";
@@ -5304,7 +5292,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testCiscoOspfIntervals() {
-    AsaConfiguration config = parseCiscoConfig("ospf-intervals", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration config = parseCiscoConfig("ospf-intervals");
 
     String eth0 = "Ethernet0/0";
     String eth1 = "Ethernet0/1";
@@ -5458,7 +5446,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testPrefixListSeq() {
-    AsaConfiguration c = parseCiscoConfig("prefix-list-seq", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration c = parseCiscoConfig("prefix-list-seq");
     assertThat(
         c.getPrefixLists(), hasKeys("NOSEQ", "NOSEQ_THEN_SEQ", "SEQ_NO_SEQ", "OUT_OF_ORDER"));
     {
@@ -5566,7 +5554,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testIosVrfdShowRunAll() {
-    AsaConfiguration c = parseCiscoConfig("ios_vrfd_show_run_all", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration c = parseCiscoConfig("ios_vrfd_show_run_all");
     assertThat(c.getVrfs(), hasKeys("default", "VRF2"));
     assertThat(
         c.getVrfs().get("VRF2").getRouteDistinguisher(),
@@ -6265,7 +6253,7 @@ public final class CiscoAsaGrammarTest {
   @Test
   public void testAsaNatOrder() {
     String hostname = "asa-nat-mixed";
-    AsaConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+    AsaConfiguration config = parseCiscoConfig(hostname);
 
     // Finishes extraction, necessary for object NATs
     config.setWarnings(new Warnings());
@@ -6337,7 +6325,7 @@ public final class CiscoAsaGrammarTest {
   public void testAsaTwiceNatDynamic() {
     // Test vendor-specific parsing of ASA dynamic twice NATs
     String hostname = "asa-nat-twice-dynamic";
-    AsaConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+    AsaConfiguration config = parseCiscoConfig(hostname);
 
     AclLineMatchExpr matchSourceSubnet =
         matchSrc(new IpSpaceReference("source-subnet", "Match network object: 'source-subnet'"));
@@ -6403,7 +6391,7 @@ public final class CiscoAsaGrammarTest {
   public void testAsaTwiceNatStatic() {
     // Test vendor-specific parsing of ASA static twice NATs
     String hostname = "asa-nat-twice-static";
-    AsaConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+    AsaConfiguration config = parseCiscoConfig(hostname);
 
     List<CiscoAsaNat> nats = config.getCiscoAsaNats();
     assertThat(nats, hasSize(9));
@@ -6464,7 +6452,7 @@ public final class CiscoAsaGrammarTest {
   public void testAsaTwiceNatStaticSource() {
     // Test ASA twice NAT with source only
     String hostname = "asa-nat-twice-static";
-    AsaConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+    AsaConfiguration config = parseCiscoConfig(hostname);
 
     Prefix realSourceHost = Prefix.parse("1.1.1.1/32");
     Prefix mappedSourceHost = Prefix.parse("2.2.2.2/32");
@@ -6570,7 +6558,7 @@ public final class CiscoAsaGrammarTest {
   public void testAsaTwiceNatStaticSourceAndDestination() {
     // Test ASA twice NAT with source and destination
     String hostname = "asa-nat-twice-static";
-    AsaConfiguration config = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_ASA);
+    AsaConfiguration config = parseCiscoConfig(hostname);
 
     Prefix realSource = Prefix.parse("1.1.1.1/32");
     Prefix mappedSource = Prefix.parse("2.2.2.2/32");
@@ -6957,7 +6945,7 @@ public final class CiscoAsaGrammarTest {
   public void testBgpRedistributeOspfExtraction() {
     {
       String hostname = "ios-bgp-redistribute-ospf";
-      AsaConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+      AsaConfiguration vc = parseCiscoConfig(hostname);
       BgpRedistributionPolicy redistributionPolicy =
           vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
@@ -6968,7 +6956,7 @@ public final class CiscoAsaGrammarTest {
     }
     {
       String hostname = "ios-bgp-redistribute-ospf-match-various";
-      AsaConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+      AsaConfiguration vc = parseCiscoConfig(hostname);
       BgpRedistributionPolicy redistributionPolicy =
           vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
       assertThat(redistributionPolicy.getRouteMap(), equalTo("ospf2bgp"));
@@ -6984,7 +6972,7 @@ public final class CiscoAsaGrammarTest {
     }
     {
       String hostname = "ios-bgp-redistribute-ospf-match-internal";
-      AsaConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+      AsaConfiguration vc = parseCiscoConfig(hostname);
       BgpRedistributionPolicy redistributionPolicy =
           vc.getDefaultVrf().getBgpProcess().getRedistributionPolicies().get(RoutingProtocol.OSPF);
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
@@ -6997,7 +6985,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testEigrpShutdownExtraction() {
-    AsaConfiguration vc = parseCiscoConfig("ios-eigrp-shutdown", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration vc = parseCiscoConfig("ios-eigrp-shutdown");
     Map<Long, EigrpProcess> procs = vc.getDefaultVrf().getEigrpProcesses();
     assertThat(procs.get(1L).getShutdown(), nullValue());
     assertFalse(procs.get(2L).getShutdown());
@@ -7014,8 +7002,7 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testEigrpRouterIdExtraction() {
-    AsaConfiguration vc =
-        parseCiscoConfig("ios-eigrp-classic-routerid", ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration vc = parseCiscoConfig("ios-eigrp-classic-routerid");
     Map<Long, EigrpProcess> procs = vc.getDefaultVrf().getEigrpProcesses();
     assertThat(procs.get(1L).getRouterId(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(procs.get(2L).getRouterId(), nullValue());
@@ -7136,7 +7123,7 @@ public final class CiscoAsaGrammarTest {
   @Test
   public void testIosRouteMapSetExtcommunityRtExtraction() {
     String hostname = "ios-route-map-set-extcommunity-rt";
-    AsaConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+    AsaConfiguration vc = parseCiscoConfig(hostname);
     assertThat(vc.getRouteMaps(), hasKeys("rm1", "rm2"));
     {
       RouteMap rm = vc.getRouteMaps().get("rm1");

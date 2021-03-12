@@ -33,13 +33,7 @@ options {
 }
 
 @members {
-   private boolean _cadant;
-
    private boolean _multilineBgpNeighbors;
-
-   public void setCadant(boolean b) {
-      _cadant = b;
-   }
 
    public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
       _multilineBgpNeighbors = multilineBgpNeighbors;
@@ -47,8 +41,7 @@ options {
 
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n",
-         _cadant,
+      return String.format("_multilineBgpNeighbors: %s\n",
          _multilineBgpNeighbors
       );
    }
@@ -1255,16 +1248,6 @@ ip_ssh_null
       | SOURCE_INTERFACE
       | TIME_OUT
    ) null_rest_of_line
-;
-
-ip_ssh_private_key
-:
-   PRIVATE_KEY ~END_CADANT+ END_CADANT
-;
-
-ip_ssh_public_key
-:
-   PUBLIC_KEY ~END_CADANT+ END_CADANT
 ;
 
 ip_ssh_pubkey_chain
@@ -2729,9 +2712,7 @@ s_ip_ssh
 :
    NO? IP SSH
    (
-      ip_ssh_private_key
-      | ip_ssh_pubkey_chain
-      | ip_ssh_public_key
+      ip_ssh_pubkey_chain
       | ip_ssh_version
       | ip_ssh_null
    )
@@ -3698,14 +3679,7 @@ stanza
    | s_l2tp_class
    | s_l2vpn
    | s_license
-   |
-   {!_cadant}?
-
-   s_line
-   |
-   {_cadant}?
-
-   s_line_cadant
+   | s_line
    | s_logging
    | s_lpts
    | s_management

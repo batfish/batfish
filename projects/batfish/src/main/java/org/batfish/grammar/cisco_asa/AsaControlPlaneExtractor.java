@@ -4,9 +4,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
-import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
-import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
-import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
 import static org.batfish.representation.cisco_asa.CiscoAsaNat.ANY_INTERFACE;
 import static org.batfish.representation.cisco_asa.CiscoStructureType.ACCESS_LIST;
@@ -1415,8 +1412,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private final @Nonnull BgpPeerGroup _dummyPeerGroup = new MasterBgpPeerGroup();
 
-  private final ConfigurationFormat _format;
-
   private boolean _inIpv6BgpPeer;
 
   private boolean _no;
@@ -1458,11 +1453,9 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
    */
   private String _lastKnownOspfProcess;
 
-  public AsaControlPlaneExtractor(
-      String text, AsaCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
+  public AsaControlPlaneExtractor(String text, AsaCombinedParser parser, Warnings warnings) {
     _text = text;
     _parser = parser;
-    _format = format;
     _w = warnings;
     _peerGroupStack = new ArrayList<>();
   }
@@ -1885,11 +1878,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA1);
     _currentIsakmpPolicy.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
-    if (_format == ARUBAOS) {
-      _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
-    } else {
-      _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
-    }
+    _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
 
     _currentIsakmpPolicy.setLifetimeSeconds(86400);
     _configuration.defineStructure(ISAKMP_POLICY, priority.toString(), ctx);
@@ -1915,17 +1904,10 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   @Override
   public void enterCisco_configuration(Cisco_configurationContext ctx) {
     _configuration = new AsaConfiguration();
-    _configuration.setVendor(_format);
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    if (_format == CISCO_IOS) {
-      Logging logging = new Logging();
-      logging.setOn(true);
-      _configuration.getCf().setLogging(logging);
-    } else if (_format == CISCO_ASA) {
-      // serial line may not be anywhere in the config so add it here to make sure the serial line
-      // is in the data model
-      _configuration.getCf().getLines().computeIfAbsent(SERIAL_LINE, Line::new);
-    }
+    // serial line may not be anywhere in the config so add it here to make sure the serial line
+    // is in the data model
+    _configuration.getCf().getLines().computeIfAbsent(SERIAL_LINE, Line::new);
   }
 
   @Override
@@ -3076,7 +3058,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
             .computeIfAbsent(
                 _currentOspfProcess.getName(),
                 (procName) -> {
-                  OspfProcess p = new OspfProcess(procName, _format);
+                  OspfProcess p = new OspfProcess(procName);
                   p.setRouterId(routerId);
                   return p;
                 });
@@ -3461,7 +3443,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     _currentOspfProcess =
         currentVrf()
             .getOspfProcesses()
-            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName, _format));
+            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName));
   }
 
   @Override
@@ -4775,9 +4757,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       if (ctx.wildcard != null) {
         // IP and mask
         Ip wildcard = toIp(ctx.wildcard);
-        if (_format == CISCO_ASA) {
-          wildcard = wildcard.inverted();
-        }
+        wildcard = wildcard.inverted();
         return new WildcardAddressSpecifier(IpWildcard.ipWithWildcardMask(toIp(ctx.ip), wildcard));
       } else {
         // Just IP. Same as if 'host' was specified
@@ -5045,7 +5025,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   @Override
   public void exitIf_channel_group(If_channel_groupContext ctx) {
     int num = toInteger(ctx.num);
-    String name = computeAggregatedInterfaceName(num, _format);
+    String name = computeAggregatedInterfaceName(num);
     _currentInterfaces.forEach(i -> i.setChannelGroup(name));
   }
 
@@ -5065,17 +5045,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
   }
 
-  private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
-    switch (format) {
-      case CISCO_ASA:
-      case FORCE10:
-      case CISCO_IOS:
-        return String.format("Port-channel%d", num);
-
-      default:
-        _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
-        return null;
-    }
+  private @Nullable String computeAggregatedInterfaceName(int num) {
+    return String.format("Port-channel%d", num);
   }
 
   @Override
@@ -5522,7 +5493,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
           SwitchportMode defaultSwitchportMode = _configuration.getCf().getDefaultSwitchportMode();
           iface.setSwitchportMode(
               (defaultSwitchportMode == SwitchportMode.NONE || defaultSwitchportMode == null)
-                  ? Interface.getUndeclaredDefaultSwitchportMode(_configuration.getVendor())
+                  ? Interface.getUndeclaredDefaultSwitchportMode(ConfigurationFormat.CISCO_ASA)
                   : defaultSwitchportMode);
         }
       }
@@ -6654,9 +6625,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     // In process context
     Ip address = toIp(ctx.address);
     Ip mask = (ctx.mask != null) ? toIp(ctx.mask) : address.getClassMask().inverted();
-    if (_format == CISCO_ASA) {
-      mask = mask.inverted();
-    }
+    mask = mask.inverted();
     _currentEigrpProcess.getWildcardNetworks().add(IpWildcard.ipWithWildcardMask(address, mask));
   }
 
@@ -6669,9 +6638,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
     boolean passive = (ctx.NO() == null);
     String interfaceName = ctx.i.getText(); // Note: Interface alias is not canonicalized for ASA
-    if (_format != CISCO_ASA) {
-      interfaceName = getCanonicalInterfaceName(interfaceName);
-    }
     _currentEigrpProcess.getInterfacePassiveStatus().put(interfaceName, passive);
     _configuration.referenceStructure(
         INTERFACE, interfaceName, EIGRP_PASSIVE_INTERFACE, ctx.i.getStart().getLine());
@@ -7858,9 +7824,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       address = toIp(ctx.ip);
       wildcard = toIp(ctx.wildcard);
     }
-    if (_format == CISCO_ASA) {
-      wildcard = wildcard.inverted();
-    }
+    wildcard = wildcard.inverted();
     long area;
     if (ctx.area_int != null) {
       area = toLong(ctx.area_int);
@@ -7888,18 +7852,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     boolean passive = ctx.NO() == null;
     OspfProcess proc = _currentOspfProcess;
     proc.setPassiveInterfaceDefault(passive);
-    if (_configuration.getVendor() == CISCO_IOS) {
-      proc.getNonDefaultInterfaces().clear();
-    }
-  }
-
-  private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
-    /*
-     * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
-     *
-     * We assume no others does this ridiculous thing. TODO: verify more vendors.
-     */
-    return format != CISCO_IOS;
   }
 
   @Override
@@ -7942,7 +7894,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
+    r.setOnlyClassfulRoutes(ctx.subnets == null && !true);
   }
 
   @Override
@@ -7972,7 +7924,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
+    r.setOnlyClassfulRoutes(ctx.subnets == null && !true);
   }
 
   @Override
@@ -8000,7 +7952,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       _configuration.referenceStructure(
           ROUTE_MAP, map, OSPF_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
     }
-    r.setOnlyClassfulRoutes(ctx.SUBNETS().isEmpty() && !ospfRedistributeSubnetsByDefault(_format));
+    r.setOnlyClassfulRoutes(ctx.SUBNETS().isEmpty() && !true);
   }
 
   @Override
@@ -8035,7 +7987,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       long tag = toLong(ctx.tag);
       r.setTag(tag);
     }
-    r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
+    r.setOnlyClassfulRoutes(ctx.subnets == null && !true);
   }
 
   @Override

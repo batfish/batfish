@@ -188,7 +188,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             AsaCombinedParser asaParser = new AsaCombinedParser(_fileText, _settings);
             combinedParser = asaParser;
-            extractor = new AsaControlPlaneExtractor(_fileText, asaParser, format, _warnings);
+            extractor = new AsaControlPlaneExtractor(_fileText, asaParser, _warnings);
             break;
           }
 

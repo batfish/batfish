@@ -113,6 +113,7 @@ l_null
       | LOGGING
       | LOGOUT_WARNING
       | MODEM
+      | NO VACANT_MESSAGE
       | NOTIFY
       | PASSWORD
       | PRIVILEGE
@@ -128,10 +129,6 @@ l_null
       | TIMEOUT
       | TIMESTAMP
       | TXSPEED
-      |
-      (
-        NO VACANT_MESSAGE
-      )
    ) null_rest_of_line
 ;
 
@@ -196,12 +193,4 @@ s_line
       | l_transport
       | description_line
    )*
-;
-
-s_line_cadant
-:
-   LINE line_type_cadant start_line = dec end_line = dec?
-   (
-      lc_null
-   )
 ;
