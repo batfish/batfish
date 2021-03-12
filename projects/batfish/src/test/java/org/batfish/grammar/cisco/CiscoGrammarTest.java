@@ -38,8 +38,6 @@ import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
@@ -303,7 +301,6 @@ import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineType;
-import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfIntraAreaRoute;
@@ -3559,34 +3556,6 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e1Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e2Name, c))));
-  }
-
-  @Test
-  public void testBgpMultipathRelax() throws IOException {
-    String testrigName = "bgp-multipath-relax";
-    List<String> configurationNames = ImmutableList.of("arista_disabled", "arista_enabled");
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
-    org.batfish.datamodel.BgpProcess aristaDisabled =
-        configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
-    org.batfish.datamodel.BgpProcess aristaEnabled =
-        configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
-
-    assertThat(
-        aristaDisabled,
-        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(
-        aristaEnabled,
-        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-
-    assertThat(aristaDisabled, hasMultipathEbgp(false));
-    assertThat(aristaEnabled, hasMultipathEbgp(false));
   }
 
   @Test

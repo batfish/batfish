@@ -18,6 +18,8 @@ import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFam
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
@@ -463,6 +465,34 @@ public class AristaGrammarTest {
             .iterator()
             .next(),
         equalTo(new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false)));
+  }
+
+  @Test
+  public void testBgpMultipathRelax() throws IOException {
+    String testrigName = "arista-bgp-multipath-relax";
+    List<String> configurationNames = ImmutableList.of("arista_disabled", "arista_enabled");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
+    org.batfish.datamodel.BgpProcess aristaDisabled =
+        configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess aristaEnabled =
+        configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
+
+    assertThat(
+        aristaDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        aristaEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+
+    assertThat(aristaDisabled, hasMultipathEbgp(false));
+    assertThat(aristaEnabled, hasMultipathEbgp(false));
   }
 
   @Test
