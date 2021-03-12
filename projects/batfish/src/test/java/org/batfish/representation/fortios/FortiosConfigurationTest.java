@@ -1,6 +1,7 @@
 package org.batfish.representation.fortios;
 
 import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
 import static org.batfish.representation.fortios.Service.DEFAULT_SOURCE_PORT_RANGE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -16,8 +17,6 @@ import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.TraceElement;
-import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 public class FortiosConfigurationTest {
@@ -189,22 +188,9 @@ public class FortiosConfigurationTest {
     c.setWarnings(new Warnings());
     c.setFilename(filename);
     service.setProtocol(Service.Protocol.ICMP);
-    TraceElement.Builder expectedTe =
-        TraceElement.builder()
-            .add("Matched service ")
-            .add(
-                service.getName(),
-                new VendorStructureId(
-                    filename,
-                    FortiosStructureType.SERVICE_CUSTOM.getDescription(),
-                    service.getName()));
-    assertThat(c.toMatchExpr(service).getTraceElement(), equalTo(expectedTe.build()));
-
-    // With comment
-    String comment = "you can't go there";
-    service.setComment(comment);
-    expectedTe.add(String.format("(%s)", comment));
-    assertThat(c.toMatchExpr(service).getTraceElement(), equalTo(expectedTe.build()));
+    assertThat(
+        c.toMatchExpr(service).getTraceElement(),
+        equalTo(matchServiceTraceElement(service, filename)));
   }
 
   /**
