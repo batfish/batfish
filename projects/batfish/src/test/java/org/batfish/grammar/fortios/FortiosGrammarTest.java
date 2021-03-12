@@ -24,6 +24,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
@@ -51,6 +52,7 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpAccessListToBddImpl;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.PermitAndDenyBdds;
+import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.BddTestbed;
@@ -418,49 +420,59 @@ public final class FortiosGrammarTest {
   @Test
   public void testInterfaceConversion() throws IOException {
     String hostname = "iface";
-    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
 
+    // AGGREGATE, REDUNDANT, and WL_MESH aren't yet supported; confirm in warnings
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        hasItems(
+            WarningMatchers.hasText(
+                String.format(
+                    "Interface %s has unsupported type %s and will not be converted",
+                    "agg", Type.AGGREGATE)),
+            WarningMatchers.hasText(
+                String.format(
+                    "Interface %s has unsupported type %s and will not be converted",
+                    "redundant", Type.REDUNDANT)),
+            WarningMatchers.hasText(
+                String.format(
+                    "Interface %s has unsupported type %s and will not be converted",
+                    "wl", Type.WL_MESH))));
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     Map<String, org.batfish.datamodel.Interface> ifaces = c.getAllInterfaces();
     assertThat(
         ifaces.keySet(),
         containsInAnyOrder(
-            "port1",
-            "port2",
-            "longest if name",
-            "tunnel",
-            "loopback123",
-            "agg",
-            "emac",
-            "redundant",
-            "vlan"));
+            "port1", "port2", "longest if name", "tunnel", "loopback123", "emac", "vlan"));
     org.batfish.datamodel.Interface port1 = ifaces.get("port1");
     org.batfish.datamodel.Interface port2 = ifaces.get("port2");
     org.batfish.datamodel.Interface longName = ifaces.get("longest if name");
     org.batfish.datamodel.Interface tunnel = ifaces.get("tunnel");
     org.batfish.datamodel.Interface loopback = ifaces.get("loopback123");
-    org.batfish.datamodel.Interface agg = ifaces.get("agg");
     org.batfish.datamodel.Interface emac = ifaces.get("emac");
-    org.batfish.datamodel.Interface redundant = ifaces.get("redundant");
     org.batfish.datamodel.Interface vlan = ifaces.get("vlan");
 
     // Check active
     assertFalse(tunnel.getActive()); // explicitly set to down
-    assertFalse(agg.getActive()); // down because no contributing children
-    assertFalse(redundant.getActive()); // down because no contributing children
     Stream.of(port1, port2, longName, loopback, emac, vlan)
         .forEach(iface -> assertTrue(iface.getName() + " is up", iface.getActive()));
 
     // Check VRFs
     assertThat(longName.getVrf().getName(), equalTo(computeVrfName("root", 31)));
     String defaultVrf = computeVrfName("root", 0);
-    Stream.of(port1, port2, tunnel, loopback, agg, emac, redundant, vlan)
+    Stream.of(port1, port2, tunnel, loopback, emac, vlan)
         .forEach(iface -> assertThat(iface.getVrf().getName(), equalTo(defaultVrf)));
 
     // Check addresses
     assertThat(port1.getAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
     assertThat(longName.getAddress(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
-    Stream.of(port2, tunnel, loopback, agg, emac, redundant, vlan)
-        .forEach(iface -> assertNull(iface.getAddress()));
+    Stream.of(port2, tunnel, loopback, emac, vlan).forEach(iface -> assertNull(iface.getAddress()));
 
     // Check interface types
     assertThat(port1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
@@ -468,27 +480,25 @@ public final class FortiosGrammarTest {
     assertThat(longName.getInterfaceType(), equalTo(InterfaceType.VLAN));
     assertThat(tunnel.getInterfaceType(), equalTo(InterfaceType.TUNNEL));
     assertThat(loopback.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
-    assertThat(agg.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
     assertThat(emac.getInterfaceType(), equalTo(InterfaceType.VLAN));
-    assertThat(redundant.getInterfaceType(), equalTo(InterfaceType.REDUNDANT));
     assertThat(vlan.getInterfaceType(), equalTo(InterfaceType.VLAN));
 
     // Check MTUs
     assertThat(port2.getMtu(), equalTo(1234));
-    Stream.of(port1, longName, tunnel, loopback, agg, emac, redundant, vlan)
+    Stream.of(port1, longName, tunnel, loopback, emac, vlan)
         .forEach(iface -> assertThat(iface.getMtu(), equalTo(Interface.DEFAULT_INTERFACE_MTU)));
 
     // Check aliases
     assertThat(port1.getDeclaredNames(), contains("longest possibl alias str"));
     assertThat(port2.getDeclaredNames(), contains("no_spaces"));
     assertThat(longName.getDeclaredNames(), contains(""));
-    Stream.of(tunnel, loopback, agg, emac, redundant, vlan)
+    Stream.of(tunnel, loopback, emac, vlan)
         .forEach(iface -> assertThat(iface.getDeclaredNames(), empty()));
 
     // Check descriptions
     assertThat(port1.getDescription(), equalTo("quoted description w/ spaces and more"));
     assertThat(port2.getDescription(), equalTo("no_spaces_descr"));
-    Stream.of(longName, tunnel, loopback, agg, emac, redundant, vlan)
+    Stream.of(longName, tunnel, loopback, emac, vlan)
         .forEach(iface -> assertNull(iface.getDescription()));
   }
 

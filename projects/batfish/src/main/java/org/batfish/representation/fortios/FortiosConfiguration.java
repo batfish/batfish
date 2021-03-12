@@ -263,21 +263,17 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   private @Nullable InterfaceType toViType(Interface.Type vsType) {
     switch (vsType) {
-      case AGGREGATE:
-        // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
-        return InterfaceType.AGGREGATED;
       case LOOPBACK:
         return InterfaceType.LOOPBACK;
       case PHYSICAL:
         return InterfaceType.PHYSICAL;
-      case REDUNDANT:
-        // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
-        return InterfaceType.REDUNDANT;
       case TUNNEL:
         return InterfaceType.TUNNEL;
       case EMAC_VLAN:
       case VLAN:
         return InterfaceType.VLAN;
+      case AGGREGATE: // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
+      case REDUNDANT: // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
       case WL_MESH: // TODO Support this type
       default:
         return null;
