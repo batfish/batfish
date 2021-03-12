@@ -687,7 +687,7 @@ public final class FortiosGrammarTest {
    * Test extraction of firewall policy when warnings are generated for invalid / pruned properties.
    */
   @Test
-  public void testFirewallPolicyExtactionWithWarnings() {
+  public void testFirewallPolicyExtractionWithWarnings() {
     String hostname = "firewall_policy_warn";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
@@ -738,6 +738,15 @@ public final class FortiosGrammarTest {
                 hasComment("Expected policy number in range 0-4294967294, but got '4294967295'"),
                 hasComment("Expected policy number in range 0-4294967294, but got 'not_a_number'"),
                 hasComment("Illegal value for policy name"),
+                allOf(
+                    hasComment("Policy edit block ignored: name is invalid"),
+                    hasText(containsString("4294967295"))),
+                allOf(
+                    hasComment("Policy edit block ignored: name is invalid"),
+                    hasText(containsString("not_a_number"))),
+                allOf(
+                    hasComment("Policy edit block ignored: service must be set"),
+                    hasText(containsString("edit 2"))),
                 hasComment(
                     "Interface/zone port1 is undefined and cannot be added to policy 4294967295"),
                 hasComment(
@@ -800,7 +809,8 @@ public final class FortiosGrammarTest {
         (FortiosConfiguration)
             batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
 
-    assertThat(vc.getPolicies(), hasKeys("0", "1"));
+    // Policy 1 should not convert because it doesn't have any valid src or dst addresses
+    assertThat(vc.getPolicies(), hasKeys("0"));
     assertThat(vc.getAddresses(), hasKeys("new_addr1", "new_addr2"));
     assertThat(vc.getServices(), hasKeys("new_service1", "new_service2"));
 
@@ -834,7 +844,8 @@ public final class FortiosGrammarTest {
                 hasComment("Service old_service1 is undefined and cannot be added to policy 1"),
                 hasComment("Service new_service2 is undefined and cannot be added to policy 1"),
                 hasComment("Cannot rename non-existent address undefined"),
-                hasComment("Cannot rename non-existent service custom undefined"))));
+                hasComment("Cannot rename non-existent service custom undefined"),
+                hasComment("Policy edit block ignored: srcaddr must be set"))));
   }
 
   @Test

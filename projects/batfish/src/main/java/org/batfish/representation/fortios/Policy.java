@@ -103,6 +103,27 @@ public final class Policy implements Serializable {
     _dstAddr = ImmutableSet.copyOf(dstAddr);
   }
 
+  /** Returns message indicating why this policy can't be committed in the CLI, or null if it can */
+  public @Nullable String getInvalidReason() {
+    // _valid indicates whether any invalid lines have gone into this policy that would cause the
+    // CLI to pop out of its edit block
+    if (!_valid) {
+      return "name is invalid"; // currently, only invalid name can cause valid to be false
+    } else if (_srcIntf.isEmpty()) {
+      return "srcintf must be set";
+    } else if (_dstIntf.isEmpty()) {
+      return "dstintf must be set";
+    } else if (_srcAddrUuids.isEmpty()) {
+      return "srcaddr must be set";
+    } else if (_dstAddrUuids.isEmpty()) {
+      return "dstaddr must be set";
+    } else if (_serviceUuids.isEmpty()) {
+      return "service must be set";
+    }
+    // TODO "schedule" must be set to commit policy, but we don't parse it. Should we?
+    return null;
+  }
+
   /** Set of Batfish-internal UUIDs associated with service references. */
   @Nonnull
   public Set<BatfishUUID> getServiceUUIDs() {
@@ -133,6 +154,10 @@ public final class Policy implements Serializable {
     _status = status;
   }
 
+  public void setValid(boolean valid) {
+    _valid = valid;
+  }
+
   public Policy(String number) {
     _number = number;
     _srcIntf = new HashSet<>();
@@ -159,4 +184,7 @@ public final class Policy implements Serializable {
   @Nullable private Status _status;
   @Nullable private String _comments;
   @Nullable private Action _action;
+
+  // Whether this policy has invalid lines that would prevent it from being committed in CLI
+  private transient boolean _valid;
 }
