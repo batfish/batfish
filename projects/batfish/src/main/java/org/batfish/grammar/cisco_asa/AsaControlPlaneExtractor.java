@@ -579,8 +579,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco_asa.AsaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco_asa.AsaParser.If_ip_igmpContext;
 import org.batfish.grammar.cisco_asa.AsaParser.If_ip_inband_access_groupContext;
-import org.batfish.grammar.cisco_asa.AsaParser.If_ip_nat_insideContext;
-import org.batfish.grammar.cisco_asa.AsaParser.If_ip_nat_outsideContext;
 import org.batfish.grammar.cisco_asa.AsaParser.If_ip_ospf_areaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.If_ip_ospf_costContext;
 import org.batfish.grammar.cisco_asa.AsaParser.If_ip_ospf_dead_intervalContext;
@@ -5165,20 +5163,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
     _configuration.referenceStructure(IP_ACCESS_LIST, name, INTERFACE_IP_INBAND_ACCESS_GROUP, line);
-  }
-
-  @Override
-  public void exitIf_ip_nat_inside(If_ip_nat_insideContext ctx) {
-    _configuration
-        .getNatInside()
-        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
-  }
-
-  @Override
-  public void exitIf_ip_nat_outside(If_ip_nat_outsideContext ctx) {
-    _configuration
-        .getNatOutside()
-        .addAll(_currentInterfaces.stream().map(Interface::getName).collect(Collectors.toSet()));
   }
 
   @Override

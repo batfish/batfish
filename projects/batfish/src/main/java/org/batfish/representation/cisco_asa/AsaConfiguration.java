@@ -495,10 +495,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private final Map<String, IntegerSpace> _namedVlans;
 
-  private final @Nonnull Set<String> _natInside;
-
-  private final Set<String> _natOutside;
-
   private final List<CiscoAsaNat> _ciscoAsaNats;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
@@ -587,8 +583,6 @@ public final class AsaConfiguration extends VendorConfiguration {
     _macAccessLists = new TreeMap<>();
     _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
-    _natInside = new TreeSet<>();
-    _natOutside = new TreeSet<>();
     _ciscoAsaNats = new ArrayList<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
@@ -843,14 +837,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   public Map<String, IntegerSpace> getNamedVlans() {
     return _namedVlans;
-  }
-
-  public @Nonnull Set<String> getNatInside() {
-    return _natInside;
-  }
-
-  public Set<String> getNatOutside() {
-    return _natOutside;
   }
 
   public List<CiscoAsaNat> getCiscoAsaNats() {
@@ -1870,14 +1856,6 @@ public final class AsaConfiguration extends VendorConfiguration {
     }
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
-
-    /*
-     * NAT rules are specified at the top level, but are applied as incoming transformations on the
-     * outside interface (outside-to-inside) and outgoing transformations on the outside interface
-     * (inside-to-outside)
-     *
-     * Currently, only static NATs have both incoming and outgoing transformations
-     */
 
     List<CiscoAsaNat> ciscoAsaNats = firstNonNull(_ciscoAsaNats, ImmutableList.of());
     if (!ciscoAsaNats.isEmpty()) {
