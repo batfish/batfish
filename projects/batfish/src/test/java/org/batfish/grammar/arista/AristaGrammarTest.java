@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -88,6 +89,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
+import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -111,6 +113,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
@@ -120,7 +123,6 @@ import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GenericRib;
@@ -148,6 +150,7 @@ import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
@@ -208,7 +211,7 @@ public class AristaGrammarTest {
     configureBatfishTestSettings(settings);
     AristaCombinedParser parser = new AristaCombinedParser(src, settings);
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(src, parser, ConfigurationFormat.ARISTA, new Warnings());
+        new AristaControlPlaneExtractor(src, parser, ARISTA, new Warnings());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
@@ -232,7 +235,7 @@ public class AristaGrammarTest {
       String canonicalHostname = hostname.toLowerCase();
       assertThat(configs, hasKey(canonicalHostname));
       Configuration c = configs.get(canonicalHostname);
-      assertThat(c, hasConfigurationFormat(ConfigurationFormat.ARISTA));
+      assertThat(c, hasConfigurationFormat(ARISTA));
       return c;
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -425,6 +428,44 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testBgpLocalAs() throws IOException {
+    String testrigName = "arista-bgp-local-as";
+    List<String> configurationNames = ImmutableList.of("r1", "r2");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
+    assertTrue(
+        configurations.values().stream().allMatch(c -> c.getConfigurationFormat() == ARISTA));
+    Map<Ip, Map<String, Set<String>>> ipOwners =
+        batfish.getTopologyProvider().getIpOwners(batfish.getSnapshot()).getIpVrfOwners();
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, null).getGraph();
+
+    // Edge one direction
+    assertThat(
+        bgpTopology
+            .adjacentNodes(
+                new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false))
+            .iterator()
+            .next(),
+        equalTo(new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false)));
+
+    // Edge the other direction
+    assertThat(
+        bgpTopology
+            .adjacentNodes(
+                new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false))
+            .iterator()
+            .next(),
+        equalTo(new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false)));
+  }
+
+  @Test
   public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "arista-bgp-remove-private-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
@@ -441,7 +482,7 @@ public class AristaGrammarTest {
     batfish.computeDataPlane(snapshot);
     assertTrue(
         batfish.loadConfigurations(snapshot).values().stream()
-            .allMatch(c -> c.getConfigurationFormat() == ConfigurationFormat.ARISTA));
+            .allMatch(c -> c.getConfigurationFormat() == ARISTA));
     DataPlane dp = batfish.loadDataPlane(snapshot);
     SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
         dp.getRibs();

@@ -108,14 +108,12 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -129,8 +127,6 @@ import org.batfish.common.bdd.BDDMatchers;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.config.Settings;
-import org.batfish.datamodel.BgpPeerConfigId;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -155,7 +151,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -165,7 +160,6 @@ import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.main.TestrigText;
 import org.batfish.representation.cisco_asa.AsaConfiguration;
 import org.batfish.representation.cisco_asa.CiscoAsaNat;
 import org.batfish.representation.cisco_asa.CiscoAsaNat.Section;
@@ -958,42 +952,6 @@ public final class CiscoAsaGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT, "ON2", 0));
     /* Confirm undefined reference shows up as such */
     assertThat(ccae, hasUndefinedReference(filename, NETWORK_OBJECT, "ON_UNDEFINED"));
-  }
-
-  @Test
-  public void testBgpLocalAs() throws IOException {
-    String testrigName = "bgp-local-as";
-    List<String> configurationNames = ImmutableList.of("r1", "r2");
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
-    Map<Ip, Map<String, Set<String>>> ipOwners =
-        batfish.getTopologyProvider().getIpOwners(batfish.getSnapshot()).getIpVrfOwners();
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, null).getGraph();
-
-    // Edge one direction
-    assertThat(
-        bgpTopology
-            .adjacentNodes(
-                new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false))
-            .iterator()
-            .next(),
-        equalTo(new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false)));
-
-    // Edge the other direction
-    assertThat(
-        bgpTopology
-            .adjacentNodes(
-                new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false))
-            .iterator()
-            .next(),
-        equalTo(new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false)));
   }
 
   @Test

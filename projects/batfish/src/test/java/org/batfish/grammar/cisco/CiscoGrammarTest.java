@@ -263,7 +263,6 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
@@ -332,7 +331,6 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
-import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -3561,42 +3559,6 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e1Name, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e2Name, c))));
-  }
-
-  @Test
-  public void testBgpLocalAs() throws IOException {
-    String testrigName = "bgp-local-as";
-    List<String> configurationNames = ImmutableList.of("r1", "r2");
-
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
-    Map<Ip, Map<String, Set<String>>> ipOwners =
-        batfish.getTopologyProvider().getIpOwners(batfish.getSnapshot()).getIpVrfOwners();
-    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
-        BgpTopologyUtils.initBgpTopology(configurations, ipOwners, false, null).getGraph();
-
-    // Edge one direction
-    assertThat(
-        bgpTopology
-            .adjacentNodes(
-                new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false))
-            .iterator()
-            .next(),
-        equalTo(new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false)));
-
-    // Edge the other direction
-    assertThat(
-        bgpTopology
-            .adjacentNodes(
-                new BgpPeerConfigId("r2", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.1/32"), false))
-            .iterator()
-            .next(),
-        equalTo(new BgpPeerConfigId("r1", DEFAULT_VRF_NAME, Prefix.parse("1.2.0.2/32"), false)));
   }
 
   @Test
