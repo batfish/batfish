@@ -44,7 +44,7 @@ CLOSE_PAREN
 START_FLAT_LINE
 :
   F_WhitespaceChar* ('activate'|'deactivate'|'delete'|'insert'|'set')
-  {lastTokenType() == -1 || lastTokenType() == NEWLINE}?
+  {lastTokenType() == -1 || lastTokenType() == NEWLINE}? -> pushMode(M_FLAT_LINE)
 ;
 
 INACTIVE
@@ -98,6 +98,27 @@ NEWLINE: F_NewlineChar+ -> channel(HIDDEN);
 WS
 :
    F_WhitespaceChar+ -> skip // so not counted as last token
+;
+
+mode M_FLAT_LINE;
+
+M_FLAT_LINE_WORD
+:
+   (
+      F_QuotedString
+      | F_ParenString
+      | F_WordChar+
+   ) -> type(WORD)
+;
+
+M_FLAT_LINE_NEWLINE
+:
+   F_NewlineChar -> type(NEWLINE), popMode
+;
+
+M_FLAT_LINE_WS
+:
+   F_WhitespaceChar+ -> skip
 ;
 
 fragment

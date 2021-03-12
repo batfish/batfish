@@ -28,7 +28,7 @@ statement
 
 flat_statement
 :
-  START_FLAT_LINE words += word+
+  START_FLAT_LINE words += word+ NEWLINE
 ;
 
 hierarchical_statement
