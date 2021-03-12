@@ -25,3 +25,6 @@ set policy-options policy-statement p1 term t4 then accept
 insert policy-options policy-statement p1 term t3 before term t1
 delete policy-options policy-statement p1 term t1
 insert policy-options policy-statement p1 term t4 after term t3
+set policy-options policy-statement p1 term t5 then accept
+
+{master:0}
