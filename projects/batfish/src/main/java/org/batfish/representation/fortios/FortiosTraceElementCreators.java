@@ -1,6 +1,5 @@
 package org.batfish.representation.fortios;
 
-import com.google.common.annotations.VisibleForTesting;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.vendor.VendorStructureId;
 
@@ -10,8 +9,7 @@ public final class FortiosTraceElementCreators {
   private FortiosTraceElementCreators() {}
 
   /** Creates {@link TraceElement} for specified {@link Service}. */
-  @VisibleForTesting
-  public static TraceElement matchServiceTraceElement(Service service, String filename) {
+  static TraceElement matchServiceTraceElement(Service service, String filename) {
     TraceElement.Builder te =
         TraceElement.builder()
             .add("Matched service ")
