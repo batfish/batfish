@@ -32,10 +32,10 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -264,12 +264,14 @@ public class FortiosConfiguration extends VendorConfiguration {
   private @Nullable InterfaceType toViType(Interface.Type vsType) {
     switch (vsType) {
       case AGGREGATE:
+        // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
         return InterfaceType.AGGREGATED;
       case LOOPBACK:
         return InterfaceType.LOOPBACK;
       case PHYSICAL:
         return InterfaceType.PHYSICAL;
       case REDUNDANT:
+        // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
         return InterfaceType.REDUNDANT;
       case TUNNEL:
         return InterfaceType.TUNNEL;
@@ -339,7 +341,8 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   /** Computes the VI name for a VRF in the given VDOM with the given VRF number. */
-  private static @Nonnull String computeVrfName(String vdom, int vrf) {
+  @VisibleForTesting
+  public static @Nonnull String computeVrfName(String vdom, int vrf) {
     return String.format("%s:%s", vdom, vrf);
   }
 
