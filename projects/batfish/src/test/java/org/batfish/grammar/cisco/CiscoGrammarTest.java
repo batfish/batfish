@@ -26,6 +26,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
+import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
+import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
+import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
@@ -124,6 +127,7 @@ import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedI
 import static org.batfish.datamodel.matchers.IpsecSessionMatchers.hasNegotiatedIpsecP2Proposal;
 import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
+import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
@@ -151,6 +155,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.shiftDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.shiftSourceIp;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
+import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
@@ -300,6 +305,7 @@ import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.Line;
+import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
@@ -499,6 +505,58 @@ public final class CiscoGrammarTest {
     assertThat(iosLines.get("aux0"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
     assertThat(iosLines.get("aux0"), hasAuthenticationLoginList(hasMethod(LINE)));
     assertThat(iosLines.get("aux0"), hasAuthenticationLoginList(hasMethod(NONE)));
+  }
+
+  @Test
+  public void testAaaAuthenticationLogin() throws IOException {
+    // test IOS config
+    Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
+    SortedMap<String, Line> iosLines =
+        aaaAuthIosConfiguration.getVendorFamily().getCisco().getLines();
+    for (Line line : iosLines.values()) {
+      if (line.getLineType() == LineType.AUX) {
+        assertThat(line, not(requiresAuthentication()));
+      } else {
+        assertThat(line, requiresAuthentication());
+      }
+    }
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(hasMethod(GROUP_TACACS), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(not(hasMethod(GROUP_RADIUS)), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod(GROUP_TACACS), "ssh"))))))));
+    // test IOS config with no default login list defined
+    Configuration aaaAuthIosConfigNoDefault = parseConfig("aaaAuthenticationIosNoDefault");
+    SortedMap<String, Line> iosNoDefaultLines =
+        aaaAuthIosConfigNoDefault.getVendorFamily().getCisco().getLines();
+    for (Line line : iosNoDefaultLines.values()) {
+      if (line.getLineType() == LineType.AUX || line.getLineType() == LineType.CON) {
+        assertThat(line, not(requiresAuthentication()));
+      } else {
+        assertThat(line, requiresAuthentication());
+      }
+    }
   }
 
   @Test
