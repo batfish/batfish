@@ -251,13 +251,13 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setActive(iface.getStatusEffective())
             .setAddress(iface.getIp())
             .setMtu(iface.getMtuEffective())
-            .setType(type);
+            .setType(type)
+            // TODO Check whether FortiOS should use outgoing filter or outgoing original flow
+            //  filter (i.e. whether policies act on post-NAT or original flows)
+            .setOutgoingFilter(generateOutgoingFilter(iface, c));
     // TODO Is this the right VI field for interface alias?
     Optional.ofNullable(iface.getAlias())
         .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
-    // TODO Check whether FortiOS should use outgoing filter or outgoing original flow filter
-    //  (i.e. whether policies act on post-NAT or original flows)
-    generateOutgoingFilter(iface, c).ifPresent(viIface::setOutgoingFilter);
     viIface.build();
   }
 
@@ -280,7 +280,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     }
   }
 
-  private @Nonnull Optional<IpAccessList> generateOutgoingFilter(Interface iface, Configuration c) {
+  private @Nonnull IpAccessList generateOutgoingFilter(Interface iface, Configuration c) {
     List<AclLine> lines = new ArrayList<>();
     for (Policy policy : _policies.values()) {
       if (!policy.getDstIntf().contains(iface.getName())) {
@@ -309,19 +309,12 @@ public class FortiosConfiguration extends VendorConfiguration {
           policyPermits ? ExprAclLine.accepting(matchExpr) : ExprAclLine.rejecting(matchExpr));
     }
 
-    if (lines.isEmpty()) {
-      // No policies affect traffic exiting this interface.
-      // TODO Check default action (no egress filter implies default action PERMIT)
-      return Optional.empty();
-    }
-
-    lines.add(ExprAclLine.ACCEPT_ALL); // TODO Check default action
-    return Optional.of(
-        IpAccessList.builder()
-            .setOwner(c)
-            .setName(computeOutgoingFilterName(iface.getName()))
-            .setLines(lines)
-            .build());
+    lines.add(ExprAclLine.REJECT_ALL); // Default reject (including if no policies apply)
+    return IpAccessList.builder()
+        .setOwner(c)
+        .setName(computeOutgoingFilterName(iface.getName()))
+        .setLines(lines)
+        .build();
   }
 
   /** Computes the VI name for the given policy. */
