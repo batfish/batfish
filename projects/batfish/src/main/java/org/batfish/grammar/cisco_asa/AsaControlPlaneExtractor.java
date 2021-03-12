@@ -1030,6 +1030,7 @@ import org.batfish.grammar.cisco_asa.AsaParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.cisco_asa.AccessListAddressSpecifier;
 import org.batfish.representation.cisco_asa.AccessListServiceSpecifier;
 import org.batfish.representation.cisco_asa.AsaConfiguration;
+import org.batfish.representation.cisco_asa.AsaPredefinedServiceObject;
 import org.batfish.representation.cisco_asa.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco_asa.BgpAggregateIpv6Network;
 import org.batfish.representation.cisco_asa.BgpNetwork;
@@ -1169,7 +1170,6 @@ import org.batfish.representation.cisco_asa.VrfAddressFamily;
 import org.batfish.representation.cisco_asa.VrrpGroup;
 import org.batfish.representation.cisco_asa.VrrpInterface;
 import org.batfish.representation.cisco_asa.WildcardAddressSpecifier;
-import org.batfish.representation.cisco_asa.asa.AsaPredefinedServiceObject;
 import org.batfish.vendor.VendorConfiguration;
 
 public class AsaControlPlaneExtractor extends AsaParserBaseListener
