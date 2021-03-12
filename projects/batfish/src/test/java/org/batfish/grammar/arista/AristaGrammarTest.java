@@ -93,6 +93,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -104,6 +106,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -120,6 +123,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
@@ -418,6 +422,53 @@ public class AristaGrammarTest {
             .setLocalPreference(100)
             .build();
     assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+  }
+
+  @Test
+  public void testBgpRemovePrivateAs() throws IOException {
+    String testrigName = "arista-bgp-remove-private-as";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+
+    // Check that 1.1.1.1/32 appears on r3
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    batfish.computeDataPlane(snapshot);
+    assertTrue(
+        batfish.loadConfigurations(snapshot).values().stream()
+            .allMatch(c -> c.getConfigurationFormat() == ConfigurationFormat.ARISTA));
+    DataPlane dp = batfish.loadDataPlane(snapshot);
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
+        dp.getRibs();
+    Set<AbstractRoute> r3Routes = ribs.get("r3").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<Prefix> r3Prefixes =
+        r3Routes.stream().map(AbstractRoute::getNetwork).collect(Collectors.toSet());
+    Prefix r1Loopback = Prefix.parse("1.1.1.1/32");
+    assertTrue(r3Prefixes.contains(r1Loopback));
+
+    // check that private AS is present in path in received 1.1.1.1/32 advert on r2
+    Set<AbstractRoute> r2Routes = ribs.get("r2").get(DEFAULT_VRF_NAME).getRoutes();
+    boolean r2HasPrivate =
+        r2Routes.stream()
+            .filter(r -> r.getNetwork().equals(r1Loopback))
+            .flatMap(r -> ((Bgpv4Route) r).getAsPath().getAsSets().stream())
+            .flatMap(asSet -> asSet.getAsns().stream())
+            .anyMatch(AsPath::isPrivateAs);
+    assertTrue(r2HasPrivate);
+
+    // check that private AS is absent from path in received 1.1.1.1/32 advert on r3
+    boolean r3HasPrivate =
+        r3Routes.stream()
+            .filter(a -> a.getNetwork().equals(r1Loopback))
+            .flatMap(r -> ((Bgpv4Route) r).getAsPath().getAsSets().stream())
+            .flatMap(asSet -> asSet.getAsns().stream())
+            .anyMatch(AsPath::isPrivateAs);
+    assertFalse(r3HasPrivate);
   }
 
   @Test
