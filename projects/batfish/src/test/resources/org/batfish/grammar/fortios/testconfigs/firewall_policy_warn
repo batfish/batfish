@@ -58,4 +58,16 @@ config firewall policy
         # all should be dropped
         set dstaddr addr20 all
     next
+    edit 1
+        # this should be allowed even though properties are missing because
+        # first edit block already sets those properties for policy 1
+        set srcintf port10
+    next
+    edit 2
+        # This policy shouldn't be created because you can't leave out service
+        set srcintf port10
+        set dstintf port20
+        set srcaddr addr10
+        set dstaddr addr20
+    next
 end
