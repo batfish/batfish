@@ -35,6 +35,7 @@ import org.batfish.grammar.fortios.FortiosParser.Address_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfa_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_allow_routingContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_associated_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_commentContext;
@@ -61,6 +62,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfp_set_srcaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_srcintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_icmpcodeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_icmptypeContext;
@@ -221,6 +223,37 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsr_unset_buffer(Csr_unset_bufferContext ctx) {
     _currentReplacemsg.setBuffer(null);
+  }
+
+  @Override
+  public void exitCfa_rename(Cfa_renameContext ctx) {
+    Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
+    Optional<String> newNameOpt = toString(ctx, ctx.new_name);
+    assert currentNameOpt.isPresent();
+    assert newNameOpt.isPresent();
+
+    String currentName = currentNameOpt.get();
+    String newName = newNameOpt.get();
+    if (!_c.getAddresses().containsKey(currentName)) {
+      warnRenameNonExistent(ctx, currentName, FortiosStructureType.ADDRESS);
+      return;
+    }
+    // TODO check addrgrp as well, once that exists
+    if (_c.getAddresses().containsKey(newName)) {
+      // TODO handle conflicting renames
+      warnRenameConflict(ctx, currentName, newName, FortiosStructureType.ADDRESS);
+      return;
+    }
+    // Rename refs / def
+    _c.renameStructure(
+        currentName,
+        newName,
+        FortiosStructureType.ADDRESS,
+        ImmutableSet.of(FortiosStructureType.ADDRESS, FortiosStructureType.ADDRGRP));
+    // Rename the object itself
+    Address currentAddress = _c.getAddresses().remove(currentName);
+    currentAddress.setName(newName);
+    _c.getAddresses().put(newName, currentAddress);
   }
 
   @Override
@@ -593,6 +626,37 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       _c.defineStructure(FortiosStructureType.SERVICE_CUSTOM, name, ctx);
     }
     _currentService = null;
+  }
+
+  @Override
+  public void exitCfsc_rename(Cfsc_renameContext ctx) {
+    Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
+    Optional<String> newNameOpt = toString(ctx, ctx.new_name);
+    assert currentNameOpt.isPresent();
+    assert newNameOpt.isPresent();
+
+    String currentName = currentNameOpt.get();
+    String newName = newNameOpt.get();
+    if (!_c.getServices().containsKey(currentName)) {
+      warnRenameNonExistent(ctx, currentName, FortiosStructureType.SERVICE_CUSTOM);
+      return;
+    }
+    // TODO check service group as well, once that exists
+    if (_c.getServices().containsKey(newName)) {
+      // TODO handle conflicting renames
+      warnRenameConflict(ctx, currentName, newName, FortiosStructureType.SERVICE_CUSTOM);
+      return;
+    }
+    // Rename refs / def
+    _c.renameStructure(
+        currentName,
+        newName,
+        FortiosStructureType.SERVICE_CUSTOM,
+        ImmutableSet.of(FortiosStructureType.SERVICE_CUSTOM, FortiosStructureType.SERVICE_GROUP));
+    // Rename the object itself
+    Service currentService = _c.getServices().remove(currentName);
+    currentService.setName(newName);
+    _c.getServices().put(newName, currentService);
   }
 
   @Override
@@ -1095,6 +1159,22 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return Optional.empty();
     }
     return Optional.of(num);
+  }
+
+  /** Generate a warning for trying to rename a non-existent structure. */
+  private void warnRenameNonExistent(
+      ParserRuleContext ctx, String name, FortiosStructureType type) {
+    warn(ctx, String.format("Cannot rename non-existent %s %s", type.getDescription(), name));
+  }
+
+  /** Generate a warning for trying to rename a structure with a name already in use. */
+  private void warnRenameConflict(
+      ParserRuleContext ctx, String currentName, String newName, FortiosStructureType type) {
+    warn(
+        ctx,
+        String.format(
+            "Renaming %s %s conflicts with an existing object %s, ignoring this rename operation",
+            type.getDescription(), currentName, newName));
   }
 
   @Override
