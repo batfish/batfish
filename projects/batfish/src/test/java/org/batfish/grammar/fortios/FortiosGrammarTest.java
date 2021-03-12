@@ -809,7 +809,8 @@ public final class FortiosGrammarTest {
         (FortiosConfiguration)
             batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
 
-    assertThat(vc.getPolicies(), hasKeys("0", "1"));
+    // Policy 1 should not convert because it doesn't have any valid src or dst addresses
+    assertThat(vc.getPolicies(), hasKeys("0"));
     assertThat(vc.getAddresses(), hasKeys("new_addr1", "new_addr2"));
     assertThat(vc.getServices(), hasKeys("new_service1", "new_service2"));
 
@@ -843,7 +844,8 @@ public final class FortiosGrammarTest {
                 hasComment("Service old_service1 is undefined and cannot be added to policy 1"),
                 hasComment("Service new_service2 is undefined and cannot be added to policy 1"),
                 hasComment("Cannot rename non-existent address undefined"),
-                hasComment("Cannot rename non-existent service custom undefined"))));
+                hasComment("Cannot rename non-existent service custom undefined"),
+                hasComment("Policy edit block ignored: srcaddr must be set"))));
   }
 
   @Test
