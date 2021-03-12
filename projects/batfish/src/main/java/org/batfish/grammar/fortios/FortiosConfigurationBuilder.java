@@ -452,7 +452,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void enterCfp_edit(Cfp_editContext ctx) {
     Optional<Long> number = toLong(ctx, ctx.policy_number());
-    _currentPolicyValid = number.isPresent();
     Policy existing = number.map(Object::toString).map(_c.getPolicies()::get).orElse(null);
     if (existing != null) {
       // Make a clone to edit
@@ -460,14 +459,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     } else {
       _currentPolicy = new Policy(toString(ctx.policy_number().str()));
     }
+    _currentPolicy.setValid(number.isPresent());
   }
 
   @Override
   public void exitCfp_edit(Cfp_editContext ctx) {
     // If edited policy is valid, add/update the entry in VS map
-    // TODO: Better validity checking
     String number = _currentPolicy.getNumber();
-    if (_currentPolicyValid) {
+    String invalidReason = _currentPolicy.getInvalidReason();
+    if (invalidReason == null) { // policy is valid
       _c.defineStructure(FortiosStructureType.POLICY, number, ctx);
       _c.referenceStructure(
           FortiosStructureType.POLICY,
@@ -475,6 +475,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           FortiosStructureUsage.POLICY_SELF_REF,
           ctx.start.getLine());
       _c.getPolicies().put(number, _currentPolicy);
+    } else {
+      warn(ctx, String.format("Policy edit block ignored: %s", invalidReason));
     }
     _currentPolicy = null;
   }
@@ -1255,7 +1257,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Address _currentAddress;
   private Interface _currentInterface;
   private Policy _currentPolicy;
-  private boolean _currentPolicyValid;
   private Replacemsg _currentReplacemsg;
   private Service _currentService;
   private final @Nonnull FortiosConfiguration _c;

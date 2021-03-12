@@ -23,5 +23,11 @@ config firewall policy
     edit 1
         set UNDEFINED_POLICY_PROP to a bunch of garbage
         set comments "policy comments, plural"
+        # Can't commit policy block without all these properties
+        set srcintf port1
+        set dstintf port1
+        set srcaddr addr1
+        set dstaddr addr1
+        set service service1
     next
 end
