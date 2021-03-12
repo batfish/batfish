@@ -1,7 +1,0 @@
-!
-hostname ios-bgp-multiple-routers
-!
-router bgp 3
-!
-router bgp 2
-!

@@ -1,6 +1,0 @@
-!
-hostname ios-route-map-set-tag
-!
-route-map SET_TAG permit 10
-  set tag 20
-!
