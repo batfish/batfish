@@ -26,7 +26,9 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
@@ -112,7 +114,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     // Convert policies. Must happen after c._ipSpaces is populated (addresses are converted)
     Map<String, AclLineMatchExpr> convertedServices =
         _services.values().stream()
-            .collect(ImmutableMap.toImmutableMap(Service::getName, svc -> svc.toMatchExpr(_w)));
+            .collect(ImmutableMap.toImmutableMap(Service::getName, this::toMatchExpr));
     _policies.values().forEach(policy -> convertPolicy(policy, c, convertedServices));
 
     // Count structure references
@@ -120,6 +122,33 @@ public class FortiosConfiguration extends VendorConfiguration {
     markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
     markConcreteStructure(FortiosStructureType.INTERFACE);
     return c;
+  }
+
+  /** Convert specified {@link Service} into its corresponding {@link AclLineMatchExpr}. */
+  @VisibleForTesting
+  @Nonnull
+  AclLineMatchExpr toMatchExpr(Service service) {
+    List<AclLineMatchExpr> matchExprs =
+        service
+            .toHeaderSpaces()
+            .map(MatchHeaderSpace::new)
+            .collect(ImmutableList.toImmutableList());
+    if (matchExprs.isEmpty()) {
+      _w.redFlag(String.format("Service %s does not match any packets", service.getName()));
+      return AclLineMatchExprs.FALSE;
+    }
+    TraceElement.Builder te = TraceElement.builder();
+    te.add("Matched service custom")
+        .add(
+            service.getName(),
+            new VendorStructureId(
+                _filename,
+                FortiosStructureType.SERVICE_CUSTOM.getDescription(),
+                service.getName()));
+    if (service.getComment() != null) {
+      te.add(String.format("(%s)", service.getComment()));
+    }
+    return new OrMatchExpr(matchExprs, te.build());
   }
 
   private void convertPolicy(

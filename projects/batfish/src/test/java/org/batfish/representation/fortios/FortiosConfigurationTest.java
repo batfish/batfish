@@ -17,9 +17,10 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
-public class ServiceTest {
+public class FortiosConfigurationTest {
 
   private static final BddTestbed BDD_TESTBED;
   private static final BDD ZERO;
@@ -39,16 +40,18 @@ public class ServiceTest {
   public void testToMatchExpr_tcpUdpSctp_defaults() {
     // Default service with no dst ports specified matches nothing and files warning
     String svcName = "name";
+    FortiosConfiguration c = new FortiosConfiguration();
     Service service = new Service(svcName, new BatfishUUID(1));
     Warnings w = new Warnings(true, true, true);
-    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr(w)), equalTo(ZERO));
+    c.setWarnings(w);
+    assertThat(ACL_TO_BDD.toBdd(c.toMatchExpr(service)), equalTo(ZERO));
     assertThat(
         w.getRedFlagWarnings(),
         contains(hasText(String.format("Service %s does not match any packets", svcName))));
 
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr(w)), equalTo(ZERO));
+    assertThat(ACL_TO_BDD.toBdd(c.toMatchExpr(service)), equalTo(ZERO));
   }
 
   @Test
@@ -180,18 +183,28 @@ public class ServiceTest {
   @Test
   public void testToMatchExpr_traceElement() {
     String svcName = "name";
+    String filename = "filename";
     Service service = new Service(svcName, new BatfishUUID(1));
+    FortiosConfiguration c = new FortiosConfiguration();
+    c.setWarnings(new Warnings());
+    c.setFilename(filename);
     service.setProtocol(Service.Protocol.ICMP);
-    assertThat(
-        service.toMatchExpr(new Warnings()).getTraceElement(),
-        equalTo(TraceElement.of("Matched service " + svcName)));
+    TraceElement.Builder expectedTe =
+        TraceElement.builder()
+            .add("Matched service custom")
+            .add(
+                service.getName(),
+                new VendorStructureId(
+                    filename,
+                    FortiosStructureType.SERVICE_CUSTOM.getDescription(),
+                    service.getName()));
+    assertThat(c.toMatchExpr(service).getTraceElement(), equalTo(expectedTe.build()));
 
     // With comment
     String comment = "you can't go there";
     service.setComment(comment);
-    assertThat(
-        service.toMatchExpr(new Warnings()).getTraceElement(),
-        equalTo(TraceElement.of(String.format("Matched service %s: %s", svcName, comment))));
+    expectedTe.add(comment);
+    assertThat(c.toMatchExpr(service).getTraceElement(), equalTo(expectedTe.build()));
   }
 
   /**
@@ -200,7 +213,9 @@ public class ServiceTest {
    */
   private void assertConvertsWithoutWarnings(Service service, BDD expected) {
     Warnings w = new Warnings();
-    assertThat(ACL_TO_BDD.toBdd(service.toMatchExpr(w)), equalTo(expected));
+    FortiosConfiguration c = new FortiosConfiguration();
+    c.setWarnings(w);
+    assertThat(ACL_TO_BDD.toBdd(c.toMatchExpr(service)), equalTo(expected));
     assertThat(w.getRedFlagWarnings(), empty());
   }
 }
