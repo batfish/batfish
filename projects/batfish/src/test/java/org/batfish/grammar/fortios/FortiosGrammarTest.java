@@ -6,6 +6,7 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
@@ -793,7 +794,7 @@ public final class FortiosGrammarTest {
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
     Map<String, Policy> policies = vc.getPolicies();
-    assertThat(policies, hasKeys(contains("1")));
+    assertThat(policies, hasKeys(containsInAnyOrder("1", "3")));
     Policy policy = policies.get("1");
 
     Map<String, Service> services = vc.getServices();
@@ -826,14 +827,14 @@ public final class FortiosGrammarTest {
     String hostname = "firewall_policy_warn";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Warnings warnings =
+    Warnings parseWarnings =
         getOnlyElement(
             batfish
                 .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
                 .getWarnings()
                 .values());
     assertThat(
-        warnings,
+        parseWarnings,
         hasParseWarnings(
             containsInAnyOrder(
                 hasComment("Expected policy number in range 0-4294967294, but got '4294967295'"),
@@ -874,6 +875,25 @@ public final class FortiosGrammarTest {
                 allOf(
                     hasComment("When 'any' is set together with other interfaces, it is removed"),
                     hasText("any port10")))));
+
+    Warnings conversionWarnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        conversionWarnings,
+        hasRedFlags(
+            contains(WarningMatchers.hasText("Ignoring policy 3: Action IPSEC is not supported"))));
+
+    // Confirm that only the supported policy is converted
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(
+        c.getIpAccessLists(),
+        hasKeys(
+            computeViPolicyName(null, "1"),
+            computeOutgoingFilterName("port10"),
+            computeOutgoingFilterName("port20")));
   }
 
   @Test

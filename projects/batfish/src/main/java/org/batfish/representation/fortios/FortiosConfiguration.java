@@ -1,5 +1,6 @@
 package org.batfish.representation.fortios;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
@@ -157,9 +158,27 @@ public class FortiosConfiguration extends VendorConfiguration {
       return;
     }
 
-    // TODO Incorporate policy.getComments()
     String number = policy.getNumber();
     @Nullable String name = policy.getName();
+    String numAndName = name == null ? number : String.format("%s (%s)", number, name);
+
+    ExprAclLine.Builder line;
+    switch (policy.getActionEffective()) {
+      case ALLOW:
+        line = ExprAclLine.accepting();
+        break;
+      case DENY:
+        line = ExprAclLine.rejecting();
+        break;
+      default: // TODO: Support policies with action IPSEC
+        _w.redFlag(
+            String.format(
+                "Ignoring policy %s: Action %s is not supported",
+                numAndName, policy.getActionEffective()));
+        return;
+    }
+
+    // TODO Incorporate policy.getComments()
     Set<String> srcAddrs = policy.getSrcAddr();
     Set<String> dstAddrs = policy.getDstAddr();
     Set<String> services = policy.getService();
@@ -202,7 +221,6 @@ public class FortiosConfiguration extends VendorConfiguration {
             .map(convertedServices::get)
             .collect(ImmutableList.toImmutableList());
     if (srcAddrExprs.isEmpty() || dstAddrExprs.isEmpty() || services.isEmpty()) {
-      String numAndName = name == null ? number : String.format("%s (%s)", number, name);
       String emptyField =
           srcAddrExprs.isEmpty()
               ? "source addresses"
@@ -217,13 +235,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     matchConjuncts.add(or(dstAddrExprs));
     matchConjuncts.add(or(svcExprs)); // TODO confirm services should be disjoined
 
-    // construct line
-    ExprAclLine.Builder line =
-        policy.getActionEffective() == Policy.Action.ALLOW
-            ? ExprAclLine.accepting()
-            : ExprAclLine.rejecting();
     line.setMatchCondition(and(matchConjuncts.build()));
-
     String viName = computeViPolicyName(policy);
     IpAccessList.builder().setOwner(c).setName(viName).setLines(line.build()).build();
   }
@@ -297,6 +309,11 @@ public class FortiosConfiguration extends VendorConfiguration {
       // Each policy can only either allow or deny, so no need to create separate lines to match
       // permitted and denied traffic. (Ideally would use an AclAclLine, but can't AND that with the
       // matchSources expr.)
+      // TODO This may need to change once we support action IPSEC.
+      Policy.Action policyAction = policy.getActionEffective();
+      checkState( // not a warning because other policies should not have been converted
+          policyAction == Policy.Action.ALLOW || policyAction == Policy.Action.DENY,
+          "Policies with actions other than ALLOW and DENY are not supported");
       boolean policyPermits = policy.getActionEffective() == Policy.Action.ALLOW;
       AclLineMatchExpr policyMatches =
           policyPermits ? new PermittedByAcl(viPolicyName) : new DeniedByAcl(viPolicyName);
