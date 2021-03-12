@@ -632,21 +632,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentService = null;
   }
 
-  /** Generate a warning for trying to rename a non-existent structure. */
-  void warnRenameNonExistent(ParserRuleContext ctx, String name, FortiosStructureType type) {
-    warn(ctx, String.format("Cannot rename non-existent %s %s", type.getDescription(), name));
-  }
-
-  /** Generate a warning for trying to rename a structure with a name already in use. */
-  void warnRenameConflict(
-      ParserRuleContext ctx, String currentName, String newName, FortiosStructureType type) {
-    warn(
-        ctx,
-        String.format(
-            "Renaming %s %s conflicts with an existing object %s, ignoring this rename operation",
-            type.getDescription(), currentName, newName));
-  }
-
   @Override
   public void exitCfsc_rename(Cfsc_renameContext ctx) {
     Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
@@ -1178,6 +1163,22 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return Optional.empty();
     }
     return Optional.of(num);
+  }
+
+  /** Generate a warning for trying to rename a non-existent structure. */
+  private void warnRenameNonExistent(
+      ParserRuleContext ctx, String name, FortiosStructureType type) {
+    warn(ctx, String.format("Cannot rename non-existent %s %s", type.getDescription(), name));
+  }
+
+  /** Generate a warning for trying to rename a structure with a name already in use. */
+  private void warnRenameConflict(
+      ParserRuleContext ctx, String currentName, String newName, FortiosStructureType type) {
+    warn(
+        ctx,
+        String.format(
+            "Renaming %s %s conflicts with an existing object %s, ignoring this rename operation",
+            type.getDescription(), currentName, newName));
   }
 
   @Override
