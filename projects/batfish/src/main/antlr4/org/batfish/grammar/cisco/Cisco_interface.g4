@@ -668,11 +668,6 @@ if_mtu
    MTU mtu_size = dec NEWLINE
 ;
 
-if_nameif
-:
-   NAMEIF name = variable NEWLINE
-;
-
 if_network_clock
 :
   NETWORK_CLOCK null_rest_of_line
@@ -685,9 +680,7 @@ if_no
     if_no_bfd
     | if_no_ip
     | if_no_mka
-    | if_no_nameif
     | if_no_routing_dynamic
-    | if_no_security_level
     | if_no_synchronous
   )
 ;
@@ -730,19 +723,9 @@ if_no_mka
   MKA null_rest_of_line
 ;
 
-if_no_nameif
-:
-   NAMEIF NEWLINE
-;
-
 if_no_routing_dynamic
 :
    ROUTING DYNAMIC NEWLINE
-;
-
-if_no_security_level
-:
-   SECURITY_LEVEL NEWLINE
 ;
 
 if_no_synchronous
@@ -1577,11 +1560,6 @@ if_zone_member
    ZONE_MEMBER SECURITY? name = variable_permissive NEWLINE
 ;
 
-if_security_level
-:
-   SECURITY_LEVEL level = dec NEWLINE
-;
-
 ifdhcp_null
 :
    (
@@ -1853,7 +1831,6 @@ if_inner
    | if_member_interface
    | if_mka
    | if_mtu
-   | if_nameif
    | if_network_clock
    | if_no
    | if_port_security
@@ -1884,7 +1861,6 @@ if_inner
    | if_vrrp
    | if_vrrpno
    | if_zone_member
-   | if_security_level
    // do not rearrange items below
  
    | if_null_single

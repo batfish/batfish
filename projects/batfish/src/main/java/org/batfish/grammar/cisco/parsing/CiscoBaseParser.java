@@ -22,17 +22,7 @@ public abstract class CiscoBaseParser extends BatfishParser {
     return true;
   }
 
-  private boolean _asa;
-
   public CiscoBaseParser(TokenStream input) {
     super(input);
-  }
-
-  protected boolean isAsa() {
-    return _asa;
-  }
-
-  public void setAsa(boolean asa) {
-    _asa = asa;
   }
 }

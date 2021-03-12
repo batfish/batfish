@@ -1,0 +1,31 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-nested-network-object-group
+!
+object-group network eng
+ network-object host 10.1.1.5
+ network-object host 10.1.1.9
+ network-object host 10.1.1.89
+!
+object-group network hr
+ network-object host 10.1.2.8
+ network-object host 10.1.2.12
+!
+object-group network finance
+ network-object host 10.1.4.89
+ network-object host 10.1.4.100
+!
+object-group group network admin
+ group-object eng
+ group-object hr
+ group-object finance
+ group-object UNDEFINED_GROUP
+!
+object-group network it
+ network-object host 10.2.3.4
+!
+object-group network mixed_group
+ network-object host 10.2.3.5
+ group-object it
+ group-object UNDEFINED_GROUP_MIXED

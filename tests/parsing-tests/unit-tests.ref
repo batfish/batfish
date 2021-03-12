@@ -7854,7 +7854,7 @@
         },
         "configs/asa_acl" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8279,7 +8279,7 @@
         },
         "configs/asa_banner" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8327,7 +8327,7 @@
         },
         "configs/asa_interface" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8372,7 +8372,7 @@
         },
         "configs/asa_nat" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8674,7 +8674,7 @@
         },
         "configs/asa_object_groups" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8753,7 +8753,7 @@
         },
         "configs/asa_ospf" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -14303,19 +14303,6 @@
             "      AAA:'aaa'",
             "      (aaa_authentication",
             "        AUTHENTICATION:'authentication'",
-            "        (aaa_authentication_asa",
-            "          linetype = HTTP:'http'  <== mode:M_Authentication",
-            "          (aaa_authentication_asa_console",
-            "            CONSOLE:'console'",
-            "            group = (variable",
-            "              TACACS_PLUS_ASA:'TACACS+')",
-            "            LOCAL_ASA:'LOCAL'",
-            "            NEWLINE:'\\n')))))",
-            "  (stanza",
-            "    (s_aaa",
-            "      AAA:'aaa'",
-            "      (aaa_authentication",
-            "        AUTHENTICATION:'authentication'",
             "        (aaa_authentication_include",
             "          INCLUDE:'include'  <== mode:M_Authentication",
             "          name = (variable",
@@ -14486,19 +14473,6 @@
             "              (aaa_authentication_list_method_group_ios",
             "                TACACS_PLUS:'tacacs+')))",
             "          NEWLINE:'\\n'))))",
-            "  (stanza",
-            "    (s_aaa",
-            "      AAA:'aaa'",
-            "      (aaa_authentication",
-            "        AUTHENTICATION:'authentication'",
-            "        (aaa_authentication_asa",
-            "          linetype = TELNET:'telnet'  <== mode:M_Authentication",
-            "          (aaa_authentication_asa_console",
-            "            CONSOLE:'console'",
-            "            group = (variable",
-            "              TACACS_PLUS_ASA:'TACACS+')",
-            "            LOCAL_ASA:'LOCAL'",
-            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_aaa",
             "      AAA:'aaa'",
@@ -15613,7 +15587,7 @@
         },
         "configs/cisco_asa/asa-interface-redundant" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -25709,18 +25683,6 @@
             "              DEC:'0'  <== mode:M_Interface))))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner",
-            "        (if_nameif",
-            "          NAMEIF:'nameif'",
-            "          name = (variable",
-            "            INSIDE:'inside')",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
-            "        (if_security_level",
-            "          SECURITY_LEVEL:'security-level'",
-            "          level = (dec",
-            "            UINT8:'100')",
-            "          NEWLINE:'\\n'))",
-            "      (if_inner",
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
@@ -25744,18 +25706,6 @@
             "            low = (dec",
             "              DEC:'0'  <== mode:M_Interface))))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
-            "      (if_inner",
-            "        (if_no",
-            "          NO:'no'",
-            "          (if_no_nameif",
-            "            NAMEIF:'nameif'",
-            "            NEWLINE:'\\n')))",
-            "      (if_inner",
-            "        (if_no",
-            "          NO:'no'",
-            "          (if_no_security_level",
-            "            SECURITY_LEVEL:'security-level'",
-            "            NEWLINE:'\\n')))",
             "      (if_inner",
             "        (if_no",
             "          NO:'no'",
@@ -78377,7 +78327,7 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 9,
-              "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+              "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza asa_configuration]",
               "Text" : "interface outside"
             }
           ]
@@ -78387,85 +78337,85 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 6,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat (any,any) source dynamic source-net pat-pool pool block-allocation round-robin"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 7,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat (inside,outside) source dynamic net1 net2 interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 9,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat (inside,outside) source static net1 net2 route-lookup"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 10,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat source dynamic source-net pat-pool pool extended flat include-reserve"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 12,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat source static net1 net2 dns no-proxy-arp unidirectional"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 13,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat source static net1 net2 service service1 service2"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 16,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 17,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic 1.1.1.1"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 18,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic source-mapped dns"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 19,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic source-mapped interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 20,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic pat-pool WORD interface flat"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 21,
-              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza asa_configuration]",
               "Text" : "static interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 22,
-              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza asa_configuration]",
               "Text" : "static source-mapped no-proxy-arp route-lookup"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 23,
-              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza asa_configuration]",
               "Text" : "static source-mapped service sctp ftp bgp"
             }
           ],
@@ -78646,13 +78596,13 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 313,
+              "Line" : 309,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre ipv4"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 314,
+              "Line" : 310,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -80996,79 +80946,75 @@
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
-              "definitionLines" : "342-343",
+              "definitionLines" : "338-339",
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
-              "definitionLines" : "291-295",
+              "definitionLines" : "291-293",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : "297-300",
+              "definitionLines" : "295-296",
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
-              "definitionLines" : "302",
+              "definitionLines" : "298",
               "numReferrers" : 1
             },
             "Null0" : {
-              "definitionLines" : "304",
+              "definitionLines" : "300",
               "numReferrers" : 1
             },
             "Tunnel0" : {
-              "definitionLines" : "308-319",
+              "definitionLines" : "304-315",
               "numReferrers" : 1
             },
             "Vlan1" : {
-              "definitionLines" : "322",
+              "definitionLines" : "318",
               "numReferrers" : 1
             },
             "Vlan1005" : {
-              "definitionLines" : "328",
-              "numReferrers" : 1
-            },
-            "Vlan1006" : {
-              "definitionLines" : "330",
-              "numReferrers" : 1
-            },
-            "Vlan111" : {
-              "definitionLines" : "320",
-              "numReferrers" : 1
-            },
-            "Vlan1234" : {
-              "definitionLines" : "332",
-              "numReferrers" : 1
-            },
-            "Vlan2" : {
               "definitionLines" : "324",
               "numReferrers" : 1
             },
-            "Vlan3" : {
+            "Vlan1006" : {
               "definitionLines" : "326",
               "numReferrers" : 1
             },
+            "Vlan111" : {
+              "definitionLines" : "316",
+              "numReferrers" : 1
+            },
+            "Vlan1234" : {
+              "definitionLines" : "328",
+              "numReferrers" : 1
+            },
+            "Vlan2" : {
+              "definitionLines" : "320",
+              "numReferrers" : 1
+            },
+            "Vlan3" : {
+              "definitionLines" : "322",
+              "numReferrers" : 1
+            },
             "Vlan4094" : {
-              "definitionLines" : "334",
+              "definitionLines" : "330",
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
-              "definitionLines" : "336",
+              "definitionLines" : "332",
               "numReferrers" : 1
             },
             "Wlan-GigabitEthernet0" : {
-              "definitionLines" : "340",
+              "definitionLines" : "336",
               "numReferrers" : 1
             },
             "Wlan-ap0" : {
-              "definitionLines" : "338",
-              "numReferrers" : 1
-            },
-            "inside" : {
-              "definitionLines" : "292",
+              "definitionLines" : "334",
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
-              "definitionLines" : "306",
+              "definitionLines" : "302",
               "numReferrers" : 1
             }
           }
@@ -86333,7 +86279,7 @@
             },
             "Cellular0" : {
               "tunnel source" : [
-                317
+                313
               ]
             },
             "Crypto-Engine1/2/3" : {
@@ -86351,7 +86297,7 @@
                 7
               ],
               "tunnel source" : [
-                318
+                314
               ]
             },
             "Ethernet1/11" : {
@@ -86361,7 +86307,7 @@
             },
             "Ethernet1/12" : {
               "interface" : [
-                342
+                338
               ]
             },
             "GigabitEthernet0/0" : {
@@ -86371,87 +86317,82 @@
             },
             "Loopback0" : {
               "interface" : [
-                297
+                295
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                302
+                298
               ]
             },
             "Null0" : {
               "interface" : [
-                304
+                300
               ]
             },
             "Tunnel0" : {
               "interface" : [
-                308
+                304
               ]
             },
             "Vlan1" : {
               "interface" : [
-                322
+                318
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                328
+                324
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                330
+                326
               ]
             },
             "Vlan111" : {
               "interface" : [
-                320
+                316
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                332
+                328
               ]
             },
             "Vlan2" : {
               "interface" : [
-                324
+                320
               ]
             },
             "Vlan3" : {
               "interface" : [
-                326
+                322
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                334
+                330
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                336
+                332
               ]
             },
             "Wlan-GigabitEthernet0" : {
               "interface" : [
-                340
+                336
               ]
             },
             "Wlan-ap0" : {
               "interface" : [
-                338
-              ]
-            },
-            "inside" : {
-              "interface" : [
-                292
+                334
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                306
+                302
               ]
             }
           },

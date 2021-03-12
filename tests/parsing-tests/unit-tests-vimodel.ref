@@ -25027,18 +25027,6 @@
                       "methods" : [
                         "LINE"
                       ]
-                    },
-                    "http" : {
-                      "methods" : [
-                        "GROUP_USER_DEFINED",
-                        "LOCAL_CASE"
-                      ]
-                    },
-                    "telnet" : {
-                      "methods" : [
-                        "GROUP_USER_DEFINED",
-                        "LOCAL_CASE"
-                      ]
                     }
                   },
                   "privilegeMode" : true
@@ -25047,32 +25035,6 @@
               "newModel" : false
             },
             "hostname" : "cisco_aaa",
-            "lines" : {
-              "http" : {
-                "name" : "http",
-                "aaaAuthenticationLoginList" : {
-                  "methods" : [
-                    "GROUP_USER_DEFINED",
-                    "LOCAL_CASE"
-                  ]
-                },
-                "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0,
-                "lineType" : "HTTP"
-              },
-              "telnet" : {
-                "name" : "telnet",
-                "aaaAuthenticationLoginList" : {
-                  "methods" : [
-                    "GROUP_USER_DEFINED",
-                    "LOCAL_CASE"
-                  ]
-                },
-                "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0,
-                "lineType" : "TELNET"
-              }
-            },
             "logging" : {
               "on" : true
             }
@@ -28651,6 +28613,43 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "GigabitEthernet0/0" : {
+            "name" : "GigabitEthernet0/0",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allPrefixes" : [
+              "192.168.0.1/24"
+            ],
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "GigabitEthernet0/0"
+            ],
+            "mtu" : 1500,
+            "ospfSettings" : {
+              "cost" : 60,
+              "deadInterval" : 40,
+              "enabled" : false,
+              "helloInterval" : 10,
+              "helloMultiplier" : 0,
+              "networkType" : "BROADCAST",
+              "passive" : false
+            },
+            "prefix" : "192.168.0.1/24",
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          },
           "Loopback0" : {
             "name" : "Loopback0",
             "active" : true,
@@ -29005,45 +29004,6 @@
             "type" : "UNKNOWN",
             "vrf" : "default"
           },
-          "inside" : {
-            "name" : "inside",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "192.168.0.1/24"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 1.0E9,
-            "declaredNames" : [
-              "GigabitEthernet0/0",
-              "inside"
-            ],
-            "mtu" : 1500,
-            "ospfSettings" : {
-              "cost" : 60,
-              "deadInterval" : 40,
-              "enabled" : false,
-              "helloInterval" : 10,
-              "helloMultiplier" : 0,
-              "networkType" : "BROADCAST",
-              "passive" : false
-            },
-            "outgoingFilter" : "~COMBINED_OUTGOING_ACL~inside~",
-            "prefix" : "192.168.0.1/24",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "speed" : 1.0E9,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
-            "vrf" : "default"
-          },
           "tunnel-ip6" : {
             "name" : "tunnel-ip6",
             "active" : true,
@@ -29105,82 +29065,6 @@
             "name" : "abc",
             "sourceName" : "abc",
             "sourceType" : "extended ipv4 access-list"
-          },
-          "~COMBINED_OUTGOING_ACL~inside~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "DENY",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                      "srcInterfaces" : [
-                        "inside"
-                      ],
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "same-security-traffic permit intra-interface is not set"
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface",
-                      "traceElement" : {
-                        "fragments" : [
-                          {
-                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                            "text" : "same-security-traffic permit inter-interface is not set"
-                          }
-                        ]
-                      }
-                    }
-                  ]
-                }
-              },
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.acl.PermittedByAcl",
-                      "aclName" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.acl.FalseExpr"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~COMBINED_OUTGOING_ACL~inside~"
-          },
-          "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~" : {
-            "lines" : [
-              {
-                "class" : "org.batfish.datamodel.ExprAclLine",
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OriginatingFromDevice"
-                },
-                "name" : "Allow traffic originating from this device",
-                "traceElement" : {
-                  "fragments" : [
-                    {
-                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched traffic originating from this device"
-                    }
-                  ]
-                }
-              }
-            ],
-            "name" : "~ZONE_OUTGOING_ACL~SECURITY_LEVEL_100~"
           }
         },
         "vendorFamily" : {
@@ -29197,14 +29081,6 @@
           },
           "default" : {
             "name" : "default"
-          }
-        },
-        "zones" : {
-          "SECURITY_LEVEL_100" : {
-            "name" : "SECURITY_LEVEL_100",
-            "interfaces" : [
-              "inside"
-            ]
           }
         }
       },

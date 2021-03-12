@@ -1,6 +1,5 @@
 package org.batfish.grammar.cisco;
 
-import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
@@ -17,7 +16,6 @@ import com.google.common.collect.Iterables;
 import java.io.IOException;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.main.BatfishTestUtils;
@@ -40,16 +38,11 @@ public class CiscoAclTest {
 
   @Test
   public void testAclMasks() throws IOException {
-    testAcls("aclAsa", CISCO_ASA);
-    testAcls("aclIos", CISCO_IOS);
-  }
-
-  private void testAcls(String hostname, ConfigurationFormat format) throws IOException {
-    Configuration c = parseConfig(hostname);
+    Configuration c = parseConfig("aclIos");
     IpAccessList acl = c.getIpAccessLists().get("acl");
     AclLine line = Iterables.getOnlyElement(acl.getLines());
 
-    assertThat(c.getConfigurationFormat(), equalTo(format));
+    assertThat(c.getConfigurationFormat(), equalTo(CISCO_IOS));
     ImmutableList.of("1.2.3.0", "1.2.3.255").stream()
         .map(Ip::parse)
         .forEach(

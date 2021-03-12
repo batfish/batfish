@@ -160,6 +160,7 @@
               <arg>-XDignore.symbol.file</arg>
             </compilerArgs>
             <fork>true</fork>
+            <maxmem>2048m</maxmem>
             <useIncrementalCompilation>false</useIncrementalCompilation>
           </configuration>
         </plugin>

@@ -145,8 +145,6 @@ public class Interface implements Serializable {
 
   private boolean _active;
 
-  private String _alias;
-
   @Nullable private IntegerSpace _allowedVlans;
 
   private boolean _autoState;
@@ -235,8 +233,6 @@ public class Interface implements Serializable {
   private SortedSet<String> _declaredNames;
 
   private String _securityZone;
-
-  @Nullable private Integer _securityLevel;
 
   private @Nullable Double _speed;
 
@@ -335,10 +331,6 @@ public class Interface implements Serializable {
 
   public boolean getActive() {
     return _active;
-  }
-
-  public String getAlias() {
-    return _alias;
   }
 
   @Nullable
@@ -535,11 +527,6 @@ public class Interface implements Serializable {
     return _tunnel;
   }
 
-  @Nullable
-  public Integer getSecurityLevel() {
-    return _securityLevel;
-  }
-
   public String getVrf() {
     return _vrf;
   }
@@ -550,10 +537,6 @@ public class Interface implements Serializable {
 
   public void setActive(boolean active) {
     _active = active;
-  }
-
-  public void setAlias(String alias) {
-    _alias = alias;
   }
 
   public void setAutoState(boolean autoState) {
@@ -719,9 +702,5 @@ public class Interface implements Serializable {
 
   public void setHsrpVersion(String hsrpVersion) {
     _hsrpVersion = hsrpVersion;
-  }
-
-  public void setSecurityLevel(@Nullable Integer level) {
-    _securityLevel = level;
   }
 }

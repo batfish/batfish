@@ -1,0 +1,20 @@
+!
+hostname ospf-network-types
+!
+interface Ethernet0/0
+!
+interface Ethernet0/1
+ ip ospf network point-to-point
+!
+interface Ethernet0/2
+ ip ospf network broadcast
+!
+interface Ethernet0/3
+ ip ospf network non-broadcast
+!
+interface Ethernet0/4
+ ip ospf network point-to-multipoint
+!
+interface Ethernet0/5
+ ip ospf network point-to-multipoint non-broadcast
+!

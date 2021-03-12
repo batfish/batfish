@@ -1,0 +1,17 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname network-object
+!
+object network ON1
+ description blah blah blah
+ host 1.2.3.4
+!
+object network ON2
+ subnet 2.2.2.0 255.255.255.0
+!
+object-group network OGN
+ network-object object ON1
+ network-object 3.3.3.3 255.255.255.255
+ network-object object ON_UNDEFINED
+!

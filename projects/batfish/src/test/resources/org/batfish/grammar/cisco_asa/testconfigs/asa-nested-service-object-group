@@ -1,0 +1,32 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-nested-service-object-group
+!
+object-group service service1 tcp-udp
+ description blah blah blah
+ port-object eq domain
+!
+object-group service service2 udp
+ port-object eq 1234
+ port-object eq 2345
+!
+object-group service service3 tcp
+ port-object range 2345 2445
+!
+object-group group service services tcp-udp
+ group-object service1
+ group-object service2
+ group-object service3
+!
+object-group service service4
+ port-object eq 4444
+!
+object-group service mixed_group
+ port-object eq 5555
+ group-object service4
+ group-object UNDEFINED_GROUP_MIXED
+!
+object-group group service services_undef tcp-udp
+ group-object UNDEFINED_GROUP
+!
