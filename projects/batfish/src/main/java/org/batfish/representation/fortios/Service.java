@@ -1,24 +1,17 @@
 package org.batfish.representation.fortios;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.Warnings;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 /** FortiOS datamodel component containing firewall service configuration */
 public final class Service implements FortiosRenameableObject, Serializable {
@@ -223,17 +216,8 @@ public final class Service implements FortiosRenameableObject, Serializable {
   @Nullable private IntegerSpace _sctpPortRangeDst;
   @Nullable private IntegerSpace _sctpPortRangeSrc;
 
-  public @Nonnull AclLineMatchExpr toMatchExpr(Warnings w) {
-    List<AclLineMatchExpr> matchExprs =
-        toHeaderSpaces().map(MatchHeaderSpace::new).collect(ImmutableList.toImmutableList());
-    if (matchExprs.isEmpty()) {
-      w.redFlag(String.format("Service %s does not match any packets", _name));
-      return AclLineMatchExprs.FALSE;
-    }
-    return new OrMatchExpr(matchExprs, getTraceElement());
-  }
-
-  private @Nonnull Stream<HeaderSpace> toHeaderSpaces() {
+  @Nonnull
+  Stream<HeaderSpace> toHeaderSpaces() {
     switch (getProtocolEffective()) {
       case TCP_UDP_SCTP:
         return Stream.of(
@@ -285,10 +269,5 @@ public final class Service implements FortiosRenameableObject, Serializable {
     Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
     Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
     return headerSpace.build();
-  }
-
-  private @Nonnull String getTraceElement() {
-    String baseTrace = "Matched service " + _name;
-    return _comment == null ? baseTrace : String.format("%s: %s", baseTrace, _comment);
   }
 }
