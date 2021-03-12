@@ -5,7 +5,7 @@ import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFa
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.grammar.cisco_asa.AsaParser.Cisco_configurationContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Asa_configurationContext;
 
 public class AsaCombinedParser extends BatfishCombinedParser<AsaParser, AsaLexer> {
 
@@ -23,7 +23,7 @@ public class AsaCombinedParser extends BatfishCombinedParser<AsaParser, AsaLexer
   }
 
   @Override
-  public Cisco_configurationContext parse() {
-    return _parser.cisco_configuration();
+  public Asa_configurationContext parse() {
+    return _parser.asa_configuration();
   }
 }

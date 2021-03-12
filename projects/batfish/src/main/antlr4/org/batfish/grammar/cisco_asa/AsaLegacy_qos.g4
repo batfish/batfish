@@ -1,6 +1,6 @@
-parser grammar Cisco_qos;
+parser grammar AsaLegacy_qos;
 
-import Cisco_common;
+import Asa_common;
 
 options {
    tokenVocab = AsaLexer;

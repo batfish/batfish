@@ -1,6 +1,6 @@
-parser grammar Cisco_routemap;
+parser grammar AsaLegacy_routemap;
 
-import Cisco_common;
+import Asa_common;
 
 options {
    tokenVocab = AsaLexer;

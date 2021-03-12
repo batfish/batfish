@@ -1,6 +1,6 @@
-parser grammar Cisco_crypto;
+parser grammar AsaLegacy_crypto;
 
-import Cisco_common;
+import Asa_common;
 
 options {
    tokenVocab = AsaLexer;

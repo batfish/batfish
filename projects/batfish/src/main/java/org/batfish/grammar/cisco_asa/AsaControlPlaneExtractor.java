@@ -451,6 +451,7 @@ import org.batfish.grammar.cisco_asa.AsaParser.As_path_multipath_relax_rb_stanza
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_ag_globalContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_ag_interfaceContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_banner_headerContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Asa_configurationContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_nat_ifacesContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_nat_optional_argsContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Asa_twice_nat_destinationContext;
@@ -479,7 +480,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Cipt_modeContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cis_keyContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cis_policyContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cis_profileContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Cisco_configurationContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cispol_authenticationContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cispol_encryptionContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cispol_encryption_arubaContext;
@@ -1898,7 +1898,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void enterCisco_configuration(Cisco_configurationContext ctx) {
+  public void enterAsa_configuration(Asa_configurationContext ctx) {
     _configuration = new AsaConfiguration();
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     // serial line may not be anywhere in the config so add it here to make sure the serial line

@@ -1,30 +1,30 @@
 parser grammar AsaParser;
 
 import
-Cisco_common,
-Cisco_aaa,
-Cisco_acl,
-Cisco_bgp,
-Cisco_cable,
-Cisco_crypto,
-Cisco_callhome,
-Cisco_eigrp,
-Cisco_hsrp,
-Cisco_ignored,
-Cisco_interface,
-Cisco_isis,
-Cisco_line,
-Cisco_logging,
-Cisco_mpls,
-Cisco_ntp,
-Cisco_ospf,
-Cisco_pim,
-Cisco_qos,
-Cisco_rip,
-Cisco_routemap,
-Cisco_snmp,
-Cisco_static,
-Cisco_zone;
+Asa_common,
+AsaLegacy_aaa,
+AsaLegacy_acl,
+AsaLegacy_bgp,
+AsaLegacy_cable,
+AsaLegacy_crypto,
+AsaLegacy_callhome,
+AsaLegacy_eigrp,
+AsaLegacy_hsrp,
+AsaLegacy_ignored,
+AsaLegacy_interface,
+AsaLegacy_isis,
+AsaLegacy_line,
+AsaLegacy_logging,
+AsaLegacy_mpls,
+AsaLegacy_ntp,
+AsaLegacy_ospf,
+AsaLegacy_pim,
+AsaLegacy_qos,
+AsaLegacy_rip,
+AsaLegacy_routemap,
+AsaLegacy_snmp,
+AsaLegacy_static,
+AsaLegacy_zone;
 
 
 options {
@@ -294,7 +294,7 @@ bfd_template_null
   ) null_rest_of_line
 ;
 
-cisco_configuration
+asa_configuration
 :
    NEWLINE?
    (

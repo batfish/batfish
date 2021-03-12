@@ -7854,7 +7854,7 @@
         },
         "configs/asa_acl" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8279,7 +8279,7 @@
         },
         "configs/asa_banner" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8327,7 +8327,7 @@
         },
         "configs/asa_interface" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8372,7 +8372,7 @@
         },
         "configs/asa_nat" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8674,7 +8674,7 @@
         },
         "configs/asa_object_groups" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -8753,7 +8753,7 @@
         },
         "configs/asa_ospf" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'",
@@ -15587,7 +15587,7 @@
         },
         "configs/cisco_asa/asa-interface-redundant" : {
           "sentences" : [
-            "(cisco_configuration",
+            "(asa_configuration",
             "  (stanza",
             "    (s_null",
             "      (null_single",
@@ -78327,7 +78327,7 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 9,
-              "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+              "Parser_Context" : "[access_list_ip_range extended_access_list_tail extended_access_list_stanza stanza asa_configuration]",
               "Text" : "interface outside"
             }
           ]
@@ -78337,85 +78337,85 @@
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 6,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat (any,any) source dynamic source-net pat-pool pool block-allocation round-robin"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 7,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat (inside,outside) source dynamic net1 net2 interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 9,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat (inside,outside) source static net1 net2 route-lookup"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 10,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat source dynamic source-net pat-pool pool extended flat include-reserve"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 12,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat source static net1 net2 dns no-proxy-arp unidirectional"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 13,
-              "Parser_Context" : "[s_asa_twice_nat stanza cisco_configuration]",
+              "Parser_Context" : "[s_asa_twice_nat stanza asa_configuration]",
               "Text" : "nat source static net1 net2 service service1 service2"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 16,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 17,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic 1.1.1.1"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 18,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic source-mapped dns"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 19,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic source-mapped interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 20,
-              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_dynamic on_nat o_network s_object stanza asa_configuration]",
               "Text" : "dynamic pat-pool WORD interface flat"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 21,
-              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza asa_configuration]",
               "Text" : "static interface"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 22,
-              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza asa_configuration]",
               "Text" : "static source-mapped no-proxy-arp route-lookup"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 23,
-              "Parser_Context" : "[onn_static on_nat o_network s_object stanza cisco_configuration]",
+              "Parser_Context" : "[onn_static on_nat o_network s_object stanza asa_configuration]",
               "Text" : "static source-mapped service sctp ftp bgp"
             }
           ],

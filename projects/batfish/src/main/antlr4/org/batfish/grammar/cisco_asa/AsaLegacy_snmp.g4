@@ -1,6 +1,6 @@
-parser grammar Cisco_snmp;
+parser grammar AsaLegacy_snmp;
 
-import Cisco_common;
+import Asa_common;
 
 options {
    tokenVocab = AsaLexer;
