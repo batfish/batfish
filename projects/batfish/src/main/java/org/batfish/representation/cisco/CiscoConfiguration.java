@@ -3243,9 +3243,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // objects
     markConcreteStructure(
-        CiscoStructureType.ICMP_TYPE_OBJECT,
-        CiscoStructureUsage.ICMP_TYPE_OBJECT_GROUP_ICMP_OBJECT);
-    markConcreteStructure(
         CiscoStructureType.NETWORK_OBJECT,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
@@ -3259,9 +3256,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.SERVICE_OBJECT,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT,
         CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT);
-    markConcreteStructure(
-        CiscoStructureType.PROTOCOL_OBJECT,
-        CiscoStructureUsage.PROTOCOL_OBJECT_GROUP_PROTOCOL_OBJECT);
 
     // service template
     markConcreteStructure(
@@ -3272,9 +3266,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // track
     markConcreteStructure(CiscoStructureType.TRACK);
-
-    // VXLAN
-    markConcreteStructure(CiscoStructureType.VXLAN, CiscoStructureUsage.VXLAN_SELF_REF);
 
     // zone
     markConcreteStructure(

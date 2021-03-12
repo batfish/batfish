@@ -27,7 +27,6 @@ public enum CiscoStructureType implements StructureType {
   EXTCOMMUNITY_LIST("extcommunity-list"),
   EXTCOMMUNITY_LIST_EXPANDED("extcommunity-list expanded"),
   EXTCOMMUNITY_LIST_STANDARD("extcommunity-list standard"),
-  ICMP_TYPE_OBJECT("object icmp-type"),
   ICMP_TYPE_OBJECT_GROUP("object-group icmp-type"),
   INSPECT_CLASS_MAP("class-map type inspect"),
   INSPECT_POLICY_MAP("policy-map type inspect"),
@@ -53,7 +52,6 @@ public enum CiscoStructureType implements StructureType {
   POLICY_MAP("policy-map"),
   PREFIX_LIST("ipv4 prefix-list"),
   PREFIX6_LIST("ipv6 prefix-list"),
-  PROTOCOL_OBJECT("object protocol"),
   PROTOCOL_OBJECT_GROUP("object-group protocol"),
   PROTOCOL_OR_SERVICE_OBJECT_GROUP("object-group protocol or service"),
   ROUTE_MAP("route-map"),
@@ -65,8 +63,7 @@ public enum CiscoStructureType implements StructureType {
   SERVICE_OBJECT_GROUP("object-group service"),
   SERVICE_TEMPLATE("service-template"),
   TRACK("track"),
-  TRAFFIC_ZONE("zone"),
-  VXLAN("vxlan");
+  TRAFFIC_ZONE("zone");
 
   private final String _description;
 
