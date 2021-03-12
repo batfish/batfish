@@ -241,17 +241,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     String currentName = currentNameOpt.get();
     String newName = newNameOpt.get();
     if (!_c.getAddresses().containsKey(currentName)) {
-      warn(ctx, String.format("Cannot rename non-existent address %s", currentName));
+      warnRenameNonExistent(ctx, currentName, FortiosStructureType.ADDRESS);
       return;
     }
     // TODO check addrgrp as well, once that exists
     if (_c.getAddresses().containsKey(newName)) {
       // TODO handle conflicting renames
-      warn(
-          ctx,
-          String.format(
-              "Rename conflicts with an existing object %s, ignoring this rename operation",
-              newName));
+      warnRenameConflict(ctx, currentName, newName, FortiosStructureType.ADDRESS);
       return;
     }
     // Rename refs / def
@@ -636,6 +632,21 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentService = null;
   }
 
+  /** Generate a warning for trying to rename a non-existent structure. */
+  void warnRenameNonExistent(ParserRuleContext ctx, String name, FortiosStructureType type) {
+    warn(ctx, String.format("Cannot rename non-existent %s %s", type.getDescription(), name));
+  }
+
+  /** Generate a warning for trying to rename a structure with a name already in use. */
+  void warnRenameConflict(
+      ParserRuleContext ctx, String currentName, String newName, FortiosStructureType type) {
+    warn(
+        ctx,
+        String.format(
+            "Renaming %s %s conflicts with an existing object %s, ignoring this rename operation",
+            type.getDescription(), currentName, newName));
+  }
+
   @Override
   public void exitCfsc_rename(Cfsc_renameContext ctx) {
     Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
@@ -646,17 +657,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     String currentName = currentNameOpt.get();
     String newName = newNameOpt.get();
     if (!_c.getServices().containsKey(currentName)) {
-      warn(ctx, String.format("Cannot rename non-existent service %s", currentName));
+      warnRenameNonExistent(ctx, currentName, FortiosStructureType.SERVICE_CUSTOM);
       return;
     }
     // TODO check service group as well, once that exists
     if (_c.getServices().containsKey(newName)) {
       // TODO handle conflicting renames
-      warn(
-          ctx,
-          String.format(
-              "Rename conflicts with an existing object %s, ignoring this rename operation",
-              newName));
+      warnRenameConflict(ctx, currentName, newName, FortiosStructureType.SERVICE_CUSTOM);
       return;
     }
     // Rename refs / def

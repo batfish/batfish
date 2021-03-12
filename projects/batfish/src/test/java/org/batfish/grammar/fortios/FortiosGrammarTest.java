@@ -763,7 +763,7 @@ public final class FortiosGrammarTest {
                 hasComment("Service old_service1 is undefined and cannot be added to policy 1"),
                 hasComment("Service new_service2 is undefined and cannot be added to policy 1"),
                 hasComment("Cannot rename non-existent address undefined"),
-                hasComment("Cannot rename non-existent service undefined"))));
+                hasComment("Cannot rename non-existent service custom undefined"))));
   }
 
   @Test

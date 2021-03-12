@@ -4,11 +4,9 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-cf_address: ADDRESS newline (
-        cfa_edit
-        | cfa_rename
-    )*
-;
+cf_address: ADDRESS newline cfa*;
+
+cfa: cfa_edit | cfa_rename;
 
 cfa_rename: RENAME current_name = address_name TO new_name = address_name newline;
 

@@ -6,11 +6,9 @@ options {
 
 cf_service: SERVICE cfs_custom;
 
-cfs_custom: CUSTOM newline (
-        cfsc_edit
-        | cfsc_rename
-    )*
-;
+cfs_custom: CUSTOM newline cfsc*;
+
+cfsc: cfsc_edit | cfsc_rename;
 
 cfsc_rename: RENAME current_name = service_name TO new_name = service_name newline;
 
