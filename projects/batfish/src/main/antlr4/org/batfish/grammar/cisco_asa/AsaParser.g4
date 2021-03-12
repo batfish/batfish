@@ -2266,34 +2266,6 @@ asa_banner_header
   | BANNER_MOTD_ASA
 ;
 
-s_banner_cadant
-:
-  BANNER type = cadant_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
-;
-
-cadant_banner_type
-:
-  LOGIN
-  | MOTD
-;
-
-s_banner_ios
-:
-  banner_header = ios_banner_header banner = ios_delimited_banner NEWLINE
-;
-
-ios_banner_header
-:
-  BANNER_IOS
-  | BANNER_CONFIG_SAVE_IOS
-  | BANNER_EXEC_IOS
-  | BANNER_INCOMING_IOS
-  | BANNER_LOGIN_IOS
-  | BANNER_MOTD_IOS
-  | BANNER_PROMPT_TIMEOUT_IOS
-  | BANNER_SLIP_PPP_IOS
-;
-
 s_bfd
 :
    BFD null_rest_of_line
@@ -3287,28 +3259,6 @@ s_username_attributes
    )*
 ;
 
-
-s_vlan_cisco
-:
-   NO? VLAN
-   (
-      ACCESS_MAP
-      |
-      (
-         variable_vlan? dec
-      )
-   ) null_rest_of_line
-   (
-      vlan_vn_segment
-      | vlan_null
-   )*
-;
-
-s_vlan_internal_cisco
-:
-   NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
-;
-
 s_vlan_name
 :
    VLAN_NAME name = variable_permissive NEWLINE
@@ -3674,8 +3624,6 @@ stanza
    | s_asa_twice_nat
    | s_authentication
    | s_banner_asa
-   | s_banner_cadant
-   | s_banner_ios
    | s_bfd
    | s_bfd_template
    | s_cable
@@ -3713,7 +3661,6 @@ stanza
    | s_failover
    | s_flow
    | s_flow_sampler_map
-   | s_foundry_mac_access_list
    | s_gatekeeper
    | s_global_port_security
    | s_guest_access_email
@@ -3832,8 +3779,6 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | { !isAsa() }? s_vlan_cisco
-   | { !isAsa() }? s_vlan_internal_cisco
    | s_vlan_name
    | s_voice
    | s_voice_card

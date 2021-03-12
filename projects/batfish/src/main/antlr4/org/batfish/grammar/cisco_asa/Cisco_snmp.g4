@@ -117,42 +117,7 @@ ss_group_v3
 
 ss_host
 :
-   HOST
-   (
-     {isAsa()}? ss_host_asa
-     | {!isAsa()}? ss_host_generic
-   )
-;
-
-ss_host_generic
-:
-   (
-      ip4 = IP_ADDRESS
-      | ip6 = IPV6_ADDRESS
-      | host = variable
-   )
-   (
-      ss_host_use_vrf
-      |
-      (
-         (
-            ss_host_informs
-            | ss_host_traps
-            | ss_host_version
-         )* comm_or_username = variable_snmp_host
-         (
-            traps += variable_snmp_host
-         )*
-      )
-      |
-      // cadant
-
-      (
-         ss_host_name
-         | ss_host_traps
-         | ss_host_version
-      )+
-   ) NEWLINE
+   HOST ss_host_asa
 ;
 
 ss_host_asa
@@ -168,39 +133,6 @@ ss_host_asa
    (VERSION version = variable_snmp_host (username = variable_snmp_host)?)?
    (UDP_PORT port)?
    NEWLINE
-;
-
-ss_host_informs
-:
-   INFORMS
-;
-
-ss_host_name
-:
-   NAME name = variable
-;
-
-ss_host_traps
-:
-   TRAPS
-;
-
-ss_host_use_vrf
-:
-   (
-      USE_VRF
-      | VRF
-   ) vrf = variable
-;
-
-ss_host_version
-:
-   VERSION version = variable_snmp_host
-   (
-      AUTH
-      | NOAUTH
-      | PRIV
-   )?
 ;
 
 ss_mib

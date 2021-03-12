@@ -1,6 +1,5 @@
 package org.batfish.grammar.cisco_asa;
 
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.BatfishANTLRErrorStrategy;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory;
 import org.batfish.grammar.BatfishCombinedParser;
@@ -13,7 +12,7 @@ public class AsaCombinedParser extends BatfishCombinedParser<AsaParser, AsaLexer
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(AsaLexer.NEWLINE, "\n");
 
-  public AsaCombinedParser(String input, GrammarSettings settings, ConfigurationFormat format) {
+  public AsaCombinedParser(String input, GrammarSettings settings) {
     super(
         AsaParser.class,
         AsaLexer.class,
@@ -21,13 +20,6 @@ public class AsaCombinedParser extends BatfishCombinedParser<AsaParser, AsaLexer
         settings,
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
-    boolean cadant = format == ConfigurationFormat.CADANT;
-    _lexer.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _lexer.setCadant(cadant);
-    _lexer.setFoundry(format == ConfigurationFormat.FOUNDRY);
-    _lexer.setIos(format == ConfigurationFormat.CISCO_IOS);
-    _parser.setAsa(format == ConfigurationFormat.CISCO_ASA);
-    _parser.setCadant(cadant);
     _parser.setMultilineBgpNeighbors(false);
   }
 

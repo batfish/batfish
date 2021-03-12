@@ -186,7 +186,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           }
         case CISCO_ASA:
           {
-            AsaCombinedParser asaParser = new AsaCombinedParser(_fileText, _settings, format);
+            AsaCombinedParser asaParser = new AsaCombinedParser(_fileText, _settings);
             combinedParser = asaParser;
             extractor = new AsaControlPlaneExtractor(_fileText, asaParser, format, _warnings);
             break;

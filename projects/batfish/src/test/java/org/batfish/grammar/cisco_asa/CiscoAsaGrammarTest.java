@@ -491,7 +491,7 @@ public final class CiscoAsaGrammarTest {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    AsaCombinedParser asaParser = new AsaCombinedParser(src, settings, format);
+    AsaCombinedParser asaParser = new AsaCombinedParser(src, settings);
     AsaControlPlaneExtractor extractor =
         new AsaControlPlaneExtractor(src, asaParser, format, new Warnings());
     ParserRuleContext tree =

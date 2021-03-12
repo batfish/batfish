@@ -286,7 +286,6 @@ aaa_authentication
    AUTHENTICATION
    (
       aaa_authentication_asa
-      | aaa_authentication_banner
       | aaa_authentication_captive_portal
       | aaa_authentication_dot1x
       | aaa_authentication_enable
@@ -326,11 +325,6 @@ aaa_authentication_asa_console
          group = variable LOCAL_ASA?
       )
    ) NEWLINE
-;
-
-aaa_authentication_banner
-:
-   BANNER banner = ios_delimited_banner NEWLINE
 ;
 
 aaa_authentication_captive_portal

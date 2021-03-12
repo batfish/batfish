@@ -649,8 +649,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Inspect_protocolContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Int_exprContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Interface_nameContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ios_banner_headerContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ios_delimited_bannerContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_as_path_access_list_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_as_path_access_list_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_community_list_expanded_stanzaContext;
@@ -879,8 +877,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.S_aaaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_access_lineContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_asa_twice_natContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_banner_asaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.S_banner_cadantContext;
-import org.batfish.grammar.cisco_asa.AsaParser.S_banner_iosContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_bfd_templateContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_cableContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_class_mapContext;
@@ -962,7 +958,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Ss_enable_trapsContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ss_file_transferContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ss_group_v3Context;
 import org.batfish.grammar.cisco_asa.AsaParser.Ss_host_asaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ss_host_genericContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ss_source_interfaceContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ss_tftp_server_listContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ss_trap_sourceContext;
@@ -3633,21 +3628,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitSs_host_generic(Ss_host_genericContext ctx) {
-    String hostname;
-    if (ctx.ip4 != null) {
-      hostname = ctx.ip4.getText();
-    } else if (ctx.ip6 != null) {
-      hostname = ctx.ip6.getText();
-    } else if (ctx.host != null) {
-      hostname = ctx.host.getText();
-    } else {
-      throw new BatfishException("Invalid host");
-    }
-    _configuration.getSnmpServer().getHosts().computeIfAbsent(hostname, SnmpHost::new);
-  }
-
-  @Override
   public void exitSs_host_asa(Ss_host_asaContext ctx) {
     String sourceInterface = ctx.source_interface.getText();
     _configuration.setSnmpSourceInterface(sourceInterface);
@@ -3949,50 +3929,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       return "motd";
     }
     return null;
-  }
-
-  @Override
-  public void exitS_banner_cadant(S_banner_cadantContext ctx) {
-    String bannerType = ctx.type.getText();
-    String body = ctx.body != null ? ctx.body.getText() : "";
-    _configuration.getCf().getBanners().put(bannerType, body);
-  }
-
-  @Override
-  public void exitS_banner_ios(S_banner_iosContext ctx) {
-    String bannerType = toBannerType(ctx.banner_header);
-    if (bannerType == null) {
-      warn(ctx, String.format("Unsupported IOS banner header: %s", ctx.banner_header.getText()));
-      return;
-    }
-    String body = toString(ctx.banner);
-    _configuration.getCf().getBanners().put(bannerType, body);
-  }
-
-  private static @Nonnull String toString(Ios_delimited_bannerContext ctx) {
-    return ctx.body != null ? ctx.body.getText() : "";
-  }
-
-  private static @Nullable String toBannerType(Ios_banner_headerContext ctx) {
-    if (ctx.BANNER_IOS() != null) {
-      return "";
-    } else if (ctx.BANNER_CONFIG_SAVE_IOS() != null) {
-      return "config-save";
-    } else if (ctx.BANNER_EXEC_IOS() != null) {
-      return "exec";
-    } else if (ctx.BANNER_INCOMING_IOS() != null) {
-      return "incoming";
-    } else if (ctx.BANNER_LOGIN_IOS() != null) {
-      return "login";
-    } else if (ctx.BANNER_MOTD_IOS() != null) {
-      return "motd";
-    } else if (ctx.BANNER_PROMPT_TIMEOUT_IOS() != null) {
-      return "prompt-timeout";
-    } else if (ctx.BANNER_SLIP_PPP_IOS() != null) {
-      return "slip-ppp";
-    } else {
-      return null;
-    }
   }
 
   @Override
