@@ -4,7 +4,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.BgpAttributesRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
@@ -15,35 +15,36 @@ import org.hamcrest.Matcher;
 
 @ParametersAreNonnullByDefault
 final class BgpRouteMatchersImpl {
-  static final class HasCommunities extends FeatureMatcher<BgpRoute<?, ?>, Set<Community>> {
+  static final class HasCommunities
+      extends FeatureMatcher<BgpAttributesRoute<?, ?>, Set<Community>> {
     HasCommunities(@Nonnull Matcher<? super Set<Community>> subMatcher) {
       super(subMatcher, "A BgpRoute with communities:", "communities");
     }
 
     @Override
-    protected Set<Community> featureValueOf(BgpRoute<?, ?> actual) {
+    protected Set<Community> featureValueOf(BgpAttributesRoute<?, ?> actual) {
       return actual.getCommunities().getCommunities();
     }
   }
 
-  static final class HasOriginType extends FeatureMatcher<BgpRoute<?, ?>, OriginType> {
+  static final class HasOriginType extends FeatureMatcher<BgpAttributesRoute<?, ?>, OriginType> {
     HasOriginType(@Nonnull Matcher<? super OriginType> subMatcher) {
       super(subMatcher, "A BgpRoute with originType:", "originType");
     }
 
     @Override
-    protected OriginType featureValueOf(BgpRoute<?, ?> actual) {
+    protected OriginType featureValueOf(BgpAttributesRoute<?, ?> actual) {
       return actual.getOriginType();
     }
   }
 
-  static final class HasWeight extends FeatureMatcher<BgpRoute<?, ?>, Integer> {
+  static final class HasWeight extends FeatureMatcher<BgpAttributesRoute<?, ?>, Integer> {
     HasWeight(@Nonnull Matcher<? super Integer> subMatcher) {
       super(subMatcher, "A BgpRoute with weight:", "weight");
     }
 
     @Override
-    protected Integer featureValueOf(BgpRoute<?, ?> actual) {
+    protected Integer featureValueOf(BgpAttributesRoute<?, ?> actual) {
       return actual.getWeight();
     }
   }

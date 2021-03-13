@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.BgpAttributesRoute.MAX_LOCAL_PREFERENCE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.BgpRoute;

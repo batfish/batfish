@@ -9,7 +9,7 @@ import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
 import static org.batfish.datamodel.AuthenticationMethod.PASSWORD;
-import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.BgpAttributesRoute.MAX_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;

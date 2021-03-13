@@ -12,9 +12,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
@@ -134,12 +134,15 @@ public class GeneratedRouteHelperTest {
                     Statements.ReturnTrue.toStaticStatement()))
             .build();
 
+    GeneratedRoute otherRoute =
+        _builder
+            .setNextHopIp(Ip.parse("5.5.5.5"))
+            .setDiscard(false)
+            .setNetwork(Prefix.parse("7.7.7.0/24"))
+            .build();
     Builder newRoute =
         GeneratedRouteHelper.activateGeneratedRoute(
-            gr,
-            policy,
-            ImmutableSet.of(
-                annotateRoute(new ConnectedRoute(Prefix.strict("2.2.2.2/32"), "blah"))));
+            gr, policy, ImmutableSet.of(annotateRoute(otherRoute)));
 
     assertThat(newRoute.build(), hasCommunities(contains(StandardCommunity.of(1L))));
   }

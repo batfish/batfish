@@ -1,5 +1,6 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.BgpAttributesRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -182,7 +183,7 @@ public final class BgpProtocolHelper {
     builder.setLocalPreference(
         sessionProperties.advertiseUnchangedLocalPref()
             ? route.getLocalPreference()
-            : BgpRoute.DEFAULT_LOCAL_PREFERENCE);
+            : DEFAULT_LOCAL_PREFERENCE);
 
     return builder;
   }
@@ -286,7 +287,7 @@ public final class BgpProtocolHelper {
         .setProtocol(RoutingProtocol.AGGREGATE)
         .setNextHop(NextHopIp.of(nextHopIp))
         .setNetwork(generatedRoute.getNetwork())
-        .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+        .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
         /*
          * Note: Origin type and originator IP should get overwritten by export policy,
          * but are needed initially
@@ -325,7 +326,7 @@ public final class BgpProtocolHelper {
         .setSrcProtocol(route.getProtocol())
         .setOriginType(OriginType.INCOMPLETE)
         // TODO: support customization of route preference
-        .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
+        .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
         .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
         .setNextHopIp(nextHopIp)
         .setMetric(route.getMetric())

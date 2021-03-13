@@ -1,5 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.datamodel.BgpAttributesRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
@@ -33,7 +34,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.BumTransportMethod;
@@ -156,7 +156,7 @@ public class BgpRoutingProcessTest {
                 .setNonRouting(true)
                 .setProtocol(RoutingProtocol.BGP)
                 .setOriginType(OriginType.EGP)
-                .setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE)
+                .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setVniIp(ip)
                 .setOriginatorIp(ip)
                 .setNextHop(NextHopDiscard.instance())
@@ -227,7 +227,7 @@ public class BgpRoutingProcessTest {
                 .setVniIp(localIp)
                 .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni)))
-                .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+                .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setNonRouting(true)
                 .setOriginType(OriginType.EGP)
                 .setProtocol(RoutingProtocol.BGP)
@@ -247,7 +247,7 @@ public class BgpRoutingProcessTest {
                 .setVniIp(localIp)
                 .setRouteDistinguisher(RouteDistinguisher.from(_bgpProcess.getRouterId(), 2))
                 .setCommunities(ImmutableSet.of(ExtendedCommunity.target(65500, vni2)))
-                .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+                .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                 .setNonRouting(true)
                 .setOriginType(OriginType.EGP)
                 .setProtocol(RoutingProtocol.BGP)

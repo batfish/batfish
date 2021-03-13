@@ -7,7 +7,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
-import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.BgpAttributesRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
