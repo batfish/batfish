@@ -3,6 +3,7 @@ package org.batfish.representation.fortios;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchPolicyTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -321,7 +322,7 @@ public class FortiosConfiguration extends VendorConfiguration {
           new VendorStructureId(
               _filename, FortiosStructureType.POLICY.getDescription(), viPolicyName);
       AclLineMatchExpr matchExpr =
-          and(TraceElement.builder().add("Match policy", vsi).build(), matchSources, policyMatches);
+          and(matchPolicyTraceElement(policy, _filename), matchSources, policyMatches);
       lines.add(
           policyPermits ? ExprAclLine.accepting(matchExpr) : ExprAclLine.rejecting(matchExpr));
     }
