@@ -51,6 +51,10 @@ public final class AclLineMatchExprs {
     return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);
   }
 
+  public static AclLineMatchExpr and(TraceElement traceElement, AclLineMatchExpr... exprs) {
+    return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);
+  }
+
   public static AclLineMatchExpr and(AclLineMatchExpr... exprs) {
     return and(ImmutableList.copyOf(exprs));
   }

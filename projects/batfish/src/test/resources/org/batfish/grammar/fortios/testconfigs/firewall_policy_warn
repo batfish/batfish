@@ -70,4 +70,13 @@ config firewall policy
         set srcaddr addr10
         set dstaddr addr20
     next
+    edit 3
+        # This policy shouldn't be created action ipsec isn't supported
+        set action ipsec
+        set srcintf port10
+        set dstintf port20
+        set srcaddr addr10
+        set dstaddr addr20
+        set service service10
+    next
 end
