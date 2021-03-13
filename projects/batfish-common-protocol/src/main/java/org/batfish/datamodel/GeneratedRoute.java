@@ -2,11 +2,13 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Comparators.lexicographical;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
@@ -28,13 +30,17 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
  * used for determining route preference in RIBs.
  */
 @ParametersAreNonnullByDefault
-public final class GeneratedRoute extends AbstractRoute implements Comparable<GeneratedRoute> {
+public final class GeneratedRoute extends BgpRoute<GeneratedRoute.Builder, GeneratedRoute>
+    implements Comparable<GeneratedRoute> {
   /** A {@link GeneratedRoute} builder */
-  public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
+  public static class Builder extends BgpRoute.Builder<Builder, GeneratedRoute> {
 
-    @Nullable private AsPath _asPath;
+    @Override
+    public Builder newBuilder() {
+      return new Builder();
+    }
+
     @Nullable private String _attributePolicy;
-    @Nullable private Set<Community> _communities;
     private boolean _discard;
     @Nullable private String _generationPolicy;
 
@@ -43,17 +49,22 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
     @Nonnull
     @Override
     public GeneratedRoute build() {
+      Prefix network = getNetwork();
+      checkArgument(network != null, "Missing %s", PROP_NETWORK);
       return new GeneratedRoute(
-          getNetwork(),
+          network,
           getAdmin(),
           firstNonNull(_nextHop, NextHopDiscard.instance()),
           firstNonNull(_asPath, AsPath.empty()),
           _attributePolicy,
-          ImmutableSortedSet.copyOf(firstNonNull(_communities, ImmutableSet.of())),
+          ImmutableSet.copyOf(firstNonNull(_communities, ImmutableSet.of())),
           _discard,
+          _localPreference,
           _generationPolicy,
           getMetric(),
+          firstNonNull(_originType, OriginType.INCOMPLETE),
           getTag(),
+          _weight,
           getNonForwarding(),
           getNonRouting());
     }
@@ -64,18 +75,8 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
       return this;
     }
 
-    public Builder setAsPath(@Nullable AsPath asPath) {
-      _asPath = asPath;
-      return this;
-    }
-
     public Builder setAttributePolicy(@Nullable String attributePolicy) {
       _attributePolicy = attributePolicy;
-      return this;
-    }
-
-    public Builder setCommunities(@Nullable Set<Community> communities) {
-      _communities = communities;
       return this;
     }
 
@@ -94,21 +95,15 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
     return new Builder();
   }
 
-  private static final String PROP_AS_PATH = "asPath";
   private static final String PROP_ATTRIBUTE_POLICY = "attributePolicy";
   private static final String PROP_ATTRIBUTE_POLICY_SOURCES = "attributePolicySources";
-  private static final String PROP_COMMUNITIES = "communities";
   private static final String PROP_DISCARD = "discard";
   private static final String PROP_GENERATION_POLICY = "generationPolicy";
   private static final String PROP_GENERATION_POLICY_SOURCES = "generationPolicySources";
-  private static final String PROP_METRIC = "metric";
 
-  @Nonnull private final AsPath _asPath;
   @Nullable private final String _attributePolicy;
-  @Nonnull private final SortedSet<Community> _communities;
-  private final boolean _discard;
   @Nullable private final String _generationPolicy;
-  private final long _metric;
+  private final boolean _discard;
   // Non-final fields, not properties of the route. Should not impact equality or hashcode.
   private SortedSet<String> _attributePolicySources;
   private SortedSet<String> _generationPolicySources;
@@ -125,22 +120,28 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
       @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
       @JsonProperty(PROP_DISCARD) boolean discard,
       @Nullable @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
-      @Nullable @JsonProperty(PROP_METRIC) Long metric,
+      @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
+      @JsonProperty(PROP_METRIC) long metric,
+      @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @JsonProperty(PROP_TAG) long tag) {
+      @JsonProperty(PROP_TAG) long tag,
+      @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(network != null, "GeneratedRoute missing %s", PROP_NETWORK);
-    checkArgument(metric != null, "GeneratedRoute missing %s", PROP_METRIC);
+    checkArgument(originType != null, "Missing %s", PROP_ORIGIN_TYPE);
     return new GeneratedRoute(
         network,
         administrativeCost,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         firstNonNull(asPath, AsPath.empty()),
         attributePolicy,
-        firstNonNull(communities, ImmutableSortedSet.of()),
+        firstNonNull(communities, ImmutableSet.of()),
         discard,
+        localPreference,
         generationPolicy,
         metric,
+        originType,
         tag,
+        weight,
         false,
         false);
   }
@@ -151,30 +152,41 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
       NextHop nextHop,
       AsPath asPath,
       @Nullable String attributePolicy,
-      @Nullable SortedSet<Community> communities,
+      Set<Community> communities,
       boolean discard,
+      long localPreference,
       @Nullable String generationPolicy,
       long metric,
+      OriginType originType,
       long tag,
+      int weight,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(network, administrativeCost, tag, nonRouting, nonForwarding);
-    _asPath = asPath;
+    super(
+        network,
+        nextHop,
+        administrativeCost,
+        asPath,
+        communities,
+        localPreference,
+        metric,
+        Ip.ZERO,
+        null,
+        false,
+        originType,
+        RoutingProtocol.AGGREGATE,
+        null,
+        null,
+        tag,
+        weight,
+        nonForwarding,
+        nonRouting);
     _attributePolicy = attributePolicy;
     _attributePolicySources = ImmutableSortedSet.of();
-    _communities = firstNonNull(communities, ImmutableSortedSet.of());
     _discard = discard;
     _generationPolicy = generationPolicy;
     _generationPolicySources = ImmutableSortedSet.of();
-    _metric = metric;
-    // TODO: incorporate discard in here too.
     _nextHop = nextHop;
-  }
-
-  /** A BGP AS-path attribute to associate with this generated route */
-  @JsonProperty(PROP_AS_PATH)
-  public AsPath getAsPath() {
-    return _asPath;
   }
 
   /** The name of the policy that sets attributes of this route */
@@ -189,17 +201,37 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
     return _attributePolicySources;
   }
 
-  /** The communities attached to this route */
-  @Nonnull
-  @JsonProperty(PROP_COMMUNITIES)
-  public SortedSet<Community> getCommunities() {
-    return _communities;
-  }
-
   /** Whether this route is route is meant to discard all matching packets */
   @JsonProperty(PROP_DISCARD)
   public boolean getDiscard() {
     return _discard;
+  }
+
+  @JsonIgnore
+  @Nonnull
+  @Override
+  public Set<Long> getClusterList() {
+    return super.getClusterList();
+  }
+
+  @JsonIgnore
+  @Nonnull
+  @Override
+  public Ip getOriginatorIp() {
+    return super.getOriginatorIp();
+  }
+
+  @JsonIgnore
+  @Nonnull
+  @Override
+  public RoutingProtocol getProtocol() {
+    return super.getProtocol();
+  }
+
+  @JsonIgnore
+  @Override
+  public boolean getReceivedFromRouteReflectorClient() {
+    return super.getReceivedFromRouteReflectorClient();
   }
 
   /** The name of the policy that will generate this route if another route matches it */
@@ -212,18 +244,6 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   @JsonProperty(PROP_GENERATION_POLICY_SOURCES)
   public SortedSet<String> getGenerationPolicySources() {
     return _generationPolicySources;
-  }
-
-  @JsonIgnore(false)
-  @JsonProperty(PROP_METRIC)
-  @Override
-  public Long getMetric() {
-    return _metric;
-  }
-
-  @Override
-  public RoutingProtocol getProtocol() {
-    return RoutingProtocol.AGGREGATE;
   }
 
   @Override
@@ -247,21 +267,22 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
   // The comparator has no impact on route preference in RIBs and should not be used as such
   private static final Comparator<GeneratedRoute> COMPARATOR =
       Comparator.comparing(GeneratedRoute::getNetwork)
-          .thenComparing(GeneratedRoute::getNextHopIp)
-          .thenComparing(GeneratedRoute::getNextHopInterface)
+          .thenComparing(GeneratedRoute::getNextHopIp, nullsLast(naturalOrder()))
+          .thenComparing(GeneratedRoute::getNextHopInterface, nullsLast(naturalOrder()))
           .thenComparing(GeneratedRoute::getMetric)
           .thenComparing(GeneratedRoute::getAdministrativeCost)
           .thenComparing(GeneratedRoute::getTag)
           .thenComparing(GeneratedRoute::getNonRouting)
           .thenComparing(GeneratedRoute::getNonForwarding)
           .thenComparing(GeneratedRoute::getAsPath)
+          .thenComparing(GeneratedRoute::getLocalPreference)
+          .thenComparing(gr -> gr.getOriginType().getPreference())
+          .thenComparing(GeneratedRoute::getWeight)
+          .thenComparing(GeneratedRoute::getAttributePolicy, nullsLast(String::compareTo))
           .thenComparing(
-              GeneratedRoute::getAttributePolicy, Comparator.nullsLast(String::compareTo))
-          .thenComparing(
-              GeneratedRoute::getCommunities, Comparators.lexicographical(Ordering.natural()))
+              gr -> gr.getCommunities().getCommunities(), lexicographical(Ordering.natural()))
           .thenComparing(GeneratedRoute::getDiscard)
-          .thenComparing(
-              GeneratedRoute::getGenerationPolicy, Comparator.nullsLast(String::compareTo));
+          .thenComparing(GeneratedRoute::getGenerationPolicy, nullsLast(String::compareTo));
 
   @Override
   public Builder toBuilder() {
@@ -274,11 +295,15 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
         .setMetric(firstNonNull(getMetric(), 0L))
         .setNextHop(getNextHop())
         .setTag(getTag())
-        // GeneratedRoute properties
+        // BGP route properties
         .setAsPath(getAsPath())
-        .setAttributePolicy(getAttributePolicy())
         .setCommunities(getCommunities())
-        .setDiscard(getDiscard())
+        .setLocalPreference(_localPreference)
+        .setOriginType(_originType)
+        .setWeight(_weight)
+        // GeneratedRoute properties
+        .setAttributePolicy(getAttributePolicy())
+        .setDiscard(_discard)
         .setGenerationPolicy(getGenerationPolicy());
   }
 
@@ -297,13 +322,16 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
         && _discard == that._discard
-        && _metric == that._metric
+        && _med == that._med
         && _tag == that._tag
         && _asPath.equals(that._asPath)
         && Objects.equals(_attributePolicy, that._attributePolicy)
         && _communities.equals(that._communities)
         && Objects.equals(_generationPolicy, that._generationPolicy)
-        && _nextHop.equals(that._nextHop);
+        && _nextHop.equals(that._nextHop)
+        && _localPreference == that._localPreference
+        && _originType == that._originType
+        && _weight == that._weight;
   }
 
   @Override
@@ -322,8 +350,11 @@ public final class GeneratedRoute extends AbstractRoute implements Comparable<Ge
               _communities,
               _discard,
               _generationPolicy,
-              _metric,
-              _nextHop);
+              _med,
+              _nextHop,
+              _localPreference,
+              _originType,
+              _weight);
       _hashCode = h;
     }
     return h;

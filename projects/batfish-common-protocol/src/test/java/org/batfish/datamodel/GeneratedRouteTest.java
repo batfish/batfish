@@ -37,7 +37,9 @@ public class GeneratedRouteTest {
         .addEqualityGroup(gr.setTag(5L).build())
         .addEqualityGroup(gr.setNonRouting(true).build())
         .addEqualityGroup(gr.setNonForwarding(true).build())
-        .addEqualityGroup(new Object())
+        .addEqualityGroup(gr.setLocalPreference(1L).build())
+        .addEqualityGroup(gr.setOriginType(OriginType.IGP).build())
+        .addEqualityGroup(gr.setWeight(1).build())
         .testEquals();
   }
 
@@ -57,6 +59,9 @@ public class GeneratedRouteTest {
             .add(grb.setDiscard(true).build())
             .add(grb.setAttributePolicy(null).build())
             .add(grb.setTag(5L).build())
+            .add(grb.setLocalPreference(1L).build())
+            .add(grb.setOriginType(OriginType.IGP).build())
+            .add(grb.setWeight(1).build())
             .build();
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {

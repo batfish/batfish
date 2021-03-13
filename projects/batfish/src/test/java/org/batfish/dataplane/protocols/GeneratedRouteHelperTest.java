@@ -1,6 +1,8 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -10,12 +12,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
 import org.junit.Test;
@@ -103,5 +110,37 @@ public class GeneratedRouteHelperTest {
                         .build())));
 
     assertThat(newRoute, notNullValue());
+  }
+
+  @Test
+  public void testActivateAndSetBgpProperties() {
+    GeneratedRoute gr = _builder.setDiscard(true).setNetwork(Prefix.parse("1.1.1.0/24")).build();
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("n1")
+            .build();
+    nf.vrfBuilder().setOwner(c).build();
+
+    RoutingPolicy policy =
+        nf.routingPolicyBuilder()
+            .setName("always match")
+            .setOwner(c)
+            .setStatements(
+                ImmutableList.of(
+                    new SetCommunities(
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(1L)))),
+                    Statements.ReturnTrue.toStaticStatement()))
+            .build();
+
+    Builder newRoute =
+        GeneratedRouteHelper.activateGeneratedRoute(
+            gr,
+            policy,
+            ImmutableSet.of(
+                annotateRoute(new ConnectedRoute(Prefix.strict("2.2.2.2/32"), "blah"))));
+
+    assertThat(newRoute.build(), hasCommunities(contains(StandardCommunity.of(1L))));
   }
 }
