@@ -28,6 +28,33 @@ public final class Service implements FortiosRenameableObject, Serializable {
     IP,
   }
 
+  /**
+   * Returns message indicating why this service can't be committed in the CLI, or null if it can
+   */
+  public @Nullable String getInvalidReason() {
+    // _valid indicates whether any invalid lines have gone into this service that would cause the
+    // CLI to pop out of its edit block
+    if (!_valid) {
+      return "name is invalid"; // currently, only invalid name can cause valid to be false
+    }
+    // TODO Check validity of _ipRange; it is not yet used in conversion
+    switch (getProtocolEffective()) {
+      case TCP_UDP_SCTP:
+        if (_tcpPortRangeDst == null && _udpPortRangeDst == null && _sctpPortRangeDst == null) {
+          return "TCP/UDP/SCTP portrange cannot all be empty";
+        }
+        return null;
+      case ICMP:
+      case ICMP6:
+        // both ICMP type and ICMP code are allowed to be unset
+      case IP:
+        // protocol-number is allowed to be unset
+        return null;
+      default:
+        return String.format("protocol %s is unknown", getProtocolEffective());
+    }
+  }
+
   @Override
   @Nonnull
   public String getName() {
@@ -164,8 +191,11 @@ public final class Service implements FortiosRenameableObject, Serializable {
     _icmpCode = icmpCode;
   }
 
-  public void setIcmpType(int icmpType) {
+  public void setIcmpType(@Nullable Integer icmpType) {
     _icmpType = icmpType;
+    if (_icmpType == null) { // When ICMP type is cleared, it also clears ICMP code
+      _icmpCode = null;
+    }
   }
 
   public void setIpRange(IpRange ipRange) {
@@ -196,6 +226,10 @@ public final class Service implements FortiosRenameableObject, Serializable {
     _sctpPortRangeSrc = sctpPortRange;
   }
 
+  public void setValid(boolean valid) {
+    _valid = valid;
+  }
+
   public Service(String name, BatfishUUID uuid) {
     _name = name;
     _uuid = uuid;
@@ -215,6 +249,9 @@ public final class Service implements FortiosRenameableObject, Serializable {
   @Nullable private IntegerSpace _udpPortRangeSrc;
   @Nullable private IntegerSpace _sctpPortRangeDst;
   @Nullable private IntegerSpace _sctpPortRangeSrc;
+
+  // Whether this service has invalid lines that would prevent committing the service in CLI
+  private transient boolean _valid;
 
   @Nonnull
   Stream<HeaderSpace> toHeaderSpaces() {
