@@ -31097,7 +31097,7 @@
                     "stubType" : "NSSA",
                     "summaries" : {
                       "1.2.3.0/24" : {
-                        "advertise" : true,
+                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD",
                         "metric" : 17
                       }
                     },
@@ -31110,7 +31110,7 @@
                     "stubType" : "NONE",
                     "summaries" : {
                       "1.2.3.0/24" : {
-                        "advertise" : false
+                        "behavior" : "NOT_ADVERTISE_AND_NO_DISCARD"
                       }
                     },
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
@@ -31388,7 +31388,7 @@
                     "stubType" : "NSSA",
                     "summaries" : {
                       "1.2.3.0/24" : {
-                        "advertise" : true,
+                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD",
                         "metric" : 17
                       }
                     },
@@ -31401,7 +31401,7 @@
                     "stubType" : "NONE",
                     "summaries" : {
                       "1.2.3.0/24" : {
-                        "advertise" : false
+                        "behavior" : "NOT_ADVERTISE_AND_NO_DISCARD"
                       }
                     },
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
@@ -31454,7 +31454,7 @@
                     "stubType" : "NONE",
                     "summaries" : {
                       "3.3.3.0/24" : {
-                        "advertise" : true
+                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD"
                       }
                     },
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:1~"
@@ -42611,7 +42611,7 @@
                     "stubType" : "NONE",
                     "summaries" : {
                       "10.0.0.0/15" : {
-                        "advertise" : true
+                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD"
                       }
                     },
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
@@ -66976,7 +66976,7 @@
                     "stubType" : "NSSA",
                     "summaries" : {
                       "1.2.0.0/16" : {
-                        "advertise" : true,
+                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD",
                         "metric" : 100
                       }
                     },

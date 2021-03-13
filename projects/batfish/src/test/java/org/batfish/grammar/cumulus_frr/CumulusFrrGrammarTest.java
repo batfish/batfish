@@ -86,6 +86,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -1920,7 +1921,8 @@ public class CumulusFrrGrammarTest {
       org.batfish.datamodel.ospf.OspfArea area = proc.getAreas().get(area1110);
       assertThat(area.getSummaries(), hasKeys(Prefix.parse("1.255.0.0/17")));
       OspfAreaSummary summary = Iterables.getOnlyElement(area.getSummaries().values());
-      assertThat(summary.getAdvertised(), equalTo(true));
+      assertThat(
+          summary.getBehavior(), equalTo(SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD));
       assertThat(summary.getMetric(), equalTo(10L));
       String name = computeOspfAreaRangeFilterName(c.getDefaultVrf().getName(), area1110);
       assertThat(area.getSummaryFilter(), equalTo(name));

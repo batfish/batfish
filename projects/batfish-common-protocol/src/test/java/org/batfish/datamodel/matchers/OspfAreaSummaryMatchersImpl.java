@@ -25,7 +25,18 @@ final class OspfAreaSummaryMatchersImpl {
 
     @Override
     protected Boolean featureValueOf(OspfAreaSummary arg0) {
-      return arg0.getAdvertised();
+      return arg0.isAdvertised();
+    }
+  }
+
+  static final class InstallsDiscard extends FeatureMatcher<OspfAreaSummary, Boolean> {
+    InstallsDiscard(Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "An OspfAreaSummary that installs discard:", "installs discard");
+    }
+
+    @Override
+    protected Boolean featureValueOf(OspfAreaSummary arg0) {
+      return arg0.installsDiscard();
     }
   }
 

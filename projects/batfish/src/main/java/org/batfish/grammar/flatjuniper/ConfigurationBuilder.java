@@ -171,6 +171,7 @@ import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 import org.batfish.datamodel.isis.IsisOption;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
@@ -4676,7 +4677,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitOa_area_range(FlatJuniperParser.Oa_area_rangeContext ctx) {
     if (_currentAreaRangePrefix != null) {
       OspfAreaSummary summary =
-          new OspfAreaSummary(!_currentAreaRangeRestrict, _currentAreaRangeMetric);
+          new OspfAreaSummary(
+              _currentAreaRangeRestrict
+                  ? SummaryRouteBehavior.NOT_ADVERTISE_AND_INSTALL_DISCARD
+                  : SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD,
+              _currentAreaRangeMetric);
       _currentArea.getSummaries().put(_currentAreaRangePrefix, summary);
     } else {
       todo(ctx);

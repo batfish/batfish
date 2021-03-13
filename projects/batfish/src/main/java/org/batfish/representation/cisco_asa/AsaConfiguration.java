@@ -2313,7 +2313,7 @@ public final class AsaConfiguration extends VendorConfiguration {
         OspfAreaSummary summary = e2.getValue();
         int prefixLength = prefix.getPrefixLength();
         int filterMinPrefixLength =
-            summary.getAdvertised()
+            summary.isAdvertised()
                 ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
                 : prefixLength;
         summaryFilter.addLine(

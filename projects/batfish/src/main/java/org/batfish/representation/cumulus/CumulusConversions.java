@@ -83,6 +83,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Common;
@@ -1486,7 +1487,8 @@ public final class CumulusConversions {
         // that. Upconvert if not null.
         Prefix prefix = range.getRange();
         Long cost = range.getCost() == null ? null : range.getCost().longValue();
-        OspfAreaSummary summary = new OspfAreaSummary(true, cost);
+        OspfAreaSummary summary =
+            new OspfAreaSummary(SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD, cost);
         ret.addSummary(prefix, summary);
         lines.add(new RouteFilterLine(LineAction.DENY, PrefixRange.moreSpecificThan(prefix)));
       }

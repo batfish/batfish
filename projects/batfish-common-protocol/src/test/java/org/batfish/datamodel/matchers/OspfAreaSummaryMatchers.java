@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.matchers.OspfAreaSummaryMatchersImpl.HasMetric;
+import org.batfish.datamodel.matchers.OspfAreaSummaryMatchersImpl.InstallsDiscard;
 import org.batfish.datamodel.matchers.OspfAreaSummaryMatchersImpl.IsAdvertised;
 import org.hamcrest.Matcher;
 
@@ -30,6 +31,19 @@ public final class OspfAreaSummaryMatchers {
    */
   public static IsAdvertised isAdvertised(Matcher<? super Boolean> subMatcher) {
     return new IsAdvertised(subMatcher);
+  }
+
+  /** Returns a matcher asserting that the OSPF summary route will be advertised. */
+  public static InstallsDiscard installsDiscard() {
+    return new InstallsDiscard(equalTo(true));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the OSPF area
+   * summary's advertised flag.
+   */
+  public static InstallsDiscard installsDiscard(Matcher<? super Boolean> subMatcher) {
+    return new InstallsDiscard(subMatcher);
   }
 
   private OspfAreaSummaryMatchers() {}
