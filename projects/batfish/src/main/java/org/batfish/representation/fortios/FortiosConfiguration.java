@@ -318,9 +318,6 @@ public class FortiosConfiguration extends VendorConfiguration {
       boolean policyPermits = policy.getActionEffective() == Policy.Action.ALLOW;
       AclLineMatchExpr policyMatches =
           policyPermits ? new PermittedByAcl(viPolicyName) : new DeniedByAcl(viPolicyName);
-      VendorStructureId vsi =
-          new VendorStructureId(
-              _filename, FortiosStructureType.POLICY.getDescription(), viPolicyName);
       AclLineMatchExpr matchExpr =
           and(matchPolicyTraceElement(policy, _filename), matchSources, policyMatches);
       lines.add(
