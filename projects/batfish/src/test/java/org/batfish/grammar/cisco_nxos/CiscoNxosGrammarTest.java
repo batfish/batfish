@@ -120,6 +120,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -233,6 +234,7 @@ import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.matchers.VniSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.packet_policy.FibLookup;
@@ -5246,9 +5248,12 @@ public final class CiscoNxosGrammarTest {
       Map<Prefix, OspfAreaSummary> summaries = proc.getAreas().get(0L).getSummaries();
 
       assertThat(summaries, hasKeys(p0, p1, p2));
-      assertTrue(summaries.get(p0).getAdvertised());
-      assertFalse(summaries.get(p1).getAdvertised());
-      assertTrue(summaries.get(p2).getAdvertised());
+      assertThat(
+          summaries.get(p0).getBehavior(), is(SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD));
+      assertThat(
+          summaries.get(p1).getBehavior(), is(SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD));
+      assertThat(
+          summaries.get(p2).getBehavior(), is(SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD));
       // TODO: convert and test tags
     }
     // TODO: convert and test OSPF timers

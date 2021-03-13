@@ -269,6 +269,7 @@ import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -6384,7 +6385,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
     Map<Prefix, OspfAreaSummary> area =
         _currentOspfProcess.getSummaries().computeIfAbsent(areaNum, k -> new TreeMap<>());
-    area.put(prefix, new OspfAreaSummary(advertise, cost));
+    area.put(
+        prefix,
+        new OspfAreaSummary(
+            advertise
+                ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
+                : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
+            cost));
   }
 
   @Override
@@ -6682,7 +6689,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
     Map<Prefix, OspfAreaSummary> area =
         _currentOspfProcess.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
-    area.put(prefix, new OspfAreaSummary(advertise, cost));
+    area.put(
+        prefix,
+        new OspfAreaSummary(
+            advertise
+                ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
+                : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
+            cost));
   }
 
   @Override

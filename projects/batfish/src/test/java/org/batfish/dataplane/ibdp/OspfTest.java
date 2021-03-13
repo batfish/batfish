@@ -5,6 +5,9 @@ import static org.batfish.datamodel.RoutingProtocol.OSPF_E1;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_E2;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_IA;
 import static org.batfish.datamodel.RoutingProtocol.OSPF_IS;
+import static org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD;
+import static org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior.NOT_ADVERTISE_AND_INSTALL_DISCARD;
+import static org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.computeOspfTopology;
 import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
@@ -16,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import javax.annotation.Nullable;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -39,6 +43,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -161,8 +166,7 @@ public class OspfTest {
       Long maxMetricStubNetworks,
       Long maxMetricSummaryNetworks,
       Long maxMetricTransitLinks,
-      boolean summarizeR1L0,
-      boolean summaryR1L0Advertise,
+      @Nullable SummaryRouteBehavior summaryR1L0Behavior,
       Long summarizeR1L0Metric) {
 
     String l0Name = "Loopback0";
@@ -186,9 +190,9 @@ public class OspfTest {
     OspfProcess.Builder opb = nf.ospfProcessBuilder();
     OspfArea.Builder oaba = nf.ospfAreaBuilder().setNumber(areaA);
     OspfArea.Builder oabb = nf.ospfAreaBuilder().setNumber(areaB);
-    if (summarizeR1L0) {
+    if (summaryR1L0Behavior != null) {
       oabb.addSummary(
-          C1_L0_SUMMARY_PREFIX, new OspfAreaSummary(summaryR1L0Advertise, summarizeR1L0Metric));
+          C1_L0_SUMMARY_PREFIX, new OspfAreaSummary(summaryR1L0Behavior, summarizeR1L0Metric));
       oabb.setSummaryFilter(C1_L0_SUMMARY_FILTER_NAME);
     }
     OspfArea.Builder oabc = nf.ospfAreaBuilder().setNumber(areaC);
@@ -229,7 +233,7 @@ public class OspfTest {
     oa1b.addInterface(iface.getName());
 
     Configuration c2 = cb.setHostname(C2_NAME).build();
-    if (summarizeR1L0) {
+    if (summaryR1L0Behavior != null) {
       RouteFilterList rfl = new RouteFilterList(C1_L0_SUMMARY_FILTER_NAME);
       rfl.addLine(
           new RouteFilterLine(LineAction.DENY, PrefixRange.moreSpecificThan(C1_L0_SUMMARY_PREFIX)));
@@ -641,8 +645,7 @@ public class OspfTest {
             null,
             null,
             MAX_METRIC_TRANSIT_LINKS,
-            false,
-            false,
+            null,
             null);
     assertRoute(routesByNode, OSPF, C1_NAME, C2_L0_ADDRESS, 2L);
     assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
@@ -691,8 +694,7 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             null,
             MAX_METRIC_TRANSIT_LINKS,
-            false,
-            false,
+            null,
             null);
     assertRoute(routesByNode, OSPF, C1_NAME, C2_L0_ADDRESS, 65536L);
     assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
@@ -741,8 +743,7 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS,
-            false,
-            false,
+            null,
             null);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
     assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
@@ -792,8 +793,7 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS,
-            true,
-            true,
+            ADVERTISE_AND_INSTALL_DISCARD,
             100L);
     // only care about internal routes for this test
     assertNoRoute(routesByNode, C1_NAME, C1_L0_SUMMARY_PREFIX);
@@ -829,7 +829,20 @@ public class OspfTest {
   @Test
   public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeAdvertiseDynamicMetric() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
-        getOspfRoutes(1L, 1L, 0L, 0L, 0L, 0L, 0L, null, null, null, null, true, true, null);
+        getOspfRoutes(
+            1L,
+            1L,
+            0L,
+            0L,
+            0L,
+            0L,
+            0L,
+            null,
+            null,
+            null,
+            null,
+            ADVERTISE_AND_INSTALL_DISCARD,
+            null);
     // only care about internal routes for this test
     assertNoRoute(routesByNode, C1_NAME, C1_L0_SUMMARY_PREFIX);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 2);
@@ -864,7 +877,20 @@ public class OspfTest {
   @Test
   public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeAdvertiseFixedMetric() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
-        getOspfRoutes(1L, 1L, 0L, 0L, 0L, 0L, 0L, null, null, null, null, true, true, 100L);
+        getOspfRoutes(
+            1L,
+            1L,
+            0L,
+            0L,
+            0L,
+            0L,
+            0L,
+            null,
+            null,
+            null,
+            null,
+            ADVERTISE_AND_INSTALL_DISCARD,
+            100L);
     // only care about internal routes for this test
     assertNoRoute(routesByNode, C1_NAME, C1_L0_SUMMARY_PREFIX);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 2);
@@ -897,9 +923,10 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeNoAdvertise() {
+  public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeNoAdvertiseAndNoInstall() {
     SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
-        getOspfRoutes(1L, 1L, 0L, 0L, 0L, 0L, 0L, null, null, null, null, true, false, null);
+        getOspfRoutes(
+            1L, 1L, 0L, 0L, 0L, 0L, 0L, null, null, null, null, NOT_ADVERTISE_AND_NO_DISCARD, null);
     // only care about internal routes for this test
     assertNoRoute(routesByNode, C1_NAME, C1_L0_SUMMARY_PREFIX);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 2);
@@ -909,10 +936,59 @@ public class OspfTest {
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_ADDRESS, 3L);
     assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_ADDRESS, 2L);
     // summary discard route
-    assertRoute(routesByNode, OSPF_IS, C2_NAME, C1_L0_SUMMARY_PREFIX, 0L);
     assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_ADDRESS, 2L);
     assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_ADDRESS, 3L);
     assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_ADDRESS, 2L);
+    // summary discard route not installed for no-advertise
+    assertNoRoute(routesByNode, C2_NAME, C1_L0_SUMMARY_PREFIX);
+    // summary prefix not advertised
+    assertNoRoute(routesByNode, C3_NAME, C1_L0_SUMMARY_PREFIX);
+    // suppressed by summary
+    assertNoRoute(routesByNode, C3_NAME, C1_L0_ADDRESS);
+    assertRoute(routesByNode, OSPF, C3_NAME, C2_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF, C3_NAME, C4_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_IA, C3_NAME, C1_E1_2_ADDRESS, 2L);
+    // summary prefix not advertised
+    assertNoRoute(routesByNode, C4_NAME, C1_L0_SUMMARY_PREFIX);
+    // suppressed by summary
+    assertNoRoute(routesByNode, C4_NAME, C1_L0_ADDRESS);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_L0_ADDRESS, 3L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C3_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_IA, C4_NAME, C1_E1_2_ADDRESS, 3L);
+    assertRoute(routesByNode, OSPF, C4_NAME, C2_E2_3_ADDRESS, 2L);
+  }
+
+  @Test
+  public void testOspfDualAreaBackboneInterAreaPropagationR2E21SummarizeNoAdvertiseAndInstall() {
+    SortedMap<String, SortedMap<String, Set<AbstractRoute>>> routesByNode =
+        getOspfRoutes(
+            1L,
+            1L,
+            0L,
+            0L,
+            0L,
+            0L,
+            0L,
+            null,
+            null,
+            null,
+            null,
+            NOT_ADVERTISE_AND_INSTALL_DISCARD,
+            null);
+    // only care about internal routes for this test
+    assertNoRoute(routesByNode, C1_NAME, C1_L0_SUMMARY_PREFIX);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 2);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_L0_ADDRESS, 3L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C4_L0_ADDRESS, 4L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_E2_3_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF_IA, C1_NAME, C3_E3_4_ADDRESS, 3L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C1_L0_ADDRESS, 2L);
+    // summary discard route
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_L0_ADDRESS, 2L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C4_L0_ADDRESS, 3L);
+    assertRoute(routesByNode, OSPF, C2_NAME, C3_E3_4_ADDRESS, 2L);
+    // summary discard route is installed for no-advertise yes-install
+    assertRoute(routesByNode, OSPF_IS, C2_NAME, C1_L0_SUMMARY_PREFIX, 0L);
     // summary prefix not advertised
     assertNoRoute(routesByNode, C3_NAME, C1_L0_SUMMARY_PREFIX);
     // suppressed by summary
@@ -945,8 +1021,7 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS,
-            false,
-            false,
+            null,
             null);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
     assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
@@ -995,8 +1070,7 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS,
-            false,
-            false,
+            null,
             null);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
     assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);
@@ -1045,8 +1119,7 @@ public class OspfTest {
             MAX_METRIC_STUB_NETWORKS,
             MAX_METRIC_SUMMARY_NETWORKS,
             MAX_METRIC_TRANSIT_LINKS,
-            false,
-            false,
+            null,
             null);
     assertRoute(routesByNode, OSPF_IA, C1_NAME, C2_L0_ADDRESS, 16711681L);
     assertRoute(routesByNode, OSPF_E1, C1_NAME, C2_L1_ADDRESS, 16711681L);

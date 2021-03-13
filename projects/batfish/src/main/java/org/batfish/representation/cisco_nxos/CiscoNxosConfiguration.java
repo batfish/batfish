@@ -121,6 +121,7 @@ import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubSettings;
@@ -2624,7 +2625,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull OspfAreaSummary toOspfAreaSummary(OspfSummaryAddress ospfSummaryAddress) {
-    return new OspfAreaSummary(!ospfSummaryAddress.getNotAdvertise(), null);
+    return new OspfAreaSummary(
+        ospfSummaryAddress.getNotAdvertise()
+            ? SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD
+            : SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD,
+        null);
   }
 
   private void createOspfExportPolicy(

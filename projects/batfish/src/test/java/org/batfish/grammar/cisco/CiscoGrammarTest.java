@@ -139,6 +139,7 @@ import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.installsDiscard;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
@@ -3262,12 +3263,10 @@ public final class CiscoGrammarTest {
             hasOspfProcess(
                 "1",
                 hasArea(
-                    1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised(equalTo(false)))))));
-    assertThat(
-        manual,
-        hasDefaultVrf(
-            hasOspfProcess(
-                "1", hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(100L))))));
+                    1L,
+                    hasSummary(
+                        Prefix.parse("10.0.0.0/16"),
+                        allOf(not(isAdvertised()), not(installsDiscard()), hasMetric(100L)))))));
 
     Configuration defaults = parseConfig("iosOspfCostDefaults");
 
@@ -3275,13 +3274,12 @@ public final class CiscoGrammarTest {
         defaults,
         hasDefaultVrf(
             hasOspfProcess(
-                "1", hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), isAdvertised())))));
-    assertThat(
-        defaults,
-        hasDefaultVrf(
-            hasOspfProcess(
                 "1",
-                hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(nullValue()))))));
+                hasArea(
+                    1L,
+                    hasSummary(
+                        Prefix.parse("10.0.0.0/16"),
+                        allOf(isAdvertised(), installsDiscard(), hasMetric(nullValue())))))));
   }
 
   @Test
