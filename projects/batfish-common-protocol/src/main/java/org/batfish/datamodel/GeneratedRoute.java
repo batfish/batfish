@@ -326,7 +326,7 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
               _med,
               _nextHop,
               _localPreference,
-              _originType,
+              _originType.ordinal(),
               _weight);
       _hashCode = h;
     }
