@@ -1,9 +1,9 @@
 package org.batfish.datamodel.questions;
 
 import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
-import static org.batfish.datamodel.BgpAttributesRoute.PROP_AS_PATH;
-import static org.batfish.datamodel.BgpAttributesRoute.PROP_COMMUNITIES;
-import static org.batfish.datamodel.BgpAttributesRoute.PROP_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
+import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
+import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

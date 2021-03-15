@@ -1,6 +1,6 @@
 package org.batfish.dataplane.protocols;
 
-import static org.batfish.datamodel.BgpAttributesRoute.DEFAULT_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.annotations.VisibleForTesting;
