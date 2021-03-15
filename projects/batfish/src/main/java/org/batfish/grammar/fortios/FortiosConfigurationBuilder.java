@@ -254,6 +254,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     Address currentAddress = _c.getAddresses().remove(currentName);
     currentAddress.setName(newName);
     _c.getAddresses().put(newName, currentAddress);
+    // Add the rename as part of the def
+    _c.defineStructure(FortiosStructureType.ADDRESS, newName, ctx);
   }
 
   @Override
@@ -657,6 +659,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     Service currentService = _c.getServices().remove(currentName);
     currentService.setName(newName);
     _c.getServices().put(newName, currentService);
+    // Add the rename as part of the def
+    _c.defineStructure(FortiosStructureType.SERVICE_CUSTOM, newName, ctx);
   }
 
   @Override

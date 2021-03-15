@@ -10,6 +10,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
@@ -980,11 +981,18 @@ public final class FortiosGrammarTest {
 
     // Should have definitions for the renamed structures
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "new_addr1"));
-    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "new_addr2"));
+    // Rename should be part of the definition
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 52)));
     assertThat(
         ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service1"));
+    // Rename should be part of the definition
     assertThat(
-        ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2"));
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 49)));
 
     // Should have references for the renamed structures, even if the renaming happened after the
     // reference
