@@ -23,8 +23,8 @@ import org.batfish.datamodel.Prefix;
 import org.junit.Test;
 
 public class IpsRoutedOutInterfacesFactoryTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final IpSpaceToBDD _dst = _pkt.getDstIpSpaceToBDD();
 
   @Test
   public void testComputeIpsRoutedOutInterfacesMap() {
@@ -35,8 +35,8 @@ public class IpsRoutedOutInterfacesFactoryTest {
     Prefix prefix2 = Prefix.parse("2.2.3.0/24");
     ConnectedRoute route1 = new ConnectedRoute(prefix1, iface1);
     ConnectedRoute route2 = new ConnectedRoute(prefix2, iface2);
-    BDD prefix1Bdd = DST.toBDD(prefix1);
-    BDD prefix2Bdd = DST.toBDD(prefix2);
+    BDD prefix1Bdd = _dst.toBDD(prefix1);
+    BDD prefix2Bdd = _dst.toBDD(prefix2);
 
     // empty fib
     {
@@ -74,7 +74,7 @@ public class IpsRoutedOutInterfacesFactoryTest {
       Map<String, IpSpace> map =
           IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
       assertEquals(1, map.size());
-      assertEquals(prefix1Bdd, DST.visit(map.get(iface1)));
+      assertEquals(prefix1Bdd, _dst.visit(map.get(iface1)));
     }
 
     // two fib entries
@@ -93,8 +93,8 @@ public class IpsRoutedOutInterfacesFactoryTest {
       Map<String, IpSpace> map =
           IpsRoutedOutInterfacesFactory.computeIpsRoutedOutInterfacesMap(fib);
       assertEquals(2, map.size());
-      assertEquals(prefix1Bdd, DST.visit(map.get(iface1)));
-      assertEquals(prefix2Bdd, DST.visit(map.get(iface2)));
+      assertEquals(prefix1Bdd, _dst.visit(map.get(iface1)));
+      assertEquals(prefix2Bdd, _dst.visit(map.get(iface2)));
     }
   }
 }
