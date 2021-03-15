@@ -43,7 +43,7 @@ cfa_set_fabric_object: FABRIC_OBJECT value = enable_or_disable newline;
 cfa_set_start_ip: START_IP ip = ip_address newline;
 
 // Shown in config as IP and mask, but accepts input formatted as prefix
-cfa_set_subnet: SUBNET subnet = ip_address_with_mask_or_prefix newline;
+cfa_set_subnet: SUBNET subnet = ip_address_with_maybe_invalid_mask_or_prefix newline;
 
 cfa_set_type: TYPE type = address_type newline;
 

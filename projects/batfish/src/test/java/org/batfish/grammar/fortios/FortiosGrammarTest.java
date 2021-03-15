@@ -66,10 +66,12 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -168,18 +170,23 @@ public final class FortiosGrammarTest {
         addresses,
         hasKeys(
             "ipmask",
+            "ipmask-default",
             "iprange",
+            "iprange-default",
             "fqdn",
             "dynamic",
             "geography",
             "interface-subnet",
             "mac",
             "wildcard",
+            "wildcard-default",
             "undefined-refs",
             "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxy"));
 
     Address ipmask = addresses.get("ipmask");
+    Address ipmaskDefault = addresses.get("ipmask-default");
     Address iprange = addresses.get("iprange");
+    Address iprangeDefault = addresses.get("iprange-default");
     Address fqdn = addresses.get("fqdn");
     Address dynamic = addresses.get("dynamic");
     Address geography = addresses.get("geography");
@@ -187,6 +194,7 @@ public final class FortiosGrammarTest {
     Address undefinedRefs = addresses.get("undefined-refs");
     Address mac = addresses.get("mac");
     Address wildcard = addresses.get("wildcard");
+    Address wildcardDefault = addresses.get("wildcard-default");
     Address longName =
         addresses.get(
             "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxy");
@@ -204,14 +212,24 @@ public final class FortiosGrammarTest {
     assertThat(mac.getType(), equalTo(Address.Type.MAC));
 
     // Test that type-specific fields are populated correctly
-    assertThat(ipmask.getTypeSpecificFields().getSubnet(), equalTo(Prefix.parse("1.1.1.0/24")));
-    assertThat(iprange.getTypeSpecificFields().getStartIp(), equalTo(Ip.parse("1.1.1.0")));
-    assertThat(iprange.getTypeSpecificFields().getEndIp(), equalTo(Ip.parse("1.1.1.255")));
+    assertThat(ipmask.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.1.1.0")));
+    assertThat(ipmask.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("255.255.255.0")));
+    assertThat(iprange.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.1.1.0")));
+    assertThat(iprange.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("1.1.1.255")));
     assertThat(interfaceSubnet.getTypeSpecificFields().getInterface(), equalTo("port1"));
-    assertThat(
-        wildcard.getTypeSpecificFields().getWildcard(),
-        equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("2.0.0.2"), Ip.parse("255.0.0.255"))));
-    assertThat(longName.getTypeSpecificFields().getSubnet(), equalTo(Prefix.parse("1.1.1.0/24")));
+    // Configured IP is 2.2.2.2, but mask should canonicalize it to 2.0.0.2
+    assertThat(wildcard.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("2.0.0.2")));
+    assertThat(wildcard.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("255.0.0.255")));
+    assertThat(longName.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.1.1.0")));
+    assertThat(longName.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("255.255.255.0")));
+
+    // Test that type-specific field defaults are correct
+    assertThat(ipmaskDefault.getTypeSpecificFields().getIp1Effective(), equalTo(Ip.ZERO));
+    assertThat(ipmaskDefault.getTypeSpecificFields().getIp2Effective(), equalTo(Ip.ZERO));
+    assertThat(iprangeDefault.getTypeSpecificFields().getIp1Effective(), equalTo(Ip.ZERO));
+    // Skip ip2 for iprange; end-ip must be set.
+    assertThat(wildcardDefault.getTypeSpecificFields().getIp1Effective(), equalTo(Ip.ZERO));
+    assertThat(wildcardDefault.getTypeSpecificFields().getIp2Effective(), equalTo(Ip.ZERO));
 
     // Test explicitly set values
     assertThat(ipmask.getAllowRouting(), equalTo(true));
@@ -312,13 +330,16 @@ public final class FortiosGrammarTest {
         ipSpaces,
         hasKeys(
             "ipmask",
+            "ipmask-default",
             "iprange",
+            "iprange-default",
             "fqdn",
             "dynamic",
             "geography",
             "interface-subnet",
             "mac",
             "wildcard",
+            "wildcard-default",
             // TODO undefined-refs shouldn't be converted
             "undefined-refs",
             longName));
@@ -330,9 +351,17 @@ public final class FortiosGrammarTest {
     assertThat(
         ipSpaces.get("wildcard").accept(SRC_IP_BDD),
         equalTo(
-            IpWildcard.ipWithWildcardMask(Ip.parse("2.0.0.2"), Ip.parse("255.0.0.255"))
+            // Configured mask is 255.0.0.255, but in IpWildcard, the set bits mean "don't care"
+            IpWildcard.ipWithWildcardMask(Ip.parse("2.2.2.2"), Ip.parse("0.255.255.0"))
                 .toIpSpace()
                 .accept(SRC_IP_BDD)));
+
+    BDD allSrcIps = UniverseIpSpace.INSTANCE.accept(SRC_IP_BDD);
+    assertThat(ipSpaces.get("ipmask-default").accept(SRC_IP_BDD), equalTo(allSrcIps));
+    assertThat(
+        ipSpaces.get("iprange-default").accept(SRC_IP_BDD),
+        equalTo(IpRange.range(Ip.ZERO, Ip.parse("1.1.1.1")).accept(SRC_IP_BDD)));
+    assertThat(ipSpaces.get("wildcard-default").accept(SRC_IP_BDD), equalTo(allSrcIps));
 
     // Unsupported types
     Stream.of("fqdn", "dynamic", "geography", "interface-subnet", "mac", "undefined-refs")

@@ -327,7 +327,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCfa_set_start_ip(Cfa_set_start_ipContext ctx) {
     if (_currentAddress.getType() == Address.Type.IPRANGE) {
-      _currentAddress.getTypeSpecificFields().setStartIp(toIp(ctx.ip));
+      _currentAddress.getTypeSpecificFields().setIp1(toIp(ctx.ip));
     } else {
       warn(ctx, "Cannot set start-ip for address type " + _currentAddress.getTypeEffective());
     }
@@ -336,7 +336,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCfa_set_end_ip(Cfa_set_end_ipContext ctx) {
     if (_currentAddress.getType() == Address.Type.IPRANGE) {
-      _currentAddress.getTypeSpecificFields().setEndIp(toIp(ctx.ip));
+      _currentAddress.getTypeSpecificFields().setIp2(toIp(ctx.ip));
     } else {
       warn(ctx, "Cannot set end-ip for address type " + _currentAddress.getTypeEffective());
     }
@@ -363,7 +363,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfa_set_subnet(Cfa_set_subnetContext ctx) {
     Address.Type currentType = _currentAddress.getTypeEffective();
     if (currentType == Address.Type.IPMASK || currentType == Address.Type.INTERFACE_SUBNET) {
-      _currentAddress.getTypeSpecificFields().setSubnet(toPrefix(ctx.subnet));
+      if (ctx.subnet.ip_prefix() != null) {
+        Prefix prefix = Prefix.parse(ctx.subnet.ip_prefix().getText());
+        _currentAddress.getTypeSpecificFields().setIp1(prefix.getStartIp());
+        _currentAddress.getTypeSpecificFields().setIp2(prefix.getPrefixWildcard().inverted());
+      } else {
+        assert ctx.subnet.ip != null && ctx.subnet.mask != null;
+        _currentAddress.getTypeSpecificFields().setIp1(toIp(ctx.subnet.ip));
+        _currentAddress.getTypeSpecificFields().setIp2(toIp(ctx.subnet.mask));
+      }
     } else {
       warn(ctx, "Cannot set subnet for address type " + currentType);
     }
@@ -377,7 +385,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCfa_set_wildcard(Cfa_set_wildcardContext ctx) {
     if (_currentAddress.getType() == Address.Type.WILDCARD) {
-      _currentAddress.getTypeSpecificFields().setWildcard(toIpWildcard(ctx.wildcard));
+      // Convert to wildcard; canonicalizes IP based on mask bits
+      IpWildcard wildcard = toIpWildcard(ctx.wildcard);
+      // Set IP and mask in _currentAddress. Invert mask bits because IpWildcard interprets set bits
+      // as "don't matter" while FortiOS interprets unset bits as "don't matter".
+      _currentAddress.getTypeSpecificFields().setIp1(wildcard.getIp());
+      _currentAddress.getTypeSpecificFields().setIp2(wildcard.getWildcardMaskAsIp().inverted());
     } else {
       warn(ctx, "Cannot set wildcard for address type " + _currentAddress.getTypeEffective());
     }
@@ -1248,7 +1261,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private static @Nonnull IpWildcard toIpWildcard(Ip_wildcardContext ctx) {
-    return IpWildcard.ipWithWildcardMask(toIp(ctx.ip), toIp(ctx.mask));
+    // Invert mask because in FortiOS, bits that are set matter, whereas the opposite is true for
+    // the mask in IpWildcard
+    return IpWildcard.ipWithWildcardMask(toIp(ctx.ip), toIp(ctx.mask).inverted());
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
