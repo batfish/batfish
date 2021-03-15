@@ -612,20 +612,26 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void enterCfsc_edit(Cfsc_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.service_name());
-    if (!name.isPresent()) {
-      _currentService = new Service(toString(ctx.service_name().str()), getUUID()); // dummy
-      return;
+    Service existing = name.map(_c.getServices()::get).orElse(null);
+    if (existing != null) {
+      // Make a clone to edit
+      _currentService = SerializationUtils.clone(existing);
+    } else {
+      _currentService = new Service(toString(ctx.service_name().str()), getUUID());
     }
-    _currentService = _c.getServices().computeIfAbsent(name.get(), s -> new Service(s, getUUID()));
+    _currentService.setValid(name.isPresent());
   }
 
   @Override
   public void exitCfsc_edit(Cfsc_editContext ctx) {
     String name = _currentService.getName();
-    // TODO better validation
-    if (SERVICE_NAME_PATTERN.matcher(name).matches()) {
+    String invalidReason = _currentService.getInvalidReason();
+    if (invalidReason == null) { // service edit block is valid
       _c.getRenameableObjects().put(_currentService.getBatfishUUID(), _currentService);
       _c.defineStructure(FortiosStructureType.SERVICE_CUSTOM, name, ctx);
+      _c.getServices().put(name, _currentService);
+    } else {
+      warn(ctx, String.format("Service edit block ignored: %s", invalidReason));
     }
     _currentService = null;
   }
@@ -676,6 +682,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           ctx,
           String.format(
               "Cannot set ICMP code for service %s when protocol is not set to ICMP or ICMP6.",
+              _currentService.getName()));
+      return;
+    } else if (_currentService.getIcmpType() == null) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set ICMP code for service %s when ICMP type is not set.",
               _currentService.getName()));
       return;
     }
