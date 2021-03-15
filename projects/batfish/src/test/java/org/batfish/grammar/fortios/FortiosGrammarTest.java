@@ -84,6 +84,8 @@ import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
+import org.batfish.representation.fortios.Zone;
+import org.batfish.representation.fortios.Zone.IntrazoneAction;
 import org.hamcrest.Matcher;
 import org.junit.Rule;
 import org.junit.Test;
@@ -502,6 +504,73 @@ public final class FortiosGrammarTest {
     assertThat(port2.getDescription(), equalTo("no_spaces_descr"));
     Stream.of(longName, tunnel, loopback, emac, vlan)
         .forEach(iface -> assertNull(iface.getDescription()));
+  }
+
+  @Test
+  public void testZoneExtraction() {
+    String hostname = "zone";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Zone> zones = vc.getZones();
+    assertThat(zones.keySet(), containsInAnyOrder("zone1", "zone2", "zone3"));
+
+    Zone zone1 = zones.get("zone1");
+    Zone zone2 = zones.get("zone2");
+    Zone zone3 = zones.get("zone3");
+
+    assertThat(zone1.getInterface(), containsInAnyOrder("port1", "port2"));
+    // Defaults
+    assertThat(zone1.getIntrazone(), nullValue());
+    assertThat(zone1.getIntrazoneEffective(), equalTo(Zone.DEFAULT_INTRAZONE_ACTION));
+    assertThat(zone1.getDescription(), nullValue());
+
+    assertThat(zone2.getDescription(), equalTo("zone2 description"));
+    assertThat(zone2.getIntrazone(), equalTo(IntrazoneAction.DENY));
+    assertThat(zone2.getIntrazoneEffective(), equalTo(IntrazoneAction.DENY));
+    assertThat(zone2.getInterface(), contains("port3"));
+
+    assertThat(zone3.getIntrazone(), equalTo(IntrazoneAction.ALLOW));
+    assertThat(zone3.getIntrazoneEffective(), equalTo(IntrazoneAction.ALLOW));
+    assertThat(zone3.getInterface(), contains("port4"));
+  }
+
+  @Test
+  public void testZoneWarnings() throws IOException {
+    String hostname = "zone_warn";
+
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings parseWarnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        parseWarnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                allOf(
+                    hasComment("Zone edit block ignored: interface must be set"),
+                    hasText("edit \"zone1\"\n    next")),
+                hasComment("Illegal value for zone name"),
+                hasComment("Zone edit block ignored: name is invalid"),
+                hasComment("Interface UNDEFINED is undefined and cannot be added to zone zone3"),
+                hasComment(
+                    "Interface port1 is already in another zone and cannot be added to zone"
+                        + " zone4"))));
+
+    // Also check extraction to make sure the right lines/blocks are discarded
+    Map<String, Zone> zones = vc.getZones();
+    assertThat(zones, hasKeys("zone3", "zone4"));
+
+    Zone zone3 = zones.get("zone3");
+    Zone zone4 = zones.get("zone4");
+
+    assertThat(zone3.getInterface(), contains("port1"));
+    // Only port2 should show up, since port1 is already taken
+    assertThat(zone4.getInterface(), contains("port2"));
   }
 
   @Test

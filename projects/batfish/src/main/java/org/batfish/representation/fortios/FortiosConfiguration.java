@@ -51,6 +51,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
     _services = new HashMap<>();
+    _zones = new HashMap<>();
   }
 
   @Override
@@ -99,6 +100,11 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _services;
   }
 
+  /** name -> zone */
+  public @Nonnull Map<String, Zone> getZones() {
+    return _zones;
+  }
+
   private String _hostname;
   private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Interface> _interfaces;
@@ -107,6 +113,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
   private final @Nonnull Map<String, Service> _services;
+  private final @Nonnull Map<String, Zone> _zones;
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     Configuration c = new Configuration(_hostname, ConfigurationFormat.FORTIOS);
