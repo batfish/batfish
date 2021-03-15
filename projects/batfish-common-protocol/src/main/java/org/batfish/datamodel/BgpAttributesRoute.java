@@ -91,6 +91,7 @@ public abstract class BgpAttributesRoute<
       _asPath = asPath;
       return getThis();
     }
+
     /** Overwrite communities */
     public B setCommunities(CommunitySet communities) {
       _communities = communities.getCommunities();
