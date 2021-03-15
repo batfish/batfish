@@ -4,9 +4,11 @@ end
 config firewall service custom
     edit "longest possible firewall service custom service name that is accepted by devic"
         set comment "service custom comment"
+        set protocol IP
     next
-    edit "custom_default"
-        # Variety of destination and source port ranges
+    edit "custom_tcp"
+        # Variety of destination and source port ranges (at least one required)
+        set tcp-portrange 1
     next
     edit "explicit_tcp"
         set protocol TCP/UDP/SCTP

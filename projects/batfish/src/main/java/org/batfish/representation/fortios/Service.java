@@ -164,8 +164,11 @@ public final class Service implements FortiosRenameableObject, Serializable {
     _icmpCode = icmpCode;
   }
 
-  public void setIcmpType(int icmpType) {
+  public void setIcmpType(@Nullable Integer icmpType) {
     _icmpType = icmpType;
+    if (_icmpType == null) { // When ICMP type is cleared, it also clears ICMP code
+      _icmpCode = null;
+    }
   }
 
   public void setIpRange(IpRange ipRange) {

@@ -2,6 +2,7 @@ package org.batfish.grammar.fortios;
 
 import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
@@ -473,14 +474,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     } else {
       _currentPolicy = new Policy(toString(ctx.policy_number().str()));
     }
-    _currentPolicy.setValid(number.isPresent());
+    _currentPolicyValid = number.isPresent();
   }
 
   @Override
   public void exitCfp_edit(Cfp_editContext ctx) {
     // If edited policy is valid, add/update the entry in VS map
     String number = _currentPolicy.getNumber();
-    String invalidReason = _currentPolicy.getInvalidReason();
+    String invalidReason = policyValid(_currentPolicy, _currentPolicyValid);
     if (invalidReason == null) { // policy is valid
       _c.defineStructure(FortiosStructureType.POLICY, number, ctx);
       _c.referenceStructure(
@@ -624,20 +625,26 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void enterCfsc_edit(Cfsc_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.service_name());
-    if (!name.isPresent()) {
-      _currentService = new Service(toString(ctx.service_name().str()), getUUID()); // dummy
-      return;
+    Service existing = name.map(_c.getServices()::get).orElse(null);
+    if (existing != null) {
+      // Make a clone to edit
+      _currentService = SerializationUtils.clone(existing);
+    } else {
+      _currentService = new Service(toString(ctx.service_name().str()), getUUID());
     }
-    _currentService = _c.getServices().computeIfAbsent(name.get(), s -> new Service(s, getUUID()));
+    _currentServiceValid = name.isPresent();
   }
 
   @Override
   public void exitCfsc_edit(Cfsc_editContext ctx) {
     String name = _currentService.getName();
-    // TODO better validation
-    if (SERVICE_NAME_PATTERN.matcher(name).matches()) {
+    String invalidReason = serviceValid(_currentService, _currentServiceValid);
+    if (invalidReason == null) { // service edit block is valid
       _c.getRenameableObjects().put(_currentService.getBatfishUUID(), _currentService);
       _c.defineStructure(FortiosStructureType.SERVICE_CUSTOM, name, ctx);
+      _c.getServices().put(name, _currentService);
+    } else {
+      warn(ctx, String.format("Service edit block ignored: %s", invalidReason));
     }
     _currentService = null;
   }
@@ -688,6 +695,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           ctx,
           String.format(
               "Cannot set ICMP code for service %s when protocol is not set to ICMP or ICMP6.",
+              _currentService.getName()));
+      return;
+    } else if (_currentService.getIcmpType() == null) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set ICMP code for service %s when ICMP type is not set.",
               _currentService.getName()));
       return;
     }
@@ -772,6 +786,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void enterCsz_edit(Csz_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.zone_name());
     Zone existing = name.map(_c.getZones()::get).orElse(null);
+    _currentZoneNameValid = name.isPresent();
     if (existing != null) {
       // Make a clone to edit
       _currentZone = SerializationUtils.clone(existing);
@@ -781,8 +796,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /** Returns message indicating why this zone can't be committed in the CLI, or null if it can */
-  private @Nullable String getZoneInvalidReason(Zone zone) {
-    if (!ZONE_NAME_PATTERN.matcher(zone.getName()).matches()) {
+  private static @Nullable String getZoneInvalidReason(Zone zone, boolean nameValid) {
+    if (!nameValid) {
       return "name is invalid";
     } else if (zone.getInterface().isEmpty()) {
       return "interface must be set";
@@ -794,7 +809,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCsz_edit(Csz_editContext ctx) {
     // If edited item is valid, add/update the entry in VS map
     String name = _currentZone.getName();
-    String invalidReason = getZoneInvalidReason(_currentZone);
+    String invalidReason = getZoneInvalidReason(_currentZone, _currentZoneNameValid);
     if (invalidReason == null) { // is valid
       _c.defineStructure(FortiosStructureType.ZONE, name, ctx);
       _c.referenceStructure(
@@ -1377,6 +1392,56 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Ip6.parse(ctx.getText());
   }
 
+  /** Returns message indicating why policy can't be committed in the CLI, or null if it can */
+  @VisibleForTesting
+  public static @Nullable String policyValid(Policy p, boolean valid) {
+    // _valid indicates whether any invalid lines have gone into current policy that would cause the
+    // CLI to pop out of its edit block
+    if (!valid) {
+      return "name is invalid"; // currently, only invalid name can cause valid to be false
+    } else if (p.getSrcIntf().isEmpty()) {
+      return "srcintf must be set";
+    } else if (p.getDstIntf().isEmpty()) {
+      return "dstintf must be set";
+    } else if (p.getSrcAddrUUIDs().isEmpty()) {
+      return "srcaddr must be set";
+    } else if (p.getDstAddrUUIDs().isEmpty()) {
+      return "dstaddr must be set";
+    } else if (p.getServiceUUIDs().isEmpty()) {
+      return "service must be set";
+    }
+    // TODO "schedule" must be set to commit policy, but we don't parse it. Should we?
+    return null;
+  }
+
+  /** Returns message indicating why service can't be committed in the CLI, or null if it can */
+  @VisibleForTesting
+  public static @Nullable String serviceValid(Service s, boolean valid) {
+    // Indicates whether any invalid lines have gone into current service that would cause the
+    // CLI to pop out of its edit block
+    if (!valid) {
+      return "name is invalid"; // currently, only invalid name can cause valid to be false
+    }
+    // TODO Check validity of _ipRange; it is not yet used in conversion
+    switch (s.getProtocolEffective()) {
+      case TCP_UDP_SCTP:
+        if (s.getTcpPortRangeDst() == null
+            && s.getUdpPortRangeDst() == null
+            && s.getSctpPortRangeDst() == null) {
+          return "TCP/UDP/SCTP portrange cannot all be empty";
+        }
+        return null;
+      case ICMP:
+      case ICMP6:
+        // both ICMP type and ICMP code are allowed to be unset
+      case IP:
+        // protocol-number is allowed to be unset
+        return null;
+      default:
+        return String.format("protocol %s is unknown", s.getProtocolEffective());
+    }
+  }
+
   private static final Pattern ADDRESS_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
   private static final Pattern DEVICE_HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
   private static final Pattern ESCAPED_DOUBLE_QUOTED_CHAR_PATTERN =
@@ -1398,9 +1463,26 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Address _currentAddress;
   private Interface _currentInterface;
   private Policy _currentPolicy;
+  /**
+   * Whether the current policy has invalid lines that would prevent committing the policy in CLI.
+   * This field being true does not guarantee the current policy is valid; use {@link
+   * #policyValid(Policy, boolean)}.
+   */
+  private boolean _currentPolicyValid;
+
   private Replacemsg _currentReplacemsg;
   private Service _currentService;
+  /**
+   * Whether the current service has invalid lines that would prevent committing the service in CLI.
+   * This field being true does not guarantee the current service is valid; use {@link
+   * #serviceValid(Service, boolean)}.
+   */
+  private boolean _currentServiceValid;
+
   private Zone _currentZone;
+  /** Whether the current zone has an invalid name. */
+  private boolean _currentZoneNameValid;
+
   private final @Nonnull FortiosConfiguration _c;
   private final @Nonnull FortiosCombinedParser _parser;
   private final @Nonnull String _text;
