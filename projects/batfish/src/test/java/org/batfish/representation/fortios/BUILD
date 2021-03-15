@@ -14,6 +14,7 @@ junit_tests(
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
+        "//projects/batfish/src/main/java/org/batfish/grammar/fortios",
         "//projects/batfish/src/main/java/org/batfish/representation/fortios",
         "//projects/bdd",
         "@maven//:com_google_guava_guava",
