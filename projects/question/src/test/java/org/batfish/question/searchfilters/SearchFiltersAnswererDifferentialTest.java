@@ -35,7 +35,7 @@ import org.junit.rules.TemporaryFolder;
 public class SearchFiltersAnswererDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
-  private final BDDPacket _PKT = new BDDPacket();
+  private final BDDPacket _pkt = new BDDPacket();
   private static final String HOSTNAME = "hostname";
   private static final String IFACE1 = "iface1";
   private static final String IFACE2 = "iface2";
@@ -92,7 +92,7 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             batfish,
             DEFAULT_PARAMS,
-            _PKT);
+            _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
@@ -109,7 +109,7 @@ public class SearchFiltersAnswererDifferentialTest {
             snapshot,
             getBatfish(refConfig, config),
             DEFAULT_PARAMS,
-            _PKT);
+            _pkt);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
     assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
@@ -139,7 +139,7 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             batfish,
             DEFAULT_PARAMS,
-            _PKT);
+            _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
@@ -156,7 +156,7 @@ public class SearchFiltersAnswererDifferentialTest {
             snapshot,
             getBatfish(refConfig, config),
             DEFAULT_PARAMS,
-            _PKT);
+            _pkt);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
     assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
@@ -200,7 +200,7 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             batfish,
             params,
-            _PKT);
+            _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
@@ -222,7 +222,7 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             batfish,
             params,
-            _PKT);
+            _pkt);
     result = getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
     assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
     assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
