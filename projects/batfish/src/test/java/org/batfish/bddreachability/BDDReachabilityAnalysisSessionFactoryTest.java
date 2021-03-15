@@ -87,7 +87,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
   private static final Transition FWI2_REVERSE_TRANSFORMATION = new MockTransition(FWI2);
   private static final Transition FWI3_REVERSE_TRANSFORMATION = new MockTransition(FWI3);
 
-  private final BDDReverseTransformationRanges TRIVIAL_REVERSE_TRANSFORMATION_RANGES =
+  private final BDDReverseTransformationRanges _trivialReverseTransformationRanges =
       new BDDReverseTransformationRanges() {
         @Nonnull
         @Override
@@ -232,7 +232,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
 
   private Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSessions(
       Map<StateExpr, BDD> forwardReachableSets) {
-    return computeInitializedSessions(forwardReachableSets, TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
+    return computeInitializedSessions(forwardReachableSets, _trivialReverseTransformationRanges);
   }
 
   private Map<String, List<BDDFirewallSessionTraceInfo>> computeInitializedSessions(
@@ -353,7 +353,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             _lastHopMgr,
             ImmutableMap.of(),
             _reverseFlowTransformationFactory,
-            TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
+            _trivialReverseTransformationRanges);
     assertEquals(sessionFlows, sessionFactory.getSessionFlowMatchBdd(outBdd));
   }
 
@@ -495,7 +495,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             new PreOutEdgePostNat(FW, FWI3, BORDER, BORDER_IFACE), outBdd);
 
     Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
-        computeInitializedSessions(forwardReachableSets, TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
+        computeInitializedSessions(forwardReachableSets, _trivialReverseTransformationRanges);
 
     assertThat(sessions.keySet(), contains(FW));
     List<BDDFirewallSessionTraceInfo> fwSessions = sessions.get(FW);
@@ -536,7 +536,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             new PreOutEdgePostNat(FW, FWI3, BORDER, BORDER_IFACE), outBdd);
 
     Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
-        computeInitializedSessions(forwardReachableSets, TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
+        computeInitializedSessions(forwardReachableSets, _trivialReverseTransformationRanges);
 
     assertThat(sessions.keySet(), contains(FW));
     List<BDDFirewallSessionTraceInfo> fwSessions = sessions.get(FW);
@@ -570,7 +570,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
             new PreOutEdgePostNat(FW, FWI3, BORDER, BORDER_IFACE), outBdd);
 
     Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
-        computeInitializedSessions(forwardReachableSets, TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
+        computeInitializedSessions(forwardReachableSets, _trivialReverseTransformationRanges);
 
     assertThat(sessions.keySet(), contains(FW));
     List<BDDFirewallSessionTraceInfo> fwSessions = sessions.get(FW);
@@ -728,7 +728,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
         ImmutableMap.of(new VrfAccept(FW, FW_VRF), acceptBdd);
 
     Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
-        computeInitializedSessions(forwardReachableSets, TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
+        computeInitializedSessions(forwardReachableSets, _trivialReverseTransformationRanges);
 
     assertThat(sessions.keySet(), contains(FW));
     List<BDDFirewallSessionTraceInfo> fwSessions = sessions.get(FW);
@@ -770,7 +770,7 @@ public class BDDReachabilityAnalysisSessionFactoryTest {
         ImmutableMap.of(new VrfAccept(FW, FW_VRF), acceptBdd);
 
     Map<String, List<BDDFirewallSessionTraceInfo>> sessions =
-        computeInitializedSessions(forwardReachableSets, TRIVIAL_REVERSE_TRANSFORMATION_RANGES);
+        computeInitializedSessions(forwardReachableSets, _trivialReverseTransformationRanges);
 
     assertThat(sessions.keySet(), contains(FW));
     assertThat(

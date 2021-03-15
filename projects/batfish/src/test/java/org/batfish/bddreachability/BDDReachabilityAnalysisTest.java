@@ -137,7 +137,7 @@ public final class BDDReachabilityAnalysisTest {
   private PreOutEdgePostNat _srcPreOutEdgePostNat2;
   private PreOutVrf _srcPreOutVrf;
 
-  private final BDD TCP_BDD = _pkt.getIpProtocol().value(IpProtocol.TCP);
+  private final BDD _tcpBdd = _pkt.getIpProtocol().value(IpProtocol.TCP);
 
   @Before
   public void setup() throws IOException {
@@ -535,7 +535,7 @@ public final class BDDReachabilityAnalysisTest {
     assertThat(edge(_srcPreOutEdgePostNat1, new NodeDropAclOut(_srcName)), nullValue());
     assertThat(
         bddTransition(_srcPreOutEdgePostNat2, new NodeDropAclOut(_srcName)),
-        equalTo(TCP_BDD.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT)).not()));
+        equalTo(_tcpBdd.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT)).not()));
   }
 
   @Test
@@ -545,7 +545,7 @@ public final class BDDReachabilityAnalysisTest {
     assertThat(bddTransition(_srcPreOutEdgePostNat1, _dstPreInInterface1), isOne());
     assertThat(
         bddTransition(_srcPreOutEdgePostNat2, _dstPreInInterface2),
-        equalTo(TCP_BDD.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT))));
+        equalTo(_tcpBdd.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT))));
   }
 
   @Test
