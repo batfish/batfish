@@ -161,12 +161,12 @@ import org.junit.rules.TemporaryFolder;
 public final class BDDReachabilityAnalysisFactoryTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
-  private static final BDDPacket PKT = new BDDPacket();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDD _one = _pkt.getFactory().one();
+  private final BDD _zero = _pkt.getFactory().zero();
+
   private static final IpSpaceSpecifier CONSTANT_UNIVERSE_IPSPACE_SPECIFIER =
       new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
-  private static final BDD ONE = PKT.getFactory().one();
-  private static final BDD ZERO = PKT.getFactory().zero();
-
   private static final String INGRESS_NODE = "ingress_node";
   private static final String INGRESS_IFACE = "ingressIface";
   private static final String INGRESS_VRF = "ingressVrf";
@@ -201,7 +201,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     return new BDDReachabilityAnalysisFactory(
-        PKT,
+        _pkt,
         configs,
         dataPlane.getForwardingAnalysis(),
         new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
@@ -404,10 +404,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
               edge -> {
                 assertFalse(
                     "Edge into query state must require requiredTransitNodes bit to be one",
-                    edge.traverseForward(ONE).andSat(notTransited));
+                    edge.traverseForward(_one).andSat(notTransited));
                 assertFalse(
                     "Edge into query state must require requiredTransitNodes bit to be one",
-                    edge.traverseBackward(ONE).andSat(notTransited));
+                    edge.traverseBackward(_one).andSat(notTransited));
               });
 
       // all edges from originate states initialize the transit nodes bit to zero
@@ -427,7 +427,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 }
                 assertFalse(
                     "Edge out of originate state must require requiredTransitNodes bit to be zero",
-                    edge.traverseForward(ONE).andSat(transited));
+                    edge.traverseForward(_one).andSat(transited));
                 assertFalse(
                     "Edge out of originate state must require requiredTransitNodes bit to be zero",
                     edge.traverseBackward(
@@ -575,7 +575,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
   @Test
   public void testInactiveInterface() throws IOException {
     Ip ip = Ip.parse("1.2.3.4");
-    BDD ipBDD = new IpSpaceToBDD(PKT.getDstIp()).toBDD(ip);
+    BDD ipBDD = new IpSpaceToBDD(_pkt.getDstIp()).toBDD(ip);
 
     NetworkFactory nf = new NetworkFactory();
     Configuration config =
@@ -609,7 +609,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           ImmutableMap.of(
               config.getHostname(),
               ImmutableMap.of(
-                  vrf.getName(), ImmutableMap.of(iface.getName(), PKT.getFactory().zero())));
+                  vrf.getName(), ImmutableMap.of(iface.getName(), _pkt.getFactory().zero())));
       assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
 
@@ -621,7 +621,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
           ImmutableMap.of(
               config.getHostname(),
               ImmutableMap.of(
-                  vrf.getName(), ImmutableMap.of(iface.getName(), PKT.getFactory().zero())));
+                  vrf.getName(), ImmutableMap.of(iface.getName(), _pkt.getFactory().zero())));
       assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
   }
@@ -670,7 +670,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreInInterface(config.getHostname(), iface.getName()))
             .get(new PostInInterface(config.getHostname(), iface.getName()));
 
-    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     BDD ingressAclBdd = toBDD.toBDD(ingressAclHeaderSpace);
     BDD natMatchBdd = toBDD.toBDD(natMatchHeaderSpace);
     BDD origDstIpBdd = toBDD.getDstIpSpaceToBdd().toBDD(Ip.parse("6.6.6.6"));
@@ -735,7 +735,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreInInterface(config.getHostname(), iface.getName()))
             .get(new PostInInterface(config.getHostname(), iface.getName()));
 
-    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     BDD ingressAclBdd = toBDD.toBDD(ingressAclHeaderSpace);
     BDD nat1MatchBdd = toBDD.toBDD(nat1MatchHeaderSpace);
     BDD nat2MatchBdd = toBDD.toBDD(nat2MatchHeaderSpace);
@@ -799,7 +799,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutInterfaceDeliveredToSubnet(config.getHostname(), ifaceName))
             .get(new NodeInterfaceDeliveredToSubnet(config.getHostname(), ifaceName));
 
-    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     BDD preNatAclBdd = toBDD.toBDD(preNatAclHeaderSpace);
     BDD nat1MatchBdd = toBDD.toBDD(nat1MatchHeaderSpace);
     BDD nat2MatchBdd = toBDD.toBDD(nat2MatchHeaderSpace);
@@ -870,7 +870,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 .assign(new InterfaceLocation(hostname, ifaceName), UniverseIpSpace.INSTANCE)
                 .build());
 
-    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     IpSpaceToBDD srcToBdd = toBDD.getSrcIpSpaceToBdd();
 
     BDD preNatOutAclBdd = toBDD.toBDD(preNatOutAclHeaderSpace);
@@ -1017,7 +1017,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 .assign(new InterfaceLocation(hostname, ifaceName), UniverseIpSpace.INSTANCE)
                 .build());
 
-    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     IpSpaceToBDD srcToBdd = toBDD.getSrcIpSpaceToBdd();
 
     BDD preNatOutAclBdd = toBDD.toBDD(preNatOutAclHeaderSpace);
@@ -1037,7 +1037,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         equalTo(preNatOutAclBdd.and(natMatchBdd.ite(poolIpBdd, origSrcIpBdd))));
 
     transition = preOutEdgeOutEdges.get(new NodeDropAclOut(hostname));
-    assertThat(transition.transitForward(ONE), equalTo(preNatOutAclBdd.not()));
+    assertThat(transition.transitForward(_one), equalTo(preNatOutAclBdd.not()));
   }
 
   /*
@@ -1088,7 +1088,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
 
-    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
 
     BDD resultBDD = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
@@ -1164,7 +1164,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
 
-    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
 
     BDD resultBDD = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
@@ -1177,7 +1177,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
 
-    assertThat(transitionEN.transitForward(resultBDD), equalTo(PKT.getFactory().zero()));
+    assertThat(transitionEN.transitForward(resultBDD), equalTo(_pkt.getFactory().zero()));
   }
 
   @Test
@@ -1205,12 +1205,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, config);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
 
-    BDD one = PKT.getFactory().one();
+    BDD one = _pkt.getFactory().one();
     assertThat(factory.computeFinalHeaderSpaceBdd(one), equalTo(one));
-    BDD dstIp1 = PKT.getDstIp().value(1);
-    BDD dstNatPoolIpBdd = PKT.getDstIp().value(dstNatPoolIp.asLong());
-    BDD srcIp1 = PKT.getSrcIp().value(1);
-    BDD srcNatPoolIpBdd = PKT.getSrcIp().value(srcNatPoolIp.asLong());
+    BDD dstIp1 = _pkt.getDstIp().value(1);
+    BDD dstNatPoolIpBdd = _pkt.getDstIp().value(dstNatPoolIp.asLong());
+    BDD srcIp1 = _pkt.getSrcIp().value(1);
+    BDD srcNatPoolIpBdd = _pkt.getSrcIp().value(srcNatPoolIp.asLong());
     assertThat(factory.computeFinalHeaderSpaceBdd(dstIp1), equalTo(dstIp1.or(dstNatPoolIpBdd)));
     assertThat(factory.computeFinalHeaderSpaceBdd(srcIp1), equalTo(srcIp1.or(srcNatPoolIpBdd)));
     assertThat(
@@ -1244,12 +1244,12 @@ public final class BDDReachabilityAnalysisFactoryTest {
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(hostname, config);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
 
-    BDD one = PKT.getFactory().one();
+    BDD one = _pkt.getFactory().one();
     assertThat(factory.computeFinalHeaderSpaceBdd(one), equalTo(one));
-    BDD dstPort1 = PKT.getDstPort().value(3000);
-    BDD dstNatPoolBdd = PKT.getDstPort().value(30000);
-    BDD srcPort1 = PKT.getSrcPort().value(1000);
-    BDD srcNatPoolBdd = PKT.getSrcPort().value(10000);
+    BDD dstPort1 = _pkt.getDstPort().value(3000);
+    BDD dstNatPoolBdd = _pkt.getDstPort().value(30000);
+    BDD srcPort1 = _pkt.getSrcPort().value(1000);
+    BDD srcNatPoolBdd = _pkt.getSrcPort().value(10000);
     assertThat(factory.computeFinalHeaderSpaceBdd(dstPort1), equalTo(dstPort1.or(dstNatPoolBdd)));
     assertThat(factory.computeFinalHeaderSpaceBdd(srcPort1), equalTo(srcPort1.or(srcNatPoolBdd)));
     assertThat(
@@ -1317,7 +1317,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     assertEquals(
         bdds,
         ImmutableMap.of(
-            IngressLocation.vrf(hostname, vrf.getName()), PKT.getDstIp().value(dstIp.asLong())));
+            IngressLocation.vrf(hostname, vrf.getName()), _pkt.getDstIp().value(dstIp.asLong())));
   }
 
   /**
@@ -1430,7 +1430,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         bdds,
         ImmutableMap.of(
             IngressLocation.interfaceLink(hostname, INGRESS_IFACE),
-            PKT.getDstIp().value(dstIp.asLong())));
+            _pkt.getDstIp().value(dstIp.asLong())));
   }
 
   /**
@@ -1464,7 +1464,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     PbrFibLookup pbrFibLookup = new PbrFibLookup(hostname, "vrf1", "vrf2");
     PreOutVrf preOutVrf2 = new PreOutVrf(hostname, "vrf2");
     NodeDropNoRoute nodeDropNoRoute = new NodeDropNoRoute(hostname);
-    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_pkt.getDstIp());
     BDD routableFromLookupVrf = ipSpaceToBDD.toBDD(Prefix.parse("8.8.8.0/24"));
     BDD acceptedInIngressVrf =
         // These are the concrete addresses of the two interfaces in the ingress vrf
@@ -1478,7 +1478,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
         hasEntry(
             equalTo(pbrFibLookup),
             // edge to preOutVrf2 should be limited to traffic routable in vrf2
-            hasEntry(equalTo(preOutVrf2), mapsForward(ONE, routableFromLookupVrf))));
+            hasEntry(equalTo(preOutVrf2), mapsForward(_one, routableFromLookupVrf))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
@@ -1487,7 +1487,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 equalTo(nodeDropNoRoute),
                 // edge to nodeDropNoRoute should have traffic not accepted in vrf1 and not routable
                 // in vrf2
-                mapsForward(ONE, routableFromLookupVrf.nor(acceptedInIngressVrf)))));
+                mapsForward(_one, routableFromLookupVrf.nor(acceptedInIngressVrf)))));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
@@ -1572,14 +1572,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .getForwardEdgeMap()
             .get(new PostInVrf(INGRESS_NODE, INGRESS_VRF))
             .get(new PostInVrf(INGRESS_NODE, NEXT_VRF))
-            .transitForward(ONE);
-    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
+            .transitForward(_one);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_pkt.getDstIp());
 
     // ingressVrf should delegate space associated with nextVrfRoute 0.0.0.0/0 minus more specific
     // space associated with connected route 10.0.0.0/24
     assertThat(
         nextVrfDstIpsBDD,
-        equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
+        equalTo(_one.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
 
     BDD acceptedEndToEndBDD =
         analysis
@@ -1626,14 +1626,14 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .getForwardEdgeMap()
             .get(new PostInVrf(INGRESS_NODE, INGRESS_VRF))
             .get(new PostInVrf(INGRESS_NODE, NEXT_VRF))
-            .transitForward(ONE);
-    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(PKT.getDstIp());
+            .transitForward(_one);
+    IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(_pkt.getDstIp());
 
     // ingressVrf should delegate space associated with nextVrfRoute 0.0.0.0/0 minus more specific
     // space associated with connected route 10.0.0.0/24
     assertThat(
         nextVrfDstIpsBDD,
-        equalTo(ONE.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
+        equalTo(_one.diff(Prefix.parse("10.0.0.0/24").toIpSpace().accept(ipSpaceToBDD))));
 
     BDD deliveredToSubnetEndToEndBDD =
         analysis
@@ -1706,15 +1706,15 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(IngressLocation.interfaceLink(INGRESS_NODE, INGRESS_IFACE));
 
     // policy allows traffic to i1's subnet
-    BDD i1SubnetBdd = PKT.getDstIpSpaceToBDD().toBDD(Ip.parse("1.1.1.2"));
+    BDD i1SubnetBdd = _pkt.getDstIpSpaceToBDD().toBDD(Ip.parse("1.1.1.2"));
     assertTrue(deliveredToSubnetEndToEndBDD.andSat(i1SubnetBdd));
 
     // policy allows traffic to i1's ip
-    BDD i1Ip = PKT.getDstIpSpaceToBDD().toBDD(Ip.parse("1.1.1.1"));
+    BDD i1Ip = _pkt.getDstIpSpaceToBDD().toBDD(Ip.parse("1.1.1.1"));
     assertTrue(deliveredToSubnetEndToEndBDD.andSat(i1Ip));
 
     // policy drops traffic to i2
-    BDD i2SubnetBdd = PKT.getDstIpSpaceToBDD().toBDD(Ip.parse("2.2.2.2"));
+    BDD i2SubnetBdd = _pkt.getDstIpSpaceToBDD().toBDD(Ip.parse("2.2.2.2"));
     assertFalse(deliveredToSubnetEndToEndBDD.andSat(i2SubnetBdd));
   }
 
@@ -1734,7 +1734,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     // Generate edges for originating at first interface, with an arbitrary dst IP constraint
     OriginateInterface originateIface1 = new OriginateInterface(c.getHostname(), iface1.getName());
-    BDD rootBdd = PKT.getDstIp().value(Ip.parse("3.3.3.3").asLong());
+    BDD rootBdd = _pkt.getDstIp().value(Ip.parse("3.3.3.3").asLong());
     List<Edge> rootEdges =
         factory
             .generateRootEdges_OriginateInterface_PostInVrf(
@@ -1896,9 +1896,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
         hasTransition(
             allOf(
                 // every flow marked as denied can traverse this edge (and the marking is removed)
-                mapsForward(deniedBdd, ONE),
+                mapsForward(deniedBdd, _one),
                 // no flow marked as permitted can traverse this edge
-                mapsForward(permittedBdd, ZERO))));
+                mapsForward(permittedBdd, _zero))));
   }
 
   /**
@@ -1955,9 +1955,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 allOf(
                     // every flow marked as denied can traverse this edge (and the marking is
                     // removed)
-                    mapsForward(deniedBdd, ONE),
+                    mapsForward(deniedBdd, _one),
                     // no flow marked as permitted can traverse this edge
-                    mapsForward(permittedBdd, ZERO)))));
+                    mapsForward(permittedBdd, _zero)))));
   }
 
   /** Test that PBR takes precedence over incoming filter when both are present on an interface. */
@@ -2020,7 +2020,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .getBddOutgoingOriginalFlowFilterManagers()
             .get(c1)
             .outgoingOriginalFlowFiltersConstraint();
-    BDD src1Bdd = PKT.getSrcIp().value(srcIp1.asLong());
+    BDD src1Bdd = _pkt.getSrcIp().value(srcIp1.asLong());
 
     // Test permit edges, to NodeInterface[Disposition] states
     StateExpr nodeDeliveredToSubnet = new NodeInterfaceDeliveredToSubnet(c1, i1);
@@ -2087,7 +2087,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(c1)
             .outgoingOriginalFlowFiltersConstraint();
     BDD src1And3Bdd =
-        PKT.getSrcIp().value(srcIp1.asLong()).or(PKT.getSrcIp().value(srcIp3.asLong()));
+        _pkt.getSrcIp().value(srcIp1.asLong()).or(_pkt.getSrcIp().value(srcIp3.asLong()));
 
     // Test permit edge to PreInInterface states
     StateExpr preInInterface = new PreInInterface(c2, i1);
@@ -2106,7 +2106,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             edge(
                 new PreOutEdgePostNat(c2, i1, c1, i1),
                 new PreInInterface(c1, i1),
-                mapsForward(ONE, ONE))));
+                mapsForward(_one, _one))));
 
     // Test deny edge to NodeDropAclOut state
     StateExpr nodeDropAclOut = new NodeDropAclOut(c1);
@@ -2155,7 +2155,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // flows with these three src IPs
     BDD permittedByFilter =
         Stream.of(Ip.parse("1.0.0.0"), Ip.parse("2.0.0.0"), Ip.parse("3.0.0.0"))
-            .map(ip -> PKT.getSrcIp().value(ip.asLong()))
+            .map(ip -> _pkt.getSrcIp().value(ip.asLong()))
             .reduce(BDD::or)
             .orElse(null);
     assert permittedByFilter != null;
@@ -2172,7 +2172,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     StateExpr postInInterface2 = new PostInInterface(c1, i2);
     Matcher<Transition> addsOriginalFlowFiltersConstraint =
         allOf(
-            mapsForward(ONE, outgoingConstraint), mapsBackward(permittedOutI1, permittedByFilter));
+            mapsForward(_one, outgoingConstraint), mapsBackward(permittedOutI1, permittedByFilter));
     assertThat(
         edges,
         containsInAnyOrder(
@@ -2205,7 +2205,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     // flows with these three src IPs
     BDD permittedByFilter =
         Stream.of(Ip.parse("1.0.0.0"), Ip.parse("2.0.0.0"), Ip.parse("3.0.0.0"))
-            .map(ip -> PKT.getSrcIp().value(ip.asLong()))
+            .map(ip -> _pkt.getSrcIp().value(ip.asLong()))
             .reduce(BDD::or)
             .orElse(null);
 
@@ -2215,9 +2215,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     List<Edge> edges =
         Streams.concat(
                 factory.generateRootEdges_OriginateInterface_PostInVrf(
-                    ImmutableMap.of(originateIface1, ONE, originateIface2, ONE)),
+                    ImmutableMap.of(originateIface1, _one, originateIface2, _one)),
                 factory.generateRootEdges_OriginateVrf_PostInVrf(
-                    ImmutableMap.of(originateVrf, ONE)))
+                    ImmutableMap.of(originateVrf, _one)))
             .collect(ImmutableList.toImmutableList());
 
     // Wherever the flow originates, the constraint for going out i1 should be added. (No need to
@@ -2225,7 +2225,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     StateExpr postInVrf = new PostInVrf(c1, vrf);
     Matcher<Transition> addsOriginalFlowFiltersConstraint =
         allOf(
-            mapsForward(ONE, outgoingConstraint), mapsBackward(permittedOutI1, permittedByFilter));
+            mapsForward(_one, outgoingConstraint), mapsBackward(permittedOutI1, permittedByFilter));
     assertThat(
         edges,
         containsInAnyOrder(
@@ -2251,7 +2251,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     IpAccessList filter =
         nf.aclBuilder().setOwner(c).setLines(accepting(matchSrc(srcIp1)), REJECT_ALL).build();
     c.getAllInterfaces().get(i1).setOutgoingOriginalFlowFilter(filter);
-    BDD permittedByFilter = PKT.getSrcIp().value(srcIp1.asLong());
+    BDD permittedByFilter = _pkt.getSrcIp().value(srcIp1.asLong());
 
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
     BDDOutgoingOriginalFlowFilterManager originalFlowsMgr =
@@ -2264,7 +2264,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     // Flows will also be constrained to those not dropped by the packet policy
     Prefix pbrPrefix = Prefix.parse("8.8.8.0/24");
-    BDD notDroppedByPbr = new IpSpaceToBDD(PKT.getDstIp()).toBDD(pbrPrefix);
+    BDD notDroppedByPbr = new IpSpaceToBDD(_pkt.getDstIp()).toBDD(pbrPrefix);
 
     List<Edge> edges =
         factory
@@ -2280,7 +2280,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
                 preInInterface,
                 pbrFibLookup,
                 allOf(
-                    mapsForward(ONE, originalFlowFiltersConstraint.and(notDroppedByPbr)),
+                    mapsForward(_one, originalFlowFiltersConstraint.and(notDroppedByPbr)),
                     mapsBackward(permittedOutI1, permittedByFilter.and(notDroppedByPbr))))));
   }
 }
