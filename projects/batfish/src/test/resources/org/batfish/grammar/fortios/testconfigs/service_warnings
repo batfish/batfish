@@ -13,4 +13,8 @@ config firewall service custom
         set udp-portrange 254
         set sctp-portrange 254
     next
+    edit "icmp code before type"
+        set protocol ICMP
+        set icmpcode 254
+    next
 end

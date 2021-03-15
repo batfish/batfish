@@ -17,6 +17,7 @@ config firewall service custom
     edit "service1"
         set UNDEFINED_SERVICE_PROP to a bunch of garbage
         set comment "service comment"
+        set protocol IP
     next
 end
 config firewall policy

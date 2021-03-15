@@ -514,7 +514,7 @@ public final class FortiosGrammarTest {
         services.keySet(),
         containsInAnyOrder(
             "longest possible firewall service custom service name that is accepted by devic",
-            "custom_default",
+            "custom_tcp",
             "explicit_tcp",
             "src_port_defaults",
             "custom_icmp",
@@ -525,8 +525,8 @@ public final class FortiosGrammarTest {
     Service serviceLongName =
         services.get(
             "longest possible firewall service custom service name that is accepted by devic");
-    Service serviceDefault = services.get("custom_default");
-    Service serviceTcp = services.get("explicit_tcp");
+    Service serviceTcpDefault = services.get("custom_tcp");
+    Service serviceTcpExplicit = services.get("explicit_tcp");
     Service serviceSrcPortDefaults = services.get("src_port_defaults");
     Service serviceIcmp = services.get("custom_icmp");
     Service serviceIcmp6 = services.get("custom_icmp6");
@@ -536,15 +536,14 @@ public final class FortiosGrammarTest {
     assertThat(serviceLongName.getComment(), equalTo("service custom comment"));
 
     // Check default protocol
-    assertThat(serviceDefault.getProtocol(), nullValue());
-    assertThat(serviceDefault.getProtocolEffective(), equalTo(Service.DEFAULT_PROTOCOL));
+    assertThat(serviceTcpDefault.getProtocol(), nullValue());
+    assertThat(serviceTcpDefault.getProtocolEffective(), equalTo(Service.DEFAULT_PROTOCOL));
     // Check defaults
-    assertThat(serviceDefault.getSctpPortRangeDst(), nullValue());
-    assertThat(serviceDefault.getSctpPortRangeSrc(), nullValue());
-    assertThat(serviceDefault.getTcpPortRangeDst(), nullValue());
-    assertThat(serviceDefault.getTcpPortRangeSrc(), nullValue());
-    assertThat(serviceDefault.getUdpPortRangeDst(), nullValue());
-    assertThat(serviceDefault.getUdpPortRangeSrc(), nullValue());
+    assertThat(serviceTcpDefault.getSctpPortRangeDst(), nullValue());
+    assertThat(serviceTcpDefault.getSctpPortRangeSrc(), nullValue());
+    assertThat(serviceTcpDefault.getTcpPortRangeSrc(), nullValue());
+    assertThat(serviceTcpDefault.getUdpPortRangeDst(), nullValue());
+    assertThat(serviceTcpDefault.getUdpPortRangeSrc(), nullValue());
 
     // Even with dest ports configured, source ports should still show up as default
     assertThat(serviceSrcPortDefaults.getSctpPortRangeSrc(), nullValue());
@@ -560,26 +559,29 @@ public final class FortiosGrammarTest {
         serviceSrcPortDefaults.getUdpPortRangeSrcEffective(),
         equalTo(Service.DEFAULT_SOURCE_PORT_RANGE));
 
-    assertThat(serviceTcp.getProtocol(), equalTo(Protocol.TCP_UDP_SCTP));
-    assertThat(serviceTcp.getProtocolEffective(), equalTo(Protocol.TCP_UDP_SCTP));
+    assertThat(serviceTcpExplicit.getProtocol(), equalTo(Protocol.TCP_UDP_SCTP));
+    assertThat(serviceTcpExplicit.getProtocolEffective(), equalTo(Protocol.TCP_UDP_SCTP));
     // Check variety of port range syntax
     // TCP
+    assertThat(serviceTcpDefault.getTcpPortRangeDst(), equalTo(IntegerSpace.of(1)));
     assertThat(
-        serviceTcp.getTcpPortRangeDst(),
+        serviceTcpExplicit.getTcpPortRangeDst(),
         equalTo(IntegerSpace.builder().including(1, 2, 10, 11, 13).build()));
     assertThat(
-        serviceTcp.getTcpPortRangeSrc(),
+        serviceTcpExplicit.getTcpPortRangeSrc(),
         equalTo(IntegerSpace.builder().including(3, 4, 6, 7).build()));
     // UDP
     assertThat(
-        serviceTcp.getUdpPortRangeDst(), equalTo(IntegerSpace.builder().including(100).build()));
-    assertThat(serviceTcp.getUdpPortRangeSrc(), nullValue());
+        serviceTcpExplicit.getUdpPortRangeDst(),
+        equalTo(IntegerSpace.builder().including(100).build()));
+    assertThat(serviceTcpExplicit.getUdpPortRangeSrc(), nullValue());
     // SCTP
     assertThat(
-        serviceTcp.getSctpPortRangeDst(),
+        serviceTcpExplicit.getSctpPortRangeDst(),
         equalTo(IntegerSpace.builder().including(200, 201).build()));
     assertThat(
-        serviceTcp.getSctpPortRangeSrc(), equalTo(IntegerSpace.builder().including(300).build()));
+        serviceTcpExplicit.getSctpPortRangeSrc(),
+        equalTo(IntegerSpace.builder().including(300).build()));
 
     assertThat(serviceIcmp.getProtocol(), equalTo(Protocol.ICMP));
     assertThat(serviceIcmp.getProtocolEffective(), equalTo(Protocol.ICMP));
@@ -631,6 +633,12 @@ public final class FortiosGrammarTest {
         hasParseWarnings(
             containsInAnyOrder(
                 hasComment("Illegal value for service name"),
+                allOf(
+                    hasComment("Service edit block ignored: name is invalid"),
+                    hasText(
+                        containsString(
+                            "edit \"longer than longest possible firewall service custom service"
+                                + " name that is accepted by device\""))),
                 hasComment(
                     "Cannot set IP protocol number for service setting props for wrong protocol"
                         + " when protocol is not set to IP."),
@@ -648,7 +656,10 @@ public final class FortiosGrammarTest {
                         + " protocol is not set to TCP/UDP/SCTP."),
                 hasComment(
                     "Cannot set UDP port range for service setting props for wrong protocol when"
-                        + " protocol is not set to TCP/UDP/SCTP."))));
+                        + " protocol is not set to TCP/UDP/SCTP."),
+                hasComment(
+                    "Cannot set ICMP code for service icmp code before type when ICMP type is not"
+                        + " set."))));
   }
 
   @Test
