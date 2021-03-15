@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
@@ -11,6 +12,12 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.junit.Test;
 
 public class NameRegexNodeSpecifierTest {
+  @Test
+  public void testEquals() {
+    NameRegexNodeSpecifier specifier = new NameRegexNodeSpecifier(Pattern.compile("hey"));
+    assertThat(specifier, equalTo(specifier));
+    assertThat(specifier, not(equalTo(AllNodesNodeSpecifier.INSTANCE)));
+  }
 
   @Test
   public void testResolve() {
