@@ -512,11 +512,13 @@ public final class FortiosGrammarTest {
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
     Map<String, Zone> zones = vc.getZones();
-    assertThat(zones.keySet(), containsInAnyOrder("zone1", "zone2", "zone3"));
+    assertThat(
+        zones.keySet(),
+        containsInAnyOrder("zone1", "zone2", "longest possible valid name for zon"));
 
     Zone zone1 = zones.get("zone1");
     Zone zone2 = zones.get("zone2");
-    Zone zone3 = zones.get("zone3");
+    Zone zoneLongName = zones.get("longest possible valid name for zon");
 
     assertThat(zone1.getInterface(), containsInAnyOrder("port1", "port2"));
     // Defaults
@@ -529,9 +531,9 @@ public final class FortiosGrammarTest {
     assertThat(zone2.getIntrazoneEffective(), equalTo(IntrazoneAction.DENY));
     assertThat(zone2.getInterface(), contains("port3"));
 
-    assertThat(zone3.getIntrazone(), equalTo(IntrazoneAction.ALLOW));
-    assertThat(zone3.getIntrazoneEffective(), equalTo(IntrazoneAction.ALLOW));
-    assertThat(zone3.getInterface(), contains("port4"));
+    assertThat(zoneLongName.getIntrazone(), equalTo(IntrazoneAction.ALLOW));
+    assertThat(zoneLongName.getIntrazoneEffective(), equalTo(IntrazoneAction.ALLOW));
+    assertThat(zoneLongName.getInterface(), contains("port4"));
   }
 
   @Test
