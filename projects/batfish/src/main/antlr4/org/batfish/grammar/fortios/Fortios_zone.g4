@@ -4,7 +4,7 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-cs_zone: ZONE newline csz_edit*;
+cs_zone: ZONE newline csz*;
 
 csz
 :

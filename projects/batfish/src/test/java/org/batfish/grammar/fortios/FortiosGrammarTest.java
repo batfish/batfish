@@ -1034,10 +1034,13 @@ public final class FortiosGrammarTest {
     assertThat(vc.getPolicies(), hasKeys("0"));
     assertThat(vc.getAddresses(), hasKeys("new_addr1", "new_addr2"));
     assertThat(vc.getServices(), hasKeys("new_service1", "new_service2"));
+    assertThat(vc.getZones(), hasKeys("new_zone1", "new_zone2"));
 
     Policy policy = vc.getPolicies().get("0");
     // Policy should be using renamed structures
     // Whether or not they were renamed after initial reference
+    assertThat(policy.getSrcIntfZones(), contains("new_zone1"));
+    assertThat(policy.getDstIntfZones(), contains("new_zone2"));
     assertThat(policy.getSrcAddr(), contains("new_addr1"));
     assertThat(policy.getDstAddr(), contains("new_addr2"));
     assertThat(policy.getService(), containsInAnyOrder("new_service1", "new_service2"));
@@ -1062,11 +1065,14 @@ public final class FortiosGrammarTest {
             containsInAnyOrder(
                 hasComment("Address old_addr1 is undefined and cannot be added to policy 1"),
                 hasComment("Address new_addr2 is undefined and cannot be added to policy 1"),
+                hasComment("Interface/zone old_zone1 is undefined and cannot be added to policy 1"),
+                hasComment("Interface/zone new_zone2 is undefined and cannot be added to policy 1"),
                 hasComment("Service old_service1 is undefined and cannot be added to policy 1"),
                 hasComment("Service new_service2 is undefined and cannot be added to policy 1"),
                 hasComment("Cannot rename non-existent address undefined"),
                 hasComment("Cannot rename non-existent service custom undefined"),
-                hasComment("Policy edit block ignored: srcaddr must be set"))));
+                hasComment("Cannot rename non-existent zone undefined"),
+                hasComment("Policy edit block ignored: srcintf must be set"))));
   }
 
   @Test
