@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -14,6 +15,7 @@ public interface HasReadableCommunities {
   CommunitySet getCommunities();
 
   // TODO: transition all usages to getCommunities and remove
+  @JsonIgnore
   @Nonnull
   Set<Community> getCommunitiesAsSet();
 }
