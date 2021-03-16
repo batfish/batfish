@@ -239,7 +239,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_VRRP_INTERFACE;
-import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
@@ -249,7 +248,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
-import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
@@ -286,7 +284,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -922,8 +919,6 @@ import org.batfish.grammar.cisco.CiscoParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_as_path_prepend_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_comm_list_delete_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_additive_rm_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Set_community_list_additive_rm_stanzaContext;
-import org.batfish.grammar.cisco.CiscoParser.Set_community_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_none_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_community_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_extcommunity_rm_stanza_costContext;
@@ -1110,10 +1105,8 @@ import org.batfish.representation.cisco.RouteMapMatchIpv6PrefixListLine;
 import org.batfish.representation.cisco.RouteMapMatchSourceProtocolLine;
 import org.batfish.representation.cisco.RouteMapMatchTagLine;
 import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityLine;
-import org.batfish.representation.cisco.RouteMapSetAdditiveCommunityListLine;
 import org.batfish.representation.cisco.RouteMapSetAsPathPrependLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityLine;
-import org.batfish.representation.cisco.RouteMapSetCommunityListLine;
 import org.batfish.representation.cisco.RouteMapSetCommunityNoneLine;
 import org.batfish.representation.cisco.RouteMapSetDeleteCommunityLine;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtAdditiveLine;
@@ -5677,14 +5670,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIp_community_list_standard_tail(Ip_community_list_standard_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
-    List<Long> communities = new ArrayList<>();
+    List<StandardCommunity> communities = new ArrayList<>();
     for (CommunityContext communityCtx : ctx.communities) {
       Long community = toLong(communityCtx);
       if (community == null) {
         warn(ctx, String.format("Invalid standard community: '%s'", communityCtx.getText()));
         return;
       }
-      communities.add(community);
+      communities.add(StandardCommunity.of(community));
     }
     StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
     _currentStandardCommunityList.getLines().add(line);
@@ -8622,40 +8615,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       builder.add(StandardCommunity.of(community));
     }
     RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(builder.build());
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_community_list_additive_rm_stanza(
-      Set_community_list_additive_rm_stanzaContext ctx) {
-    Set<String> communityLists = new LinkedHashSet<>();
-    for (VariableContext communityListCtx : ctx.comm_lists) {
-      String communityList = communityListCtx.getText();
-      communityLists.add(communityList);
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          communityList,
-          ROUTE_MAP_ADD_COMMUNITY,
-          communityListCtx.getStart().getLine());
-    }
-    RouteMapSetAdditiveCommunityListLine line =
-        new RouteMapSetAdditiveCommunityListLine(communityLists);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_community_list_rm_stanza(Set_community_list_rm_stanzaContext ctx) {
-    Set<String> communityLists = new LinkedHashSet<>();
-    for (VariableContext communityListCtx : ctx.comm_lists) {
-      String communityList = communityListCtx.getText();
-      communityLists.add(communityList);
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          communityList,
-          ROUTE_MAP_SET_COMMUNITY,
-          communityListCtx.getStart().getLine());
-    }
-    RouteMapSetCommunityListLine line = new RouteMapSetCommunityListLine(communityLists);
     _currentRouteMapClause.addSetLine(line);
   }
 

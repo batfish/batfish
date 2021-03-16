@@ -250,22 +250,6 @@ set_community_additive_rm_stanza
    ) NEWLINE
 ;
 
-set_community_list_additive_rm_stanza
-:
-   SET COMMUNITY COMMUNITY_LIST
-   (
-      comm_lists += variable
-   )+ ADDITIVE NEWLINE
-;
-
-set_community_list_rm_stanza
-:
-   SET COMMUNITY COMMUNITY_LIST
-   (
-      comm_lists += variable
-   )+ NEWLINE
-;
-
 set_community_none_rm_stanza
 :
    SET COMMUNITY NONE NEWLINE
@@ -416,8 +400,6 @@ set_rm_stanza
    | set_comm_list_delete_rm_stanza
    | set_community_rm_stanza
    | set_community_additive_rm_stanza
-   | set_community_list_additive_rm_stanza
-   | set_community_list_rm_stanza
    | set_community_none_rm_stanza
    | set_extcomm_list_rm_stanza
    | set_extcommunity_rm_stanza

@@ -22,7 +22,6 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -43,6 +42,7 @@ import org.batfish.datamodel.questions.INodeRegexQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 
 @AutoService(Plugin.class)
 public class CompareSameNameQuestionPlugin extends QuestionPlugin {
@@ -120,7 +120,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
       add(AsPathAccessList.class, Configuration::getAsPathAccessLists);
       add(AuthenticationKeyChain.class, Configuration::getAuthenticationKeyChains);
-      add(CommunityList.class, Configuration::getCommunityLists);
+      add(CommunitySetMatchExpr.class, Configuration::getCommunitySetMatchExprs);
       add(IkePhase1Key.class, Configuration::getIkePhase1Keys);
       add(IkePhase1Policy.class, Configuration::getIkePhase1Policies);
       add(IkePhase1Proposal.class, Configuration::getIkePhase1Proposals);
@@ -219,9 +219,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     /**
      * Set of structure types to analyze drawn from ( AsPathAccessList, * AuthenticationKeyChain,
-     * CommunityList, IkePhase1Policy, IkePhase1Proposal, IkePhase1Key, Interface, * Ip6AccessList,
-     * IpAccessList, IpsecPhase2Policy, IpsecPhase2Proposal, IpsecPeerConfig, Route6FilterList, *
-     * RouteFilterList, RoutingPolicy, Vrf, Zone )
+     * CommunitySetMatchExpr, IkePhase1Policy, IkePhase1Proposal, IkePhase1Key, Interface, *
+     * Ip6AccessList, IpAccessList, IpsecPhase2Policy, IpsecPhase2Proposal, IpsecPeerConfig,
+     * Route6FilterList, * RouteFilterList, RoutingPolicy, Vrf, Zone )
      *
      * <p>Default value is '[]', which denotes all types except those in excludedNamedStructTypes.
      */
