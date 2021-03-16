@@ -8,7 +8,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** FortiOS datamodel component containing interface configuration */
+/** FortiOS datamodel component containing zone configuration */
 public final class Zone implements FortiosRenameableObject, InterfaceOrZone, Serializable {
 
   public enum IntrazoneAction {

@@ -12,6 +12,11 @@ config system interface
         set ip 192.168.20.1 255.255.255.0
         set type physical
     next
+    edit "port3"
+        set vdom "root"
+        set ip 192.168.30.1 255.255.255.0
+        set type physical
+    next
 end
 config system zone
     # No interface set, block invalid
@@ -21,7 +26,8 @@ config system zone
     next
     edit zone3
         set intrazone allow
-        set interface UNDEFINED
+        # Full line should be thrown out since one of the ifaces is invalid
+        set interface port3 UNDEFINED
         set interface port1
         # This is valid, iface already taken but by this zone
         set interface port1

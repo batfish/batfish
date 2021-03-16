@@ -533,7 +533,7 @@ public final class FortiosGrammarTest {
 
     assertThat(zoneLongName.getIntrazone(), equalTo(IntrazoneAction.ALLOW));
     assertThat(zoneLongName.getIntrazoneEffective(), equalTo(IntrazoneAction.ALLOW));
-    assertThat(zoneLongName.getInterface(), contains("port4"));
+    assertThat(zoneLongName.getInterface(), containsInAnyOrder("port4", "port5"));
   }
 
   @Test
@@ -555,7 +555,7 @@ public final class FortiosGrammarTest {
             containsInAnyOrder(
                 allOf(
                     hasComment("Zone edit block ignored: interface must be set"),
-                    hasText("edit \"zone1\"\n    next")),
+                    hasText(containsString("zone1"))),
                 hasComment("Illegal value for zone name"),
                 hasComment("Zone edit block ignored: name is invalid"),
                 hasComment("Interface UNDEFINED is undefined and cannot be added to zone zone3"),
