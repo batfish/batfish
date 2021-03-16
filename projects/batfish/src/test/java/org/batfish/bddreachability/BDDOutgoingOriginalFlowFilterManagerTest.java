@@ -41,7 +41,7 @@ import org.junit.Test;
 
 /** Tests of {@link BDDOutgoingOriginalFlowFilterManager}. */
 public class BDDOutgoingOriginalFlowFilterManagerTest {
-  private static final BDDPacket PKT = new BDDPacket();
+  private final BDDPacket _pkt = new BDDPacket();
 
   private static final String ACTIVE_IFACE_WITH_FILTER_1 = "activeWithFilter1";
   private static final String ACTIVE_IFACE_WITH_FILTER_2 = "activeWithFilter2";
@@ -103,17 +103,17 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     return c;
   }
 
-  private static BDDOutgoingOriginalFlowFilterManager getMgrForConfig(Configuration c) {
+  private BDDOutgoingOriginalFlowFilterManager getMgrForConfig(Configuration c) {
     Map<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
-    Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(PKT, configs);
+    Map<String, BDDSourceManager> srcMgrs = BDDSourceManager.forNetwork(_pkt, configs);
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
-        BDDOutgoingOriginalFlowFilterManager.forNetwork(PKT, configs, srcMgrs);
+        BDDOutgoingOriginalFlowFilterManager.forNetwork(_pkt, configs, srcMgrs);
     return mgrs.get(c.getHostname());
   }
 
   @Test
   public void testEmpty() {
-    BDDOutgoingOriginalFlowFilterManager empty = BDDOutgoingOriginalFlowFilterManager.empty(PKT);
+    BDDOutgoingOriginalFlowFilterManager empty = BDDOutgoingOriginalFlowFilterManager.empty(_pkt);
     assertTrue(empty.isTrivial());
   }
 
@@ -189,7 +189,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
       BDDOutgoingOriginalFlowFilterManager mgr = getMgrForConfig(c);
       assertThat(
           mgr.getInterfaceBDDs(),
-          equalTo(ImmutableMap.of(ACTIVE_IFACE_WITH_FILTER_1, PKT.getFactory().one())));
+          equalTo(ImmutableMap.of(ACTIVE_IFACE_WITH_FILTER_1, _pkt.getFactory().one())));
     }
 
     // If one active interface with a filter is present and other active interfaces are also
@@ -265,9 +265,9 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
 
-    Map<String, BDDSourceManager> bddSrcMgrs = BDDSourceManager.forNetwork(PKT, configs, false);
+    Map<String, BDDSourceManager> bddSrcMgrs = BDDSourceManager.forNetwork(_pkt, configs, false);
     Map<String, BDDOutgoingOriginalFlowFilterManager> mgrs =
-        BDDOutgoingOriginalFlowFilterManager.forNetwork(PKT, configs, bddSrcMgrs);
+        BDDOutgoingOriginalFlowFilterManager.forNetwork(_pkt, configs, bddSrcMgrs);
     BDDOutgoingOriginalFlowFilterManager mgr1 = mgrs.get(c1.getHostname());
     BDDOutgoingOriginalFlowFilterManager mgr2 = mgrs.get(c2.getHostname());
     BDDOutgoingOriginalFlowFilterManager mgr3 = mgrs.get(c3.getHostname());
@@ -304,12 +304,12 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
     Ip ip2 = Ip.parse("10.10.10.2");
     Ip ip3 = Ip.parse("10.10.10.3");
     Ip ip4 = Ip.parse("10.10.10.4");
-    BDD srcIp1 = PKT.getSrcIp().value(ip1.asLong());
-    BDD srcIp2 = PKT.getSrcIp().value(ip2.asLong());
-    BDD srcIp3 = PKT.getSrcIp().value(ip3.asLong());
-    BDD srcIp4 = PKT.getSrcIp().value(ip4.asLong());
-    BDD dstIp1 = PKT.getDstIp().value(DST_IP_1.asLong());
-    BDD dstIp2 = PKT.getDstIp().value(DST_IP_2.asLong());
+    BDD srcIp1 = _pkt.getSrcIp().value(ip1.asLong());
+    BDD srcIp2 = _pkt.getSrcIp().value(ip2.asLong());
+    BDD srcIp3 = _pkt.getSrcIp().value(ip3.asLong());
+    BDD srcIp4 = _pkt.getSrcIp().value(ip4.asLong());
+    BDD dstIp1 = _pkt.getDstIp().value(DST_IP_1.asLong());
+    BDD dstIp2 = _pkt.getDstIp().value(DST_IP_2.asLong());
     BDD srcIp1ToDstIp1 = srcIp1.and(dstIp1);
     BDD srcIp2ToDstIp1 = srcIp2.and(dstIp1);
     BDD srcIp3ToDstIp2 = srcIp3.and(dstIp2);
@@ -331,9 +331,9 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
             .build();
     TransformationToTransition transformationToTransition =
         new TransformationToTransition(
-            PKT,
+            _pkt,
             new IpAccessListToBddImpl(
-                PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), ImmutableMap.of()));
+                _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), ImmutableMap.of()));
     Transition transformation1Transition = transformationToTransition.toTransition(transformation1);
     Transition transformation2Transition = transformationToTransition.toTransition(transformation2);
 
@@ -362,7 +362,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
       assertThat(flows, equalTo(srcIp1ToDstIp1.or(srcIp2TransformedFlows)));
 
       // Run it backwards. Should see that only flows originally destined for dstIp1 get permitted.
-      BDD backwardsFlows = transition.transitBackward(PKT.getFactory().one());
+      BDD backwardsFlows = transition.transitBackward(_pkt.getFactory().one());
       assertThat(backwardsFlows, equalTo(dstIp1));
     }
 
@@ -383,7 +383,7 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
       assertThat(flows, equalTo(srcIp3ToDstIp2.or(srcIp4TransformedFlows)));
 
       // Run it backwards. Should see that only flows originally not destined for dstIp1 get denied.
-      BDD backwardsFlows = denyTransition.transitBackward(PKT.getFactory().one());
+      BDD backwardsFlows = denyTransition.transitBackward(_pkt.getFactory().one());
       assertThat(backwardsFlows, equalTo(dstIp1.not()));
     }
 
@@ -401,13 +401,13 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
 
       // Just start with all flows since we expect them all to be permitted. Due to transformations,
       // not every possible flow can reach the interface.
-      BDD flows = transition.transitForward(PKT.getFactory().one());
-      BDD allUntransformedFlows = PKT.getFactory().one().diff(srcIp2.or(srcIp4));
+      BDD flows = transition.transitForward(_pkt.getFactory().one());
+      BDD allUntransformedFlows = _pkt.getFactory().one().diff(srcIp2.or(srcIp4));
       BDD allTransformedFlows = srcIp2TransformedFlows.or(srcIp4TransformedFlows);
       assertThat(flows, equalTo(allUntransformedFlows.or(allTransformedFlows)));
 
       // Run it backwards; should still see that anything can reach permitted state
-      BDD backwardsFlows = transition.transitBackward(PKT.getFactory().one());
+      BDD backwardsFlows = transition.transitBackward(_pkt.getFactory().one());
       assertTrue(backwardsFlows.isOne());
     }
 
@@ -424,11 +424,11 @@ public class BDDOutgoingOriginalFlowFilterManagerTest {
               removeOutgoingInterfaceConstraints);
 
       // Just start with all flows since we don't expect any to be denied.
-      BDD flows = denyTransition.transitForward(PKT.getFactory().one());
+      BDD flows = denyTransition.transitForward(_pkt.getFactory().one());
       assertTrue(flows.isZero());
 
       // Run it backwards; should still see that nothing can reach denied state
-      BDD backwardsFlows = denyTransition.transitBackward(PKT.getFactory().one());
+      BDD backwardsFlows = denyTransition.transitBackward(_pkt.getFactory().one());
       assertTrue(backwardsFlows.isZero());
     }
   }

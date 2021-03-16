@@ -10,16 +10,16 @@ import org.junit.Test;
 
 /** Test of {@link Branch}. */
 public class BranchTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final BDD ONE = PKT.getFactory().one();
-  private static final BDD ZERO = PKT.getFactory().zero();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDD _one = _pkt.getFactory().one();
+  private final BDD _zero = _pkt.getFactory().zero();
 
-  private static BDD dstIp(String ip) {
-    return PKT.getDstIp().value(Ip.parse(ip).asLong());
+  private BDD dstIp(String ip) {
+    return _pkt.getDstIp().value(Ip.parse(ip).asLong());
   }
 
-  private static BDD srcIp(String ip) {
-    return PKT.getSrcIp().value(Ip.parse(ip).asLong());
+  private BDD srcIp(String ip) {
+    return _pkt.getSrcIp().value(Ip.parse(ip).asLong());
   }
 
   @Test
@@ -31,11 +31,11 @@ public class BranchTest {
     Transition falseBranch = new Constraint(falseBranchBdd);
     Transition transition = new Branch(guard, trueBranch, falseBranch);
 
-    assertThat(transition.transitForward(ONE), equalTo(guard.ite(trueBranchBdd, falseBranchBdd)));
-    assertThat(transition.transitBackward(ONE), equalTo(guard.ite(trueBranchBdd, falseBranchBdd)));
+    assertThat(transition.transitForward(_one), equalTo(guard.ite(trueBranchBdd, falseBranchBdd)));
+    assertThat(transition.transitBackward(_one), equalTo(guard.ite(trueBranchBdd, falseBranchBdd)));
 
-    assertThat(transition.transitForward(ZERO), equalTo(ZERO));
-    assertThat(transition.transitBackward(ZERO), equalTo(ZERO));
+    assertThat(transition.transitForward(_zero), equalTo(_zero));
+    assertThat(transition.transitBackward(_zero), equalTo(_zero));
 
     assertThat(transition.transitForward(guard), equalTo(guard.and(trueBranchBdd)));
     assertThat(transition.transitBackward(guard), equalTo(guard.and(trueBranchBdd)));

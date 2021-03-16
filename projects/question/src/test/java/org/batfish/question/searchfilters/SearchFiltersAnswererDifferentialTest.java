@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
 import static org.batfish.datamodel.matchers.FlowMatchers.hasIngressInterface;
 import static org.batfish.question.searchfilters.SearchFiltersAnswerer.getDiffResult;
 import static org.hamcrest.Matchers.allOf;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -34,7 +35,7 @@ import org.junit.rules.TemporaryFolder;
 public class SearchFiltersAnswererDifferentialTest {
   @Rule public TemporaryFolder _tmp = new TemporaryFolder();
 
-  private static final BDDPacket PKT = new BDDPacket();
+  private final BDDPacket _pkt = new BDDPacket();
   private static final String HOSTNAME = "hostname";
   private static final String IFACE1 = "iface1";
   private static final String IFACE2 = "iface2";
@@ -91,10 +92,10 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             batfish,
             DEFAULT_PARAMS,
-            PKT);
+            _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
+    assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
     assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
     assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
@@ -108,9 +109,9 @@ public class SearchFiltersAnswererDifferentialTest {
             snapshot,
             getBatfish(refConfig, config),
             DEFAULT_PARAMS,
-            PKT);
+            _pkt);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
-    assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
+    assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
     assertThat(result.getDecreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
   }
@@ -138,10 +139,10 @@ public class SearchFiltersAnswererDifferentialTest {
             reference,
             batfish,
             DEFAULT_PARAMS,
-            PKT);
+            _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
+    assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
     assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
     assertThat(result.getIncreasedFlow().get(), hasDstIp(IP));
 
@@ -155,9 +156,9 @@ public class SearchFiltersAnswererDifferentialTest {
             snapshot,
             getBatfish(refConfig, config),
             DEFAULT_PARAMS,
-            PKT);
+            _pkt);
     result = getDiffResult(refAcl, acl, configContext, PERMIT_QUERY);
-    assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
+    assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
     assertTrue("Expected decreased result", result.getDecreasedFlow().isPresent());
     assertThat(result.getDecreasedFlow().get(), hasDstIp(IP));
   }
@@ -192,10 +193,17 @@ public class SearchFiltersAnswererDifferentialTest {
     // can match line 1 because IFACE1 is specified
     DiffConfigContext configContext =
         new DiffConfigContext(
-            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, params, PKT);
+            config,
+            refConfig,
+            ImmutableSet.of(aclName),
+            snapshot,
+            reference,
+            batfish,
+            params,
+            _pkt);
     DifferentialSearchFiltersResult result =
         getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
+    assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
     assertTrue("Expected increased result", result.getIncreasedFlow().isPresent());
     assertThat(result.getIncreasedFlow().get(), allOf(hasIngressInterface(IFACE1), hasDstIp(IP)));
 
@@ -207,9 +215,16 @@ public class SearchFiltersAnswererDifferentialTest {
     // can't match line 1 because IFACE2 is specified
     configContext =
         new DiffConfigContext(
-            config, refConfig, ImmutableSet.of(aclName), snapshot, reference, batfish, params, PKT);
+            config,
+            refConfig,
+            ImmutableSet.of(aclName),
+            snapshot,
+            reference,
+            batfish,
+            params,
+            _pkt);
     result = getDiffResult(acl, refAcl, configContext, PERMIT_QUERY);
-    assertTrue("Expected no decreased result", !result.getDecreasedFlow().isPresent());
-    assertTrue("Expected no increased result", !result.getIncreasedFlow().isPresent());
+    assertFalse("Expected no decreased result", result.getDecreasedFlow().isPresent());
+    assertFalse("Expected no increased result", result.getIncreasedFlow().isPresent());
   }
 }
