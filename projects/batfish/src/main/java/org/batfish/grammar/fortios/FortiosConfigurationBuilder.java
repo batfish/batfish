@@ -1475,7 +1475,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * Class representing a set of interfaces as well as a set of zones. For use with firewall
    * policies srcintf and dstintf references.
    */
-  private final class InterfacesAndZones {
+  private static final class InterfacesAndZones {
     Set<String> getInterfaces() {
       return _interfaces;
     }
