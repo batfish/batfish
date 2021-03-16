@@ -382,20 +382,13 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public final class CiscoNxosGrammarTest {
 
-  private static final BddTestbed BDD_TESTBED =
-      new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
-  private static final IpAccessListToBdd ACL_TO_BDD;
-  private static final IpSpaceToBDD DST_IP_BDD;
-  private static final IpSpaceToBDD SRC_IP_BDD;
+  private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+  private final IpAccessListToBdd _aclToBdd = _bddTestbed.getAclToBdd();
+  private final IpSpaceToBDD _dstIpBdd = _bddTestbed.getDstIpBdd();
+  private final IpSpaceToBDD _srcIpBdd = _bddTestbed.getSrcIpBdd();
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_nxos/testconfigs/";
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/cisco_nxos/snapshots/";
-
-  static {
-    DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
-    SRC_IP_BDD = BDD_TESTBED.getSrcIpBdd();
-    ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
-  }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -417,46 +410,46 @@ public final class CiscoNxosGrammarTest {
     return OspfInterAreaRoute.builder().setNextHop(NextHopIp.of(Ip.parse("3.3.3.3"))).setArea(0L);
   }
 
-  private static @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
-    return ACL_TO_BDD.toBdd(aclLineMatchExpr);
+  private @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
+    return _aclToBdd.toBdd(aclLineMatchExpr);
   }
 
-  private static @Nonnull BDD toMatchBDD(AclLine aclLine) {
-    return ACL_TO_BDD.toPermitAndDenyBdds(aclLine).getMatchBdd();
+  private @Nonnull BDD toMatchBDD(AclLine aclLine) {
+    return _aclToBdd.toPermitAndDenyBdds(aclLine).getMatchBdd();
   }
 
-  private static @Nonnull BDD toIcmpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+  private @Nonnull BDD toIcmpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
     return toIfBDD(
         AclLineMatchExprs.and(
             matchFragmentOffset(0), matchIpProtocol(IpProtocol.ICMP), aclLineMatchExpr));
   }
 
-  private static @Nonnull BDD toIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+  private @Nonnull BDD toIfBDD(AclLineMatchExpr aclLineMatchExpr) {
     return toBDD(AclLineMatchExprs.and(matchFragmentOffset(0), aclLineMatchExpr));
   }
 
-  private static @Nonnull BDD toIfBDD(AclLine aclLine) {
+  private @Nonnull BDD toIfBDD(AclLine aclLine) {
     return toMatchBDD(aclLine).and(toBDD(matchFragmentOffset(0)));
   }
 
-  private static @Nonnull BDD toNonIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+  private @Nonnull BDD toNonIfBDD(AclLineMatchExpr aclLineMatchExpr) {
     return toBDD(
         AclLineMatchExprs.and(
             matchFragmentOffset(IntegerSpace.of(Range.closed(1, 8191))), aclLineMatchExpr));
   }
 
-  private static @Nonnull BDD toNonIfBDD(AclLine aclLine) {
+  private @Nonnull BDD toNonIfBDD(AclLine aclLine) {
     return toMatchBDD(aclLine)
         .and(toBDD(matchFragmentOffset(IntegerSpace.of(Range.closed(1, 8191)))));
   }
 
-  private static @Nonnull BDD toTcpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+  private @Nonnull BDD toTcpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
     return toIfBDD(
         AclLineMatchExprs.and(
             matchFragmentOffset(0), matchIpProtocol(IpProtocol.TCP), aclLineMatchExpr));
   }
 
-  private static @Nonnull BDD toUdpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
+  private @Nonnull BDD toUdpIfBDD(AclLineMatchExpr aclLineMatchExpr) {
     return toIfBDD(
         AclLineMatchExprs.and(
             matchFragmentOffset(0), matchIpProtocol(IpProtocol.UDP), aclLineMatchExpr));
@@ -2814,9 +2807,7 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_indices");
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toMatchBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toMatchBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchIpProtocol(1)),
               toBDD(matchIpProtocol(4)),
@@ -2826,9 +2817,7 @@ public final class CiscoNxosGrammarTest {
     {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_simple_protocols");
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toMatchBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toMatchBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchIpProtocol(IpProtocol.AHP)),
               toBDD(matchIpProtocol(IpProtocol.EIGRP)),
@@ -2871,9 +2860,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl =
           c.getIpAccessLists().get("acl_common_ip_options_dscp");
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toMatchBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toMatchBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchDscp(1)),
               toBDD(matchDscp(DscpType.AF11)),
@@ -2903,9 +2890,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl =
           c.getIpAccessLists().get("acl_common_ip_options_packet_length");
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toMatchBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toMatchBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toBDD(matchPacketLength(100)),
               toBDD(matchPacketLength(IntegerSpace.of(Range.closed(20, 199)))),
@@ -2922,9 +2907,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_icmp");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toIcmpIfBDD(matchIcmpType(0)),
               toIcmpIfBDD(matchIcmp(1, 2)),
@@ -3002,9 +2985,7 @@ public final class CiscoNxosGrammarTest {
           c.getIpAccessLists().get("acl_tcp_destination_ports");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toTcpIfBDD(matchDstPort(1)),
               toTcpIfBDD(
@@ -3021,9 +3002,7 @@ public final class CiscoNxosGrammarTest {
           c.getIpAccessLists().get("acl_tcp_destination_ports_named");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toTcpIfBDD(matchDstPort(NamedPort.BGP.number())),
               toTcpIfBDD(matchDstPort(NamedPort.CHARGEN.number())),
@@ -3063,9 +3042,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_tcp_source_ports");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toTcpIfBDD(matchSrcPort(1)),
               toTcpIfBDD(
@@ -3092,9 +3069,7 @@ public final class CiscoNxosGrammarTest {
               .setUseUrg(true);
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toTcpIfBDD(
                   matchTcpFlags(
@@ -3119,9 +3094,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_tcp_flags_mask");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toTcpIfBDD(
                   matchTcpFlags(
@@ -3135,9 +3108,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_tcp_established");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toTcpIfBDD(
                   matchTcpFlags(
@@ -3155,9 +3126,7 @@ public final class CiscoNxosGrammarTest {
           c.getIpAccessLists().get("acl_udp_destination_ports");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toUdpIfBDD(matchDstPort(1)),
               toUdpIfBDD(
@@ -3174,9 +3143,7 @@ public final class CiscoNxosGrammarTest {
           c.getIpAccessLists().get("acl_udp_destination_ports_named");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toUdpIfBDD(matchDstPort(NamedPort.BIFFudp_OR_EXECtcp.number())),
               toUdpIfBDD(matchDstPort(NamedPort.BOOTPC.number())),
@@ -3210,9 +3177,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_udp_source_ports");
       // check behavior for initial fragments only
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toUdpIfBDD(matchSrcPort(1)),
               toUdpIfBDD(
@@ -3230,9 +3195,7 @@ public final class CiscoNxosGrammarTest {
           c.getIpAccessLists().get("acl_l4_fragments_semantics");
       // check behavior for initial fragments
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toIcmpIfBDD(AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIcmpType(0))),
               toIcmpIfBDD(AclLineMatchExprs.and(matchSrc(Ip.parse("192.0.2.1")), matchIcmpType(1))),
@@ -3243,9 +3206,7 @@ public final class CiscoNxosGrammarTest {
 
       // check behavior for non-initial fragments
       assertThat(
-          acl.getLines().stream()
-              .map(CiscoNxosGrammarTest::toNonIfBDD)
-              .collect(ImmutableList.toImmutableList()),
+          acl.getLines().stream().map(this::toNonIfBDD).collect(ImmutableList.toImmutableList()),
           contains(
               toNonIfBDD(
                   AclLineMatchExprs.and(
@@ -3338,29 +3299,29 @@ public final class CiscoNxosGrammarTest {
 
       spec = specs.next();
       assertThat(
-          ((LiteralIpAddressSpec) spec).getIpSpace().accept(DST_IP_BDD),
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(_dstIpBdd),
           equalTo(
               ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255"))
                   .toIpSpace()
-                  .accept(DST_IP_BDD)));
+                  .accept(_dstIpBdd)));
 
       spec = specs.next();
       assertThat(
-          ((LiteralIpAddressSpec) spec).getIpSpace().accept(DST_IP_BDD),
-          equalTo(Prefix.parse("10.0.1.0/24").toIpSpace().accept(DST_IP_BDD)));
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(_dstIpBdd),
+          equalTo(Prefix.parse("10.0.1.0/24").toIpSpace().accept(_dstIpBdd)));
 
       spec = specs.next();
       assertThat(((AddrGroupIpAddressSpec) spec).getName(), equalTo("mydstaddrgroup"));
 
       spec = specs.next();
       assertThat(
-          ((LiteralIpAddressSpec) spec).getIpSpace().accept(DST_IP_BDD),
-          equalTo(Ip.parse("10.0.2.2").toIpSpace().accept(DST_IP_BDD)));
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(_dstIpBdd),
+          equalTo(Ip.parse("10.0.2.2").toIpSpace().accept(_dstIpBdd)));
 
       spec = specs.next();
       assertThat(
-          ((LiteralIpAddressSpec) spec).getIpSpace().accept(DST_IP_BDD),
-          equalTo(UniverseIpSpace.INSTANCE.accept(DST_IP_BDD)));
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(_dstIpBdd),
+          equalTo(UniverseIpSpace.INSTANCE.accept(_dstIpBdd)));
     }
     {
       IpAccessList acl = vc.getIpAccessLists().get("acl_common_ip_options_source_ip");
@@ -3374,29 +3335,29 @@ public final class CiscoNxosGrammarTest {
 
       spec = specs.next();
       assertThat(
-          ((LiteralIpAddressSpec) spec).getIpSpace().accept(SRC_IP_BDD),
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(_srcIpBdd),
           equalTo(
               ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.0.0.255"))
                   .toIpSpace()
-                  .accept(SRC_IP_BDD)));
+                  .accept(_srcIpBdd)));
 
       spec = specs.next();
       assertThat(
-          ((LiteralIpAddressSpec) spec).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(Prefix.parse("10.0.1.0/24").toIpSpace().accept(SRC_IP_BDD)));
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(_srcIpBdd),
+          equalTo(Prefix.parse("10.0.1.0/24").toIpSpace().accept(_srcIpBdd)));
 
       spec = specs.next();
       assertThat(((AddrGroupIpAddressSpec) spec).getName(), equalTo("mysrcaddrgroup"));
 
       spec = specs.next();
       assertThat(
-          ((LiteralIpAddressSpec) spec).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(Ip.parse("10.0.2.2").toIpSpace().accept(SRC_IP_BDD)));
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(_srcIpBdd),
+          equalTo(Ip.parse("10.0.2.2").toIpSpace().accept(_srcIpBdd)));
 
       spec = specs.next();
       assertThat(
-          ((LiteralIpAddressSpec) spec).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(UniverseIpSpace.INSTANCE.accept(SRC_IP_BDD)));
+          ((LiteralIpAddressSpec) spec).getIpSpace().accept(_srcIpBdd),
+          equalTo(UniverseIpSpace.INSTANCE.accept(_srcIpBdd)));
     }
     {
       IpAccessList acl = vc.getIpAccessLists().get("acl_common_ip_options_dscp");
@@ -3797,44 +3758,44 @@ public final class CiscoNxosGrammarTest {
       line = (ActionIpAccessListLine) lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(_srcIpBdd),
+          equalTo(_srcIpBdd.toBDD(Ip.parse("192.0.2.1"))));
       assertThat(line.getProtocol(), equalTo(IpProtocol.ICMP));
 
       line = (ActionIpAccessListLine) lines.next();
       assertThat(line.getAction(), equalTo(LineAction.DENY));
       assertThat(
-          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(_srcIpBdd),
+          equalTo(_srcIpBdd.toBDD(Ip.parse("192.0.2.1"))));
       assertThat(line.getProtocol(), equalTo(IpProtocol.ICMP));
 
       line = (ActionIpAccessListLine) lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(_srcIpBdd),
+          equalTo(_srcIpBdd.toBDD(Ip.parse("192.0.2.1"))));
       assertThat(line.getProtocol(), equalTo(IpProtocol.fromNumber(2)));
 
       line = (ActionIpAccessListLine) lines.next();
       assertThat(line.getAction(), equalTo(LineAction.DENY));
       assertThat(
-          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(_srcIpBdd),
+          equalTo(_srcIpBdd.toBDD(Ip.parse("192.0.2.1"))));
       assertThat(line.getProtocol(), equalTo(IpProtocol.fromNumber(3)));
 
       line = (ActionIpAccessListLine) lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(_srcIpBdd),
+          equalTo(_srcIpBdd.toBDD(Ip.parse("192.0.2.1"))));
       assertThat(line.getProtocol(), equalTo(IpProtocol.fromNumber(4)));
       assertTrue(line.getFragments());
 
       line = (ActionIpAccessListLine) lines.next();
       assertThat(line.getAction(), equalTo(LineAction.DENY));
       assertThat(
-          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(SRC_IP_BDD),
-          equalTo(SRC_IP_BDD.toBDD(Ip.parse("192.0.2.1"))));
+          ((LiteralIpAddressSpec) line.getSrcAddressSpec()).getIpSpace().accept(_srcIpBdd),
+          equalTo(_srcIpBdd.toBDD(Ip.parse("192.0.2.1"))));
       assertThat(line.getProtocol(), equalTo(IpProtocol.fromNumber(5)));
       assertTrue(line.getFragments());
     }
@@ -4943,13 +4904,13 @@ public final class CiscoNxosGrammarTest {
     {
       IpSpace ipSpace = c.getIpSpaces().get("og_syntax");
       assertThat(
-          ipSpace.accept(SRC_IP_BDD),
+          ipSpace.accept(_srcIpBdd),
           equalTo(
               AclIpSpace.union(
                       Ip.parse("10.0.0.1").toIpSpace(),
                       ipWithWildcardMask(Ip.parse("10.0.0.0"), Ip.parse("0.255.0.255")).toIpSpace(),
                       Prefix.parse("10.0.0.0/24").toIpSpace())
-                  .accept(SRC_IP_BDD)));
+                  .accept(_srcIpBdd)));
     }
   }
 

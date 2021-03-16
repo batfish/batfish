@@ -35,20 +35,20 @@ import org.junit.Test;
 
 /** Tests of {@link Transitions}. */
 public class TransitionsTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final BDD BDD_ZERO = PKT.getFactory().zero();
-  private static final BDD BDD_ONE = PKT.getFactory().one();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDD _zero = _pkt.getFactory().zero();
+  private final BDD _one = _pkt.getFactory().one();
 
   private BDD var(int i) {
-    return PKT.getFactory().ithVar(i);
+    return _pkt.getFactory().ithVar(i);
   }
 
   private Transition eraseVar(int i) {
-    return eraseAndSet(var(i), BDD_ONE);
+    return eraseAndSet(var(i), _one);
   }
 
-  private static Transition setSrcIp(Ip value) {
-    return constraint(PKT.getSrcIp().value(value.asLong()));
+  private Transition setSrcIp(Ip value) {
+    return constraint(_pkt.getSrcIp().value(value.asLong()));
   }
 
   // Any composition containing ZERO is zero
@@ -112,14 +112,14 @@ public class TransitionsTest {
   public void testBranchGuardIsOne() {
     Transition thenTrans = constraint(var(0));
     Transition elseTrans = constraint(var(1));
-    assertEquals(thenTrans, branch(BDD_ONE, thenTrans, elseTrans));
+    assertEquals(thenTrans, branch(_one, thenTrans, elseTrans));
   }
 
   @Test
   public void testBranchGuardIsZero() {
     Transition thenTrans = constraint(var(0));
     Transition elseTrans = constraint(var(1));
-    assertEquals(elseTrans, branch(BDD_ZERO, thenTrans, elseTrans));
+    assertEquals(elseTrans, branch(_zero, thenTrans, elseTrans));
   }
 
   @Test
@@ -258,7 +258,7 @@ public class TransitionsTest {
   public void testMergeComposed_Constraint_RemoveSourceConstraint() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
-            PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
+            _pkt, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
     BDDFiniteDomain<String> finiteDomain = mgr.getFiniteDomain();
     BDD bdd = var(0);
     Constraint constraint = new Constraint(bdd);
@@ -268,7 +268,7 @@ public class TransitionsTest {
     Transition expected =
         compose(
             constraint(bdd.and(finiteDomain.getIsValidConstraint())),
-            eraseAndSet(finiteDomain.getVar(), PKT.getFactory().one()));
+            eraseAndSet(finiteDomain.getVar(), _pkt.getFactory().one()));
     assertEquals(expected, actual);
   }
 
@@ -306,7 +306,7 @@ public class TransitionsTest {
   public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_merge() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
-            PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b", "c"));
+            _pkt, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b", "c"));
     checkState(mgr.isValidValue().isOne(), "manager needs to have isValidValue = 1");
     RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);
     AddSourceConstraint add = new AddSourceConstraint(mgr, "a");
@@ -321,7 +321,7 @@ public class TransitionsTest {
   public void testMergeComposed_RemoveSourceConstraint_AddSourceConstraint_no_merge() {
     BDDSourceManager mgr =
         BDDSourceManager.forSources(
-            PKT, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
+            _pkt, ImmutableSet.of("a", "b", "c", "d"), ImmutableSet.of("a", "b"));
     checkState(
         !mgr.isValidValue().isOne(), "manager needs to have nontrivial isValidValue constraint");
     RemoveSourceConstraint remove = new RemoveSourceConstraint(mgr);

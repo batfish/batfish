@@ -92,9 +92,6 @@ import org.junit.rules.TemporaryFolder;
 
 public final class FortiosGrammarTest {
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
-  @Rule public ExpectedException _thrown = ExpectedException.none();
-
   @Test
   public void testHostnameExtraction() {
     String filename = "fortios_hostname";
@@ -323,20 +320,20 @@ public final class FortiosGrammarTest {
             "undefined-refs",
             longName));
 
-    BDD prefix1110 = Prefix.parse("1.1.1.0/24").toIpSpace().accept(SRC_IP_BDD);
-    assertThat(ipSpaces.get("ipmask").accept(SRC_IP_BDD), equalTo(prefix1110));
-    assertThat(ipSpaces.get("iprange").accept(SRC_IP_BDD), equalTo(prefix1110));
-    assertThat(ipSpaces.get(longName).accept(SRC_IP_BDD), equalTo(prefix1110));
+    BDD prefix1110 = Prefix.parse("1.1.1.0/24").toIpSpace().accept(_srcIpBdd);
+    assertThat(ipSpaces.get("ipmask").accept(_srcIpBdd), equalTo(prefix1110));
+    assertThat(ipSpaces.get("iprange").accept(_srcIpBdd), equalTo(prefix1110));
+    assertThat(ipSpaces.get(longName).accept(_srcIpBdd), equalTo(prefix1110));
     assertThat(
-        ipSpaces.get("wildcard").accept(SRC_IP_BDD),
+        ipSpaces.get("wildcard").accept(_srcIpBdd),
         equalTo(
             IpWildcard.ipWithWildcardMask(Ip.parse("2.0.0.2"), Ip.parse("255.0.0.255"))
                 .toIpSpace()
-                .accept(SRC_IP_BDD)));
+                .accept(_srcIpBdd)));
 
     // Unsupported types
     Stream.of("fqdn", "dynamic", "geography", "interface-subnet", "mac", "undefined-refs")
-        .forEach(t -> assertThat(ipSpaces.get(t).accept(SRC_IP_BDD), equalTo(ZERO)));
+        .forEach(t -> assertThat(ipSpaces.get(t).accept(_srcIpBdd), equalTo(_zero)));
   }
 
   @Test
@@ -754,22 +751,22 @@ public final class FortiosGrammarTest {
     // Create IpAccessListToBdd to convert ACLs. Can't use ACL_TO_BDD because we need IpSpaces
     IpAccessListToBdd aclToBdd =
         new IpAccessListToBddImpl(
-            PKT, BDDSourceManager.empty(PKT), ImmutableMap.of(), c.getIpSpaces());
+            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), c.getIpSpaces());
 
     // Make BDDs representing components of defined policies
-    BDD addr1AsSrc = SRC_IP_BDD.toBDD(Prefix.parse("10.0.1.0/24"));
-    BDD addr2AsSrc = SRC_IP_BDD.toBDD(Prefix.parse("10.0.2.0/24"));
-    BDD addr1AsDst = DST_IP_BDD.toBDD(Prefix.parse("10.0.1.0/24"));
-    BDD addr2AsDst = DST_IP_BDD.toBDD(Prefix.parse("10.0.2.0/24"));
+    BDD addr1AsSrc = _srcIpBdd.toBDD(Prefix.parse("10.0.1.0/24"));
+    BDD addr2AsSrc = _srcIpBdd.toBDD(Prefix.parse("10.0.2.0/24"));
+    BDD addr1AsDst = _dstIpBdd.toBDD(Prefix.parse("10.0.1.0/24"));
+    BDD addr2AsDst = _dstIpBdd.toBDD(Prefix.parse("10.0.2.0/24"));
     BDD service11 =
-        BDD_TESTBED.toBDD(
+        _bddTestbed.toBDD(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.TCP)
                 .setSrcPorts(Service.DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
                 .setDstPorts(SubRange.singleton(11))
                 .build());
     BDD service12From11 =
-        BDD_TESTBED.toBDD(
+        _bddTestbed.toBDD(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.TCP)
                 .setSrcPorts(SubRange.singleton(11))
@@ -778,7 +775,7 @@ public final class FortiosGrammarTest {
     {
       // Deny service custom_tcp_12_from_11 from addr1 to addr2
       PermitAndDenyBdds expected =
-          new PermitAndDenyBdds(ZERO, addr1AsSrc.and(addr2AsDst).and(service12From11));
+          new PermitAndDenyBdds(_zero, addr1AsSrc.and(addr2AsDst).and(service12From11));
       assertThat(aclToBdd.toPermitAndDenyBdds(deny), equalTo(expected));
     }
     {
@@ -787,12 +784,12 @@ public final class FortiosGrammarTest {
       BDD srcAddrs = addr1AsSrc.or(addr2AsSrc);
       BDD dstAddrs = addr1AsDst.or(addr2AsDst);
       PermitAndDenyBdds expected =
-          new PermitAndDenyBdds(services.and(srcAddrs).and(dstAddrs), ZERO);
+          new PermitAndDenyBdds(services.and(srcAddrs).and(dstAddrs), _zero);
       assertThat(aclToBdd.toPermitAndDenyBdds(allow), equalTo(expected));
     }
     {
       // Allow all
-      PermitAndDenyBdds expected = new PermitAndDenyBdds(ONE, ZERO);
+      PermitAndDenyBdds expected = new PermitAndDenyBdds(_one, _zero);
       assertThat(aclToBdd.toPermitAndDenyBdds(any), equalTo(expected));
     }
   }
@@ -1149,31 +1146,21 @@ public final class FortiosGrammarTest {
     assertThat(vc.getPolicies().get("1").getComments(), equalTo("policy comments, plural"));
   }
 
-  private static final BddTestbed BDD_TESTBED =
-      new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
-  private static final BDD ZERO;
-  private static final BDD ONE;
-  private static final BDDPacket PKT;
+  ////////////////////////
+  // Setup / test infra //
+  ////////////////////////
 
-  @SuppressWarnings("unused")
-  private static final IpAccessListToBdd ACL_TO_BDD;
-
-  private static final IpSpaceToBDD DST_IP_BDD;
-  private static final IpSpaceToBDD SRC_IP_BDD;
+  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/fortios/testconfigs/";
 
-  @SuppressWarnings("unused")
-  private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/fortios/snapshots/";
-
-  static {
-    ZERO = BDD_TESTBED.getPkt().getFactory().zero();
-    ONE = BDD_TESTBED.getPkt().getFactory().one();
-    PKT = BDD_TESTBED.getPkt();
-    DST_IP_BDD = BDD_TESTBED.getDstIpBdd();
-    SRC_IP_BDD = BDD_TESTBED.getSrcIpBdd();
-    ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
-  }
+  private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+  private final BDDPacket _pkt = _bddTestbed.getPkt();
+  private final BDD _zero = _bddTestbed.getPkt().getFactory().zero();
+  private final BDD _one = _bddTestbed.getPkt().getFactory().one();
+  private final IpSpaceToBDD _dstIpBdd = _bddTestbed.getDstIpBdd();
+  private final IpSpaceToBDD _srcIpBdd = _bddTestbed.getSrcIpBdd();
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
       throws IOException {

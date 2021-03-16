@@ -45,15 +45,14 @@ import org.junit.rules.TemporaryFolder;
 
 /** Test for {@link BDDLoopDetectionAnalysis}. */
 public final class BDDLoopDetectionAnalysisTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
-
   private static final String DST_NODE = "dest";
   private static final String SRC_NODE = "src";
   private static final Prefix DST_PREFIX_1 = Prefix.parse("1.1.0.0/32");
   private static final Prefix DST_PREFIX_2 = Prefix.parse("2.1.0.0/32");
 
-  private static final BDD ZERO = PKT.getFactory().zero();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final IpSpaceToBDD _dst = _pkt.getDstIpSpaceToBDD();
+  private final BDD _zero = _pkt.getFactory().zero();
 
   public @Rule TemporaryFolder _temporaryFolder = new TemporaryFolder();
 
@@ -124,7 +123,7 @@ public final class BDDLoopDetectionAnalysisTest {
     DataPlane dataPlane = batfish.loadDataPlane(snapshot);
     BDDLoopDetectionAnalysis analysis =
         new BDDReachabilityAnalysisFactory(
-                PKT,
+                _pkt,
                 configs,
                 dataPlane.getForwardingAnalysis(),
                 new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
@@ -134,7 +133,7 @@ public final class BDDLoopDetectionAnalysisTest {
 
     Map<IngressLocation, BDD> actual = analysis.detectLoops();
 
-    BDD loopBdd = DST.toBDD(DST_PREFIX_1).or(DST.toBDD(DST_PREFIX_2));
+    BDD loopBdd = _dst.toBDD(DST_PREFIX_1).or(_dst.toBDD(DST_PREFIX_2));
     Map<IngressLocation, BDD> expected =
         ImmutableMap.<IngressLocation, BDD>builder()
             // src node locations
@@ -158,15 +157,15 @@ public final class BDDLoopDetectionAnalysisTest {
     // there's a topological cycle, but the composed edge constraints don't permit anything
     Map<IngressLocation, BDD> actual =
         new BDDLoopDetectionAnalysis(
-                PKT,
+                _pkt,
                 Stream.of(
-                    new Edge(state1, state2, constraint(DST.toBDD(DST_PREFIX_1))),
-                    new Edge(state2, state1, constraint(DST.toBDD(DST_PREFIX_2)))),
+                    new Edge(state1, state2, constraint(_dst.toBDD(DST_PREFIX_1))),
+                    new Edge(state2, state1, constraint(_dst.toBDD(DST_PREFIX_2)))),
                 ImmutableSet.of(state1, state2))
             .detectLoops();
 
     Map<IngressLocation, BDD> expected =
-        ImmutableMap.of(vrf("node1", "vrf1"), ZERO, vrf("node2", "vrf2"), ZERO);
+        ImmutableMap.of(vrf("node1", "vrf1"), _zero, vrf("node2", "vrf2"), _zero);
 
     assertEquals(expected, actual);
   }
