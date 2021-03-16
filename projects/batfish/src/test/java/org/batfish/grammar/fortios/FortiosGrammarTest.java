@@ -760,12 +760,14 @@ public final class FortiosGrammarTest {
     String port2 = "port2";
     String port3 = "port3";
     String port4 = "port4";
-    assertThat(interfaces, hasKeys(containsInAnyOrder(port1, port2, port3, port4)));
+    String port5 = "port5";
+    assertThat(interfaces, hasKeys(containsInAnyOrder(port1, port2, port3, port4, port5)));
 
     Map<String, Zone> zones = vc.getZones();
     String zone1 = "zone1";
     String zone2 = "zone2";
-    assertThat(zones, hasKeys(containsInAnyOrder(zone1, zone2)));
+    String zone3 = "zone3";
+    assertThat(zones, hasKeys(containsInAnyOrder(zone1, zone2, zone3)));
 
     assertThat(policyDisable.getAction(), equalTo(Action.DENY));
     assertThat(policyDisable.getStatus(), equalTo(Policy.Status.DISABLE));
@@ -803,8 +805,10 @@ public final class FortiosGrammarTest {
     assertThat(policyAny.getSrcIntf(), contains(Policy.ANY_INTERFACE));
     assertThat(policyAny.getDstIntf(), contains(Policy.ANY_INTERFACE));
 
-    assertThat(policyZone.getSrcIntfZones(), containsInAnyOrder("zone1", "zone2"));
-    assertThat(policyZone.getDstIntfZones(), containsInAnyOrder("zone1", "zone2"));
+    assertThat(policyZone.getSrcIntfZones(), containsInAnyOrder(zone1, zone2, zone3));
+    assertThat(policyZone.getSrcIntf(), contains(port2));
+    assertThat(policyZone.getDstIntfZones(), contains(zone1));
+    assertThat(policyZone.getDstIntf(), contains(port1));
   }
 
   @Test
@@ -829,7 +833,8 @@ public final class FortiosGrammarTest {
             computeOutgoingFilterName("port1"),
             computeOutgoingFilterName("port2"),
             computeOutgoingFilterName("port3"),
-            computeOutgoingFilterName("port4")));
+            computeOutgoingFilterName("port4"),
+            computeOutgoingFilterName("port5")));
     IpAccessList deny = acls.get(denyName);
     IpAccessList allow = acls.get(allowName);
     IpAccessList any = acls.get(anyName);
