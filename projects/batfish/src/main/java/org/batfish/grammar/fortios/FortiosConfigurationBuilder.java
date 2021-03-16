@@ -201,6 +201,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           policy.getServiceUUIDs().stream()
               .map(u -> _c.getRenameableObjects().get(u).getName())
               .collect(ImmutableSet.toImmutableSet()));
+      policy.setDstIntfZones(
+          policy.getDstIntfZoneUUIDs().stream()
+              .map(u -> _c.getRenameableObjects().get(u).getName())
+              .collect(ImmutableSet.toImmutableSet()));
+      policy.setSrcIntfZones(
+          policy.getSrcIntfZoneUUIDs().stream()
+              .map(u -> _c.getRenameableObjects().get(u).getName())
+              .collect(ImmutableSet.toImmutableSet()));
     }
   }
 
@@ -541,23 +549,31 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_dstintf(Cfp_set_dstintfContext ctx) {
-    toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
+    toInterfacesAndZones(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
         .ifPresent(
             i -> {
               Set<String> ifaces = _currentPolicy.getDstIntf();
               ifaces.clear();
-              ifaces.addAll(i);
+              ifaces.addAll(i.getInterfaces());
+
+              Set<BatfishUUID> zones = _currentPolicy.getDstIntfZoneUUIDs();
+              zones.clear();
+              zones.addAll(i.getZones());
             });
   }
 
   @Override
   public void exitCfp_set_srcintf(Cfp_set_srcintfContext ctx) {
-    toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
+    toInterfacesAndZones(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
         .ifPresent(
             i -> {
               Set<String> ifaces = _currentPolicy.getSrcIntf();
               ifaces.clear();
-              ifaces.addAll(i);
+              ifaces.addAll(i.getInterfaces());
+
+              Set<BatfishUUID> zones = _currentPolicy.getSrcIntfZoneUUIDs();
+              zones.clear();
+              zones.addAll(i.getZones());
             });
   }
 
@@ -594,21 +610,27 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_dstintf(Cfp_append_dstintfContext ctx) {
-    toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
+    toInterfacesAndZones(ctx.interfaces, FortiosStructureUsage.POLICY_DSTINTF, false)
         .ifPresent(
             i -> {
               Set<String> ifaces = _currentPolicy.getDstIntf();
-              ifaces.addAll(i);
+              ifaces.addAll(i.getInterfaces());
+
+              Set<BatfishUUID> zones = _currentPolicy.getDstIntfZoneUUIDs();
+              zones.addAll(i.getZones());
             });
   }
 
   @Override
   public void exitCfp_append_srcintf(Cfp_append_srcintfContext ctx) {
-    toInterfaces(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
+    toInterfacesAndZones(ctx.interfaces, FortiosStructureUsage.POLICY_SRCINTF, true)
         .ifPresent(
             i -> {
               Set<String> ifaces = _currentPolicy.getSrcIntf();
-              ifaces.addAll(i);
+              ifaces.addAll(i.getInterfaces());
+
+              Set<BatfishUUID> zones = _currentPolicy.getSrcIntfZoneUUIDs();
+              zones.addAll(i.getZones());
             });
   }
 
@@ -973,14 +995,18 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /**
-   * Convert specified interface or zone names context into a set of names. If {@code pruneAny} is
-   * true, then the special 'any' interface will be removed if specified with other interfaces.
+   * Convert specified interface or zone names context into interface and zone identifiers. If
+   * {@code pruneAny} is true, then the special 'any' interface will be removed if specified with
+   * other interfaces.
    */
-  private Optional<Set<String>> toInterfaces(
+  private Optional<InterfacesAndZones> toInterfacesAndZones(
       Interface_or_zone_namesContext ctx, FortiosStructureUsage usage, boolean pruneAny) {
     int line = ctx.start.getLine();
     Map<String, Interface> ifacesMap = _c.getInterfaces();
+    Map<String, Zone> zonesMap = _c.getZones();
     ImmutableSet.Builder<String> ifaceNameBuilder = ImmutableSet.builder();
+    ImmutableSet.Builder<BatfishUUID> zonesUuidBuilder = ImmutableSet.builder();
+
     Set<String> ifaces =
         ctx.interface_or_zone_name().stream()
             .map(n -> toString(n.str()))
@@ -995,6 +1021,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       } else if (ifacesMap.containsKey(name)) {
         ifaceNameBuilder.add(name);
         _c.referenceStructure(FortiosStructureType.INTERFACE, name, usage, line);
+      } else if (zonesMap.containsKey(name)) {
+        zonesUuidBuilder.add(zonesMap.get(name).getBatfishUUID());
+        _c.referenceStructure(FortiosStructureType.ZONE, name, usage, line);
       } else {
         _c.undefined(FortiosStructureType.INTERFACE_OR_ZONE, name, usage, line);
         warn(
@@ -1005,7 +1034,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         return Optional.empty();
       }
     }
-    return Optional.of(ifaceNameBuilder.build());
+    return Optional.of(new InterfacesAndZones(ifaceNameBuilder.build(), zonesUuidBuilder.build()));
   }
 
   /**
@@ -1399,9 +1428,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     // CLI to pop out of its edit block
     if (!valid) {
       return "name is invalid"; // currently, only invalid name can cause valid to be false
-    } else if (p.getSrcIntf().isEmpty()) {
+    } else if (p.getSrcIntf().isEmpty() && p.getSrcIntfZoneUUIDs().isEmpty()) {
       return "srcintf must be set";
-    } else if (p.getDstIntf().isEmpty()) {
+    } else if (p.getDstIntf().isEmpty() && p.getDstIntfZoneUUIDs().isEmpty()) {
       return "dstintf must be set";
     } else if (p.getSrcAddrUUIDs().isEmpty()) {
       return "srcaddr must be set";
@@ -1440,6 +1469,28 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       default:
         return String.format("protocol %s is unknown", s.getProtocolEffective());
     }
+  }
+
+  /**
+   * Class representing a set of interfaces as well as a set of zones. For use with firewall
+   * policies srcintf and dstintf references.
+   */
+  private static final class InterfacesAndZones {
+    Set<String> getInterfaces() {
+      return _interfaces;
+    }
+
+    Set<BatfishUUID> getZones() {
+      return _zones;
+    }
+
+    InterfacesAndZones(Set<String> interfaces, Set<BatfishUUID> zones) {
+      _interfaces = ImmutableSet.copyOf(interfaces);
+      _zones = ImmutableSet.copyOf(zones);
+    }
+
+    private final Set<String> _interfaces;
+    private final Set<BatfishUUID> _zones;
   }
 
   private static final Pattern ADDRESS_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
