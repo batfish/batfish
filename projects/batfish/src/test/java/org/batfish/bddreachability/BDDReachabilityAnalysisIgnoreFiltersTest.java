@@ -50,7 +50,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class BDDReachabilityAnalysisIgnoreFiltersTest {
-  private static final BDDPacket PKT = new BDDPacket();
   private static final String NODE1 = "node1";
   private static final ConcreteInterfaceAddress NODE1_ADDR =
       ConcreteInterfaceAddress.parse("1.2.3.1/24");
@@ -63,7 +62,9 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
       IngressLocation.vrf(NODE1, Configuration.DEFAULT_VRF_NAME);
   private static final Ip NAT_MATCH_IP = Ip.parse("2.2.2.2");
   private static final Ip NAT_POOL_IP = Ip.parse("2.2.2.3");
-  private static final BDD ZERO = PKT.getFactory().zero();
+
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDD _zero = _pkt.getFactory().zero();
 
   public static @ClassRule TemporaryFolder temp = new TemporaryFolder();
 
@@ -131,7 +132,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     Map<String, Configuration> configs = batfish.loadConfigurations(snapshot);
     DataPlane dataPlane = batfish.loadDataPlane(snapshot);
     return new BDDReachabilityAnalysisFactory(
-            PKT,
+            _pkt,
             configs,
             dataPlane.getForwardingAnalysis(),
             new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
@@ -151,7 +152,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     Map<IngressLocation, BDD> reachableBDDs =
         initAnalysis(DENIED_IN_SRC_IP.toIpSpace(), ACCEPTED, true)
             .getIngressLocationReachableBDDs();
-    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), not(equalTo(ZERO))));
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), not(equalTo(_zero))));
   }
 
   @Test
@@ -159,7 +160,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     Map<IngressLocation, BDD> reachableBDDs =
         initAnalysis(DENIED_IN_SRC_IP.toIpSpace(), ACCEPTED, false)
             .getIngressLocationReachableBDDs();
-    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), equalTo(ZERO)));
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), equalTo(_zero)));
   }
 
   @Test
@@ -167,7 +168,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     Map<IngressLocation, BDD> reachableBDDs =
         initAnalysis(DENIED_OUT_SRC_IP.toIpSpace(), ACCEPTED, true)
             .getIngressLocationReachableBDDs();
-    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), not(equalTo(ZERO))));
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), not(equalTo(_zero))));
   }
 
   @Test
@@ -175,7 +176,7 @@ public class BDDReachabilityAnalysisIgnoreFiltersTest {
     Map<IngressLocation, BDD> reachableBDDs =
         initAnalysis(DENIED_OUT_SRC_IP.toIpSpace(), ACCEPTED, false)
             .getIngressLocationReachableBDDs();
-    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), equalTo(ZERO)));
+    assertThat(reachableBDDs, hasEntry(equalTo(INGRESS_LOCATION), equalTo(_zero)));
   }
 
   @Test

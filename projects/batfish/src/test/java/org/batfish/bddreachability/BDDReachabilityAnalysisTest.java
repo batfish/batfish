@@ -79,7 +79,7 @@ import org.junit.rules.TemporaryFolder;
 public final class BDDReachabilityAnalysisTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
-  private static final BDDPacket PKT = new BDDPacket();
+  private final BDDPacket _pkt = new BDDPacket();
 
   private BDDReachabilityAnalysis _graph;
   private BDDReachabilityAnalysisFactory _graphFactory;
@@ -137,7 +137,7 @@ public final class BDDReachabilityAnalysisTest {
   private PreOutEdgePostNat _srcPreOutEdgePostNat2;
   private PreOutVrf _srcPreOutVrf;
 
-  private static final BDD TCP_BDD = PKT.getIpProtocol().value(IpProtocol.TCP);
+  private final BDD _tcpBdd = _pkt.getIpProtocol().value(IpProtocol.TCP);
 
   @Before
   public void setup() throws IOException {
@@ -160,7 +160,7 @@ public final class BDDReachabilityAnalysisTest {
     DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     _graphFactory =
         new BDDReachabilityAnalysisFactory(
-            PKT,
+            _pkt,
             _net._configs,
             dataPlane.getForwardingAnalysis(),
             new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
@@ -174,7 +174,7 @@ public final class BDDReachabilityAnalysisTest {
                 UniverseIpSpace.INSTANCE)
             .build();
     _graph = _graphFactory.bddReachabilityAnalysis(assignment);
-    _bddOps = new BDDOps(PKT.getFactory());
+    _bddOps = new BDDOps(_pkt.getFactory());
     _dstIface1Ip = DST_PREFIX_1.getStartIp();
     _dstIface1IpBDD = dstIpBDD(_dstIface1Ip);
     _dstIface2Ip = DST_PREFIX_2.getStartIp();
@@ -235,7 +235,7 @@ public final class BDDReachabilityAnalysisTest {
         .getForwardEdgeMap()
         .get(preState)
         .get(postState)
-        .transitForward(PKT.getFactory().one());
+        .transitForward(_pkt.getFactory().one());
   }
 
   private Edge edge(StateExpr preState, StateExpr postState) {
@@ -243,12 +243,12 @@ public final class BDDReachabilityAnalysisTest {
     return transition == null ? null : new Edge(preState, postState, transition);
   }
 
-  private static BDD dstIpBDD(Ip ip) {
-    return new IpSpaceToBDD(PKT.getDstIp()).toBDD(ip);
+  private BDD dstIpBDD(Ip ip) {
+    return new IpSpaceToBDD(_pkt.getDstIp()).toBDD(ip);
   }
 
-  private static BDD dstPortBDD(int destPort) {
-    return PKT.getDstPort().value(destPort);
+  private BDD dstPortBDD(int destPort) {
+    return _pkt.getDstPort().value(destPort);
   }
 
   private BDD or(BDD... bdds) {
@@ -535,7 +535,7 @@ public final class BDDReachabilityAnalysisTest {
     assertThat(edge(_srcPreOutEdgePostNat1, new NodeDropAclOut(_srcName)), nullValue());
     assertThat(
         bddTransition(_srcPreOutEdgePostNat2, new NodeDropAclOut(_srcName)),
-        equalTo(TCP_BDD.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT)).not()));
+        equalTo(_tcpBdd.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT)).not()));
   }
 
   @Test
@@ -545,7 +545,7 @@ public final class BDDReachabilityAnalysisTest {
     assertThat(bddTransition(_srcPreOutEdgePostNat1, _dstPreInInterface1), isOne());
     assertThat(
         bddTransition(_srcPreOutEdgePostNat2, _dstPreInInterface2),
-        equalTo(TCP_BDD.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT))));
+        equalTo(_tcpBdd.and(dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT))));
   }
 
   @Test
@@ -574,18 +574,18 @@ public final class BDDReachabilityAnalysisTest {
     OriginateInterface originateInterface = new OriginateInterface(hostname, ifaceName);
     OriginateInterfaceLink originateInterfaceLink = new OriginateInterfaceLink(hostname, ifaceName);
     PostInVrf postInVrf = new PostInVrf(hostname, "vrf");
-    BDD ifaceOriginateBdd = PKT.getDstIp().value(1);
-    BDD ifaceLinkBdd = PKT.getDstIp().value(2);
-    BDD postInVrfBdd = PKT.getSrcIp().value(3); // srcIp, so not mutually exclusive w/ other BDDS
+    BDD ifaceOriginateBdd = _pkt.getDstIp().value(1);
+    BDD ifaceLinkBdd = _pkt.getDstIp().value(2);
+    BDD postInVrfBdd = _pkt.getSrcIp().value(3); // srcIp, so not mutually exclusive w/ other BDDS
     BDDReachabilityAnalysis analysis =
         new BDDReachabilityAnalysis(
-            PKT,
+            _pkt,
             ImmutableSet.of(originateInterface, originateInterfaceLink),
             Stream.of(
                 new Edge(originateInterface, Query.INSTANCE, ifaceOriginateBdd),
                 new Edge(originateInterfaceLink, postInVrf, ifaceLinkBdd),
                 new Edge(postInVrf, Query.INSTANCE, postInVrfBdd)),
-            PKT.getFactory().one());
+            _pkt.getFactory().one());
 
     // The origination states should translate to Locations with the expected success BDDs.
     InterfaceLocation ifaceLocation = new InterfaceLocation(hostname, ifaceName);
@@ -606,9 +606,9 @@ public final class BDDReachabilityAnalysisTest {
     StateExpr b = new NodeAccept("B");
     StateExpr c = new NodeAccept("C");
 
-    BDD start = PKT.getSrcPort().value(1);
-    BDD bddAB = PKT.getDstIp().value(1);
-    BDD bddBC = PKT.getSrcIp().value(1);
+    BDD start = _pkt.getSrcPort().value(1);
+    BDD bddAB = _pkt.getDstIp().value(1);
+    BDD bddBC = _pkt.getSrcIp().value(1);
 
     Edge edgeAB = new Edge(a, b, bddAB);
     Edge edgeBC = new Edge(b, c, bddBC);

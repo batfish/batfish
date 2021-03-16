@@ -8,27 +8,27 @@ import org.junit.Test;
 
 /** Test for {@link BDDPacketLength}. */
 public final class BDDPacketLengthTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final BDDPacketLength PKT_LEN = PKT.getPacketLength();
-
   @Test
   public void testSatAssignment() {
+    BDDPacket pkt = new BDDPacket();
+    BDDPacketLength pktLen = pkt.getPacketLength();
+
     // unconstrained
     {
-      BDD satAssignment = PKT.getFactory().one().fullSatOne();
-      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(20));
+      BDD satAssignment = pkt.getFactory().one().fullSatOne();
+      assertThat(pktLen.satAssignmentToValue(satAssignment), equalTo(20));
     }
 
     // constrained to a single value
     {
-      BDD satAssignment = PKT_LEN.value(100).fullSatOne();
-      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(100));
+      BDD satAssignment = pktLen.value(100).fullSatOne();
+      assertThat(pktLen.satAssignmentToValue(satAssignment), equalTo(100));
     }
 
     // constrained to a range
     {
-      BDD satAssignment = PKT_LEN.range(100, 200).fullSatOne();
-      assertThat(PKT_LEN.satAssignmentToValue(satAssignment), equalTo(100));
+      BDD satAssignment = pktLen.range(100, 200).fullSatOne();
+      assertThat(pktLen.satAssignmentToValue(satAssignment), equalTo(100));
     }
   }
 }

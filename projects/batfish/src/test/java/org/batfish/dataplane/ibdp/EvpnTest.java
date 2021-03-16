@@ -239,16 +239,14 @@ public class EvpnTest {
               isEvpnType3RouteThat(
                   allOf(
                       hasPrefix(leaf1VtepPrefix),
-                      hasCommunities(
-                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+                      hasCommunities(ExtendedCommunity.target(65000, 10010))))));
       assertThat(
           exitgwRoutes,
           hasItem(
               isEvpnType3RouteThat(
                   allOf(
                       hasPrefix(leaf1VtepPrefix),
-                      hasCommunities(
-                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+                      hasCommunities(ExtendedCommunity.target(65000, 10020))))));
       // Ensure not in main RIB
       assertThat(
           mainRibRoutes.get(exitGw).get(vrf1).getRoutes(),
@@ -261,8 +259,7 @@ public class EvpnTest {
                   allOf(
                       hasPrefix(exitgwVtepPrefix),
                       hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
-                      hasCommunities(
-                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+                      hasCommunities(ExtendedCommunity.target(65000, 10010))))));
       assertThat(
           exitgwRoutes,
           hasItem(
@@ -270,8 +267,7 @@ public class EvpnTest {
                   allOf(
                       hasPrefix(exitgwVtepPrefix),
                       hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
-                      hasCommunities(
-                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+                      hasCommunities(ExtendedCommunity.target(65000, 10020))))));
     }
 
     {
@@ -282,16 +278,14 @@ public class EvpnTest {
               isEvpnType3RouteThat(
                   allOf(
                       hasPrefix(exitgwVtepPrefix),
-                      hasCommunities(
-                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+                      hasCommunities(ExtendedCommunity.target(65000, 10010))))));
       assertThat(
           leaf1Routes,
           hasItem(
               isEvpnType3RouteThat(
                   allOf(
                       hasPrefix(exitgwVtepPrefix),
-                      hasCommunities(
-                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+                      hasCommunities(ExtendedCommunity.target(65000, 10020))))));
       // Ensure not in main RIB
       assertThat(
           mainRibRoutes.get(leaf1).get(vrf1).getRoutes(),
@@ -304,8 +298,7 @@ public class EvpnTest {
                   allOf(
                       hasPrefix(leaf1VtepPrefix),
                       hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
-                      hasCommunities(
-                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10010))))))));
+                      hasCommunities(ExtendedCommunity.target(65000, 10010))))));
       assertThat(
           leaf1Routes,
           hasItem(
@@ -313,8 +306,7 @@ public class EvpnTest {
                   allOf(
                       hasPrefix(leaf1VtepPrefix),
                       hasNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP),
-                      hasCommunities(
-                          equalTo(ImmutableSet.of(ExtendedCommunity.target(65000, 10020))))))));
+                      hasCommunities(ExtendedCommunity.target(65000, 10020))))));
     }
   }
 }

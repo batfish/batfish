@@ -22,25 +22,25 @@ config system interface
         set ip 192.168.40.1 255.255.255.0
         set type physical
     next
+    edit "port5"
+        set vdom "root"
+        set ip 192.168.50.1 255.255.255.0
+        set type physical
+    next
 end
 config system zone
     edit "zone1"
-        set interface port1
+        set interface port3
         set interface port2
         append interface port1
     next
     edit "zone2"
         set description "zone2 description"
         set intrazone deny
-        select interface port2
         select interface port3
     next
     edit "longest possible valid name for zon"
         set intrazone allow
-        set interface port4
+        set interface port4 port5
     next
-    #edit "zone3"
-    #    set intrazone allow
-        # TODO is this valid?
-    #next
 end

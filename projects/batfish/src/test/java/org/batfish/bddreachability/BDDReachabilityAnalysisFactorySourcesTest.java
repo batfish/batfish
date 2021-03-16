@@ -59,7 +59,6 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
 
   private static final BDDPacket pkt = new BDDPacket();
   private static Map<StateExpr, Map<StateExpr, Transition>> edges;
-  private static BDDReachabilityAnalysisFactory factory;
   private static BDD ingressIfaceSrcIpBdd;
   private static BDD matchSrcInterfaceBdd;
   private static BDD originatingFromDeviceSrcIpBdd;
@@ -75,7 +74,7 @@ public class BDDReachabilityAnalysisFactorySourcesTest {
     Batfish batfish = BatfishTestUtils.getBatfish(configs, temp);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
-    factory =
+    BDDReachabilityAnalysisFactory factory =
         new BDDReachabilityAnalysisFactory(
             pkt,
             configs,

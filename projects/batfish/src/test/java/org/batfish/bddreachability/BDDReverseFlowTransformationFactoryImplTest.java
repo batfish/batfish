@@ -34,9 +34,9 @@ import org.junit.Test;
 
 /** Tests for {@link BDDReverseFlowTransformationFactoryImpl}. */
 public class BDDReverseFlowTransformationFactoryImplTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final BDD ONE = PKT.getFactory().one();
-  private static final BDD ZERO = PKT.getFactory().zero();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDD _one = _pkt.getFactory().one();
+  private final BDD _zero = _pkt.getFactory().zero();
 
   private static final String HOSTNAME = "HOSTNAME";
   private static final String IFACENAME = "INTERFACE";
@@ -57,14 +57,14 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     Vrf vrf = nf.vrfBuilder().setOwner(config).build();
     _ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true).setName(IFACENAME);
     _configs = ImmutableMap.of(HOSTNAME, config);
-    _headerSpaceToBDD = new HeaderSpaceToBDD(PKT, ImmutableMap.of());
+    _headerSpaceToBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     _transformationToTransitions =
         ImmutableMap.of(
             HOSTNAME,
             new TransformationToTransition(
-                PKT,
+                _pkt,
                 new IpAccessListToBddImpl(
-                    PKT, BDDSourceManager.empty(PKT), _headerSpaceToBDD, ImmutableMap.of())));
+                    _pkt, BDDSourceManager.empty(_pkt), _headerSpaceToBDD, ImmutableMap.of())));
   }
 
   private BDD dstBdd(Ip ip) {
@@ -118,11 +118,11 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     assertThat(
         "Anything might have been natted",
         outgoingTransformation.transitForward(poolBdd),
-        equalTo(ONE));
+        equalTo(_one));
     assertThat(
         "If outside the pool, not natted",
         outgoingTransformation.transitForward(poolBdd.not()),
-        equalTo(ZERO));
+        equalTo(_zero));
   }
 
   @Test
@@ -171,21 +171,21 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     assertThat(
         "everything is mapped to the shift prefix",
         transition.transitForward(shiftPrefixBdd),
-        equalTo(ONE));
+        equalTo(_one));
     assertThat(
         "nothing is mapped outside the shift prefix",
         transition.transitForward(shiftPrefixBdd.not()),
-        equalTo(ZERO));
+        equalTo(_zero));
 
     transition = factory.reverseFlowOutgoingTransformation(HOSTNAME, i.getName());
     assertThat(
         "everything is mapped to the shift prefix",
         transition.transitForward(shiftPrefixBdd),
-        equalTo(ONE));
+        equalTo(_one));
     assertThat(
         "nothing is mapped outside the shift prefix",
         transition.transitForward(shiftPrefixBdd.not()),
-        equalTo(ZERO));
+        equalTo(_zero));
   }
 
   @Test
@@ -228,7 +228,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     assertThat(
         "range of the forward transformation is the poolIp and the shift prefix",
         transition.transitForward(poolBdd.or(shiftPrefixBdd).not()),
-        equalTo(ZERO));
+        equalTo(_zero));
 
     transition = factory.reverseFlowOutgoingTransformation(HOSTNAME, i.getName());
     assertThat(
@@ -242,7 +242,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     assertThat(
         "range of the forward transformation is the poolIp and the shift prefix",
         transition.transitForward(poolBdd.or(shiftPrefixBdd).not()),
-        equalTo(ZERO));
+        equalTo(_zero));
   }
 
   @Test
@@ -337,7 +337,7 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     assertThat(
         "everything is natted to pool1 or pool2",
         incomingTransformation.transitForward(pool1Bdd.or(pool2Bdd).not()),
-        equalTo(ZERO));
+        equalTo(_zero));
 
     Transition outgoingTransformation =
         factory.reverseFlowOutgoingTransformation(HOSTNAME, i.getName());
@@ -353,6 +353,6 @@ public class BDDReverseFlowTransformationFactoryImplTest {
     assertThat(
         "everything is natted to pool1 or pool2",
         outgoingTransformation.transitForward(pool1Bdd.or(pool2Bdd).not()),
-        equalTo(ZERO));
+        equalTo(_zero));
   }
 }

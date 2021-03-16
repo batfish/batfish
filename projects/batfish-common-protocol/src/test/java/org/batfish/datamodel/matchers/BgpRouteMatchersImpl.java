@@ -1,49 +1,75 @@
 package org.batfish.datamodel.matchers;
 
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
+import org.batfish.datamodel.HasReadableAsPath;
+import org.batfish.datamodel.HasReadableCommunities;
+import org.batfish.datamodel.HasReadableLocalPreference;
+import org.batfish.datamodel.HasReadableOriginType;
+import org.batfish.datamodel.HasReadableWeight;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 @ParametersAreNonnullByDefault
 final class BgpRouteMatchersImpl {
-  static final class HasCommunities extends FeatureMatcher<BgpRoute<?, ?>, Set<Community>> {
-    HasCommunities(@Nonnull Matcher<? super Set<Community>> subMatcher) {
-      super(subMatcher, "A BgpRoute with communities:", "communities");
+  static final class HasAsPath extends FeatureMatcher<HasReadableAsPath, AsPath> {
+    HasAsPath(@Nonnull Matcher<? super AsPath> subMatcher) {
+      super(subMatcher, "A HasReadableAsPath with as-path:", "as-path");
     }
 
     @Override
-    protected Set<Community> featureValueOf(BgpRoute<?, ?> actual) {
-      return actual.getCommunities().getCommunities();
+    protected AsPath featureValueOf(HasReadableAsPath actual) {
+      return actual.getAsPath();
     }
   }
 
-  static final class HasOriginType extends FeatureMatcher<BgpRoute<?, ?>, OriginType> {
-    HasOriginType(@Nonnull Matcher<? super OriginType> subMatcher) {
-      super(subMatcher, "A BgpRoute with originType:", "originType");
+  static final class HasCommunities extends FeatureMatcher<HasReadableCommunities, CommunitySet> {
+    HasCommunities(@Nonnull Matcher<? super CommunitySet> subMatcher) {
+      super(subMatcher, "A HasReadableCommunities with communities:", "communities");
     }
 
     @Override
-    protected OriginType featureValueOf(BgpRoute<?, ?> actual) {
+    protected CommunitySet featureValueOf(HasReadableCommunities actual) {
+      return actual.getCommunities();
+    }
+  }
+
+  static final class HasLocalPreference extends FeatureMatcher<HasReadableLocalPreference, Long> {
+    HasLocalPreference(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "A HasReadableLocalPreference with localPreference:", "localPreference");
+    }
+
+    @Override
+    protected Long featureValueOf(HasReadableLocalPreference actual) {
+      return actual.getLocalPreference();
+    }
+  }
+
+  static final class HasOriginType extends FeatureMatcher<HasReadableOriginType, OriginType> {
+    HasOriginType(@Nonnull Matcher<? super OriginType> subMatcher) {
+      super(subMatcher, "A HasReadableOriginType with originType:", "originType");
+    }
+
+    @Override
+    protected OriginType featureValueOf(HasReadableOriginType actual) {
       return actual.getOriginType();
     }
   }
 
-  static final class HasWeight extends FeatureMatcher<BgpRoute<?, ?>, Integer> {
+  static final class HasWeight extends FeatureMatcher<HasReadableWeight, Integer> {
     HasWeight(@Nonnull Matcher<? super Integer> subMatcher) {
-      super(subMatcher, "A BgpRoute with weight:", "weight");
+      super(subMatcher, "A HasReadableWeight with weight:", "weight");
     }
 
     @Override
-    protected Integer featureValueOf(BgpRoute<?, ?> actual) {
+    protected Integer featureValueOf(HasReadableWeight actual) {
       return actual.getWeight();
     }
   }

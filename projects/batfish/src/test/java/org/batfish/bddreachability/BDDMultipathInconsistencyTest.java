@@ -51,7 +51,8 @@ import org.junit.rules.TemporaryFolder;
 public class BDDMultipathInconsistencyTest {
   @Rule public TemporaryFolder temp = new TemporaryFolder();
 
-  private static final BDDPacket PKT = new BDDPacket();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final IpSpaceToBDD _srcToBDD = _pkt.getSrcIpSpaceToBDD();
 
   private BDDReachabilityAnalysisFactory _graphFactory;
   private TestNetwork _net;
@@ -60,12 +61,10 @@ public class BDDMultipathInconsistencyTest {
 
   private String _srcName;
 
-  private IpSpaceToBDD _srcToBDD = new IpSpaceToBDD(PKT.getSrcIp());
-
   private Batfish _batfish;
 
-  private static BDD dstPortBDD(int port) {
-    return PKT.getDstPort().value(port);
+  private BDD dstPortBDD(int port) {
+    return _pkt.getDstPort().value(port);
   }
 
   private BDD srcIpBDD(Ip ip) {
@@ -81,7 +80,7 @@ public class BDDMultipathInconsistencyTest {
     DataPlane dataPlane = _batfish.loadDataPlane(_batfish.getSnapshot());
     _graphFactory =
         new BDDReachabilityAnalysisFactory(
-            PKT,
+            _pkt,
             _net._configs,
             dataPlane.getForwardingAnalysis(),
             new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
@@ -123,7 +122,7 @@ public class BDDMultipathInconsistencyTest {
                 ImmutableSet.of(DENIED_IN))
             .getIngressLocationReachableBDDs();
 
-    BDD tcpBdd = PKT.getIpProtocol().value(IpProtocol.TCP);
+    BDD tcpBdd = _pkt.getIpProtocol().value(IpProtocol.TCP);
     BDD dstIpBDD = _graphFactory.getIpSpaceToBDD().toBDD(_dstIface2Ip);
     BDD srcIpBDD = srcIpBDD(Ip.MAX);
     BDD postNatAclBDD = dstPortBDD(POST_SOURCE_NAT_ACL_DEST_PORT);
@@ -137,7 +136,7 @@ public class BDDMultipathInconsistencyTest {
     BDD expected = tcpBdd.and(dstIpBDD).and(srcIpBDD).and(postNatAclBDD);
     assertEquals(expected, inconsistency.getBDD());
 
-    Flow flow = multipathInconsistencyToFlow(PKT, inconsistency);
+    Flow flow = multipathInconsistencyToFlow(_pkt, inconsistency);
     assertThat(flow, hasDstIp(_dstIface2Ip));
   }
 
@@ -173,7 +172,7 @@ public class BDDMultipathInconsistencyTest {
             .getIngressLocationReachableBDDs();
 
     BDD natAclIpBDD = srcIpBDD(SOURCE_NAT_ACL_IP);
-    BDD srcNatAclBDD = IpAccessListToBdd.toBDD(PKT, _net._link2SrcSourceNatAcl);
+    BDD srcNatAclBDD = IpAccessListToBdd.toBDD(_pkt, _net._link2SrcSourceNatAcl);
     assertThat(srcNatAclBDD, equalTo(natAclIpBDD));
 
     /*
@@ -247,12 +246,13 @@ public class BDDMultipathInconsistencyTest {
                 ImmutableSet.of(NEIGHBOR_UNREACHABLE))
             .getIngressLocationReachableBDDs();
 
-    assertThat(computeMultipathInconsistencies(PKT, acceptedBDDs, dropExceptDeniedInBDDs), empty());
     assertThat(
-        computeMultipathInconsistencies(PKT, acceptedBDDs, dropBDDs),
-        equalTo(computeMultipathInconsistencies(PKT, acceptedBDDs, deniedInBDDs)));
-    assertThat(computeMultipathInconsistencies(PKT, neighborUnreachableBDDs, dropBDDs), empty());
+        computeMultipathInconsistencies(_pkt, acceptedBDDs, dropExceptDeniedInBDDs), empty());
     assertThat(
-        computeMultipathInconsistencies(PKT, acceptedBDDs, neighborUnreachableBDDs), empty());
+        computeMultipathInconsistencies(_pkt, acceptedBDDs, dropBDDs),
+        equalTo(computeMultipathInconsistencies(_pkt, acceptedBDDs, deniedInBDDs)));
+    assertThat(computeMultipathInconsistencies(_pkt, neighborUnreachableBDDs, dropBDDs), empty());
+    assertThat(
+        computeMultipathInconsistencies(_pkt, acceptedBDDs, neighborUnreachableBDDs), empty());
   }
 }

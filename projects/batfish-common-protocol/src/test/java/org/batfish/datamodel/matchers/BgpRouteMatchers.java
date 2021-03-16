@@ -2,22 +2,29 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
+import org.batfish.datamodel.HasReadableAsPath;
+import org.batfish.datamodel.HasReadableCommunities;
+import org.batfish.datamodel.HasReadableLocalPreference;
+import org.batfish.datamodel.HasReadableOriginType;
+import org.batfish.datamodel.HasReadableWeight;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasAsPath;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasCommunities;
+import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasLocalPreference;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasOriginType;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasWeight;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsBgpv4RouteThat;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsEvpnType3RouteThat;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsEvpnType5RouteThat;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.hamcrest.Matcher;
 
 @ParametersAreNonnullByDefault
@@ -25,26 +32,53 @@ public final class BgpRouteMatchers {
 
   /**
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
-   * BgpRoute}'s communities.
+   * HasReadableAsPath}'s as-path.
    */
-  public static @Nonnull Matcher<BgpRoute<?, ?>> hasCommunities(
-      Matcher<? super Set<Community>> subMatcher) {
-    return new HasCommunities(subMatcher);
+  public static @Nonnull Matcher<HasReadableAsPath> hasAsPath(Matcher<? super AsPath> subMatcher) {
+    return new HasAsPath(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code expectedCommunities} is equal to the
+   * {@link HasReadableCommunities}'s communities.
+   */
+  public static @Nonnull Matcher<HasReadableCommunities> hasCommunities(
+      CommunitySet expectedCommunities) {
+    return new HasCommunities(equalTo(expectedCommunities));
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied communities comprise the {@link
+   * HasReadableCommunities}'s communities.
+   */
+  public static @Nonnull Matcher<HasReadableCommunities> hasCommunities(
+      Community... expectedCommunities) {
+    return new HasCommunities(equalTo(CommunitySet.of(expectedCommunities)));
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code expectedLocalPreference} is equal to
+   * the {@link HasReadableLocalPreference}'s local preference.
+   */
+  public static @Nonnull Matcher<HasReadableLocalPreference> hasLocalPreference(
+      long expectedLocalPreference) {
+    return new HasLocalPreference(equalTo(expectedLocalPreference));
   }
 
   /**
    * Provides a matcher that matches when the supplied {@code expectedOriginType} is equal to the
-   * {@link BgpRoute}'s originType.
+   * {@link HasReadableOriginType}'s originType.
    */
-  public static @Nonnull Matcher<BgpRoute<?, ?>> hasOriginType(OriginType expectedOriginType) {
+  public static @Nonnull Matcher<HasReadableOriginType> hasOriginType(
+      OriginType expectedOriginType) {
     return new HasOriginType(equalTo(expectedOriginType));
   }
 
   /**
    * Provides a matcher that matches when the supplied {@code expectedWeight} is equal to the {@link
-   * BgpRoute}'s weight.
+   * HasReadableWeight}'s weight.
    */
-  public static @Nonnull Matcher<BgpRoute<?, ?>> hasWeight(int expectedWeight) {
+  public static @Nonnull Matcher<HasReadableWeight> hasWeight(int expectedWeight) {
     return new HasWeight(equalTo(expectedWeight));
   }
 

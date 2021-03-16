@@ -19,9 +19,9 @@ csz_rename: RENAME current_name = zone_name TO new_name = zone_name newline;
 csze
 :
     (
-        SET (csz_set_singletons | csz_set_lists)
-        | APPEND csz_append
-        | SELECT csz_set_lists
+        SET (csz_set_singletons | csz_set_interface)
+        | APPEND csz_append_interface
+        | SELECT csz_set_interface
     )
 ;
 
@@ -34,11 +34,7 @@ csz_set_description: DESCRIPTION description = str newline;
 
 csz_set_intrazone: INTRAZONE value = allow_or_deny newline;
 
-csz_set_lists: csz_set_interface;
-
 csz_set_interface: INTERFACE interfaces = interface_names newline;
-
-csz_append: csz_append_interface;
 
 csz_append_interface: INTERFACE interfaces = interface_names newline;
 
