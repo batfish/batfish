@@ -8,6 +8,7 @@ c_system: SYSTEM (
   cs_global
   | cs_interface
   | cs_replacemsg
+  | cs_zone
 );
 
 cs_global: GLOBAL newline csg*;
