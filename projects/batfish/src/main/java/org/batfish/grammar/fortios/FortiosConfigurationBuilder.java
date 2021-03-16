@@ -852,8 +852,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCsz_rename(Csz_renameContext ctx) {
     Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
     Optional<String> newNameOpt = toString(ctx, ctx.new_name);
-    assert currentNameOpt.isPresent();
-    assert newNameOpt.isPresent();
+    if (!newNameOpt.isPresent() || !currentNameOpt.isPresent()) {
+      return;
+    }
 
     String currentName = currentNameOpt.get();
     String newName = newNameOpt.get();

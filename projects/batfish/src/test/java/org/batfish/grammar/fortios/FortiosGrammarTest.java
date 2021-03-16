@@ -1073,6 +1073,9 @@ public final class FortiosGrammarTest {
                 hasComment("Cannot rename non-existent address undefined"),
                 hasComment("Cannot rename non-existent service custom undefined"),
                 hasComment("Cannot rename non-existent zone undefined"),
+                allOf(
+                    hasComment("Illegal value for zone name"),
+                    hasText(containsString("a name that is too long to use for this object type"))),
                 hasComment("Policy edit block ignored: srcintf must be set"))));
   }
 
@@ -1087,18 +1090,22 @@ public final class FortiosGrammarTest {
 
     // Should have definitions for the renamed structures
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "new_addr1"));
-    // Rename should be part of the definition
+    assertThat(
+        ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service1"));
+
+    // Rename should be part of the definitions
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
             filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 74)));
     assertThat(
-        ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service1"));
-    // Rename should be part of the definition
-    assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
             filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 71)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.ZONE, "new_zone2", contains(39, 40, 41, 77)));
 
     // Should have references for the renamed structures, even if the renaming happened after the
     // reference
