@@ -38,7 +38,10 @@ public class NodePropertySpecifier extends PropertySpecifier {
 
   public static final String AS_PATH_ACCESS_LISTS = "AS_Path_Access_Lists";
   public static final String AUTHENTICATION_KEY_CHAINS = "Authentication_Key_Chains";
-  public static final String COMMUNITY_LISTS = "Community_Lists";
+  public static final String COMMUNITY_MATCH_EXPRS = "Community_Match_Exprs";
+  public static final String COMMUNITY_SET_EXPRS = "Community_Set_Exprs";
+  public static final String COMMUNITY_SET_MATCH_EXPRS = "Community_Set_Match_Exprs";
+  public static final String COMMUNITY_SETS = "Community_Sets";
   public static final String CONFIGURATION_FORMAT = "Configuration_Format";
   public static final String DEFAULT_CROSS_ZONE_ACTION = "Default_Cross_Zone_Action";
   public static final String DEFAULT_INBOUND_ACTION = "Default_Inbound_Action";
@@ -85,13 +88,29 @@ public class NodePropertySpecifier extends PropertySpecifier {
                   Schema.set(Schema.STRING),
                   "Names of authentication keychains"))
           .put(
-              COMMUNITY_LISTS,
+              COMMUNITY_MATCH_EXPRS,
               new PropertyDescriptor<>(
-                  /* TODO rename and break this up as appropriate. For now, every vendor that had
-                  `CommunityList`s should have `CommunitySetMatchExpr`s with the same name.*/
+                  Configuration::getCommunityMatchExprs,
+                  Schema.set(Schema.STRING),
+                  "Names of expressions for matching a community"))
+          .put(
+              COMMUNITY_SET_EXPRS,
+              new PropertyDescriptor<>(
+                  Configuration::getCommunitySetExprs,
+                  Schema.set(Schema.STRING),
+                  "Names of expressions representing a community-set"))
+          .put(
+              COMMUNITY_SET_MATCH_EXPRS,
+              new PropertyDescriptor<>(
                   Configuration::getCommunitySetMatchExprs,
                   Schema.set(Schema.STRING),
-                  "Names of community lists"))
+                  "Names of expressions for matching a ommunity-set"))
+          .put(
+              COMMUNITY_SETS,
+              new PropertyDescriptor<>(
+                  Configuration::getCommunitySets,
+                  Schema.set(Schema.STRING),
+                  "Names of community-sets"))
           .put(
               CONFIGURATION_FORMAT,
               new PropertyDescriptor<>(
