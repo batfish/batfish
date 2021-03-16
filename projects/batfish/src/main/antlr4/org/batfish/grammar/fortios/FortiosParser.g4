@@ -7,7 +7,8 @@ import
   Fortios_interface,
   Fortios_policy,
   Fortios_service,
-  Fortios_system;
+  Fortios_system,
+  Fortios_zone;
 
 options {
   superClass = 'org.batfish.grammar.fortios.parsing.FortiosBaseParser';

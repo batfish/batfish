@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.fortios.FortiosParser.Address_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Allow_or_denyContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_allow_routingContext;
@@ -87,12 +89,18 @@ import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vrfContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
+import org.batfish.grammar.fortios.FortiosParser.Csz_append_interfaceContext;
+import org.batfish.grammar.fortios.FortiosParser.Csz_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Csz_set_descriptionContext;
+import org.batfish.grammar.fortios.FortiosParser.Csz_set_interfaceContext;
+import org.batfish.grammar.fortios.FortiosParser.Csz_set_intrazoneContext;
 import org.batfish.grammar.fortios.FortiosParser.Device_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Double_quoted_stringContext;
 import org.batfish.grammar.fortios.FortiosParser.Enable_or_disableContext;
 import org.batfish.grammar.fortios.FortiosParser.Fortios_configurationContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_aliasContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Interface_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
@@ -122,6 +130,7 @@ import org.batfish.grammar.fortios.FortiosParser.Uint8Context;
 import org.batfish.grammar.fortios.FortiosParser.Up_or_downContext;
 import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
+import org.batfish.grammar.fortios.FortiosParser.Zone_nameContext;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.FortiosConfiguration;
@@ -135,6 +144,8 @@ import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
+import org.batfish.representation.fortios.Zone;
+import org.batfish.representation.fortios.Zone.IntrazoneAction;
 
 /**
  * Given a parse tree, builds a {@link FortiosConfiguration} that has been prepopulated with
@@ -771,6 +782,84 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
   }
 
+  @Override
+  public void enterCsz_edit(Csz_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.zone_name());
+    Zone existing = name.map(_c.getZones()::get).orElse(null);
+    _currentZoneNameValid = name.isPresent();
+    if (existing != null) {
+      // Make a clone to edit
+      _currentZone = SerializationUtils.clone(existing);
+    } else {
+      _currentZone = new Zone(toString(ctx.zone_name().str()), getUUID());
+    }
+  }
+
+  /** Returns message indicating why this zone can't be committed in the CLI, or null if it can */
+  private static @Nullable String getZoneInvalidReason(Zone zone, boolean nameValid) {
+    if (!nameValid) {
+      return "name is invalid";
+    } else if (zone.getInterface().isEmpty()) {
+      return "interface must be set";
+    }
+    return null;
+  }
+
+  @Override
+  public void exitCsz_edit(Csz_editContext ctx) {
+    // If edited item is valid, add/update the entry in VS map
+    String invalidReason = getZoneInvalidReason(_currentZone, _currentZoneNameValid);
+    if (invalidReason == null) { // is valid
+      String name = _currentZone.getName();
+      _c.defineStructure(FortiosStructureType.ZONE, name, ctx);
+      _c.referenceStructure(
+          FortiosStructureType.ZONE,
+          name,
+          FortiosStructureUsage.ZONE_SELF_REF,
+          ctx.start.getLine());
+      _c.getZones().put(name, _currentZone);
+      _c.getRenameableObjects().put(_currentZone.getBatfishUUID(), _currentZone);
+    } else {
+      warn(ctx, String.format("Zone edit block ignored: %s", invalidReason));
+    }
+    _currentZone = null;
+  }
+
+  @Override
+  public void exitCsz_set_description(Csz_set_descriptionContext ctx) {
+    _currentZone.setDescription(toString(ctx.description));
+  }
+
+  @Override
+  public void exitCsz_set_intrazone(Csz_set_intrazoneContext ctx) {
+    _currentZone.setIntrazone(toIntrazoneAction(ctx.value));
+  }
+
+  @Override
+  public void exitCsz_set_interface(Csz_set_interfaceContext ctx) {
+    toZoneInterfaces(ctx.interfaces)
+        .ifPresent(
+            newInterfaces -> {
+              Set<String> ifaces = _currentZone.getInterface();
+              ifaces.clear();
+              ifaces.addAll(newInterfaces);
+            });
+  }
+
+  @Override
+  public void exitCsz_append_interface(Csz_append_interfaceContext ctx) {
+    toZoneInterfaces(ctx.interfaces)
+        .ifPresent(newInterfaces -> _currentZone.getInterface().addAll(newInterfaces));
+  }
+
+  private IntrazoneAction toIntrazoneAction(Allow_or_denyContext ctx) {
+    if (ctx.ALLOW() != null) {
+      return IntrazoneAction.ALLOW;
+    }
+    assert ctx.DENY() != null;
+    return IntrazoneAction.DENY;
+  }
+
   /**
    * Generate a list of service UUIDs for the supplied Service_names context. Returns {@link
    * Optional#empty()} if invalid.
@@ -837,6 +926,50 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       }
     }
     return Optional.of(addressUuidsBuilder.build());
+  }
+
+  private Optional<Set<String>> toZoneInterfaces(Interface_namesContext ctx) {
+    int line = ctx.start.getLine();
+    Map<String, Interface> ifacesMap = _c.getInterfaces();
+    String currentZoneName = _currentZone.getName();
+
+    ImmutableSet<String> usedIfaceNames =
+        _c.getZones().values().stream()
+            .filter(z -> !z.getName().equals(currentZoneName))
+            .map(Zone::getInterface)
+            .flatMap(Collection::stream)
+            .collect(ImmutableSet.toImmutableSet());
+
+    ImmutableSet.Builder<String> ifaceNameBuilder = ImmutableSet.builder();
+    Set<String> newIfaces =
+        ctx.interface_name().stream()
+            .map(n -> toString(n.str()))
+            .collect(ImmutableSet.toImmutableSet());
+
+    for (String name : newIfaces) {
+      if (usedIfaceNames.contains(name)) {
+        warn(
+            ctx,
+            String.format(
+                "Interface %s is already in another zone and cannot be added to zone %s",
+                name, currentZoneName));
+        return Optional.empty();
+      } else if (ifacesMap.containsKey(name)) {
+        ifaceNameBuilder.add(name);
+        _c.referenceStructure(
+            FortiosStructureType.INTERFACE, name, FortiosStructureUsage.ZONE_INTERFACE, line);
+      } else {
+        _c.undefined(
+            FortiosStructureType.INTERFACE, name, FortiosStructureUsage.ZONE_INTERFACE, line);
+        warn(
+            ctx,
+            String.format(
+                "Interface %s is undefined and cannot be added to zone %s", name, currentZoneName));
+        return Optional.empty();
+      }
+    }
+
+    return Optional.of(ifaceNameBuilder.build());
   }
 
   /**
@@ -1022,6 +1155,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Address_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "address name", ADDRESS_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Zone_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "zone name", ZONE_NAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, Policy_nameContext ctx) {
@@ -1341,6 +1478,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * #serviceValid(Service, boolean)}.
    */
   private boolean _currentServiceValid;
+
+  private Zone _currentZone;
+  /** Whether the current zone has an invalid name. */
+  private boolean _currentZoneNameValid;
 
   private final @Nonnull FortiosConfiguration _c;
   private final @Nonnull FortiosCombinedParser _parser;

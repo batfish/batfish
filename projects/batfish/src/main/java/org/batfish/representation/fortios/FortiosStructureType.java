@@ -11,7 +11,8 @@ public enum FortiosStructureType implements StructureType {
   POLICY("policy"),
   SERVICE_GROUP("service group"),
   SERVICE_CUSTOM("service custom"),
-  SERVICE_CUSTOM_OR_SERVICE_GROUP("service custom or service group");
+  SERVICE_CUSTOM_OR_SERVICE_GROUP("service custom or service group"),
+  ZONE("zone");
 
   private final String _description;
 

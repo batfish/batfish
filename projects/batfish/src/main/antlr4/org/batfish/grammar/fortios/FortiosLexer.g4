@@ -66,6 +66,7 @@ ICMPCODE: 'icmpcode';
 ICMPTYPE: 'icmptype';
 INTERFACE: 'interface' -> pushMode(M_Str);
 INTERFACE_SUBNET: 'interface-subnet';
+INTRAZONE: 'intrazone';
 IP: 'ip';
 IPMASK: 'ipmask';
 IPRANGE: 'iprange';
@@ -125,6 +126,7 @@ VRF: 'vrf';
 WEBPROXY: 'webproxy';
 WILDCARD: 'wildcard';
 WL_MESH: 'wl-mesh';
+ZONE: 'zone';
 
 // Other Tokens
 
