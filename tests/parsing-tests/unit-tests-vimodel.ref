@@ -19253,6 +19253,147 @@
           }
         }
       },
+      "arista_community_list_named" : {
+        "configurationFormat" : "ARISTA",
+        "name" : "arista_community_list_named",
+        "communityLists" : {
+          "COMM_LIST_NAME" : {
+            "class" : "org.batfish.datamodel.CommunityList",
+            "invertMatch" : false,
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
+                  "community" : "75:42"
+                }
+              }
+            ],
+            "name" : "COMM_LIST_NAME"
+          }
+        },
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "ARISTA_UNSPECIFIED",
+        "deviceType" : "SWITCH",
+        "routeFilterLists" : {
+          "PFX_LIST" : {
+            "lines" : [
+              {
+                "action" : "PERMIT",
+                "ipWildcard" : "10.0.0.0/15",
+                "lengthRange" : "15-32"
+              }
+            ],
+            "name" : "PFX_LIST"
+          }
+        },
+        "routingPolicies" : {
+          "TO_NEIGHBOR" : {
+            "name" : "TO_NEIGHBOR",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitReject"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnFalse"
+                      }
+                    ]
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~TO_NEIGHBOR~SEQ:30~"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "~TO_NEIGHBOR~SEQ:30~" : {
+            "name" : "~TO_NEIGHBOR~SEQ:30~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetLocalDefaultActionReject"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "PFX_LIST"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                      "name" : "COMM_LIST_NAME"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnLocalDefaultAction"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "arista_community_list_named"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "arista_dhcp_relay" : {
         "configurationFormat" : "ARISTA",
         "name" : "arista_dhcp_relay",
@@ -34436,20 +34577,37 @@
       "community-name-numbers" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "community-name-numbers",
-        "communityLists" : {
+        "communityMatchExprs" : {
           "9999-RRR" : {
-            "class" : "org.batfish.datamodel.CommunityList",
-            "invertMatch" : false,
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityIn",
+            "communitySetExpr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+              "communitySet" : [
+                "9999:8888"
+              ]
+            }
+          }
+        },
+        "communitySetMatchExprs" : {
+          "9999-RRR" : {
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
             "lines" : [
               {
                 "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
-                  "community" : "9999:8888"
+                "communitySetMatchExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll",
+                  "exprs" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.communities.CommunityIs",
+                        "community" : "9999:8888"
+                      }
+                    }
+                  ]
                 }
               }
-            ],
-            "name" : "9999-RRR"
+            ]
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -34470,19 +34628,36 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                  "class" : "org.batfish.datamodel.routing_policy.communities.MatchCommunities",
+                  "communitySetExpr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                  },
+                  "communitySetMatchExpr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference",
                     "name" : "9999-RRR"
                   }
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
-                      "communities" : [
-                        "65535:65282"
+                    "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
+                    "communitySetExpr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
+                      "exprs" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
+                          "initial" : {
+                            "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                          },
+                          "removalCriterion" : {
+                            "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+                          "communitySet" : [
+                            "65535:65282"
+                          ]
+                        }
                       ]
                     }
                   },
@@ -34512,20 +34687,37 @@
       "community-name-numbers_dos" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "community-name-numbers_dos",
-        "communityLists" : {
+        "communityMatchExprs" : {
           "9999-RRR" : {
-            "class" : "org.batfish.datamodel.CommunityList",
-            "invertMatch" : false,
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityIn",
+            "communitySetExpr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+              "communitySet" : [
+                "9999:8888"
+              ]
+            }
+          }
+        },
+        "communitySetMatchExprs" : {
+          "9999-RRR" : {
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
             "lines" : [
               {
                 "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
-                  "community" : "9999:8888"
+                "communitySetMatchExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll",
+                  "exprs" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.communities.CommunityIs",
+                        "community" : "9999:8888"
+                      }
+                    }
+                  ]
                 }
               }
-            ],
-            "name" : "9999-RRR"
+            ]
           }
         },
         "defaultCrossZoneAction" : "PERMIT",
@@ -34546,19 +34738,36 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchCommunitySet",
-                  "expr" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
+                  "class" : "org.batfish.datamodel.routing_policy.communities.MatchCommunities",
+                  "communitySetExpr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                  },
+                  "communitySetMatchExpr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference",
                     "name" : "9999-RRR"
                   }
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet",
-                      "communities" : [
-                        "65535:65282"
+                    "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
+                    "communitySetExpr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
+                      "exprs" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
+                          "initial" : {
+                            "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                          },
+                          "removalCriterion" : {
+                            "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
+                          }
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+                          "communitySet" : [
+                            "65535:65282"
+                          ]
+                        }
                       ]
                     }
                   },
@@ -34574,95 +34783,6 @@
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "community-name-numbers_dos",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default"
-          }
-        }
-      },
-      "community_list_named" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "community_list_named",
-        "communityLists" : {
-          "COMM_LIST_NAME" : {
-            "class" : "org.batfish.datamodel.CommunityList",
-            "invertMatch" : false,
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
-                  "community" : "75:42"
-                }
-              }
-            ],
-            "name" : "COMM_LIST_NAME"
-          }
-        },
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
-        "deviceType" : "SWITCH",
-        "routeFilterLists" : {
-          "PFX_LIST" : {
-            "lines" : [
-              {
-                "action" : "PERMIT",
-                "ipWildcard" : "10.0.0.0/15",
-                "lengthRange" : "15-32"
-              }
-            ],
-            "name" : "PFX_LIST"
-          }
-        },
-        "routingPolicies" : {
-          "TO_NEIGHBOR" : {
-            "name" : "TO_NEIGHBOR",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~TO_NEIGHBOR~30~",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnLocalDefaultAction"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                    "name" : "PFX_LIST"
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                      "name" : "COMM_LIST_NAME"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "community_list_named",
             "logging" : {
               "on" : true
             }

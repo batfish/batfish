@@ -42,6 +42,18 @@
         }
       },
       {
+        "Structure_Type" : "route-map",
+        "Structure_Name" : "TO_NEIGHBOR",
+        "Source_Lines" : {
+          "filename" : "configs/arista_community_list_named",
+          "lines" : [
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      {
         "Structure_Type" : "nat pool",
         "Structure_Name" : "pool2",
         "Source_Lines" : {
@@ -1207,18 +1219,6 @@
           "lines" : [
             4,
             5
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "route-map",
-        "Structure_Name" : "TO_NEIGHBOR",
-        "Source_Lines" : {
-          "filename" : "configs/community_list_named",
-          "lines" : [
-            8,
-            9,
-            10
           ]
         }
       },

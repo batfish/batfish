@@ -13,6 +13,7 @@
         "configs/arista_acl" : "ARISTA",
         "configs/arista_bgp" : "ARISTA",
         "configs/arista_bgp_asn" : "ARISTA",
+        "configs/arista_community_list_named" : "ARISTA",
         "configs/arista_dhcp_relay" : "ARISTA",
         "configs/arista_interface" : "ARISTA",
         "configs/arista_ip_route" : "ARISTA",
@@ -143,7 +144,6 @@
         "configs/cisco_wsma" : "CISCO_IOS",
         "configs/cisco_zone" : "CISCO_IOS",
         "configs/colon_in_vrf" : "CISCO_IOS",
-        "configs/community_list_named" : "CISCO_IOS",
         "configs/community_name_numbers" : "CISCO_IOS",
         "configs/community_name_numbers_dos" : "CISCO_IOS",
         "configs/community_set" : "CISCO_IOS_XR",
@@ -343,6 +343,9 @@
         ],
         "arista_bgp_asn" : [
           "configs/arista_bgp_asn"
+        ],
+        "arista_community_list_named" : [
+          "configs/arista_community_list_named"
         ],
         "arista_dhcp_relay" : [
           "configs/arista_dhcp_relay"
@@ -748,9 +751,6 @@
         ],
         "community-name-numbers_dos" : [
           "configs/community_name_numbers_dos"
-        ],
-        "community_list_named" : [
-          "configs/community_list_named"
         ],
         "community_set" : [
           "configs/community_set"
@@ -1245,6 +1245,7 @@
         "configs/arista_acl" : "PASSED",
         "configs/arista_bgp" : "PASSED",
         "configs/arista_bgp_asn" : "PASSED",
+        "configs/arista_community_list_named" : "PASSED",
         "configs/arista_dhcp_relay" : "PASSED",
         "configs/arista_interface" : "PASSED",
         "configs/arista_ip_route" : "PASSED",
@@ -1375,7 +1376,6 @@
         "configs/cisco_wsma" : "PASSED",
         "configs/cisco_zone" : "PASSED",
         "configs/colon_in_vrf" : "PASSED",
-        "configs/community_list_named" : "PASSED",
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
@@ -1994,6 +1994,74 @@
             "          (eos_rbi_router_id",
             "            ROUTER_ID:'router-id'",
             "            id = IP_ADDRESS:'1.2.3.4'",
+            "            NEWLINE:'\\n')))))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/arista_community_list_named" : {
+          "sentences" : [
+            "(arista_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'arista_community_list_named'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza",
+            "    (ip_prefix_list_stanza",
+            "      IP:'ip'",
+            "      PREFIX_LIST:'prefix-list'",
+            "      name = (variable",
+            "        VARIABLE:'PFX_LIST'  <== mode:M_PrefixList)",
+            "      (ip_prefix_list_tail",
+            "        SEQ:'seq'",
+            "        seqnum = DEC:'10'",
+            "        action = (access_list_action",
+            "          PERMIT:'permit')",
+            "        prefix = IP_PREFIX:'10.0.0.0/15'",
+            "        LE:'le'",
+            "        maxpl = DEC:'32'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (ip_community_list_standard_stanza",
+            "      IP:'ip'",
+            "      COMMUNITY_LIST:'community-list'",
+            "      STANDARD:'standard'",
+            "      name = (variable",
+            "        VARIABLE:'COMM_LIST_NAME')",
+            "      (ip_community_list_standard_tail",
+            "        ala = (access_list_action",
+            "          PERMIT:'permit')",
+            "        (community",
+            "          STANDARD_COMMUNITY:'75:42')",
+            "        NEWLINE:'\\n')))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'",
+            "      name = (variable",
+            "        VARIABLE:'TO_NEIGHBOR'  <== mode:M_RouteMap)",
+            "      rmt = (access_list_action",
+            "        PERMIT:'permit')",
+            "      num = DEC:'30'",
+            "      NEWLINE:'\\n'",
+            "      (rm_stanza",
+            "        (match_rm_stanza",
+            "          MATCH:'match'",
+            "          (match_ip_prefix_list_rm_stanza",
+            "            IP:'ip'",
+            "            ADDRESS:'address'",
+            "            PREFIX_LIST:'prefix-list'",
+            "            (variable",
+            "              VARIABLE:'PFX_LIST'  <== mode:M_PrefixList)",
+            "            NEWLINE:'\\n')))",
+            "      (rm_stanza",
+            "        (rm_set",
+            "          SET:'set'",
+            "          (set_community_list_additive_rm_stanza",
+            "            COMMUNITY:'community'",
+            "            COMMUNITY_LIST:'community-list'",
+            "            (variable",
+            "              VARIABLE:'COMM_LIST_NAME')",
+            "            ADDITIVE:'additive'",
             "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
@@ -40603,77 +40671,6 @@
             "      (null_single",
             "        END:'end'",
             "        NEWLINE:'\\n\\n')))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/community_list_named" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'community_list_named'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza",
-            "    (ip_prefix_list_stanza",
-            "      IP:'ip'",
-            "      PREFIX_LIST:'prefix-list'",
-            "      name = (variable",
-            "        VARIABLE:'PFX_LIST'  <== mode:M_Name)",
-            "      (ip_prefix_list_tail",
-            "        SEQ:'seq'",
-            "        seqnum = (dec",
-            "          UINT8:'10')",
-            "        action = (access_list_action",
-            "          PERMIT:'permit')",
-            "        prefix = IP_PREFIX:'10.0.0.0/15'",
-            "        LE:'le'",
-            "        maxpl = (dec",
-            "          UINT8:'32')",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (ip_community_list_standard_stanza",
-            "      IP:'ip'",
-            "      COMMUNITY_LIST:'community-list'",
-            "      STANDARD:'standard'",
-            "      name = (variable",
-            "        VARIABLE:'COMM_LIST_NAME')",
-            "      (ip_community_list_standard_tail",
-            "        ala = (access_list_action",
-            "          PERMIT:'permit')",
-            "        (community",
-            "          STANDARD_COMMUNITY:'75:42')",
-            "        NEWLINE:'\\n')))",
-            "  (stanza",
-            "    (route_map_stanza",
-            "      ROUTE_MAP:'route-map'",
-            "      name = (variable",
-            "        VARIABLE:'TO_NEIGHBOR'  <== mode:M_RouteMap)",
-            "      rmt = (access_list_action",
-            "        PERMIT:'permit')",
-            "      num = (dec",
-            "        UINT8:'30')",
-            "      NEWLINE:'\\n'",
-            "      (rm_stanza",
-            "        (match_rm_stanza",
-            "          MATCH:'match'",
-            "          (match_ip_prefix_list_rm_stanza",
-            "            IP:'ip'",
-            "            ADDRESS:'address'",
-            "            PREFIX_LIST:'prefix-list'",
-            "            (variable",
-            "              VARIABLE:'PFX_LIST'  <== mode:M_Words)",
-            "            NEWLINE:'\\n'  <== mode:M_Words)))",
-            "      (rm_stanza",
-            "        (set_rm_stanza",
-            "          (set_community_list_additive_rm_stanza",
-            "            SET:'set'",
-            "            COMMUNITY:'community'",
-            "            COMMUNITY_LIST:'community-list'",
-            "            (variable",
-            "              VARIABLE:'COMM_LIST_NAME')",
-            "            ADDITIVE:'additive'",
-            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -79911,6 +79908,7 @@
         "arista_acl" : "PASSED",
         "arista_bgp" : "WARNINGS",
         "arista_bgp_asn" : "PASSED",
+        "arista_community_list_named" : "PASSED",
         "arista_dhcp_relay" : "PASSED",
         "arista_interface" : "PASSED",
         "arista_ip_route" : "PASSED",
@@ -80046,7 +80044,6 @@
         "commset" : "PASSED",
         "community-name-numbers" : "PASSED",
         "community-name-numbers_dos" : "PASSED",
-        "community_list_named" : "PASSED",
         "community_set" : "PASSED",
         "cumulus_nclu" : "WARNINGS",
         "cumulus_nclu_bgp" : "PASSED",
@@ -80232,6 +80229,26 @@
           }
         },
         "configs/arista_bgp_asn" : { },
+        "configs/arista_community_list_named" : {
+          "ipv4 prefix-list" : {
+            "PFX_LIST" : {
+              "definitionLines" : "5",
+              "numReferrers" : 1
+            }
+          },
+          "route-map" : {
+            "TO_NEIGHBOR" : {
+              "definitionLines" : "9-11",
+              "numReferrers" : 0
+            }
+          },
+          "standard community-list" : {
+            "COMM_LIST_NAME" : {
+              "definitionLines" : "7",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/arista_dhcp_relay" : {
           "interface" : {
             "Ethernet0" : {
@@ -81396,26 +81413,6 @@
           }
         },
         "configs/colon_in_vrf" : { },
-        "configs/community_list_named" : {
-          "ipv4 prefix-list" : {
-            "PFX_LIST" : {
-              "definitionLines" : "4",
-              "numReferrers" : 1
-            }
-          },
-          "route-map" : {
-            "TO_NEIGHBOR" : {
-              "definitionLines" : "8-10",
-              "numReferrers" : 0
-            }
-          },
-          "standard community-list" : {
-            "COMM_LIST_NAME" : {
-              "definitionLines" : "6",
-              "numReferrers" : 1
-            }
-          }
-        },
         "configs/community_name_numbers" : {
           "route-map" : {
             "AAA1-BBB-CCC" : {
@@ -84296,6 +84293,9 @@
         "configs/arista_bgp_asn" : [
           "arista_bgp_asn"
         ],
+        "configs/arista_community_list_named" : [
+          "arista_community_list_named"
+        ],
         "configs/arista_dhcp_relay" : [
           "arista_dhcp_relay"
         ],
@@ -84685,9 +84685,6 @@
         ],
         "configs/colon_in_vrf" : [
           "colon_in_vrf"
-        ],
-        "configs/community_list_named" : [
-          "community_list_named"
         ],
         "configs/community_name_numbers" : [
           "community-name-numbers"
@@ -85195,6 +85192,22 @@
             "UNDEFINED_MAP" : {
               "bgp redistribute ospfv3 route-map" : [
                 14
+              ]
+            }
+          }
+        },
+        "configs/arista_community_list_named" : {
+          "community-list" : {
+            "COMM_LIST_NAME" : {
+              "route-map set community additive" : [
+                11
+              ]
+            }
+          },
+          "ipv4 prefix-list" : {
+            "PFX_LIST" : {
+              "route-map match ipv4 prefix-list" : [
+                10
               ]
             }
           }
@@ -87193,22 +87206,6 @@
             "RMT_PBI" : {
               "bgp redistribute connected route-map" : [
                 6
-              ]
-            }
-          }
-        },
-        "configs/community_list_named" : {
-          "community-list" : {
-            "COMM_LIST_NAME" : {
-              "route-map set community additive" : [
-                10
-              ]
-            }
-          },
-          "ipv4 prefix-list" : {
-            "PFX_LIST" : {
-              "route-map match ipv4 prefix-list" : [
-                9
               ]
             }
           }
@@ -91022,6 +91019,7 @@
           }
         },
         "configs/arista_bgp_asn" : { },
+        "configs/arista_community_list_named" : { },
         "configs/arista_dhcp_relay" : { },
         "configs/arista_interface" : {
           "policy-map" : {
@@ -92377,7 +92375,6 @@
             }
           }
         },
-        "configs/community_list_named" : { },
         "configs/community_name_numbers" : { },
         "configs/community_name_numbers_dos" : { },
         "configs/community_set" : { },
@@ -94087,6 +94084,7 @@
         "configs/arista_acl" : "PASSED",
         "configs/arista_bgp" : "PASSED",
         "configs/arista_bgp_asn" : "PASSED",
+        "configs/arista_community_list_named" : "PASSED",
         "configs/arista_dhcp_relay" : "PASSED",
         "configs/arista_interface" : "PASSED",
         "configs/arista_ip_route" : "PASSED",
@@ -94217,7 +94215,6 @@
         "configs/cisco_wsma" : "PASSED",
         "configs/cisco_zone" : "PASSED",
         "configs/colon_in_vrf" : "PASSED",
-        "configs/community_list_named" : "PASSED",
         "configs/community_name_numbers" : "PASSED",
         "configs/community_name_numbers_dos" : "PASSED",
         "configs/community_set" : "PASSED",
