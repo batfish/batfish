@@ -35,6 +35,7 @@ import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.h
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasExportPolicy;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -6476,11 +6477,18 @@ public final class CiscoNxosGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
       Bgpv4Route inRoute =
-          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(3, 3), ExtendedCommunity.target(1L, 1L)))
+              .build();
       Bgpv4Route route = processRouteIn(rp, inRoute);
+      // Standard communities should be replaced, while extended communities should be preserved.
       assertThat(
-          route.getCommunities().getCommunities(),
-          contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+          route,
+          hasCommunities(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              ExtendedCommunity.target(1L, 1L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("set_community_additive");
