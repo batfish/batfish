@@ -53,7 +53,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       extends AbstractRouteBuilder<B, R>
       implements HasWritableAsPath<B, R>,
           HasWritableCommunities<B, R>,
-          HasWritableLocalPreference,
+          HasWritableLocalPreference<B, R>,
           HasWritableOriginType<B, R>,
           HasWritableWeight<B, R> {
 
