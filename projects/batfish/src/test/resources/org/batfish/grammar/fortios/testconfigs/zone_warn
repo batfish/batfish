@@ -1,0 +1,40 @@
+config system global
+    set hostname "zone_warn"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 192.168.10.1 255.255.255.0
+        set type physical
+    next
+    edit "port2"
+        set vdom "root"
+        set ip 192.168.20.1 255.255.255.0
+        set type physical
+    next
+    edit "port3"
+        set vdom "root"
+        set ip 192.168.30.1 255.255.255.0
+        set type physical
+    next
+end
+config system zone
+    # No interface set, block invalid
+    edit "zone1"
+    next
+    edit "this zone name is just too long to us"
+    next
+    edit zone3
+        set intrazone allow
+        # Full line should be thrown out since one of the ifaces is invalid
+        set interface port3 UNDEFINED
+        set interface port1
+        # This is valid, iface already taken but by this zone
+        set interface port1
+    next
+    edit zone4
+        # This is invalid, cannot reuse an interface already in another zone
+        set interface port1
+        append interface port2
+    next
+end

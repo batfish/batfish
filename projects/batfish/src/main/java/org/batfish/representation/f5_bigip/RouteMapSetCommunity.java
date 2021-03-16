@@ -1,5 +1,6 @@
 package org.batfish.representation.f5_bigip;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Set;
@@ -9,8 +10,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /** Route-map transformation that replaces the communities attribute of the route */
@@ -30,11 +37,17 @@ public final class RouteMapSetCommunity implements RouteMapSet {
   @Override
   public @Nonnull Stream<Statement> toStatements(
       Configuration c, F5BigipConfiguration vc, Warnings w) {
-    return Stream.of(
-        new SetCommunity(
-            new LiteralCommunitySet(
+    CommunitySetExpr communities =
+        new LiteralCommunitySet(
+            CommunitySet.of(
                 _communities.stream()
                     .map(StandardCommunity::of)
-                    .collect(ImmutableSet.toImmutableSet()))));
+                    .collect(ImmutableList.toImmutableList())));
+    return Stream.of(
+        new SetCommunities(
+            CommunitySetUnion.of(
+                new CommunitySetDifference(
+                    InputCommunities.instance(), AllStandardCommunities.instance()),
+                communities)));
   }
 }

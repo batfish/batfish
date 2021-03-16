@@ -4,13 +4,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,14 +30,16 @@ public class GeneratedRouteTest {
         .addEqualityGroup(gr.build(), gr.build())
         .addEqualityGroup(gr.setMetric(2L).build())
         .addEqualityGroup(gr.setDiscard(true).build())
-        .addEqualityGroup(gr.setCommunities(ImmutableSet.of(StandardCommunity.of(111L))).build())
+        .addEqualityGroup(gr.setCommunities(CommunitySet.of(StandardCommunity.of(111L))).build())
         .addEqualityGroup(gr.setGenerationPolicy("GENERATE").build())
         .addEqualityGroup(gr.setAttributePolicy("Attribute").build())
         .addEqualityGroup(gr.setAdmin(100).build())
         .addEqualityGroup(gr.setTag(5L).build())
         .addEqualityGroup(gr.setNonRouting(true).build())
         .addEqualityGroup(gr.setNonForwarding(true).build())
-        .addEqualityGroup(new Object())
+        .addEqualityGroup(gr.setLocalPreference(1L).build())
+        .addEqualityGroup(gr.setOriginType(OriginType.IGP).build())
+        .addEqualityGroup(gr.setWeight(1).build())
         .testEquals();
   }
 
@@ -53,10 +55,13 @@ public class GeneratedRouteTest {
             .add(grb.build())
             .add(grb.setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 1L))).build())
             .add(grb.setGenerationPolicy(null).build())
-            .add(grb.setCommunities(ImmutableSet.of(StandardCommunity.of(111L))).build())
+            .add(grb.setCommunities(CommunitySet.of(StandardCommunity.of(111L))).build())
             .add(grb.setDiscard(true).build())
             .add(grb.setAttributePolicy(null).build())
             .add(grb.setTag(5L).build())
+            .add(grb.setLocalPreference(101L).build())
+            .add(grb.setOriginType(OriginType.IGP).build())
+            .add(grb.setWeight(1).build())
             .build();
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {

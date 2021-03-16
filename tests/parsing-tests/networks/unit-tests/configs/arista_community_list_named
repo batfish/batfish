@@ -1,5 +1,6 @@
+!RANCID-CONTENT-TYPE: arista
 !
-hostname community_list_named
+hostname arista_community_list_named
 !
 ip prefix-list PFX_LIST seq 10 permit 10.0.0.0/15 le 32
 !

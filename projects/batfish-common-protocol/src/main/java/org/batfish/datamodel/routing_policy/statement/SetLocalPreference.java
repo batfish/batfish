@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.HasWritableLocalPreference;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
@@ -39,10 +39,14 @@ public final class SetLocalPreference extends Statement {
 
   @Override
   public Result execute(Environment environment) {
+    if (!(environment.getOutputRoute() instanceof HasWritableLocalPreference)) {
+      return new Result();
+    }
     Result result = new Result();
-    BgpRoute.Builder<?, ?> bgpBuilder = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
+    HasWritableLocalPreference<?, ?> outputRoute =
+        (HasWritableLocalPreference<?, ?>) environment.getOutputRoute();
     long localPreference = _localPreference.evaluate(environment);
-    bgpBuilder.setLocalPreference(localPreference);
+    outputRoute.setLocalPreference(localPreference);
     if (environment.getWriteToIntermediateBgpAttributes()) {
       environment.getIntermediateBgpAttributes().setLocalPreference(localPreference);
     }

@@ -1,10 +1,10 @@
 package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertNonBgpRouteToBgpRoute;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -12,9 +12,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
-import java.util.Set;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
@@ -38,9 +36,9 @@ import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -209,15 +207,15 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   public void testCommunitiesInTransformedRoute() {
     for (boolean isIbgp : ImmutableList.of(false, true)) {
       setUpPeers(isIbgp);
-      Set<Community> communities = ImmutableSortedSet.of(StandardCommunity.of(10L));
+      CommunitySet communities = CommunitySet.of(StandardCommunity.of(10L));
       GeneratedRoute aggRoute = _baseAggRouteBuilder.setCommunities(communities).build();
       Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setCommunities(communities).build();
 
       // By default, _fromNeighbor doesn't have sendCommunity set; should see no communities
       Bgpv4Route.Builder transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
       Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
-      assertThat(transformedAggregateRoute.getCommunities(), empty());
-      assertThat(transformedBgpRoute.getCommunities(), empty());
+      assertThat(transformedAggregateRoute, hasCommunities());
+      assertThat(transformedBgpRoute, hasCommunities());
 
       // Now set sendCommunity and make sure communities appear in transformed routes.
       _headNeighbor =
@@ -233,8 +231,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
               .build();
       transformedAggregateRoute = runTransformBgpRoutePreExport(aggRoute);
       transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
-      assertThat(transformedAggregateRoute.getCommunities(), equalTo(communities));
-      assertThat(transformedBgpRoute.getCommunities(), equalTo(communities));
+      assertThat(transformedAggregateRoute, hasCommunities(communities));
+      assertThat(transformedBgpRoute, hasCommunities(communities));
     }
   }
 
@@ -246,8 +244,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   public void testRoutesWithNoAdvertiseSetNotExported() {
     for (boolean isIbgp : ImmutableList.of(false, true)) {
       setUpPeers(isIbgp);
-      Set<Community> noAdvertiseCommunitySet =
-          ImmutableSortedSet.of(StandardCommunity.NO_ADVERTISE);
+      CommunitySet noAdvertiseCommunitySet = CommunitySet.of(StandardCommunity.NO_ADVERTISE);
 
       Bgpv4Route.Builder transformedAggregateRoute =
           runTransformBgpRoutePreExport(
@@ -268,7 +265,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    */
   @Test
   public void testRoutesWithNoExportSetNotExported() {
-    Set<Community> noExportCommunitySet = ImmutableSortedSet.of(StandardCommunity.NO_EXPORT);
+    CommunitySet noExportCommunitySet = CommunitySet.of(StandardCommunity.NO_EXPORT);
 
     {
       // iBGP

@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.communities;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.HasReadableCommunities;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /**
@@ -92,16 +92,15 @@ public final class CommunityContext {
   public static @Nonnull CommunityContext fromEnvironment(Environment environment) {
     CommunitySet inputCommunitySet;
     if (environment.getUseOutputAttributes()
-        && environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
-      BgpRoute.Builder<?, ?> bgpRouteBuilder =
-          (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
-      inputCommunitySet = CommunitySet.of(bgpRouteBuilder.getCommunities());
+        && environment.getOutputRoute() instanceof HasReadableCommunities) {
+      HasReadableCommunities outputRoute = (HasReadableCommunities) environment.getOutputRoute();
+      inputCommunitySet = outputRoute.getCommunities();
     } else if (environment.getReadFromIntermediateBgpAttributes()) {
-      inputCommunitySet =
-          CommunitySet.of(environment.getIntermediateBgpAttributes().getCommunities());
-    } else if (environment.getOriginalRoute() instanceof BgpRoute) {
-      BgpRoute<?, ?> bgpRoute = (BgpRoute<?, ?>) environment.getOriginalRoute();
-      inputCommunitySet = bgpRoute.getCommunities();
+      inputCommunitySet = environment.getIntermediateBgpAttributes().getCommunities();
+    } else if (environment.getOriginalRoute() instanceof HasReadableCommunities) {
+      HasReadableCommunities originalRoute =
+          (HasReadableCommunities) environment.getOriginalRoute();
+      inputCommunitySet = originalRoute.getCommunities();
     } else {
       inputCommunitySet = CommunitySet.empty();
     }

@@ -13,6 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.HasWritableAsPath;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
@@ -51,15 +52,18 @@ public final class PrependAsPath extends Statement {
 
   @Override
   public Result execute(Environment environment) {
+    if (!(environment.getOutputRoute() instanceof HasWritableAsPath<?, ?>)) {
+      return new Result();
+    }
     List<Long> toPrepend = _expr.evaluate(environment);
     List<AsSet> newAsPaths = toPrepend.stream().map(AsSet::of).collect(Collectors.toList());
 
-    BgpRoute.Builder<?, ?> bgpRouteBuilder = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
-    bgpRouteBuilder.setAsPath(
+    HasWritableAsPath<?, ?> outputRoute = (HasWritableAsPath<?, ?>) environment.getOutputRoute();
+    outputRoute.setAsPath(
         AsPath.of(
             ImmutableList.<AsSet>builder()
                 .addAll(newAsPaths)
-                .addAll(bgpRouteBuilder.getAsPath().getAsSets())
+                .addAll(outputRoute.getAsPath().getAsSets())
                 .build()));
 
     if (environment.getWriteToIntermediateBgpAttributes()) {

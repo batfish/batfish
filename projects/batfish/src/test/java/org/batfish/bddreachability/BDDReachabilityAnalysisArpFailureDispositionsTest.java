@@ -46,8 +46,8 @@ import org.junit.rules.TemporaryFolder;
 
 /** Test the dispostions when ARP failures occur. */
 public class BDDReachabilityAnalysisArpFailureDispositionsTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final IpSpaceToBDD DST_TO_BDD = new IpSpaceToBDD(PKT.getDstIp());
+  private final BDDPacket _pkt = new BDDPacket();
+  private final IpSpaceToBDD _dstToBdd = _pkt.getDstIpSpaceToBDD();
   private static final ImmutableSet<FlowDisposition> DISPOSITIONS =
       ImmutableSet.of(DELIVERED_TO_SUBNET, EXITS_NETWORK, INSUFFICIENT_INFO, NEIGHBOR_UNREACHABLE);
 
@@ -75,7 +75,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
   IngressLocation _loc;
 
   private BDD dstIpToBDD(Ip dstIp) {
-    return DST_TO_BDD.toBDD(dstIp);
+    return _dstToBdd.toBDD(dstIp);
   }
 
   private Batfish initBatfish(SortedMap<String, Configuration> configs) throws IOException {
@@ -88,7 +88,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     Batfish batfish = initBatfish(_configs);
     DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
     return new BDDReachabilityAnalysisFactory(
-        PKT,
+        _pkt,
         _configs,
         dataPlane.getForwardingAnalysis(),
         new IpsRoutedOutInterfacesFactory(dataPlane.getFibs()),
@@ -187,7 +187,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
                 NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
                 NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
             .map(this::dstIpToBDD)
-            .reduce(PKT.getFactory().zero(), BDD::or);
+            .reduce(_pkt.getFactory().zero(), BDD::or);
     assertThat(reach, hasEntry(_loc, neighborUnreachableIps));
   }
 
@@ -327,7 +327,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
                 NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
                 NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
             .map(this::dstIpToBDD)
-            .reduce(PKT.getFactory().zero(), BDD::or);
+            .reduce(_pkt.getFactory().zero(), BDD::or);
     assertThat(reach, hasEntry(_loc, exitsNetworkIps));
   }
 
@@ -460,7 +460,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
                 NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
                 NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
             .map(this::dstIpToBDD)
-            .reduce(PKT.getFactory().zero(), BDD::or);
+            .reduce(_pkt.getFactory().zero(), BDD::or);
     assertThat(reach, hasEntry(_loc, exitsNetworkIps));
   }
 

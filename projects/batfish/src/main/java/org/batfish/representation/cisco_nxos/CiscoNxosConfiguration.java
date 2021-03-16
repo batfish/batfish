@@ -139,6 +139,7 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
@@ -3533,7 +3534,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 new SetCommunities(
                     routeMapSetCommunity.getAdditive()
                         ? CommunitySetUnion.of(InputCommunities.instance(), communities)
-                        : communities));
+                        : CommunitySetUnion.of(
+                            new CommunitySetDifference(
+                                InputCommunities.instance(), AllStandardCommunities.instance()),
+                            communities)));
           }
 
           @Override

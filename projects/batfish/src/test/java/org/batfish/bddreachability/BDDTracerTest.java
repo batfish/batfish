@@ -41,8 +41,8 @@ public class BDDTracerTest {
     }
   }
 
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final BDD ONE = PKT.getFactory().one();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDD _one = _pkt.getFactory().one();
 
   private static final StateExpr A = new DummyState("A");
   private static final StateExpr B = new DummyState("B");
@@ -52,11 +52,11 @@ public class BDDTracerTest {
     return new BDDTrace(ImmutableList.copyOf(hops), disposition);
   }
 
-  private static BDDHop hop(StateExpr expr) {
-    return new BDDHop(expr, ONE);
+  private BDDHop hop(StateExpr expr) {
+    return new BDDHop(expr, _one);
   }
 
-  private static BDDHop hop(StateExpr expr, BDD bdd) {
+  private BDDHop hop(StateExpr expr, BDD bdd) {
     return new BDDHop(expr, bdd);
   }
 
@@ -67,7 +67,7 @@ public class BDDTracerTest {
             .put(A, B, IDENTITY)
             .put(B, C, IDENTITY)
             .build();
-    List<BDDTrace> traces = BDDTracer.getTraces(table, A, ONE);
+    List<BDDTrace> traces = BDDTracer.getTraces(table, A, _one);
     assertThat(traces, contains(trace(TERMINATED, hop(A), hop(B), hop(C))));
   }
 
@@ -78,19 +78,19 @@ public class BDDTracerTest {
             .put(A, B, IDENTITY)
             .put(B, A, IDENTITY)
             .build();
-    List<BDDTrace> traces = BDDTracer.getTraces(table, A, ONE);
+    List<BDDTrace> traces = BDDTracer.getTraces(table, A, _one);
     assertThat(traces, contains(trace(LOOPED, hop(A), hop(B), hop(A))));
   }
 
   @Test
   public void testLoopWithConstraint() {
-    BDD dst1 = PKT.getDstIpSpaceToBDD().toBDD(Prefix.parse("128.0.0.0/1"));
+    BDD dst1 = _pkt.getDstIpSpaceToBDD().toBDD(Prefix.parse("128.0.0.0/1"));
     ImmutableTable<StateExpr, StateExpr, Transition> table =
         ImmutableTable.<StateExpr, StateExpr, Transition>builder()
             .put(A, B, IDENTITY)
             .put(B, A, constraint(dst1))
             .build();
-    List<BDDTrace> traces = BDDTracer.getTraces(table, A, ONE);
+    List<BDDTrace> traces = BDDTracer.getTraces(table, A, _one);
     assertThat(
         traces,
         containsInAnyOrder(
@@ -100,14 +100,14 @@ public class BDDTracerTest {
 
   @Test
   public void testBranch() {
-    BDD toB = PKT.getDstIpSpaceToBDD().toBDD(Prefix.parse("0.0.0.0/1"));
-    BDD toC = PKT.getDstIpSpaceToBDD().toBDD(Prefix.parse("128.0.0.0/1"));
+    BDD toB = _pkt.getDstIpSpaceToBDD().toBDD(Prefix.parse("0.0.0.0/1"));
+    BDD toC = _pkt.getDstIpSpaceToBDD().toBDD(Prefix.parse("128.0.0.0/1"));
     ImmutableTable<StateExpr, StateExpr, Transition> table =
         ImmutableTable.<StateExpr, StateExpr, Transition>builder()
             .put(A, B, constraint(toB))
             .put(A, C, constraint(toC))
             .build();
-    List<BDDTrace> traces = BDDTracer.getTraces(table, A, ONE);
+    List<BDDTrace> traces = BDDTracer.getTraces(table, A, _one);
     assertThat(
         traces,
         contains(

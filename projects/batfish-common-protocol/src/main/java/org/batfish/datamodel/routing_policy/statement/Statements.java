@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpRoute.Builder;
+import org.batfish.datamodel.HasWritableAsPath;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -75,9 +76,12 @@ public enum Statements {
 
         case RemovePrivateAs:
           {
-            BgpRoute.Builder<?, ?> bgpRouteBuilder =
-                (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
-            bgpRouteBuilder.setAsPath(bgpRouteBuilder.getAsPath().removePrivateAs());
+            if (!(environment.getOutputRoute() instanceof HasWritableAsPath)) {
+              break;
+            }
+            HasWritableAsPath<?, ?> outputRoute =
+                (HasWritableAsPath<?, ?>) environment.getOutputRoute();
+            outputRoute.setAsPath(outputRoute.getAsPath().removePrivateAs());
             if (environment.getWriteToIntermediateBgpAttributes()) {
               BgpRoute.Builder<?, ?> ir = environment.getIntermediateBgpAttributes();
               ir.setAsPath(ir.getAsPath().removePrivateAs());

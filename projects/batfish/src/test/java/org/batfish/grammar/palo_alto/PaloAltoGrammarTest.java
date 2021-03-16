@@ -280,8 +280,8 @@ import org.junit.rules.TemporaryFolder;
 public final class PaloAltoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
   private static final String SNAPSHOTS_PREFIX = "org/batfish/grammar/palo_alto/snapshots/";
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final IpSpaceToBDD DST = PKT.getDstIpSpaceToBDD();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final IpSpaceToBDD _dst = _pkt.getDstIpSpaceToBDD();
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -385,8 +385,8 @@ public final class PaloAltoGrammarTest {
     return fb.build();
   }
 
-  private static void assertIpSpacesEqual(IpSpace left, IpSpace right) {
-    assertThat(DST.visit(left), equalTo(DST.visit(right)));
+  private void assertIpSpacesEqual(IpSpace left, IpSpace right) {
+    assertThat(_dst.visit(left), equalTo(_dst.visit(right)));
   }
 
   @Test

@@ -39,6 +39,7 @@ import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExpr
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -142,7 +143,6 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.installsDiscard;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
-import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
@@ -243,12 +243,12 @@ import com.google.common.graph.EndpointPair;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
@@ -266,7 +266,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -301,6 +300,7 @@ import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.Line;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
@@ -309,7 +309,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -330,7 +329,6 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.ClassicMetric;
@@ -341,7 +339,6 @@ import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
-import org.batfish.datamodel.matchers.BgpRouteMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpMetricMatchers;
@@ -353,6 +350,7 @@ import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
+import org.batfish.datamodel.matchers.SnmpServerMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -363,10 +361,14 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityContext;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -388,6 +390,8 @@ import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
+import org.batfish.representation.cisco.ExpandedCommunityList;
+import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
@@ -395,6 +399,8 @@ import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtAdditiveLine;
 import org.batfish.representation.cisco.RouteMapSetExtcommunityRtLine;
+import org.batfish.representation.cisco.StandardCommunityList;
+import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
 import org.hamcrest.Matcher;
@@ -3060,8 +3066,10 @@ public final class CiscoGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     /* Confirm community strings are correctly parsed */
-    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("test$#!@")))));
-    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("quoted$#!@")))));
+    assertThat(
+        c, hasDefaultVrf(hasSnmpServer(SnmpServerMatchers.hasCommunities(hasKey("test$#!@")))));
+    assertThat(
+        c, hasDefaultVrf(hasSnmpServer(SnmpServerMatchers.hasCommunities(hasKey("quoted$#!@")))));
 
     /* Confirm ACL is referenced */
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "80", 1));
@@ -3588,99 +3596,211 @@ public final class CiscoGrammarTest {
   }
 
   @Test
-  public void testCommunityListConversion() throws IOException {
-    String testrigName = "community-list-conversion";
-    String iosName = "ios";
-    String eosName = "eos";
-    List<String> configurationNames = ImmutableList.of(iosName, eosName);
+  public void testIpCommunityListExpandedConversion() throws IOException {
+    String hostname = "ios-ip-community-list-expanded";
+    Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
 
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-    Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
+    {
+      // Test CommunityMatchExpr conversion
+      assertThat(c.getCommunityMatchExprs(), hasKeys("cl_test"));
+      CommunityMatchExprEvaluator eval = ctx.getCommunityMatchExprEvaluator();
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
 
-    Configuration iosCommunityListConfig = configurations.get(iosName);
-    Map<String, CommunityList> iosCommunityLists = iosCommunityListConfig.getCommunityLists();
+        // no single community matched by regex _1:1.*2:2_, so deny line is NOP
 
-    Configuration eosCommunityListConfig = configurations.get(eosName);
-    Map<String, CommunityList> eosCommunityLists = eosCommunityListConfig.getCommunityLists();
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        assertFalse(expr.accept(eval, StandardCommunity.of(11, 11)));
 
-    Community iosImpliedStd = communityListToCommunity(iosCommunityLists, "40");
-    String iosRegexImpliedExp = communityListToRegex(iosCommunityLists, "400");
-    Community iosStdAsnn = communityListToCommunity(iosCommunityLists, "std_as_nn");
-    String iosRegexExpAsnn = communityListToRegex(iosCommunityLists, "exp_as_nn");
-    Community iosStdGshut = communityListToCommunity(iosCommunityLists, "std_gshut");
-    String iosRegexExpGshut = communityListToRegex(iosCommunityLists, "exp_gshut");
-    Community iosStdInternet = communityListToCommunity(iosCommunityLists, "std_internet");
-    String iosRegexExpInternet = communityListToRegex(iosCommunityLists, "exp_internet");
-    Community iosStdLocalAs = communityListToCommunity(iosCommunityLists, "std_local_AS");
-    String iosRegexExpLocalAs = communityListToRegex(iosCommunityLists, "exp_local_AS");
-    Community iosStdNoAdv = communityListToCommunity(iosCommunityLists, "std_no_advertise");
-    String iosRegexExpNoAdv = communityListToRegex(iosCommunityLists, "exp_no_advertise");
-    Community iosStdNoExport = communityListToCommunity(iosCommunityLists, "std_no_export");
-    String iosRegexExpNoExport = communityListToRegex(iosCommunityLists, "exp_no_export");
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, StandardCommunity.of(2, 2)));
+      }
+    }
+    {
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
 
-    Community eosStd = communityListToCommunity(eosCommunityLists, "eos_std");
-    String eosRegexExp = communityListToRegex(eosCommunityLists, "eos_exp");
-    Community eosStdGshut = communityListToCommunity(eosCommunityLists, "eos_std_gshut");
-    Community eosStdInternet = communityListToCommunity(eosCommunityLists, "eos_std_internet");
-    Community eosStdLocalAs = communityListToCommunity(eosCommunityLists, "eos_std_local_AS");
-    Community eosStdNoAdv = communityListToCommunity(eosCommunityLists, "eos_std_no_adv");
-    Community eosStdNoExport = communityListToCommunity(eosCommunityLists, "eos_std_no_export");
-    String eosRegexExpMulti = communityListToRegex(eosCommunityLists, "eos_exp_multi");
+        // deny regex _1:1.*2:2_
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
 
-    // check literal communities
-    assertThat(iosImpliedStd, equalTo(StandardCommunity.of(4294967295L)));
-    assertThat(iosStdAsnn, equalTo(StandardCommunity.parse("65535:65535")));
-    assertThat(eosStd, equalTo(StandardCommunity.parse("0:1")));
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+        assertFalse(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
 
-    // check regex communities
-    assertThat(iosRegexImpliedExp, equalTo("4294967295"));
-    assertThat(iosRegexExpAsnn, equalTo("65535:65535"));
-    assertThat(eosRegexExp, equalTo("1"));
-    /*
-     *  TODO: https://github.com/batfish/batfish/issues/1993
-     *  (Should be three regexes: '0:1', '0:2, '0:3')
-     */
-    assertThat(eosRegexExpMulti, equalTo("0:10:20:3"));
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
+    }
+  }
 
-    // Check well known community regexes are generated properly
-    assertThat(iosStdInternet, equalTo(StandardCommunity.INTERNET));
-    assertThat(iosStdNoAdv, equalTo(StandardCommunity.NO_ADVERTISE));
-    assertThat(iosStdNoExport, equalTo(StandardCommunity.NO_EXPORT));
-    assertThat(iosStdGshut, equalTo(StandardCommunity.GRACEFUL_SHUTDOWN));
-    assertThat(iosStdLocalAs, equalTo(StandardCommunity.NO_EXPORT_SUBCONFED));
-    assertThat(eosStdInternet, equalTo(StandardCommunity.INTERNET));
-    assertThat(eosStdNoAdv, equalTo(StandardCommunity.NO_ADVERTISE));
-    assertThat(eosStdNoExport, equalTo(StandardCommunity.NO_EXPORT));
-    assertThat(eosStdGshut, equalTo(StandardCommunity.GRACEFUL_SHUTDOWN));
-    assertThat(eosStdLocalAs, equalTo(StandardCommunity.NO_EXPORT_SUBCONFED));
+  @Test
+  public void testIpCommunityListExpandedExtraction() {
+    String hostname = "ios-ip-community-list-expanded";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
 
-    // make sure well known communities in expanded lists are not actually converted
-    assertThat(iosRegexExpGshut, equalTo("gshut"));
-    assertThat(iosRegexExpInternet, equalTo("internet"));
-    assertThat(iosRegexExpLocalAs, equalTo("local-AS"));
-    assertThat(iosRegexExpNoAdv, equalTo("no-advertise"));
-    assertThat(iosRegexExpNoExport, equalTo("no-export"));
+    assertThat(vc.getExpandedCommunityLists(), hasKeys("cl_test"));
+    {
+      ExpandedCommunityList cl = vc.getExpandedCommunityLists().get("cl_test");
+      Iterator<ExpandedCommunityListLine> lines = cl.getLines().iterator();
+      ExpandedCommunityListLine line;
 
-    // check conjunctions of communities are converted correctly
-    assertThat(
-        ((LiteralCommunityConjunction)
-                communityListToMatchCondition(iosCommunityLists, "std_community"))
-            .getRequiredCommunities(),
-        equalTo(
-            ImmutableSet.of(
-                StandardCommunity.of(1L), StandardCommunity.of(2L), StandardCommunity.of(3L))));
-    assertThat(
-        ((LiteralCommunityConjunction)
-                communityListToMatchCondition(eosCommunityLists, "eos_std_multi"))
-            .getRequiredCommunities(),
-        equalTo(
-            ImmutableSet.of(
-                StandardCommunity.of(1L), StandardCommunity.of(2L), StandardCommunity.of(3L))));
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo("_1:1.*2:2_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_1:1_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_2:2_"));
+
+      assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
+  public void testIpCommunityListStandardConversion() throws IOException {
+    String hostname = "ios-ip-community-list-standard";
+    Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
+
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
+    {
+      // Test CommunityMatchExpr conversion
+      assertThat(c.getCommunityMatchExprs(), hasKeys("cl_values", "cl_test"));
+      CommunityMatchExprEvaluator eval = ctx.getCommunityMatchExprEvaluator();
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_values");
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit internet
+        assertTrue(expr.accept(eval, StandardCommunity.INTERNET));
+        // permit local-AS
+        assertTrue(expr.accept(eval, StandardCommunity.NO_EXPORT_SUBCONFED));
+        // permit no-advertise
+        assertTrue(expr.accept(eval, StandardCommunity.NO_ADVERTISE));
+        // permit no-export
+        assertTrue(expr.accept(eval, StandardCommunity.NO_EXPORT));
+      }
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
+
+        // no single community matched by 1:1 2:2, so deny line is NOP
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit 2:2
+        assertTrue(expr.accept(eval, StandardCommunity.of(2, 2)));
+      }
+    }
+    {
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_values", "cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_values");
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        // permit internet
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.INTERNET)));
+        // permit local-AS
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_EXPORT_SUBCONFED)));
+        // permit no-advertise
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_ADVERTISE)));
+        // permit no-export
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_EXPORT)));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
+
+        // deny 1:1 2:2
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+
+        // permit 2:2
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
+    }
+  }
+
+  @Test
+  public void testIpCommunityListStandardExtraction() {
+    String hostname = "ios-ip-community-list-standard";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+
+    assertThat(vc.getStandardCommunityLists(), hasKeys("cl_values", "cl_test"));
+    {
+      StandardCommunityList cl = vc.getStandardCommunityLists().get("cl_values");
+      assertThat(
+          cl.getLines().stream()
+              .map(StandardCommunityListLine::getCommunities)
+              .map(Iterables::getOnlyElement)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              StandardCommunity.of(4294967295L),
+              StandardCommunity.of(1, 1),
+              StandardCommunity.GRACEFUL_SHUTDOWN,
+              StandardCommunity.INTERNET,
+              StandardCommunity.NO_EXPORT_SUBCONFED,
+              StandardCommunity.NO_ADVERTISE,
+              StandardCommunity.NO_EXPORT));
+    }
+    {
+      StandardCommunityList cl = vc.getStandardCommunityLists().get("cl_test");
+      Iterator<StandardCommunityListLine> lines = cl.getLines().iterator();
+      StandardCommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          line.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(2, 2)));
+
+      assertFalse(lines.hasNext());
+    }
   }
 
   @Test
@@ -3997,30 +4117,6 @@ public final class CiscoGrammarTest {
     assertThat(
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()),
         hasNumReferrers("configs/" + hostname, NAMED_RSA_PUB_KEY, "testrsa", 1));
-  }
-
-  private static org.batfish.datamodel.routing_policy.expr.CommunitySetExpr
-      communityListToMatchCondition(
-          Map<String, CommunityList> communityLists, String communityName) {
-    return communityLists.get(communityName).getLines().get(0).getMatchCondition();
-  }
-
-  private static Community communityListToCommunity(
-      Map<String, CommunityList> communityLists, String communityName) {
-    return Iterables.getOnlyElement(
-        communityLists
-            .get(communityName)
-            .getLines()
-            .get(0)
-            .getMatchCondition()
-            .asLiteralCommunities(null));
-  }
-
-  private static @Nonnull String communityListToRegex(
-      Map<String, CommunityList> communityLists, String communityName) {
-    return ((RegexCommunitySet)
-            communityLists.get(communityName).getLines().get(0).getMatchCondition())
-        .getRegex();
   }
 
   @Test
@@ -5667,21 +5763,21 @@ public final class CiscoGrammarTest {
                 hasPrefix(Prefix.parse("1.1.1.1/32")),
                 hasProtocol(RoutingProtocol.BGP),
                 hasNextHop(NextHopVrf.of("SRC_VRF")),
-                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
+                hasCommunities(ExtendedCommunity.target(65003, 11))));
     Matcher<AbstractRoute> leakedRouteMatcher2220 =
         isBgpv4RouteThat(
             allOf(
                 hasPrefix(Prefix.parse("2.2.2.0/24")),
                 hasProtocol(RoutingProtocol.BGP),
                 hasNextHop(NextHopVrf.of("SRC_VRF")),
-                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
+                hasCommunities(ExtendedCommunity.target(65003, 11))));
     Matcher<AbstractRoute> leakedRouteMatcher3330 =
         isBgpv4RouteThat(
             allOf(
                 hasPrefix(Prefix.parse("3.3.3.0/24")),
                 hasProtocol(RoutingProtocol.BGP),
                 hasNextHop(NextHopVrf.of("SRC_VRF_WITH_EXPORT_MAP")),
-                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
+                hasCommunities(ExtendedCommunity.target(65003, 11))));
     assertThat(
         dstVrfRoutes,
         // 1.1.1.1/32 is denied by import map
@@ -5775,8 +5871,8 @@ public final class CiscoGrammarTest {
       assertTrue(result);
       // old target community should be removed, standard community should be retained
       assertThat(
-          output.getCommunities(),
-          containsInAnyOrder(
+          output,
+          hasCommunities(
               StandardCommunity.of(1L),
               ExtendedCommunity.target(65000, 1),
               ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
@@ -5791,8 +5887,8 @@ public final class CiscoGrammarTest {
       assertTrue(result);
       // all old communities should still be present
       assertThat(
-          output.getCommunities(),
-          containsInAnyOrder(
+          output,
+          hasCommunities(
               StandardCommunity.of(1L),
               ExtendedCommunity.target(99, 99),
               ExtendedCommunity.target(65000, 1),

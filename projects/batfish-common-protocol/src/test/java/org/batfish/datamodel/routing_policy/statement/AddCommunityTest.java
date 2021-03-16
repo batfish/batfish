@@ -1,8 +1,8 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -56,8 +56,6 @@ public class AddCommunityTest {
     // Test sets community on BGP route
     Environment e = Environment.builder(c).setOutputRoute(Bgpv4Route.testBuilder()).build();
     ac.execute(e);
-    assertThat(
-        ((Bgpv4Route.Builder) e.getOutputRoute()).getCommunities(),
-        contains(StandardCommunity.of(1L)));
+    assertThat(((Bgpv4Route.Builder) e.getOutputRoute()), hasCommunities(StandardCommunity.of(1L)));
   }
 }

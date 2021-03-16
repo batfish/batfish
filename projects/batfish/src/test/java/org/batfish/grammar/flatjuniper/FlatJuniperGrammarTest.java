@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
@@ -189,7 +190,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
@@ -773,12 +773,9 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         r1Routes,
         hasItem(
-            allOf(
-                hasPrefix(Prefix.parse("10.20.20.0/23")),
-                hasCommunities(contains(acceptedCommunity)))));
+            allOf(hasPrefix(Prefix.parse("10.20.20.0/23")), hasCommunities(acceptedCommunity))));
     assertThat(
-        r1Routes,
-        hasItem(allOf(hasPrefix(Prefix.parse("10.20.22.0/24")), hasCommunities(empty()))));
+        r1Routes, hasItem(allOf(hasPrefix(Prefix.parse("10.20.22.0/24")), hasCommunities())));
   }
 
   @Test
@@ -1729,7 +1726,7 @@ public final class FlatJuniperGrammarTest {
     /* Make sure the global-address-book address is the only config ipSpace */
     assertThat(c.getIpSpaces().keySet(), containsInAnyOrder(trustedSpaceName));
 
-    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+    IpSpace ipSpace = getOnlyElement(c.getIpSpaces().values());
 
     // It should contain the specific address
     assertThat(ipSpace, containsIp(Ip.parse(trustedIpAddr)));
@@ -1854,7 +1851,7 @@ public final class FlatJuniperGrammarTest {
 
     // It should be the only IpSpace
     assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
-    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+    IpSpace ipSpace = getOnlyElement(c.getIpSpaces().values());
 
     // It should contain the specific address
     assertThat(ipSpace, containsIp(Ip.parse(specificAddr)));
@@ -1903,7 +1900,7 @@ public final class FlatJuniperGrammarTest {
 
     // It should be the only IpSpace
     assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
-    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+    IpSpace ipSpace = getOnlyElement(c.getIpSpaces().values());
 
     // It should contain the specific address
     assertThat(ipSpace, containsIp(Ip.parse(specificAddr)));
@@ -1952,7 +1949,7 @@ public final class FlatJuniperGrammarTest {
 
     // It should be the only IpSpace
     assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
-    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+    IpSpace ipSpace = getOnlyElement(c.getIpSpaces().values());
 
     // It should contain the specific address
     assertThat(ipSpace, containsIp(Ip.parse(specificAddr)));
@@ -2366,10 +2363,10 @@ public final class FlatJuniperGrammarTest {
                 _folder, "org/batfish/grammar/juniper/testconfigs/generated-route-communities")
             .get("generated-route-communities");
     assertThat(
-        config.getDefaultVrf().getGeneratedRoutes().stream()
-            .map(GeneratedRoute::getCommunities)
-            .collect(ImmutableSet.toImmutableSet()),
-        equalTo(ImmutableSet.of(ImmutableSortedSet.of(StandardCommunity.of(65537L)))));
+        getOnlyElement(config.getDefaultVrf().getGeneratedRoutes())
+            .getCommunities()
+            .getCommunities(),
+        contains(StandardCommunity.of(65537L)));
   }
 
   @Test
@@ -2580,11 +2577,10 @@ public final class FlatJuniperGrammarTest {
     If i = (If) policyPreference.getStatements().get(0);
 
     assertThat(i.getTrueStatements(), hasSize(1));
-    assertThat(
-        Iterables.getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
+    assertThat(getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
 
     assertThat(
-        Iterables.getOnlyElement(i.getTrueStatements()),
+        getOnlyElement(i.getTrueStatements()),
         isSetAdministrativeCostThat(hasAdmin(isLiteralIntThat(hasVal(123)))));
   }
 
@@ -5926,7 +5922,7 @@ public final class FlatJuniperGrammarTest {
 
       assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
       VlanReference member =
-          (VlanReference) Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
+          (VlanReference) getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
       assertThat(member.getName(), equalTo("foo"));
     }
     {
@@ -5939,8 +5935,7 @@ public final class FlatJuniperGrammarTest {
       org.batfish.representation.juniper.Interface unit = iface.getUnits().get(unitName);
 
       assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.ACCESS));
-      VlanRange member =
-          (VlanRange) Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
+      VlanRange member = (VlanRange) getOnlyElement(unit.getEthernetSwitching().getVlanMembers());
       assertThat(member.getRange(), equalTo(IntegerSpace.of(2)));
     }
     {
@@ -5988,8 +5983,7 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(unit.getEthernetSwitching().getSwitchportMode(), equalTo(SwitchportMode.TRUNK));
     assertThat(
-        Iterables.getOnlyElement(unit.getEthernetSwitching().getVlanMembers()),
-        instanceOf(AllVlans.class));
+        getOnlyElement(unit.getEthernetSwitching().getVlanMembers()), instanceOf(AllVlans.class));
   }
 
   @Test

@@ -501,7 +501,7 @@ public final class F5BigipStructuredGrammarTest {
                       .build())
               .getBooleanValue());
       Bgpv4Route outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(empty()));
+      assertThat(outputRoute, hasCommunities());
     }
 
     {
@@ -516,7 +516,7 @@ public final class F5BigipStructuredGrammarTest {
                       .build())
               .getBooleanValue());
       Bgpv4Route outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(contains(StandardCommunity.parse("2:2"))));
+      assertThat(outputRoute, hasCommunities(StandardCommunity.parse("2:2")));
     }
 
     {
@@ -583,7 +583,7 @@ public final class F5BigipStructuredGrammarTest {
                       .build())
               .getBooleanValue());
       Bgpv4Route outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(empty()));
+      assertThat(outputRoute, hasCommunities());
     }
 
     {
@@ -598,7 +598,7 @@ public final class F5BigipStructuredGrammarTest {
                       .build())
               .getBooleanValue());
       Bgpv4Route outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(contains(StandardCommunity.parse("2:2"))));
+      assertThat(outputRoute, hasCommunities(StandardCommunity.parse("2:2")));
     }
   }
 
