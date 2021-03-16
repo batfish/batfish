@@ -1,0 +1,60 @@
+config system global
+    set hostname "address_type_switching"
+end
+config firewall address
+    edit "mask-to-range"
+        set subnet 1.2.2.0 1.1.1.255
+        set type iprange
+    next
+    edit "mask-to-wildcard"
+        set subnet 1.2.2.0 1.1.1.255
+        set type wildcard
+    next
+    edit "range-to-mask"
+        set type iprange
+        set start-ip 255.1.1.1
+        set end-ip 255.0.0.0
+        set type ipmask
+    next
+    edit "range-to-wildcard"
+        set type iprange
+        set start-ip 255.1.1.1
+        set end-ip 128.0.255.0
+        set type wildcard
+    next
+    edit "wildcard-to-mask"
+        set type wildcard
+        set wildcard 1.1.1.1 255.255.0.0
+        set type ipmask
+    next
+    edit "wildcard-to-range"
+        set type wildcard
+        set wildcard 1.1.1.1 255.255.0.0
+        set type iprange
+    next
+    # Addresses that start valid but are switched to a type that makes them invalid
+    edit "mask-to-invalid-range"
+        # end-ip can't be 0.0.0.0
+        set subnet 0.0.0.0/0
+        set type iprange
+    next
+    edit "range-to-invalid-mask"
+        set type iprange
+        set start-ip 1.1.1.1
+        set end-ip 2.2.2.2
+        set type ipmask
+    next
+    edit "wildcard-to-invalid-mask"
+        set type wildcard
+        set wildcard 1.1.1.1 255.0.255.0
+        set type ipmask
+    next
+    edit "wildcard-to-invalid-range"
+        # Start with type iprange in order to get a noncanonical wildcard IP
+        set type iprange
+        set start-ip 1.1.1.1
+        set end-ip 0.0.255.255
+        set type wildcard
+        set type iprange
+    next
+end

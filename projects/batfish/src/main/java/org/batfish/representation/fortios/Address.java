@@ -69,14 +69,12 @@ public class Address implements FortiosRenameableObject, Serializable {
       return _ip2;
     }
 
+    /** @see #getIp1 */
     public @Nonnull Ip getIp1Effective() {
       return firstNonNull(_ip1, DEFAULT_IP);
     }
 
-    /**
-     * See {@link #getIp2} for interpretation. Note that for {@link Type#IPRANGE}, end IP must be
-     * explicitly configured, so {@link #getIp2} should be used.
-     */
+    /** @see #getIp2 */
     public @Nonnull Ip getIp2Effective() {
       return firstNonNull(_ip2, DEFAULT_IP);
     }
@@ -126,11 +124,12 @@ public class Address implements FortiosRenameableObject, Serializable {
         return Prefix.create(subnetIp, subnetMask).toIpSpace();
       case IPRANGE:
         Ip startIp = getTypeSpecificFields().getIp1Effective();
-        Ip endIp = getTypeSpecificFields().getIp2();
-        // Throw if end IP is missing; such an address should not have made it through extraction
+        Ip endIp = getTypeSpecificFields().getIp2Effective();
+        // Throw if end IP is zero; such an address should not have made it through extraction.
+        // ("end IP cannot be 0" is the warning the CLI gives when end-ip was not set.)
         checkState(
-            endIp != null,
-            String.format("Cannot convert address %s: end IP must be specified", _name));
+            !endIp.equals(Ip.ZERO),
+            String.format("Cannot convert address %s: end IP cannot be 0", _name));
         // Shouldn't have made it through extraction if end IP > start IP; let range throw if so
         return IpRange.range(startIp, endIp);
       case WILDCARD:

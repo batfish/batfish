@@ -253,6 +253,56 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testAddressTypeSwitchingExtraction() throws IOException {
+    String hostname = "address_type_switching";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Address> addresses = vc.getAddresses();
+    assertThat(
+        addresses,
+        hasKeys(
+            "mask-to-range",
+            "mask-to-wildcard",
+            "range-to-mask",
+            "range-to-wildcard",
+            "wildcard-to-mask",
+            "wildcard-to-range"));
+
+    Address maskToRange = addresses.get("mask-to-range");
+    Address maskToWildcard = addresses.get("mask-to-wildcard");
+    Address rangeToMask = addresses.get("range-to-mask");
+    Address rangeToWildcard = addresses.get("range-to-wildcard");
+    Address wildcardToMask = addresses.get("wildcard-to-mask");
+    Address wildcardToRange = addresses.get("wildcard-to-range");
+
+    // Set subnet 1.2.2.0 1.1.1.255, then set type iprange.
+    assertThat(maskToRange.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.0.0.0")));
+    assertThat(maskToRange.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("1.1.1.255")));
+
+    // Set subnet 1.2.2.0 1.1.1.255, then set type wildcard.
+    assertThat(maskToWildcard.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.0.0.0")));
+    assertThat(maskToWildcard.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("1.1.1.255")));
+
+    // Set start-ip 255.1.1.1 and end-ip 255.0.0.0, then set type ipmask.
+    // Switching type does not canonicalize subnet IP.
+    assertThat(rangeToMask.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("255.1.1.1")));
+    assertThat(rangeToMask.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("255.0.0.0")));
+
+    // Set start-ip 255.1.1.1 and end-ip 128.0.255.0, then set type wildcard.
+    // Switching type does not canonicalize wildcard IP.
+    assertThat(rangeToWildcard.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("255.1.1.1")));
+    assertThat(rangeToWildcard.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("128.0.255.0")));
+
+    // Set wildcard 1.1.1.1 255.255.0.0, then set type ipmask.
+    assertThat(wildcardToMask.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.1.0.0")));
+    assertThat(wildcardToMask.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("255.255.0.0")));
+
+    // Set wildcard 1.1.1.1 255.255.0.0, then set type iprange.
+    assertThat(wildcardToRange.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.1.0.0")));
+    assertThat(wildcardToRange.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("255.255.0.0")));
+  }
+
+  @Test
   public void testAddressWarnings() throws IOException {
     String hostname = "address_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -278,6 +328,7 @@ public final class FortiosGrammarTest {
         (nameType, name) ->
             warningMatchers.add(
                 allOf(hasComment("Illegal value for " + nameType), hasText(containsString(name)))));
+    warningMatchers.add(hasComment("Address edit block ignored: name is invalid"));
 
     // Expect warnings for each undefined reference in the config (in an otherwise legal context)
     warningMatchers.add(hasComment("No interface or zone named undefined_iface"));
@@ -366,6 +417,86 @@ public final class FortiosGrammarTest {
     // Unsupported types
     Stream.of("fqdn", "dynamic", "geography", "interface-subnet", "mac", "undefined-refs")
         .forEach(t -> assertThat(ipSpaces.get(t).accept(SRC_IP_BDD), equalTo(ZERO)));
+  }
+
+  @Test
+  public void testAddressTypeSwitchingConversion() throws IOException {
+    String hostname = "address_type_switching";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings w =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    assertThat(
+        w.getParseWarnings(),
+        containsInAnyOrder(
+            // Set subnet 0.0.0.0/0, then set type iprange
+            hasComment("Address edit block ignored: end-ip cannot be 0"),
+            // Set type iprange, set start-ip to 1.1.1.1 and end-ip to 2.2.2.2, then set type ipmask
+            hasComment("Address edit block ignored: 2.2.2.2 is not a valid subnet mask"),
+            // Set type wildcard, set wildcard 1.1.1.1 255.0.255.0, then set type ipmask
+            hasComment("Address edit block ignored: 255.0.255.0 is not a valid subnet mask"),
+            // Set type iprange, set start-ip to 1.1.1.1 and end-ip to 0.0.255.255, set type
+            // wildcard (non-canonical IP 1.1.1.1 is preserved), set type iprange
+            hasComment("Address edit block ignored: end-ip must be greater than start-ip")));
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    Map<String, IpSpace> ipSpaces = c.getIpSpaces();
+    assertThat(
+        ipSpaces,
+        hasKeys(
+            "mask-to-range",
+            "mask-to-wildcard",
+            "range-to-mask",
+            "range-to-wildcard",
+            "wildcard-to-mask",
+            "wildcard-to-range"));
+
+    IpSpace maskToRange = ipSpaces.get("mask-to-range");
+    IpSpace maskToWildcard = ipSpaces.get("mask-to-wildcard");
+    IpSpace rangeToMask = ipSpaces.get("range-to-mask");
+    IpSpace rangeToWildcard = ipSpaces.get("range-to-wildcard");
+    IpSpace wildcardToMask = ipSpaces.get("wildcard-to-mask");
+    IpSpace wildcardToRange = ipSpaces.get("wildcard-to-range");
+
+    // Set subnet 1.2.2.0 1.1.1.255, then set type iprange.
+    assertThat(
+        maskToRange.accept(SRC_IP_BDD),
+        equalTo(IpRange.range(Ip.parse("1.0.0.0"), Ip.parse("1.1.1.255")).accept(SRC_IP_BDD)));
+
+    // Set subnet 1.2.2.0 1.1.1.255, then set type wildcard.
+    assertThat(
+        maskToWildcard.accept(SRC_IP_BDD),
+        equalTo(
+            IpWildcard.ipWithWildcardMask(Ip.parse("1.0.0.0"), Ip.parse("1.1.1.255").inverted())
+                .toIpSpace()
+                .accept(SRC_IP_BDD)));
+
+    // Set start-ip 255.1.1.1 and end-ip 255.0.0.0, then set type ipmask.
+    assertThat(
+        rangeToMask.accept(SRC_IP_BDD),
+        equalTo(Prefix.parse("255.0.0.0/8").toIpSpace().accept(SRC_IP_BDD)));
+
+    // Set start-ip 255.1.1.1 and end-ip 128.0.255.0, then set type wildcard.
+    assertThat(
+        rangeToWildcard.accept(SRC_IP_BDD),
+        equalTo(
+            IpWildcard.ipWithWildcardMask(Ip.parse("255.1.1.1"), Ip.parse("128.0.255.0").inverted())
+                .toIpSpace()
+                .accept(SRC_IP_BDD)));
+
+    // Set wildcard 1.1.1.1 255.255.0.0, then set type ipmask.
+    assertThat(
+        wildcardToMask.accept(SRC_IP_BDD),
+        equalTo(Prefix.parse("1.1.0.0/16").toIpSpace().accept(SRC_IP_BDD)));
+
+    // Set wildcard 1.1.1.1 255.255.0.0, then set type iprange.
+    assertThat(
+        wildcardToRange.accept(SRC_IP_BDD),
+        equalTo(IpRange.range(Ip.parse("1.1.0.0"), Ip.parse("255.255.0.0")).accept(SRC_IP_BDD)));
   }
 
   @Test
