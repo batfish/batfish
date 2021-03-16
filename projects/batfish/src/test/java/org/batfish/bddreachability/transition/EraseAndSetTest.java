@@ -11,32 +11,32 @@ import org.junit.Test;
 
 /** Tests of {@link EraseAndSet}. */
 public class EraseAndSetTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final BDD ONE = PKT.getFactory().one();
-  private static final BDD ZERO = PKT.getFactory().zero();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDD _one = _pkt.getFactory().one();
+  private final BDD _zero = _pkt.getFactory().zero();
 
-  private static BDD dstIp(String ip) {
-    return PKT.getDstIp().value(Ip.parse(ip).asLong());
+  private BDD dstIp(String ip) {
+    return _pkt.getDstIp().value(Ip.parse(ip).asLong());
   }
 
-  private static BDD srcIp(String ip) {
-    return PKT.getSrcIp().value(Ip.parse(ip).asLong());
+  private BDD srcIp(String ip) {
+    return _pkt.getSrcIp().value(Ip.parse(ip).asLong());
   }
 
   @Test
   public void testEraseAndSet() {
     BDD setBdd = dstIp("1.1.1.1");
-    BDD vars = Arrays.stream(PKT.getDstIp().getBitvec()).reduce(PKT.getFactory().one(), BDD::and);
+    BDD vars = Arrays.stream(_pkt.getDstIp().getBitvec()).reduce(_pkt.getFactory().one(), BDD::and);
     Transition transition = new EraseAndSet(vars, setBdd);
 
-    assertThat(transition.transitForward(ONE), equalTo(setBdd));
-    assertThat(transition.transitBackward(ONE), equalTo(ONE));
+    assertThat(transition.transitForward(_one), equalTo(setBdd));
+    assertThat(transition.transitBackward(_one), equalTo(_one));
 
     assertThat(transition.transitForward(setBdd), equalTo(setBdd));
-    assertThat(transition.transitBackward(setBdd), equalTo(ONE));
+    assertThat(transition.transitBackward(setBdd), equalTo(_one));
 
     assertThat(transition.transitForward(setBdd.not()), equalTo(setBdd));
-    assertThat(transition.transitBackward(setBdd.not()), equalTo(ZERO));
+    assertThat(transition.transitBackward(setBdd.not()), equalTo(_zero));
 
     // more interesting example
     BDD bdd = setBdd.ite(srcIp("5.5.5.5"), srcIp("6.6.6.6"));

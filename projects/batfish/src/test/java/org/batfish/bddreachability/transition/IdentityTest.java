@@ -9,16 +9,16 @@ import org.junit.Test;
 
 /** Tests of {@link Identity}. */
 public class IdentityTest {
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final BDD ONE = PKT.getFactory().one();
-  private static final BDD ZERO = PKT.getFactory().zero();
-
   @Test
   public void testIdentity() {
-    assertThat(Identity.INSTANCE.transitForward(ONE), equalTo(ONE));
-    assertThat(Identity.INSTANCE.transitBackward(ONE), equalTo(ONE));
+    BDDPacket pkt = new BDDPacket();
+    BDD one = pkt.getFactory().one();
+    BDD zero = pkt.getFactory().zero();
 
-    assertThat(Identity.INSTANCE.transitForward(ZERO), equalTo(ZERO));
-    assertThat(Identity.INSTANCE.transitBackward(ZERO), equalTo(ZERO));
+    assertThat(Identity.INSTANCE.transitForward(one), equalTo(one));
+    assertThat(Identity.INSTANCE.transitBackward(one), equalTo(one));
+
+    assertThat(Identity.INSTANCE.transitForward(zero), equalTo(zero));
+    assertThat(Identity.INSTANCE.transitBackward(zero), equalTo(zero));
   }
 }

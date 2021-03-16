@@ -830,9 +830,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsz_edit(Csz_editContext ctx) {
     // If edited item is valid, add/update the entry in VS map
-    String name = _currentZone.getName();
     String invalidReason = getZoneInvalidReason(_currentZone, _currentZoneNameValid);
     if (invalidReason == null) { // is valid
+      String name = _currentZone.getName();
       _c.defineStructure(FortiosStructureType.ZONE, name, ctx);
       _c.referenceStructure(
           FortiosStructureType.ZONE,

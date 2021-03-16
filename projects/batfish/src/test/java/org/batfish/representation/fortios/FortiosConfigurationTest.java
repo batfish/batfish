@@ -21,19 +21,11 @@ import org.junit.Test;
 
 public class FortiosConfigurationTest {
 
-  private static final BddTestbed BDD_TESTBED;
-  private static final BDD ZERO;
-  private static final BDD ONE;
-  private static final IpAccessListToBdd ACL_TO_BDD;
-  private static final HeaderSpaceToBDD HS_TO_BDD;
-
-  static {
-    BDD_TESTBED = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
-    ZERO = BDD_TESTBED.getPkt().getFactory().zero();
-    ONE = BDD_TESTBED.getPkt().getFactory().one();
-    ACL_TO_BDD = BDD_TESTBED.getAclToBdd();
-    HS_TO_BDD = BDD_TESTBED.getHsToBdd();
-  }
+  private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+  private final BDD _zero = _bddTestbed.getPkt().getFactory().zero();
+  private final BDD _one = _bddTestbed.getPkt().getFactory().one();
+  private final IpAccessListToBdd _aclToBdd = _bddTestbed.getAclToBdd();
+  private final HeaderSpaceToBDD _hsToBdd = _bddTestbed.getHsToBdd();
 
   @Test
   public void testToMatchExpr_tcpUdpSctp_defaults() {
@@ -43,14 +35,14 @@ public class FortiosConfigurationTest {
     Service service = new Service(svcName, new BatfishUUID(1));
     Warnings w = new Warnings(true, true, true);
     c.setWarnings(w);
-    assertThat(ACL_TO_BDD.toBdd(c.toMatchExpr(service)), equalTo(ZERO));
+    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service)), equalTo(_zero));
     assertThat(
         w.getRedFlagWarnings(),
         contains(hasText(String.format("Service %s does not match any packets", svcName))));
 
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    assertThat(ACL_TO_BDD.toBdd(c.toMatchExpr(service)), equalTo(ZERO));
+    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service)), equalTo(_zero));
   }
 
   @Test
@@ -59,7 +51,7 @@ public class FortiosConfigurationTest {
     Service service = new Service("name", new BatfishUUID(1));
     service.setTcpPortRangeDst(tcpDstPorts);
     BDD tcp =
-        HS_TO_BDD.toBDD(
+        _hsToBdd.toBDD(
             HeaderSpace.builder()
                 .setIpProtocols(IpProtocol.TCP)
                 .setSrcPorts(DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
@@ -104,7 +96,7 @@ public class FortiosConfigurationTest {
             .setSrcPorts(sctpSrcPorts.getSubRanges())
             .setDstPorts(sctpDstPorts.getSubRanges())
             .build();
-    BDD expected = HS_TO_BDD.toBDD(tcp).or(HS_TO_BDD.toBDD(udp)).or(HS_TO_BDD.toBDD(sctp));
+    BDD expected = _hsToBdd.toBDD(tcp).or(_hsToBdd.toBDD(udp)).or(_hsToBdd.toBDD(sctp));
     assertConvertsWithoutWarnings(service, expected);
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
@@ -116,7 +108,7 @@ public class FortiosConfigurationTest {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP);
     HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).build();
-    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
+    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
@@ -124,7 +116,7 @@ public class FortiosConfigurationTest {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP6);
     HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.IPV6_ICMP).build();
-    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
+    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
@@ -141,7 +133,7 @@ public class FortiosConfigurationTest {
             .setIcmpCodes(icmpCode)
             .setIcmpTypes(icmpType)
             .build();
-    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
+    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
@@ -158,14 +150,14 @@ public class FortiosConfigurationTest {
             .setIcmpCodes(icmpCode)
             .setIcmpTypes(icmpType)
             .build();
-    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
+    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
   public void testToMatchExpr_ip_default() {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.IP);
-    assertConvertsWithoutWarnings(service, ONE);
+    assertConvertsWithoutWarnings(service, _one);
   }
 
   @Test
@@ -176,7 +168,7 @@ public class FortiosConfigurationTest {
     service.setProtocolNumber(protocolNumber);
     HeaderSpace expected =
         HeaderSpace.builder().setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build();
-    assertConvertsWithoutWarnings(service, HS_TO_BDD.toBDD(expected));
+    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
@@ -201,7 +193,7 @@ public class FortiosConfigurationTest {
     Warnings w = new Warnings();
     FortiosConfiguration c = new FortiosConfiguration();
     c.setWarnings(w);
-    assertThat(ACL_TO_BDD.toBdd(c.toMatchExpr(service)), equalTo(expected));
+    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service)), equalTo(expected));
     assertThat(w.getRedFlagWarnings(), empty());
   }
 }

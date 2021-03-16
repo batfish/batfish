@@ -45120,12 +45120,16 @@
                       "class" : "org.batfish.datamodel.GeneratedRoute",
                       "administrativeCost" : 32767,
                       "asPath" : [ ],
+                      "communities" : [ ],
                       "discard" : false,
+                      "localPreference" : 100,
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
                       "nextHopInterface" : "null_interface",
                       "nextHopIp" : "AUTO/NONE(-1l)",
-                      "tag" : -1
+                      "originType" : "incomplete",
+                      "tag" : -1,
+                      "weight" : 0
                     }
                   ],
                   "ipv4UnicastAddressFamily" : {
@@ -45163,12 +45167,16 @@
                       "class" : "org.batfish.datamodel.GeneratedRoute",
                       "administrativeCost" : 32767,
                       "asPath" : [ ],
+                      "communities" : [ ],
                       "discard" : false,
+                      "localPreference" : 100,
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
                       "nextHopInterface" : "null_interface",
                       "nextHopIp" : "AUTO/NONE(-1l)",
-                      "tag" : -1
+                      "originType" : "incomplete",
+                      "tag" : -1,
+                      "weight" : 0
                     }
                   ],
                   "ipv4UnicastAddressFamily" : {

@@ -9,6 +9,7 @@ import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.RoutingProtocol.IBGP;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
@@ -599,7 +600,7 @@ public final class CumulusConversionsTest {
             .getRoutingPolicies()
             .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(route, builder.setNetwork(route.getNetwork()), Direction.OUT));
-    assertThat(builder.getCommunities(), contains(community));
+    assertThat(builder, hasCommunities(community));
   }
 
   /**

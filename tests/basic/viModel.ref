@@ -4628,13 +4628,17 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 200,
                 "asPath" : [ ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "2.128.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               }
             ],
             "bgpProcess" : {
@@ -5978,13 +5982,17 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 200,
                 "asPath" : [ ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:2.128.0.0/16~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "2.128.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               }
             ],
             "bgpProcess" : {

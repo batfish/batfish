@@ -78,9 +78,9 @@ public final class SessionInstrumentationTest {
   private static final String PERMIT_TCP = "permit tcp";
 
   // BDD stuff
-  private static final BDDPacket PKT = new BDDPacket();
-  private static final BDD ONE = PKT.getFactory().one();
-  private static final BDD ZERO = PKT.getFactory().zero();
+  private final BDDPacket _pkt = new BDDPacket();
+  private final BDD _one = _pkt.getFactory().one();
+  private final BDD _zero = _pkt.getFactory().zero();
 
   @Rule public ExpectedException _exception = ExpectedException.none();
 
@@ -135,9 +135,9 @@ public final class SessionInstrumentationTest {
     // Setup last hop manager
     _lastHopMgr =
         new LastHopOutgoingInterfaceManager(
-            PKT,
+            _pkt,
             BDDFiniteDomain.domainsWithSharedVariable(
-                PKT,
+                _pkt,
                 LAST_HOP_VAR_NAME,
                 ImmutableMap.of(
                     NodeInterfacePair.of(FW, FW_I1),
@@ -148,7 +148,7 @@ public final class SessionInstrumentationTest {
 
     // Setup source managers
     {
-      BDDInteger srcVar = PKT.allocateBDDInteger("Source", 3, false);
+      BDDInteger srcVar = _pkt.allocateBDDInteger("Source", 3, false);
       // Setup source tracking for firewall
       _fwSrcMgr = BDDSourceManager.forInterfaces(srcVar, ImmutableSet.of(FW_I1, FAKE_IFACE));
       _invalidSrc = _fwSrcMgr.isValidValue().not();
@@ -159,12 +159,12 @@ public final class SessionInstrumentationTest {
 
       _srcMgrs = ImmutableMap.of(FW, _fwSrcMgr, SOURCE1, _source1SrcMgr);
       _outgoingOriginalFlowFilterMgrs =
-          forNetwork(PKT, ImmutableMap.of(FW, _fw, SOURCE1, _source1), _srcMgrs);
+          forNetwork(_pkt, ImmutableMap.of(FW, _fw, SOURCE1, _source1), _srcMgrs);
     }
 
     // Setup filter BDDs
     {
-      _permitTcpBdd = PKT.getIpProtocol().value(IpProtocol.TCP);
+      _permitTcpBdd = _pkt.getIpProtocol().value(IpProtocol.TCP);
       _filterBdds = ImmutableMap.of(FW, ImmutableMap.of(PERMIT_TCP, () -> _permitTcpBdd));
     }
   }
@@ -175,49 +175,49 @@ public final class SessionInstrumentationTest {
 
   private List<Edge> deliveredToSubnetEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return new SessionInstrumentation(
-            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
+            _pkt, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeInterfaceDeliveredToSubnetEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeAcceptEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return new SessionInstrumentation(
-            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
+            _pkt, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeAcceptEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeDropAclInEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return new SessionInstrumentation(
-            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
+            _pkt, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeDropAclInEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> nodeDropAclOutEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return new SessionInstrumentation(
-            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
+            _pkt, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .nodeDropAclOutEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> fibLookupSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return new SessionInstrumentation(
-            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
+            _pkt, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .fibLookupSessionEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   private List<Edge> preInInterfaceEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return new SessionInstrumentation(
-            PKT, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
+            _pkt, configs(), _srcMgrs, _lastHopMgr, _outgoingOriginalFlowFilterMgrs, _filterBdds)
         .preInInterfaceEdges(sessionInfo)
         .collect(ImmutableList.toImmutableList());
   }
 
   @Test
   public void testNodeAcceptEdges() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD validSrc = _fwSrcMgr.isValidValue();
     BDD lastHop1 = _lastHopMgr.getLastHopOutgoingInterfaceBdd(SOURCE1, SOURCE1_IFACE, FW, FW_I1);
@@ -238,7 +238,7 @@ public final class SessionInstrumentationTest {
                     mapsForward(srcFwI1, sessionHeaders),
                     mapsForward(srcFwI1.and(noLastHop), sessionHeaders),
                     mapsForward(srcFwI1.and(lastHop1), sessionHeaders),
-                    mapsBackward(ONE, validSrc.and(sessionHeaders))))));
+                    mapsBackward(_one, validSrc.and(sessionHeaders))))));
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
@@ -254,13 +254,13 @@ public final class SessionInstrumentationTest {
                     mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd)),
                     mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(_permitTcpBdd)),
                     mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(_permitTcpBdd)),
-                    mapsBackward(ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd))))));
+                    mapsBackward(_one, validSrc.and(sessionHeaders).and(_permitTcpBdd))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // Session has a transformation
     {
-      BDD poolBdd = PKT.getSrcIp().value(10L);
-      Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
+      BDD poolBdd = _pkt.getSrcIp().value(10L);
+      Transition nat = Transitions.eraseAndSet(_pkt.getSrcIp(), poolBdd);
       BDDFirewallSessionTraceInfo natSessionInfo =
           new BDDFirewallSessionTraceInfo(
               FW, ImmutableSet.of(FW_I1), Accept.INSTANCE, sessionHeaders, nat);
@@ -274,14 +274,14 @@ public final class SessionInstrumentationTest {
                       mapsForward(srcFwI1, sessionHeaders.and(poolBdd)),
                       mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(poolBdd)),
                       mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(poolBdd)),
-                      mapsBackward(ONE, validSrc.and(sessionHeaders)),
-                      mapsBackward(poolBdd.not(), ZERO)))));
+                      mapsBackward(_one, validSrc.and(sessionHeaders)),
+                      mapsBackward(poolBdd.not(), _zero)))));
     }
   }
 
   @Test
   public void testFibLookupSessionEdges() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
             FW, ImmutableSet.of(FW_I1), PostNatFibLookup.INSTANCE, sessionHeaders, IDENTITY);
@@ -293,15 +293,15 @@ public final class SessionInstrumentationTest {
                 new PreInInterface(FW, FW_I1),
                 new PostInVrfSession(FW, FW_VRF),
                 allOf(
-                    mapsForward(ONE, sessionHeaders.and(_fwSrcMgr.getSourceInterfaceBDD(FW_I1))),
-                    mapsBackward(ONE, sessionHeaders)))));
+                    mapsForward(_one, sessionHeaders.and(_fwSrcMgr.getSourceInterfaceBDD(FW_I1))),
+                    mapsBackward(_one, sessionHeaders)))));
   }
 
   @Test
   public void testFibLookupSessionEdges_transformation() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
-    BDD poolBdd = PKT.getSrcIp().value(10L);
-    Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
+    BDD poolBdd = _pkt.getSrcIp().value(10L);
+    Transition nat = Transitions.eraseAndSet(_pkt.getSrcIp(), poolBdd);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
             FW, ImmutableSet.of(FW_I1), PostNatFibLookup.INSTANCE, sessionHeaders, nat);
@@ -314,14 +314,14 @@ public final class SessionInstrumentationTest {
                 new PostInVrfSession(FW, FW_VRF),
                 allOf(
                     mapsForward(
-                        ONE,
+                        _one,
                         sessionHeaders.and(poolBdd).and(_fwSrcMgr.getSourceInterfaceBDD(FW_I1))),
-                    mapsBackward(ONE, sessionHeaders)))));
+                    mapsBackward(_one, sessionHeaders)))));
   }
 
   @Test
   public void testFibLookupSessionEdges_inboundSession() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDDFirewallSessionTraceInfo sessionInfo =
         new BDDFirewallSessionTraceInfo(
             FW,
@@ -332,7 +332,8 @@ public final class SessionInstrumentationTest {
 
     BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
     Matcher<Transition> expectedTransition =
-        allOf(mapsForward(ONE, sessionHeaders.and(originating)), mapsBackward(ONE, sessionHeaders));
+        allOf(
+            mapsForward(_one, sessionHeaders.and(originating)), mapsBackward(_one, sessionHeaders));
     assertThat(
         fibLookupSessionEdges(sessionInfo),
         containsInAnyOrder(
@@ -348,9 +349,9 @@ public final class SessionInstrumentationTest {
 
   @Test
   public void testFibLookupSessionEdges_inboundSessionWithTransformation() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
-    BDD poolBdd = PKT.getSrcIp().value(10L);
-    Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
+    BDD poolBdd = _pkt.getSrcIp().value(10L);
+    Transition nat = Transitions.eraseAndSet(_pkt.getSrcIp(), poolBdd);
     BDDFirewallSessionTraceInfo natSessionInfo =
         new BDDFirewallSessionTraceInfo(
             FW,
@@ -362,8 +363,8 @@ public final class SessionInstrumentationTest {
     BDD originating = _fwSrcMgr.getOriginatingFromDeviceBDD();
     Matcher<Transition> expectedTransition =
         allOf(
-            mapsForward(ONE, sessionHeaders.and(originating).and(poolBdd)),
-            mapsBackward(ONE, sessionHeaders));
+            mapsForward(_one, sessionHeaders.and(originating).and(poolBdd)),
+            mapsBackward(_one, sessionHeaders));
     assertThat(
         fibLookupSessionEdges(natSessionInfo),
         containsInAnyOrder(
@@ -379,7 +380,7 @@ public final class SessionInstrumentationTest {
 
   @Test
   public void testPreInInterfaceEdges() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD validSrc = _fwSrcMgr.isValidValue();
     BDD lastHop1 = _lastHopMgr.getLastHopOutgoingInterfaceBdd(SOURCE1, SOURCE1_IFACE, FW, FW_I1);
@@ -408,7 +409,7 @@ public final class SessionInstrumentationTest {
                     mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(source1Iface)),
                     mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(source1Iface)),
                     mapsBackward(source1Iface, validSrc.and(sessionHeaders)),
-                    mapsBackward(fakeIface, ZERO)))));
+                    mapsBackward(fakeIface, _zero)))));
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
@@ -428,7 +429,7 @@ public final class SessionInstrumentationTest {
                     mapsForward(
                         srcFwI1.and(lastHop1), sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
                     mapsBackward(source1Iface, validSrc.and(sessionHeaders).and(_permitTcpBdd)),
-                    mapsBackward(fakeIface, ZERO)))));
+                    mapsBackward(fakeIface, _zero)))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // FW_I1 has an outgoing session ACL
@@ -449,13 +450,13 @@ public final class SessionInstrumentationTest {
                     mapsForward(
                         srcFwI1.and(lastHop1), sessionHeaders.and(_permitTcpBdd).and(source1Iface)),
                     mapsBackward(source1Iface, validSrc.and(sessionHeaders).and(_permitTcpBdd)),
-                    mapsBackward(fakeIface, ZERO)))));
+                    mapsBackward(fakeIface, _zero)))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // Session has a transformation
     {
-      BDD poolBdd = PKT.getSrcIp().value(10L);
-      Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
+      BDD poolBdd = _pkt.getSrcIp().value(10L);
+      Transition nat = Transitions.eraseAndSet(_pkt.getSrcIp(), poolBdd);
       BDDFirewallSessionTraceInfo natSessionInfo =
           new BDDFirewallSessionTraceInfo(
               FW,
@@ -476,14 +477,14 @@ public final class SessionInstrumentationTest {
                       mapsForward(
                           srcFwI1.and(lastHop1), sessionHeaders.and(poolBdd).and(source1Iface)),
                       mapsBackward(source1Iface, validSrc.and(sessionHeaders)),
-                      mapsBackward(source1Iface.and(poolBdd.not()), ZERO),
-                      mapsBackward(fakeIface, ZERO)))));
+                      mapsBackward(source1Iface.and(poolBdd.not()), _zero),
+                      mapsBackward(fakeIface, _zero)))));
     }
   }
 
   @Test
   public void testDeliveredToSubnetEdges() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD lastHop1 = _lastHopMgr.getLastHopOutgoingInterfaceBdd(SOURCE1, SOURCE1_IFACE, FW, FW_I1);
     BDD noLastHop = _lastHopMgr.getNoLastHopOutgoingInterfaceBdd(FW, FW_I1);
@@ -508,7 +509,7 @@ public final class SessionInstrumentationTest {
                     mapsForward(srcFwI1, sessionHeaders.and(srcFwI1)),
                     mapsForward(srcFwI1.and(noLastHop), sessionHeaders.and(srcFwI1).and(noLastHop)),
                     mapsForward(srcFwI1.and(lastHop1), sessionHeaders.and(srcFwI1).and(lastHop1)),
-                    mapsBackward(ONE, sessionHeaders)))));
+                    mapsBackward(_one, sessionHeaders)))));
 
     // FW_I1 has an incoming session ACL
     _fwI1.setFirewallSessionInterfaceInfo(
@@ -521,8 +522,8 @@ public final class SessionInstrumentationTest {
                 new PreInInterface(FW, FW_I1),
                 new NodeInterfaceDeliveredToSubnet(FW, FW_I1),
                 allOf(
-                    mapsForward(ONE, sessionHeaders.and(_permitTcpBdd)),
-                    mapsBackward(ONE, sessionHeaders.and(_permitTcpBdd))))));
+                    mapsForward(_one, sessionHeaders.and(_permitTcpBdd)),
+                    mapsBackward(_one, sessionHeaders.and(_permitTcpBdd))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // FW_I1 has an outgoing session ACL
@@ -536,14 +537,14 @@ public final class SessionInstrumentationTest {
                 new PreInInterface(FW, FW_I1),
                 new NodeInterfaceDeliveredToSubnet(FW, FW_I1),
                 allOf(
-                    mapsForward(ONE, sessionHeaders.and(_permitTcpBdd)),
-                    mapsBackward(ONE, sessionHeaders.and(_permitTcpBdd))))));
+                    mapsForward(_one, sessionHeaders.and(_permitTcpBdd)),
+                    mapsBackward(_one, sessionHeaders.and(_permitTcpBdd))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
 
     // Session has a transformation
     {
-      BDD poolBdd = PKT.getSrcIp().value(10L);
-      Transition nat = Transitions.eraseAndSet(PKT.getSrcIp(), poolBdd);
+      BDD poolBdd = _pkt.getSrcIp().value(10L);
+      Transition nat = Transitions.eraseAndSet(_pkt.getSrcIp(), poolBdd);
       BDDFirewallSessionTraceInfo natSessionInfo =
           new BDDFirewallSessionTraceInfo(
               FW,
@@ -558,16 +559,16 @@ public final class SessionInstrumentationTest {
                   new PreInInterface(FW, FW_I1),
                   new NodeInterfaceDeliveredToSubnet(FW, FW_I1),
                   allOf(
-                      mapsForward(ONE, sessionHeaders.and(poolBdd)),
+                      mapsForward(_one, sessionHeaders.and(poolBdd)),
                       mapsForward(poolBdd.not(), sessionHeaders.and(poolBdd)),
-                      mapsBackward(ONE, sessionHeaders),
-                      mapsBackward(poolBdd.not(), ZERO)))));
+                      mapsBackward(_one, sessionHeaders),
+                      mapsBackward(poolBdd.not(), _zero)))));
     }
   }
 
   @Test
   public void testDropAclInEdges() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD validSrc = _fwSrcMgr.isValidValue();
 
@@ -590,13 +591,13 @@ public final class SessionInstrumentationTest {
                 new NodeDropAclIn(FW),
                 allOf(
                     mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd.not())),
-                    mapsBackward(ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd.not()))))));
+                    mapsBackward(_one, validSrc.and(sessionHeaders).and(_permitTcpBdd.not()))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
   }
 
   @Test
   public void testDropAclOutEdges() {
-    BDD sessionHeaders = PKT.getDstIp().value(10L);
+    BDD sessionHeaders = _pkt.getDstIp().value(10L);
     BDD srcFwI1 = _fwSrcMgr.getSourceInterfaceBDD(FW_I1);
     BDD validSrc = _fwSrcMgr.isValidValue();
 
@@ -623,7 +624,7 @@ public final class SessionInstrumentationTest {
                 new NodeDropAclOut(FW),
                 allOf(
                     mapsForward(srcFwI1, sessionHeaders.and(_permitTcpBdd.not())),
-                    mapsBackward(ONE, validSrc.and(sessionHeaders).and(_permitTcpBdd.not()))))));
+                    mapsBackward(_one, validSrc.and(sessionHeaders).and(_permitTcpBdd.not()))))));
     _fwI1.setFirewallSessionInterfaceInfo(null);
   }
 }

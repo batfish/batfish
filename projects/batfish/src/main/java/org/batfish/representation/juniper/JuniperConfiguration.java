@@ -146,6 +146,8 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -155,7 +157,6 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -166,7 +167,6 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -753,7 +753,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
               return new If(
                   new Conjunction(ImmutableList.of(matchStatic, networkMatcher)),
                   ImmutableList.of(
-                      new SetCommunity(new LiteralCommunitySet(route.getCommunities()))));
+                      new SetCommunities(
+                          new LiteralCommunitySet(CommunitySet.of(route.getCommunities())))));
             })
         .collect(ImmutableList.toImmutableList());
   }
@@ -1489,7 +1490,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (route.getAsPath() != null) {
       newRoute.setAsPath(route.getAsPath());
     }
-    newRoute.setCommunities(route.getCommunities());
+    newRoute.setCommunities(CommunitySet.of(route.getCommunities()));
     newRoute.setMetric(route.getMetric());
     newRoute.setNetwork(route.getPrefix());
     if (route.getTag() != null) {
@@ -1510,7 +1511,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (route.getAsPath() != null) {
       newRoute.setAsPath(route.getAsPath());
     }
-    newRoute.setCommunities(route.getCommunities());
+    newRoute.setCommunities(CommunitySet.of(route.getCommunities()));
     newRoute.setMetric(route.getMetric());
     newRoute.setNetwork(route.getPrefix());
     if (route.getTag() != null) {
