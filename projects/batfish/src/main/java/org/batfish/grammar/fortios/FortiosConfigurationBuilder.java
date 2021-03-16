@@ -98,6 +98,7 @@ import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefixContext;
+import org.batfish.grammar.fortios.FortiosParser.Ip_prefixContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_protocol_numberContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_wildcardContext;
 import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
@@ -270,13 +271,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     } else {
       _currentAddress = new Address(toString(ctx.address_name().str()), getUUID());
     }
-    _currentAddressValid = name.isPresent();
+    _currentAddressNameValid = name.isPresent();
   }
 
   @Override
   public void exitCfa_edit(Cfa_editContext ctx) {
     // If edited address is valid, add/update the entry in VS addresses map.
-    String invalidReason = addressValid(_currentAddress, _currentAddressValid);
+    String invalidReason = addressValid(_currentAddress, _currentAddressNameValid);
     if (invalidReason == null) {
       _c.defineStructure(FortiosStructureType.ADDRESS, _currentAddress.getName(), ctx);
       _c.getAddresses().put(_currentAddress.getName(), _currentAddress);
@@ -367,8 +368,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     Address.Type currentType = _currentAddress.getTypeEffective();
     if (currentType == Address.Type.IPMASK || currentType == Address.Type.INTERFACE_SUBNET) {
       if (ctx.subnet.ip_prefix() != null) {
-        Prefix prefix = Prefix.parse(ctx.subnet.ip_prefix().getText());
+        Prefix prefix = toPrefix(ctx.subnet.ip_prefix());
         _currentAddress.getTypeSpecificFields().setIp1(prefix.getStartIp());
+        // getPrefixWildcard returns a mask where the 1s indicate bits that DON'T matter,
+        // so invert it to get the correct mask for FortiOS
         _currentAddress.getTypeSpecificFields().setIp2(prefix.getPrefixWildcard().inverted());
       } else {
         assert ctx.subnet.ip != null && ctx.subnet.mask != null;
@@ -1031,11 +1034,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private @Nonnull Prefix toPrefix(Ip_address_with_mask_or_prefixContext ctx) {
     if (ctx.ip_prefix() != null) {
-      return Prefix.parse(ctx.ip_prefix().getText());
+      return toPrefix(ctx.ip_prefix());
     } else {
       assert ctx.ip_address() != null && ctx.subnet_mask() != null;
       return Prefix.create(toIp(ctx.ip_address()), toIp(ctx.subnet_mask()));
     }
+  }
+
+  private @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
   }
 
   private @Nonnull Optional<String> toString(
@@ -1266,10 +1273,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Ip.parse(ctx.getText());
   }
 
+  /**
+   * Creates an {@link IpWildcard} from the given wildcard context. Note that the context's mask is
+   * assumed to be in conventional FortiOS format, i.e. 1s indicate bits that matter. The convention
+   * in the {@link IpWildcard} class is the opposite, i.e. 0s in the mask indicate bits that matter.
+   */
   private static @Nonnull IpWildcard toIpWildcard(Ip_wildcardContext ctx) {
     return toIpWildcard(ctx.ip, ctx.mask);
   }
 
+  /**
+   * Creates an {@link IpWildcard} from the given IP and mask. Note that the provided mask is
+   * assumed to be in conventional FortiOS format, i.e. 1s indicate bits that matter. The convention
+   * in the {@link IpWildcard} class is the opposite, i.e. 0s in the mask indicate bits that matter.
+   */
   private static @Nonnull IpWildcard toIpWildcard(Ip_addressContext ip, Ip_addressContext mask) {
     // Invert mask because in FortiOS, bits that are set matter, whereas the opposite is true for
     // the mask in IpWildcard
@@ -1280,13 +1297,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Ip6.parse(ctx.getText());
   }
 
-  /** Returns message indicating why service can't be committed in the CLI, or null if it can */
+  /** Returns message indicating why address can't be committed in the CLI, or null if it can */
   @VisibleForTesting
-  public static @Nullable String addressValid(Address a, boolean valid) {
-    // Indicates whether any invalid lines have gone into the address that would cause the
-    // CLI to pop out of its edit block
-    if (!valid) {
-      return "name is invalid"; // currently, only invalid name can cause valid to be false
+  public static @Nullable String addressValid(Address a, boolean nameValid) {
+    if (!nameValid) {
+      return "name is invalid";
     }
     switch (a.getTypeEffective()) {
       case IPMASK:
@@ -1392,7 +1407,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * This field being true does not guarantee the current address is valid; use {@link
    * #addressValid(Address, boolean)}.
    */
-  private boolean _currentAddressValid;
+  private boolean _currentAddressNameValid;
 
   private Interface _currentInterface;
   private Policy _currentPolicy;
