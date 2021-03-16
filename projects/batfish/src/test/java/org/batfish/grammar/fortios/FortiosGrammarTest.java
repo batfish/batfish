@@ -1090,14 +1090,14 @@ public final class FortiosGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 52)));
+            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 74)));
     assertThat(
         ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service1"));
     // Rename should be part of the definition
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 49)));
+            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 71)));
 
     // Should have references for the renamed structures, even if the renaming happened after the
     // reference

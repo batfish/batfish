@@ -1,6 +1,27 @@
 config system global
     set hostname "rename"
 end
+config firewall service custom
+    edit "old_service1"
+        set tcp-portrange 1
+    next
+    edit "old_service2"
+        set tcp-portrange 2
+    next
+    # Rename before it is ever referenced
+    rename "old_service1" to "new"_service1
+end
+config firewall address
+    edit "old_addr1"
+        set subnet 10.0.1.0 255.255.255.0
+    next
+    edit "old_addr2"
+        set subnet 10.0.2.0 255.255.255.0
+    next
+    # Rename before it is ever referenced
+    rename old_addr1 to new_addr1
+end
+
 config system interface
     edit "port1"
         set vdom "root"
@@ -22,26 +43,6 @@ config system zone
     rename "old_zone1" to "new"_zone1
 end
 
-config firewall service custom
-    edit "old_service1"
-        set tcp-portrange 1
-    next
-    edit "old_service2"
-        set tcp-portrange 2
-    next
-    # Rename before it is ever referenced
-    rename "old_service1" to "new"_service1
-end
-config firewall address
-    edit "old_addr1"
-        set subnet 10.0.1.0 255.255.255.0
-    next
-    edit "old_addr2"
-        set subnet 10.0.2.0 255.255.255.0
-    next
-    # Rename before it is ever referenced
-    rename old_addr1 to new_addr1
-end
 config firewall policy
     edit 0
         set action deny
