@@ -72,8 +72,7 @@ public class CommunityMatchExprToBDDTest {
                 new RegexCommunitySet(":30$"),
                 new LiteralCommunity(StandardCommunity.parse("20:30")),
                 new LiteralCommunity(StandardCommunity.parse("21:30"))),
-            null,
-            true);
+            null);
     BDDRoute bddRoute = new BDDRoute(_g);
     TransferBDD transferBDD = new TransferBDD(_g, _baseConfig, ImmutableList.of());
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);

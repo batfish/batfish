@@ -15,7 +15,6 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/bdd",
-        "//projects/lib/z3",
         "//projects/question",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_google_auto_service_auto_service_annotations",
@@ -27,28 +26,12 @@ java_library(
     ],
 )
 
-java_library(
-    name = "matchers",
-    testonly = True,
-    srcs = glob(
-        [
-            "src/test/java/**/*.java",
-        ],
-        exclude = ["src/test/java/**/*Test.java"],
-    ),
-    deps = [
-        ":minesweeper",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
-)
-
 junit_tests(
     name = "minesweeper_tests",
     size = "small",
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
-    tags = ["z3"],
     runtime_deps = [
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
@@ -61,7 +44,6 @@ junit_tests(
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/bdd",
-        "//projects/lib/z3",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:dk_brics_automaton",

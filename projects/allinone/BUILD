@@ -228,25 +228,6 @@ junit_tests(
     ],
 )
 
-junit_tests(
-    name = "smt_tests",
-    size = "small",
-    srcs = glob([
-        "src/test/java/org/batfish/minesweeper/smt/*.java",
-    ]),
-    tags = ["z3"],
-    deps = [
-        "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/minesweeper",
-        "//projects/minesweeper:matchers",
-        "@maven//:com_google_guava_guava",
-        "@maven//:junit_junit",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
-)
-
 pmd_test(
     name = "pmd",
     lib = ":allinone",

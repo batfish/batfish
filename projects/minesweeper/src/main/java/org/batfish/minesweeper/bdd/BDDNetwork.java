@@ -19,7 +19,6 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.GraphEdge;
 import org.batfish.minesweeper.Protocol;
-import org.batfish.minesweeper.abstraction.InterfacePolicy;
 import org.batfish.minesweeper.utils.MsPair;
 
 public class BDDNetwork {
