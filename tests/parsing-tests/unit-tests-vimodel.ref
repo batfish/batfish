@@ -18878,13 +18878,17 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 200,
                 "asPath" : [ ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:192.154.2.0/24~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "192.154.2.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               }
             ],
             "bgpProcess" : {
@@ -27187,13 +27191,17 @@
                 "administrativeCost" : 200,
                 "asPath" : [ ],
                 "attributePolicy" : "AGGREGATE-MAP",
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:aVrfWithInnerStatements:192.168.0.0/16~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "192.168.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
+                "originType" : "incomplete",
                 "tag" : -1,
+                "weight" : 0,
                 "attributePolicySources" : [
                   "AGGREGATE-MAP"
                 ]
@@ -27220,12 +27228,16 @@
                       "class" : "org.batfish.datamodel.GeneratedRoute",
                       "administrativeCost" : 32767,
                       "asPath" : [ ],
+                      "communities" : [ ],
                       "discard" : false,
+                      "localPreference" : 100,
                       "metric" : 0,
                       "network" : "0.0.0.0/0",
                       "nextHopInterface" : "null_interface",
                       "nextHopIp" : "AUTO/NONE(-1l)",
-                      "tag" : -1
+                      "originType" : "incomplete",
+                      "tag" : -1,
+                      "weight" : 0
                     }
                   ],
                   "ipv4UnicastAddressFamily" : {
@@ -41815,13 +41827,17 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 200,
                 "asPath" : [ ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "1.0.0.0/8",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               }
             ],
             "bgpProcess" : {
@@ -42632,13 +42648,17 @@
                     "class" : "org.batfish.datamodel.GeneratedRoute",
                     "administrativeCost" : 32767,
                     "asPath" : [ ],
+                    "communities" : [ ],
                     "discard" : false,
                     "generationPolicy" : "~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:default:2~",
+                    "localPreference" : 100,
                     "metric" : 0,
                     "network" : "0.0.0.0/0",
                     "nextHopInterface" : "null_interface",
                     "nextHopIp" : "AUTO/NONE(-1l)",
-                    "tag" : -1
+                    "originType" : "incomplete",
+                    "tag" : -1,
+                    "weight" : 0
                   }
                 ],
                 "processId" : "2",
@@ -72425,13 +72445,17 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 130,
                 "asPath" : [ ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:10.0.0.0/8~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "10.0.0.0/8",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
@@ -72442,11 +72466,14 @@
                 ],
                 "discard" : true,
                 "generationPolicy" : "~GENERATED_ROUTE_POLICY:10.0.1.0/24~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "10.0.1.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
@@ -72459,13 +72486,17 @@
                     "confederation" : false
                   }
                 ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:20.0.0.0/8~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "20.0.0.0/8",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
@@ -72479,37 +72510,49 @@
                     "confederation" : false
                   }
                 ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:30.0.0.0/8~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "30.0.0.0/8",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 130,
                 "asPath" : [ ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:35.0.0.0/8~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "35.0.0.0/8",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               },
               {
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 130,
                 "asPath" : [ ],
+                "communities" : [ ],
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_POLICY:40.0.0.0/8~",
+                "localPreference" : 100,
                 "metric" : 0,
                 "network" : "40.0.0.0/8",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "tag" : -1
+                "originType" : "incomplete",
+                "tag" : -1,
+                "weight" : 0
               }
             ]
           }

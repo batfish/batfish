@@ -37,7 +37,6 @@ import static org.batfish.representation.f5_bigip.F5BigipStructureType.ROUTE_MAP
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
@@ -782,7 +781,7 @@ public final class F5BigipImishGrammarTest {
                       .build())
               .getBooleanValue());
       Bgpv4Route outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(empty()));
+      assertThat(outputRoute, hasCommunities());
     }
 
     {
@@ -797,7 +796,7 @@ public final class F5BigipImishGrammarTest {
                       .build())
               .getBooleanValue());
       Bgpv4Route outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(contains(StandardCommunity.parse("2:2"))));
+      assertThat(outputRoute, hasCommunities(StandardCommunity.parse("2:2")));
     }
 
     {
@@ -864,7 +863,7 @@ public final class F5BigipImishGrammarTest {
                       .build())
               .getBooleanValue());
       Bgpv4Route outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(empty()));
+      assertThat(outputRoute, hasCommunities());
     }
 
     {
@@ -879,7 +878,7 @@ public final class F5BigipImishGrammarTest {
                       .build())
               .getBooleanValue());
       Bgpv4Route outputRoute = outputBuilder.build();
-      assertThat(outputRoute, hasCommunities(contains(StandardCommunity.parse("2:2"))));
+      assertThat(outputRoute, hasCommunities(StandardCommunity.parse("2:2")));
     }
   }
 

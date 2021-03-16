@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.HasReadableLocalPreference;
 import org.batfish.datamodel.routing_policy.Environment;
 
 public final class IncrementLocalPreference extends LongExpr {
@@ -40,8 +40,17 @@ public final class IncrementLocalPreference extends LongExpr {
 
   @Override
   public long evaluate(Environment environment) {
-    BgpRoute<?, ?> oldRoute = (BgpRoute) environment.getOriginalRoute();
-    return Math.min(oldRoute.getLocalPreference() + _addend, MAX_LOCAL_PREFERENCE);
+    long oldLocalPreference;
+    if (environment.getReadFromIntermediateBgpAttributes()) {
+      oldLocalPreference = environment.getIntermediateBgpAttributes().getLocalPreference();
+    } else if (!(environment.getOriginalRoute() instanceof HasReadableLocalPreference)) {
+      oldLocalPreference = 0L;
+    } else {
+      HasReadableLocalPreference oldRoute =
+          (HasReadableLocalPreference) environment.getOriginalRoute();
+      oldLocalPreference = oldRoute.getLocalPreference();
+    }
+    return Math.min(oldLocalPreference + _addend, MAX_LOCAL_PREFERENCE);
   }
 
   public long getAddend() {

@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
@@ -687,7 +688,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     EvpnType3Route.Builder type3RouteBuilder = EvpnType3Route.builder();
     type3RouteBuilder.setAdmin(ebgpAdmin);
     type3RouteBuilder.setCommunities(ImmutableSet.of(routeTarget));
-    type3RouteBuilder.setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE);
+    type3RouteBuilder.setLocalPreference(DEFAULT_LOCAL_PREFERENCE);
     // so that this route is not installed back in the main RIB of any of the VRFs
     type3RouteBuilder.setNonRouting(true);
     type3RouteBuilder.setOriginatorIp(routerId);
@@ -1506,7 +1507,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // Override some attributes with local ones, then send it through the import policy.
       long localPreference;
       if (ebgp) {
-        localPreference = Bgpv4Route.DEFAULT_LOCAL_PREFERENCE;
+        localPreference = DEFAULT_LOCAL_PREFERENCE;
       } else {
         localPreference = advert.getLocalPreference();
       }
