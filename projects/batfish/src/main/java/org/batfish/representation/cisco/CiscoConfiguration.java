@@ -25,7 +25,6 @@ import static org.batfish.representation.cisco.CiscoConversions.matchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
-import static org.batfish.representation.cisco.CiscoConversions.toCommunityList;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
@@ -44,11 +43,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -78,7 +79,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -136,6 +136,7 @@ import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.eigrp.EigrpMetric;
@@ -154,6 +155,22 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunityIn;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -2539,15 +2556,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
-    // convert standard/expanded community lists and community-sets to community lists
-    for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      CommunityList cList = toCommunityList(scList);
-      c.getCommunityLists().put(cList.getName(), cList);
-    }
-    for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
-      CommunityList cList = toCommunityList(ecList);
-      c.getCommunityLists().put(cList.getName(), cList);
-    }
+    // convert standard/expanded community lists
+    convertIpCommunityLists(c);
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -3798,5 +3808,97 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, TrackMethod> getTrackingGroups() {
     return _trackingGroups;
+  }
+
+  private void convertIpCommunityLists(Configuration c) {
+    // create CommunitySetMatchExpr for route-map match community
+    _standardCommunityLists.forEach(
+        (name, ipCommunityListStandard) ->
+            c.getCommunitySetMatchExprs()
+                .put(name, toCommunitySetMatchExpr(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach(
+        (name, ipCommunityListExpanded) ->
+            c.getCommunitySetMatchExprs()
+                .put(name, toCommunitySetMatchExpr(ipCommunityListExpanded)));
+
+    // create CommunityMatchExpr for route-map set comm-list delete
+    _standardCommunityLists.forEach(
+        (name, ipCommunityListStandard) ->
+            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach(
+        (name, ipCommunityListExpanded) ->
+            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(ipCommunityListExpanded)));
+  }
+
+  private static CommunitySetMatchExpr toCommunitySetMatchExpr(
+      ExpandedCommunityList ipCommunityListExpanded) {
+    return new CommunitySetAcl(
+        ipCommunityListExpanded.getLines().stream()
+            .map(CiscoConfiguration::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      ExpandedCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            toJavaRegex(line.getRegex())));
+  }
+
+  private static CommunitySetMatchExpr toCommunitySetMatchExpr(
+      StandardCommunityList ipCommunityListStandard) {
+    return new CommunitySetAcl(
+        ipCommunityListStandard.getLines().stream()
+            .map(CiscoConfiguration::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      StandardCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchAll(
+            line.getCommunities().stream()
+                .map(community -> new HasCommunity(new CommunityIs(community)))
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      ExpandedCommunityList ipCommunityListExpanded) {
+    return new CommunityAcl(
+        ipCommunityListExpanded.getLines().stream()
+            .map(CiscoConfiguration::toCommunityAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  private static @Nonnull CommunityAclLine toCommunityAclLine(ExpandedCommunityListLine line) {
+    return new CommunityAclLine(
+        line.getAction(),
+        new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
+  }
+
+  private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      StandardCommunityList ipCommunityListStandard) {
+    Set<Community> whitelist = new HashSet<>();
+    Set<Community> blacklist = new HashSet<>();
+    for (StandardCommunityListLine line : ipCommunityListStandard.getLines()) {
+      if (line.getCommunities().size() != 1) {
+        continue;
+      }
+      Community community = Iterables.getOnlyElement(line.getCommunities());
+      if (line.getAction() == LineAction.PERMIT) {
+        if (!blacklist.contains(community)) {
+          whitelist.add(community);
+        }
+      } else {
+        // DENY
+        if (!whitelist.contains(community)) {
+          blacklist.add(community);
+        }
+      }
+    }
+    return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
   }
 }

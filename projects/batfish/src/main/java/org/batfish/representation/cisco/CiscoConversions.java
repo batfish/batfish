@@ -21,7 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.math.BigInteger;
@@ -47,8 +46,6 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -77,7 +74,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -91,7 +87,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
@@ -114,8 +109,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -536,22 +529,6 @@ public class CiscoConversions {
             .map(IpAsPathAccessListLine::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(pathList.getName(), lines);
-  }
-
-  static CommunityList toCommunityList(ExpandedCommunityList ecList) {
-    List<CommunityListLine> cllList =
-        ecList.getLines().stream()
-            .map(CiscoConversions::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new CommunityList(ecList.getName(), cllList, false);
-  }
-
-  public static CommunityList toCommunityList(StandardCommunityList scList) {
-    List<CommunityListLine> cllList =
-        scList.getLines().stream()
-            .map(CiscoConversions::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new CommunityList(scList.getName(), cllList, false);
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
@@ -1600,23 +1577,6 @@ public class CiscoConversions {
         .setMatchCondition(match)
         .setName(line.getName())
         .build();
-  }
-
-  private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
-    String javaRegex = CiscoConfiguration.toJavaRegex(eclLine.getRegex());
-    return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));
-  }
-
-  private static CommunityListLine toCommunityListLine(StandardCommunityListLine sclLine) {
-    Collection<Long> lineCommunities = sclLine.getCommunities();
-    org.batfish.datamodel.routing_policy.expr.CommunitySetExpr expr =
-        lineCommunities.size() == 1
-            ? new LiteralCommunity(StandardCommunity.of(lineCommunities.iterator().next()))
-            : new LiteralCommunityConjunction(
-                lineCommunities.stream()
-                    .map(StandardCommunity::of)
-                    .collect(ImmutableSet.toImmutableSet()));
-    return new CommunityListLine(sclLine.getAction(), expr);
   }
 
   private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {

@@ -11,8 +11,8 @@
           "AuthenticationKeyChain" : {
             "structureClassName" : "AuthenticationKeyChain"
           },
-          "CommunityList" : {
-            "structureClassName" : "CommunityList"
+          "CommunitySetMatchExpr" : {
+            "structureClassName" : "CommunitySetMatchExpr"
           },
           "IkePhase1Key" : {
             "structureClassName" : "IkePhase1Key"
@@ -254,8 +254,8 @@
           "AuthenticationKeyChain" : {
             "structureClassName" : "AuthenticationKeyChain"
           },
-          "CommunityList" : {
-            "structureClassName" : "CommunityList"
+          "CommunitySetMatchExpr" : {
+            "structureClassName" : "CommunitySetMatchExpr"
           },
           "IkePhase1Key" : {
             "structureClassName" : "IkePhase1Key"
@@ -310,8 +310,8 @@
           "AuthenticationKeyChain" : {
             "structureClassName" : "AuthenticationKeyChain"
           },
-          "CommunityList" : {
-            "structureClassName" : "CommunityList"
+          "CommunitySetMatchExpr" : {
+            "structureClassName" : "CommunitySetMatchExpr"
           },
           "IkePhase1Key" : {
             "structureClassName" : "IkePhase1Key"
@@ -363,8 +363,8 @@
           "AuthenticationKeyChain" : {
             "structureClassName" : "AuthenticationKeyChain"
           },
-          "CommunityList" : {
-            "structureClassName" : "CommunityList"
+          "CommunitySetMatchExpr" : {
+            "structureClassName" : "CommunitySetMatchExpr"
           },
           "IkePhase1Key" : {
             "structureClassName" : "IkePhase1Key"
@@ -417,8 +417,8 @@
           "AuthenticationKeyChain" : {
             "structureClassName" : "AuthenticationKeyChain"
           },
-          "CommunityList" : {
-            "structureClassName" : "CommunityList"
+          "CommunitySetMatchExpr" : {
+            "structureClassName" : "CommunitySetMatchExpr"
           },
           "IkePhase1Key" : {
             "structureClassName" : "IkePhase1Key"
