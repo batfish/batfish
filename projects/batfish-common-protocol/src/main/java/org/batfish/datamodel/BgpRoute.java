@@ -28,7 +28,12 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 /** A generic BGP route containing the common properties among different types of BGP routes */
 @ParametersAreNonnullByDefault
 public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>>
-    extends AbstractRoute {
+    extends AbstractRoute
+    implements HasReadableAsPath,
+        HasReadableCommunities,
+        HasReadableLocalPreference,
+        HasReadableOriginType,
+        HasReadableWeight {
 
   /** Local-preference has a maximum value of u32 max. */
   public static final long MAX_LOCAL_PREFERENCE = (1L << 32) - 1;
@@ -45,7 +50,12 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   /** Builder for {@link BgpRoute} */
   @ParametersAreNonnullByDefault
   public abstract static class Builder<B extends Builder<B, R>, R extends BgpRoute<B, R>>
-      extends AbstractRouteBuilder<B, R> {
+      extends AbstractRouteBuilder<B, R>
+      implements HasWritableAsPath<B, R>,
+          HasWritableCommunities<B, R>,
+          HasWritableLocalPreference,
+          HasWritableOriginType<B, R>,
+          HasWritableWeight<B, R> {
 
     @Nonnull protected AsPath _asPath;
     // Invariant: either immutable or a local copy shielded from external mutations.
@@ -87,6 +97,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     public abstract R build();
 
     @Nonnull
+    @Override
     public AsPath getAsPath() {
       return _asPath;
     }
@@ -99,12 +110,20 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     @Nonnull
-    public Set<Community> getCommunities() {
+    @Override
+    public CommunitySet getCommunities() {
+      return CommunitySet.of(_communities);
+    }
+
+    @Nonnull
+    @Override
+    public Set<Community> getCommunitiesAsSet() {
       return _communities instanceof ImmutableSet
           ? _communities
           : Collections.unmodifiableSet(_communities);
     }
 
+    @Override
     public long getLocalPreference() {
       return _localPreference;
     }
@@ -115,6 +134,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     @Nullable
+    @Override
     public OriginType getOriginType() {
       return _originType;
     }
@@ -128,10 +148,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nonnull
     protected abstract B getThis();
 
+    @Override
     public int getWeight() {
       return _weight;
     }
 
+    @Nonnull
+    @Override
     public B setAsPath(AsPath asPath) {
       _asPath = asPath;
       return getThis();
@@ -162,12 +185,15 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     /** Overwrite communities */
+    @Nonnull
+    @Override
     public B setCommunities(CommunitySet communities) {
       _communities = communities.getCommunities();
       return getThis();
     }
 
     /** Overwrite communities */
+    // TODO: remove in favor of setCommunities(CommunitySet)
     public B setCommunities(Collection<? extends Community> communities) {
       if (communities instanceof ImmutableSet) {
         @SuppressWarnings("unchecked") // cannot be mutated, cast to superclass is safe.
@@ -206,6 +232,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    @Nonnull
+    @Override
     public B setLocalPreference(long localPreference) {
       _localPreference = localPreference;
       return getThis();
@@ -216,6 +244,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    @Nonnull
+    @Override
     public B setOriginType(OriginType originType) {
       _originType = originType;
       return getThis();
@@ -241,6 +271,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    @Nonnull
+    @Override
     public B setWeight(int weight) {
       _weight = weight;
       return getThis();
@@ -327,6 +359,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
   @Nonnull
   @JsonProperty(PROP_AS_PATH)
+  @Override
   public AsPath getAsPath() {
     return _asPath;
   }
@@ -336,8 +369,17 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   /** Return the set of all community attributes */
-  public @Nonnull CommunitySet getCommunities() {
+  @Nonnull
+  @Override
+  public final CommunitySet getCommunities() {
     return _communities;
+  }
+
+  /** Return the set of all community attributes */
+  @Nonnull
+  @Override
+  public final Set<Community> getCommunitiesAsSet() {
+    return _communities.getCommunities();
   }
 
   /** Return only standard community attributes */
@@ -355,6 +397,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)
+  @Override
   public long getLocalPreference() {
     return _localPreference;
   }
@@ -374,6 +417,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
   @Nonnull
   @JsonProperty(PROP_ORIGIN_TYPE)
+  @Override
   public OriginType getOriginType() {
     return _originType;
   }
@@ -404,6 +448,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   @JsonProperty(PROP_WEIGHT)
+  @Override
   public int getWeight() {
     return _weight;
   }

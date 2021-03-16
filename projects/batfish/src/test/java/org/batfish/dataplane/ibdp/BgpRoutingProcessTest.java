@@ -650,7 +650,7 @@ public class BgpRoutingProcessTest {
                     hasPrefix(allowedPrefix),
                     hasNextHop(NextHopVrf.of(otherVrf)),
                     isNonRouting(false),
-                    hasCommunities(contains(routeTarget))))));
+                    hasCommunities(routeTarget)))));
 
     // Process denied prefix, but because no policy is specified, allow it
     _routingProcess.importCrossVrfV4Routes(
@@ -671,7 +671,7 @@ public class BgpRoutingProcessTest {
                     hasPrefix(deniedPrefix),
                     hasNextHop(NextHopVrf.of(otherVrf)),
                     isNonRouting(false),
-                    hasCommunities(contains(routeTarget))))));
+                    hasCommunities(routeTarget)))));
 
     // Finally check that routes imported from other vrfs won't be exported for leaking.
     // Fake up end of round

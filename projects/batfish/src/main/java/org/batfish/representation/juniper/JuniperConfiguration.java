@@ -1489,7 +1489,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (route.getAsPath() != null) {
       newRoute.setAsPath(route.getAsPath());
     }
-    newRoute.setCommunities(route.getCommunities());
+    newRoute.setCommunities(CommunitySet.of(route.getCommunities()));
     newRoute.setMetric(route.getMetric());
     newRoute.setNetwork(route.getPrefix());
     if (route.getTag() != null) {
@@ -1510,7 +1510,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (route.getAsPath() != null) {
       newRoute.setAsPath(route.getAsPath());
     }
-    newRoute.setCommunities(route.getCommunities());
+    newRoute.setCommunities(CommunitySet.of(route.getCommunities()));
     newRoute.setMetric(route.getMetric());
     newRoute.setNetwork(route.getPrefix());
     if (route.getTag() != null) {

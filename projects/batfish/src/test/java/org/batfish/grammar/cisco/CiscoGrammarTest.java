@@ -39,6 +39,7 @@ import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExpr
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -141,7 +142,6 @@ import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
-import static org.batfish.datamodel.matchers.SnmpServerMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasEigrpProcesses;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
@@ -340,7 +340,6 @@ import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpNeighborConfig;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
-import org.batfish.datamodel.matchers.BgpRouteMatchers;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.EigrpMetricMatchers;
@@ -352,6 +351,7 @@ import org.batfish.datamodel.matchers.IpsecPhase2PolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecPhase2ProposalMatchers;
 import org.batfish.datamodel.matchers.Route6FilterListMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
+import org.batfish.datamodel.matchers.SnmpServerMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -3059,8 +3059,10 @@ public final class CiscoGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     /* Confirm community strings are correctly parsed */
-    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("test$#!@")))));
-    assertThat(c, hasDefaultVrf(hasSnmpServer(hasCommunities(hasKey("quoted$#!@")))));
+    assertThat(
+        c, hasDefaultVrf(hasSnmpServer(SnmpServerMatchers.hasCommunities(hasKey("test$#!@")))));
+    assertThat(
+        c, hasDefaultVrf(hasSnmpServer(SnmpServerMatchers.hasCommunities(hasKey("quoted$#!@")))));
 
     /* Confirm ACL is referenced */
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "80", 1));
@@ -5669,21 +5671,21 @@ public final class CiscoGrammarTest {
                 hasPrefix(Prefix.parse("1.1.1.1/32")),
                 hasProtocol(RoutingProtocol.BGP),
                 hasNextHop(NextHopVrf.of("SRC_VRF")),
-                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
+                hasCommunities(ExtendedCommunity.target(65003, 11))));
     Matcher<AbstractRoute> leakedRouteMatcher2220 =
         isBgpv4RouteThat(
             allOf(
                 hasPrefix(Prefix.parse("2.2.2.0/24")),
                 hasProtocol(RoutingProtocol.BGP),
                 hasNextHop(NextHopVrf.of("SRC_VRF")),
-                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
+                hasCommunities(ExtendedCommunity.target(65003, 11))));
     Matcher<AbstractRoute> leakedRouteMatcher3330 =
         isBgpv4RouteThat(
             allOf(
                 hasPrefix(Prefix.parse("3.3.3.0/24")),
                 hasProtocol(RoutingProtocol.BGP),
                 hasNextHop(NextHopVrf.of("SRC_VRF_WITH_EXPORT_MAP")),
-                BgpRouteMatchers.hasCommunities(contains(ExtendedCommunity.target(65003, 11)))));
+                hasCommunities(ExtendedCommunity.target(65003, 11))));
     assertThat(
         dstVrfRoutes,
         // 1.1.1.1/32 is denied by import map
@@ -5777,8 +5779,8 @@ public final class CiscoGrammarTest {
       assertTrue(result);
       // old target community should be removed, standard community should be retained
       assertThat(
-          output.getCommunities(),
-          containsInAnyOrder(
+          output,
+          hasCommunities(
               StandardCommunity.of(1L),
               ExtendedCommunity.target(65000, 1),
               ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
@@ -5793,8 +5795,8 @@ public final class CiscoGrammarTest {
       assertTrue(result);
       // all old communities should still be present
       assertThat(
-          output.getCommunities(),
-          containsInAnyOrder(
+          output,
+          hasCommunities(
               StandardCommunity.of(1L),
               ExtendedCommunity.target(99, 99),
               ExtendedCommunity.target(65000, 1),

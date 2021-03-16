@@ -1,8 +1,13 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.OriginType.IGP;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasAsPath;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasLocalPreference;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -10,6 +15,8 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
@@ -23,6 +30,15 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
 import org.junit.Test;
@@ -123,6 +139,13 @@ public class GeneratedRouteHelperTest {
             .build();
     nf.vrfBuilder().setOwner(c).build();
 
+    GeneratedRoute otherRoute =
+        _builder
+            .setNextHopIp(Ip.parse("5.5.5.5"))
+            .setDiscard(false)
+            .setNetwork(Prefix.parse("7.7.7.0/24"))
+            .build();
+
     RoutingPolicy policy =
         nf.routingPolicyBuilder()
             .setName("always match")
@@ -130,20 +153,28 @@ public class GeneratedRouteHelperTest {
             .setStatements(
                 ImmutableList.of(
                     new SetCommunities(
-                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(1L)))),
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(2L)))),
+                    new PrependAsPath(
+                        new LiteralAsList(
+                            ImmutableList.of(new ExplicitAs(1L), new ExplicitAs(65100L)))),
+                    new SetOrigin(new LiteralOrigin(IGP, null)),
+                    Statements.RemovePrivateAs.toStaticStatement(),
+                    new SetLocalPreference(new LiteralLong(123L)),
+                    new SetWeight(new LiteralInt(456)),
                     Statements.ReturnTrue.toStaticStatement()))
             .build();
 
-    GeneratedRoute otherRoute =
-        _builder
-            .setNextHopIp(Ip.parse("5.5.5.5"))
-            .setDiscard(false)
-            .setNetwork(Prefix.parse("7.7.7.0/24"))
-            .build();
     Builder newRoute =
         GeneratedRouteHelper.activateGeneratedRoute(
             gr, policy, ImmutableSet.of(annotateRoute(otherRoute)));
 
-    assertThat(newRoute.build(), hasCommunities(contains(StandardCommunity.of(1L))));
+    assertThat(
+        newRoute.build(),
+        allOf(
+            hasAsPath(equalTo(AsPath.of(AsSet.of(1L)))),
+            hasCommunities(StandardCommunity.of(2L)),
+            hasOriginType(IGP),
+            hasLocalPreference(123L),
+            hasWeight(456)));
   }
 }

@@ -772,12 +772,9 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         r1Routes,
         hasItem(
-            allOf(
-                hasPrefix(Prefix.parse("10.20.20.0/23")),
-                hasCommunities(contains(acceptedCommunity)))));
+            allOf(hasPrefix(Prefix.parse("10.20.20.0/23")), hasCommunities(acceptedCommunity))));
     assertThat(
-        r1Routes,
-        hasItem(allOf(hasPrefix(Prefix.parse("10.20.22.0/24")), hasCommunities(empty()))));
+        r1Routes, hasItem(allOf(hasPrefix(Prefix.parse("10.20.22.0/24")), hasCommunities())));
   }
 
   @Test

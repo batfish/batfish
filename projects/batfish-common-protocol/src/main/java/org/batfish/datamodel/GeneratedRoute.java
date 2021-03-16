@@ -5,10 +5,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Comparators.lexicographical;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
+import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
+import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
+import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
+import static org.batfish.datamodel.BgpRoute.PROP_ORIGIN_TYPE;
+import static org.batfish.datamodel.BgpRoute.PROP_WEIGHT;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.util.Comparator;
@@ -21,6 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 /**
  * A generated/aggregate IPV4 route.
@@ -29,21 +35,35 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
  * used for determining route preference in RIBs.
  */
 @ParametersAreNonnullByDefault
-public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Builder, GeneratedRoute>
-    implements Comparable<GeneratedRoute> {
+public final class GeneratedRoute extends AbstractRoute
+    implements Comparable<GeneratedRoute>,
+        HasReadableAsPath,
+        HasReadableCommunities,
+        HasReadableLocalPreference,
+        HasReadableOriginType,
+        HasReadableWeight {
   /** A {@link GeneratedRoute} builder */
-  public static class Builder extends BgpAttributesRoute.Builder<Builder, GeneratedRoute> {
+  public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute>
+      implements HasWritableAsPath<Builder, GeneratedRoute>,
+          HasWritableCommunities<Builder, GeneratedRoute>,
+          HasWritableLocalPreference<Builder, GeneratedRoute>,
+          HasWritableOriginType<Builder, GeneratedRoute>,
+          HasWritableWeight<Builder, GeneratedRoute> {
 
-    @Override
-    public Builder newBuilder() {
-      return new Builder();
-    }
-
+    @Nonnull private AsPath _asPath;
     @Nullable private String _attributePolicy;
+    @Nonnull private CommunitySet _communities;
     private boolean _discard;
     @Nullable private String _generationPolicy;
+    private long _localPreference;
+    private long _metric;
+    @Nonnull private OriginType _originType;
+    private int _weight;
 
     private Builder() {
+      _asPath = AsPath.empty();
+      _communities = CommunitySet.empty();
+      _localPreference = BgpRoute.DEFAULT_LOCAL_PREFERENCE;
       _originType = OriginType.INCOMPLETE;
     }
 
@@ -76,18 +96,90 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
       return this;
     }
 
+    @Nonnull
+    @Override
+    public AsPath getAsPath() {
+      return _asPath;
+    }
+
+    @Nonnull
+    @Override
+    public Builder setAsPath(AsPath asPath) {
+      _asPath = asPath;
+      return this;
+    }
+
+    @Nonnull
     public Builder setAttributePolicy(@Nullable String attributePolicy) {
       _attributePolicy = attributePolicy;
       return this;
     }
 
+    @Nonnull
+    @Override
+    public CommunitySet getCommunities() {
+      return _communities;
+    }
+
+    @Nonnull
+    @Override
+    public Set<Community> getCommunitiesAsSet() {
+      return _communities.getCommunities();
+    }
+
+    /** Overwrite communities */
+    @Override
+    public Builder setCommunities(CommunitySet communities) {
+      _communities = communities;
+      return this;
+    }
+
+    @Nonnull
     public Builder setDiscard(boolean discard) {
       _discard = discard;
       return this;
     }
 
+    @Nonnull
     public Builder setGenerationPolicy(@Nullable String generationPolicy) {
       _generationPolicy = generationPolicy;
+      return this;
+    }
+
+    @Override
+    public long getLocalPreference() {
+      return _localPreference;
+    }
+
+    @Nonnull
+    @Override
+    public Builder setLocalPreference(long localPreference) {
+      _localPreference = localPreference;
+      return this;
+    }
+
+    @Nonnull
+    @Override
+    public OriginType getOriginType() {
+      return _originType;
+    }
+
+    @Nonnull
+    @Override
+    public Builder setOriginType(OriginType originType) {
+      _originType = originType;
+      return this;
+    }
+
+    @Override
+    public int getWeight() {
+      return _weight;
+    }
+
+    @Nonnull
+    @Override
+    public Builder setWeight(int weight) {
+      _weight = weight;
       return this;
     }
   }
@@ -102,9 +194,15 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
   private static final String PROP_GENERATION_POLICY = "generationPolicy";
   private static final String PROP_GENERATION_POLICY_SOURCES = "generationPolicySources";
 
+  @Nonnull private final AsPath _asPath;
   @Nullable private final String _attributePolicy;
+  @Nonnull private final CommunitySet _communities;
   private final boolean _discard;
   @Nullable private final String _generationPolicy;
+  private final long _localPreference;
+  private final long _metric;
+  @Nonnull private final OriginType _originType;
+  private final int _weight;
 
   // Non-final fields, not properties of the route. Should not impact equality or hashcode.
   private SortedSet<String> _attributePolicySources;
@@ -119,7 +217,7 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_ATTRIBUTE_POLICY) String attributePolicy,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) Iterable<Community> communities,
+      @Nullable @JsonProperty(PROP_COMMUNITIES) CommunitySet communities,
       @JsonProperty(PROP_DISCARD) boolean discard,
       @Nullable @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
@@ -136,7 +234,7 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         firstNonNull(asPath, AsPath.empty()),
         attributePolicy,
-        ImmutableSet.copyOf(firstNonNull(communities, ImmutableSet.of())),
+        firstNonNull(communities, CommunitySet.empty()),
         discard,
         localPreference,
         generationPolicy,
@@ -154,7 +252,7 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
       NextHop nextHop,
       AsPath asPath,
       @Nullable String attributePolicy,
-      Set<Community> communities,
+      CommunitySet communities,
       boolean discard,
       long localPreference,
       @Nullable String generationPolicy,
@@ -164,24 +262,26 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
       int weight,
       boolean nonForwarding,
       boolean nonRouting) {
-    super(
-        network,
-        nextHop,
-        administrativeCost,
-        asPath,
-        communities,
-        localPreference,
-        metric,
-        originType,
-        tag,
-        weight,
-        nonForwarding,
-        nonRouting);
+    super(network, administrativeCost, tag, nonRouting, nonForwarding);
+    _asPath = asPath;
     _attributePolicy = attributePolicy;
     _attributePolicySources = ImmutableSortedSet.of();
+    _communities = communities;
     _discard = discard;
     _generationPolicy = generationPolicy;
     _generationPolicySources = ImmutableSortedSet.of();
+    _metric = metric;
+    _localPreference = localPreference;
+    _nextHop = nextHop;
+    _originType = originType;
+    _weight = weight;
+  }
+
+  @JsonProperty(PROP_AS_PATH)
+  @Nonnull
+  @Override
+  public AsPath getAsPath() {
+    return _asPath;
   }
 
   /** The name of the policy that sets attributes of this route */
@@ -194,6 +294,20 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
   @JsonProperty(PROP_ATTRIBUTE_POLICY_SOURCES)
   public SortedSet<String> getAttributePolicySources() {
     return _attributePolicySources;
+  }
+
+  /** Return the set of all community attributes */
+  @Nonnull
+  @Override
+  public final CommunitySet getCommunities() {
+    return _communities;
+  }
+
+  /** Return the set of all community attributes */
+  @Nonnull
+  @Override
+  public final Set<Community> getCommunitiesAsSet() {
+    return _communities.getCommunities();
   }
 
   /** Whether this route is route is meant to discard all matching packets */
@@ -214,9 +328,35 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
     return _generationPolicySources;
   }
 
+  @JsonProperty(PROP_LOCAL_PREFERENCE)
+  @Override
+  public long getLocalPreference() {
+    return _localPreference;
+  }
+
+  @JsonIgnore(false)
+  @JsonProperty(PROP_METRIC)
+  @Override
+  public Long getMetric() {
+    return _metric;
+  }
+
+  @JsonProperty(PROP_ORIGIN_TYPE)
+  @Nonnull
+  @Override
+  public OriginType getOriginType() {
+    return _originType;
+  }
+
   @Override
   public RoutingProtocol getProtocol() {
     return RoutingProtocol.AGGREGATE;
+  }
+
+  @JsonProperty(PROP_WEIGHT)
+  @Override
+  public int getWeight() {
+    return _weight;
   }
 
   @Override
@@ -257,6 +397,7 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
           .thenComparing(GeneratedRoute::getDiscard)
           .thenComparing(GeneratedRoute::getGenerationPolicy, nullsLast(String::compareTo));
 
+  @Nonnull
   @Override
   public Builder toBuilder() {
     return new Builder()
@@ -295,7 +436,7 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
         && getNonRouting() == that.getNonRouting()
         && getNonForwarding() == that.getNonForwarding()
         && _discard == that._discard
-        && _med == that._med
+        && _metric == that._metric
         && _tag == that._tag
         && _asPath.equals(that._asPath)
         && Objects.equals(_attributePolicy, that._attributePolicy)
@@ -323,7 +464,7 @@ public final class GeneratedRoute extends BgpAttributesRoute<GeneratedRoute.Buil
               _communities,
               _discard,
               _generationPolicy,
-              _med,
+              _metric,
               _nextHop,
               _localPreference,
               _originType.ordinal(),

@@ -4,11 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpAttributesRoute;
-import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.HasWritableCommunities;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -28,16 +26,14 @@ public final class SetCommunities extends Statement {
 
   @Override
   public @Nonnull Result execute(Environment environment) {
-    if (!(environment.getOutputRoute() instanceof BgpAttributesRoute.Builder)) {
+    if (!(environment.getOutputRoute() instanceof HasWritableCommunities)) {
       return new Result();
     }
     CommunityContext ctx = CommunityContext.fromEnvironment(environment);
-    CommunitySet communitySet = _communitySetExpr.accept(CommunitySetExprEvaluator.instance(), ctx);
-
-    BgpAttributesRoute.Builder<?, ?> bgpRoute =
-        (BgpAttributesRoute.Builder<?, ?>) environment.getOutputRoute();
-    Set<Community> communities = communitySet.getCommunities();
-    bgpRoute.setCommunities(communities);
+    CommunitySet communities = _communitySetExpr.accept(CommunitySetExprEvaluator.instance(), ctx);
+    HasWritableCommunities<?, ?> outputRoute =
+        (HasWritableCommunities<?, ?>) environment.getOutputRoute();
+    outputRoute.setCommunities(communities);
     if (environment.getWriteToIntermediateBgpAttributes()) {
       environment.getIntermediateBgpAttributes().setCommunities(communities);
     }
