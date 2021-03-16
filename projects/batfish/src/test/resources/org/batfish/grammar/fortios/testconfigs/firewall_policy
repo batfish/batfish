@@ -10,6 +10,29 @@ config system interface
         set vdom "root"
         set ip 10.0.2.1/24
     next
+    edit port3
+        set vdom "root"
+        set ip 10.0.3.1/24
+    next
+    edit port4
+        set vdom "root"
+        set ip 10.0.4.1/24
+    next
+    edit port5
+        set vdom "root"
+        set ip 10.0.5.1/24
+    next
+end
+config system zone
+    edit zone1
+        set interface port3
+    next
+    edit zone2
+        set interface port4
+    next
+    edit zone3
+        set interface port5
+    next
 end
 config firewall service custom
     edit "custom_tcp_11"
@@ -72,6 +95,17 @@ config firewall policy
         set action allow
         set srcintf any
         set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service ALL
+    next
+    edit 3
+        set action allow
+        set srcintf zone1 port2 zone3
+        append srcintf zone2
+        set dstintf zone1 zone2
+        set dstintf zone1
+        append dstintf zone3
         set srcaddr all
         set dstaddr all
         set service ALL
