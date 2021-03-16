@@ -105,7 +105,7 @@ config firewall policy
         append srcintf zone2
         set dstintf zone1 zone2
         set dstintf zone1
-        append dstintf port1
+        append dstintf zone3
         set srcaddr all
         set dstaddr all
         set service ALL

@@ -807,8 +807,7 @@ public final class FortiosGrammarTest {
 
     assertThat(policyZone.getSrcIntfZones(), containsInAnyOrder(zone1, zone2, zone3));
     assertThat(policyZone.getSrcIntf(), contains(port2));
-    assertThat(policyZone.getDstIntfZones(), contains(zone1));
-    assertThat(policyZone.getDstIntf(), contains(port1));
+    assertThat(policyZone.getDstIntfZones(), containsInAnyOrder(zone1, zone3));
   }
 
   @Test
