@@ -70,9 +70,39 @@ public final class Policy implements Serializable {
     return _srcIntf;
   }
 
+  /**
+   * Names of zones referenced in srcintf field in this policy. Should be derived from {@link
+   * this#getSrcIntfZoneUUIDs} when finishing building the VS model.
+   */
+  @Nullable
+  public Set<String> getSrcIntfZones() {
+    return _srcIntfZones;
+  }
+
+  /** Set of Batfish-internal UUIDs associated with srcintf zone references. */
+  @Nonnull
+  public Set<BatfishUUID> getSrcIntfZoneUUIDs() {
+    return _srcIntfZoneUuids;
+  }
+
   @Nonnull
   public Set<String> getDstIntf() {
     return _dstIntf;
+  }
+
+  /**
+   * Names of zones referenced in dstintf field in this policy. Should be derived from {@link
+   * this#getDstIntfZoneUUIDs} when finishing building the VS model.
+   */
+  @Nullable
+  public Set<String> getDstIntfZones() {
+    return _dstIntfZones;
+  }
+
+  /** Set of Batfish-internal UUIDs associated with dstintf zone references. */
+  @Nonnull
+  public Set<BatfishUUID> getDstIntfZoneUUIDs() {
+    return _dstIntfZoneUuids;
   }
 
   public @Nullable Set<String> getSrcAddr() {
@@ -125,6 +155,14 @@ public final class Policy implements Serializable {
     _service = ImmutableSet.copyOf(service);
   }
 
+  public void setSrcIntfZones(Set<String> srcintfZones) {
+    _srcIntfZones = ImmutableSet.copyOf(srcintfZones);
+  }
+
+  public void setDstIntfZones(Set<String> dstintfZones) {
+    _dstIntfZones = ImmutableSet.copyOf(dstintfZones);
+  }
+
   public void setSrcAddr(Set<String> srcAddr) {
     _srcAddr = ImmutableSet.copyOf(srcAddr);
   }
@@ -141,6 +179,8 @@ public final class Policy implements Serializable {
     _dstAddr = new HashSet<>();
     _service = new HashSet<>();
 
+    _srcIntfZoneUuids = new HashSet<>();
+    _dstIntfZoneUuids = new HashSet<>();
     _srcAddrUuids = new HashSet<>();
     _dstAddrUuids = new HashSet<>();
     _serviceUuids = new HashSet<>();
@@ -149,7 +189,11 @@ public final class Policy implements Serializable {
   @Nonnull private String _number;
   @Nullable private String _name;
   @Nonnull private final Set<String> _srcIntf;
+  @Nullable private Set<String> _srcIntfZones;
+  @Nonnull private final Set<BatfishUUID> _srcIntfZoneUuids;
   @Nonnull private final Set<String> _dstIntf;
+  @Nullable private Set<String> _dstIntfZones;
+  @Nonnull private final Set<BatfishUUID> _dstIntfZoneUuids;
   @Nullable private Set<String> _srcAddr;
   @Nonnull private final Set<BatfishUUID> _srcAddrUuids;
   @Nullable private Set<String> _dstAddr;

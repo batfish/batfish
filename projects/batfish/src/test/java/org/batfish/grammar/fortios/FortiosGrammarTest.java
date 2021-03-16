@@ -739,11 +739,12 @@ public final class FortiosGrammarTest {
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
     Map<String, Policy> policies = vc.getPolicies();
-    assertThat(policies, hasKeys(contains("0", "4294967294", "1", "2")));
+    assertThat(policies, hasKeys(contains("0", "4294967294", "1", "2", "3")));
     Policy policyDisable = policies.get("0");
     Policy policyDeny = policies.get("4294967294");
     Policy policyAllow = policies.get("1");
     Policy policyAny = policies.get("2");
+    Policy policyZone = policies.get("3");
 
     Map<String, Service> services = vc.getServices();
     String service11 = "custom_tcp_11";
@@ -760,7 +761,14 @@ public final class FortiosGrammarTest {
     Map<String, Interface> interfaces = vc.getInterfaces();
     String port1 = "port1";
     String port2 = "port2";
-    assertThat(interfaces, hasKeys(containsInAnyOrder(port1, port2)));
+    String port3 = "port3";
+    String port4 = "port4";
+    assertThat(interfaces, hasKeys(containsInAnyOrder(port1, port2, port3, port4)));
+
+    Map<String, Zone> zones = vc.getZones();
+    String zone1 = "zone1";
+    String zone2 = "zone2";
+    assertThat(zones, hasKeys(containsInAnyOrder(zone1, zone2)));
 
     assertThat(policyDisable.getAction(), equalTo(Action.DENY));
     assertThat(policyDisable.getStatus(), equalTo(Policy.Status.DISABLE));
@@ -797,6 +805,9 @@ public final class FortiosGrammarTest {
     assertThat(policyAny.getDstAddr(), contains(addrAll));
     assertThat(policyAny.getSrcIntf(), contains(Policy.ANY_INTERFACE));
     assertThat(policyAny.getDstIntf(), contains(Policy.ANY_INTERFACE));
+
+    assertThat(policyZone.getSrcIntfZones(), containsInAnyOrder("zone1", "zone2"));
+    assertThat(policyZone.getDstIntfZones(), containsInAnyOrder("zone1", "zone2"));
   }
 
   @Test
@@ -810,14 +821,18 @@ public final class FortiosGrammarTest {
     String denyName = computeViPolicyName("longest allowed firewall policy nam", "4294967294");
     String allowName = computeViPolicyName("Permit Custom TCP Traffic", "1");
     String anyName = computeViPolicyName(null, "2");
+    String zonePolicyName = computeViPolicyName(null, "3");
     assertThat(
         acls,
         hasKeys(
             denyName,
             allowName,
             anyName,
+            zonePolicyName,
             computeOutgoingFilterName("port1"),
-            computeOutgoingFilterName("port2")));
+            computeOutgoingFilterName("port2"),
+            computeOutgoingFilterName("port3"),
+            computeOutgoingFilterName("port4")));
     IpAccessList deny = acls.get(denyName);
     IpAccessList allow = acls.get(allowName);
     IpAccessList any = acls.get(anyName);
@@ -866,6 +881,8 @@ public final class FortiosGrammarTest {
       PermitAndDenyBdds expected = new PermitAndDenyBdds(ONE, ZERO);
       assertThat(aclToBdd.toPermitAndDenyBdds(any), equalTo(expected));
     }
+
+    // TODO test policy conversion with zone matches
   }
 
   /**
