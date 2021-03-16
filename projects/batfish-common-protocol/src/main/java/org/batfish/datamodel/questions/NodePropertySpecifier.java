@@ -87,7 +87,9 @@ public class NodePropertySpecifier extends PropertySpecifier {
           .put(
               COMMUNITY_LISTS,
               new PropertyDescriptor<>(
-                  Configuration::getCommunityLists,
+                  /* TODO rename and break this up as appropriate. For now, every vendor that had
+                  `CommunityList`s should have `CommunitySetMatchExpr`s with the same name.*/
+                  Configuration::getCommunitySetMatchExprs,
                   Schema.set(Schema.STRING),
                   "Names of community lists"))
           .put(
