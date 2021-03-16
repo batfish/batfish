@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.HasWritableOriginType;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -55,13 +55,14 @@ public final class SetOrigin extends Statement {
   @Override
   @Nonnull
   public Result execute(Environment environment) {
-    if (!(environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>)) {
-      // Do nothing for non-BGP routes
+    if (!(environment.getOutputRoute() instanceof HasWritableOriginType<?, ?>)) {
+      // Do nothing for routes without origin type
       return new Result();
     }
-    BgpRoute.Builder<?, ?> bgpRoute = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
+    HasWritableOriginType<?, ?> outputRoute =
+        (HasWritableOriginType<?, ?>) environment.getOutputRoute();
     OriginType originType = _origin.evaluate(environment);
-    bgpRoute.setOriginType(originType);
+    outputRoute.setOriginType(originType);
     if (environment.getWriteToIntermediateBgpAttributes()) {
       environment.getIntermediateBgpAttributes().setOriginType(originType);
     }

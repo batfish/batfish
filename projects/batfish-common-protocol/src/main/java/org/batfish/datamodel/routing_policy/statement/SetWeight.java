@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.HasWritableWeight;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
@@ -46,9 +46,15 @@ public final class SetWeight extends Statement {
 
   @Override
   public Result execute(Environment environment) {
+    if (!(environment.getOutputRoute() instanceof HasWritableWeight)) {
+      return new Result();
+    }
     int weight = _weight.evaluate(environment);
-    BgpRoute.Builder<?, ?> bgpRouteBuilder = (BgpRoute.Builder<?, ?>) environment.getOutputRoute();
-    bgpRouteBuilder.setWeight(weight);
+    HasWritableWeight<?, ?> outputRoute = (HasWritableWeight) environment.getOutputRoute();
+    outputRoute.setWeight(weight);
+    if (environment.getWriteToIntermediateBgpAttributes()) {
+      environment.getIntermediateBgpAttributes().setWeight(weight);
+    }
     return new Result();
   }
 

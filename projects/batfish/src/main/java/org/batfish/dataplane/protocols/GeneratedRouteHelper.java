@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
@@ -31,19 +30,13 @@ public class GeneratedRouteHelper {
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy policy,
       Set<AnnotatedRoute<AbstractRoute>> contributingRoutes) {
-    GeneratedRoute.Builder grb = generatedRoute.toBuilder();
-
-    // Null route if necessary
-    if (generatedRoute.getDiscard()) {
-      grb.setNextHopInterface(Interface.NULL_INTERFACE_NAME);
-    }
-
     if (policy == null) {
-      return grb;
+      // no contributor is needed if there is no policy
+      return generatedRoute.toBuilder();
     }
-
     // Find first matching route among candidates
     for (AnnotatedRoute<AbstractRoute> contributingCandidate : contributingRoutes) {
+      GeneratedRoute.Builder grb = generatedRoute.toBuilder();
       if (policy.process(contributingCandidate, grb, Direction.OUT)) {
         if (!generatedRoute.getDiscard()) {
           grb.setNextHopIp(contributingCandidate.getAbstractRoute().getNextHopIp());
