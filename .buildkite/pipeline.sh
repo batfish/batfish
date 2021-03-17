@@ -141,6 +141,23 @@ for cmd in ${REFS}; do
 EOF
 done
 
+# Run Pybf pipeline to make sure Bf changes don't break it
+#if [ "${BUILDKITE_PULL_REQUEST}" != "false" ]; then
+cat <<EOF
+  - trigger: pybatfish-pre-commit
+    label: ":snake: pybatfish"
+    soft_fail: true
+    build:
+      message: "${BUILDKITE_MESSAGE}"
+      commit: "${BUILDKITE_COMMIT}"
+      branch: "${BUILDKITE_BRANCH}"
+      env:
+        BUILDKITE_PULL_REQUEST: "${BUILDKITE_PULL_REQUEST}"
+        BUILDKITE_PULL_REQUEST_BASE_BRANCH: "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
+        BUILDKITE_PULL_REQUEST_REPO: "${BUILDKITE_PULL_REQUEST_REPO}"
+EOF
+#fi
+
 ###### Code coverage
 cat <<EOF
   - label: ":coverage: Report coverage"
