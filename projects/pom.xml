@@ -91,7 +91,6 @@
     <re2j.version>1.4</re2j.version>
     <servlet.version>4.0.0</servlet.version>
     <sqlite-jdbc.version>3.25.2</sqlite-jdbc.version>
-    <z3.version>2019-01-26-be61a26452735dfe62b14ddb4804ca5df0526dcf</z3.version>
 
     <!-- Transitive dependencies managed up for security reasons. -->
     <httpclient.version>4.3.6</httpclient.version>
@@ -474,31 +473,6 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-install-plugin</artifactId>
-        <executions>
-          <!-- Microsoft Z3 Java bindings are not distributed. -->
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
-            <id>install-z3</id>
-            <configuration>
-              <groupId>com.microsoft.z3</groupId>
-              <artifactId>z3</artifactId>
-              <version>${z3.version}</version>
-              <packaging>jar</packaging>
-              <file>${basedir}/lib/z3/com.microsoft.z3-${z3.version}.jar</file>
-              <sources>${basedir}/lib/z3/com.microsoft.z3-${z3.version}-sources.jar</sources>
-            </configuration>
-          </execution>
-        </executions>
-        <!-- run this phase only once at the top level, not in any of the child modules. -->
-        <inherited>false</inherited>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
@@ -750,17 +724,10 @@
       </dependency>
 
       <dependency>
-        <groupId>com.microsoft.z3</groupId>
-        <artifactId>z3</artifactId>
-        <version>${z3.version}</version>
-      </dependency>
-
-      <dependency>
         <groupId>com.squareup.okhttp3</groupId>
         <artifactId>okhttp</artifactId>
         <version>${okhttp.version}</version>
       </dependency>
-
 
       <dependency>
         <groupId>commons-beanutils</groupId>

@@ -1,8 +1,0 @@
-[
-  {
-    "class" : "org.batfish.minesweeper.answers.SmtOneAnswerElement",
-    "result" : {
-      "verified" : true
-    }
-  }
-]

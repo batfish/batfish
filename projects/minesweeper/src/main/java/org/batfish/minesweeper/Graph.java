@@ -110,14 +110,6 @@ public class Graph {
   private final Map<Integer, Set<String>> _domainMapInverse;
 
   /**
-   * The SMT- and BDD-based analyses (see the corresponding smt and bdd packages) handle communities
-   * differently and make different assumptions about these communities, and in the future might
-   * diverge further. Hence we use this flag to build the appropriate Graph object for the given
-   * analysis.
-   */
-  private final boolean _bddBasedAnalysis;
-
-  /**
    * A graph with a static route with a dynamic next hop cannot be encoded to SMT, so some of the
    * Minesweeper analyses will fail. Compression is still possible though.
    */
@@ -145,44 +137,9 @@ public class Graph {
    */
   private final RegexAtomicPredicates<SymbolicAsPathRegex> _asPathRegexAtomicPredicates;
 
-  /**
-   * Create a graph, loading configurations from the given {@link IBatfish}.
-   *
-   * <p>Note that, because configurations are not supplied, this {@link Graph} will clone the active
-   * configurations before use. This avoids side-effects that occur when {@link Graph} and other
-   * code in this package mutates the configs in the graph.
-   *
-   * <p>For increased, efficiency, use {@link #Graph(IBatfish, NetworkSnapshot, Map)} which will
-   * skip the cloning, assuming that the caller has made a defensive copy first.
-   */
+  /** Create a graph. */
   public Graph(IBatfish batfish, NetworkSnapshot snapshot) {
-    this(batfish, snapshot, null, null, null, null, false);
-  }
-
-  /** Create a graph and specify whether it will be used for a BDD-based analysis or not. */
-  public Graph(IBatfish batfish, NetworkSnapshot snapshot, boolean bddBasedAnalysis) {
-    this(batfish, snapshot, null, null, null, null, bddBasedAnalysis);
-  }
-
-  /**
-   * Create a graph, using the specified configurations.
-   *
-   * <p>Note that the given {@code configs} may be mutated during computation; callers are advised
-   * to defensively copy them or use {@link #Graph(IBatfish, NetworkSnapshot)}, which will do the
-   * defensive copy automatically, to avoid this side effect.
-   */
-  public Graph(
-      IBatfish batfish, NetworkSnapshot snapshot, @Nullable Map<String, Configuration> configs) {
-    this(batfish, snapshot, configs, null, null, null, false);
-  }
-
-  /** Create a graph, while selecting the subset of routers to use. */
-  public Graph(
-      IBatfish batfish,
-      NetworkSnapshot snapshot,
-      @Nullable Map<String, Configuration> configs,
-      @Nullable Set<String> routers) {
-    this(batfish, snapshot, configs, routers, null, null, false);
+    this(batfish, snapshot, null, null, null, null);
   }
 
   /**
@@ -198,18 +155,6 @@ public class Graph {
       @Nullable Set<String> routers,
       @Nullable Set<CommunitySetExpr> communities,
       @Nullable Set<String> asPathRegexes) {
-    this(batfish, snapshot, configs, routers, communities, asPathRegexes, true);
-  }
-
-  /** Create a graph, specifying all parameters directly. */
-  public Graph(
-      IBatfish batfish,
-      NetworkSnapshot snapshot,
-      @Nullable Map<String, Configuration> configs,
-      @Nullable Set<String> routers,
-      @Nullable Set<CommunitySetExpr> communities,
-      @Nullable Set<String> asPathRegexes,
-      boolean bddBasedAnalysis) {
     _batfish = batfish;
     _edgeMap = new HashMap<>();
     _allEdges = new HashSet<>();
@@ -229,7 +174,6 @@ public class Graph {
     _allCommunities = new HashSet<>();
     _communityDependencies = new TreeMap<>();
     _snapshot = snapshot;
-    _bddBasedAnalysis = bddBasedAnalysis;
 
     if (configs == null) {
       // Since many functions that use the graph mutate the configurations, we must clone them
@@ -269,18 +213,13 @@ public class Graph {
     initAreaIds();
     initDomains();
     initAllCommunities(communities);
-    if (_bddBasedAnalysis) {
-      // compute atomic predicates for the BDD-based analysis
-      // ignore community regexes of type OTHER, which are not used by that analysis
-      Set<CommunityVar> comms =
-          _allCommunities.stream()
-              .filter(c -> c.getType() != Type.OTHER)
-              .collect(ImmutableSet.toImmutableSet());
-      _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.ALL_COMMUNITIES);
-    } else {
-      _communityAtomicPredicates = null;
-      initCommDependencies();
-    }
+    // compute atomic predicates for the BDD-based analysis
+    // ignore community regexes of type OTHER, which are not used by that analysis
+    Set<CommunityVar> comms =
+        _allCommunities.stream()
+            .filter(c -> c.getType() != Type.OTHER)
+            .collect(ImmutableSet.toImmutableSet());
+    _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.ALL_COMMUNITIES);
     _namedCommunities = new HashMap<>();
     initNamedCommunities();
     _asPathRegexAtomicPredicates =
@@ -988,10 +927,6 @@ public class Graph {
 
   public Set<CommunityVar> getAllCommunities() {
     return _allCommunities;
-  }
-
-  public boolean getBddBasedAnalysis() {
-    return _bddBasedAnalysis;
   }
 
   public SortedMap<CommunityVar, List<CommunityVar>> getCommunityDependencies() {

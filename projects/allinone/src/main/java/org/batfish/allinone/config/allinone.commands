@@ -17,11 +17,6 @@ echo [Will check for BGP sessions now]
 prompt
 get bgpSessionCheck
 
-# acl reachability requries z3
-#echo [Will check for ACL reachability now]
-#prompt
-#get aclReachability
-
 echo [Will check for VPN sessions now]
 prompt
 get ipsecVpnCheck

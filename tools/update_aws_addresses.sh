@@ -10,4 +10,4 @@ bazel test --keep_going //tests/{aws,parsing-tests}:ref_tests && exit 1 || true
 
 # Patch and then rerun, which now should pass
 cat $(find $(bazel info bazel-testlogs)/tests/{parsing-tests,aws} -name 'test.log') | patch -p0
-bazel test --test_tag_filters=-z3 //tests/{aws,parsing-tests}:ref_tests
+bazel test //tests/{aws,parsing-tests}:ref_tests
