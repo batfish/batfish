@@ -58,11 +58,20 @@ config firewall address
         set type wildcard
         set wildcard 1.1.0.1 255.255.0.255
     next
+    edit "ipmask-default"
+    next
+    edit "iprange-default"
+        set type iprange
+        set end-ip 1.1.1.1
+    next
+    edit "wildcard-default"
+        set type wildcard
+    next
 end
 # Another edit clause for wildcard (modeling a prospective change)
 config firewall address
     edit "wildcard"
         set type wildcard
-        set wildcard 2.0.0.2 255.0.0.255
+        set wildcard 2.2.2.2 255.0.0.255
     next
 end

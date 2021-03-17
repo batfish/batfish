@@ -27,6 +27,13 @@ ip_address_with_mask_or_prefix
     | ip_prefix
 ;
 
+// For ip_address_with_mask_or_prefix contexts where the mask can be invalid
+ip_address_with_maybe_invalid_mask_or_prefix
+:
+    ip = ip_address mask = ip_address
+    | ip_prefix
+;
+
 ip_wildcard
 :
     ip = ip_address mask = ip_address

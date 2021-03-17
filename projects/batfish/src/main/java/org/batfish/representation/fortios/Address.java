@@ -1,6 +1,7 @@
 package org.batfish.representation.fortios;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
@@ -16,13 +17,13 @@ import org.batfish.datamodel.Prefix;
 /** FortiOS datamodel component containing address configuration */
 public class Address implements FortiosRenameableObject, Serializable {
   public enum Type {
-    INTERFACE_SUBNET,
     IPMASK,
     IPRANGE,
     WILDCARD,
     // Not supported
     DYNAMIC,
     FQDN,
+    INTERFACE_SUBNET,
     GEOGRAPHY,
     MAC,
   }
@@ -30,66 +31,64 @@ public class Address implements FortiosRenameableObject, Serializable {
   // Fields that are only allowed to be set for a particular address type
   public static class TypeSpecificFields implements Serializable {
     @Nullable private String _interface; // for type INTERFACE_SUBNET
-    @Nullable private Ip _startIp; // for type IPRANGE
-    @Nullable private Ip _endIp; // for type IPRANGE
-    @Nullable private Prefix _subnet; // for type IPMASK
-    @Nullable private IpWildcard _wildcard; // for type WILDCARD
+    @Nullable private Ip _ip1;
+    @Nullable private Ip _ip2;
 
-    private static final Ip DEFAULT_START_IP = Ip.ZERO;
-    private static final Prefix DEFAULT_SUBNET = Prefix.ZERO;
-    // TODO Test that wildcard-type address with no wildcard set matches all addresses
-    private static final IpWildcard DEFAULT_WILDCARD = IpWildcard.ANY;
+    // Type.SUBNET and Type.INTERFACE_SUBNET: Default subnet is 0.0.0.0/0
+    // Type.WILDCARD: Default wildcard is 0.0.0.0 0.0.0.0 (meaning all IPs)
+    // Type.IPRANGE: Default start IP is 0.0.0.0 (end IP must be specified)
+    private static final Ip DEFAULT_IP = Ip.ZERO;
 
     public @Nullable String getInterface() {
       return _interface;
     }
 
-    public @Nullable Ip getStartIp() {
-      return _startIp;
+    /**
+     * Interpreted as:
+     *
+     * <ul>
+     *   <li>Subnet IP for types {@link Type#IPMASK} and {@link Type#INTERFACE_SUBNET}
+     *   <li>Start IP for type {@link Type#IPRANGE}
+     *   <li>Wildcard IP for type {@link Type#WILDCARD}
+     * </ul>
+     */
+    public @Nullable Ip getIp1() {
+      return _ip1;
     }
 
-    public @Nonnull Ip getStartIpEffective() {
-      return firstNonNull(_startIp, DEFAULT_START_IP);
+    /**
+     * Interpreted as:
+     *
+     * <ul>
+     *   <li>Subnet mask for types {@link Type#IPMASK} and {@link Type#INTERFACE_SUBNET}
+     *   <li>End IP for type {@link Type#IPRANGE}
+     *   <li>Wildcard mask for type {@link Type#WILDCARD}
+     * </ul>
+     */
+    public @Nullable Ip getIp2() {
+      return _ip2;
     }
 
-    public @Nullable Ip getEndIp() {
-      return _endIp;
+    /** @see #getIp1 */
+    public @Nonnull Ip getIp1Effective() {
+      return firstNonNull(_ip1, DEFAULT_IP);
     }
 
-    public @Nullable Prefix getSubnet() {
-      return _subnet;
-    }
-
-    public @Nonnull Prefix getSubnetEffective() {
-      return firstNonNull(_subnet, DEFAULT_SUBNET);
-    }
-
-    public @Nullable IpWildcard getWildcard() {
-      return _wildcard;
-    }
-
-    public @Nonnull IpWildcard getWildcardEffective() {
-      return firstNonNull(_wildcard, DEFAULT_WILDCARD);
+    /** @see #getIp2 */
+    public @Nonnull Ip getIp2Effective() {
+      return firstNonNull(_ip2, DEFAULT_IP);
     }
 
     public void setInterface(String iface) {
       _interface = iface;
     }
 
-    public void setStartIp(Ip startIp) {
-      _startIp = startIp;
+    public void setIp1(Ip ip1) {
+      _ip1 = ip1;
     }
 
-    public void setEndIp(Ip endIp) {
-      _endIp = endIp;
-    }
-
-    public void setSubnet(Prefix subnet) {
-      _subnet = subnet;
-    }
-
-    public void setWildcard(IpWildcard wildcard) {
-      _wildcard = wildcard;
+    public void setIp2(Ip ip2) {
+      _ip2 = ip2;
     }
   }
 
@@ -114,18 +113,31 @@ public class Address implements FortiosRenameableObject, Serializable {
 
   public IpSpace toIpSpace(Warnings w) {
     // TODO Investigate & support _allowRouting, _associatedInterface, _fabricObject
-    // TODO Support edge cases; e.g. if subnet is already set and then type is set to iprange,
-    //  device will automatically reinterpret subnet IP and mask as start and end IPs.
     switch (getTypeEffective()) {
       case IPMASK:
-        return getTypeSpecificFields().getSubnetEffective().toIpSpace();
+        Ip subnetIp = getTypeSpecificFields().getIp1Effective();
+        Ip subnetMask = getTypeSpecificFields().getIp2Effective();
+        // Throw if mask is invalid; such an address should not have made it through extraction
+        checkState(
+            subnetMask.isValidNetmask1sLeading(),
+            String.format("Cannot convert address %s: %s is an invalid mask", _name, subnetMask));
+        return Prefix.create(subnetIp, subnetMask).toIpSpace();
       case IPRANGE:
-        Ip startIp = getTypeSpecificFields().getStartIpEffective();
-        Ip endIp = getTypeSpecificFields().getEndIp();
-        assert endIp != null;
+        Ip startIp = getTypeSpecificFields().getIp1Effective();
+        Ip endIp = getTypeSpecificFields().getIp2Effective();
+        // Throw if end IP is zero; such an address should not have made it through extraction.
+        // ("end IP cannot be 0" is the warning the CLI gives when end-ip was not set.)
+        checkState(
+            !endIp.equals(Ip.ZERO),
+            String.format("Cannot convert address %s: end IP cannot be 0", _name));
+        // Shouldn't have made it through extraction if end IP > start IP; let range throw if so
         return IpRange.range(startIp, endIp);
       case WILDCARD:
-        return getTypeSpecificFields().getWildcardEffective().toIpSpace();
+        Ip ip = getTypeSpecificFields().getIp1Effective();
+        // Invert mask because IpWildcard interprets set bits as "don't care", whereas FortiOS
+        // interprets unset bits as "don't care"
+        Ip mask = getTypeSpecificFields().getIp2Effective().inverted();
+        return IpWildcard.ipWithWildcardMask(ip, mask).toIpSpace();
       case INTERFACE_SUBNET:
         // TODO test what IPs this actually includes. Docs say it will:
         //  "automatically create an address object that matches the interface subnet"
