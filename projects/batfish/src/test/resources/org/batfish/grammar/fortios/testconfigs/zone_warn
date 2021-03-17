@@ -37,4 +37,7 @@ config system zone
         set interface port1
         append interface port2
     next
+    # Can't use a name already taken by an interface
+    edit port3
+    next
 end

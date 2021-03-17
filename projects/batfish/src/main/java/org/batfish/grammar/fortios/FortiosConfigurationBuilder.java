@@ -841,9 +841,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /** Returns message indicating why this zone can't be committed in the CLI, or null if it can */
-  private static @Nullable String getZoneInvalidReason(Zone zone, boolean nameValid) {
+  private static @Nullable String getZoneInvalidReason(
+      Zone zone, boolean nameValid, Set<String> interfaceNames) {
     if (!nameValid) {
       return "name is invalid";
+    } else if (interfaceNames.contains(zone.getName())) {
+      return "name conflicts with a system interface name";
     } else if (zone.getInterface().isEmpty()) {
       return "interface must be set";
     }
@@ -853,7 +856,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsz_edit(Csz_editContext ctx) {
     // If edited item is valid, add/update the entry in VS map
-    String invalidReason = getZoneInvalidReason(_currentZone, _currentZoneNameValid);
+    String invalidReason =
+        getZoneInvalidReason(_currentZone, _currentZoneNameValid, _c.getInterfaces().keySet());
     if (invalidReason == null) { // is valid
       String name = _currentZone.getName();
       _c.defineStructure(FortiosStructureType.ZONE, name, ctx);

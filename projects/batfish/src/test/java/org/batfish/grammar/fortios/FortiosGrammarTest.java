@@ -718,7 +718,9 @@ public final class FortiosGrammarTest {
                 hasComment("Interface UNDEFINED is undefined and cannot be added to zone zone3"),
                 hasComment(
                     "Interface port1 is already in another zone and cannot be added to zone"
-                        + " zone4"))));
+                        + " zone4"),
+                hasComment(
+                    "Zone edit block ignored: name conflicts with a system interface name"))));
 
     // Also check extraction to make sure the right lines/blocks are discarded
     Map<String, Zone> zones = vc.getZones();
