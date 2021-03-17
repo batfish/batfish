@@ -20,9 +20,9 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.representation.fortios.FortiosConfiguration.computeOutgoingFilterName;
-import static org.batfish.representation.fortios.FortiosConfiguration.computeViPolicyName;
 import static org.batfish.representation.fortios.FortiosConfiguration.computeVrfName;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.computeCrossZoneFilterName;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -61,6 +61,7 @@ import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -94,7 +95,6 @@ import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.Zone;
 import org.batfish.representation.fortios.Zone.IntrazoneAction;
 import org.hamcrest.Matcher;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -977,37 +977,38 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicyConversion() throws IOException {
+  public void testFirewallPolicyConversion() {
     String hostname = "firewall_policy";
-    Configuration c = parseConfig(hostname);
+    FortiosConfiguration vc = parseVendorConfig(hostname);
 
-    Map<String, IpAccessList> acls = c.getIpAccessLists();
+    Map<String, Policy> policies = vc.getPolicies();
+
+    String denyName = "4294967294";
+    String allowName = "1";
+    String anyName = "2";
+    String zonePolicyName = "3";
 
     // Policy 0 should not be converted because it's disabled
-    String denyName = computeViPolicyName("longest allowed firewall policy nam", "4294967294");
-    String allowName = computeViPolicyName("Permit Custom TCP Traffic", "1");
-    String anyName = computeViPolicyName(null, "2");
-    String zonePolicyName = computeViPolicyName(null, "3");
-    assertThat(
-        acls,
-        hasKeys(
-            denyName,
-            allowName,
-            anyName,
-            zonePolicyName,
-            computeOutgoingFilterName("port1"),
-            computeOutgoingFilterName("port2"),
-            computeOutgoingFilterName("port3"),
-            computeOutgoingFilterName("port4"),
-            computeOutgoingFilterName("port5")));
-    IpAccessList deny = acls.get(denyName);
-    IpAccessList allow = acls.get(allowName);
-    IpAccessList any = acls.get(anyName);
+    Map<String, AclLine> convertedPolicies = vc.getConvertedPolicies(vc.getAddresses().keySet());
+    assertThat(convertedPolicies, hasKeys(denyName, allowName, anyName, zonePolicyName));
 
-    // Create IpAccessListToBdd to convert ACLs. Can't use ACL_TO_BDD because we need IpSpaces
+    AclLine deny = convertedPolicies.get(denyName);
+    AclLine allow = convertedPolicies.get(allowName);
+    AclLine any = convertedPolicies.get(anyName);
+    AclLine zonePolicy = convertedPolicies.get(zonePolicyName);
+
+    // Create IpAccessListToBdd to convert ACLs.
+    Map<String, IpSpace> namedIpSpaces =
+        ImmutableMap.of(
+            "addr1",
+            Prefix.parse("10.0.1.0/24").toIpSpace(),
+            "addr2",
+            Prefix.parse("10.0.2.0/24").toIpSpace(),
+            "all",
+            UniverseIpSpace.INSTANCE);
     IpAccessListToBdd aclToBdd =
         new IpAccessListToBddImpl(
-            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), c.getIpSpaces());
+            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), namedIpSpaces);
 
     // Make BDDs representing components of defined policies
     BDD addr1AsSrc = _srcIpBdd.toBDD(Prefix.parse("10.0.1.0/24"));
@@ -1047,9 +1048,51 @@ public final class FortiosGrammarTest {
       // Allow all
       PermitAndDenyBdds expected = new PermitAndDenyBdds(_one, _zero);
       assertThat(aclToBdd.toPermitAndDenyBdds(any), equalTo(expected));
+      assertThat(aclToBdd.toPermitAndDenyBdds(zonePolicy), equalTo(expected));
     }
+  }
 
-    // TODO test policy conversion with zone matches
+  @Test
+  public void testViAcls() throws IOException {
+    String hostname = "firewall_policy";
+    Configuration c = parseConfig(hostname);
+
+    Map<String, IpAccessList> acls = c.getIpAccessLists();
+    assertThat(
+        acls.keySet(),
+        containsInAnyOrder(
+            computeCrossZoneFilterName("interface", "port1", "interface", "port1"),
+            computeCrossZoneFilterName("interface", "port1", "interface", "port2"),
+            computeCrossZoneFilterName("interface", "port1", "zone", "zone1"),
+            computeCrossZoneFilterName("interface", "port1", "zone", "zone2"),
+            computeCrossZoneFilterName("interface", "port1", "zone", "zone3"),
+            computeCrossZoneFilterName("interface", "port2", "interface", "port1"),
+            computeCrossZoneFilterName("interface", "port2", "interface", "port2"),
+            computeCrossZoneFilterName("interface", "port2", "zone", "zone1"),
+            computeCrossZoneFilterName("interface", "port2", "zone", "zone2"),
+            computeCrossZoneFilterName("interface", "port2", "zone", "zone3"),
+            computeCrossZoneFilterName("zone", "zone1", "interface", "port1"),
+            computeCrossZoneFilterName("zone", "zone1", "interface", "port2"),
+            computeCrossZoneFilterName("zone", "zone1", "zone", "zone1"),
+            computeCrossZoneFilterName("zone", "zone1", "zone", "zone2"),
+            computeCrossZoneFilterName("zone", "zone1", "zone", "zone3"),
+            computeCrossZoneFilterName("zone", "zone2", "interface", "port1"),
+            computeCrossZoneFilterName("zone", "zone2", "interface", "port2"),
+            computeCrossZoneFilterName("zone", "zone2", "zone", "zone1"),
+            computeCrossZoneFilterName("zone", "zone2", "zone", "zone2"),
+            computeCrossZoneFilterName("zone", "zone2", "zone", "zone3"),
+            computeCrossZoneFilterName("zone", "zone3", "interface", "port1"),
+            computeCrossZoneFilterName("zone", "zone3", "interface", "port2"),
+            computeCrossZoneFilterName("zone", "zone3", "zone", "zone1"),
+            computeCrossZoneFilterName("zone", "zone3", "zone", "zone2"),
+            computeCrossZoneFilterName("zone", "zone3", "zone", "zone3"),
+            computeOutgoingFilterName("interface", "port1"),
+            computeOutgoingFilterName("interface", "port2"),
+            computeOutgoingFilterName("zone", "zone1"),
+            computeOutgoingFilterName("zone", "zone2"),
+            computeOutgoingFilterName("zone", "zone3")));
+
+    // TODO Test semantics of ACLs
   }
 
   /**
@@ -1152,15 +1195,6 @@ public final class FortiosGrammarTest {
         conversionWarnings,
         hasRedFlags(
             contains(WarningMatchers.hasText("Ignoring policy 3: Action IPSEC is not supported"))));
-
-    // Confirm that only the supported policy is converted
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    assertThat(
-        c.getIpAccessLists(),
-        hasKeys(
-            computeViPolicyName(null, "1"),
-            computeOutgoingFilterName("port10"),
-            computeOutgoingFilterName("port20")));
   }
 
   @Test
@@ -1434,7 +1468,6 @@ public final class FortiosGrammarTest {
    * currently ignored because of a bug in how we convert policies - deny rules that don't match
    * still end up denying traffic.
    */
-  @Ignore
   @Test
   public void testInterfaceOutgoingFilterPolicyConversion() throws IOException {
     String hostname = "policy";

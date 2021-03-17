@@ -33,6 +33,11 @@ public final class Interface implements InterfaceOrZone, Serializable {
   public static final boolean DEFAULT_STATUS = true;
 
   @Override
+  public <T> T accept(InterfaceOrZoneVisitor<T> visitor) {
+    return visitor.visitInterface(this);
+  }
+
+  @Override
   @Nonnull
   public String getName() {
     return _name;
