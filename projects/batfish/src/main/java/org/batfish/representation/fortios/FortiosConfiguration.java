@@ -119,9 +119,6 @@ public class FortiosConfiguration extends VendorConfiguration {
         .forEach(address -> c.getIpSpaces().put(address.getName(), address.toIpSpace(_w)));
 
     // Convert policies. Must happen after c._ipSpaces is populated (addresses are converted)
-    Map<String, AclLineMatchExpr> convertedServices =
-        _services.values().stream()
-            .collect(ImmutableMap.toImmutableMap(Service::getName, this::toMatchExpr));
     // Convert each policy to an AclLine
     Map<String, AclLine> convertedPolicies = getConvertedPolicies(c.getIpSpaces().keySet());
     // Identify the structures for which cross-zone filters are needed (zones and unzoned ifaces)

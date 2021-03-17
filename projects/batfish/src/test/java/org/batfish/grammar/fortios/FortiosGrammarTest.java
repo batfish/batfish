@@ -981,14 +981,12 @@ public final class FortiosGrammarTest {
     String hostname = "firewall_policy";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
-    Map<String, Policy> policies = vc.getPolicies();
-
+    // Policy 0 should not be converted because it's disabled
     String denyName = "4294967294";
     String allowName = "1";
     String anyName = "2";
     String zonePolicyName = "3";
 
-    // Policy 0 should not be converted because it's disabled
     Map<String, AclLine> convertedPolicies = vc.getConvertedPolicies(vc.getAddresses().keySet());
     assertThat(convertedPolicies, hasKeys(denyName, allowName, anyName, zonePolicyName));
 
