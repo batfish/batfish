@@ -91,6 +91,7 @@ import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_append_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Csz_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_set_descriptionContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_set_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_set_intrazoneContext;
@@ -867,6 +868,39 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, String.format("Zone edit block ignored: %s", invalidReason));
     }
     _currentZone = null;
+  }
+
+  @Override
+  public void exitCsz_rename(Csz_renameContext ctx) {
+    Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
+    Optional<String> newNameOpt = toString(ctx, ctx.new_name);
+    if (!newNameOpt.isPresent() || !currentNameOpt.isPresent()) {
+      return;
+    }
+
+    String currentName = currentNameOpt.get();
+    String newName = newNameOpt.get();
+    if (!_c.getZones().containsKey(currentName)) {
+      warnRenameNonExistent(ctx, currentName, FortiosStructureType.ZONE);
+      return;
+    }
+    if (_c.getZones().containsKey(newName) || _c.getInterfaces().containsKey(newName)) {
+      // TODO handle conflicting renames
+      warnRenameConflict(ctx, currentName, newName, FortiosStructureType.ZONE);
+      return;
+    }
+    // Rename refs / def
+    _c.renameStructure(
+        currentName,
+        newName,
+        FortiosStructureType.ZONE,
+        ImmutableSet.of(FortiosStructureType.ZONE, FortiosStructureType.INTERFACE));
+    // Rename the object itself
+    Zone current = _c.getZones().remove(currentName);
+    current.setName(newName);
+    _c.getZones().put(newName, current);
+    // Add the rename as part of the def
+    _c.defineStructure(FortiosStructureType.ZONE, newName, ctx);
   }
 
   @Override
