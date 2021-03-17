@@ -6,6 +6,7 @@ import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
@@ -94,7 +95,11 @@ public final class FortiosPolicyConversions {
     String crossZoneFilterName = computeCrossZoneFilterName(from, to);
     return Stream.of(
         accepting(and(matchSrcInterfaces, permittedByAcl(crossZoneFilterName))),
-        rejecting(matchSrcInterfaces));
+        // For traffic from the source interfaces, the deniedByAcl expr is guaranteed to match if it
+        // reaches this line, since we know it wasn't permitted by the ACL in the last line.
+        // In other words, rejecting(matchSrcInterfaces) would be logically identical here.
+        // However, having an explicit deniedByAcl expr results in better ACL traces.
+        rejecting(and(matchSrcInterfaces, deniedByAcl(crossZoneFilterName))));
   }
 
   /**
