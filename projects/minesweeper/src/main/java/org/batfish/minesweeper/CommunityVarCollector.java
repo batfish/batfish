@@ -9,7 +9,6 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.RegexCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.EmptyCommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
@@ -36,11 +35,6 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
   private CommunityVarCollector(@Nonnull Configuration configuration) {
     _builder = ImmutableSet.builder();
     _configuration = configuration;
-  }
-
-  @Override
-  public void visitCommunityHalvesExpr(CommunityHalvesExpr communityHalvesExpr) {
-    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
