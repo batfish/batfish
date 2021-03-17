@@ -5,7 +5,9 @@ import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -78,5 +80,14 @@ public class IpTest {
   public void testCreateInvalidIp() {
     _thrown.expect(IllegalArgumentException.class);
     Ip.create(1L << 32);
+  }
+
+  @Test
+  public void testIsValidNetmask1sLeading() {
+    assertTrue(Ip.parse("0.0.0.0").isValidNetmask1sLeading());
+    assertTrue(Ip.parse("255.255.255.255").isValidNetmask1sLeading());
+    assertTrue(Ip.parse("255.128.0.0").isValidNetmask1sLeading());
+    assertFalse(Ip.parse("0.0.1.255").isValidNetmask1sLeading());
+    assertFalse(Ip.parse("255.0.1.0").isValidNetmask1sLeading());
   }
 }

@@ -106,6 +106,7 @@ import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefixContext;
+import org.batfish.grammar.fortios.FortiosParser.Ip_prefixContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_protocol_numberContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_wildcardContext;
 import org.batfish.grammar.fortios.FortiosParser.Ipv6_addressContext;
@@ -289,16 +290,19 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     } else {
       _currentAddress = new Address(toString(ctx.address_name().str()), getUUID());
     }
+    _currentAddressNameValid = name.isPresent();
   }
 
   @Override
   public void exitCfa_edit(Cfa_editContext ctx) {
     // If edited address is valid, add/update the entry in VS addresses map.
-    // TODO: Better validity checking
-    if (ADDRESS_NAME_PATTERN.matcher(_currentAddress.getName()).matches()) {
+    String invalidReason = addressValid(_currentAddress, _currentAddressNameValid);
+    if (invalidReason == null) {
       _c.defineStructure(FortiosStructureType.ADDRESS, _currentAddress.getName(), ctx);
       _c.getAddresses().put(_currentAddress.getName(), _currentAddress);
       _c.getRenameableObjects().put(_currentAddress.getBatfishUUID(), _currentAddress);
+    } else {
+      warn(ctx, String.format("Address edit block ignored: %s", invalidReason));
     }
     _currentAddress = null;
   }
@@ -346,7 +350,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCfa_set_start_ip(Cfa_set_start_ipContext ctx) {
     if (_currentAddress.getType() == Address.Type.IPRANGE) {
-      _currentAddress.getTypeSpecificFields().setStartIp(toIp(ctx.ip));
+      _currentAddress.getTypeSpecificFields().setIp1(toIp(ctx.ip));
     } else {
       warn(ctx, "Cannot set start-ip for address type " + _currentAddress.getTypeEffective());
     }
@@ -355,7 +359,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCfa_set_end_ip(Cfa_set_end_ipContext ctx) {
     if (_currentAddress.getType() == Address.Type.IPRANGE) {
-      _currentAddress.getTypeSpecificFields().setEndIp(toIp(ctx.ip));
+      _currentAddress.getTypeSpecificFields().setIp2(toIp(ctx.ip));
     } else {
       warn(ctx, "Cannot set end-ip for address type " + _currentAddress.getTypeEffective());
     }
@@ -382,7 +386,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfa_set_subnet(Cfa_set_subnetContext ctx) {
     Address.Type currentType = _currentAddress.getTypeEffective();
     if (currentType == Address.Type.IPMASK || currentType == Address.Type.INTERFACE_SUBNET) {
-      _currentAddress.getTypeSpecificFields().setSubnet(toPrefix(ctx.subnet));
+      if (ctx.subnet.ip_prefix() != null) {
+        Prefix prefix = toPrefix(ctx.subnet.ip_prefix());
+        _currentAddress.getTypeSpecificFields().setIp1(prefix.getStartIp());
+        // getPrefixWildcard returns a mask where the 1s indicate bits that DON'T matter,
+        // so invert it to get the correct mask for FortiOS
+        _currentAddress.getTypeSpecificFields().setIp2(prefix.getPrefixWildcard().inverted());
+      } else {
+        assert ctx.subnet.ip != null && ctx.subnet.mask != null;
+        // Convert to wildcard to get canonicalized IP (CLI automatically zeroes out bits in the IP
+        // that are zeros in the mask, even if the mask is invalid).
+        IpWildcard wildcard = toIpWildcard(ctx.subnet.ip, ctx.subnet.mask);
+        _currentAddress.getTypeSpecificFields().setIp1(wildcard.getIp());
+        _currentAddress.getTypeSpecificFields().setIp2(toIp(ctx.subnet.mask));
+      }
     } else {
       warn(ctx, "Cannot set subnet for address type " + currentType);
     }
@@ -396,7 +413,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCfa_set_wildcard(Cfa_set_wildcardContext ctx) {
     if (_currentAddress.getType() == Address.Type.WILDCARD) {
-      _currentAddress.getTypeSpecificFields().setWildcard(toIpWildcard(ctx.wildcard));
+      // Convert to wildcard; canonicalizes IP based on mask bits
+      IpWildcard wildcard = toIpWildcard(ctx.wildcard);
+      // Set IP and mask in _currentAddress. Invert mask bits because IpWildcard interprets set bits
+      // as "don't matter" while FortiOS interprets unset bits as "don't matter".
+      _currentAddress.getTypeSpecificFields().setIp1(wildcard.getIp());
+      _currentAddress.getTypeSpecificFields().setIp2(wildcard.getWildcardMaskAsIp().inverted());
     } else {
       warn(ctx, "Cannot set wildcard for address type " + _currentAddress.getTypeEffective());
     }
@@ -1174,11 +1196,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private @Nonnull Prefix toPrefix(Ip_address_with_mask_or_prefixContext ctx) {
     if (ctx.ip_prefix() != null) {
-      return Prefix.parse(ctx.ip_prefix().getText());
+      return toPrefix(ctx.ip_prefix());
     } else {
       assert ctx.ip_address() != null && ctx.subnet_mask() != null;
       return Prefix.create(toIp(ctx.ip_address()), toIp(ctx.subnet_mask()));
     }
+  }
+
+  private @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
   }
 
   private @Nonnull Optional<String> toString(
@@ -1413,12 +1439,64 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Ip.parse(ctx.getText());
   }
 
+  /**
+   * Creates an {@link IpWildcard} from the given wildcard context. Note that the context's mask is
+   * assumed to be in conventional FortiOS format, i.e. 1s indicate bits that matter. The convention
+   * in the {@link IpWildcard} class is the opposite, i.e. 0s in the mask indicate bits that matter.
+   */
   private static @Nonnull IpWildcard toIpWildcard(Ip_wildcardContext ctx) {
-    return IpWildcard.ipWithWildcardMask(toIp(ctx.ip), toIp(ctx.mask));
+    return toIpWildcard(ctx.ip, ctx.mask);
+  }
+
+  /**
+   * Creates an {@link IpWildcard} from the given IP and mask. Note that the provided mask is
+   * assumed to be in conventional FortiOS format, i.e. 1s indicate bits that matter. The convention
+   * in the {@link IpWildcard} class is the opposite, i.e. 0s in the mask indicate bits that matter.
+   */
+  private static @Nonnull IpWildcard toIpWildcard(Ip_addressContext ip, Ip_addressContext mask) {
+    // Invert mask because in FortiOS, bits that are set matter, whereas the opposite is true for
+    // the mask in IpWildcard
+    return IpWildcard.ipWithWildcardMask(toIp(ip), toIp(mask).inverted());
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
     return Ip6.parse(ctx.getText());
+  }
+
+  /** Returns message indicating why address can't be committed in the CLI, or null if it can */
+  @VisibleForTesting
+  public static @Nullable String addressValid(Address a, boolean nameValid) {
+    if (!nameValid) {
+      return "name is invalid";
+    }
+    switch (a.getTypeEffective()) {
+      case IPMASK:
+        Ip subnetMask = a.getTypeSpecificFields().getIp2Effective();
+        if (!subnetMask.isValidNetmask1sLeading()) {
+          return String.format("%s is not a valid subnet mask", subnetMask);
+        }
+        return null;
+      case IPRANGE:
+        Ip endIp = a.getTypeSpecificFields().getIp2Effective();
+        if (endIp.equals(Ip.ZERO)) {
+          // This is the warning the CLI gives if end-ip is not set
+          return "end-ip cannot be 0";
+        }
+        Ip startIp = a.getTypeSpecificFields().getIp1Effective();
+        if (endIp.asLong() < startIp.asLong()) {
+          return "end-ip must be greater than start-ip";
+        }
+        return null;
+      case WILDCARD: // Any IPs are valid for wildcard
+      case INTERFACE_SUBNET: // All cases from here on are unsupported
+      case DYNAMIC:
+      case FQDN:
+      case GEOGRAPHY:
+      case MAC:
+        return null;
+      default:
+        return String.format("address type %s is unknown", a.getTypeEffective());
+    }
   }
 
   /** Returns message indicating why policy can't be committed in the CLI, or null if it can */
@@ -1512,6 +1590,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
 
   private Address _currentAddress;
+  /**
+   * Whether the current address has invalid lines that would prevent committing the address in CLI.
+   * This field being true does not guarantee the current address is valid; use {@link
+   * #addressValid(Address, boolean)}.
+   */
+  private boolean _currentAddressNameValid;
+
   private Interface _currentInterface;
   private Policy _currentPolicy;
   /**

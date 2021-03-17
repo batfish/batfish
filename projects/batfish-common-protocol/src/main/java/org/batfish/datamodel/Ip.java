@@ -213,6 +213,15 @@ public class Ip implements Comparable<Ip>, Serializable {
     }
   }
 
+  /**
+   * Whether this IP is a valid 1s-leading netmask, e.g. 255.0.0.0. IPs 0.0.0.0 and 255.255.255.255
+   * are considered valid 1s-leading netmasks.
+   */
+  public boolean isValidNetmask1sLeading() {
+    int numTrailingZeros = Math.min(Long.numberOfTrailingZeros(_ip), Prefix.MAX_PREFIX_LENGTH);
+    return _ip >> numTrailingZeros == Ip.MAX.asLong() >> numTrailingZeros;
+  }
+
   @Nonnull
   public IpIpSpace toIpSpace() {
     return IpIpSpace.create(this);

@@ -14,35 +14,91 @@ import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class AddressTest {
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private static Address createAddressWithIps(Ip ip1, Ip ip2) {
+    Address address = new Address("name", new BatfishUUID(1));
+    address.getTypeSpecificFields().setIp1(ip1);
+    address.getTypeSpecificFields().setIp2(ip2);
+    return address;
+  }
+
+  @Test
+  public void testToIpSpace_ipmaskDefault() {
+    Address address = new Address("name", new BatfishUUID(1));
+    assertConvertsWithoutWarnings(address, Prefix.ZERO.toIpSpace());
+  }
+
   @Test
   public void testToIpSpace_ipmask() {
+    Ip ip = Ip.parse("1.1.1.1");
+    Ip mask = Ip.parse("255.255.255.0");
+    Address address = createAddressWithIps(ip, mask);
+    assertConvertsWithoutWarnings(address, Prefix.create(ip, mask).toIpSpace());
+  }
+
+  @Test
+  public void testToIpSpace_ipmaskInvalidMask() {
+    // 1.1.1.0 isn't a valid subnet mask
+    Address address = createAddressWithIps(Ip.parse("1.1.1.0"), Ip.parse("1.1.1.0"));
+    _thrown.expect(IllegalStateException.class);
+    address.toIpSpace(new Warnings());
+  }
+
+  @Test
+  public void testToIpSpace_iprangeDefault() {
+    // Must set end IP
+    Ip endIp = Ip.parse("1.1.1.255");
     Address address = new Address("name", new BatfishUUID(1));
-    Prefix prefix = Prefix.parse("1.1.1.0/24");
-    address.getTypeSpecificFields().setSubnet(prefix);
-    assertConvertsWithoutWarnings(address, prefix.toIpSpace());
+    address.setType(Address.Type.IPRANGE);
+    address.getTypeSpecificFields().setIp2(endIp);
+    assertConvertsWithoutWarnings(address, IpRange.range(Ip.ZERO, endIp));
   }
 
   @Test
   public void testToIpSpace_iprange() {
-    Address address = new Address("name", new BatfishUUID(1));
-    address.setType(Address.Type.IPRANGE);
     Ip startIp = Ip.parse("1.1.1.0");
     Ip endIp = Ip.parse("1.1.1.255");
-    address.getTypeSpecificFields().setStartIp(startIp);
-    address.getTypeSpecificFields().setEndIp(endIp);
+    Address address = createAddressWithIps(startIp, endIp);
+    address.setType(Address.Type.IPRANGE);
     assertConvertsWithoutWarnings(address, IpRange.range(startIp, endIp));
   }
 
   @Test
-  public void testToIpSpace_wildcard() {
+  public void testToIpSpace_iprangeNoEndIp() {
+    // 1.1.1.0 isn't a valid subnet mask
+    Address address = new Address("name", new BatfishUUID(1));
+    address.setType(Address.Type.IPRANGE);
+    _thrown.expect(IllegalStateException.class);
+    address.toIpSpace(new Warnings());
+  }
+
+  @Test
+  public void testToIpSpace_iprangeEndIpTooLow() {
+    Address address = createAddressWithIps(Ip.parse("2.2.2.2"), Ip.parse("1.1.1.1"));
+    address.setType(Address.Type.IPRANGE);
+    _thrown.expect(IllegalArgumentException.class);
+    address.toIpSpace(new Warnings());
+  }
+
+  @Test
+  public void testToIpSpace_wildcardDefault() {
     Address address = new Address("name", new BatfishUUID(1));
     address.setType(Address.Type.WILDCARD);
-    IpWildcard wildcard =
-        IpWildcard.ipWithWildcardMask(Ip.parse("1.1.1.1"), Ip.parse("255.0.255.128"));
-    address.getTypeSpecificFields().setWildcard(wildcard);
+    assertConvertsWithoutWarnings(address, IpWildcard.ANY.toIpSpace());
+  }
+
+  @Test
+  public void testToIpSpace_wildcard() {
+    Ip mask = Ip.parse("255.0.255.128"); // FortiOS format (bits that are set matter)
+    IpWildcard wildcard = IpWildcard.ipWithWildcardMask(Ip.parse("1.1.1.1"), mask.inverted());
+    Address address = createAddressWithIps(wildcard.getIp(), mask);
+    address.setType(Address.Type.WILDCARD);
     assertConvertsWithoutWarnings(address, wildcard.toIpSpace());
   }
 
