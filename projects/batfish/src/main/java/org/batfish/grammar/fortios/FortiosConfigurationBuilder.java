@@ -439,7 +439,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCsi_edit(Csi_editContext ctx) {
     // TODO better validation
     String name = _currentInterface.getName();
-    if (INTERFACE_NAME_PATTERN.matcher(name).matches()) {
+    if (_c.getZones().containsKey(name)) {
+      warn(ctx, "Interface edit block ignored: name conflicts with a zone name");
+    } else if (INTERFACE_NAME_PATTERN.matcher(name).matches()) {
       _c.defineStructure(FortiosStructureType.INTERFACE, name, ctx);
       _c.referenceStructure(
           FortiosStructureType.INTERFACE,
