@@ -1235,6 +1235,9 @@ public final class FortiosGrammarTest {
                 hasComment("Cannot rename non-existent address undefined"),
                 hasComment("Cannot rename non-existent service custom undefined"),
                 hasComment("Cannot rename non-existent zone undefined"),
+                hasComment(
+                    "Renaming zone new_zone1 conflicts with an existing object port1, ignoring"
+                        + " this rename operation"),
                 allOf(
                     hasComment("Illegal value for zone name"),
                     hasText(containsString("a name that is too long to use for this object type"))),
