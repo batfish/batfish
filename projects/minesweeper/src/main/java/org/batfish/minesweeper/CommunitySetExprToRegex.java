@@ -3,7 +3,6 @@ package org.batfish.minesweeper;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.RegexCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.EmptyCommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
@@ -18,11 +17,6 @@ public class CommunitySetExprToRegex implements CommunitySetExprVisitor<RegexCom
 
   public static @Nonnull RegexCommunitySet convert(@Nonnull CommunitySetExpr communitySetExpr) {
     return communitySetExpr.accept(INSTANCE);
-  }
-
-  @Override
-  public RegexCommunitySet visitCommunityHalvesExpr(CommunityHalvesExpr communityHalvesExpr) {
-    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
