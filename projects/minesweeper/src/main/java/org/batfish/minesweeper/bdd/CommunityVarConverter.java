@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.datamodel.routing_policy.expr.CommunityHalvesExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.EmptyCommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
@@ -28,11 +27,6 @@ public final class CommunityVarConverter implements CommunitySetExprVisitor<Comm
 
   public static @Nonnull CommunityVar toCommunityVar(@Nonnull CommunitySetExpr matchCondition) {
     return matchCondition.accept(INSTANCE);
-  }
-
-  @Override
-  public CommunityVar visitCommunityHalvesExpr(CommunityHalvesExpr communityHalvesExpr) {
-    throw new UnsupportedOperationException("no implementation for generated method");
   }
 
   @Override
