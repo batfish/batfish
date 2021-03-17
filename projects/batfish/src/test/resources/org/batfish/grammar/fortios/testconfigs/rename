@@ -21,11 +21,33 @@ config firewall address
     # Rename before it is ever referenced
     rename old_addr1 to new_addr1
 end
+
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 10.0.1.1/24
+    next
+    edit port2
+        set vdom "root"
+        set ip 10.0.2.1/24
+    next
+end
+config system zone
+    edit old_zone1
+        set interface port1
+    next
+    edit old_zone2
+        set interface port2
+    next
+    # Rename a zone before it is ever referenced
+    rename "old_zone1" to "new"_zone1
+end
+
 config firewall policy
     edit 0
         set action deny
-        set srcintf any
-        set dstintf any
+        set srcintf new_zone1
+        set dstintf old_zone2
         set srcaddr new_addr1
         set dstaddr old_addr2
         set service new_service1 old_service2
@@ -35,8 +57,8 @@ config firewall policy
     #   2. Using old names after the structure is renamed
     edit 1
         set action deny
-        set srcintf any
-        set dstintf any
+        set srcintf old_zone1
+        set dstintf new_zone2
         set srcaddr old_addr1
         set dstaddr new_addr2
         set service old_service1
@@ -51,10 +73,22 @@ end
 config firewall address
     rename old_addr2 to new_addr2
 end
+config system zone
+    rename old_zone2 to new_zone2
+end
+
 # Renaming a non-existent object should fail with a warning
 config firewall service custom
     rename undefined to other
 end
 config firewall address
     rename undefined to other
+end
+config system zone
+    rename undefined to other
+end
+
+# Renaming a valid object with an unused but invalid name should fail w/ warning
+config system zone
+    rename new_zone2 to "a name that is too long to use for this object type"
 end

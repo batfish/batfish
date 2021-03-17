@@ -1195,10 +1195,13 @@ public final class FortiosGrammarTest {
     assertThat(vc.getPolicies(), hasKeys("0"));
     assertThat(vc.getAddresses(), hasKeys("new_addr1", "new_addr2"));
     assertThat(vc.getServices(), hasKeys("new_service1", "new_service2"));
+    assertThat(vc.getZones(), hasKeys("new_zone1", "new_zone2"));
 
     Policy policy = vc.getPolicies().get("0");
     // Policy should be using renamed structures
     // Whether or not they were renamed after initial reference
+    assertThat(policy.getSrcIntfZones(), contains("new_zone1"));
+    assertThat(policy.getDstIntfZones(), contains("new_zone2"));
     assertThat(policy.getSrcAddr(), contains("new_addr1"));
     assertThat(policy.getDstAddr(), contains("new_addr2"));
     assertThat(policy.getService(), containsInAnyOrder("new_service1", "new_service2"));
@@ -1223,11 +1226,17 @@ public final class FortiosGrammarTest {
             containsInAnyOrder(
                 hasComment("Address old_addr1 is undefined and cannot be added to policy 1"),
                 hasComment("Address new_addr2 is undefined and cannot be added to policy 1"),
+                hasComment("Interface/zone old_zone1 is undefined and cannot be added to policy 1"),
+                hasComment("Interface/zone new_zone2 is undefined and cannot be added to policy 1"),
                 hasComment("Service old_service1 is undefined and cannot be added to policy 1"),
                 hasComment("Service new_service2 is undefined and cannot be added to policy 1"),
                 hasComment("Cannot rename non-existent address undefined"),
                 hasComment("Cannot rename non-existent service custom undefined"),
-                hasComment("Policy edit block ignored: srcaddr must be set"))));
+                hasComment("Cannot rename non-existent zone undefined"),
+                allOf(
+                    hasComment("Illegal value for zone name"),
+                    hasText(containsString("a name that is too long to use for this object type"))),
+                hasComment("Policy edit block ignored: srcintf must be set"))));
   }
 
   @Test
@@ -1241,18 +1250,22 @@ public final class FortiosGrammarTest {
 
     // Should have definitions for the renamed structures
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "new_addr1"));
-    // Rename should be part of the definition
-    assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 52)));
     assertThat(
         ccae, hasDefinedStructure(filename, FortiosStructureType.SERVICE_CUSTOM, "new_service1"));
-    // Rename should be part of the definition
+
+    // Rename should be part of the definitions
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 49)));
+            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 74)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 71)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.ZONE, "new_zone2", contains(39, 40, 41, 77)));
 
     // Should have references for the renamed structures, even if the renaming happened after the
     // reference
