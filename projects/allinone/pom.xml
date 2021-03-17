@@ -36,6 +36,8 @@
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
                   </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.batfish:minesweeper
+                  </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.batfish:question
                   </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
@@ -181,13 +183,6 @@
     <dependency>
       <groupId>org.batfish</groupId>
       <artifactId>batfish-common-protocol</artifactId>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>minesweeper</artifactId>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
