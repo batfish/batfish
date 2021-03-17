@@ -38,8 +38,6 @@ junit_tests(
     ],
     deps = [
         ":minesweeper",
-        "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
