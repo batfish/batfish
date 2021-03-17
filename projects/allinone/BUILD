@@ -197,7 +197,7 @@ junit_tests(
     srcs = [
         "src/test/java/org/batfish/question/traceroute/TracerouteTest.java",
     ],
-    resources = glob(["src/test/resources/org/batfish/allinone/testrigs/specifiers-reachability/**"]),
+    resources = glob(["src/test/resources/org/batfish/allinone/**"]),
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
