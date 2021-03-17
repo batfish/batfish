@@ -148,7 +148,7 @@ cat <<EOF
     label: ":snake: pybatfish"
     # soft_fail: true
     build:
-      message: "${BUILDKITE_MESSAGE}"
+      message: "Triggered build from :batfish:"
       env:
         BUILDKITE_PULL_REQUEST: "${BUILDKITE_PULL_REQUEST}"
         BUILDKITE_PULL_REQUEST_BASE_BRANCH: "${BUILDKITE_PULL_REQUEST_BASE_BRANCH}"
