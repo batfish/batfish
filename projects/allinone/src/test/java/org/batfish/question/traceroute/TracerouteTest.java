@@ -3,7 +3,6 @@ package org.batfish.question.traceroute;
 import static org.batfish.common.util.TracePruner.DEFAULT_MAX_TRACES;
 import static org.batfish.datamodel.FlowDiff.flowDiff;
 import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
-import static org.batfish.datamodel.matchers.HopMatchers.hasSteps;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
@@ -18,7 +17,9 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -46,7 +47,10 @@ import org.batfish.datamodel.StaticRoute.Builder;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.flow.BidirectionalTrace;
+import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
+import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.flow.TransformationStep.TransformationStepDetail;
 import org.batfish.datamodel.flow.TransformationStep.TransformationType;
@@ -55,7 +59,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -942,7 +945,6 @@ public class TracerouteTest {
                         Schema.set(Schema.TRACE))))));
   }
 
-  @Ignore("https://github.com/batfish/batfish/issues/3588")
   @Test
   public void testNatTable() throws IOException {
     String hostname = "ios-nat-table";
@@ -973,23 +975,31 @@ public class TracerouteTest {
     assertThat(traces, hasSize(1));
 
     BidirectionalTrace bidirectionalTrace = traces.get(0);
+    assertNotNull(bidirectionalTrace.getReverseTrace());
 
     // Reverse source nat should be applied to the return flow
-    assertThat(
-        bidirectionalTrace.getReverseTrace(),
-        hasHops(
-            contains(
-                hasSteps(
-                    containsInAnyOrder(
-                        new TransformationStep(
-                            new TransformationStepDetail(
-                                TransformationType.DEST_NAT,
-                                ImmutableSortedSet.of(
-                                    flowDiff(
-                                        DESTINATION, Ip.parse("10.0.0.1"), Ip.parse("1.0.0.2")))),
-                            StepAction.TRANSFORMED))))));
+    assertTrue(
+        someHopHasStep(
+            bidirectionalTrace.getReverseTrace(),
+            new TransformationStep(
+                new TransformationStepDetail(
+                    TransformationType.DEST_NAT,
+                    ImmutableSortedSet.of(
+                        flowDiff(DESTINATION, Ip.parse("10.0.0.1"), Ip.parse("1.0.0.2")))),
+                StepAction.TRANSFORMED)));
 
     // Routing should NOT be skipped to the return flow thus resulting in NULL_ROUTED disposition
     assertThat(bidirectionalTrace.getReverseTrace(), hasDisposition(FlowDisposition.NULL_ROUTED));
+  }
+
+  private boolean someHopHasStep(Trace t, Step<?> s) {
+    for (Hop h : t.getHops()) {
+      for (Step<?> step : h.getSteps()) {
+        if (step.equals(s)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 }
