@@ -406,12 +406,12 @@ public final class FortiosGrammarTest {
                 .toIpSpace()
                 .accept(_srcIpBdd)));
 
-    BDD allSrcIps = UniverseIpSpace.INSTANCE.accept(SRC_IP_BDD);
-    assertThat(ipSpaces.get("ipmask-default").accept(SRC_IP_BDD), equalTo(allSrcIps));
+    BDD allSrcIps = UniverseIpSpace.INSTANCE.accept(_srcIpBdd);
+    assertThat(ipSpaces.get("ipmask-default").accept(_srcIpBdd), equalTo(allSrcIps));
     assertThat(
-        ipSpaces.get("iprange-default").accept(SRC_IP_BDD),
-        equalTo(IpRange.range(Ip.ZERO, Ip.parse("1.1.1.1")).accept(SRC_IP_BDD)));
-    assertThat(ipSpaces.get("wildcard-default").accept(SRC_IP_BDD), equalTo(allSrcIps));
+        ipSpaces.get("iprange-default").accept(_srcIpBdd),
+        equalTo(IpRange.range(Ip.ZERO, Ip.parse("1.1.1.1")).accept(_srcIpBdd)));
+    assertThat(ipSpaces.get("wildcard-default").accept(_srcIpBdd), equalTo(allSrcIps));
 
     // Unsupported types
     Stream.of("fqdn", "dynamic", "geography", "interface-subnet", "mac", "undefined-refs")
@@ -463,39 +463,39 @@ public final class FortiosGrammarTest {
 
     // Set subnet 1.2.2.0 1.1.1.255, then set type iprange.
     assertThat(
-        maskToRange.accept(SRC_IP_BDD),
-        equalTo(IpRange.range(Ip.parse("1.0.0.0"), Ip.parse("1.1.1.255")).accept(SRC_IP_BDD)));
+        maskToRange.accept(_srcIpBdd),
+        equalTo(IpRange.range(Ip.parse("1.0.0.0"), Ip.parse("1.1.1.255")).accept(_srcIpBdd)));
 
     // Set subnet 1.2.2.0 1.1.1.255, then set type wildcard.
     assertThat(
-        maskToWildcard.accept(SRC_IP_BDD),
+        maskToWildcard.accept(_srcIpBdd),
         equalTo(
             IpWildcard.ipWithWildcardMask(Ip.parse("1.0.0.0"), Ip.parse("1.1.1.255").inverted())
                 .toIpSpace()
-                .accept(SRC_IP_BDD)));
+                .accept(_srcIpBdd)));
 
     // Set start-ip 255.1.1.1 and end-ip 255.0.0.0, then set type ipmask.
     assertThat(
-        rangeToMask.accept(SRC_IP_BDD),
-        equalTo(Prefix.parse("255.0.0.0/8").toIpSpace().accept(SRC_IP_BDD)));
+        rangeToMask.accept(_srcIpBdd),
+        equalTo(Prefix.parse("255.0.0.0/8").toIpSpace().accept(_srcIpBdd)));
 
     // Set start-ip 255.1.1.1 and end-ip 128.0.255.0, then set type wildcard.
     assertThat(
-        rangeToWildcard.accept(SRC_IP_BDD),
+        rangeToWildcard.accept(_srcIpBdd),
         equalTo(
             IpWildcard.ipWithWildcardMask(Ip.parse("255.1.1.1"), Ip.parse("128.0.255.0").inverted())
                 .toIpSpace()
-                .accept(SRC_IP_BDD)));
+                .accept(_srcIpBdd)));
 
     // Set wildcard 1.1.1.1 255.255.0.0, then set type ipmask.
     assertThat(
-        wildcardToMask.accept(SRC_IP_BDD),
-        equalTo(Prefix.parse("1.1.0.0/16").toIpSpace().accept(SRC_IP_BDD)));
+        wildcardToMask.accept(_srcIpBdd),
+        equalTo(Prefix.parse("1.1.0.0/16").toIpSpace().accept(_srcIpBdd)));
 
     // Set wildcard 1.1.1.1 255.255.0.0, then set type iprange.
     assertThat(
-        wildcardToRange.accept(SRC_IP_BDD),
-        equalTo(IpRange.range(Ip.parse("1.1.0.0"), Ip.parse("255.255.0.0")).accept(SRC_IP_BDD)));
+        wildcardToRange.accept(_srcIpBdd),
+        equalTo(IpRange.range(Ip.parse("1.1.0.0"), Ip.parse("255.255.0.0")).accept(_srcIpBdd)));
   }
 
   @Test
