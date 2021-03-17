@@ -9,10 +9,14 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -60,6 +64,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
@@ -87,6 +92,7 @@ import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.Zone;
 import org.batfish.representation.fortios.Zone.IntrazoneAction;
 import org.hamcrest.Matcher;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -1236,6 +1242,68 @@ public final class FortiosGrammarTest {
     assertThat(vc.getAddresses().get("addr1").getComment(), equalTo("addr comment"));
     assertThat(vc.getServices().get("service1").getComment(), equalTo("service comment"));
     assertThat(vc.getPolicies().get("1").getComments(), equalTo("policy comments, plural"));
+  }
+
+  private Flow createFlow(String ingressIface, Ip src, Ip dst, int port) {
+    return Flow.builder()
+        .setIngressNode("node")
+        .setIngressInterface(ingressIface)
+        .setIpProtocol(IpProtocol.TCP)
+        .setSrcIp(src)
+        .setDstIp(dst)
+        .setSrcPort(9999) // Arbitrary src port
+        .setDstPort(port)
+        .build();
+  }
+
+  /**
+   * Test that policies are converted correctly for use as interface outgoing filters. This test is
+   * currently ignored because of a bug in how we convert policies - deny rules that don't match
+   * still end up denying traffic.
+   */
+  @Ignore
+  @Test
+  public void testInterfaceOutgoingFilterPolicyConversion() throws IOException {
+    String hostname = "policy";
+    Configuration c = parseConfig(hostname);
+
+    int dstPortAllowed = 2345;
+    int dstPortDenied = 1234;
+
+    String port1 = "port1";
+    Ip port1Addr = Ip.parse("10.0.1.2");
+    String port2 = "port2";
+    Ip port2Addr = Ip.parse("10.0.2.2");
+    String port3 = "port3";
+    Ip port3Addr = Ip.parse("10.0.3.2");
+    String port4 = "port4";
+    Ip port4Addr = Ip.parse("10.0.4.2");
+
+    // Explicitly permitted
+    Flow p1ToP3 = createFlow(port1, port1Addr, port3Addr, dstPortAllowed);
+    Flow p1ToP4 = createFlow(port1, port1Addr, port3Addr, dstPortAllowed);
+    Flow p2ToP3 = createFlow(port2, port2Addr, port4Addr, dstPortAllowed);
+    Flow p2ToP4 = createFlow(port2, port2Addr, port4Addr, dstPortAllowed);
+
+    // Explicitly denied
+    Flow p1ToP3Denied = createFlow(port1, port1Addr, port3Addr, dstPortDenied);
+    Flow p2ToP3Denied = createFlow(port2, port2Addr, port4Addr, dstPortDenied);
+
+    // No-match, denied
+    Flow p3ToP1 = createFlow(port3, port3Addr, port1Addr, dstPortAllowed);
+
+    // Explicitly permitted
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(accepts(p1ToP3, port1, c))));
+    assertThat(c, hasInterface(port4, hasOutgoingFilter(accepts(p1ToP4, port1, c))));
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(accepts(p2ToP3, port2, c))));
+    assertThat(c, hasInterface(port4, hasOutgoingFilter(accepts(p2ToP4, port2, c))));
+
+    // No-match, denied
+    assertThat(c, hasInterface(port1, hasOutgoingFilter(rejects(p3ToP1, port3, c))));
+
+    // Explicitly denied
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
   }
 
   ////////////////////////
