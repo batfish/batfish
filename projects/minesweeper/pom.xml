@@ -100,14 +100,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.microsoft.z3</groupId>
-      <artifactId>z3</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>dk.brics</groupId>
       <artifactId>automaton</artifactId>
-	  </dependency>
+    </dependency>
 
     <dependency>
       <groupId>org.apache.commons</groupId>

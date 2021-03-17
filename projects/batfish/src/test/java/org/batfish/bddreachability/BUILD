@@ -3,18 +3,18 @@ load("@batfish//skylark:junit.bzl", "junit_tests")
 package(
     default_testonly = True,
     default_visibility = ["//visibility:public"],
-    )
-
+)
 
 java_library(
     name = "testlib",
-    srcs = glob(["**/*.java"], exclude=["**/*Test.java"]),
+    srcs = glob(
+        ["**/*.java"],
+        exclude = ["**/*Test.java"],
+    ),
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/bdd",
         "//projects/symbolic",
