@@ -146,7 +146,7 @@ done
 cat <<EOF
   - trigger: pybatfish-pre-commit
     label: ":snake: pybatfish"
-    soft_fail: true
+    # soft_fail: true
     build:
       message: "${BUILDKITE_MESSAGE}"
       commit: "${BUILDKITE_COMMIT}"
