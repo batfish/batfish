@@ -9,16 +9,20 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.representation.fortios.FortiosConfiguration.computeOutgoingFilterName;
-import static org.batfish.representation.fortios.FortiosConfiguration.computeViPolicyName;
 import static org.batfish.representation.fortios.FortiosConfiguration.computeVrfName;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.computeCrossZoneFilterName;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -57,9 +61,11 @@ import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.InterfaceType;
@@ -1001,37 +1007,36 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testFirewallPolicyConversion() throws IOException {
+  public void testFirewallPolicyConversion() {
     String hostname = "firewall_policy";
-    Configuration c = parseConfig(hostname);
-
-    Map<String, IpAccessList> acls = c.getIpAccessLists();
+    FortiosConfiguration vc = parseVendorConfig(hostname);
 
     // Policy 0 should not be converted because it's disabled
-    String denyName = computeViPolicyName("longest allowed firewall policy nam", "4294967294");
-    String allowName = computeViPolicyName("Permit Custom TCP Traffic", "1");
-    String anyName = computeViPolicyName(null, "2");
-    String zonePolicyName = computeViPolicyName(null, "3");
-    assertThat(
-        acls,
-        hasKeys(
-            denyName,
-            allowName,
-            anyName,
-            zonePolicyName,
-            computeOutgoingFilterName("port1"),
-            computeOutgoingFilterName("port2"),
-            computeOutgoingFilterName("port3"),
-            computeOutgoingFilterName("port4"),
-            computeOutgoingFilterName("port5")));
-    IpAccessList deny = acls.get(denyName);
-    IpAccessList allow = acls.get(allowName);
-    IpAccessList any = acls.get(anyName);
+    String denyName = "4294967294";
+    String allowName = "1";
+    String anyName = "2";
+    String zonePolicyName = "3";
 
-    // Create IpAccessListToBdd to convert ACLs. Can't use ACL_TO_BDD because we need IpSpaces
+    Map<String, AclLine> convertedPolicies = vc.getConvertedPolicies(vc.getAddresses().keySet());
+    assertThat(convertedPolicies, hasKeys(denyName, allowName, anyName, zonePolicyName));
+
+    AclLine deny = convertedPolicies.get(denyName);
+    AclLine allow = convertedPolicies.get(allowName);
+    AclLine any = convertedPolicies.get(anyName);
+    AclLine zonePolicy = convertedPolicies.get(zonePolicyName);
+
+    // Create IpAccessListToBdd to convert ACLs.
+    Map<String, IpSpace> namedIpSpaces =
+        ImmutableMap.of(
+            "addr1",
+            Prefix.parse("10.0.1.0/24").toIpSpace(),
+            "addr2",
+            Prefix.parse("10.0.2.0/24").toIpSpace(),
+            "all",
+            UniverseIpSpace.INSTANCE);
     IpAccessListToBdd aclToBdd =
         new IpAccessListToBddImpl(
-            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), c.getIpSpaces());
+            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), namedIpSpaces);
 
     // Make BDDs representing components of defined policies
     BDD addr1AsSrc = _srcIpBdd.toBDD(Prefix.parse("10.0.1.0/24"));
@@ -1071,9 +1076,83 @@ public final class FortiosGrammarTest {
       // Allow all
       PermitAndDenyBdds expected = new PermitAndDenyBdds(_one, _zero);
       assertThat(aclToBdd.toPermitAndDenyBdds(any), equalTo(expected));
+      assertThat(aclToBdd.toPermitAndDenyBdds(zonePolicy), equalTo(expected));
     }
+  }
 
-    // TODO test policy conversion with zone matches
+  @Test
+  public void testViAcls() throws IOException {
+    String hostname = "firewall_vi_policy";
+    Configuration c = parseConfig(hostname);
+
+    // Configuration contains unzoned interface port1 and zone zone1 containing port2 and port3
+    String port1IntrazoneName =
+        computeCrossZoneFilterName("interface", "port1", "interface", "port1");
+    String zone1IntrazoneName = computeCrossZoneFilterName("zone", "zone1", "zone", "zone1");
+    String port1ToZone1Name = computeCrossZoneFilterName("interface", "port1", "zone", "zone1");
+    String zone1ToPort1Name = computeCrossZoneFilterName("zone", "zone1", "interface", "port1");
+    String port1OutgoingName = computeOutgoingFilterName("interface", "port1");
+    String zone1OutgoingName = computeOutgoingFilterName("zone", "zone1");
+
+    Map<String, IpAccessList> acls = c.getIpAccessLists();
+    assertThat(
+        acls.keySet(),
+        containsInAnyOrder(
+            port1IntrazoneName,
+            zone1IntrazoneName,
+            port1ToZone1Name,
+            zone1ToPort1Name,
+            port1OutgoingName,
+            zone1OutgoingName));
+
+    IpAccessList port1Intrazone = acls.get(port1IntrazoneName);
+    IpAccessList zone1Intrazone = acls.get(zone1IntrazoneName);
+    IpAccessList port1ToZone1 = acls.get(port1ToZone1Name);
+    IpAccessList zone1ToPort1 = acls.get(zone1ToPort1Name);
+    IpAccessList port1Outgoing = acls.get(port1OutgoingName);
+    IpAccessList zone1Outgoing = acls.get(zone1OutgoingName);
+
+    // Create IpAccessListToBdd to convert ACLs.
+    Prefix addr1 = Prefix.parse("10.0.1.0/24");
+    Prefix addr2 = Prefix.parse("10.0.0.0/16");
+    Map<String, IpSpace> namedIpSpaces =
+        ImmutableMap.of(
+            "addr1",
+            addr1.toIpSpace(),
+            "addr2",
+            addr2.toIpSpace(),
+            "all",
+            UniverseIpSpace.INSTANCE);
+    BDDSourceManager srcMgr =
+        BDDSourceManager.forInterfaces(_pkt, c.getActiveInterfaces().keySet());
+    IpAccessListToBdd aclToBdd = new IpAccessListToBddImpl(_pkt, srcMgr, acls, namedIpSpaces);
+
+    // Make BDDs representing components of defined policies
+    BDD addr1AsDst = _dstIpBdd.toBDD(addr1);
+    BDD addr2AsDst = _dstIpBdd.toBDD(addr2);
+
+    // No policies apply to traffic from port1 to port1
+    assertThat(aclToBdd.toBdd(port1Intrazone), equalTo(_zero));
+
+    // Only policy 2 applies to zone1 intrazone traffic
+    assertThat(aclToBdd.toBdd(zone1Intrazone), equalTo(addr2AsDst));
+
+    // Policy 1 denies 10.0.1.0/24, then policy 2 permits 10.0.0.0/16
+    assertThat(aclToBdd.toBdd(port1ToZone1), equalTo(addr2AsDst.diff(addr1AsDst)));
+
+    // No policies apply to traffic from zone1 to port1
+    assertThat(aclToBdd.toBdd(zone1ToPort1), equalTo(_zero));
+
+    // No policies apply to traffic leaving port1
+    assertThat(aclToBdd.toBdd(port1Outgoing), equalTo(_zero));
+
+    // Should reflect that policy 1 blocks traffic from port1 to addr1, and that traffic from zone1
+    // to addr2 is permitted
+    BDD fromPort1 = srcMgr.getSourceInterfaceBDD("port1");
+    BDD fromZone1 = srcMgr.getSourceInterfaceBDD("port2").or(srcMgr.getSourceInterfaceBDD("port3"));
+    BDD permittedFromPort1 = fromPort1.and(addr2AsDst.diff(addr1AsDst));
+    BDD permittedFromZone1 = fromZone1.and(addr2AsDst);
+    assertThat(aclToBdd.toBdd(zone1Outgoing), equalTo(permittedFromPort1.or(permittedFromZone1)));
   }
 
   /**
@@ -1176,15 +1255,6 @@ public final class FortiosGrammarTest {
         conversionWarnings,
         hasRedFlags(
             contains(WarningMatchers.hasText("Ignoring policy 3: Action IPSEC is not supported"))));
-
-    // Confirm that only the supported policy is converted
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    assertThat(
-        c.getIpAccessLists(),
-        hasKeys(
-            computeViPolicyName(null, "1"),
-            computeOutgoingFilterName("port10"),
-            computeOutgoingFilterName("port20")));
   }
 
   @Test
@@ -1442,6 +1512,67 @@ public final class FortiosGrammarTest {
     assertThat(vc.getAddresses().get("addr1").getComment(), equalTo("addr comment"));
     assertThat(vc.getServices().get("service1").getComment(), equalTo("service comment"));
     assertThat(vc.getPolicies().get("1").getComments(), equalTo("policy comments, plural"));
+  }
+
+  private Flow createFlow(String ingressIface, Ip src, Ip dst, int port) {
+    return Flow.builder()
+        .setIngressNode("node")
+        .setIngressInterface(ingressIface)
+        .setIpProtocol(IpProtocol.TCP)
+        .setSrcIp(src)
+        .setDstIp(dst)
+        .setSrcPort(9999) // Arbitrary src port
+        .setDstPort(port)
+        .build();
+  }
+
+  /**
+   * Test that policies are converted correctly for use as interface outgoing filters. This test is
+   * currently ignored because of a bug in how we convert policies - deny rules that don't match
+   * still end up denying traffic.
+   */
+  @Test
+  public void testInterfaceOutgoingFilterPolicyConversion() throws IOException {
+    String hostname = "policy";
+    Configuration c = parseConfig(hostname);
+
+    int dstPortAllowed = 2345;
+    int dstPortDenied = 1234;
+
+    String port1 = "port1";
+    Ip port1Addr = Ip.parse("10.0.1.2");
+    String port2 = "port2";
+    Ip port2Addr = Ip.parse("10.0.2.2");
+    String port3 = "port3";
+    Ip port3Addr = Ip.parse("10.0.3.2");
+    String port4 = "port4";
+    Ip port4Addr = Ip.parse("10.0.4.2");
+
+    // Explicitly permitted
+    Flow p1ToP3 = createFlow(port1, port1Addr, port3Addr, dstPortAllowed);
+    Flow p1ToP4 = createFlow(port1, port1Addr, port3Addr, dstPortAllowed);
+    Flow p2ToP3 = createFlow(port2, port2Addr, port4Addr, dstPortAllowed);
+    Flow p2ToP4 = createFlow(port2, port2Addr, port4Addr, dstPortAllowed);
+
+    // Explicitly denied
+    Flow p1ToP3Denied = createFlow(port1, port1Addr, port3Addr, dstPortDenied);
+    Flow p2ToP3Denied = createFlow(port2, port2Addr, port4Addr, dstPortDenied);
+
+    // No-match, denied
+    Flow p3ToP1 = createFlow(port3, port3Addr, port1Addr, dstPortAllowed);
+
+    // Explicitly permitted
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(accepts(p1ToP3, port1, c))));
+    assertThat(c, hasInterface(port4, hasOutgoingFilter(accepts(p1ToP4, port1, c))));
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(accepts(p2ToP3, port2, c))));
+    assertThat(c, hasInterface(port4, hasOutgoingFilter(accepts(p2ToP4, port2, c))));
+
+    // No-match, denied
+    assertThat(c, hasInterface(port1, hasOutgoingFilter(rejects(p3ToP1, port3, c))));
+
+    // Explicitly denied
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
   }
 
   ////////////////////////

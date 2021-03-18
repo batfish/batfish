@@ -18,6 +18,11 @@ public final class Zone implements FortiosRenameableObject, InterfaceOrZone, Ser
 
   public static final IntrazoneAction DEFAULT_INTRAZONE_ACTION = IntrazoneAction.DENY;
 
+  @Override
+  public <T> T accept(InterfaceOrZoneVisitor<T> visitor) {
+    return visitor.visitZone(this);
+  }
+
   @Nullable
   public String getDescription() {
     return _description;
