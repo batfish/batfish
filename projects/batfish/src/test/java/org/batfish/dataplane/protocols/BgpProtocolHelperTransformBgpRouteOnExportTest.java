@@ -2,6 +2,7 @@ package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertNonBgpRouteToBgpRoute;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
@@ -197,6 +198,27 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     assertThat(
         convertGeneratedRouteToBgp(_baseAggRouteBuilder.build(), Ip.ZERO, nextHopIp, false).build(),
         hasNextHopIp(nextHopIp));
+  }
+
+  @Test
+  public void testConvertGeneratedToBgpPreservesOriginType() {
+    Ip nextHopIp = Ip.parse("1.1.1.1");
+    assertThat(
+        convertGeneratedRouteToBgp(
+                _baseAggRouteBuilder.setOriginType(OriginType.IGP).build(),
+                Ip.ZERO,
+                nextHopIp,
+                false)
+            .build(),
+        hasOriginType(OriginType.IGP));
+    assertThat(
+        convertGeneratedRouteToBgp(
+                _baseAggRouteBuilder.setOriginType(OriginType.INCOMPLETE).build(),
+                Ip.ZERO,
+                nextHopIp,
+                false)
+            .build(),
+        hasOriginType(OriginType.INCOMPLETE));
   }
 
   /**

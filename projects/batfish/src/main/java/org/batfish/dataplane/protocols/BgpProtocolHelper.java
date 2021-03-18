@@ -293,7 +293,7 @@ public final class BgpProtocolHelper {
          * but are needed initially
          */
         .setOriginatorIp(routerId)
-        .setOriginType(OriginType.INCOMPLETE)
+        .setOriginType(generatedRoute.getOriginType())
         .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
         .setNonRouting(nonRouting);
   }
