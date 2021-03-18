@@ -11,7 +11,7 @@ import org.batfish.datamodel.routing_policy.expr.MainRibRoutes;
 
 /**
  * Visitor that evaluates a {@link org.batfish.datamodel.routing_policy.expr.RoutesExpr}, yielding a
- * {@link Collection<AbstractRoute>}.
+ * {@link Collection} of {@link AbstractRoute}.
  */
 @ParametersAreNonnullByDefault
 public final class RoutesExprEvaluator
