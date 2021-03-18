@@ -1006,6 +1006,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Optional.of(addressUuidsBuilder.build());
   }
 
+  /**
+   * Convert names in the specified context into an optional set of interface names. Returns an
+   * empty optional if the line would not be accepted.
+   *
+   * <p>Note: we are simplifying allowed interface specification here - any valid interface not
+   * already zoned is permitted. This means we are ignoring some (buggy) interface-restriction
+   * applied by real devices here; specifically: some versions of fortiOS cli will prevent you from
+   * using an interface you just removed.
+   */
   private Optional<Set<String>> toZoneInterfaces(Interface_namesContext ctx) {
     int line = ctx.start.getLine();
     Map<String, Interface> ifacesMap = _c.getInterfaces();
