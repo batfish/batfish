@@ -1052,45 +1052,77 @@ public final class FortiosGrammarTest {
 
   @Test
   public void testViAcls() throws IOException {
-    String hostname = "firewall_policy";
+    String hostname = "firewall_vi_policy";
     Configuration c = parseConfig(hostname);
+
+    // Configuration contains unzoned interface port1 and zone zone1 containing port2 and port3
+    String port1IntrazoneName =
+        computeCrossZoneFilterName("interface", "port1", "interface", "port1");
+    String zone1IntrazoneName = computeCrossZoneFilterName("zone", "zone1", "zone", "zone1");
+    String port1ToZone1Name = computeCrossZoneFilterName("interface", "port1", "zone", "zone1");
+    String zone1ToPort1Name = computeCrossZoneFilterName("zone", "zone1", "interface", "port1");
+    String port1OutgoingName = computeOutgoingFilterName("interface", "port1");
+    String zone1OutgoingName = computeOutgoingFilterName("zone", "zone1");
 
     Map<String, IpAccessList> acls = c.getIpAccessLists();
     assertThat(
         acls.keySet(),
         containsInAnyOrder(
-            computeCrossZoneFilterName("interface", "port1", "interface", "port1"),
-            computeCrossZoneFilterName("interface", "port1", "interface", "port2"),
-            computeCrossZoneFilterName("interface", "port1", "zone", "zone1"),
-            computeCrossZoneFilterName("interface", "port1", "zone", "zone2"),
-            computeCrossZoneFilterName("interface", "port1", "zone", "zone3"),
-            computeCrossZoneFilterName("interface", "port2", "interface", "port1"),
-            computeCrossZoneFilterName("interface", "port2", "interface", "port2"),
-            computeCrossZoneFilterName("interface", "port2", "zone", "zone1"),
-            computeCrossZoneFilterName("interface", "port2", "zone", "zone2"),
-            computeCrossZoneFilterName("interface", "port2", "zone", "zone3"),
-            computeCrossZoneFilterName("zone", "zone1", "interface", "port1"),
-            computeCrossZoneFilterName("zone", "zone1", "interface", "port2"),
-            computeCrossZoneFilterName("zone", "zone1", "zone", "zone1"),
-            computeCrossZoneFilterName("zone", "zone1", "zone", "zone2"),
-            computeCrossZoneFilterName("zone", "zone1", "zone", "zone3"),
-            computeCrossZoneFilterName("zone", "zone2", "interface", "port1"),
-            computeCrossZoneFilterName("zone", "zone2", "interface", "port2"),
-            computeCrossZoneFilterName("zone", "zone2", "zone", "zone1"),
-            computeCrossZoneFilterName("zone", "zone2", "zone", "zone2"),
-            computeCrossZoneFilterName("zone", "zone2", "zone", "zone3"),
-            computeCrossZoneFilterName("zone", "zone3", "interface", "port1"),
-            computeCrossZoneFilterName("zone", "zone3", "interface", "port2"),
-            computeCrossZoneFilterName("zone", "zone3", "zone", "zone1"),
-            computeCrossZoneFilterName("zone", "zone3", "zone", "zone2"),
-            computeCrossZoneFilterName("zone", "zone3", "zone", "zone3"),
-            computeOutgoingFilterName("interface", "port1"),
-            computeOutgoingFilterName("interface", "port2"),
-            computeOutgoingFilterName("zone", "zone1"),
-            computeOutgoingFilterName("zone", "zone2"),
-            computeOutgoingFilterName("zone", "zone3")));
+            port1IntrazoneName,
+            zone1IntrazoneName,
+            port1ToZone1Name,
+            zone1ToPort1Name,
+            port1OutgoingName,
+            zone1OutgoingName));
 
-    // TODO Test semantics of ACLs
+    IpAccessList port1Intrazone = acls.get(port1IntrazoneName);
+    IpAccessList zone1Intrazone = acls.get(zone1IntrazoneName);
+    IpAccessList port1ToZone1 = acls.get(port1ToZone1Name);
+    IpAccessList zone1ToPort1 = acls.get(zone1ToPort1Name);
+    IpAccessList port1Outgoing = acls.get(port1OutgoingName);
+    IpAccessList zone1Outgoing = acls.get(zone1OutgoingName);
+
+    // Create IpAccessListToBdd to convert ACLs.
+    Prefix addr1 = Prefix.parse("10.0.1.0/24");
+    Prefix addr2 = Prefix.parse("10.0.0.0/16");
+    Map<String, IpSpace> namedIpSpaces =
+        ImmutableMap.of(
+            "addr1",
+            addr1.toIpSpace(),
+            "addr2",
+            addr2.toIpSpace(),
+            "all",
+            UniverseIpSpace.INSTANCE);
+    BDDSourceManager srcMgr =
+        BDDSourceManager.forInterfaces(_pkt, c.getActiveInterfaces().keySet());
+    IpAccessListToBdd aclToBdd = new IpAccessListToBddImpl(_pkt, srcMgr, acls, namedIpSpaces);
+
+    // Make BDDs representing components of defined policies
+    BDD addr1AsDst = _dstIpBdd.toBDD(addr1);
+    BDD addr2AsDst = _dstIpBdd.toBDD(addr2);
+
+    // No policies apply to traffic from port1 to port1
+    assertThat(aclToBdd.toBdd(port1Intrazone), equalTo(_zero));
+
+    // Only policy 2 applies to zone1 intrazone traffic
+    assertThat(aclToBdd.toBdd(zone1Intrazone), equalTo(addr2AsDst));
+
+    // Policy 1 denies 10.0.1.0/24, then policy 2 permits 10.0.0.0/16
+    assertThat(aclToBdd.toBdd(port1ToZone1), equalTo(addr2AsDst.diff(addr1AsDst)));
+
+    // No policies apply to traffic from zone1 to port1
+    assertThat(aclToBdd.toBdd(zone1ToPort1), equalTo(_zero));
+
+    // No policies apply to traffic leaving port1
+    assertThat(aclToBdd.toBdd(port1Outgoing), equalTo(_zero));
+
+    // Should reflect that policy 1 blocks traffic from port1 to addr1, and that traffic from zone1
+    // to addr2 is permitted
+    BDD fromPort1 = srcMgr.getSourceInterfaceBDD("port1");
+    BDD fromZone1 = srcMgr.getSourceInterfaceBDD("port2").or(srcMgr.getSourceInterfaceBDD("port3"));
+    BDD permittedFromPort1 = fromPort1.and(addr2AsDst.diff(addr1AsDst));
+    BDD permittedFromZone1 = fromZone1.and(addr2AsDst);
+    assertThat(aclToBdd.toBdd(zone1Outgoing), equalTo(permittedFromPort1.or(permittedFromZone1)));
   }
 
   /**
