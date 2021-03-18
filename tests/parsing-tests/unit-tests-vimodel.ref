@@ -18886,7 +18886,7 @@
                 "network" : "192.154.2.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "originType" : "incomplete",
+                "originType" : "igp",
                 "tag" : -1,
                 "weight" : 0
               }
@@ -27340,7 +27340,7 @@
                 "network" : "192.168.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "originType" : "incomplete",
+                "originType" : "igp",
                 "tag" : -1,
                 "weight" : 0,
                 "attributePolicySources" : [

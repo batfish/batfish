@@ -1059,6 +1059,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           GeneratedRoute.builder()
               .setNetwork(prefix)
               .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
+              .setOriginType(OriginType.IGP)
               .setGenerationPolicy(genPolicy.getName())
               .setDiscard(true);
 

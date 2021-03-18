@@ -4981,7 +4981,7 @@
                 "network" : "2.128.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "originType" : "incomplete",
+                "originType" : "igp",
                 "tag" : -1,
                 "weight" : 0
               }
@@ -6448,7 +6448,7 @@
                 "network" : "2.128.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "originType" : "incomplete",
+                "originType" : "igp",
                 "tag" : -1,
                 "weight" : 0
               }
