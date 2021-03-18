@@ -21,6 +21,7 @@ ADMIN:
   }
 ;
 
+ACCEPT: 'accept';
 ACTION: 'action';
 ADDRESS: 'address';
 AGGREGATE: 'aggregate';

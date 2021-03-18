@@ -45,7 +45,7 @@ config firewall policy
         set service ALL
     next
     edit 2
-        set action allow
+        set action accept
         set srcintf any
         set dstintf zone1
         set srcaddr all

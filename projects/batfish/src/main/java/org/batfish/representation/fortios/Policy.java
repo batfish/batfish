@@ -23,7 +23,7 @@ public final class Policy implements Serializable {
   }
 
   public enum Action {
-    ALLOW,
+    ACCEPT,
     DENY,
     IPSEC,
   }
