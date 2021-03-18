@@ -1,6 +1,8 @@
 package org.batfish.minesweeper.communities;
 
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -20,8 +22,10 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.minesweeper.CommunityVar;
 import org.junit.Before;
 import org.junit.Test;
@@ -112,6 +116,18 @@ public class CommunitySetMatchExprVarCollectorTest {
     CommunityVar cvar = CommunityVar.from("^20:");
 
     assertEquals(ImmutableSet.of(cvar), result);
+  }
+
+  @Test
+  public void testVisitCommunitySetMatchRegex() {
+    CommunitySetMatchRegex cmsr =
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            "^65000:123 65011:12[3]$");
+
+    Set<CommunityVar> result = cmsr.accept(_varCollector, _baseConfig);
+    // TODO: this construct is not supported yet.
+    assertThat(result, empty());
   }
 
   @Test
