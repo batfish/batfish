@@ -97,6 +97,7 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
+    // NOTE: when implementing, update CommunitySetMatchExprVarCollector#visitCommunitySetMatchRegex
     throw new UnsupportedOperationException("Currently not supporting community set regexes");
   }
 

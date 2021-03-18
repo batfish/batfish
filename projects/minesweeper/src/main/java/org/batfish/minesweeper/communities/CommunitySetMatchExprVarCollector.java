@@ -1,11 +1,12 @@
 package org.batfish.minesweeper.communities;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
@@ -50,16 +51,17 @@ public class CommunitySetMatchExprVarCollector
       CommunitySetMatchExprReference communitySetMatchExprReference, Configuration arg) {
     String name = communitySetMatchExprReference.getName();
     CommunitySetMatchExpr expr = arg.getCommunitySetMatchExprs().get(name);
-    if (expr == null) {
-      throw new BatfishException("Cannot find community set match expression: " + name);
-    }
+    // Expr should exist, enforced during conversion by CommunityStructuresVerifier.
+    checkState(expr != null, "Undefined reference in community exprs should not be possible");
     return expr.accept(this, arg);
   }
 
   @Override
   public Set<CommunityVar> visitCommunitySetMatchRegex(
       CommunitySetMatchRegex communitySetMatchRegex, Configuration arg) {
-    throw new UnsupportedOperationException("Community set regexes are not supported");
+    // This is not supported, but rather than throw we do nothing. If we end up needing to model
+    // this structure, the later code will crash instead.
+    return ImmutableSet.of();
   }
 
   @Override
