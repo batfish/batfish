@@ -428,11 +428,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void enterCsi_edit(Csi_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.interface_name());
-    if (!name.isPresent()) {
-      _currentInterface = new Interface(toString(ctx.interface_name().str())); // dummy
+    Interface existing = name.map(_c.getInterfaces()::get).orElse(null);
+    if (existing == null) {
+      // TODO edit block validation / committing
+      _currentInterface = new Interface(toString(ctx.interface_name().str()));
       return;
     }
-    _currentInterface = _c.getInterfaces().computeIfAbsent(name.get(), Interface::new);
+    _currentInterface = existing;
   }
 
   @Override
@@ -448,6 +450,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           name,
           FortiosStructureUsage.INTERFACE_SELF_REF,
           ctx.start.getLine());
+      _c.getInterfaces().put(name, _currentInterface);
     }
     _currentInterface = null;
   }

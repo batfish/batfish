@@ -666,6 +666,7 @@ public final class FortiosGrammarTest {
   @Test
   public void testInterfaceWarnings() throws IOException {
     String hostname = "iface_warn";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings parseWarnings =
         getOnlyElement(
@@ -684,6 +685,10 @@ public final class FortiosGrammarTest {
                     hasComment("Illegal value for interface alias"),
                     hasText(containsString("alias string is too long to associate with iface"))),
                 hasComment("Interface edit block ignored: name conflicts with a zone name"))));
+
+    // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
+    // object is created when the name conflicts
+    assertThat(vc.getInterfaces(), hasKeys("port1"));
   }
 
   @Test
