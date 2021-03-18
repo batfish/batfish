@@ -62,14 +62,16 @@ public final class FortiosPolicyConversions {
   }
 
   /**
-   * Generates {@link IpAccessList} to be used as outgoingFilter by interfaces in zone {@code
-   * toZone}, given supplied definitions for all {@code sharedGateways} and {@code virtualSystems}.
+   * Generates {@link IpAccessList} to be used as outgoing filter by interfaces in {@code to}. This
+   * filter will incorporate the cross-zone policies from each of the provided {@code
+   * zonesAndUnzonedInterfaces}.
    */
   private static @Nonnull IpAccessList generateOutgoingFilter(
       InterfaceOrZone to, List<InterfaceOrZone> zonesAndUnzonedInterfaces) {
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
 
-    // TODO Should originated traffic always be rejected? Is it subject to default intrazone action?
+    // TODO Should originated traffic always be rejected? Is it subject to intrazone policies or
+    //  default intrazone action?
     lines.add(ExprAclLine.rejecting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
 
     // Add lines for each possible source:
@@ -301,7 +303,11 @@ public final class FortiosPolicyConversions {
     Set<String> services = policy.getService();
 
     // Make sure references were finalized
-    assert srcAddrs != null && dstAddrs != null && services != null;
+    assert srcAddrs != null
+        && dstAddrs != null
+        && services != null
+        && policy.getSrcIntfZones() != null
+        && policy.getDstIntfZones() != null;
 
     // Note that src/dst interface filtering will be done in generated export policies.
     ImmutableList.Builder<AclLineMatchExpr> matchConjuncts = ImmutableList.builder();

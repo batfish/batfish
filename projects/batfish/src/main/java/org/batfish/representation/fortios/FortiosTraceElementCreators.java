@@ -68,7 +68,7 @@ public final class FortiosTraceElementCreators {
       InterfaceOrZone interfaceOrZone, String filename) {
     String action =
         getDefaultIntrazoneAction(interfaceOrZone) == Zone.IntrazoneAction.ALLOW
-            ? "accepted"
+            ? "allowed"
             : "denied";
     return TraceElement.builder()
         .add(String.format("Default %s intrazone traffic entering and exiting ", action))
