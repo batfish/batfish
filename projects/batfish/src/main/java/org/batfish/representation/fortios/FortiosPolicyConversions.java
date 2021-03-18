@@ -283,7 +283,7 @@ public final class FortiosPolicyConversions {
 
     ExprAclLine.Builder line;
     switch (policy.getActionEffective()) {
-      case ALLOW:
+      case ACCEPT:
         line = ExprAclLine.accepting();
         break;
       case DENY:

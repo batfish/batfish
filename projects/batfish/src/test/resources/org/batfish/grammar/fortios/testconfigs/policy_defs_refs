@@ -39,7 +39,7 @@ config firewall address
 end
 config firewall policy
     edit 1
-        set action allow
+        set action accept
         set status enable
 
         # Undefined references
