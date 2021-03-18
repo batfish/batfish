@@ -1,0 +1,55 @@
+config system global
+    set hostname "firewall_vi_policy"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set ip 10.0.1.1/24
+    next
+    edit port2
+        set vdom "root"
+        set ip 10.0.2.1/24
+    next
+    edit port3
+        set vdom "root"
+        set ip 10.0.3.1/24
+    next
+end
+config system zone
+    edit zone1
+        set interface port2 port3
+    next
+end
+config firewall service custom
+    edit ALL
+        set protocol IP
+    next
+end
+config firewall address
+    edit addr1
+        set subnet 10.0.1.0 255.255.255.0
+    next
+    edit addr2
+        set subnet 10.0.0.0 255.255.0.0
+    next
+    edit all
+    next
+end
+config firewall policy
+    edit 1
+        set action deny
+        set srcintf port1
+        set dstintf zone1
+        set srcaddr all
+        set dstaddr addr1
+        set service ALL
+    next
+    edit 2
+        set action allow
+        set srcintf any
+        set dstintf zone1
+        set srcaddr all
+        set dstaddr addr2
+        set service ALL
+    next
+end
