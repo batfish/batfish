@@ -88,7 +88,10 @@ config system zone
     rename undefined to other
 end
 
-# Renaming a valid object with an unused but invalid name should fail w/ warning
 config system zone
+    # Renaming a valid object with an unused but invalid name should fail w/ warning
     rename new_zone2 to "a name that is too long to use for this object type"
+
+    # Trying to rename to a named already used by interface should fail w/ warning
+    rename new_zone1 to port1
 end

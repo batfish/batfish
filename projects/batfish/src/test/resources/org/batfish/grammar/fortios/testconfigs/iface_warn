@@ -1,0 +1,27 @@
+config system global
+    set hostname "iface_warn"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        # mask format
+        set ip 192.168.122.2 255.255.255.0
+        set type physical
+        set alias "alias string is too long to associate with iface"
+    next
+    edit "name is too long for iface"
+        set vdom "root"
+        set type vlan
+    next
+end
+config system zone
+    edit conflict
+        set interface port1
+    next
+end
+
+config system interface
+    # Cannot use the same name for an interface and zone
+    edit conflict
+    next
+end

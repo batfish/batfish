@@ -664,6 +664,34 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testInterfaceWarnings() throws IOException {
+    String hostname = "iface_warn";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings parseWarnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        parseWarnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                allOf(
+                    hasComment("Illegal value for interface name"),
+                    hasText(containsString("name is too long for iface"))),
+                allOf(
+                    hasComment("Illegal value for interface alias"),
+                    hasText(containsString("alias string is too long to associate with iface"))),
+                hasComment("Interface edit block ignored: name conflicts with a zone name"))));
+
+    // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
+    // object is created when the name conflicts
+    assertThat(vc.getInterfaces(), hasKeys("port1"));
+  }
+
+  @Test
   public void testZoneExtraction() {
     String hostname = "zone";
     FortiosConfiguration vc = parseVendorConfig(hostname);
@@ -718,7 +746,9 @@ public final class FortiosGrammarTest {
                 hasComment("Interface UNDEFINED is undefined and cannot be added to zone zone3"),
                 hasComment(
                     "Interface port1 is already in another zone and cannot be added to zone"
-                        + " zone4"))));
+                        + " zone4"),
+                hasComment(
+                    "Zone edit block ignored: name conflicts with a system interface name"))));
 
     // Also check extraction to make sure the right lines/blocks are discarded
     Map<String, Zone> zones = vc.getZones();
@@ -1233,6 +1263,9 @@ public final class FortiosGrammarTest {
                 hasComment("Cannot rename non-existent address undefined"),
                 hasComment("Cannot rename non-existent service custom undefined"),
                 hasComment("Cannot rename non-existent zone undefined"),
+                hasComment(
+                    "Renaming zone new_zone1 conflicts with an existing object port1, ignoring"
+                        + " this rename operation"),
                 allOf(
                     hasComment("Illegal value for zone name"),
                     hasText(containsString("a name that is too long to use for this object type"))),
