@@ -279,7 +279,7 @@ public final class FortiosPolicyConversions {
 
     String number = policy.getNumber();
     @Nullable String name = policy.getName();
-    String numAndName = name == null ? number : String.format("%s (%s)", number, name);
+    String numAndName = name == null ? number : String.format("%s named %s", number, name);
 
     ExprAclLine.Builder line;
     switch (policy.getActionEffective()) {
