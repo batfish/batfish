@@ -564,7 +564,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             // Prevent from funneling to main RIB
             .setNonRouting(true);
     // Hopefully, the direction should not matter here.
-    boolean accept = policy.process(route, bgpBuilder, OUT);
+    boolean accept = policy.process(route, bgpBuilder, OUT, _mainRib::getRoutes);
     if (!accept) {
       return RibDelta.empty();
     }
@@ -1057,9 +1057,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         generatedRoute.getAttributePolicy() != null
             ? _policies.get(generatedRoute.getAttributePolicy()).orElse(null)
             : null;
+    // This kind of generation policy should not need access to the main rib
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
-            generatedRoute, policy, _mainRib.getTypedRoutes());
+            generatedRoute, policy, _mainRib.getTypedRoutes(), null);
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
             builder.build(), attrPolicy, _process.getRouterId(), nextHopIp, false)
@@ -1556,7 +1557,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         if (importPolicy != null) {
           // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
           acceptIncoming =
-              importPolicy.process(transformedOutgoingRoute, transformedIncomingRouteBuilder, IN);
+              importPolicy.process(
+                  transformedOutgoingRoute,
+                  transformedIncomingRouteBuilder,
+                  IN,
+                  _mainRib::getRoutes);
         }
       }
       if (acceptIncoming) {

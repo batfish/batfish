@@ -305,7 +305,7 @@ public final class VirtualRouter {
         .map(
             route -> {
               AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
-              boolean accept = policy.process(route, builder, IN);
+              boolean accept = policy.process(route, builder, IN, _mainRib::getRoutes);
               return accept ? new AnnotatedRoute<AbstractRoute>(builder.build(), _name) : null;
             })
         .filter(Objects::nonNull)
@@ -433,7 +433,7 @@ public final class VirtualRouter {
           policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
-              gr, generationPolicy, _mainRib.getTypedRoutes());
+              gr, generationPolicy, _mainRib.getTypedRoutes(), _mainRib::getRoutes);
 
       if (grb != null) {
         // Routes have been changed
@@ -1267,7 +1267,7 @@ public final class VirtualRouter {
                   ra -> {
                     AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
                     AbstractRouteBuilder<?, ?> routeBuilder = annotatedRoute.getRoute().toBuilder();
-                    if (policy.process(annotatedRoute, routeBuilder, IN)) {
+                    if (policy.process(annotatedRoute, routeBuilder, IN, _mainRib::getRoutes)) {
                       // Preserve original route's source VRF
                       return ra.toBuilder()
                           .setRoute(

@@ -1,6 +1,8 @@
 package org.batfish.minesweeper.communities;
 
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -19,7 +21,9 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.HasMatchingRoute;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.MainRibRoutes;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -117,6 +121,19 @@ public class BooleanExprVarCollectorTest {
         ImmutableSet.of(CommunityVar.from(COMM1), CommunityVar.from(COMM2));
 
     assertEquals(expected, result);
+  }
+
+  @Test
+  public void testVisitHasMatchingRoute() {
+    MatchCommunities mc =
+        new MatchCommunities(
+            new LiteralCommunitySet(CommunitySet.of(COMM1)),
+            new HasCommunity(new CommunityIs(COMM2)));
+    HasMatchingRoute expr = new HasMatchingRoute(MainRibRoutes.instance(), mc);
+
+    assertThat(
+        _varCollector.visitHasMatchingRoute(expr, _baseConfig),
+        contains(CommunityVar.from(COMM1), CommunityVar.from(COMM2)));
   }
 
   @Test

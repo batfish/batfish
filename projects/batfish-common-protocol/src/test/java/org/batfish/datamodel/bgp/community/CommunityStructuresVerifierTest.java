@@ -4,6 +4,7 @@ import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.BO
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.COMMUNITY_MATCH_EXPR_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.COMMUNITY_SET_EXPR_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.COMMUNITY_SET_MATCH_EXPR_VERIFIER;
+import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.ROUTES_EXPR_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.STATEMENT_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.verify;
 import static org.hamcrest.Matchers.containsString;
@@ -47,6 +48,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.HasMatchingRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
@@ -56,6 +58,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MainRibRoutes;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
@@ -190,6 +193,14 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new SetVarMetricType("a").accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetWeight(new LiteralInt(1)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(Statements.ExitAccept.toStaticStatement().accept(STATEMENT_VERIFIER, ctx));
+  }
+
+  @Test
+  public void testRoutesExprVerifierUnrelated() {
+    // no exception should be thrown while verifying non-community-related structures
+    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
+
+    assertNull(MainRibRoutes.instance().accept(ROUTES_EXPR_VERIFIER, ctx));
   }
 
   @Test
@@ -506,6 +517,19 @@ public final class CommunityStructuresVerifierTest {
             ImmutableList.of(
                 new MatchCommunities(
                     InputCommunities.instance(), new CommunitySetMatchExprReference("undefined"))))
+        .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitHasMatchingRoute() {
+    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
+
+    _thrown.expect(VendorConversionException.class);
+    _thrown.expectMessage(containsString("Undefined reference"));
+    new HasMatchingRoute(
+            MainRibRoutes.instance(),
+            new MatchCommunities(
+                InputCommunities.instance(), new CommunitySetMatchExprReference("undefined")))
         .accept(BOOLEAN_EXPR_VERIFIER, ctx);
   }
 

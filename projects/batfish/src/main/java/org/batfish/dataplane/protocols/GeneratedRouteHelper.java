@@ -1,6 +1,8 @@
 package org.batfish.dataplane.protocols;
 
+import java.util.Collection;
 import java.util.Set;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
@@ -29,7 +31,8 @@ public class GeneratedRouteHelper {
   public static GeneratedRoute.Builder activateGeneratedRoute(
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy policy,
-      Set<AnnotatedRoute<AbstractRoute>> contributingRoutes) {
+      Set<AnnotatedRoute<AbstractRoute>> contributingRoutes,
+      Supplier<Collection<AbstractRoute>> mainRibRoutes) {
     if (policy == null) {
       // no contributor is needed if there is no policy
       return generatedRoute.toBuilder();
@@ -37,7 +40,7 @@ public class GeneratedRouteHelper {
     // Find first matching route among candidates
     for (AnnotatedRoute<AbstractRoute> contributingCandidate : contributingRoutes) {
       GeneratedRoute.Builder grb = generatedRoute.toBuilder();
-      if (policy.process(contributingCandidate, grb, Direction.OUT)) {
+      if (policy.process(contributingCandidate, grb, Direction.OUT, mainRibRoutes)) {
         if (!generatedRoute.getDiscard()) {
           grb.setNextHopIp(contributingCandidate.getAbstractRoute().getNextHopIp());
         }

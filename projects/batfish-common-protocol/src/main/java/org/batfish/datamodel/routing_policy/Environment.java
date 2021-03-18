@@ -5,7 +5,9 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.Map;
+import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
@@ -78,7 +80,8 @@ public class Environment {
   private final Map<String, IpAccessList> _ipAccessLists;
   private final Map<String, Ip6AccessList> _ip6AccessLists;
   private boolean _localDefaultAction;
-  private final AbstractRoute _originalRoute;
+  @Nullable private final Supplier<Collection<AbstractRoute>> _mainRibRoutes;
+  private AbstractRoute _originalRoute;
   @Nullable private final AbstractRoute6 _originalRoute6;
   private final AbstractRouteBuilder<?, ?> _outputRoute;
   private final Map<String, RoutingPolicy> _routingPolicies;
@@ -111,6 +114,7 @@ public class Environment {
       Map<String, Ip6AccessList> ip6AccessLists,
       boolean localDefaultAction,
       Map<String, RoutingPolicy> routingPolicies,
+      Supplier<Collection<AbstractRoute>> mainRibRoutes,
       AbstractRouteDecorator originalRoute,
       @Nullable AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
@@ -138,6 +142,7 @@ public class Environment {
     _ipAccessLists = ipAccessLists;
     _ip6AccessLists = ip6AccessLists;
     _localDefaultAction = localDefaultAction;
+    _mainRibRoutes = mainRibRoutes;
     _routingPolicies = routingPolicies;
     _originalRoute = originalRoute == null ? null : originalRoute.getAbstractRoute();
     _originalRoute6 = originalRoute6;
@@ -239,8 +244,29 @@ public class Environment {
     return _routingPolicies;
   }
 
+  /**
+   * Returns the routes in the main RIB, or {@code null} if called outside of data plane generation.
+   */
+  @Nullable
+  public Collection<AbstractRoute> getMainRibRoutes() {
+    return _mainRibRoutes != null ? _mainRibRoutes.get() : null;
+  }
+
   public AbstractRoute getOriginalRoute() {
     return _originalRoute;
+  }
+
+  /**
+   * Execute the supplied {@code method} against an {@code alternateRoute}, typically a contributor
+   * or gate for the original route. Calls to {@link #getOriginalRoute} within the {@code method}
+   * will return the supplied {@code alternateRoute}.
+   */
+  public <T> T withAlternateRoute(AbstractRoute alternateRoute, Supplier<T> method) {
+    AbstractRoute originalRoute = _originalRoute;
+    _originalRoute = alternateRoute;
+    T result = method.get();
+    _originalRoute = originalRoute;
+    return result;
   }
 
   @Nullable
@@ -337,6 +363,7 @@ public class Environment {
     private Map<String, IpAccessList> _ipAccessLists;
     private boolean _localDefaultAction;
     private Map<String, RoutingPolicy> _routingPolicies;
+    @Nullable private Supplier<Collection<AbstractRoute>> _mainRibRoutes;
     private AbstractRouteDecorator _originalRoute;
     private AbstractRoute6 _originalRoute6;
     private AbstractRouteBuilder<?, ?> _outputRoute;
@@ -449,6 +476,12 @@ public class Environment {
       return this;
     }
 
+    @Nonnull
+    public Builder setMainRibRoutes(@Nullable Supplier<Collection<AbstractRoute>> mainRibRoutes) {
+      _mainRibRoutes = mainRibRoutes;
+      return this;
+    }
+
     public Builder setOriginalRoute(AbstractRouteDecorator originalRoute) {
       _originalRoute = originalRoute;
       return this;
@@ -501,6 +534,7 @@ public class Environment {
           firstNonNull(_ip6AccessLists, ImmutableMap.of()),
           _localDefaultAction,
           firstNonNull(_routingPolicies, ImmutableMap.of()),
+          _mainRibRoutes,
           _originalRoute,
           _originalRoute6,
           _outputRoute,
