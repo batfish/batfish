@@ -79,7 +79,7 @@ policy_status: enable_or_disable;
 // 0-4294967294
 policy_number: str;
 
-policy_action: ALLOW | DENY | IPSEC;
+policy_action: ACCEPT | DENY | IPSEC;
 
 address_names: address_name+;
 

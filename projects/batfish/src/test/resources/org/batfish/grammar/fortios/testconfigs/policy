@@ -49,7 +49,7 @@ config firewall policy
         set service EXPLICIT_DENY
     next
     edit 2
-        set action allow
+        set action accept
         set srcintf port1 port2
         set dstintf port3 port4
         set srcaddr all

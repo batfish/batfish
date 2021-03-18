@@ -78,7 +78,7 @@ config firewall policy
     # Number doesn't indicate order, just a unique identifier
     edit 1
         set name "Permit Custom TCP Traffic"
-        set action allow
+        set action accept
         set srcintf port1
         set dstintf port2
         set srcaddr addr1
@@ -92,7 +92,7 @@ config firewall policy
         append service custom_tcp_12_from_11
     next
     edit 2
-        set action allow
+        set action accept
         set srcintf any
         set dstintf any
         set srcaddr all
@@ -100,7 +100,7 @@ config firewall policy
         set service ALL
     next
     edit 3
-        set action allow
+        set action accept
         set srcintf zone1 port2 zone3
         append srcintf zone2
         set dstintf zone1 zone2

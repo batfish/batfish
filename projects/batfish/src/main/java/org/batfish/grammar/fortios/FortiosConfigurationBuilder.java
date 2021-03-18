@@ -1151,8 +1151,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Policy.Action toAction(Policy_actionContext ctx) {
-    if (ctx.ALLOW() != null) {
-      return Action.ALLOW;
+    if (ctx.ACCEPT() != null) {
+      return Action.ACCEPT;
     } else if (ctx.DENY() != null) {
       return Action.DENY;
     } else {

@@ -29,7 +29,7 @@ config firewall address
 end
 config firewall policy
     edit 4294967295
-        set action allow
+        set action accept
         set name "this name is too long to use as a firewall policy name"
         set srcintf port1
         set dstintf port2
