@@ -40,6 +40,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -198,28 +199,11 @@ public final class FortiosPolicyConversions {
 
   /**
    * Computes name for VI {@link IpAccessList} to apply to traffic from {@code fromZoneOrIface} to
-   * {@code toZoneOrIface}. Flexibly produces intrazone or cross-zone name as appropriate.
+   * {@code toZoneOrIface}.
    */
   static String computeCrossZoneFilterName(
       InterfaceOrZone fromZoneOrIface, InterfaceOrZone toZoneOrIface) {
-    String fromType = fromZoneOrIface instanceof Interface ? "interface" : "zone";
-    String toType = toZoneOrIface instanceof Interface ? "interface" : "zone";
-    return computeCrossZoneFilterName(
-        fromType, fromZoneOrIface.getName(), toType, toZoneOrIface.getName());
-  }
-
-  /**
-   * Computes name for VI {@link IpAccessList} to apply to traffic from zone or interface named
-   * {@code from} to zone or interface named {@code to}. Flexibly produces intrazone or cross-zone
-   * name as appropriate.
-   */
-  @VisibleForTesting
-  public static String computeCrossZoneFilterName(
-      String fromType, String from, String toType, String to) {
-    if (from.equals(to)) {
-      return String.format("%s~%s~intrazone", fromType, from);
-    }
-    return String.format("%s~%s~to~%s~%s", fromType, from, toType, to);
+    return Names.zoneToZoneFilter(fromZoneOrIface.getName(), toZoneOrIface.getName());
   }
 
   /**
