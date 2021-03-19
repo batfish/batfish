@@ -21,7 +21,6 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.fortios.FortiosConfiguration.computeVrfName;
-import static org.batfish.representation.fortios.FortiosPolicyConversions.computeCrossZoneFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getPolicyName;
 import static org.hamcrest.Matchers.allOf;
@@ -76,6 +75,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -1093,11 +1093,10 @@ public final class FortiosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Configuration contains unzoned interface port1 and zone zone1 containing port2 and port3
-    String port1IntrazoneName =
-        computeCrossZoneFilterName("interface", "port1", "interface", "port1");
-    String zone1IntrazoneName = computeCrossZoneFilterName("zone", "zone1", "zone", "zone1");
-    String port1ToZone1Name = computeCrossZoneFilterName("interface", "port1", "zone", "zone1");
-    String zone1ToPort1Name = computeCrossZoneFilterName("zone", "zone1", "interface", "port1");
+    String port1IntrazoneName = Names.zoneToZoneFilter("port1", "port1");
+    String zone1IntrazoneName = Names.zoneToZoneFilter("zone1", "zone1");
+    String port1ToZone1Name = Names.zoneToZoneFilter("port1", "zone1");
+    String zone1ToPort1Name = Names.zoneToZoneFilter("zone1", "port1");
     String port1OutgoingName = computeOutgoingFilterName("interface", "port1");
     String zone1OutgoingName = computeOutgoingFilterName("zone", "zone1");
 
