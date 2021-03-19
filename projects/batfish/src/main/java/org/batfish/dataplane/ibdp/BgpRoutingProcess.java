@@ -82,6 +82,7 @@ import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.dataplane.ibdp.VirtualRouter.RibExprEvaluator;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.BgpRib;
@@ -220,6 +221,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   @Nonnull private RibDelta<EvpnType3Route> _localType3Routes = RibDelta.empty();
 
+  @Nonnull private final RibExprEvaluator _ribExprEvaluator;
+
   private static final Logger LOGGER = LogManager.getLogger(BgpRoutingProcess.class);
 
   /**
@@ -308,6 +311,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _evpnInitializationDelta = RibDelta.empty();
     _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
     assert _rtVrfMapping != null; // Avoid unused warning
+    _ribExprEvaluator = new RibExprEvaluator(_mainRib);
   }
 
   /**
@@ -564,7 +568,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             // Prevent from funneling to main RIB
             .setNonRouting(true);
     // Hopefully, the direction should not matter here.
-    boolean accept = policy.process(route, bgpBuilder, OUT, _mainRib::getRoutes);
+    boolean accept = policy.process(route, bgpBuilder, OUT, _ribExprEvaluator);
     if (!accept) {
       return RibDelta.empty();
     }
@@ -1558,10 +1562,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
           acceptIncoming =
               importPolicy.process(
-                  transformedOutgoingRoute,
-                  transformedIncomingRouteBuilder,
-                  IN,
-                  _mainRib::getRoutes);
+                  transformedOutgoingRoute, transformedIncomingRouteBuilder, IN, _ribExprEvaluator);
         }
       }
       if (acceptIncoming) {

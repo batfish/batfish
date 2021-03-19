@@ -61,10 +61,9 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.HasMatchingRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
-import org.batfish.datamodel.routing_policy.expr.MainRibRoutes;
+import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
@@ -85,6 +84,7 @@ import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
 import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
+import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.AddCommunity;
@@ -110,7 +110,7 @@ import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.datamodel.visitors.RoutesExprVisitor;
+import org.batfish.datamodel.visitors.RibExprVisitor;
 
 /**
  * Provides functionality to verify absence of undefined/cyclical references in community-related
@@ -176,10 +176,9 @@ public final class CommunityStructuresVerifier {
     }
 
     @Override
-    public Void visitHasMatchingRoute(
-        HasMatchingRoute hasMatchingRoute, CommunityStructuresVerifierContext arg) {
-      hasMatchingRoute.getRoutesExpr().accept(ROUTES_EXPR_VERIFIER, arg);
-      hasMatchingRoute.getRouteMatchExpr().accept(this, arg);
+    public Void visitRibIntersectsPrefixSpace(
+        RibIntersectsPrefixSpace ribIntersectsPrefixSpace, CommunityStructuresVerifierContext arg) {
+      ribIntersectsPrefixSpace.getRibExpr().accept(RIB_EXPR_VERIFIER, arg);
       return null;
     }
 
@@ -796,12 +795,11 @@ public final class CommunityStructuresVerifier {
     }
   }
 
-  private static final class RoutesExprVerifier
-      implements RoutesExprVisitor<Void, CommunityStructuresVerifierContext> {
+  private static final class RibExprVerifier
+      implements RibExprVisitor<Void, CommunityStructuresVerifierContext> {
 
     @Override
-    public Void visitMainRibRoutes(
-        MainRibRoutes mainRibRoutes, CommunityStructuresVerifierContext arg) {
+    public Void visitMainRib(MainRib mainRib, CommunityStructuresVerifierContext arg) {
       return null;
     }
   }
@@ -926,8 +924,7 @@ public final class CommunityStructuresVerifier {
   static final CommunitySetExprVerifier COMMUNITY_SET_EXPR_VERIFIER =
       new CommunitySetExprVerifier();
 
-  @VisibleForTesting
-  static final RoutesExprVerifier ROUTES_EXPR_VERIFIER = new RoutesExprVerifier();
+  @VisibleForTesting static final RibExprVerifier RIB_EXPR_VERIFIER = new RibExprVerifier();
 
   @VisibleForTesting
   static final CommunityStructuresStatementVerifier STATEMENT_VERIFIER =

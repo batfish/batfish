@@ -9,26 +9,24 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
-/** Tests of {@link MainRibRoutes} */
+/** Tests of {@link MainRib} */
 @ParametersAreNonnullByDefault
 public final class MainRibRoutesTest {
 
   @Test
   public void testJavaSerialization() {
-    MainRibRoutes obj = MainRibRoutes.instance();
+    MainRib obj = MainRib.instance();
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
 
   @Test
   public void testJsonSerialization() {
-    MainRibRoutes obj = MainRibRoutes.instance();
-    assertThat(BatfishObjectMapper.clone(obj, MainRibRoutes.class), equalTo(obj));
+    MainRib obj = MainRib.instance();
+    assertThat(BatfishObjectMapper.clone(obj, MainRib.class), equalTo(obj));
   }
 
   @Test
   public void testEquals() {
-    new EqualsTester()
-        .addEqualityGroup(MainRibRoutes.instance(), MainRibRoutes.instance())
-        .testEquals();
+    new EqualsTester().addEqualityGroup(MainRib.instance(), MainRib.instance()).testEquals();
   }
 }

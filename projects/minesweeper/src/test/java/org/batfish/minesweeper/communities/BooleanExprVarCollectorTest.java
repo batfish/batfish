@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.communities;
 
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -10,6 +10,7 @@ import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
@@ -20,12 +21,13 @@ import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.HasMatchingRoute;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.expr.MainRibRoutes;
+import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.minesweeper.CommunityVar;
@@ -124,16 +126,12 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitHasMatchingRoute() {
-    MatchCommunities mc =
-        new MatchCommunities(
-            new LiteralCommunitySet(CommunitySet.of(COMM1)),
-            new HasCommunity(new CommunityIs(COMM2)));
-    HasMatchingRoute expr = new HasMatchingRoute(MainRibRoutes.instance(), mc);
+  public void testVisitRibIntersectsPrefixSpace() {
+    RibIntersectsPrefixSpace expr =
+        new RibIntersectsPrefixSpace(
+            MainRib.instance(), new ExplicitPrefixSet(new PrefixSpace(ImmutableList.of())));
 
-    assertThat(
-        _varCollector.visitHasMatchingRoute(expr, _baseConfig),
-        contains(CommunityVar.from(COMM1), CommunityVar.from(COMM2)));
+    assertThat(_varCollector.visitRibIntersectsPrefixSpace(expr, _baseConfig), empty());
   }
 
   @Test

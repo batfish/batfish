@@ -157,15 +157,15 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.HasMatchingRoute;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MainRibRoutes;
+import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
+import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -2760,11 +2760,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // TODO: verify missing prefix means true
       return BooleanExprs.TRUE;
     }
-    return new HasMatchingRoute(
-        MainRibRoutes.instance() /* TODO: handle table other than inet.0 */,
-        new MatchPrefixSet(
-            DestinationNetwork.instance() /* of matching route */,
-            new ExplicitPrefixSet((new PrefixSpace(PrefixRange.fromPrefix(prefix))))));
+    return new RibIntersectsPrefixSpace(
+        MainRib.instance() /* TODO: handle table other than inet.0 */,
+        new ExplicitPrefixSet((new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
   }
 
   private RoutingPolicy toRoutingPolicy(PolicyStatement ps) {

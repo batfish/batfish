@@ -12,23 +12,24 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.expr.RibExpr;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /** A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes */
@@ -206,8 +207,9 @@ public class RoutingPolicy implements Serializable {
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       Direction direction,
-      Supplier<Collection<AbstractRoute>> mainRibRoutes) {
-    return process(inputRoute, outputRoute, null, null, direction, mainRibRoutes);
+      BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
+    return process(
+        inputRoute, outputRoute, null, null, direction, ribIntersectsPrefixSpaceEvaluator);
   }
 
   public boolean process(
@@ -223,8 +225,9 @@ public class RoutingPolicy implements Serializable {
       @Nonnull AbstractRouteBuilder<?, ?> outputRoute,
       @Nonnull EigrpProcess eigrpProcess,
       Direction direction,
-      Supplier<Collection<AbstractRoute>> mainRibRoutes) {
-    return process(inputRoute, outputRoute, null, eigrpProcess, direction, mainRibRoutes);
+      BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
+    return process(
+        inputRoute, outputRoute, null, eigrpProcess, direction, ribIntersectsPrefixSpaceEvaluator);
   }
 
   /**
@@ -255,16 +258,24 @@ public class RoutingPolicy implements Serializable {
    *     the remote node <em>to</em> the node processing the policy (regardless of whether this
    *     policy is currently being used for import or export)
    * @param direction {@link Direction} in which route is being sent
-   * @param mainRibRoutes supplier of the routes in the main rib needed by some policies
+   * @param ribIntersectsPrefixSpaceEvaluator function that evaluates whether there is any
+   *     intersection between the prefixes of the routes in the RIB represented by a provided {@link
+   *     RibExpr} and a provided {@link PrefixSpace}
    */
   public boolean processBgpRoute(
       AbstractRouteDecorator inputRoute,
       BgpRoute.Builder<?, ?> outputRoute,
       @Nullable BgpSessionProperties sessionProperties,
       Direction direction,
-      Supplier<Collection<AbstractRoute>> mainRibRoutes) {
+      BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
-    return process(inputRoute, outputRoute, sessionProperties, null, direction, mainRibRoutes);
+    return process(
+        inputRoute,
+        outputRoute,
+        sessionProperties,
+        null,
+        direction,
+        ribIntersectsPrefixSpaceEvaluator);
   }
 
   private boolean process(
@@ -273,7 +284,7 @@ public class RoutingPolicy implements Serializable {
       @Nullable BgpSessionProperties bgpSessionProperties,
       @Nullable EigrpProcess eigrpProcess,
       Direction direction,
-      @Nullable Supplier<Collection<AbstractRoute>> mainRibRoutes) {
+      @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
         Environment.builder(_owner)
@@ -282,7 +293,7 @@ public class RoutingPolicy implements Serializable {
             .setOutputRoute(outputRoute)
             .setDirection(direction)
             .setEigrpProcess(eigrpProcess)
-            .setMainRibRoutes(mainRibRoutes)
+            .setRibIntersectsPrefixSpaceEvaluator(ribIntersectsPrefixSpaceEvaluator)
             .build();
     Result result = call(environment);
     return result.getBooleanValue() && !(Boolean.TRUE.equals(environment.getSuppressed()));

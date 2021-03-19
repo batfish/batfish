@@ -60,6 +60,7 @@ import org.batfish.datamodel.MockDataPlane;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -523,6 +524,11 @@ public class RoutesAnswererTest {
     @Override
     public int comparePreference(R lhs, R rhs) {
       return 0;
+    }
+
+    @Override
+    public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
+      throw new UnsupportedOperationException();
     }
 
     @Override

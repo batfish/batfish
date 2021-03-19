@@ -18,7 +18,7 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitFirstMatchChain(FirstMatchChain firstMatchChain, U arg);
 
-  T visitHasMatchingRoute(HasMatchingRoute hasMatchingRoute, U arg);
+  T visitRibIntersectsPrefixSpace(RibIntersectsPrefixSpace ribIntersectsPrefixSpace, U arg);
 
   T visitHasRoute(HasRoute hasRoute, U arg);
 

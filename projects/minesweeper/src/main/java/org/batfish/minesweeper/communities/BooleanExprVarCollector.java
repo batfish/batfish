@@ -1,10 +1,8 @@
 package org.batfish.minesweeper.communities;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
@@ -16,7 +14,6 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.HasMatchingRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
@@ -39,6 +36,7 @@ import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
 import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
+import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
@@ -84,13 +82,9 @@ public class BooleanExprVarCollector
   }
 
   @Override
-  public Set<CommunityVar> visitHasMatchingRoute(
-      HasMatchingRoute hasMatchingRoute, Configuration arg) {
-    return Stream.of(
-            hasMatchingRoute.getRoutesExpr().accept(RoutesExprVarCollector.instance(), arg),
-            hasMatchingRoute.getRouteMatchExpr().accept(this, arg))
-        .flatMap(Collection::stream)
-        .collect(ImmutableSet.toImmutableSet());
+  public Set<CommunityVar> visitRibIntersectsPrefixSpace(
+      RibIntersectsPrefixSpace ribIntersectsPrefixSpace, Configuration arg) {
+    return ribIntersectsPrefixSpace.getRibExpr().accept(RibExprVarCollector.instance(), arg);
   }
 
   @Override

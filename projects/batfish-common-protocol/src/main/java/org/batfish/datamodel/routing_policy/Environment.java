@@ -5,9 +5,8 @@ import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.Collection;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
@@ -23,6 +22,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.eigrp.EigrpProcess;
@@ -30,6 +30,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.expr.RibExpr;
 
 public class Environment {
   /**
@@ -80,7 +81,10 @@ public class Environment {
   private final Map<String, IpAccessList> _ipAccessLists;
   private final Map<String, Ip6AccessList> _ip6AccessLists;
   private boolean _localDefaultAction;
-  @Nullable private final Supplier<Collection<AbstractRoute>> _mainRibRoutes;
+
+  @Nullable
+  private final BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
+
   private AbstractRoute _originalRoute;
   @Nullable private final AbstractRoute6 _originalRoute6;
   private final AbstractRouteBuilder<?, ?> _outputRoute;
@@ -114,7 +118,7 @@ public class Environment {
       Map<String, Ip6AccessList> ip6AccessLists,
       boolean localDefaultAction,
       Map<String, RoutingPolicy> routingPolicies,
-      Supplier<Collection<AbstractRoute>> mainRibRoutes,
+      @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator,
       AbstractRouteDecorator originalRoute,
       @Nullable AbstractRoute6 originalRoute6,
       AbstractRouteBuilder<?, ?> outputRoute,
@@ -142,7 +146,7 @@ public class Environment {
     _ipAccessLists = ipAccessLists;
     _ip6AccessLists = ip6AccessLists;
     _localDefaultAction = localDefaultAction;
-    _mainRibRoutes = mainRibRoutes;
+    _ribIntersectsPrefixSpaceEvaluator = ribIntersectsPrefixSpaceEvaluator;
     _routingPolicies = routingPolicies;
     _originalRoute = originalRoute == null ? null : originalRoute.getAbstractRoute();
     _originalRoute6 = originalRoute6;
@@ -245,28 +249,17 @@ public class Environment {
   }
 
   /**
-   * Returns the routes in the main RIB, or {@code null} if called outside of data plane generation.
+   * Returns a function for evaluating whether there is any intersection between the prefixes of the
+   * routes in the RIB represented by a provided {@link RibExpr} and a provided {@link PrefixSpace},
+   * or {@code null} if called outside of data plane generation.
    */
   @Nullable
-  public Collection<AbstractRoute> getMainRibRoutes() {
-    return _mainRibRoutes != null ? _mainRibRoutes.get() : null;
+  public BiFunction<RibExpr, PrefixSpace, Boolean> getRibIntersectsPrefixSpaceEvaluator() {
+    return _ribIntersectsPrefixSpaceEvaluator;
   }
 
   public AbstractRoute getOriginalRoute() {
     return _originalRoute;
-  }
-
-  /**
-   * Execute the supplied {@code method} against an {@code alternateRoute}, typically a contributor
-   * or gate for the original route. Calls to {@link #getOriginalRoute} within the {@code method}
-   * will return the supplied {@code alternateRoute}.
-   */
-  public <T> T withAlternateRoute(AbstractRoute alternateRoute, Supplier<T> method) {
-    AbstractRoute originalRoute = _originalRoute;
-    _originalRoute = alternateRoute;
-    T result = method.get();
-    _originalRoute = originalRoute;
-    return result;
   }
 
   @Nullable
@@ -363,7 +356,7 @@ public class Environment {
     private Map<String, IpAccessList> _ipAccessLists;
     private boolean _localDefaultAction;
     private Map<String, RoutingPolicy> _routingPolicies;
-    @Nullable private Supplier<Collection<AbstractRoute>> _mainRibRoutes;
+    @Nullable private BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
     private AbstractRouteDecorator _originalRoute;
     private AbstractRoute6 _originalRoute6;
     private AbstractRouteBuilder<?, ?> _outputRoute;
@@ -477,8 +470,9 @@ public class Environment {
     }
 
     @Nonnull
-    public Builder setMainRibRoutes(@Nullable Supplier<Collection<AbstractRoute>> mainRibRoutes) {
-      _mainRibRoutes = mainRibRoutes;
+    public Builder setRibIntersectsPrefixSpaceEvaluator(
+        @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
+      _ribIntersectsPrefixSpaceEvaluator = ribIntersectsPrefixSpaceEvaluator;
       return this;
     }
 
@@ -534,7 +528,7 @@ public class Environment {
           firstNonNull(_ip6AccessLists, ImmutableMap.of()),
           _localDefaultAction,
           firstNonNull(_routingPolicies, ImmutableMap.of()),
-          _mainRibRoutes,
+          _ribIntersectsPrefixSpaceEvaluator,
           _originalRoute,
           _originalRoute6,
           _outputRoute,

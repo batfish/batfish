@@ -1,14 +1,13 @@
 package org.batfish.dataplane.protocols;
 
-import java.util.Collection;
 import java.util.Set;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.dataplane.ibdp.VirtualRouter.RibExprEvaluator;
 
 /**
  * Contains helper logic for manipulating {@link GeneratedRoute} objects in the context of dataplane
@@ -32,7 +31,7 @@ public class GeneratedRouteHelper {
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy policy,
       Set<AnnotatedRoute<AbstractRoute>> contributingRoutes,
-      Supplier<Collection<AbstractRoute>> mainRibRoutes) {
+      RibExprEvaluator ribExprEvaluator) {
     if (policy == null) {
       // no contributor is needed if there is no policy
       return generatedRoute.toBuilder();
@@ -40,7 +39,7 @@ public class GeneratedRouteHelper {
     // Find first matching route among candidates
     for (AnnotatedRoute<AbstractRoute> contributingCandidate : contributingRoutes) {
       GeneratedRoute.Builder grb = generatedRoute.toBuilder();
-      if (policy.process(contributingCandidate, grb, Direction.OUT, mainRibRoutes)) {
+      if (policy.process(contributingCandidate, grb, Direction.OUT, ribExprEvaluator)) {
         if (!generatedRoute.getDiscard()) {
           grb.setNextHopIp(contributingCandidate.getAbstractRoute().getNextHopIp());
         }
