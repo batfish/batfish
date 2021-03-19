@@ -6,7 +6,9 @@ import
   Fortios_firewall,
   Fortios_interface,
   Fortios_policy,
+  Fortios_router,
   Fortios_service,
+  Fortios_static,
   Fortios_system,
   Fortios_zone;
 
@@ -24,5 +26,6 @@ s_config
     CONFIG (
         c_system
         | c_firewall
+        | c_router
     ) END NEWLINE
 ;

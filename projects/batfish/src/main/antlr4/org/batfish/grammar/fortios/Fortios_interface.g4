@@ -62,6 +62,3 @@ interface_type:
 
 // Up to 25 characters
 interface_alias: str;
-
-// Up to 15 characters
-interface_name: str;

@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
@@ -79,6 +80,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.Address;
@@ -92,6 +94,7 @@ import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
+import org.batfish.representation.fortios.StaticRoute;
 import org.batfish.representation.fortios.Zone;
 import org.batfish.representation.fortios.Zone.IntrazoneAction;
 import org.hamcrest.Matcher;
@@ -1255,6 +1258,107 @@ public final class FortiosGrammarTest {
         conversionWarnings,
         hasRedFlags(
             contains(WarningMatchers.hasText("Ignoring policy 3: Action IPSEC is not supported"))));
+  }
+
+  @Test
+  public void testStaticRouteExtraction() {
+    String hostname = "static_routes";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getStaticRoutes(), hasKeys("0", "1", "2", "4294967295"));
+
+    // All values explicitly configured
+    StaticRoute r0 = vc.getStaticRoutes().get("0");
+    assertThat(r0.getDevice(), equalTo("port1"));
+    assertThat(r0.getDistance(), equalTo(20));
+    assertThat(r0.getDst(), equalTo(Prefix.parse("1.1.1.0/24")));
+    assertThat(r0.getGateway(), equalTo(Ip.parse("2.2.2.2")));
+    assertThat(r0.getSdwanEnabled(), equalTo(false));
+    assertThat(r0.getStatus(), equalTo(StaticRoute.Status.ENABLE));
+
+    // All values default except device (which is required to be set)
+    StaticRoute r1 = vc.getStaticRoutes().get("1");
+    assertThat(r1.getDevice(), equalTo("port1"));
+    assertNull(r1.getDistance());
+    assertThat(r1.getDistanceEffective(), equalTo(StaticRoute.DEFAULT_DISTANCE));
+    assertNull(r1.getDst());
+    assertThat(r1.getDstEffective(), equalTo(StaticRoute.DEFAULT_DST));
+    assertNull(r1.getGateway());
+    assertNull(r1.getSdwanEnabled());
+    assertFalse(r1.getSdwanEnabledEffective());
+    assertNull(r1.getStatus());
+    assertTrue(r1.getStatusEffective());
+
+    // SD-WAN enabled; default distance should reflect that
+    StaticRoute r2 = vc.getStaticRoutes().get("2");
+    assertThat(r2.getSdwanEnabled(), equalTo(true));
+    assertThat(r2.getDistanceEffective(), equalTo(StaticRoute.DEFAULT_DISTANCE_SDWAN));
+
+    // Disabled (also max seq num)
+    StaticRoute r4294967295 = vc.getStaticRoutes().get("4294967295");
+    assertThat(r4294967295.getStatus(), equalTo(StaticRoute.Status.DISABLE));
+  }
+
+  @Test
+  public void testStaticRouteConversion() throws IOException {
+    String hostname = "static_routes";
+    Configuration c = parseConfig(hostname);
+
+    Set<org.batfish.datamodel.StaticRoute> staticRoutes =
+        c.getVrfs().get(computeVrfName("root", Interface.DEFAULT_VRF)).getStaticRoutes();
+
+    org.batfish.datamodel.StaticRoute expected0 =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setAdmin(20)
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopInterface.of("port1", Ip.parse("2.2.2.2")))
+            .build();
+    org.batfish.datamodel.StaticRoute expected1 =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setAdmin(StaticRoute.DEFAULT_DISTANCE)
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopInterface.of("port1"))
+            .build();
+    org.batfish.datamodel.StaticRoute expected2 =
+        org.batfish.datamodel.StaticRoute.builder()
+            .setAdmin(StaticRoute.DEFAULT_DISTANCE_SDWAN)
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setNextHop(NextHopInterface.of("port1"))
+            .build();
+
+    // Route 4294967295 doesn't get converted because it's disabled
+    assertThat(staticRoutes, containsInAnyOrder(expected0, expected1, expected2));
+  }
+
+  @Test
+  public void testStaticRouteWarnings() throws IOException {
+    String hostname = "static_route_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings parseWarnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        parseWarnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Expected static route sequence number in range 0-4294967295, but got"
+                        + " '4294967296'"),
+                hasComment(
+                    "Expected static route sequence number in range 0-4294967295, but got"
+                        + " 'not_a_number'"),
+                allOf(
+                    hasComment("Static route edit block ignored: sequence number is invalid"),
+                    hasText(containsString("edit 4294967296"))),
+                allOf(
+                    hasComment("Static route edit block ignored: sequence number is invalid"),
+                    hasText(containsString("edit not_a_number"))),
+                allOf(
+                    hasComment("Static route edit block ignored: device must be set"),
+                    hasText(containsString("edit 1"))))));
   }
 
   @Test
