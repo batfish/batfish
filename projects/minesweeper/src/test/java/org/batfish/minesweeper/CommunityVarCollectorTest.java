@@ -1,6 +1,8 @@
 package org.batfish.minesweeper;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +19,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.expr.EmptyCommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
+import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.junit.Before;
@@ -80,6 +83,15 @@ public class CommunityVarCollectorTest {
     Set<CommunityVar> expected = ImmutableSet.of(CommunityVar.from(COMM1));
 
     assertEquals(expected, result);
+  }
+
+  @Test
+  public void testLiteralCommunityConjunction() {
+    LiteralCommunityConjunction lcc =
+        new LiteralCommunityConjunction(ImmutableSet.of(COMM1, COMM2));
+    Set<CommunityVar> result = CommunityVarCollector.collectCommunityVars(_baseConfig, lcc);
+
+    assertThat(result, containsInAnyOrder(CommunityVar.from(COMM1), CommunityVar.from(COMM2)));
   }
 
   @Test

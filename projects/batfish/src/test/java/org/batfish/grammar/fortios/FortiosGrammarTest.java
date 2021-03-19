@@ -21,8 +21,8 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.fortios.FortiosConfiguration.computeVrfName;
-import static org.batfish.representation.fortios.FortiosPolicyConversions.computeCrossZoneFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.getPolicyName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -76,6 +76,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -731,6 +732,36 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testZoneConversion() throws IOException {
+    String hostname = "zone";
+    Configuration c = parseConfig(hostname);
+
+    Map<String, org.batfish.datamodel.Zone> zones = c.getZones();
+    assertThat(
+        zones.keySet(),
+        containsInAnyOrder("zone1", "zone2", "longest possible valid name for zon"));
+
+    org.batfish.datamodel.Zone zone1 = zones.get("zone1");
+    org.batfish.datamodel.Zone zone2 = zones.get("zone2");
+    org.batfish.datamodel.Zone zoneLongName = zones.get("longest possible valid name for zon");
+
+    assertThat(zone1.getInterfaces(), containsInAnyOrder("port1", "port2"));
+    assertThat(zone2.getInterfaces(), contains("port3"));
+    assertThat(zoneLongName.getInterfaces(), containsInAnyOrder("port4", "port5"));
+
+    // Ensure that all zones' interfaces know what they're in
+    Stream.of(zone1, zone2, zoneLongName)
+        .forEach(
+            zone ->
+                zone.getInterfaces()
+                    .forEach(
+                        zoneIface ->
+                            assertThat(
+                                c.getAllInterfaces().get(zoneIface).getZoneName(),
+                                equalTo(zone.getName()))));
+  }
+
+  @Test
   public void testZoneWarnings() throws IOException {
     String hostname = "zone_warn";
 
@@ -1028,6 +1059,12 @@ public final class FortiosGrammarTest {
     AclLine any = convertedPolicies.get(anyName);
     AclLine zonePolicy = convertedPolicies.get(zonePolicyName);
 
+    assertThat(
+        deny.getName(), equalTo(getPolicyName(denyName, "longest allowed firewall policy nam")));
+    assertThat(allow.getName(), equalTo(getPolicyName(allowName, "Permit Custom TCP Traffic")));
+    assertThat(any.getName(), equalTo(getPolicyName(anyName, null)));
+    assertThat(zonePolicy.getName(), equalTo(getPolicyName(zonePolicyName, null)));
+
     // Create IpAccessListToBdd to convert ACLs.
     Map<String, IpSpace> namedIpSpaces =
         ImmutableMap.of(
@@ -1089,11 +1126,10 @@ public final class FortiosGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Configuration contains unzoned interface port1 and zone zone1 containing port2 and port3
-    String port1IntrazoneName =
-        computeCrossZoneFilterName("interface", "port1", "interface", "port1");
-    String zone1IntrazoneName = computeCrossZoneFilterName("zone", "zone1", "zone", "zone1");
-    String port1ToZone1Name = computeCrossZoneFilterName("interface", "port1", "zone", "zone1");
-    String zone1ToPort1Name = computeCrossZoneFilterName("zone", "zone1", "interface", "port1");
+    String port1IntrazoneName = Names.zoneToZoneFilter("port1", "port1");
+    String zone1IntrazoneName = Names.zoneToZoneFilter("zone1", "zone1");
+    String port1ToZone1Name = Names.zoneToZoneFilter("port1", "zone1");
+    String zone1ToPort1Name = Names.zoneToZoneFilter("zone1", "port1");
     String port1OutgoingName = computeOutgoingFilterName("interface", "port1");
     String zone1OutgoingName = computeOutgoingFilterName("zone", "zone1");
 
