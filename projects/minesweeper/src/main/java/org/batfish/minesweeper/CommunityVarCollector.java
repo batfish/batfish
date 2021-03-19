@@ -63,7 +63,9 @@ public class CommunityVarCollector implements VoidCommunitySetExprVisitor {
   @Override
   public void visitLiteralCommunityConjunction(
       LiteralCommunityConjunction literalCommunityConjunction) {
-    throw new UnsupportedOperationException("no implementation for generated method");
+    literalCommunityConjunction
+        .getRequiredCommunities()
+        .forEach(c -> _builder.add(toCommunityVar(c)));
   }
 
   @Override
