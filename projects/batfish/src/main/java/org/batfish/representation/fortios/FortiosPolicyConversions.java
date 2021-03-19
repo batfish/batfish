@@ -42,6 +42,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -94,7 +95,7 @@ public final class FortiosPolicyConversions {
   private static @Nonnull Stream<ExprAclLine> generateCrossZoneCalls(
       InterfaceOrZone from, InterfaceOrZone to) {
     MatchSrcInterface matchSrcInterfaces = matchSrcInterface(getIncludedInterfaces(from));
-    String crossZoneFilterName = computeCrossZoneFilterName(from, to);
+    String crossZoneFilterName = Names.zoneToZoneFilter(from.getName(), to.getName());
     return Stream.of(
         accepting(and(matchSrcInterfaces, permittedByAcl(crossZoneFilterName))),
         // For traffic from the source interfaces, the deniedByAcl expr is guaranteed to match if it
@@ -108,7 +109,7 @@ public final class FortiosPolicyConversions {
    * Generates filters ({@link IpAccessList}) for traffic from each member of {@code
    * zonesAndUnzonedInterfaces} to every other member of {@code zonesAndUnzonedInterfaces},
    * including both cross-zone and intrazone filters. All filters are named using {@link
-   * #computeCrossZoneFilterName(InterfaceOrZone, InterfaceOrZone)}.
+   * Names#zoneToZoneFilter}.
    *
    * @param convertedPolicies Map of policy number to {@link AclLine} representing that policy
    */
@@ -153,7 +154,8 @@ public final class FortiosPolicyConversions {
             "Cannot generate cross-zone filter for destination type %s",
             toZoneOrIface.getClass().getTypeName()));
 
-    String crossZoneFilterName = computeCrossZoneFilterName(fromZoneOrIface, toZoneOrIface);
+    String crossZoneFilterName =
+        Names.zoneToZoneFilter(fromZoneOrIface.getName(), toZoneOrIface.getName());
 
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
     policies.values().stream()
@@ -194,32 +196,6 @@ public final class FortiosPolicyConversions {
             .collect(ImmutableList.toImmutableList());
     return Streams.concat(zones.stream(), unzonedIfaces.stream())
         .collect(ImmutableList.toImmutableList());
-  }
-
-  /**
-   * Computes name for VI {@link IpAccessList} to apply to traffic from {@code fromZoneOrIface} to
-   * {@code toZoneOrIface}. Flexibly produces intrazone or cross-zone name as appropriate.
-   */
-  static String computeCrossZoneFilterName(
-      InterfaceOrZone fromZoneOrIface, InterfaceOrZone toZoneOrIface) {
-    String fromType = fromZoneOrIface instanceof Interface ? "interface" : "zone";
-    String toType = toZoneOrIface instanceof Interface ? "interface" : "zone";
-    return computeCrossZoneFilterName(
-        fromType, fromZoneOrIface.getName(), toType, toZoneOrIface.getName());
-  }
-
-  /**
-   * Computes name for VI {@link IpAccessList} to apply to traffic from zone or interface named
-   * {@code from} to zone or interface named {@code to}. Flexibly produces intrazone or cross-zone
-   * name as appropriate.
-   */
-  @VisibleForTesting
-  public static String computeCrossZoneFilterName(
-      String fromType, String from, String toType, String to) {
-    if (from.equals(to)) {
-      return String.format("%s~%s~intrazone", fromType, from);
-    }
-    return String.format("%s~%s~to~%s~%s", fromType, from, toType, to);
   }
 
   /**
