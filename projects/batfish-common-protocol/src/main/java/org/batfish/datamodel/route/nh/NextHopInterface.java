@@ -61,7 +61,7 @@ public final class NextHopInterface implements NextHop {
    *     Interface#NULL_INTERFACE_NAME} or the IP is invalid, e.g., {@link Ip#AUTO}
    */
   @Nonnull
-  public static NextHopInterface of(String interfaceName, @Nullable Ip ip) {
+  public static NextHopInterface of(String interfaceName, Ip ip) {
     return CACHE.getUnchecked(new NextHopInterface(interfaceName, ip));
   }
 

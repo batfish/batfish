@@ -30,8 +30,10 @@ public class FortiosRouteConversions {
     return Optional.of(
         org.batfish.datamodel.StaticRoute.builder()
             .setNetwork(route.getDstEffective())
-            // Gateway IP may be null, but that's ok
-            .setNextHop(NextHopInterface.of(route.getDevice(), route.getGateway()))
+            .setNextHop(
+                route.getGateway() == null
+                    ? NextHopInterface.of(route.getDevice())
+                    : NextHopInterface.of(route.getDevice(), route.getGateway()))
             .setAdmin(route.getDistanceEffective())
             .build());
   }
