@@ -10,7 +10,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchPolicyTraceElement;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.zoneToZoneDefaultTraceElement;
 import static org.batfish.representation.fortios.InterfaceOrZoneUtils.getDefaultIntrazoneAction;
 import static org.batfish.representation.fortios.InterfaceOrZoneUtils.getIncludedInterfaces;
@@ -40,11 +42,9 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpaceReference;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.vendor.VendorStructureId;
 
 /** Helper functions for generating VI ACLs for {@link FortiosConfiguration}. */
 public final class FortiosPolicyConversions {
@@ -319,11 +319,7 @@ public final class FortiosPolicyConversions {
                 addr -> {
                   HeaderSpace hs =
                       HeaderSpace.builder().setSrcIps(new IpSpaceReference(addr)).build();
-                  VendorStructureId vsi =
-                      new VendorStructureId(
-                          filename, FortiosStructureType.ADDRESS.getDescription(), addr);
-                  return new MatchHeaderSpace(
-                      hs, TraceElement.builder().add("Match source address", vsi).build());
+                  return new MatchHeaderSpace(hs, matchSourceAddressTraceElement(addr, filename));
                 })
             .collect(ImmutableList.toImmutableList());
     List<AclLineMatchExpr> dstAddrExprs =
@@ -332,11 +328,8 @@ public final class FortiosPolicyConversions {
                 addr -> {
                   HeaderSpace hs =
                       HeaderSpace.builder().setDstIps(new IpSpaceReference(addr)).build();
-                  VendorStructureId vsi =
-                      new VendorStructureId(
-                          filename, FortiosStructureType.ADDRESS.getDescription(), addr);
                   return new MatchHeaderSpace(
-                      hs, TraceElement.builder().add("Match destination address", vsi).build());
+                      hs, matchDestinationAddressTraceElement(addr, filename));
                 })
             .collect(ImmutableList.toImmutableList());
     List<AclLineMatchExpr> svcExprs =
