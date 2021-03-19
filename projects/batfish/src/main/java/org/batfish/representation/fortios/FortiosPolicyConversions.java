@@ -95,7 +95,7 @@ public final class FortiosPolicyConversions {
   private static @Nonnull Stream<ExprAclLine> generateCrossZoneCalls(
       InterfaceOrZone from, InterfaceOrZone to) {
     MatchSrcInterface matchSrcInterfaces = matchSrcInterface(getIncludedInterfaces(from));
-    String crossZoneFilterName = computeCrossZoneFilterName(from, to);
+    String crossZoneFilterName = Names.zoneToZoneFilter(from.getName(), to.getName());
     return Stream.of(
         accepting(and(matchSrcInterfaces, permittedByAcl(crossZoneFilterName))),
         // For traffic from the source interfaces, the deniedByAcl expr is guaranteed to match if it
@@ -109,7 +109,7 @@ public final class FortiosPolicyConversions {
    * Generates filters ({@link IpAccessList}) for traffic from each member of {@code
    * zonesAndUnzonedInterfaces} to every other member of {@code zonesAndUnzonedInterfaces},
    * including both cross-zone and intrazone filters. All filters are named using {@link
-   * #computeCrossZoneFilterName(InterfaceOrZone, InterfaceOrZone)}.
+   * Names#zoneToZoneFilter}.
    *
    * @param convertedPolicies Map of policy number to {@link AclLine} representing that policy
    */
@@ -154,7 +154,8 @@ public final class FortiosPolicyConversions {
             "Cannot generate cross-zone filter for destination type %s",
             toZoneOrIface.getClass().getTypeName()));
 
-    String crossZoneFilterName = computeCrossZoneFilterName(fromZoneOrIface, toZoneOrIface);
+    String crossZoneFilterName =
+        Names.zoneToZoneFilter(fromZoneOrIface.getName(), toZoneOrIface.getName());
 
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
     policies.values().stream()
@@ -195,15 +196,6 @@ public final class FortiosPolicyConversions {
             .collect(ImmutableList.toImmutableList());
     return Streams.concat(zones.stream(), unzonedIfaces.stream())
         .collect(ImmutableList.toImmutableList());
-  }
-
-  /**
-   * Computes name for VI {@link IpAccessList} to apply to traffic from {@code fromZoneOrIface} to
-   * {@code toZoneOrIface}.
-   */
-  static String computeCrossZoneFilterName(
-      InterfaceOrZone fromZoneOrIface, InterfaceOrZone toZoneOrIface) {
-    return Names.zoneToZoneFilter(fromZoneOrIface.getName(), toZoneOrIface.getName());
   }
 
   /**
