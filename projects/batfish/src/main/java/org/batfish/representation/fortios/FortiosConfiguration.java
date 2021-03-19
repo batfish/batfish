@@ -132,6 +132,12 @@ public class FortiosConfiguration extends VendorConfiguration {
     // Convert interfaces. Must happen after converting policies
     _interfaces.values().forEach(iface -> convertInterface(iface, c));
 
+    // Convert zones
+    c.setZones(
+        _zones.values().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(Zone::getName, FortiosConfiguration::convertZone)));
+
     // Count structure references
     markConcreteStructure(FortiosStructureType.ADDRESS);
     markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
@@ -191,9 +197,13 @@ public class FortiosConfiguration extends VendorConfiguration {
     // TODO Is this the right VI field for interface alias?
     Optional.ofNullable(iface.getAlias())
         .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
+    InterfaceOrZone parentIfaceOrZone = findParentInterfaceOrZone(iface);
+    if (parentIfaceOrZone instanceof Zone) {
+      viIface.setZoneName(parentIfaceOrZone.getName());
+    }
     // TODO Check whether FortiOS should use outgoing filter or outgoing original flow filter (i.e.
     //  whether policies act on post-NAT or original flows)
-    String outgoingFilterName = computeOutgoingFilterName(findParentInterfaceOrZone(iface));
+    String outgoingFilterName = computeOutgoingFilterName(parentIfaceOrZone);
     viIface.setOutgoingFilter(c.getIpAccessLists().get(outgoingFilterName));
     viIface.build();
   }
@@ -228,6 +238,12 @@ public class FortiosConfiguration extends VendorConfiguration {
       default:
         return null;
     }
+  }
+
+  private static @Nonnull org.batfish.datamodel.Zone convertZone(Zone zone) {
+    org.batfish.datamodel.Zone viZone = new org.batfish.datamodel.Zone(zone.getName());
+    viZone.setInterfaces(zone.getInterface());
+    return viZone;
   }
 
   /** Computes the VI name for a VRF in the given VDOM with the given VRF number. */

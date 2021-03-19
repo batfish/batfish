@@ -729,6 +729,36 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testZoneConversion() throws IOException {
+    String hostname = "zone";
+    Configuration c = parseConfig(hostname);
+
+    Map<String, org.batfish.datamodel.Zone> zones = c.getZones();
+    assertThat(
+        zones.keySet(),
+        containsInAnyOrder("zone1", "zone2", "longest possible valid name for zon"));
+
+    org.batfish.datamodel.Zone zone1 = zones.get("zone1");
+    org.batfish.datamodel.Zone zone2 = zones.get("zone2");
+    org.batfish.datamodel.Zone zoneLongName = zones.get("longest possible valid name for zon");
+
+    assertThat(zone1.getInterfaces(), containsInAnyOrder("port1", "port2"));
+    assertThat(zone2.getInterfaces(), contains("port3"));
+    assertThat(zoneLongName.getInterfaces(), containsInAnyOrder("port4", "port5"));
+
+    // Ensure that all zones' interfaces know what they're in
+    Stream.of(zone1, zone2, zoneLongName)
+        .forEach(
+            zone ->
+                zone.getInterfaces()
+                    .forEach(
+                        zoneIface ->
+                            assertThat(
+                                c.getAllInterfaces().get(zoneIface).getZoneName(),
+                                equalTo(zone.getName()))));
+  }
+
+  @Test
   public void testZoneWarnings() throws IOException {
     String hostname = "zone_warn";
 
