@@ -260,10 +260,7 @@ public final class FortiosPolicyConversions {
     if (policy.getStatusEffective() != Policy.Status.ENABLE) {
       return Optional.empty();
     }
-
-    String number = policy.getNumber();
-    @Nullable String name = policy.getName();
-    String numAndName = name == null ? number : String.format("%s named %s", number, name);
+    String numAndName = getPolicyName(policy);
 
     ExprAclLine.Builder line;
     switch (policy.getActionEffective()) {
@@ -337,6 +334,18 @@ public final class FortiosPolicyConversions {
 
     line.setMatchCondition(and(matchConjuncts.build()));
     line.setTraceElement(matchPolicyTraceElement(policy, filename));
+    line.setName(numAndName);
     return Optional.of(line.build());
+  }
+
+  /** Get human-readable name for the specified policy. */
+  private static String getPolicyName(Policy policy) {
+    return getPolicyName(policy.getNumber(), policy.getName());
+  }
+
+  /** Get human-readable name for the specified policy number and name. */
+  @VisibleForTesting
+  public static String getPolicyName(String number, @Nullable String name) {
+    return name == null ? number : String.format("%s named %s", number, name);
   }
 }

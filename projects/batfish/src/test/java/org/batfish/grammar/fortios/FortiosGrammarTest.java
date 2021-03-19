@@ -22,6 +22,7 @@ import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.fortios.FortiosConfiguration.computeVrfName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.getPolicyName;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -1024,6 +1025,12 @@ public final class FortiosGrammarTest {
     AclLine allow = convertedPolicies.get(allowName);
     AclLine any = convertedPolicies.get(anyName);
     AclLine zonePolicy = convertedPolicies.get(zonePolicyName);
+
+    assertThat(
+        deny.getName(), equalTo(getPolicyName(denyName, "longest allowed firewall policy nam")));
+    assertThat(allow.getName(), equalTo(getPolicyName(allowName, "Permit Custom TCP Traffic")));
+    assertThat(any.getName(), equalTo(getPolicyName(anyName, null)));
+    assertThat(zonePolicy.getName(), equalTo(getPolicyName(zonePolicyName, null)));
 
     // Create IpAccessListToBdd to convert ACLs.
     Map<String, IpSpace> namedIpSpaces =
