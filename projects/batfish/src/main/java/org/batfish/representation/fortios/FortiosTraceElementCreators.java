@@ -29,6 +29,32 @@ public final class FortiosTraceElementCreators {
     return te.build();
   }
 
+  /** Creates {@link TraceElement} for specified address used as a destination address. */
+  static TraceElement matchDestinationAddressTraceElement(String addressName, String filename) {
+    TraceElement.Builder te =
+        TraceElement.builder()
+            .add("Matched destination address ")
+            .add(
+                addressName,
+                new VendorStructureId(
+                    filename, FortiosStructureType.ADDRESS.getDescription(), addressName));
+    // TODO handle comment
+    return te.build();
+  }
+
+  /** Creates {@link TraceElement} for specified address used as a source address. */
+  static TraceElement matchSourceAddressTraceElement(String addressName, String filename) {
+    TraceElement.Builder te =
+        TraceElement.builder()
+            .add("Matched source address ")
+            .add(
+                addressName,
+                new VendorStructureId(
+                    filename, FortiosStructureType.ADDRESS.getDescription(), addressName));
+    // TODO handle comment
+    return te.build();
+  }
+
   /** Creates {@link TraceElement} for specified {@link Policy}. */
   static TraceElement matchPolicyTraceElement(Policy policy, String filename) {
     TraceElement.Builder te = TraceElement.builder().add("Matched policy ");
