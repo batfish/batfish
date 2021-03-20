@@ -10,6 +10,7 @@ public enum FortiosStructureUsage implements StructureUsage {
   POLICY_SERVICE("firewall policy service"),
   POLICY_SRCADDR("firewall policy srcaddr"),
   POLICY_SRCINTF("firewall policy srcintf"),
+  STATIC_ROUTE_DEVICE("router static device"),
   ZONE_INTERFACE("system zone interface"),
   ZONE_SELF_REF("system zone");
 

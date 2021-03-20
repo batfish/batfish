@@ -75,6 +75,13 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_protocol_numberContext
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_sctp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_tcp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_udp_portrangeContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_set_dstContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_set_gatewayContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_set_sdwanContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Cs_replacemsgContext;
 import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_editContext;
@@ -119,6 +126,7 @@ import org.batfish.grammar.fortios.FortiosParser.Policy_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Port_rangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Route_distanceContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_port_rangeContext;
@@ -146,6 +154,7 @@ import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
+import org.batfish.representation.fortios.StaticRoute;
 import org.batfish.representation.fortios.Zone;
 import org.batfish.representation.fortios.Zone.IntrazoneAction;
 
@@ -498,6 +507,63 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsi_set_vrf(Csi_set_vrfContext ctx) {
     toInteger(ctx, ctx.value).ifPresent(v -> _currentInterface.setVrf(v));
+  }
+
+  @Override
+  public void enterCrs_edit(FortiosParser.Crs_editContext ctx) {
+    Optional<Long> routeNum = toLong(ctx, ctx.route_num());
+    StaticRoute existing =
+        routeNum.map(Object::toString).map(_c.getStaticRoutes()::get).orElse(null);
+    if (existing != null) {
+      // Make a clone to edit
+      _currentStaticRoute = SerializationUtils.clone(existing);
+    } else {
+      _currentStaticRoute = new StaticRoute(toString(ctx.route_num().str()));
+    }
+    _currentStaticRouteNumValid = routeNum.isPresent();
+  }
+
+  @Override
+  public void exitCrs_edit(Crs_editContext ctx) {
+    String invalidReason = staticRouteValid(_currentStaticRoute, _currentStaticRouteNumValid);
+    if (invalidReason == null) {
+      _c.getStaticRoutes().put(_currentStaticRoute.getSeqNum(), _currentStaticRoute);
+    } else {
+      warn(ctx, String.format("Static route edit block ignored: %s", invalidReason));
+    }
+    _currentStaticRoute = null;
+  }
+
+  @Override
+  public void exitCrs_set_device(Crs_set_deviceContext ctx) {
+    toInterface(ctx, ctx.iface, FortiosStructureUsage.STATIC_ROUTE_DEVICE)
+        .ifPresent(_currentStaticRoute::setDevice);
+  }
+
+  @Override
+  public void exitCrs_set_distance(Crs_set_distanceContext ctx) {
+    toInteger(ctx, ctx.route_distance()).ifPresent(_currentStaticRoute::setDistance);
+  }
+
+  @Override
+  public void exitCrs_set_dst(Crs_set_dstContext ctx) {
+    _currentStaticRoute.setDst(toPrefix(ctx.dst));
+  }
+
+  @Override
+  public void exitCrs_set_gateway(Crs_set_gatewayContext ctx) {
+    _currentStaticRoute.setGateway(toIp(ctx.gateway));
+  }
+
+  @Override
+  public void exitCrs_set_sdwan(Crs_set_sdwanContext ctx) {
+    _currentStaticRoute.setSdwanEnabled(toBoolean(ctx.enabled));
+  }
+
+  @Override
+  public void exitCrs_set_status(Crs_set_statusContext ctx) {
+    _currentStaticRoute.setStatus(
+        toBoolean(ctx.enabled) ? StaticRoute.Status.ENABLE : StaticRoute.Status.DISABLE);
   }
 
   @Override
@@ -1112,6 +1178,22 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /**
+   * Convert specified interface name context into the corresponding interface name, or return empty
+   * optional if there is no such interface.
+   */
+  private Optional<String> toInterface(
+      ParserRuleContext ctx, Interface_nameContext ifaceNameCtx, FortiosStructureUsage usage) {
+    String ifaceName = toString(ifaceNameCtx.str());
+    if (!_c.getInterfaces().containsKey(ifaceName)) {
+      warn(ctx, String.format("Interface %s is undefined", ifaceName));
+      _c.undefined(FortiosStructureType.INTERFACE, ifaceName, usage, ctx.start.getLine());
+      return Optional.empty();
+    }
+    _c.referenceStructure(FortiosStructureType.INTERFACE, ifaceName, usage, ctx.start.getLine());
+    return Optional.of(ifaceName);
+  }
+
+  /**
    * Convert specified service_port_ranges context into an IntegerSpace representing the destination
    * ports specified by the context.
    */
@@ -1381,6 +1463,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toLongInSpace(messageCtx, ctx.str(), POLICY_NUMBER_SPACE, "policy number");
   }
 
+  private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Route_numContext routeNum) {
+    return toLongInSpace(
+        ctx, routeNum.str(), STATIC_ROUTE_NUM_SPACE, "static route sequence number");
+  }
+
   private @Nonnull Optional<Long> toLongInSpace(
       ParserRuleContext messageCtx, StrContext ctx, LongSpace space, String name) {
     return toLongInSpace(messageCtx, toString(ctx), space, name);
@@ -1465,6 +1552,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, MtuContext mtu) {
     return toIntegerInSpace(ctx, mtu.uint16(), MTU_SPACE, "mtu");
+  }
+
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Route_distanceContext routeDistance) {
+    return toIntegerInSpace(
+        ctx, routeDistance.uint8(), ADMIN_DISTANCE_SPACE, "route administrative distance");
   }
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, VrfContext vrf) {
@@ -1601,6 +1693,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
   }
 
+  private static @Nullable String staticRouteValid(StaticRoute staticRoute, boolean seqNumValid) {
+    if (!seqNumValid) {
+      return "sequence number is invalid";
+    } else if (staticRoute.getDevice() == null) {
+      return "device must be set";
+    }
+    return null;
+  }
+
   /**
    * Class representing a set of interfaces as well as a set of zones. For use with firewall
    * policies srcintf and dstintf references.
@@ -1639,6 +1740,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
   private static final LongSpace POLICY_NUMBER_SPACE = LongSpace.of(Range.closed(0L, 4294967294L));
+  private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
+  private static final LongSpace STATIC_ROUTE_NUM_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
 
   private Address _currentAddress;
@@ -1667,6 +1771,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    */
   private boolean _currentServiceValid;
 
+  private StaticRoute _currentStaticRoute;
+  private boolean _currentStaticRouteNumValid;
   private Zone _currentZone;
   /** Whether the current zone has an invalid name. */
   private boolean _currentZoneNameValid;

@@ -11,6 +11,9 @@ single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 // 1-15 characters for interface, but 1-35 for zone
 interface_or_zone_name: str;
 
+// Up to 15 characters
+interface_name: str;
+
 interface_names: interface_name+;
 
 quoted_text: QUOTED_TEXT+;
