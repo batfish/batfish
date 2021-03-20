@@ -5,6 +5,7 @@ import static org.batfish.representation.fortios.FortiosPolicyConversions.conver
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateCrossZoneFilters;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateOutgoingFilters;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getZonesAndUnzonedInterfaces;
+import static org.batfish.representation.fortios.FortiosRouteConversions.convertStaticRoutes;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
@@ -41,6 +43,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
     _services = new HashMap<>();
+    _staticRoutes = new HashMap<>();
     _zones = new HashMap<>();
   }
 
@@ -90,6 +93,11 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _services;
   }
 
+  /** route seq num -> static route */
+  public @Nonnull Map<String, StaticRoute> getStaticRoutes() {
+    return _staticRoutes;
+  }
+
   /** name -> zone */
   public @Nonnull Map<String, Zone> getZones() {
     return _zones;
@@ -103,6 +111,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
   private final @Nonnull Map<String, Service> _services;
+  private final @Nonnull Map<String, StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Zone> _zones;
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
@@ -137,6 +146,14 @@ public class FortiosConfiguration extends VendorConfiguration {
         _zones.values().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Zone::getName, FortiosConfiguration::convertZone)));
+
+    // TODO Are FortiOS static routes really global? Can't set their VRFs. Perhaps they should
+    //  only exist in their device's VRF.
+    // Convert static routes and add them to every VRF. Must happen after all VRFs are created
+    // (interfaces must be converted).
+    SortedSet<org.batfish.datamodel.StaticRoute> viStaticRoutes =
+        convertStaticRoutes(_staticRoutes.values());
+    c.getVrfs().values().forEach(vrf -> vrf.setStaticRoutes(viStaticRoutes));
 
     // Count structure references
     markConcreteStructure(FortiosStructureType.ADDRESS);

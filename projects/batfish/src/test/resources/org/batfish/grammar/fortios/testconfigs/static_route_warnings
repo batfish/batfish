@@ -1,0 +1,13 @@
+config system global
+    set hostname "static_route_warnings"
+end
+config router static
+    # Sequence number too high
+    edit 4294967296
+    next
+    edit not_a_number
+    next
+    edit 1
+        set device port1
+    next
+end
