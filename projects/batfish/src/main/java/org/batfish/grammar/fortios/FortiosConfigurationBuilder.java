@@ -1188,17 +1188,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    */
   private Optional<String> toInterface(
       ParserRuleContext ctx, Interface_nameContext ifaceNameCtx, FortiosStructureUsage usage) {
-    Optional<String> ifaceName = toString(ctx, ifaceNameCtx);
-    if (!ifaceName.isPresent()) {
-      // Warning is handled by toString.
-      // TODO Should this count as an undefined reference?
-      return Optional.empty();
-    } else if (!_c.getInterfaces().containsKey(ifaceName.get())) {
-      warn(ctx, String.format("Interface %s is undefined", ifaceName.get()));
-      _c.undefined(FortiosStructureType.INTERFACE, ifaceName.get(), usage, ctx.start.getLine());
+    String ifaceName = toString(ifaceNameCtx.str());
+    if (!_c.getInterfaces().containsKey(ifaceName)) {
+      warn(ctx, String.format("Interface %s is undefined", ifaceName));
+      _c.undefined(FortiosStructureType.INTERFACE, ifaceName, usage, ctx.start.getLine());
       return Optional.empty();
     }
-    return ifaceName;
+    return Optional.of(ifaceName);
   }
 
   /**

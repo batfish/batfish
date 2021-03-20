@@ -9,6 +9,5 @@ config router static
     next
     edit 1
         set device port1
-        set device too-long-for-an-iface
     next
 end

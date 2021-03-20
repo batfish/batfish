@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -1395,29 +1394,19 @@ public final class FortiosGrammarTest {
                     hasText(containsString("edit not_a_number"))),
                 // Route 1 tries to set device to port1 (undefined) and an invalid interface name
                 hasComment("Interface port1 is undefined"),
-                hasComment("Illegal value for interface name"),
                 allOf(
                     hasComment("Static route edit block ignored: device must be set"),
                     hasText(containsString("edit 1"))))));
 
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
-    String filename = "configs/" + hostname;
     assertThat(
         ccae,
-        allOf(
-            hasUndefinedReference(
-                filename,
-                FortiosStructureType.INTERFACE,
-                "port1",
-                FortiosStructureUsage.STATIC_ROUTE_DEVICE),
-            // No undefined reference filed for invalid interface name
-            not(
-                hasUndefinedReference(
-                    filename,
-                    FortiosStructureType.INTERFACE,
-                    "too-long-for-an-iface",
-                    FortiosStructureUsage.STATIC_ROUTE_DEVICE))));
+        hasUndefinedReference(
+            "configs/" + hostname,
+            FortiosStructureType.INTERFACE,
+            "port1",
+            FortiosStructureUsage.STATIC_ROUTE_DEVICE));
   }
 
   @Test
