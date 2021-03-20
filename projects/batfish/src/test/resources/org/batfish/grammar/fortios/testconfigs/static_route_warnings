@@ -7,7 +7,8 @@ config router static
     next
     edit not_a_number
     next
-    # No device set
     edit 1
+        set device port1
+        set device too-long-for-an-iface
     next
 end

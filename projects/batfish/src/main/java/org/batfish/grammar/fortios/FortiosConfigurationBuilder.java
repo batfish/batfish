@@ -537,7 +537,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCrs_set_device(Crs_set_deviceContext ctx) {
-    toString(ctx, ctx.iface).ifPresent(_currentStaticRoute::setDevice);
+    toInterface(ctx, ctx.iface, FortiosStructureUsage.STATIC_ROUTE_DEVICE)
+        .ifPresent(_currentStaticRoute::setDevice);
   }
 
   @Override
@@ -1175,6 +1176,25 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       }
     }
     return Optional.of(new InterfacesAndZones(ifaceNameBuilder.build(), zonesUuidBuilder.build()));
+  }
+
+  /**
+   * Convert specified interface name context into the corresponding interface name, or return empty
+   * optional if there is no such interface.
+   */
+  private Optional<String> toInterface(
+      ParserRuleContext ctx, Interface_nameContext ifaceNameCtx, FortiosStructureUsage usage) {
+    Optional<String> ifaceName = toString(ctx, ifaceNameCtx);
+    if (!ifaceName.isPresent()) {
+      // Warning is handled by toString.
+      // TODO Should this count as an undefined reference?
+      return Optional.empty();
+    } else if (!_c.getInterfaces().containsKey(ifaceName.get())) {
+      warn(ctx, String.format("Interface %s is undefined", ifaceName.get()));
+      _c.undefined(FortiosStructureType.INTERFACE, ifaceName.get(), usage, ctx.start.getLine());
+      return Optional.empty();
+    }
+    return ifaceName;
   }
 
   /**
