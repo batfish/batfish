@@ -528,11 +528,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     String invalidReason = staticRouteValid(_currentStaticRoute, _currentStaticRouteNumValid);
     if (invalidReason == null) {
       _c.getStaticRoutes().put(_currentStaticRoute.getSeqNum(), _currentStaticRoute);
-      _c.referenceStructure(
-          FortiosStructureType.INTERFACE,
-          _currentStaticRoute.getDevice(),
-          FortiosStructureUsage.STATIC_ROUTE_DEVICE,
-          ctx.start.getLine());
     } else {
       warn(ctx, String.format("Static route edit block ignored: %s", invalidReason));
     }
@@ -1194,6 +1189,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       _c.undefined(FortiosStructureType.INTERFACE, ifaceName, usage, ctx.start.getLine());
       return Optional.empty();
     }
+    _c.referenceStructure(FortiosStructureType.INTERFACE, ifaceName, usage, ctx.start.getLine());
     return Optional.of(ifaceName);
   }
 
