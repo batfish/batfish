@@ -1,0 +1,14 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname bundle-ether-subif
+!
+interface Bundle-Ether500
+ mtu 9216
+!
+interface Bundle-Ether500.2
+ vrf VRF
+ ipv4 address 10.0.0.1 255.255.255.254
+ encapsulation dot1q 2
+!
+interface TenGigE0/1
+ bundle id 500 mode active
+!
