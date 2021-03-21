@@ -3,6 +3,7 @@ parser grammar AristaParser;
 import
 Arista_common,
 Legacy_common,
+Arista_aspath,
 Arista_bgp,
 Arista_cvx,
 Arista_email,
@@ -2466,7 +2467,8 @@ s_ip
 :
   IP
   (
-    s_ip_domain_name
+    s_ip_as_path
+    | s_ip_domain_name
     | s_ip_igmp
     | s_ip_name_server
     | s_ip_nbar
@@ -3472,7 +3474,6 @@ stanza
    | del_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
-   | ip_as_path_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
    | ip_community_list_standard_stanza

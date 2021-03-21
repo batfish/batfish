@@ -683,8 +683,6 @@ import org.batfish.grammar.arista.AristaParser.Int_exprContext;
 import org.batfish.grammar.arista.AristaParser.Interface_addressContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Interface_nameContext;
-import org.batfish.grammar.arista.AristaParser.Ip_as_path_access_list_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Ip_as_path_access_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_community_list_expanded_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_community_list_expanded_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_community_list_standard_stanzaContext;
@@ -700,6 +698,8 @@ import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_route_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_ssh_versionContext;
+import org.batfish.grammar.arista.AristaParser.Ipap_access_listContext;
+import org.batfish.grammar.arista.AristaParser.Ipap_originContext;
 import org.batfish.grammar.arista.AristaParser.Ipsec_authenticationContext;
 import org.batfish.grammar.arista.AristaParser.Ipsec_encryptionContext;
 import org.batfish.grammar.arista.AristaParser.Ipsec_encryption_arubaContext;
@@ -1211,8 +1211,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private AristaBgpVlanBase _currentAristaBgpVlan;
   private AristaBgpVrf _currentAristaBgpVrf;
   private AristaBgpVrfAddressFamily _currentAristaBgpVrfAf;
-
-  private IpAsPathAccessList _currentAsPathAcl;
 
   private CryptoMapEntry _currentCryptoMapEntry;
 
@@ -3585,14 +3583,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIp_as_path_access_list_stanza(Ip_as_path_access_list_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    _currentAsPathAcl =
-        _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
-    _configuration.defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
-  }
-
-  @Override
   public void enterIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
     String name;
     if (ctx.num != null) {
@@ -5780,16 +5770,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIp_as_path_access_list_stanza(Ip_as_path_access_list_stanzaContext ctx) {
-    _currentAsPathAcl = null;
-  }
-
-  @Override
-  public void exitIp_as_path_access_list_tail(Ip_as_path_access_list_tailContext ctx) {
+  public void exitIpap_access_list(Ipap_access_listContext ctx) {
+    String name = ctx.name.getText();
+    String regex = ctx.regex.getText().trim();
     LineAction action = toLineAction(ctx.action);
-    String regex = ctx.as_path_regex.getText().trim();
-    IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex);
-    _currentAsPathAcl.addLine(line);
+    IpAsPathAccessListLine.OriginType origin = toOriginType(ctx.origin);
+    if (origin != IpAsPathAccessListLine.OriginType.ANY) {
+      warn(ctx, "Origin type other than ANY is not yet supported");
+    }
+    IpAsPathAccessListLine line = new IpAsPathAccessListLine(action, regex, origin);
+    IpAsPathAccessList list =
+        _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
+    list.addLine(line);
+    _configuration.defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -8167,6 +8160,19 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       return LineAction.DENY;
     } else {
       throw convError(LineAction.class, ctx);
+    }
+  }
+
+  private IpAsPathAccessListLine.OriginType toOriginType(Ipap_originContext ctx) {
+    if (ctx == null || ctx.ANY() != null) {
+      return IpAsPathAccessListLine.OriginType.ANY;
+    } else if (ctx.EGP() != null) {
+      return IpAsPathAccessListLine.OriginType.EGP;
+    } else if (ctx.IGP() != null) {
+      return IpAsPathAccessListLine.OriginType.IGP;
+    } else {
+      assert ctx.INCOMPLETE() != null;
+      return IpAsPathAccessListLine.OriginType.INCOMPLETE;
     }
   }
 

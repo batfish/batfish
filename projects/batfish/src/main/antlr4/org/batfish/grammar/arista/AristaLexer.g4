@@ -5777,39 +5777,41 @@ M_AsPath_WS
 
 mode M_AsPathAccessList;
 
-M_AsPathAccessList_DEC
+M_AsPathAccessList_WORD
 :
-   F_Digit+ -> type ( DEC )
-;
-
-M_AsPathAccessList_DENY
-:
-   'deny' -> type ( DENY ) , mode ( M_Description )
+   F_NonWhitespace+ -> type(WORD), mode(M_AsPathAccessList_Action)
 ;
 
 M_AsPathAccessList_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , mode ( DEFAULT_MODE )
-;
-
-M_AsPathAccessList_PERMIT
-:
-   'permit' -> type ( PERMIT ) , mode ( M_Description )
-;
-
-M_AsPathAccessList_SEQ
-:
-   'seq' -> type ( SEQ )
-;
-
-M_AsPathAccessList_VARIABLE
-:
-   F_Variable_RequiredVarChar F_Variable_VarChar* -> type ( VARIABLE )
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_AsPathAccessList_WS
 :
-   F_Whitespace+ -> channel ( HIDDEN )
+   F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_AsPathAccessList_Action;
+
+M_AsPathAccessList_Action_DENY
+:
+   'deny' -> type(DENY), mode(M_Word)
+;
+
+M_AsPathAccessList_Action_PERMIT
+:
+   'permit' -> type(PERMIT), mode(M_Word)
+;
+
+M_AsPathAccessList_Action_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_AsPathAccessList_Action_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_Authentication;
