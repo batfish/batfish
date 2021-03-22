@@ -60,7 +60,7 @@ ACCESS_LIST
 :
   'access-list'
   {
-    if (lastTokenType() == IP) {
+    if (lastTokenType() == IP || lastTokenType() == IPV6) {
       pushMode(M_Ip_access_list);
     }
   }
@@ -782,8 +782,6 @@ COMMUNITY_LIST
    'community-list'
    {
       _enableIpv6Address = false;
-      _enableCommunityListNum = true;
-      _enableDec = false;
    }
 ;
 
@@ -3634,6 +3632,8 @@ REFLECTION: 'reflection';
 
 REGEX_MODE: 'regex-mode';
 
+REGEXP: 'regexp';
+
 REGISTER_RATE_LIMIT: 'register-rate-limit';
 
 REGISTER_SOURCE: 'register-source';
@@ -4265,11 +4265,7 @@ STACK_MIB: 'stack-mib';
 
 STALEPATH_TIME: 'stalepath-time';
 
-STANDARD
-:
-   'standard'
-   {_enableDec = true;}
-;
+STANDARD: 'standard';
 
 STANDBY: 'standby';
 
@@ -5078,13 +5074,6 @@ VARIABLE
          )
       )
    )
-   {
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-
 ;
 
 AMPERSAND
@@ -5209,10 +5198,7 @@ DOLLAR
 
 DEC
 :
-   F_Digit
-   {_enableDec}?
-
-   F_Digit*
+   F_Digit+
 ;
 
 DIGIT
@@ -5268,7 +5254,6 @@ NEWLINE
   {
     _enableIpv6Address = true;
     _enableIpAddress = true;
-    _enableDec = true;
     _enableRegex = false;
   }
 ;
@@ -6672,14 +6657,7 @@ M_RouteMap_NEWLINE
 
 M_RouteMap_VARIABLE
 :
-   F_NonWhitespace+
-   {
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-   -> type ( VARIABLE ) , popMode
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
 ;
 
 M_RouteMap_WS

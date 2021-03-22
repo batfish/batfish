@@ -44,10 +44,8 @@ public abstract class AristaBaseLexer extends BatfishLexer {
     return last == '\n' || last == '\r';
   }
 
-  protected boolean _enableDec = true;
   protected boolean _enableIpv6Address = true;
   protected boolean _enableIpAddress = true;
-  protected boolean _enableCommunityListNum = false;
   protected boolean _enableRegex = false;
 
   private int _lastTokenType = -1;
@@ -56,8 +54,6 @@ public abstract class AristaBaseLexer extends BatfishLexer {
   @Override
   public @Nonnull String printStateVariables() {
     StringBuilder sb = new StringBuilder();
-    sb.append("_enableCommunityListNum: " + _enableCommunityListNum + "\n");
-    sb.append("_enableDec: " + _enableDec + "\n");
     sb.append("_enableIpAddress: " + _enableIpAddress + "\n");
     sb.append("_enableIpv6Address: " + _enableIpv6Address + "\n");
     sb.append("_enableRegex: " + _enableRegex + "\n");

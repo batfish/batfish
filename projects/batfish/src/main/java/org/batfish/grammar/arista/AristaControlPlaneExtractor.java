@@ -3656,9 +3656,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void enterIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
     String name;
-    if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else if (ctx.name_cl != null) {
+    if (ctx.name_cl != null) {
       name = ctx.name_cl.getText();
     } else {
       throw new BatfishException("Invalid standard community-list name");

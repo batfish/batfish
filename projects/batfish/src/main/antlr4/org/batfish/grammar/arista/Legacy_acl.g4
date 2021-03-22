@@ -307,12 +307,8 @@ ip_community_list_expanded_tail
 ip_community_list_standard_stanza
 :
    IP COMMUNITY_LIST
-   (
-      (
-         STANDARD name = variable
-      )
-      | name_cl = variable_community_list
-   ) ip_community_list_standard_tail
+     name_cl = variable_community_list
+     ip_community_list_standard_tail
 ;
 
 ip_community_list_standard_tail
@@ -682,8 +678,7 @@ standard_ipv6_access_list_tail
 
 variable_community_list
 :
-   ~( NEWLINE | DEC
-   )
+   ~(NEWLINE | REGEXP)
 ;
 
 xr_mac_specifier
