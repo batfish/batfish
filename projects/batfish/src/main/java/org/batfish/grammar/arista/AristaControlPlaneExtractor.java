@@ -869,7 +869,6 @@ import org.batfish.grammar.arista.AristaParser.Viaf_vrrpContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_addressContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_preemptContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_priorityContext;
-import org.batfish.grammar.arista.AristaParser.Vlan_idContext;
 import org.batfish.grammar.arista.AristaParser.Vrfc_rdContext;
 import org.batfish.grammar.arista.AristaParser.Vrfc_route_targetContext;
 import org.batfish.grammar.arista.AristaParser.Vrfc_shutdownContext;
@@ -912,7 +911,6 @@ import org.batfish.representation.arista.IsisProcess;
 import org.batfish.representation.arista.IsisRedistributionPolicy;
 import org.batfish.representation.arista.Keyring;
 import org.batfish.representation.arista.LoggingHost;
-import org.batfish.representation.arista.MacAccessList;
 import org.batfish.representation.arista.MatchSemantics;
 import org.batfish.representation.arista.MlagConfiguration;
 import org.batfish.representation.arista.NamedRsaPubKey;
@@ -1044,10 +1042,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return Integer.parseInt(t.getText());
   }
 
-  private static int toInteger(Vlan_idContext ctx) {
-    return Integer.parseInt(ctx.getText(), 10);
-  }
-
   private static String toInterfaceName(Interface_nameContext ctx) {
     StringBuilder name =
         new StringBuilder(
@@ -1166,8 +1160,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private AristaConfiguration _configuration;
 
-  private List<AaaAccountingCommands> _currentAaaAccountingCommands;
-
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
   private Long _currentAclSeq;
@@ -1212,8 +1204,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private List<String> _currentLineNames;
 
-  private MacAccessList _currentMacAccessList;
-
   private Long _currentOspfArea;
 
   private String _currentOspfInterface;
@@ -1233,8 +1223,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private RouteMapClause _currentRouteMapClause;
 
   private SnmpCommunity _currentSnmpCommunity;
-
-  private SnmpHost _currentSnmpHost;
 
   private StandardAccessList _currentStandardAcl;
 
@@ -1365,7 +1353,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       AaaAccountingCommands c = commands.computeIfAbsent(level, k -> new AaaAccountingCommands());
       currentAaaAccountingCommands.add(c);
     }
-    _currentAaaAccountingCommands = currentAaaAccountingCommands;
   }
 
   @Override
@@ -4153,7 +4140,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       throw new BatfishException("Invalid host");
     }
     Map<String, SnmpHost> hosts = _configuration.getSnmpServer().getHosts();
-    _currentSnmpHost = hosts.computeIfAbsent(hostname, SnmpHost::new);
+    hosts.computeIfAbsent(hostname, SnmpHost::new);
   }
 
   @Override
@@ -4193,11 +4180,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
     _configuration.referenceStructure(
         INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
-  }
-
-  @Override
-  public void exitAaa_accounting_commands_line(Aaa_accounting_commands_lineContext ctx) {
-    _currentAaaAccountingCommands = null;
   }
 
   @Override
@@ -7371,11 +7353,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
     _configuration.referenceStructure(IP_ACCESS_LIST, acl, SNMP_SERVER_FILE_TRANSFER_ACL, line);
-  }
-
-  @Override
-  public void exitSs_host(Ss_hostContext ctx) {
-    _currentSnmpHost = null;
   }
 
   @Override
