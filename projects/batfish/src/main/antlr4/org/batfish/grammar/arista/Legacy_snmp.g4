@@ -134,7 +134,7 @@ ss_host_traps
 
 ss_host_udp_port
 :
-  UDP_PORT num = DEC
+  UDP_PORT num = dec
 ;
 
 ss_host_version
@@ -235,7 +235,7 @@ ssc_access_control
          |
          (
             IPV6 acl6 = variable_snmp
-         ) DEC?
+         ) dec?
       )
       | acl4 = variable_snmp
    )* NEWLINE

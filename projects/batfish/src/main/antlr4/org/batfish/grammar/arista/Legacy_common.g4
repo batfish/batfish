@@ -22,8 +22,8 @@ address_family_footer
 
 bgp_asn
 :
-    asn = DEC
-    | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
+    asn = uint32
+    | asn4b = FLOAT // dec.dec , but this lexes as FLOAT
 ;
 
 community
@@ -53,7 +53,7 @@ double_quoted_string
 
 dscp_type
 :
-   DEC
+   dec
    | AF11
    | AF12
    | AF13
@@ -79,7 +79,7 @@ dscp_type
 
 ec_literal
 :
-   DEC COLON DEC
+   dec COLON dec
 ;
 
 eos_vlan_id
@@ -92,7 +92,7 @@ eos_vlan_id
 
 eos_vxlan_interface_name
 :
-   VXLAN DEC
+   VXLAN dec
 ;
 
 exit_line
@@ -111,7 +111,7 @@ int_expr
       (
          PLUS
          | DASH
-      )? DEC
+      )? dec
    )
    | IGP_COST
 ;
@@ -123,7 +123,7 @@ interface_name
     (
       (
         name_middle_parts += M_Interface_PREFIX
-      )? name_middle_parts += DEC
+      )? name_middle_parts += (DEC | UINT8 | UINT16 | UINT32)
       (
         name_middle_parts += FORWARD_SLASH
         | name_middle_parts += PERIOD
@@ -138,14 +138,14 @@ interface_name_unstructured
 :
   (
     VARIABLE
-    | variable_interface_name DEC?
+    | variable_interface_name dec?
   )
   (
     (
       COLON
       | FORWARD_SLASH
       | PERIOD
-    ) DEC
+    ) dec
   )*
 ;
 
@@ -200,12 +200,12 @@ null_rest_of_line
 ospf_route_type
 :
    (
-      EXTERNAL DEC?
+      EXTERNAL dec?
    )
    | INTERNAL
    |
    (
-      NSSA_EXTERNAL DEC?
+      NSSA_EXTERNAL dec?
    )
 ;
 
@@ -240,7 +240,7 @@ port_specifier
 
 port
 :
-   DEC
+   dec
    | ACAP
    | ACR_NEMA
    | AFPOVERTCP
@@ -455,7 +455,7 @@ protocol
 :
    AH
    | AHP
-   | DEC
+   | dec
    | ESP
    | GRE
    | ICMP
@@ -494,30 +494,19 @@ range
 
 route_distinguisher
 :
-   (IP_ADDRESS | bgp_asn) COLON DEC
+   (IP_ADDRESS | bgp_asn) COLON uint16
 ;
 
 route_target
 :
-   (IP_ADDRESS | bgp_asn) COLON DEC
-;
-
-community_set_elem_half
-:
-   value = DEC
-   |
-   (
-      BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
-   )
-   | ASTERISK
-   | PRIVATE_AS
+   (IP_ADDRESS | bgp_asn) COLON uint16
 ;
 
 subrange
 :
-   low = DEC
+   low = dec
    (
-      DASH high = DEC
+      DASH high = dec
    )?
 ;
 
@@ -526,11 +515,6 @@ switchport_trunk_encapsulation
    DOT1Q
    | ISL
    | NEGOTIATE
-;
-
-uint32
-:
-  DEC
 ;
 
 variable
@@ -563,7 +547,7 @@ variable_hostname
 
 variable_interface_name
 :
-   ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
+   ~( DEC | UINT8 | UINT16 | UINT32 | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
    NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
@@ -591,7 +575,7 @@ variable_group_id
 
 vlan_id
 :
-  v = DEC
+  v = (DEC | UINT8 | UINT16 | UINT32)
   {isVlanId($v)}?
 
 ;

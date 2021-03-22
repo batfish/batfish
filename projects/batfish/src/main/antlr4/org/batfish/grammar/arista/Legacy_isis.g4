@@ -127,19 +127,19 @@ metric_iis_stanza
 :
    METRIC
    (
-      DEC
+      dec
       | MAXIMUM
    )
    (
-      LEVEL DEC
+      LEVEL dec
    )? NEWLINE
 ;
 
 metric_is_stanza
 :
-   METRIC DEC
+   METRIC dec
    (
-      LEVEL DEC
+      LEVEL dec
    )? NEWLINE
 ;
 
@@ -244,7 +244,7 @@ redistribute_connected_is_stanza
       | LEVEL_2
       |
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
@@ -264,7 +264,7 @@ redistribute_static_is_stanza
       | LEVEL_2
       |
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
@@ -295,11 +295,11 @@ summary_address_is_stanza
       | LEVEL_2
       |
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         TAG tag = DEC
+         TAG tag = dec
       )
    )* NEWLINE
 ;

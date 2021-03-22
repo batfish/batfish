@@ -5193,15 +5193,14 @@ DOLLAR
    '$'
 ;
 
-DEC
-:
-   F_Digit+
-;
+// Numbers: keep in order
+UINT8: F_Uint8;
+UINT16: F_Uint16;
+UINT32: F_Uint32;
 
-DIGIT
-:
-   F_Digit
-;
+// Hope to kill these two eventually
+DEC: F_Digit+;
+DIGIT: F_Digit;
 
 DOUBLE_QUOTE
 :
@@ -5328,16 +5327,6 @@ F_Base64String
       | F_Base64Char F_Base64Char '=='
       | F_Base64Char F_Base64Char F_Base64Char '='
    )
-;
-
-fragment
-F_DecByte
-:
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
 ;
 
 fragment
@@ -5488,7 +5477,7 @@ F_HexWordLE7
 fragment
 F_IpAddress
 :
-  F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+  F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
 ;
 
 fragment
@@ -5579,6 +5568,16 @@ F_StandardCommunity
 ;
 
 fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
+;
+
+fragment
 F_Uint16
 :
   F_Digit
@@ -5588,6 +5587,26 @@ F_Uint16
   | '65' [0-4] F_Digit F_Digit
   | '655' [0-2] F_Digit
   | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
 ;
 
 fragment
