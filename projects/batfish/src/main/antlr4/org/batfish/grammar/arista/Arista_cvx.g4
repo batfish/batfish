@@ -86,7 +86,7 @@ cvx_s_debug
 
 cvx_sba_interval
 :
-  INTERVAL ival = DEC NEWLINE
+  INTERVAL ival = dec NEWLINE
 ;
 
 cvx_sba_no

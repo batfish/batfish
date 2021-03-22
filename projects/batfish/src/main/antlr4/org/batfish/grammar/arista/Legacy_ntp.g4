@@ -100,7 +100,7 @@ ntp_logging
 
 ntp_max_associations
 :
-   MAX_ASSOCIATIONS DEC NEWLINE
+   MAX_ASSOCIATIONS dec NEWLINE
 ;
 
 ntp_master
@@ -131,9 +131,9 @@ ntp_server
    hostname = variable
    (
       IBURST
-      | KEY key = DEC
-      | MAXPOLL DEC
-      | MINPOLL DEC
+      | KEY key = dec
+      | MAXPOLL dec
+      | MINPOLL dec
       | prefer = PREFER
       | SOURCE
         (
@@ -141,7 +141,7 @@ ntp_server
            | src_interface_alias = variable
         )
       | USE_VRF vrf = variable
-      | VERSION ver = DEC
+      | VERSION ver = dec
    )*
    NEWLINE
 ;
@@ -158,7 +158,7 @@ ntp_source_interface
 
 ntp_trusted_key
 :
-   TRUSTED_KEY DEC NEWLINE
+   TRUSTED_KEY dec NEWLINE
 ;
 
 ntp_update_calendar

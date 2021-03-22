@@ -367,6 +367,7 @@ import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_peerContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_pfsContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_transform_setContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ipsec_isakmpContext;
+import org.batfish.grammar.arista.AristaParser.DecContext;
 import org.batfish.grammar.arista.AristaParser.Description_lineContext;
 import org.batfish.grammar.arista.AristaParser.Dh_groupContext;
 import org.batfish.grammar.arista.AristaParser.Distribute_list_is_stanzaContext;
@@ -668,7 +669,6 @@ import org.batfish.grammar.arista.AristaParser.Ip_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_hostnameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_poolContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_pool_rangeContext;
-import org.batfish.grammar.arista.AristaParser.Ip_prefixContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_route_tailContext;
@@ -753,7 +753,6 @@ import org.batfish.grammar.arista.AristaParser.Ro_networkContext;
 import org.batfish.grammar.arista.AristaParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Ro_passive_interface_defaultContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_bgp_aristaContext;
-import org.batfish.grammar.arista.AristaParser.Ro_redistribute_bgp_ciscoContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_connectedContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_ripContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_staticContext;
@@ -862,7 +861,9 @@ import org.batfish.grammar.arista.AristaParser.Track_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Ts_hostContext;
 import org.batfish.grammar.arista.AristaParser.U_passwordContext;
 import org.batfish.grammar.arista.AristaParser.U_roleContext;
+import org.batfish.grammar.arista.AristaParser.Uint16Context;
 import org.batfish.grammar.arista.AristaParser.Uint32Context;
+import org.batfish.grammar.arista.AristaParser.Uint8Context;
 import org.batfish.grammar.arista.AristaParser.VariableContext;
 import org.batfish.grammar.arista.AristaParser.Variable_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Viaf_vrrpContext;
@@ -1034,8 +1035,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private static int toInteger(TerminalNode t) {
-    return Integer.parseInt(t.getText());
+  private static int toInteger(DecContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static int toInteger(Uint8Context ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   private static int toInteger(Token t) {
@@ -1101,22 +1110,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private static Ip6 toIp6(Token t) {
     return Ip6.parse(t.getText());
-  }
-
-  private static long toLong(TerminalNode t) {
-    return Long.parseLong(t.getText());
-  }
-
-  private static long toLong(Token t) {
-    return Long.parseLong(t.getText());
-  }
-
-  private Prefix toPrefix(Ip_prefixContext ctx) {
-    if (ctx.address != null) {
-      return Prefix.create(toIp(ctx.address), toInteger(ctx.mask));
-    } else {
-      return toPrefix(ctx.prefix);
-    }
   }
 
   private static Prefix toPrefix(Token t) {
@@ -1610,7 +1603,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterCis_key(Cis_keyContext ctx) {
-    int encType = ctx.DEC() != null ? toInteger(ctx.DEC()) : 0;
+    int encType = ctx.dec() != null ? toInteger(ctx.dec()) : 0;
     IkeKeyType ikeKeyType;
     if (encType == 0) {
       ikeKeyType = IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED;
@@ -1652,7 +1645,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
     here */
     _configuration.referenceStructure(
-        ISAKMP_POLICY, priority.toString(), ISAKMP_POLICY_SELF_REF, ctx.priority.getLine());
+        ISAKMP_POLICY,
+        priority.toString(),
+        ISAKMP_POLICY_SELF_REF,
+        ctx.priority.getStart().getLine());
   }
 
   @Override
@@ -1690,7 +1686,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitCispol_group(Cispol_groupContext ctx) {
-    int group = Integer.parseInt(ctx.DEC().getText());
+    int group = toInteger(ctx.dec());
     _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.fromGroupNumber(group));
   }
 
@@ -1709,7 +1705,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitCispol_lifetime(Cispol_lifetimeContext ctx) {
-    _currentIsakmpPolicy.setLifetimeSeconds(Integer.parseInt(ctx.DEC().getText()));
+    _currentIsakmpPolicy.setLifetimeSeconds(toInteger(ctx.dec()));
   }
 
   @Override
@@ -3598,15 +3594,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterRo_area(Ro_areaContext ctx) {
-    long area;
-    if (ctx.area_int != null) {
-      area = toLong(ctx.area_int);
-    } else if (ctx.area_ip != null) {
-      area = toIp(ctx.area_ip).asLong();
-    } else {
-      throw new BatfishException("Missing area");
-    }
-    _currentOspfArea = area;
+    _currentOspfArea = toLong(ctx.area);
   }
 
   @Override
@@ -3988,7 +3976,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRo_auto_cost(Ro_auto_costContext ctx) {
-    long referenceBandwidthDec = Long.parseLong(ctx.DEC().getText());
+    long referenceBandwidthDec = toLong(ctx.refbw);
     long referenceBandwidth;
     if (ctx.MBPS() != null) {
       referenceBandwidth = referenceBandwidthDec * 1_000_000;
@@ -4368,7 +4356,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       line = ctx.name.getStart().getLine();
     } else {
       name = ctx.num.getText();
-      line = ctx.num.getLine();
+      line = ctx.num.getStart().getLine();
     }
     _configuration.referenceStructure(ACCESS_LIST, name, CLASS_MAP_ACCESS_GROUP, line);
   }
@@ -4399,8 +4387,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
     int statementLine = ctx.getStart().getLine();
     Integer target = null;
-    if (ctx.DEC() != null) {
-      target = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      target = toInteger(ctx.dec());
     }
     RouteMapContinue continueLine = new RouteMapContinue(target, statementLine);
     _currentRouteMapClause.setContinueLine(continueLine);
@@ -4928,7 +4916,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_bandwidth(If_bandwidthContext ctx) {
-    double newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
+    double newBandwidthBps = toLong(ctx.bw) * 1000.0D;
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
 
@@ -5140,13 +5128,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_eos_mlag(If_eos_mlagContext ctx) {
-    int mlagId = toInteger(ctx.DEC());
+    int mlagId = toInteger(ctx.dec());
     _currentInterfaces.forEach(iface -> iface.setMlagId(mlagId));
   }
 
   @Override
   public void exitIf_mtu(If_mtuContext ctx) {
-    int mtu = toInteger(ctx.DEC());
+    int mtu = toInteger(ctx.dec());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setMtu(mtu);
     }
@@ -6108,9 +6096,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitMatch_tag_rm_stanza(Match_tag_rm_stanzaContext ctx) {
-    Set<Integer> tags = new TreeSet<>();
-    for (Token t : ctx.tag_list) {
-      tags.add(toInteger(t));
+    Set<Long> tags = new TreeSet<>();
+    for (Uint32Context t : ctx.tag_list) {
+      tags.add(toLong(t));
     }
     RouteMapMatchTagLine line = new RouteMapMatchTagLine(tags);
     _currentRouteMapClause.addMatchLine(line);
@@ -6506,7 +6494,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long area = toLong(ctx.area);
     NssaSettings settings = proc.getNssas().computeIfAbsent(area, a -> new NssaSettings());
     if (ctx.default_information_originate != null) {
       settings.setDefaultInformationOriginate(true);
@@ -6521,7 +6509,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRo_area_range(Ro_area_rangeContext ctx) {
-    long areaNum = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long areaNum = toLong(ctx.area);
     Prefix prefix;
     if (ctx.area_prefix != null) {
       prefix = Prefix.parse(ctx.area_prefix.getText());
@@ -6545,7 +6533,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRo_area_stub(Ro_area_stubContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long area = toLong(ctx.area);
     StubSettings settings = proc.getStubs().computeIfAbsent(area, a -> new StubSettings());
     if (ctx.no_summary != null) {
       settings.setNoSummary(true);
@@ -6650,14 +6638,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       address = toIp(ctx.ip);
       wildcard = toIp(ctx.wildcard);
     }
-    long area;
-    if (ctx.area_int != null) {
-      area = toLong(ctx.area_int);
-    } else if (ctx.area_ip != null) {
-      area = toIp(ctx.area_ip).asLong();
-    } else {
-      throw new BatfishException("bad area");
-    }
+    long area = toLong(ctx.area);
     OspfWildcardNetwork network = new OspfWildcardNetwork(address, wildcard, area);
     _currentOspfProcess.getWildcardNetworks().add(network);
   }
@@ -6692,37 +6673,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, ctx.map.getLine());
     }
     r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-  }
-
-  @Override
-  public void exitRo_redistribute_bgp_cisco(Ro_redistribute_bgp_ciscoContext ctx) {
-    OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
-    long as = toAsNum(ctx.bgp_asn());
-    r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
-    if (ctx.metric != null) {
-      int metric = toInteger(ctx.metric);
-      r.setMetric(metric);
-    }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      r.setRouteMap(map);
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, ctx.map.getLine());
-    }
-    if (ctx.type != null) {
-      int typeInt = toInteger(ctx.type);
-      OspfMetricType type = OspfMetricType.fromInteger(typeInt);
-      r.setOspfMetricType(type);
-    } else {
-      r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-    }
-    if (ctx.tag != null) {
-      long tag = toLong(ctx.tag);
-      r.setTag(tag);
-    }
   }
 
   @Override
@@ -7305,7 +7255,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitSet_weight_rm_stanza(Set_weight_rm_stanzaContext ctx) {
-    RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.DEC()));
+    RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.dec()));
     _currentRouteMapClause.addSetLine(line);
   }
 
@@ -7606,8 +7556,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private int getPortNumber(PortContext ctx) {
-    if (ctx.DEC() != null) {
-      return toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      return toInteger(ctx.dec());
     } else {
       NamedPort namedPort = toNamedPort(ctx);
       return namedPort.number();
@@ -7660,8 +7610,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private AsExpr toAsExpr(As_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      int as = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      int as = toInteger(ctx.dec());
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
       return AutoAs.instance();
@@ -7711,8 +7661,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private int toDscpType(Dscp_typeContext ctx) {
     int val;
-    if (ctx.DEC() != null) {
-      val = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      val = toInteger(ctx.dec());
     } else if (ctx.AF11() != null) {
       val = DscpType.AF11.number();
     } else if (ctx.AF12() != null) {
@@ -7883,8 +7833,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   /** Returns the given IPv4 protocol, or {@code null} if none is specified. */
   private @Nullable IpProtocol toIpProtocol(ProtocolContext ctx) {
-    if (ctx.DEC() != null) {
-      int num = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      int num = toInteger(ctx.dec());
       if (num < 0 || num > 255) {
         return convProblem(IpProtocol.class, ctx, null);
       }
@@ -7953,8 +7903,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private LongExpr toLocalPreferenceLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.dec() != null) {
+      long val = toLong(ctx.dec());
       if (ctx.PLUS() != null) {
         return new IncrementLocalPreference(val);
       } else if (ctx.DASH() != null) {
@@ -7994,9 +7944,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private @Nullable Long toLong(Uint32Context ctx) {
+  private @Nullable Long toLong(DecContext ctx) {
     try {
-      long val = Long.parseLong(ctx.getText(), 10);
+      long val = Long.parseLong(ctx.getText());
       checkArgument(0 <= val && val <= 0xFFFFFFFFL);
       return val;
     } catch (IllegalArgumentException e) {
@@ -8004,9 +7954,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
+  private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.dec() != null) {
+      long val = toLong(ctx.dec());
       if (ctx.PLUS() != null) {
         return new IncrementMetric(val);
       } else if (ctx.DASH() != null) {
@@ -8520,7 +8474,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Nonnull
   private RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
-    long dec = toLong(ctx.DEC());
+    long dec = toInteger(ctx.uint16());
     if (ctx.IP_ADDRESS() != null) {
       checkArgument(dec <= 0xFFFFL, "Invalid route distinguisher %s", ctx.getText());
       return RouteDistinguisher.from(toIp(ctx.IP_ADDRESS()), (int) dec);
@@ -8530,7 +8484,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Nonnull
   private ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
-    long la = toLong(ctx.DEC());
+    long la = toInteger(ctx.uint16());
     if (ctx.IP_ADDRESS() != null) {
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
     }

@@ -97,7 +97,7 @@ extended_access_list_additional_feature
    )
    |
    (
-      icmp_message_type = DEC icmp_message_code = DEC?
+      icmp_message_type = uint8 icmp_message_code = uint8?
    )
    | ECE
    | ECHO
@@ -105,7 +105,7 @@ extended_access_list_additional_feature
    | ECHO_REQUEST
    |
    (
-      ECN ecn = DEC
+      ECN ecn = dec
    )
    | ESTABLISHED
    | FIN
@@ -128,7 +128,7 @@ extended_access_list_additional_feature
       (
          DEFAULT
          | DISABLE
-         | (level = DEC (INTERVAL secs = DEC)?)
+         | (level = dec (INTERVAL secs = dec)?)
       )?
    )
    | LOG_INPUT
@@ -172,7 +172,7 @@ extended_access_list_additional_feature
    | TRACEROUTE
    | TRACKED
    | TTL_EXCEEDED
-   | TTL EQ DEC
+   | TTL EQ uint8
    | UNREACHABLE
    | URG
 ;
@@ -183,7 +183,7 @@ extended_access_list_null_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )?
    (
       (
@@ -208,10 +208,10 @@ extended_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? ala = access_list_action
    (
-      VLAN vlan = DEC vmask = HEX
+      VLAN vlan = dec vmask = HEX
    )?
    (
       prot = protocol
@@ -229,7 +229,7 @@ extended_access_list_tail
       )?
    )?
    (
-      SEQUENCE num = DEC
+      SEQUENCE num = dec
    )? NEWLINE
 ;
 
@@ -258,7 +258,7 @@ extended_ipv6_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? ala = access_list_action prot = protocol srcipr = access_list_ip6_range
    (
       alps_src = port_specifier
@@ -273,7 +273,7 @@ extended_ipv6_access_list_tail
       )?
    )?
    (
-      SEQUENCE num = DEC
+      SEQUENCE num = dec
    )? NEWLINE
 ;
 
@@ -297,7 +297,7 @@ ip_community_list_expanded_stanza
 ip_community_list_expanded_tail
 :
    (
-      SEQ DEC
+      SEQ dec
    )? ala = access_list_action DOUBLE_QUOTE?
    (
       remainder += ~( NEWLINE | DOUBLE_QUOTE )
@@ -367,26 +367,26 @@ ip_prefix_list_null_tail
    )
    |
    (
-      NO SEQ DEC NEWLINE
+      NO SEQ dec NEWLINE
    )
 ;
 
 ip_prefix_list_tail
 :
    (
-      SEQ? seqnum = DEC
+      SEQ? seqnum = dec
    )? action = access_list_action prefix = IP_PREFIX
    (
       (
-         GE minpl = DEC
+         GE minpl = dec
       )
       |
       (
-         LE maxpl = DEC
+         LE maxpl = dec
       )
       |
       (
-         EQ eqpl = DEC
+         EQ eqpl = dec
       )
    )* NEWLINE
 ;
@@ -394,19 +394,19 @@ ip_prefix_list_tail
 ipv6_prefix_list_tail
 :
    (
-      SEQ? seqnum = DEC
+      SEQ? seqnum = dec
    )? action = access_list_action prefix6 = IPV6_PREFIX
    (
       (
-         GE minpl = DEC
+         GE minpl = dec
       )
       |
       (
-         LE maxpl = DEC
+         LE maxpl = dec
       )
       |
       (
-         EQ eqpl = DEC
+         EQ eqpl = dec
       )
    )* NEWLINE
 ;
@@ -474,7 +474,7 @@ netdestination6_network
 
 netservice_icmpv6_specifier
 :
-   DEC
+   dec
    | RTR_ADV
 ;
 
@@ -482,16 +482,16 @@ netservice_port_specifier
 :
    (
       (
-         start_port = DEC
+         start_port = dec
          (
-            end_port = DEC
+            end_port = dec
          )?
       )
       |
       (
          LIST DOUBLE_QUOTE
          (
-            elems += DEC
+            elems += dec
          )+ DOUBLE_QUOTE
       )
    )
@@ -554,7 +554,7 @@ s_arp_access_list_extended_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? action = access_list_action
    (
       REQUEST
@@ -576,7 +576,7 @@ s_ethernet_services
 
 s_ethernet_services_tail
 :
-   num = DEC? action = access_list_action src_mac = xr_mac_specifier dst_mac =
+   num = dec? action = access_list_action src_mac = xr_mac_specifier dst_mac =
    xr_mac_specifier NEWLINE
 ;
 
@@ -619,7 +619,7 @@ standard_access_list_additional_feature
    )
    |
    (
-      ECN ecn = DEC
+      ECN ecn = dec
    )
    | LOG
 ;
@@ -630,7 +630,7 @@ standard_access_list_null_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )?
    (
       COUNTERS
@@ -669,7 +669,7 @@ standard_ipv6_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = dec
    )? ala = access_list_action ipr = access_list_ip6_range
    (
       features += standard_access_list_additional_feature
