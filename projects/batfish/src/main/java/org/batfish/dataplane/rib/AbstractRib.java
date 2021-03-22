@@ -13,6 +13,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
@@ -252,6 +253,11 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    */
   protected Set<R> extractRoutes(Prefix prefix) {
     return _tree.getRoutes(prefix);
+  }
+
+  @Override
+  public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
+    return _tree.intersectsPrefixSpace(prefixSpace);
   }
 
   /**

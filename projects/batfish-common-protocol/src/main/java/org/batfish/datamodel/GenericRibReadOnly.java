@@ -50,4 +50,11 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
    *     preferable (i.e. for multipath routing); 1 if lhs route is strictly more preferred than rhs
    */
   int comparePreference(R lhs, R rhs);
+
+  /**
+   * Returns {@code true} iff there is any intersection between the space of all the prefixes
+   * belonging to routes in this rib (that would be returned by {@link #getRoutes}) and the provided
+   * {@code prefixSpace}.
+   */
+  boolean intersectsPrefixSpace(PrefixSpace prefixSpace);
 }

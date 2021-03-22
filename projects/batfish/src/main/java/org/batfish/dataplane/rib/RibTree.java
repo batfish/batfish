@@ -16,6 +16,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
@@ -187,6 +188,14 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     } else {
       return RibDelta.empty();
     }
+  }
+
+  /**
+   * Returns {@code true} iff there is any intersection between the space of all the prefixes
+   * belonging to routes in this tree and the provided {@code prefixSpace}.
+   */
+  public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
+    return _root.intersectsPrefixSpace(prefixSpace);
   }
 
   @Override
