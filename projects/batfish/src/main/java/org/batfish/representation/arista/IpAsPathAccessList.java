@@ -3,27 +3,30 @@ package org.batfish.representation.arista;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+/** The configuration of {@code s_ipap_access_list}. */
+@ParametersAreNonnullByDefault
 public class IpAsPathAccessList implements Serializable {
 
-  private List<IpAsPathAccessListLine> _lines;
-
-  private final String _name;
+  private final @Nonnull List<IpAsPathAccessListLine> _lines;
+  private final @Nonnull String _name;
 
   public IpAsPathAccessList(String name) {
     _name = name;
-    _lines = new ArrayList<>();
+    _lines = new ArrayList<>(1);
   }
 
   public void addLine(IpAsPathAccessListLine line) {
     _lines.add(line);
   }
 
-  public List<IpAsPathAccessListLine> getLines() {
+  public @Nonnull List<IpAsPathAccessListLine> getLines() {
     return _lines;
   }
 
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 }

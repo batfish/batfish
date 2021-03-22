@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: arista
+hostname as-path-access-list
+!
+ip as-path access-list list1 deny _3$
+ip as-path access-list list1 permit .* any
+ip as-path access-list list1 deny .* egp
+ip as-path access-list list1 permit .* igp
+ip as-path access-list list1 deny .* incomplete
+!
