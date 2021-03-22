@@ -5,17 +5,8 @@ options {
 }
 
 tokens {
-   ACL_NUM_APPLETALK,
-   ACL_NUM_EXTENDED,
-   ACL_NUM_EXTENDED_MAC,
-   ACL_NUM_IPX_SAP,
-   ACL_NUM_MAC,
-   ACL_NUM_PROTOCOL_TYPE_CODE,
-   ACL_NUM_STANDARD,
    BANNER_DELIMITER_EOS,
    BANNER_BODY,
-   COMMUNITY_LIST_NUM_EXPANDED,
-   COMMUNITY_LIST_NUM_STANDARD,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
@@ -67,9 +58,12 @@ ACCESS_GROUP: 'access-group';
 
 ACCESS_LIST
 :
-   'access-list'
-   {_enableAclNum = true; _enableDec = false;}
-
+  'access-list'
+  {
+    if (lastTokenType() == IP || lastTokenType() == IPV6) {
+      pushMode(M_Ip_access_list);
+    }
+  }
 ;
 
 ACCESS_SESSION: 'access-session';
@@ -788,8 +782,6 @@ COMMUNITY_LIST
    'community-list'
    {
       _enableIpv6Address = false;
-      _enableCommunityListNum = true;
-      _enableDec = false;
    }
 ;
 
@@ -1590,12 +1582,7 @@ EXTCOMMUNITY
 
 EXTEND: 'extend';
 
-EXTENDED
-:
-   'extended'
-   { _enableDec = true; _enableAclNum = false; }
-
-;
+EXTENDED: 'extended';
 
 EXTENDED_COUNTERS: 'extended-counters';
 
@@ -3645,6 +3632,8 @@ REFLECTION: 'reflection';
 
 REGEX_MODE: 'regex-mode';
 
+REGEXP: 'regexp';
+
 REGISTER_RATE_LIMIT: 'register-rate-limit';
 
 REGISTER_SOURCE: 'register-source';
@@ -4276,12 +4265,7 @@ STACK_MIB: 'stack-mib';
 
 STALEPATH_TIME: 'stalepath-time';
 
-STANDARD
-:
-   'standard'
-   { _enableDec = true; _enableAclNum = false; }
-
-;
+STANDARD: 'standard';
 
 STANDBY: 'standby';
 
@@ -5090,17 +5074,6 @@ VARIABLE
          )
       )
    )
-   {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-
 ;
 
 AMPERSAND
@@ -5225,10 +5198,7 @@ DOLLAR
 
 DEC
 :
-   F_Digit
-   {_enableDec}?
-
-   F_Digit*
+   F_Digit+
 ;
 
 DIGIT
@@ -5284,9 +5254,7 @@ NEWLINE
   {
     _enableIpv6Address = true;
     _enableIpAddress = true;
-    _enableDec = true;
     _enableRegex = false;
-    _enableAclNum = false;
   }
 ;
 
@@ -6485,6 +6453,28 @@ M_Interface_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_Ip_access_list;
+
+M_Ip_access_list_STANDARD
+:
+  'standard' -> type(STANDARD), mode(M_Word)
+;
+
+M_Ip_access_list_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_Ip_access_list_WORD
+:
+  F_NonWhitespace+ -> type(WORD), popMode
+;
+
+M_Ip_access_list_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
 mode M_ISO_Address;
 
 M_ISO_Address_ISO_ADDRESS
@@ -6645,7 +6635,7 @@ M_REMARK_NEWLINE
 
 M_REMARK_REMARK
 :
-   F_NonNewline+
+   F_NonNewline+ -> type(RAW_TEXT)
 ;
 
 mode M_RouteMap;
@@ -6667,18 +6657,7 @@ M_RouteMap_NEWLINE
 
 M_RouteMap_VARIABLE
 :
-   F_NonWhitespace+
-   {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-   -> type ( VARIABLE ) , popMode
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
 ;
 
 M_RouteMap_WS

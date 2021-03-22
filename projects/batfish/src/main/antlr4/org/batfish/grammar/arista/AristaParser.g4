@@ -2466,7 +2466,8 @@ s_ip
 :
   IP
   (
-    s_ip_as_path
+    s_ip_access_list
+    | s_ip_as_path
     | s_ip_domain_name
     | s_ip_igmp
     | s_ip_name_server
@@ -2750,16 +2751,6 @@ no_errdisable
 no_ip
 :
   IP no_ip_igmp
-;
-
-s_no_access_list_extended
-:
-   NO ACCESS_LIST ACL_NUM_EXTENDED NEWLINE
-;
-
-s_no_access_list_standard
-:
-   NO ACCESS_LIST ACL_NUM_STANDARD NEWLINE
 ;
 
 s_no_bfd
@@ -3469,23 +3460,19 @@ ssh_timeout
 
 stanza
 :
-   appletalk_access_list_stanza
-   | del_stanza
-   | extended_access_list_stanza
+   del_stanza
    | extended_ipv6_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
    | ip_community_list_standard_stanza
    | ip_prefix_list_stanza
    | ipv6_prefix_list_stanza
-   | ipx_sap_access_list_stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
    | no_failover
    | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
-   | protocol_type_code_access_list_stanza
    | route_map_stanza
    | router_bgp_stanza
    | router_isis_stanza
@@ -3554,8 +3541,6 @@ stanza
    | s_eos_vxlan_interface
    | s_interface
    | s_ip
-   | s_ip_access_list_eth
-   | s_ip_access_list_session
    | s_ip_default_gateway
    | s_ip_dhcp
    | s_ip_domain
@@ -3579,8 +3564,6 @@ stanza
    | s_logging
    | s_lpts
    | s_management
-   | s_mac_access_list
-   | s_mac_access_list_extended
    | s_map_class
    | s_media_termination
    | s_monitor
@@ -3593,8 +3576,6 @@ stanza
    | s_netdestination6
    | s_netservice
    | s_no
-   | s_no_access_list_extended
-   | s_no_access_list_standard
    | s_no_bfd
    | s_no_enable
    | s_no_vlan_internal_eos
@@ -3663,7 +3644,6 @@ stanza
    | s_wsma
    | s_xconnect_logging
    | srlg_stanza
-   | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
 ;

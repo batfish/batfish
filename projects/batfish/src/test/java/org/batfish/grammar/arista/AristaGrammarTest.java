@@ -178,6 +178,9 @@ import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
 import org.batfish.representation.arista.RouteMap;
 import org.batfish.representation.arista.RouteMapClause;
+import org.batfish.representation.arista.StandardAccessList;
+import org.batfish.representation.arista.StandardAccessListActionLine;
+import org.batfish.representation.arista.StandardAccessListRemarkLine;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -250,6 +253,27 @@ public class AristaGrammarTest {
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
+  }
+
+  /** Tests out-of-order lines, remarks, auto-numbering first and later lines. */
+  @Test
+  public void testStandardAccessList() {
+    AristaConfiguration c = parseVendorConfig("standard-access-list");
+    assertThat(c.getStandardAcls(), hasKeys("LIST1"));
+    StandardAccessList list = c.getStandardAcls().get("LIST1");
+    assertThat(
+        list.getLines().values(),
+        contains(
+            new StandardAccessListActionLine(
+                5, LineAction.PERMIT, "5 permit host 1.2.3.4", IpWildcard.parse("1.2.3.4")),
+            new StandardAccessListRemarkLine(10, "hey there"),
+            new StandardAccessListActionLine(
+                15,
+                LineAction.PERMIT,
+                "15 permit 1.2.3.4 255.255.0.255",
+                IpWildcard.parse("1.2.0.4:0.0.255.0")),
+            new StandardAccessListActionLine(30, LineAction.DENY, "30 deny any", IpWildcard.ANY),
+            new StandardAccessListRemarkLine(40, "last line")));
   }
 
   @Test

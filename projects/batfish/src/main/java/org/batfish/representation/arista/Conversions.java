@@ -514,7 +514,7 @@ public class Conversions {
             .collect(ImmutableList.toImmutableList());
     String sourceType =
         eaList.getParent() != null
-            ? AristaStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
+            ? AristaStructureType.IP_ACCESS_LIST_STANDARD.getDescription()
             : AristaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
     String name = eaList.getName();
     return IpAccessList.builder()
@@ -844,7 +844,9 @@ public class Conversions {
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList) {
     List<RouteFilterLine> lines =
-        saList.getLines().stream()
+        saList.getLines().values().stream()
+            .filter(line -> line instanceof StandardAccessListActionLine)
+            .map(line -> (StandardAccessListActionLine) line)
             .map(Conversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(saList.getName(), lines);
@@ -1080,20 +1082,11 @@ public class Conversions {
   }
 
   /** Convert a standard access list line to a route filter list line */
-  private static RouteFilterLine toRouteFilterLine(StandardAccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    /*
-     * This cast is safe since the other address specifier (network object group specifier)
-     * can be used only from extended ACLs.
-     */
-    IpWildcard srcIpWildcard =
-        ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
-    Prefix prefix = srcIpWildcard.toPrefix();
-
+  private static RouteFilterLine toRouteFilterLine(StandardAccessListActionLine fromLine) {
+    // A standard ACL is simply a wildcard on the network address, and does not filter on the
+    // prefix length at all (beyond the prefix length implied by the unmasked bits in wildcard).
     return new RouteFilterLine(
-        action,
-        IpWildcard.create(prefix),
-        new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
+        fromLine.getAction(), fromLine.getSourceIps(), new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
   }
 
   /**
