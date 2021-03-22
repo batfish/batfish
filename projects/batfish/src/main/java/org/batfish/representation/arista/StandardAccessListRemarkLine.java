@@ -17,6 +17,7 @@ public class StandardAccessListRemarkLine implements StandardAccessListLine {
     _remark = remark;
   }
 
+  @Override
   public long getSeq() {
     return _seq;
   }
