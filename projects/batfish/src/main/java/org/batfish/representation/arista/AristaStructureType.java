@@ -14,10 +14,6 @@ public enum AristaStructureType implements StructureType {
   CRYPTO_DYNAMIC_MAP_SET("crypto-dynamic-map-set"),
   CRYPTO_MAP_SET("crypto-map-set"),
   CSR_PARAMS("csr-params"),
-  DEPI_CLASS("depi-class"),
-  DEPI_TUNNEL("depi-tunnel"),
-  DOCSIS_POLICY("docsis-policy"),
-  DOCSIS_POLICY_RULE("docsis-policy-rule"),
   INSPECT_CLASS_MAP("class-map type inspect"),
   INSPECT_POLICY_MAP("policy-map type inspect"),
   INTERFACE("interface"),
@@ -43,7 +39,6 @@ public enum AristaStructureType implements StructureType {
   PREFIX6_LIST("ipv6 prefix-list"),
   ROUTE_MAP("route-map"),
   ROUTE_MAP_CLAUSE("route-map-clause"),
-  SERVICE_CLASS("cable service-class"),
   SERVICE_TEMPLATE("service-template"),
   TRACK("track"),
   VXLAN("vxlan");

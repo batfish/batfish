@@ -3,6 +3,7 @@ parser grammar AristaParser;
 import
 Arista_common,
 Legacy_common,
+Arista_aspath,
 Arista_bgp,
 Arista_cvx,
 Arista_email,
@@ -12,7 +13,6 @@ Arista_mlag,
 Arista_vlan,
 Legacy_aaa,
 Legacy_acl,
-Legacy_cable,
 Legacy_crypto,
 Legacy_callhome,
 Legacy_interface,
@@ -2466,7 +2466,8 @@ s_ip
 :
   IP
   (
-    s_ip_domain_name
+    s_ip_as_path
+    | s_ip_domain_name
     | s_ip_igmp
     | s_ip_name_server
     | s_ip_nbar
@@ -3472,7 +3473,6 @@ stanza
    | del_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
-   | ip_as_path_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
    | ip_community_list_standard_stanza
@@ -3506,7 +3506,6 @@ stanza
    | s_bfd
    | s_bfd_template
    | s_boot
-   | s_cable
    | s_call_home
    | s_callhome
    | s_call_manager_fallback
@@ -3516,7 +3515,6 @@ stanza
    | s_configure
    | s_control_plane
    | s_control_plane_security
-   | s_controller
    | s_cops
    | s_cos_queue_group
    | s_crypto
@@ -3524,8 +3522,6 @@ stanza
    | s_cvx
    | s_daemon
    | s_default
-   | s_depi_class
-   | s_depi_tunnel
    | s_dhcp
    | s_dialer
    | s_dial_peer

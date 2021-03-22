@@ -171,6 +171,8 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.IpAsPathAccessList;
+import org.batfish.representation.arista.IpAsPathAccessListLine;
 import org.batfish.representation.arista.MlagConfiguration;
 import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
@@ -854,6 +856,45 @@ public class AristaGrammarTest {
     assertThat(
         c.getAllInterfaces().get("Port-Channel6").getAllowedVlans(),
         equalTo(IntegerSpace.of(Range.closed(1, 4))));
+  }
+
+  @Test
+  public void testAsPathAccessListExtraction() {
+    AristaConfiguration c = parseVendorConfig("as-path-access-list");
+    assertThat(c.getAsPathAccessLists(), hasKeys("list1"));
+
+    IpAsPathAccessList list1 = c.getAsPathAccessLists().get("list1");
+    assertThat(list1.getLines(), hasSize(5));
+    {
+      IpAsPathAccessListLine line = list1.getLines().get(0);
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getOriginType(), equalTo(IpAsPathAccessListLine.OriginType.ANY));
+      assertThat(line.getRegex(), equalTo("_3$"));
+    }
+    {
+      IpAsPathAccessListLine line = list1.getLines().get(1);
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getOriginType(), equalTo(IpAsPathAccessListLine.OriginType.ANY));
+      assertThat(line.getRegex(), equalTo(".*"));
+    }
+    {
+      IpAsPathAccessListLine line = list1.getLines().get(2);
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getOriginType(), equalTo(IpAsPathAccessListLine.OriginType.EGP));
+      assertThat(line.getRegex(), equalTo(".*"));
+    }
+    {
+      IpAsPathAccessListLine line = list1.getLines().get(3);
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getOriginType(), equalTo(IpAsPathAccessListLine.OriginType.IGP));
+      assertThat(line.getRegex(), equalTo(".*"));
+    }
+    {
+      IpAsPathAccessListLine line = list1.getLines().get(4);
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getOriginType(), equalTo(IpAsPathAccessListLine.OriginType.INCOMPLETE));
+      assertThat(line.getRegex(), equalTo(".*"));
+    }
   }
 
   @Test
