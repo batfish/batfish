@@ -214,10 +214,22 @@ public final class XrGrammarTest {
   @Test
   public void testBundleEtherSubInterfaces() {
     Configuration c = parseConfig("bundle-ether-subif");
-    assertThat(c.getAllInterfaces(), hasKeys("Bundle-Ether500", "Bundle-Ether500.2", "TenGigE0/1"));
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys(
+            "Bundle-Ether500",
+            "Bundle-Ether500.2",
+            "TenGigE0/1",
+            "Bundle-Ether600",
+            "Bundle-Ether600.2",
+            "TenGigE0/2"));
     assertThat(c.getAllInterfaces().get("Bundle-Ether500"), allOf(isActive(), hasBandwidth(10e9)));
     assertThat(
         c.getAllInterfaces().get("Bundle-Ether500.2"), allOf(isActive(), hasBandwidth(10e9)));
+    assertThat(
+        c.getAllInterfaces().get("Bundle-Ether600"), allOf(isActive(false), hasBandwidth(10e9)));
+    assertThat(
+        c.getAllInterfaces().get("Bundle-Ether600.2"), allOf(isActive(false), hasBandwidth(10e9)));
   }
 
   /**
