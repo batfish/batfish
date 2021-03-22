@@ -19628,7 +19628,7 @@
             ],
             "name" : "sshabc",
             "sourceName" : "sshabc",
-            "sourceType" : "standard ipv4 access-list"
+            "sourceType" : "ip access-list standard"
           }
         },
         "ntpServers" : [
