@@ -734,7 +734,7 @@ aclstd_line
   aclstd_counters
   | aclstd_fragment_rules
   | aclstd_no
-  // | aclstd_requence
+  // | aclstd_resequence
   | aclstd_seq
   | aclstd_statistics
 ;
