@@ -6049,7 +6049,7 @@ public final class FlatJuniperGrammarTest {
 
     // should crash outside of data plane generation
     _thrown.expect(IllegalStateException.class);
-    _thrown.expectMessage("Cannot check RIB routes outside of data plane generation");
+    _thrown.expectMessage("Cannot check RIB routes; RIB state is not available at this time.");
     rp.process(new ConnectedRoute(Prefix.ZERO, "blah"), Bgpv4Route.builder(), Direction.OUT);
   }
 
