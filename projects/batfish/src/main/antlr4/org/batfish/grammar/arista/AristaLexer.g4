@@ -3898,10 +3898,7 @@ RTR_ADV: 'rtr-adv';
 
 RTSP: 'rtsp';
 
-RULE
-:
-   'rule' {_enableRegex = true;}
-;
+RULE: 'rule';
 
 RULE_NAME: 'rule-name';
 
@@ -5254,7 +5251,6 @@ NEWLINE
   {
     _enableIpv6Address = true;
     _enableIpAddress = true;
-    _enableRegex = false;
   }
 ;
 
@@ -5281,16 +5277,6 @@ PERIOD
 PLUS
 :
    '+'
-;
-
-REGEX
-:
-   '/' {_enableRegex}?
-   (
-      ~('/' | '\\')
-      |
-      ( '\\' '/')
-   )* '/'
 ;
 
 SEMICOLON
