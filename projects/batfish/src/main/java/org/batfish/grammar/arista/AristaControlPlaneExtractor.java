@@ -353,7 +353,6 @@ import org.batfish.grammar.arista.AristaParser.Cmm_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_activated_service_templateContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_service_templateContext;
-import org.batfish.grammar.arista.AristaParser.CommunityContext;
 import org.batfish.grammar.arista.AristaParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Copsl_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cp_ip_access_groupContext;
@@ -660,9 +659,7 @@ import org.batfish.grammar.arista.AristaParser.Interface_addressContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Interface_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_community_list_expanded_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Ip_community_list_expanded_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_community_list_standard_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Ip_community_list_standard_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.arista.AristaParser.Ip_domain_lookupContext;
 import org.batfish.grammar.arista.AristaParser.Ip_domain_nameContext;
@@ -685,6 +682,7 @@ import org.batfish.grammar.arista.AristaParser.L_access_classContext;
 import org.batfish.grammar.arista.AristaParser.L_exec_timeoutContext;
 import org.batfish.grammar.arista.AristaParser.L_login_authenticationContext;
 import org.batfish.grammar.arista.AristaParser.L_transportContext;
+import org.batfish.grammar.arista.AristaParser.Literal_standard_communityContext;
 import org.batfish.grammar.arista.AristaParser.Logging_vrfContext;
 import org.batfish.grammar.arista.AristaParser.Logging_vrf_hostContext;
 import org.batfish.grammar.arista.AristaParser.Logging_vrf_source_interfaceContext;
@@ -1173,8 +1171,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private NamedRsaPubKey _currentNamedRsaPubKey;
 
-  private ExpandedCommunityList _currentExpandedCommunityList;
-
   private ExtendedAccessList _currentExtendedAcl;
 
   private ExtendedIpv6AccessList _currentExtendedIpv6Acl;
@@ -1218,8 +1214,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private SnmpCommunity _currentSnmpCommunity;
 
   private StandardAccessList _currentStandardAcl;
-
-  private StandardCommunityList _currentStandardCommunityList;
 
   private StandardIpv6AccessList _currentStandardIpv6Acl;
 
@@ -3530,33 +3524,36 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
-    String name;
-    if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Invalid community-list name");
-    }
-    _currentExpandedCommunityList =
+  public void exitIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
+    String name = ctx.name.getText();
+    ExpandedCommunityList list =
         _configuration
             .getExpandedCommunityLists()
             .computeIfAbsent(name, ExpandedCommunityList::new);
+
+    LineAction action = toLineAction(ctx.action);
+    String regex = ctx.regexp.getText();
+    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, regex);
+    list.addLine(line);
     _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
-  public void enterIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
-    String name;
-    if (ctx.name_cl != null) {
-      name = ctx.name_cl.getText();
-    } else {
-      throw new BatfishException("Invalid standard community-list name");
-    }
-    _currentStandardCommunityList =
+  public void exitIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
+    String name = ctx.name_cl.getText();
+    StandardCommunityList list =
         _configuration
             .getStandardCommunityLists()
             .computeIfAbsent(name, StandardCommunityList::new);
     _configuration.defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
+
+    LineAction action = toLineAction(ctx.action);
+    List<Long> communities = new ArrayList<>();
+    for (Literal_standard_communityContext communityCtx : ctx.communities) {
+      communities.add(toLong(communityCtx));
+    }
+    StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
+    list.getLines().add(line);
   }
 
   @Override
@@ -5600,43 +5597,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
-    _currentExpandedCommunityList = null;
-  }
-
-  @Override
-  public void exitIp_community_list_expanded_tail(Ip_community_list_expanded_tailContext ctx) {
-    LineAction action = toLineAction(ctx.ala);
-    StringBuilder regex = new StringBuilder();
-    for (Token remainder : ctx.remainder) {
-      regex.append(remainder.getText());
-    }
-    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, regex.toString());
-    _currentExpandedCommunityList.addLine(line);
-  }
-
-  @Override
-  public void exitIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
-    _currentStandardCommunityList = null;
-  }
-
-  @Override
-  public void exitIp_community_list_standard_tail(Ip_community_list_standard_tailContext ctx) {
-    LineAction action = toLineAction(ctx.ala);
-    List<Long> communities = new ArrayList<>();
-    for (CommunityContext communityCtx : ctx.communities) {
-      Long community = toLong(communityCtx);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'", communityCtx.getText()));
-        return;
-      }
-      communities.add(community);
-    }
-    StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
-    _currentStandardCommunityList.getLines().add(line);
-  }
-
-  @Override
   public void exitIp_dhcp_relay_server(Ip_dhcp_relay_serverContext ctx) {
     if (!_no && ctx.ip != null) {
       Ip ip = toIp(ctx.ip);
@@ -7137,13 +7097,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitSet_community_additive_rm_stanza(Set_community_additive_rm_stanzaContext ctx) {
     ImmutableList.Builder<StandardCommunity> builder = ImmutableList.builder();
-    for (CommunityContext c : ctx.communities) {
-      Long community = toLong(c);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
-        return;
-      }
-      builder.add(StandardCommunity.of(community));
+    for (Literal_standard_communityContext c : ctx.communities) {
+      builder.add(StandardCommunity.of(toLong(c)));
     }
     RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(builder.build());
     _currentRouteMapClause.addSetLine(line);
@@ -7192,13 +7147,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
     List<Long> commList = new ArrayList<>();
-    for (CommunityContext c : ctx.communities) {
-      Long community = toLong(c);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
-        return;
-      }
-      commList.add(community);
+    for (Literal_standard_communityContext c : ctx.communities) {
+      commList.add(toLong(c));
     }
     RouteMapSetCommunityLine line = new RouteMapSetCommunityLine(commList);
     _currentRouteMapClause.addSetLine(line);
@@ -7921,26 +7871,26 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private @Nullable Long toLong(CommunityContext ctx) {
-    if (ctx.ACCEPT_OWN() != null) {
-      return WellKnownCommunity.ACCEPT_OWN;
-    } else if (ctx.STANDARD_COMMUNITY() != null) {
-      return StandardCommunity.parse(ctx.getText()).asLong();
-    } else if (ctx.uint32() != null) {
-      return toLong(ctx.uint32());
-    } else if (ctx.INTERNET() != null) {
-      return WellKnownCommunity.INTERNET;
+  private long toLong(Literal_standard_communityContext ctx) {
+    if (ctx.u32 != null) {
+      return toLong(ctx.u32);
+    } else if (ctx.lo != null) {
+      assert ctx.hi != null;
+      int lo = toInteger(ctx.lo);
+      int hi = toInteger(ctx.hi);
+      return StandardCommunity.of(hi, lo).asLong();
     } else if (ctx.GSHUT() != null) {
       return WellKnownCommunity.GRACEFUL_SHUTDOWN;
+    } else if (ctx.INTERNET() != null) {
+      return WellKnownCommunity.INTERNET;
     } else if (ctx.LOCAL_AS() != null) {
       // Cisco LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet forums.
       return WellKnownCommunity.NO_EXPORT_SUBCONFED;
     } else if (ctx.NO_ADVERTISE() != null) {
       return WellKnownCommunity.NO_ADVERTISE;
-    } else if (ctx.NO_EXPORT() != null) {
-      return WellKnownCommunity.NO_EXPORT;
     } else {
-      return convProblem(Long.class, ctx, null);
+      assert ctx.NO_EXPORT() != null;
+      return WellKnownCommunity.NO_EXPORT;
     }
   }
 
