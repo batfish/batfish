@@ -32,6 +32,7 @@ public class StandardAccessListActionLine implements StandardAccessListLine {
     return _name;
   }
 
+  @Override
   public long getSeq() {
     return _seq;
   }
@@ -40,6 +41,7 @@ public class StandardAccessListActionLine implements StandardAccessListLine {
     return _sourceIps;
   }
 
+  @Override
   public @Nonnull Optional<ExtendedAccessListLine> toExtendedAccessListLine() {
     return Optional.ofNullable(
         ExtendedAccessListLine.builder()
