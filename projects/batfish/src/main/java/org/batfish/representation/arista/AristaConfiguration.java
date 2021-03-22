@@ -2572,7 +2572,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN,
         AristaStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT);
     markAcls(
-        AristaStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
         AristaStructureUsage.COPS_LISTENER_ACCESS_LIST,
         AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
         AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
@@ -2604,13 +2603,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     // mark references to route-maps
     markConcreteStructure(AristaStructureType.ROUTE_MAP);
-
-    // Cable
-    markConcreteStructure(AristaStructureType.DEPI_CLASS);
-    markConcreteStructure(AristaStructureType.DEPI_TUNNEL);
-    markConcreteStructure(AristaStructureType.DOCSIS_POLICY);
-    markConcreteStructure(AristaStructureType.DOCSIS_POLICY_RULE);
-    markConcreteStructure(AristaStructureType.SERVICE_CLASS);
 
     // L2tp
     markConcreteStructure(AristaStructureType.L2TP_CLASS);
