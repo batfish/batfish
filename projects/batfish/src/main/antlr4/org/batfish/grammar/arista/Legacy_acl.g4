@@ -71,28 +71,6 @@ appletalk_access_list_stanza
    ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
 ;
 
-aruba_access_list_action
-:
-   action = access_list_action
-   | CAPTIVE
-   |
-   (
-      DST_NAT dstnat = DEC
-   )
-   | SRC_NAT
-;
-
-aruba_app
-:
-   BITTORRENT
-   | BITTORRENT_APPLICATION
-;
-
-aruba_appcategory
-:
-   PEER_TO_PEER
-;
-
 bandwidth_irs_stanza
 :
    BANDWIDTH null_rest_of_line
@@ -227,48 +205,6 @@ extended_access_list_null_tail
       | REMARK
       | STATISTICS
    ) null_rest_of_line
-;
-
-extended_access_list_stanza
-:
-   (
-      (
-         IP ACCESS_LIST EXTENDED name = variable_aclname
-      )
-      |
-      (
-         ACCESS_LIST num = ACL_NUM_EXTENDED
-      )
-      |
-      (
-         (
-            IP
-            | IPV4
-         ) ACCESS_LIST
-         (
-            shortname = variable
-            | name = variable_aclname
-         )
-      )
-      |
-      (
-         ACCESS_LIST name = variable_aclname EXTENDED
-      )
-   )
-   (
-      (
-         NEWLINE
-         (
-            extended_access_list_tail
-            | extended_access_list_null_tail
-         )*
-      )
-      |
-      (
-         extended_access_list_tail
-         | extended_access_list_null_tail
-      )
-   ) exit_line?
 ;
 
 extended_access_list_tail
@@ -465,126 +401,6 @@ ip_prefix_list_tail
          EQ eqpl = DEC
       )
    )* NEWLINE
-;
-
-ipacleth_line
-:
-   action = access_list_action ipacleth_range NEWLINE
-;
-
-ipacleth_range
-:
-   ANY
-;
-
-ipaclsession_ip_range
-:
-   (
-      ALIAS alias = variable
-   )
-   | ANY
-   |
-   (
-      HOST hostip = IP_ADDRESS
-   )
-   |
-   (
-      NETWORK net = IP_ADDRESS mask = IP_ADDRESS
-   )
-   | USER
-;
-
-ipaclsession_ip6_range
-:
-   (
-      ALIAS alias = variable
-   )
-   | ANY
-   |
-   (
-      HOST hostip = IPV6_ADDRESS
-   )
-   |
-   (
-      NETWORK net = IPV6_PREFIX
-   )
-   | USER
-;
-
-ipaclsession_line
-:
-   src = ipaclsession_ip_range dst = ipaclsession_ip_range svc =
-   ipaclsession_service action = aruba_access_list_action
-   (
-      (
-         DOT1P_PRIORITY d1ppri = DEC
-      )
-      | LOG
-      |
-      (
-         QUEUE
-         (
-            HIGH
-         )
-      )
-      |
-      (
-         TOS tos = DEC
-      )
-   )* NEWLINE
-;
-
-ipaclsession_line6
-:
-   IPV6 src = ipaclsession_ip6_range dst = ipaclsession_ip6_range svc =
-   ipaclsession_service6 action = aruba_access_list_action
-   (
-      LOG
-      |
-      (
-         QUEUE
-         (
-            HIGH
-         )
-      )
-   )* NEWLINE
-;
-
-ipaclsession_service
-:
-   (
-      APP app = aruba_app
-   )
-   |
-   (
-      APPCATEGORY appcat = aruba_appcategory
-   )
-   |
-   (
-      prot = protocol ps = netservice_port_specifier?
-   )
-   | netsvc = variable
-;
-
-ipaclsession_service6
-:
-   (
-      (
-         (
-            TCP
-            | UDP
-         ) ps = netservice_port_specifier?
-      )
-      |
-      (
-         ICMPV6 is = netservice_icmpv6_specifier?
-      )
-      |
-      (
-         prot = protocol
-      )
-   )
-   | netsvc = variable
 ;
 
 ipv6_prefix_list_tail
@@ -809,23 +625,6 @@ s_ethernet_services_tail
    xr_mac_specifier NEWLINE
 ;
 
-s_ip_access_list_eth
-:
-   IP ACCESS_LIST ETH name = variable NEWLINE
-   (
-      ipacleth_line
-   )*
-;
-
-s_ip_access_list_session
-:
-   IP ACCESS_LIST SESSION name = variable NEWLINE
-   (
-      ipaclsession_line
-      | ipaclsession_line6
-   )*
-;
-
 s_mac_access_list
 :
    ACCESS_LIST num = ACL_NUM_MAC action = access_list_action address =
@@ -918,39 +717,6 @@ standard_access_list_null_tail
    ) null_rest_of_line
 ;
 
-standard_access_list_stanza
-:
-   (
-      (
-         IP ACCESS_LIST STANDARD name = variable_aclname
-      )
-      |
-      (
-         ACCESS_LIST num = ACL_NUM_STANDARD
-      )
-      |
-      (
-         ACCESS_LIST name = variable_aclname STANDARD
-      )
-   )
-   (
-      (
-         NEWLINE
-         (
-            standard_access_list_tail
-            | standard_access_list_null_tail
-         )*
-      )
-      |
-      (
-         (
-            standard_access_list_tail
-            | standard_access_list_null_tail
-         )
-      )
-   )
-;
-
 standard_ipv6_access_list_stanza
 :
    IPV6 ACCESS_LIST STANDARD name = variable
@@ -970,19 +736,6 @@ standard_ipv6_access_list_stanza
          )
       )
    )
-;
-
-standard_access_list_tail
-:
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = DEC
-   )? ala = access_list_action ipr = access_list_ip_range
-   (
-      features += standard_access_list_additional_feature
-   )* NEWLINE
 ;
 
 standard_ipv6_access_list_tail
@@ -1015,4 +768,102 @@ xr_mac_specifier
    (
       address = MAC_ADDRESS_LITERAL mask = MAC_ADDRESS_LITERAL
    )
+;
+
+
+/// EOS VALIDATED GRAMMAR STARTS HERE
+s_ip_access_list
+:
+  ACCESS_LIST
+  (
+    acl_extended
+    | acl_standard
+  )
+;
+
+// Represents a match on either source or dest IPv4 address.
+acl_ipv4_match
+:
+   ANY
+   | wildcard_ip = IP_ADDRESS wildcard_mask = IP_ADDRESS
+   | HOST host = IP_ADDRESS
+   | prefix = IP_PREFIX
+;
+
+acl_extended
+:
+  name = WORD NEWLINE
+  (
+    extended_access_list_tail // not validated
+    | extended_access_list_null_tail // not validated
+  )*
+;
+
+acl_standard
+:
+  STANDARD name = WORD NEWLINE
+  aclstd_line*
+;
+
+aclstd_line
+:
+  aclstd_counters
+  | aclstd_fragment_rules
+  | aclstd_no
+  // | aclstd_requence
+  | aclstd_seq
+  | aclstd_statistics
+;
+
+aclstd_counters
+:
+  COUNTERS null_rest_of_line
+;
+
+aclstd_fragment_rules
+:
+  FRAGMENT_RULES NEWLINE
+;
+
+aclstd_no
+:
+  NO
+  (
+    aclstd_no_counters
+    | aclstd_no_statistics
+  )
+;
+
+aclstd_no_counters
+:
+  COUNTERS null_rest_of_line
+;
+
+aclstd_no_statistics
+:
+  STATISTICS null_rest_of_line
+;
+
+aclstd_seq
+:
+  (seq = uint32)?
+  (
+    aclstd_action_line
+    | aclstd_remark_line
+  )
+;
+
+aclstd_action_line
+:
+  action = access_list_action source = acl_ipv4_match LOG? NEWLINE
+;
+
+aclstd_remark_line
+:
+  REMARK text = RAW_TEXT NEWLINE
+;
+
+aclstd_statistics
+:
+  STATISTICS null_rest_of_line
 ;

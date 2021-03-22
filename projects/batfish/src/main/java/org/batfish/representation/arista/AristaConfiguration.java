@@ -707,7 +707,7 @@ public final class AristaConfiguration extends VendorConfiguration {
           AristaStructureType.IP_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              AristaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AristaStructureType.IP_ACCESS_LIST_STANDARD,
               AristaStructureType.IPV4_ACCESS_LIST_EXTENDED,
               AristaStructureType.IPV6_ACCESS_LIST_STANDARD,
               AristaStructureType.IPV6_ACCESS_LIST_EXTENDED));
@@ -721,7 +721,7 @@ public final class AristaConfiguration extends VendorConfiguration {
           usage,
           Arrays.asList(
               AristaStructureType.IPV4_ACCESS_LIST_EXTENDED,
-              AristaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AristaStructureType.IP_ACCESS_LIST_STANDARD,
               AristaStructureType.IPV6_ACCESS_LIST_EXTENDED,
               AristaStructureType.IPV6_ACCESS_LIST_STANDARD,
               AristaStructureType.MAC_ACCESS_LIST));
@@ -734,7 +734,7 @@ public final class AristaConfiguration extends VendorConfiguration {
           AristaStructureType.IPV4_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              AristaStructureType.IPV4_ACCESS_LIST_STANDARD,
+              AristaStructureType.IP_ACCESS_LIST_STANDARD,
               AristaStructureType.IPV4_ACCESS_LIST_EXTENDED));
     }
   }
@@ -2016,8 +2016,11 @@ public final class AristaConfiguration extends VendorConfiguration {
     if (stdacl != null) {
       // Easy. Standard ACLs filter only on the source address.
       AclIpSpace.Builder space = AclIpSpace.builder();
-      for (StandardAccessListLine line : stdacl.getLines()) {
-        space.thenAction(line.getAction(), line.getSrcAddressSpecifier().toIpSpace());
+      for (StandardAccessListLine line : stdacl.getLines().values()) {
+        if (line instanceof StandardAccessListActionLine) {
+          StandardAccessListActionLine actionLine = (StandardAccessListActionLine) line;
+          space.thenAction(actionLine.getAction(), actionLine.getSourceIps().toIpSpace());
+        }
       }
       c.setClientIps(space.build());
       return;
@@ -2528,7 +2531,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     markConcreteStructure(AristaStructureType.BFD_TEMPLATE);
     markConcreteStructure(AristaStructureType.INTERFACE);
-    markConcreteStructure(AristaStructureType.IPV4_ACCESS_LIST_STANDARD);
+    markConcreteStructure(AristaStructureType.IP_ACCESS_LIST_STANDARD);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(

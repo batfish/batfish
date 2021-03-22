@@ -2467,7 +2467,8 @@ s_ip
 :
   IP
   (
-    s_ip_as_path
+    s_ip_access_list
+    | s_ip_as_path
     | s_ip_domain_name
     | s_ip_igmp
     | s_ip_name_server
@@ -3472,7 +3473,6 @@ stanza
 :
    appletalk_access_list_stanza
    | del_stanza
-   | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
@@ -3559,8 +3559,6 @@ stanza
    | s_eos_vxlan_interface
    | s_interface
    | s_ip
-   | s_ip_access_list_eth
-   | s_ip_access_list_session
    | s_ip_default_gateway
    | s_ip_dhcp
    | s_ip_domain
@@ -3668,7 +3666,6 @@ stanza
    | s_wsma
    | s_xconnect_logging
    | srlg_stanza
-   | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
 ;

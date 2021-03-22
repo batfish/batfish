@@ -67,9 +67,12 @@ ACCESS_GROUP: 'access-group';
 
 ACCESS_LIST
 :
-   'access-list'
-   {_enableAclNum = true; _enableDec = false;}
-
+  'access-list'
+  {
+    if (lastTokenType() == IP) {
+      pushMode(M_Ip_access_list);
+    }
+  }
 ;
 
 ACCESS_SESSION: 'access-session';
@@ -1593,7 +1596,7 @@ EXTEND: 'extend';
 EXTENDED
 :
    'extended'
-   { _enableDec = true; _enableAclNum = false; }
+   {_enableDec = true;}
 
 ;
 
@@ -4279,8 +4282,7 @@ STALEPATH_TIME: 'stalepath-time';
 STANDARD
 :
    'standard'
-   { _enableDec = true; _enableAclNum = false; }
-
+   {_enableDec = true;}
 ;
 
 STANDBY: 'standby';
@@ -5091,10 +5093,6 @@ VARIABLE
       )
    )
    {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
       if (_enableCommunityListNum) {
          _enableCommunityListNum = false;
          _enableDec = true;
@@ -5286,7 +5284,6 @@ NEWLINE
     _enableIpAddress = true;
     _enableDec = true;
     _enableRegex = false;
-    _enableAclNum = false;
   }
 ;
 
@@ -6485,6 +6482,28 @@ M_Interface_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_Ip_access_list;
+
+M_Ip_access_list_STANDARD
+:
+  'standard' -> type(STANDARD), mode(M_Word)
+;
+
+M_Ip_access_list_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_Ip_access_list_WORD
+:
+  F_NonWhitespace+ -> type(WORD), popMode
+;
+
+M_Ip_access_list_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
 mode M_ISO_Address;
 
 M_ISO_Address_ISO_ADDRESS
@@ -6645,7 +6664,7 @@ M_REMARK_NEWLINE
 
 M_REMARK_REMARK
 :
-   F_NonNewline+
+   F_NonNewline+ -> type(RAW_TEXT)
 ;
 
 mode M_RouteMap;
@@ -6669,10 +6688,6 @@ M_RouteMap_VARIABLE
 :
    F_NonWhitespace+
    {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
       if (_enableCommunityListNum) {
          _enableCommunityListNum = false;
          _enableDec = true;

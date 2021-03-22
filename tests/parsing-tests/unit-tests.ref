@@ -1813,56 +1813,57 @@
             "      VARIABLE:'arista_acl'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
-            "    (extended_access_list_stanza",
+            "    (s_ip",
             "      IP:'ip'",
-            "      ACCESS_LIST:'access-list'",
-            "      shortname = (variable",
-            "        VARIABLE:'abcd')",
-            "      NEWLINE:'\\n'",
-            "      (extended_access_list_tail",
-            "        num = DEC:'5'",
-            "        ala = (access_list_action",
-            "          PERMIT:'permit')",
-            "        VLAN:'vlan'",
-            "        vlan = DEC:'123'",
-            "        vmask = HEX:'0x000'",
-            "        prot = (protocol",
-            "          UDP:'udp')",
-            "        srcipr = (access_list_ip_range",
-            "          ANY:'any')",
-            "        dstipr = (access_list_ip_range",
-            "          prefix = IP_PREFIX:'224.0.0.0/4')",
-            "        NEWLINE:'\\n')",
-            "      (extended_access_list_tail",
-            "        num = DEC:'10'",
-            "        ala = (access_list_action",
-            "          DENY:'deny')",
-            "        prot = (protocol",
-            "          TCP:'tcp')",
-            "        srcipr = (access_list_ip_range",
-            "          ANY:'any')",
-            "        dstipr = (access_list_ip_range",
-            "          prefix = IP_PREFIX:'102.66.49.113/24')",
-            "        alps_dst = (port_specifier",
-            "          NEQ:'neq'",
-            "          (port",
-            "            WWW:'www')",
-            "          (port",
-            "            HTTPS:'https'))",
-            "        (extended_access_list_additional_feature",
-            "          SYN:'syn')",
-            "        NEWLINE:'\\n')",
-            "      (extended_access_list_tail",
-            "        num = DEC:'20'",
-            "        ala = (access_list_action",
-            "          DENY:'deny')",
-            "        prot = (protocol",
-            "          IP:'ip')",
-            "        srcipr = (access_list_ip_range",
-            "          ANY:'any')",
-            "        dstipr = (access_list_ip_range",
-            "          ANY:'any')",
-            "        NEWLINE:'\\n')))",
+            "      (s_ip_access_list",
+            "        ACCESS_LIST:'access-list'",
+            "        (acl_extended",
+            "          name = WORD:'abcd'  <== mode:M_Ip_access_list",
+            "          NEWLINE:'\\n'",
+            "          (extended_access_list_tail",
+            "            num = DEC:'5'",
+            "            ala = (access_list_action",
+            "              PERMIT:'permit')",
+            "            VLAN:'vlan'",
+            "            vlan = DEC:'123'",
+            "            vmask = HEX:'0x000'",
+            "            prot = (protocol",
+            "              UDP:'udp')",
+            "            srcipr = (access_list_ip_range",
+            "              ANY:'any')",
+            "            dstipr = (access_list_ip_range",
+            "              prefix = IP_PREFIX:'224.0.0.0/4')",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_tail",
+            "            num = DEC:'10'",
+            "            ala = (access_list_action",
+            "              DENY:'deny')",
+            "            prot = (protocol",
+            "              TCP:'tcp')",
+            "            srcipr = (access_list_ip_range",
+            "              ANY:'any')",
+            "            dstipr = (access_list_ip_range",
+            "              prefix = IP_PREFIX:'102.66.49.113/24')",
+            "            alps_dst = (port_specifier",
+            "              NEQ:'neq'",
+            "              (port",
+            "                WWW:'www')",
+            "              (port",
+            "                HTTPS:'https'))",
+            "            (extended_access_list_additional_feature",
+            "              SYN:'syn')",
+            "            NEWLINE:'\\n')",
+            "          (extended_access_list_tail",
+            "            num = DEC:'20'",
+            "            ala = (access_list_action",
+            "              DENY:'deny')",
+            "            prot = (protocol",
+            "              IP:'ip')",
+            "            srcipr = (access_list_ip_range",
+            "              ANY:'any')",
+            "            dstipr = (access_list_ip_range",
+            "              ANY:'any')",
+            "            NEWLINE:'\\n')))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -2447,20 +2448,24 @@
             "            DEC:'60'",
             "            NEWLINE:'\\n')))))",
             "  (stanza",
-            "    (standard_access_list_stanza",
+            "    (s_ip",
             "      IP:'ip'",
-            "      ACCESS_LIST:'access-list'",
-            "      STANDARD:'standard'",
-            "      name = (variable_aclname",
-            "        VARIABLE:'sshabc')",
-            "      NEWLINE:'\\n'",
-            "      (standard_access_list_tail",
-            "        num = DEC:'10'",
-            "        ala = (access_list_action",
-            "          PERMIT:'permit')",
-            "        ipr = (access_list_ip_range",
-            "          prefix = IP_PREFIX:'1.2.4.8/16')",
-            "        NEWLINE:'\\n')))",
+            "      (s_ip_access_list",
+            "        ACCESS_LIST:'access-list'",
+            "        (acl_standard",
+            "          STANDARD:'standard'  <== mode:M_Ip_access_list",
+            "          name = WORD:'sshabc'  <== mode:M_Word",
+            "          NEWLINE:'\\n'",
+            "          (aclstd_line",
+            "            (aclstd_seq",
+            "              seq = (uint32",
+            "                DEC:'10')",
+            "              (aclstd_action_line",
+            "                action = (access_list_action",
+            "                  PERMIT:'permit')",
+            "                source = (acl_ipv4_match",
+            "                  prefix = IP_PREFIX:'1.2.4.8/16')",
+            "                NEWLINE:'\\n')))))))",
             "  (stanza",
             "    (s_management",
             "      MANAGEMENT:'management'",
@@ -2560,22 +2565,23 @@
             "      VARIABLE:'arista_nat'",
             "      NEWLINE:'\\n'))",
             "  (stanza",
-            "    (extended_access_list_stanza",
+            "    (s_ip",
             "      IP:'ip'",
-            "      ACCESS_LIST:'access-list'",
-            "      shortname = (variable",
-            "        VARIABLE:'acl1')",
-            "      NEWLINE:'\\n'",
-            "      (extended_access_list_tail",
-            "        ala = (access_list_action",
-            "          PERMIT:'permit')",
-            "        prot = (protocol",
-            "          IP:'ip')",
-            "        srcipr = (access_list_ip_range",
-            "          ANY:'any')",
-            "        dstipr = (access_list_ip_range",
-            "          ANY:'any')",
-            "        NEWLINE:'\\n')))",
+            "      (s_ip_access_list",
+            "        ACCESS_LIST:'access-list'",
+            "        (acl_extended",
+            "          name = WORD:'acl1'  <== mode:M_Ip_access_list",
+            "          NEWLINE:'\\n'",
+            "          (extended_access_list_tail",
+            "            ala = (access_list_action",
+            "              PERMIT:'permit')",
+            "            prot = (protocol",
+            "              IP:'ip')",
+            "            srcipr = (access_list_ip_range",
+            "              ANY:'any')",
+            "            dstipr = (access_list_ip_range",
+            "              ANY:'any')",
+            "            NEWLINE:'\\n')))))",
             "  (stanza",
             "    (s_ip_nat",
             "      (ip_nat_pool",
@@ -80278,7 +80284,7 @@
           }
         },
         "configs/arista_misc" : {
-          "standard ipv4 access-list" : {
+          "ip access-list standard" : {
             "sshabc" : {
               "definitionLines" : "30-31",
               "numReferrers" : 1
@@ -85234,6 +85240,13 @@
               ]
             }
           },
+          "ip access-list standard" : {
+            "some_acl" : {
+              "interface ip multicast boundary" : [
+                9
+              ]
+            }
+          },
           "policy-map" : {
             "pbr-pmap" : {
               "interface service-policy" : [
@@ -85243,13 +85256,6 @@
             "qos-pmap" : {
               "interface service-policy" : [
                 11
-              ]
-            }
-          },
-          "standard ipv4 access-list" : {
-            "some_acl" : {
-              "interface ip multicast boundary" : [
-                9
               ]
             }
           }
@@ -91022,6 +91028,13 @@
         "configs/arista_community_list_named" : { },
         "configs/arista_dhcp_relay" : { },
         "configs/arista_interface" : {
+          "ip access-list standard" : {
+            "some_acl" : {
+              "interface ip multicast boundary" : [
+                9
+              ]
+            }
+          },
           "policy-map" : {
             "pbr-pmap" : {
               "interface service-policy" : [
@@ -91031,13 +91044,6 @@
             "qos-pmap" : {
               "interface service-policy" : [
                 11
-              ]
-            }
-          },
-          "standard ipv4 access-list" : {
-            "some_acl" : {
-              "interface ip multicast boundary" : [
-                9
               ]
             }
           }
