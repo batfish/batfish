@@ -46,7 +46,6 @@ public abstract class AristaBaseLexer extends BatfishLexer {
 
   protected boolean _enableIpv6Address = true;
   protected boolean _enableIpAddress = true;
-  protected boolean _enableRegex = false;
 
   private int _lastTokenType = -1;
   private int _secondToLastTokenType = -1;
@@ -56,7 +55,6 @@ public abstract class AristaBaseLexer extends BatfishLexer {
     StringBuilder sb = new StringBuilder();
     sb.append("_enableIpAddress: " + _enableIpAddress + "\n");
     sb.append("_enableIpv6Address: " + _enableIpv6Address + "\n");
-    sb.append("_enableRegex: " + _enableRegex + "\n");
     return sb.toString();
   }
 }
