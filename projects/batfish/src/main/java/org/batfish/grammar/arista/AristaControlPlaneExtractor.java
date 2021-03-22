@@ -35,7 +35,6 @@ import static org.batfish.representation.arista.AristaStructureType.ISAKMP_POLIC
 import static org.batfish.representation.arista.AristaStructureType.ISAKMP_PROFILE;
 import static org.batfish.representation.arista.AristaStructureType.KEYRING;
 import static org.batfish.representation.arista.AristaStructureType.L2TP_CLASS;
-import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.NAMED_RSA_PUB_KEY;
 import static org.batfish.representation.arista.AristaStructureType.NAT_POOL;
 import static org.batfish.representation.arista.AristaStructureType.PEER_FILTER;
@@ -832,10 +831,6 @@ import org.batfish.grammar.arista.AristaParser.S_ip_tacacs_source_interfaceConte
 import org.batfish.grammar.arista.AristaParser.S_l2tp_classContext;
 import org.batfish.grammar.arista.AristaParser.S_lineContext;
 import org.batfish.grammar.arista.AristaParser.S_loggingContext;
-import org.batfish.grammar.arista.AristaParser.S_mac_access_listContext;
-import org.batfish.grammar.arista.AristaParser.S_mac_access_list_extendedContext;
-import org.batfish.grammar.arista.AristaParser.S_no_access_list_extendedContext;
-import org.batfish.grammar.arista.AristaParser.S_no_access_list_standardContext;
 import org.batfish.grammar.arista.AristaParser.S_ntpContext;
 import org.batfish.grammar.arista.AristaParser.S_peer_filterContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
@@ -1203,7 +1198,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private AristaConfiguration _configuration;
 
-  @SuppressWarnings("unused")
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
@@ -1250,7 +1244,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private List<String> _currentLineNames;
 
-  @SuppressWarnings("unused")
   private MacAccessList _currentMacAccessList;
 
   private Long _currentOspfArea;
@@ -1275,7 +1268,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private SnmpCommunity _currentSnmpCommunity;
 
-  @SuppressWarnings("unused")
   private SnmpHost _currentSnmpHost;
 
   private StandardAccessList _currentStandardAcl;
@@ -3649,9 +3641,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void enterIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
     String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else if (ctx.name != null) {
+    if (ctx.name != null) {
       name = ctx.name.getText();
     } else {
       throw new BatfishException("Invalid community-list name");
@@ -3666,9 +3656,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void enterIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
     String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else if (ctx.name != null) {
+    if (ctx.name != null) {
       name = ctx.name.getText();
     } else if (ctx.name_cl != null) {
       name = ctx.name_cl.getText();
@@ -4057,30 +4045,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (_configuration.getCf().getLogging() == null) {
       _configuration.getCf().setLogging(new Logging());
     }
-  }
-
-  @Override
-  public void enterS_mac_access_list(S_mac_access_listContext ctx) {
-    String name = ctx.num.getText();
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
-  }
-
-  @Override
-  public void enterS_mac_access_list_extended(S_mac_access_list_extendedContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Could not determine name of extended mac access-list");
-    }
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -7286,18 +7250,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitS_logging(S_loggingContext ctx) {
     _no = false;
-  }
-
-  @Override
-  public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
-    String name = ctx.ACL_NUM_EXTENDED().getText();
-    _configuration.getExtendedAcls().remove(name);
-  }
-
-  @Override
-  public void exitS_no_access_list_standard(S_no_access_list_standardContext ctx) {
-    String name = ctx.ACL_NUM_STANDARD().getText();
-    _configuration.getStandardAcls().remove(name);
   }
 
   @Override
