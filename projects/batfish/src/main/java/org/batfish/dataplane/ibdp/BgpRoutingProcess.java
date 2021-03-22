@@ -818,7 +818,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         if (importPolicy != null) {
           acceptIncoming =
               importPolicy.processBgpRoute(
-                  remoteRoute, transformedIncomingRouteBuilder, sessionProperties, IN, null);
+                  remoteRoute,
+                  transformedIncomingRouteBuilder,
+                  sessionProperties,
+                  IN,
+                  _ribExprEvaluator);
         }
       }
       if (!acceptIncoming) {
@@ -1170,7 +1174,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
         if (importPolicy != null) {
           acceptIncoming =
-              importPolicy.processBgpRoute(route, transformedBuilder, sessionProperties, IN, null);
+              importPolicy.processBgpRoute(
+                  route, transformedBuilder, sessionProperties, IN, _ribExprEvaluator);
         }
       }
       if (!acceptIncoming) {
@@ -1344,7 +1349,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             transformedOutgoingRouteBuilder,
             sessionProperties,
             Direction.OUT,
-            null);
+            _ribExprEvaluator);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getTailIp();
@@ -1435,7 +1440,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             transformedOutgoingRouteBuilder,
             sessionProperties,
             Direction.OUT,
-            null);
+            _ribExprEvaluator);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getHeadIp();
@@ -1712,7 +1717,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           // Process route through import policy, if one exists
           boolean accept = true;
           if (policy != null) {
-            accept = policy.processBgpRoute(route, builder, null, IN, null);
+            accept = policy.processBgpRoute(route, builder, null, IN, _ribExprEvaluator);
           }
           if (accept) {
             Bgpv4Rib targetRib =
