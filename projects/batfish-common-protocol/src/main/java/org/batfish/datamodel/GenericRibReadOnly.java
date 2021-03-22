@@ -53,7 +53,8 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
 
   /**
    * Returns {@code true} iff there is any intersection between the space of all the prefixes
-   * belonging to routes in this rib and the provided {@code prefixSpace}.
+   * belonging to routes in this rib (that would be returned by {@link #getRoutes}) and the provided
+   * {@code prefixSpace}.
    */
   boolean intersectsPrefixSpace(PrefixSpace prefixSpace);
 }
