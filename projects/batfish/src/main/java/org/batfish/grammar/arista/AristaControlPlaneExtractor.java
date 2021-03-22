@@ -286,7 +286,6 @@ import org.batfish.datamodel.vendor_family.cisco.Logging;
 import org.batfish.datamodel.vendor_family.cisco.Ntp;
 import org.batfish.datamodel.vendor_family.cisco.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco.Service;
-import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
 import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
@@ -1235,8 +1234,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private RouteMap _currentRouteMap;
 
   private RouteMapClause _currentRouteMapClause;
-
-  private ServiceClass _currentServiceClass;
 
   private SnmpCommunity _currentSnmpCommunity;
 
