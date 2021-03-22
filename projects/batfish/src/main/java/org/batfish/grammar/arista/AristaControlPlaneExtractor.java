@@ -15,10 +15,6 @@ import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LI
 import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.arista.AristaStructureType.CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.arista.AristaStructureType.CRYPTO_MAP_SET;
-import static org.batfish.representation.arista.AristaStructureType.DEPI_CLASS;
-import static org.batfish.representation.arista.AristaStructureType.DEPI_TUNNEL;
-import static org.batfish.representation.arista.AristaStructureType.DOCSIS_POLICY;
-import static org.batfish.representation.arista.AristaStructureType.DOCSIS_POLICY_RULE;
 import static org.batfish.representation.arista.AristaStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.arista.AristaStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
@@ -43,7 +39,6 @@ import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.PREFIX6_LIST;
 import static org.batfish.representation.arista.AristaStructureType.PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureType.ROUTE_MAP;
-import static org.batfish.representation.arista.AristaStructureType.SERVICE_CLASS;
 import static org.batfish.representation.arista.AristaStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.arista.AristaStructureType.TRACK;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
@@ -70,7 +65,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.CLASS_MAP_A
 import static org.batfish.representation.arista.AristaStructureUsage.CLASS_MAP_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
 import static org.batfish.representation.arista.AristaStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
-import static org.batfish.representation.arista.AristaStructureUsage.CONTROLLER_DEPI_TUNNEL;
 import static org.batfish.representation.arista.AristaStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
 import static org.batfish.representation.arista.AristaStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
@@ -82,11 +76,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE;
 import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
-import static org.batfish.representation.arista.AristaStructureUsage.DEPI_TUNNEL_DEPI_CLASS;
-import static org.batfish.representation.arista.AristaStructureUsage.DEPI_TUNNEL_L2TP_CLASS;
-import static org.batfish.representation.arista.AristaStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL;
-import static org.batfish.representation.arista.AristaStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY;
-import static org.batfish.representation.arista.AristaStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE;
 import static org.batfish.representation.arista.AristaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
@@ -153,7 +142,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
-import static org.batfish.representation.arista.AristaStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.arista.AristaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_STATIC_ROUTE;
@@ -293,17 +281,11 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAccountingCommands;
 import org.batfish.datamodel.vendor_family.cisco.AaaAccountingDefault;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
-import org.batfish.datamodel.vendor_family.cisco.Cable;
-import org.batfish.datamodel.vendor_family.cisco.DepiClass;
-import org.batfish.datamodel.vendor_family.cisco.DepiTunnel;
-import org.batfish.datamodel.vendor_family.cisco.DocsisPolicy;
-import org.batfish.datamodel.vendor_family.cisco.DocsisPolicyRule;
 import org.batfish.datamodel.vendor_family.cisco.L2tpClass;
 import org.batfish.datamodel.vendor_family.cisco.Logging;
 import org.batfish.datamodel.vendor_family.cisco.Ntp;
 import org.batfish.datamodel.vendor_family.cisco.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco.Service;
-import org.batfish.datamodel.vendor_family.cisco.ServiceClass;
 import org.batfish.datamodel.vendor_family.cisco.Sntp;
 import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
@@ -359,9 +341,6 @@ import org.batfish.grammar.arista.AristaParser.Ckpn_addressContext;
 import org.batfish.grammar.arista.AristaParser.Ckpn_key_stringContext;
 import org.batfish.grammar.arista.AristaParser.Ckr_local_addressContext;
 import org.batfish.grammar.arista.AristaParser.Ckr_pskContext;
-import org.batfish.grammar.arista.AristaParser.Clb_docsis_policyContext;
-import org.batfish.grammar.arista.AristaParser.Clb_ruleContext;
-import org.batfish.grammar.arista.AristaParser.Clbdg_docsis_policyContext;
 import org.batfish.grammar.arista.AristaParser.Cm_ios_inspectContext;
 import org.batfish.grammar.arista.AristaParser.Cm_iosi_matchContext;
 import org.batfish.grammar.arista.AristaParser.Cm_matchContext;
@@ -369,14 +348,11 @@ import org.batfish.grammar.arista.AristaParser.Cmm_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_activated_service_templateContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_service_templateContext;
-import org.batfish.grammar.arista.AristaParser.Cntlr_rf_channelContext;
-import org.batfish.grammar.arista.AristaParser.Cntlrrfc_depi_tunnelContext;
 import org.batfish.grammar.arista.AristaParser.CommunityContext;
 import org.batfish.grammar.arista.AristaParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Copsl_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cp_ip_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Cp_service_policyContext;
-import org.batfish.grammar.arista.AristaParser.Cqer_service_classContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_keyringContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_mapContext;
@@ -386,8 +362,6 @@ import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_peerContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_pfsContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_transform_setContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ipsec_isakmpContext;
-import org.batfish.grammar.arista.AristaParser.Cs_classContext;
-import org.batfish.grammar.arista.AristaParser.Csc_nameContext;
 import org.batfish.grammar.arista.AristaParser.Description_lineContext;
 import org.batfish.grammar.arista.AristaParser.Dh_groupContext;
 import org.batfish.grammar.arista.AristaParser.Distribute_list_is_stanzaContext;
@@ -395,9 +369,6 @@ import org.batfish.grammar.arista.AristaParser.Domain_lookupContext;
 import org.batfish.grammar.arista.AristaParser.Domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.Domain_name_serverContext;
 import org.batfish.grammar.arista.AristaParser.Dscp_typeContext;
-import org.batfish.grammar.arista.AristaParser.Dt_depi_classContext;
-import org.batfish.grammar.arista.AristaParser.Dt_l2tp_classContext;
-import org.batfish.grammar.arista.AristaParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.arista.AristaParser.Enable_secretContext;
 import org.batfish.grammar.arista.AristaParser.Eos_as_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Eos_as_range_listContext;
@@ -805,10 +776,7 @@ import org.batfish.grammar.arista.AristaParser.S_aaaContext;
 import org.batfish.grammar.arista.AristaParser.S_access_lineContext;
 import org.batfish.grammar.arista.AristaParser.S_banner_eosContext;
 import org.batfish.grammar.arista.AristaParser.S_bfd_templateContext;
-import org.batfish.grammar.arista.AristaParser.S_cableContext;
 import org.batfish.grammar.arista.AristaParser.S_class_mapContext;
-import org.batfish.grammar.arista.AristaParser.S_depi_classContext;
-import org.batfish.grammar.arista.AristaParser.S_depi_tunnelContext;
 import org.batfish.grammar.arista.AristaParser.S_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.S_eos_mlagContext;
 import org.batfish.grammar.arista.AristaParser.S_eos_vxlan_interfaceContext;
@@ -1266,8 +1234,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private RouteMap _currentRouteMap;
 
   private RouteMapClause _currentRouteMapClause;
-
-  private ServiceClass _currentServiceClass;
 
   private SnmpCommunity _currentSnmpCommunity;
 
@@ -1736,38 +1702,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterClb_docsis_policy(Clb_docsis_policyContext ctx) {
-    String name = ctx.policy.getText();
-    String rule = ctx.rulenum.getText();
-    DocsisPolicy policy =
-        _configuration
-            .getCf()
-            .getCable()
-            .getDocsisPolicies()
-            .computeIfAbsent(name, DocsisPolicy::new);
-    _configuration.defineStructure(DOCSIS_POLICY, name, ctx);
-    policy.getRules().add(rule);
-    _configuration.referenceStructure(
-        DOCSIS_POLICY_RULE, rule, DOCSIS_POLICY_DOCSIS_POLICY_RULE, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void enterClb_rule(Clb_ruleContext ctx) {
-    String name = ctx.rulenum.getText();
-    _configuration
-        .getCf()
-        .getCable()
-        .getDocsisPolicyRules()
-        .computeIfAbsent(name, DocsisPolicyRule::new);
-    _configuration.defineStructure(DOCSIS_POLICY_RULE, name, ctx);
-  }
-
-  @Override
-  public void enterCntlr_rf_channel(Cntlr_rf_channelContext ctx) {
-    _no = (ctx.NO() != null);
-  }
-
-  @Override
   public void enterCrypto_keyring(Crypto_keyringContext ctx) {
     if (_currentKeyring != null) {
       throw new BatfishException("Keyring should be null!");
@@ -1838,32 +1772,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
 
     cryptoMapSet.getCryptoMapEntries().add(_currentCryptoMapEntry);
-  }
-
-  @Override
-  public void enterCs_class(Cs_classContext ctx) {
-    String number = ctx.num.getText();
-    _currentServiceClass =
-        _configuration
-            .getCf()
-            .getCable()
-            .getServiceClasses()
-            .computeIfAbsent(number, ServiceClass::new);
-    _configuration.defineStructure(SERVICE_CLASS, number, ctx);
-  }
-
-  @Override
-  public void enterDt_depi_class(Dt_depi_classContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.referenceStructure(
-        DEPI_CLASS, name, DEPI_TUNNEL_DEPI_CLASS, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void enterDt_l2tp_class(Dt_l2tp_classContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.referenceStructure(
-        L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, ctx.getStart().getLine());
   }
 
   @Override
@@ -3793,31 +3701,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterS_cable(S_cableContext ctx) {
-    if (_configuration.getCf().getCable() == null) {
-      _configuration.getCf().setCable(new Cable());
-    }
-  }
-
-  @Override
   public void enterS_class_map(S_class_mapContext ctx) {
     // TODO: do something with this.
     String name = ctx.name.getText();
     _configuration.defineStructure(CLASS_MAP, name, ctx);
-  }
-
-  @Override
-  public void enterS_depi_class(S_depi_classContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getCf().getDepiClasses().computeIfAbsent(name, DepiClass::new);
-    _configuration.defineStructure(DEPI_CLASS, name, ctx);
-  }
-
-  @Override
-  public void enterS_depi_tunnel(S_depi_tunnelContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getCf().getDepiTunnels().computeIfAbsent(name, DepiTunnel::new);
-    _configuration.defineStructure(DEPI_TUNNEL, name, ctx);
   }
 
   @Override
@@ -4374,13 +4261,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitClbdg_docsis_policy(Clbdg_docsis_policyContext ctx) {
-    String name = ctx.policy.getText();
-    _configuration.referenceStructure(
-        DOCSIS_POLICY, name, DOCSIS_GROUP_DOCSIS_POLICY, ctx.getStart().getLine());
-  }
-
-  @Override
   public void enterCm_ios_inspect(Cm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
     _currentInspectClassMap =
@@ -4533,20 +4413,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitCntlr_rf_channel(Cntlr_rf_channelContext ctx) {
-    _no = false;
-  }
-
-  @Override
-  public void exitCntlrrfc_depi_tunnel(Cntlrrfc_depi_tunnelContext ctx) {
-    if (!_no) {
-      String name = ctx.name.getText();
-      int line = ctx.getStart().getLine();
-      _configuration.referenceStructure(DEPI_TUNNEL, name, CONTROLLER_DEPI_TUNNEL, line);
-    }
-  }
-
-  @Override
   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
     int statementLine = ctx.getStart().getLine();
     Integer target = null;
@@ -4579,13 +4445,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
             : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
     _configuration.referenceStructure(
         POLICY_MAP, ctx.name.getText(), usage, ctx.name.getStart().getLine());
-  }
-
-  @Override
-  public void exitCqer_service_class(Cqer_service_classContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(SERVICE_CLASS, name, QOS_ENFORCE_RULE_SERVICE_CLASS, line);
   }
 
   @Override
@@ -4640,17 +4499,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitCs_class(Cs_classContext ctx) {
-    _currentServiceClass = null;
-  }
-
-  @Override
-  public void exitCsc_name(Csc_nameContext ctx) {
-    String name = ctx.name.getText();
-    _configuration.getCf().getCable().getServiceClassesByName().put(name, _currentServiceClass);
-  }
-
-  @Override
   public void exitDistribute_list_is_stanza(Distribute_list_is_stanzaContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
@@ -4678,13 +4526,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     Set<String> dnsServers = _configuration.getDnsServers();
     String hostname = ctx.hostname.getText();
     dnsServers.add(hostname);
-  }
-
-  @Override
-  public void exitDt_protect_tunnel(Dt_protect_tunnelContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(DEPI_TUNNEL, name, DEPI_TUNNEL_PROTECT_TUNNEL, line);
   }
 
   @Override

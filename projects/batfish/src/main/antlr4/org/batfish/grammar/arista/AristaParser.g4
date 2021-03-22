@@ -12,7 +12,6 @@ Arista_mlag,
 Arista_vlan,
 Legacy_aaa,
 Legacy_acl,
-Legacy_cable,
 Legacy_crypto,
 Legacy_callhome,
 Legacy_interface,
@@ -3506,7 +3505,6 @@ stanza
    | s_bfd
    | s_bfd_template
    | s_boot
-   | s_cable
    | s_call_home
    | s_callhome
    | s_call_manager_fallback
@@ -3516,7 +3514,6 @@ stanza
    | s_configure
    | s_control_plane
    | s_control_plane_security
-   | s_controller
    | s_cops
    | s_cos_queue_group
    | s_crypto
@@ -3524,8 +3521,6 @@ stanza
    | s_cvx
    | s_daemon
    | s_default
-   | s_depi_class
-   | s_depi_tunnel
    | s_dhcp
    | s_dialer
    | s_dial_peer
