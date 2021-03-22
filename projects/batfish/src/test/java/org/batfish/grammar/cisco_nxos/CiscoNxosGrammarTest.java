@@ -730,14 +730,14 @@ public final class CiscoNxosGrammarTest {
     // No operation for IBGP
     boolean shouldExportToIbgp =
         nhipUnchangedPolicy.processBgpRoute(
-            originalRoute, outputRouteBuilder, ibgpSession, Direction.OUT);
+            originalRoute, outputRouteBuilder, ibgpSession, Direction.OUT, null);
     assertTrue(shouldExportToIbgp);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
 
     // Preserves original route's next hop IP for EBGP
     boolean shouldExportToEbgp =
         nhipUnchangedPolicy.processBgpRoute(
-            originalRoute, outputRouteBuilder, ebgpSession, Direction.OUT);
+            originalRoute, outputRouteBuilder, ebgpSession, Direction.OUT, null);
     assertTrue(shouldExportToEbgp);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(originalNhip));
 
@@ -747,7 +747,7 @@ public final class CiscoNxosGrammarTest {
         originalRoute.toBuilder().setNextHop(NextHopDiscard.instance()).build();
     boolean shouldExportToEbgpUnsetNextHop =
         nhipUnchangedPolicy.processBgpRoute(
-            noNhipRoute, outputRouteBuilder, ebgpSession, Direction.OUT);
+            noNhipRoute, outputRouteBuilder, ebgpSession, Direction.OUT, null);
     assertTrue(shouldExportToEbgpUnsetNextHop);
     assertThat(outputRouteBuilder.getNextHopIp(), equalTo(sessionPropsHeadIp));
   }
@@ -804,7 +804,8 @@ public final class CiscoNxosGrammarTest {
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
-      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT));
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -827,14 +828,15 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT));
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
     }
     {
       // Redistribute matching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
-      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT));
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -857,7 +859,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT));
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
     }
     {
       // Ensure external EIGRP route can also match routing policy
@@ -876,7 +878,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT));
+          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(

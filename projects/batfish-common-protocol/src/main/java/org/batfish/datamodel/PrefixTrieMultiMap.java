@@ -251,7 +251,8 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     private boolean intersectsPrefixRange(PrefixRange prefixRange) {
       // Overview:
       // - If this prefix's length is greater than prefixRange's max length, return false.
-      // - If this prefix is contained in prefixRange and this node has any elements, return true.
+      // - If this prefix is contained in prefixRange and this node has any elements (making this
+      //   prefix a key), return true.
       // - If either of this prefix or prefixRange's match prefix contains the other, then check
       //   this node's children.
       // - Else return false.

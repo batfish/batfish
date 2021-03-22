@@ -16,7 +16,7 @@ public interface NextHop extends Serializable {
   <T> T accept(NextHopVisitor<T> visitor);
 
   /**
-   * 4 Returns a {@link NextHop} based on next hop interface and next hop ip, both of which can be
+   * Returns a {@link NextHop} based on next hop interface and next hop ip, both of which can be
    * nullable. If both are null, a {@link DiscardNextHop} is returned
    */
   static NextHop legacyConverter(@Nullable String nextHopInterface, @Nullable Ip nextHopIp) {

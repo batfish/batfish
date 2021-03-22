@@ -239,25 +239,6 @@ public class RoutingPolicy implements Serializable {
    *     the remote node <em>to</em> the node processing the policy (regardless of whether this
    *     policy is currently being used for import or export)
    * @param direction {@link Direction} in which route is being sent
-   */
-  public boolean processBgpRoute(
-      AbstractRouteDecorator inputRoute,
-      BgpRoute.Builder<?, ?> outputRoute,
-      @Nullable BgpSessionProperties sessionProperties,
-      Direction direction) {
-    checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
-    return process(inputRoute, outputRoute, sessionProperties, null, direction, null);
-  }
-
-  /**
-   * Process a given {@code inputRoute} through this BGP routing policy.
-   *
-   * @param inputRoute Input route to process
-   * @param outputRoute Builder for output BGP route; may be modified by policy
-   * @param sessionProperties {@link BgpSessionProperties} representing the session <em>from</em>
-   *     the remote node <em>to</em> the node processing the policy (regardless of whether this
-   *     policy is currently being used for import or export)
-   * @param direction {@link Direction} in which route is being sent
    * @param ribIntersectsPrefixSpaceEvaluator function that evaluates whether there is any
    *     intersection between the prefixes of the routes in the RIB represented by a provided {@link
    *     RibExpr} and a provided {@link PrefixSpace}
@@ -267,7 +248,7 @@ public class RoutingPolicy implements Serializable {
       BgpRoute.Builder<?, ?> outputRoute,
       @Nullable BgpSessionProperties sessionProperties,
       Direction direction,
-      BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
+      @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     return process(
         inputRoute,

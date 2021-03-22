@@ -3417,7 +3417,8 @@ public final class CiscoGrammarTest {
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
-      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT));
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -3440,14 +3441,15 @@ public final class CiscoGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT));
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
     }
     {
       // Redistribute matching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
-      assertTrue(bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT));
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -3470,7 +3472,7 @@ public final class CiscoGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT));
+          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
     }
     {
       // Ensure external EIGRP route can also match routing policy
@@ -3489,7 +3491,7 @@ public final class CiscoGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT));
+          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -5867,7 +5869,7 @@ public final class CiscoGrammarTest {
       assertThat(c.getRoutingPolicies(), hasKey(policyName));
       RoutingPolicy rp = c.getRoutingPolicies().get(policyName);
       Bgpv4Route.Builder output = input.toBuilder();
-      boolean result = rp.processBgpRoute(input, output, null, Direction.IN);
+      boolean result = rp.processBgpRoute(input, output, null, Direction.IN, null);
       assertTrue(result);
       // old target community should be removed, standard community should be retained
       assertThat(
@@ -5883,7 +5885,7 @@ public final class CiscoGrammarTest {
       assertThat(c.getRoutingPolicies(), hasKey(policyName));
       RoutingPolicy rp = c.getRoutingPolicies().get(policyName);
       Bgpv4Route.Builder output = input.toBuilder();
-      boolean result = rp.processBgpRoute(input, output, null, Direction.IN);
+      boolean result = rp.processBgpRoute(input, output, null, Direction.IN, null);
       assertTrue(result);
       // all old communities should still be present
       assertThat(

@@ -818,7 +818,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         if (importPolicy != null) {
           acceptIncoming =
               importPolicy.processBgpRoute(
-                  remoteRoute, transformedIncomingRouteBuilder, sessionProperties, IN);
+                  remoteRoute, transformedIncomingRouteBuilder, sessionProperties, IN, null);
         }
       }
       if (!acceptIncoming) {
@@ -1170,7 +1170,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
         if (importPolicy != null) {
           acceptIncoming =
-              importPolicy.processBgpRoute(route, transformedBuilder, sessionProperties, IN);
+              importPolicy.processBgpRoute(route, transformedBuilder, sessionProperties, IN, null);
         }
       }
       if (!acceptIncoming) {
@@ -1340,7 +1340,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
         exportPolicy.processBgpRoute(
-            exportCandidate, transformedOutgoingRouteBuilder, sessionProperties, Direction.OUT);
+            exportCandidate,
+            transformedOutgoingRouteBuilder,
+            sessionProperties,
+            Direction.OUT,
+            null);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getTailIp();
@@ -1427,7 +1431,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
         exportPolicy.processBgpRoute(
-            exportCandidate, transformedOutgoingRouteBuilder, sessionProperties, Direction.OUT);
+            exportCandidate,
+            transformedOutgoingRouteBuilder,
+            sessionProperties,
+            Direction.OUT,
+            null);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getHeadIp();
@@ -1704,7 +1712,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           // Process route through import policy, if one exists
           boolean accept = true;
           if (policy != null) {
-            accept = policy.processBgpRoute(route, builder, null, IN);
+            accept = policy.processBgpRoute(route, builder, null, IN, null);
           }
           if (accept) {
             Bgpv4Rib targetRib =

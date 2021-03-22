@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
@@ -74,13 +73,7 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
 
   @Override
   public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
-    return !new PrefixSpace(
-            _routes.stream()
-                .map(AnnotatedRoute::getNetwork)
-                .map(PrefixRange::fromPrefix)
-                .collect(ImmutableList.toImmutableList()))
-        .intersection(prefixSpace)
-        .isEmpty();
+    return _routes.stream().map(AnnotatedRoute::getNetwork).anyMatch(prefixSpace::containsPrefix);
   }
 
   @Override

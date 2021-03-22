@@ -47,7 +47,8 @@ public final class RibIntersectsPrefixSpace extends BooleanExpr {
     PrefixSpace prefixSpace = _prefixSpaceExpr.accept(PrefixSpaceEvaluator.instance(), environment);
     BiFunction<RibExpr, PrefixSpace, Boolean> evaluator =
         environment.getRibIntersectsPrefixSpaceEvaluator();
-    checkState(evaluator != null, "Cannot check RIB routes outside of data plane generation");
+    checkState(
+        evaluator != null, "Cannot check RIB routes; RIB state is not available at this time.");
 
     return new Result(
         environment.getRibIntersectsPrefixSpaceEvaluator().apply(_ribExpr, prefixSpace));
