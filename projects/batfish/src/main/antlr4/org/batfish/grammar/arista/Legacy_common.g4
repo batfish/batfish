@@ -541,7 +541,7 @@ variable
 variable_aclname
 :
    (
-      ~( ETH | EXTENDED | IN | NEWLINE | OUT | REMARK | STANDARD | SESSION | WS )
+      ~( IN | NEWLINE | OUT | REMARK | STANDARD | WS )
    )+
 ;
 
@@ -575,7 +575,7 @@ variable_max_metric
 variable_permissive
 :
    (
-      ~( EXTENDED | NEWLINE | STANDARD | WS )
+      ~( NEWLINE | STANDARD | WS )
    )+
 ;
 

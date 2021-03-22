@@ -1593,12 +1593,7 @@ EXTCOMMUNITY
 
 EXTEND: 'extend';
 
-EXTENDED
-:
-   'extended'
-   {_enableDec = true;}
-
-;
+EXTENDED: 'extended';
 
 EXTENDED_COUNTERS: 'extended-counters';
 

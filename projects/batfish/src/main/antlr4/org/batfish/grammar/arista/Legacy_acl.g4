@@ -240,7 +240,7 @@ extended_access_list_tail
 
 extended_ipv6_access_list_stanza
 :
-   IPV6 ACCESS_LIST EXTENDED? name = variable_permissive
+   IPV6 ACCESS_LIST name = variable_permissive
    (
       (
          NEWLINE
@@ -294,7 +294,6 @@ ip_community_list_expanded_stanza
       (
          (
             EXPANDED
-            | EXTENDED
          ) name = variable
       )
       | num = COMMUNITY_LIST_NUM_EXPANDED
@@ -638,7 +637,7 @@ s_mac_access_list_extended
    )
    |
    (
-      MAC ACCESS_LIST EXTENDED? name = variable_permissive EXTENDED? NEWLINE
+      MAC ACCESS_LIST name = variable_permissive EXTENDED? NEWLINE
       s_mac_access_list_extended_tail*
    )
 ;
