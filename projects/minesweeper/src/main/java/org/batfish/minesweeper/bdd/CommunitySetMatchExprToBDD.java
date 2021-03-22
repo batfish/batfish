@@ -98,17 +98,17 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-    // NOTE: when implementing, update CommunitySetMatchExprVarCollector#visitCommunitySetMatchRegex
-    BDD bdd =
-        communityVarsToBDD(
-            communitySetMatchRegex.accept(
-                new CommunitySetMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
-            arg);
-    if (bdd.isZero()) {
+    // Only handles the special case when the regex applies to a single community within the set.
+    // If that is not the case, the collected set of community variables will be empty (see
+    // CommunitySetMatchExprVarCollector#visitCommunitySetMatchRegex) and we throw an exception.
+    Set<CommunityVar> cvars =
+        communitySetMatchRegex.accept(
+            new CommunitySetMatchExprVarCollector(), arg.getTransferBDD().getConfiguration());
+    if (cvars.isEmpty()) {
       throw new UnsupportedOperationException(
           "Currently not supporting arbitrary community set regexes");
     } else {
-      return bdd;
+      return communityVarsToBDD(cvars, arg);
     }
   }
 
