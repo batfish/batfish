@@ -67,7 +67,7 @@ public class CommunitySetMatchExprVarCollector
     if (cvar.toAutomaton().isEmpty()) {
       return ImmutableSet.of();
     } else {
-      return ImmutableSet.of(CommunityVar.from(regex));
+      return ImmutableSet.of(cvar);
     }
   }
 
