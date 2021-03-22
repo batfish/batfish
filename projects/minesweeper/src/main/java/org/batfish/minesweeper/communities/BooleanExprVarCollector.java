@@ -36,6 +36,7 @@ import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
 import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
+import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
@@ -78,6 +79,12 @@ public class BooleanExprVarCollector
   public Set<CommunityVar> visitFirstMatchChain(
       FirstMatchChain firstMatchChain, Configuration arg) {
     return visitAll(firstMatchChain.getSubroutines(), arg);
+  }
+
+  @Override
+  public Set<CommunityVar> visitRibIntersectsPrefixSpace(
+      RibIntersectsPrefixSpace ribIntersectsPrefixSpace, Configuration arg) {
+    return ribIntersectsPrefixSpace.getRibExpr().accept(RibExprVarCollector.instance(), arg);
   }
 
   @Override

@@ -305,6 +305,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
     assert routingPolicy != null;
     // if routingPolicy denies the input route, set the route as non-routing to prevent it from
     // going in the main RIB
+    // TODO: should main rib routes ever be supplied here?
     routeBuilder.setNonRouting(
         !routingPolicy.process(routeBuilder.build(), routeBuilder, Direction.IN));
   }
@@ -1506,11 +1507,13 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       // Ignore route; its generation is supposed to depend on some undefined policy
       return null;
     }
+    // This kind of generation policy should not need access to the main rib
     GeneratedRoute.Builder activatedRoute =
         GeneratedRouteHelper.activateGeneratedRoute(
             r,
             generationPolicy,
-            mainRibDelta.getRoutesStream().collect(ImmutableSet.toImmutableSet()));
+            mainRibDelta.getRoutesStream().collect(ImmutableSet.toImmutableSet()),
+            null);
     return activatedRoute == null ? null : activatedRoute.build();
   }
 

@@ -57,7 +57,8 @@ public class GeneratedRouteHelperTest {
   public void activateWhenPolicyIsNull() {
     GeneratedRoute gr = _builder.setNetwork(Prefix.ZERO).build();
 
-    Builder newRoute = GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of());
+    Builder newRoute =
+        GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of(), null);
 
     assertThat(newRoute, notNullValue());
   }
@@ -66,7 +67,7 @@ public class GeneratedRouteHelperTest {
   public void testDiscardIsHonored() {
     GeneratedRoute gr = _builder.setDiscard(true).setNetwork(Prefix.ZERO).build();
 
-    GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of());
+    GeneratedRouteHelper.activateGeneratedRoute(gr, null, ImmutableSet.of(), null);
 
     assertThat(gr.getDiscard(), equalTo(true));
   }
@@ -88,7 +89,8 @@ public class GeneratedRouteHelperTest {
             .setStatements(ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))
             .build();
 
-    Builder newRoute = GeneratedRouteHelper.activateGeneratedRoute(gr, policy, ImmutableSet.of());
+    Builder newRoute =
+        GeneratedRouteHelper.activateGeneratedRoute(gr, policy, ImmutableSet.of(), null);
     assertThat(newRoute, nullValue());
   }
 
@@ -123,7 +125,8 @@ public class GeneratedRouteHelperTest {
                         .setAdministrativeCost(1)
                         .setMetric(0L)
                         .setTag(1L)
-                        .build())));
+                        .build())),
+            null);
 
     assertThat(newRoute, notNullValue());
   }
@@ -166,7 +169,7 @@ public class GeneratedRouteHelperTest {
 
     Builder newRoute =
         GeneratedRouteHelper.activateGeneratedRoute(
-            gr, policy, ImmutableSet.of(annotateRoute(otherRoute)));
+            gr, policy, ImmutableSet.of(annotateRoute(otherRoute)), null);
 
     assertThat(
         newRoute.build(),

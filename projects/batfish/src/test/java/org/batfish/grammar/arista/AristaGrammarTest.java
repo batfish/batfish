@@ -2351,25 +2351,29 @@ public class AristaGrammarTest {
             originalRoute.setNetwork(allowedIn).build(),
             outputRouteBuilder,
             session,
-            Direction.IN));
+            Direction.IN,
+            null));
     assertFalse(
         importPolicy.processBgpRoute(
             originalRoute.setNetwork(deniedBoth).build(),
             outputRouteBuilder,
             session,
-            Direction.IN));
+            Direction.IN,
+            null));
     assertTrue(
         exportPolicy.processBgpRoute(
             originalRoute.setNetwork(allowedOut).build(),
             outputRouteBuilder,
             session,
-            Direction.OUT));
+            Direction.OUT,
+            null));
     assertFalse(
         exportPolicy.processBgpRoute(
             originalRoute.setNetwork(deniedBoth).build(),
             outputRouteBuilder,
             session,
-            Direction.OUT));
+            Direction.OUT,
+            null));
   }
 
   @Test
@@ -2429,7 +2433,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "9.9.9.9"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2437,7 +2441,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "8.8.8.8"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
     }
     {
@@ -2445,7 +2449,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerEvpnExportPolicyName(DEFAULT_VRF, "8.8.8.8"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2453,7 +2457,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "7.7.7.7"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
     }
     {
@@ -2461,7 +2465,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf2", "2.2.2.2"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2469,7 +2473,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf2", "2.2.2.22"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2477,7 +2481,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf3", "3.3.3.3"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2485,7 +2489,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf3", "3.3.3.33"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
     }
   }
@@ -2560,8 +2564,10 @@ public class AristaGrammarTest {
 
     Bgpv4Route acceptRoute = builder.setNetwork(Prefix.parse("10.1.1.0/24")).build();
     Bgpv4Route denyRoute = builder.setNetwork(Prefix.parse("240.1.1.0/24")).build();
-    assertTrue(policy.processBgpRoute(acceptRoute, Bgpv4Route.testBuilder(), null, Direction.IN));
-    assertFalse(policy.processBgpRoute(denyRoute, Bgpv4Route.testBuilder(), null, Direction.IN));
+    assertTrue(
+        policy.processBgpRoute(acceptRoute, Bgpv4Route.testBuilder(), null, Direction.IN, null));
+    assertFalse(
+        policy.processBgpRoute(denyRoute, Bgpv4Route.testBuilder(), null, Direction.IN, null));
   }
 
   @Test

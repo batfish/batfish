@@ -7,6 +7,7 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.dataplane.ibdp.VirtualRouter.RibExprEvaluator;
 
 /**
  * Contains helper logic for manipulating {@link GeneratedRoute} objects in the context of dataplane
@@ -29,7 +30,8 @@ public class GeneratedRouteHelper {
   public static GeneratedRoute.Builder activateGeneratedRoute(
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy policy,
-      Set<AnnotatedRoute<AbstractRoute>> contributingRoutes) {
+      Set<AnnotatedRoute<AbstractRoute>> contributingRoutes,
+      RibExprEvaluator ribExprEvaluator) {
     if (policy == null) {
       // no contributor is needed if there is no policy
       return generatedRoute.toBuilder();
@@ -37,7 +39,7 @@ public class GeneratedRouteHelper {
     // Find first matching route among candidates
     for (AnnotatedRoute<AbstractRoute> contributingCandidate : contributingRoutes) {
       GeneratedRoute.Builder grb = generatedRoute.toBuilder();
-      if (policy.process(contributingCandidate, grb, Direction.OUT)) {
+      if (policy.process(contributingCandidate, grb, Direction.OUT, ribExprEvaluator)) {
         if (!generatedRoute.getDiscard()) {
           grb.setNextHopIp(contributingCandidate.getAbstractRoute().getNextHopIp());
         }
