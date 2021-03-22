@@ -26,8 +26,10 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
@@ -141,6 +143,19 @@ public class CommunitySetMatchExprToBDDTest {
     CommunitySetMatchExprReference csmer = new CommunitySetMatchExprReference(name);
 
     BDD result = _communitySetMatchExprToBDD.visitCommunitySetMatchExprReference(csmer, _arg);
+
+    CommunityVar cvar = CommunityVar.from("^20:");
+
+    assertEquals(cvarToBDD(cvar), result);
+  }
+
+  @Test
+  public void testVisitCommunitySetMatchRegex() {
+    CommunitySetMatchRegex csmr =
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), "^20:");
+
+    BDD result = _communitySetMatchExprToBDD.visitCommunitySetMatchRegex(csmr, _arg);
 
     CommunityVar cvar = CommunityVar.from("^20:");
 

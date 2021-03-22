@@ -24,6 +24,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.communities.CommunitySetMatchExprVarCollector;
 
 /**
  * Create a BDD from a {@link
@@ -98,7 +99,17 @@ public class CommunitySetMatchExprToBDD
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
     // NOTE: when implementing, update CommunitySetMatchExprVarCollector#visitCommunitySetMatchRegex
-    throw new UnsupportedOperationException("Currently not supporting community set regexes");
+    BDD bdd =
+        communityVarsToBDD(
+            communitySetMatchRegex.accept(
+                new CommunitySetMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
+            arg);
+    if (bdd.isZero()) {
+      throw new UnsupportedOperationException(
+          "Currently not supporting arbitrary community set regexes");
+    } else {
+      return bdd;
+    }
   }
 
   @Override

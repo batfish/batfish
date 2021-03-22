@@ -59,9 +59,16 @@ public class CommunitySetMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetMatchRegex(
       CommunitySetMatchRegex communitySetMatchRegex, Configuration arg) {
-    // This is not supported, but rather than throw we do nothing. If we end up needing to model
-    // this structure, the later code will crash instead.
-    return ImmutableSet.of();
+    // See if this regex can be treated as one that applies to a single community.  If so,
+    // we collect it and treat it as such.  If not, we ignore this regex; later if the symbolic
+    // analysis ever needs to consider this regex then it will fail with an exception.
+    String regex = communitySetMatchRegex.getRegex();
+    CommunityVar cvar = CommunityVar.from(regex);
+    if (cvar.toAutomaton().isEmpty()) {
+      return ImmutableSet.of();
+    } else {
+      return ImmutableSet.of(CommunityVar.from(regex));
+    }
   }
 
   @Override

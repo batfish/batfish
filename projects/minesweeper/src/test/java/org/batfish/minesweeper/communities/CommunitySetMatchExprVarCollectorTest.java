@@ -131,6 +131,19 @@ public class CommunitySetMatchExprVarCollectorTest {
   }
 
   @Test
+  public void testVisitCommunitySetMatchRegexSpecialCase() {
+    // We support the special case of community-set regexes that are just requiring a single
+    // community to be in the set.
+    CommunitySetMatchRegex cmsr =
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), "^65000:");
+
+    Set<CommunityVar> result = cmsr.accept(_varCollector, _baseConfig);
+    // TODO: this construct is not supported yet.
+    assertEquals(result, ImmutableSet.of(CommunityVar.from("^65000:")));
+  }
+
+  @Test
   public void testVisitCommunitySetNot() {
     CommunitySetNot csn = new CommunitySetNot(new HasCommunity(new CommunityIs(COMM1)));
 
