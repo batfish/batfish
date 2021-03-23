@@ -1164,27 +1164,23 @@ public class AristaGrammarTest {
     }
   }
 
-  @Test
-  public void testCommunityListExtraction() {
-    AristaConfiguration config = parseVendorConfig("arista_community_list");
-    assertThat(config.getStandardCommunityLists(), hasKeys("NEW_CL", "OLD_CL"));
+  /** A version-independent test for <4.23 and 4.23+ syntax. */
+  private static void testCommunityListExtraction(String hostname) {
+    AristaConfiguration config = parseVendorConfig(hostname);
+    assertThat(config.getStandardCommunityLists(), hasKeys("STANDARD_CL"));
     {
-      StandardCommunityList list = config.getStandardCommunityLists().get("OLD_CL");
-      assertThat(list.getLines(), hasSize(1));
-      StandardCommunityListLine line = Iterables.getOnlyElement(list.getLines());
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      StandardCommunityList list = config.getStandardCommunityLists().get("STANDARD_CL");
+      assertThat(list.getLines(), hasSize(2));
+      StandardCommunityListLine line0 = list.getLines().get(0);
+      StandardCommunityListLine line1 = list.getLines().get(1);
+      assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
-          line.getCommunities(),
+          line0.getCommunities(),
           containsInAnyOrder(
               StandardCommunity.of(1, 1).asLong(), WellKnownCommunity.GRACEFUL_SHUTDOWN));
-    }
-    {
-      StandardCommunityList list = config.getStandardCommunityLists().get("NEW_CL");
-      assertThat(list.getLines(), hasSize(1));
-      StandardCommunityListLine line = Iterables.getOnlyElement(list.getLines());
-      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line1.getAction(), equalTo(LineAction.DENY));
       assertThat(
-          line.getCommunities(),
+          line1.getCommunities(),
           containsInAnyOrder(
               459123L,
               WellKnownCommunity.INTERNET,
@@ -1192,21 +1188,23 @@ public class AristaGrammarTest {
               WellKnownCommunity.NO_ADVERTISE,
               WellKnownCommunity.NO_EXPORT));
     }
-    assertThat(config.getExpandedCommunityLists(), hasKeys("NEW_ECL", "OLD_ECL"));
+    assertThat(config.getExpandedCommunityLists(), hasKeys("EXPANDED_CL"));
     {
-      ExpandedCommunityList list = config.getExpandedCommunityLists().get("OLD_ECL");
-      assertThat(list.getLines(), hasSize(1));
-      ExpandedCommunityListLine line = Iterables.getOnlyElement(list.getLines());
-      assertThat(line.getAction(), equalTo(LineAction.DENY));
-      assertThat(line.getRegex(), equalTo("_3$"));
+      ExpandedCommunityList list = config.getExpandedCommunityLists().get("EXPANDED_CL");
+      assertThat(list.getLines(), hasSize(2));
+      ExpandedCommunityListLine line0 = list.getLines().get(0);
+      ExpandedCommunityListLine line1 = list.getLines().get(1);
+      assertThat(line0.getAction(), equalTo(LineAction.DENY));
+      assertThat(line0.getRegex(), equalTo("_3$"));
+      assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line1.getRegex(), equalTo(".*"));
     }
-    {
-      ExpandedCommunityList list = config.getExpandedCommunityLists().get("NEW_ECL");
-      assertThat(list.getLines(), hasSize(1));
-      ExpandedCommunityListLine line = Iterables.getOnlyElement(list.getLines());
-      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
-      assertThat(line.getRegex(), equalTo(".*"));
-    }
+  }
+
+  @Test
+  public void testCommunityListExtraction() {
+    testCommunityListExtraction("arista_community_list_421");
+    testCommunityListExtraction("arista_community_list_423");
   }
 
   @Test
