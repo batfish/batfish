@@ -79,6 +79,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_tcp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_udp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_append_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsg_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
@@ -780,6 +781,39 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCfsg_rename(Cfsg_renameContext ctx) {
+    Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
+    Optional<String> newNameOpt = toString(ctx, ctx.new_name);
+    if (!newNameOpt.isPresent() || !currentNameOpt.isPresent()) {
+      return;
+    }
+
+    String currentName = currentNameOpt.get();
+    String newName = newNameOpt.get();
+    if (!_c.getServiceGroups().containsKey(currentName)) {
+      warnRenameNonExistent(ctx, currentName, FortiosStructureType.SERVICE_GROUP);
+      return;
+    }
+    if (_c.getServices().containsKey(newName) || _c.getServiceGroups().containsKey(newName)) {
+      // TODO handle conflicting renames
+      warnRenameConflict(ctx, currentName, newName, FortiosStructureType.SERVICE_GROUP);
+      return;
+    }
+    // Rename refs / def
+    _c.renameStructure(
+        currentName,
+        newName,
+        FortiosStructureType.SERVICE_GROUP,
+        ImmutableSet.of(FortiosStructureType.SERVICE_CUSTOM, FortiosStructureType.SERVICE_GROUP));
+    // Rename the object itself
+    ServiceGroup current = _c.getServiceGroups().remove(currentName);
+    current.setName(newName);
+    _c.getServiceGroups().put(newName, current);
+    // Add the rename as part of the def
+    _c.defineStructure(FortiosStructureType.SERVICE_GROUP, newName, ctx);
+  }
+
+  @Override
   public void exitCfsg_set_comment(Cfsg_set_commentContext ctx) {
     _currentServiceGroup.setComment(toString(ctx.comment));
   }
@@ -876,8 +910,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warnRenameNonExistent(ctx, currentName, FortiosStructureType.SERVICE_CUSTOM);
       return;
     }
-    // TODO check service group as well, once that exists
-    if (_c.getServices().containsKey(newName)) {
+    if (_c.getServices().containsKey(newName) || _c.getServiceGroups().containsKey(newName)) {
       // TODO handle conflicting renames
       warnRenameConflict(ctx, currentName, newName, FortiosStructureType.SERVICE_CUSTOM);
       return;
