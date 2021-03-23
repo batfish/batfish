@@ -140,9 +140,15 @@ cmq_match
 :
   MATCH
   (
-    cmqm_dscp
+    cmqm_access_group
+    | cmqm_dscp
     | cmqm_precedence
   )
+;
+
+cmqm_access_group
+:
+  ACCESS_GROUP NAME name = generic_access_list_name NEWLINE
 ;
 
 cmqm_dscp
