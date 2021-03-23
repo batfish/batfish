@@ -106,6 +106,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -171,6 +172,8 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.ExpandedCommunityList;
+import org.batfish.representation.arista.ExpandedCommunityListLine;
 import org.batfish.representation.arista.IpAsPathAccessList;
 import org.batfish.representation.arista.IpAsPathAccessListLine;
 import org.batfish.representation.arista.MlagConfiguration;
@@ -181,6 +184,8 @@ import org.batfish.representation.arista.RouteMapClause;
 import org.batfish.representation.arista.StandardAccessList;
 import org.batfish.representation.arista.StandardAccessListActionLine;
 import org.batfish.representation.arista.StandardAccessListRemarkLine;
+import org.batfish.representation.arista.StandardCommunityList;
+import org.batfish.representation.arista.StandardCommunityListLine;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -1159,10 +1164,47 @@ public class AristaGrammarTest {
     }
   }
 
+  /** A version-independent test for <4.23 and 4.23+ syntax. */
+  private static void testCommunityListExtraction(String hostname) {
+    AristaConfiguration config = parseVendorConfig(hostname);
+    assertThat(config.getStandardCommunityLists(), hasKeys("STANDARD_CL"));
+    {
+      StandardCommunityList list = config.getStandardCommunityLists().get("STANDARD_CL");
+      assertThat(list.getLines(), hasSize(2));
+      StandardCommunityListLine line0 = list.getLines().get(0);
+      StandardCommunityListLine line1 = list.getLines().get(1);
+      assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          line0.getCommunities(),
+          containsInAnyOrder(
+              StandardCommunity.of(1, 1).asLong(), WellKnownCommunity.GRACEFUL_SHUTDOWN));
+      assertThat(line1.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          line1.getCommunities(),
+          containsInAnyOrder(
+              459123L,
+              WellKnownCommunity.INTERNET,
+              WellKnownCommunity.NO_EXPORT_SUBCONFED,
+              WellKnownCommunity.NO_ADVERTISE,
+              WellKnownCommunity.NO_EXPORT));
+    }
+    assertThat(config.getExpandedCommunityLists(), hasKeys("EXPANDED_CL"));
+    {
+      ExpandedCommunityList list = config.getExpandedCommunityLists().get("EXPANDED_CL");
+      assertThat(list.getLines(), hasSize(2));
+      ExpandedCommunityListLine line0 = list.getLines().get(0);
+      ExpandedCommunityListLine line1 = list.getLines().get(1);
+      assertThat(line0.getAction(), equalTo(LineAction.DENY));
+      assertThat(line0.getRegex(), equalTo("_3$"));
+      assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line1.getRegex(), equalTo(".*"));
+    }
+  }
+
   @Test
   public void testCommunityListExtraction() {
-    AristaConfiguration config = parseVendorConfig("arista_community_list");
-    assertThat(config.getStandardCommunityLists(), hasKey("SOME_CL"));
+    testCommunityListExtraction("arista_community_list_421");
+    testCommunityListExtraction("arista_community_list_423");
   }
 
   @Test

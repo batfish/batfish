@@ -1,24 +1,28 @@
 package org.batfish.representation.arista;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.LineAction;
 
+@ParametersAreNonnullByDefault
 public class StandardCommunityListLine implements Serializable {
 
-  private LineAction _action;
-  private List<Long> _communities;
+  private final @Nonnull LineAction _action;
+  private final @Nonnull Set<Long> _communities;
 
-  public StandardCommunityListLine(LineAction action, List<Long> communities) {
+  public StandardCommunityListLine(LineAction action, Iterable<Long> communities) {
     _action = action;
-    _communities = communities;
+    _communities = ImmutableSet.copyOf(communities);
   }
 
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  public List<Long> getCommunities() {
+  public @Nonnull Set<Long> getCommunities() {
     return _communities;
   }
 }
