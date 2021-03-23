@@ -19902,6 +19902,9 @@
             "name" : "12345",
             "description" : "name is 12345 verify it"
           },
+          "1:2" : {
+            "name" : "1:2"
+          },
           "::1" : {
             "name" : "::1",
             "description" : "name is ::1 verify it"

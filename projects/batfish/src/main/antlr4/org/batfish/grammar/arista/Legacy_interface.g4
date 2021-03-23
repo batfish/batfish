@@ -89,7 +89,7 @@ eos_vxif_vxlan_vlan_vni
 
 eos_vxif_vxlan_vrf
 :
-   VRF vrf = VARIABLE VNI vni = dec NEWLINE
+   VRF vrf = vrf_name VNI vni = dec NEWLINE
 ;
 
 if_autostate
@@ -1750,13 +1750,14 @@ if_vrf
 
 if_vrf_forwarding
 :
-  // this command is deprecated by 'vrf [VRF_ID]'
+  // EOS < 4.23 - this command is deprecated by 'vrf [VRF_ID]'
   FORWARDING if_vrf_name
 ;
 
 if_vrf_name
 :
-  name = variable NEWLINE
+  // EOS >= 4.23
+  name = vrf_name NEWLINE
 ;
 
 if_vrrp

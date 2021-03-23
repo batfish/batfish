@@ -15,14 +15,12 @@ aaa_accounting
       | aaa_accounting_connection_line
       | aaa_accounting_connection_stanza
       | aaa_accounting_default
-      | aaa_accounting_delay_start
       | aaa_accounting_exec_line
       | aaa_accounting_exec_stanza
       | aaa_accounting_identity
       | aaa_accounting_nested
       | aaa_accounting_network_line
       | aaa_accounting_network_stanza
-      | aaa_accounting_send
       | aaa_accounting_system_line
       | aaa_accounting_system_stanza
       | aaa_accounting_update
@@ -99,18 +97,6 @@ aaa_accounting_default_group
 aaa_accounting_default_local
 :
    LOCAL NEWLINE
-;
-
-aaa_accounting_delay_start
-:
-   DELAY_START
-   (
-      ALL
-      | VRF name = variable
-   )?
-   (
-      EXTENDED_DELAY dec
-   )? NEWLINE
 ;
 
 aaa_accounting_exec_line
@@ -214,44 +200,6 @@ aaa_accounting_network_stanza
          | GROUP
       ) null_rest_of_line
    )+
-;
-
-aaa_accounting_send
-:
-   SEND
-   (
-      aaa_accounting_send_counters
-      | aaa_accounting_send_stop_record
-   )
-;
-
-aaa_accounting_send_counters
-:
-   COUNTERS IPV6 NEWLINE
-;
-
-aaa_accounting_send_stop_record
-:
-   STOP_RECORD
-   (
-      ALWAYS
-      |
-      (
-         AUTHENTICATION
-         (
-            (
-               FAILURE
-               |
-               (
-                  SUCCESS REMOTE_SERVER
-               )
-            )
-            (
-               VRF name = variable
-            )?
-         )
-      )
-   ) NEWLINE
 ;
 
 aaa_accounting_system_line
@@ -810,37 +758,7 @@ aaa_group
       | RADIUS
       | TACACS_PLUS
    ) name = variable NEWLINE
-   (
-      aaa_group_deadtime
-      | aaa_group_ip_tacacs
-      | aaa_group_ip_vrf
-      | aaa_group_no_source_interface
-      | aaa_group_server
-      | aaa_group_server_private
-      | aaa_group_source_interface
-      | aaa_group_use_vrf
-      | aaa_group_vrf
-   )*
-;
-
-aaa_group_deadtime
-:
-   DEADTIME minutes = dec NEWLINE
-;
-
-aaa_group_ip_tacacs
-:
-   IP TACACS SOURCE_INTERFACE interface_name NEWLINE
-;
-
-aaa_group_ip_vrf
-:
-   IP VRF FORWARDING name = variable NEWLINE
-;
-
-aaa_group_no_source_interface
-:
-   NO SOURCE_INTERFACE NEWLINE
+   aaa_group_server
 ;
 
 aaa_group_server
@@ -849,77 +767,14 @@ aaa_group_server
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-      | NAME? name = variable
-   )
-   (
-      (
-         ACCT_PORT acct_port = dec
-      )
-      |
-      (
-         AUTH_PORT auth_port = dec
-      )
-      |
-      (
-         PORT prt = dec
-      )
-   )* NEWLINE
-;
-
-aaa_group_server_private
-:
-   SERVER_PRIVATE
-   (
-      IP_ADDRESS
-      | IPV6_ADDRESS
       | name = variable
    )
    (
-      (
-         ACCT_PORT acct_port = dec
-      )
-      |
-      (
-         AUTH_PORT auth_port = dec
-      )
-      |
-      (
-         KEY dec variable_secret
-      )
-      |
-      (
-        PORT prt= dec
-      )
-      |
-      (
-         TIMEOUT dec
-      )
+      ACCT_PORT acct_port = uint16
+      | AUTH_PORT auth_port = uint16
+      | PORT prt = uint16
+      | VRF vrf = vrf_name
    )* NEWLINE
-;
-
-aaa_group_source_interface
-:
-   SOURCE_INTERFACE interface_name dec? NEWLINE
-;
-
-aaa_group_use_vrf
-:
-   USE_VRF
-   (
-      DEFAULT
-      | MANAGEMENT
-      | name = variable
-   ) NEWLINE
-;
-
-aaa_group_vrf
-:
-   VRF
-   (
-      DEFAULT
-      | MANAGEMENT
-      | name = variable
-   ) NEWLINE
 ;
 
 aaa_new_model

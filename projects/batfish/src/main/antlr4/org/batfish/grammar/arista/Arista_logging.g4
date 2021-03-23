@@ -64,7 +64,7 @@ logging_on
 
 logging_vrf
 :
-  VRF name = word
+  VRF name = vrf_name
   (
     logging_vrf_host
     | logging_vrf_source_interface
