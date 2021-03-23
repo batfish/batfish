@@ -3,6 +3,7 @@ package org.batfish.grammar.fortios;
 import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -75,6 +77,10 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_protocol_numberContext
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_sctp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_tcp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_udp_portrangeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsg_append_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsg_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
@@ -154,6 +160,7 @@ import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
+import org.batfish.representation.fortios.ServiceGroup;
 import org.batfish.representation.fortios.StaticRoute;
 import org.batfish.representation.fortios.Zone;
 import org.batfish.representation.fortios.Zone.IntrazoneAction;
@@ -218,6 +225,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
               .collect(ImmutableSet.toImmutableSet()));
       policy.setSrcIntfZones(
           policy.getSrcIntfZoneUUIDs().stream()
+              .map(u -> _c.getRenameableObjects().get(u).getName())
+              .collect(ImmutableSet.toImmutableSet()));
+    }
+
+    for (ServiceGroup group : _c.getServiceGroups().values()) {
+      group.setMember(
+          group.getMemberUUIDs().stream()
               .map(u -> _c.getRenameableObjects().get(u).getName())
               .collect(ImmutableSet.toImmutableSet()));
     }
@@ -673,7 +687,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_service(Cfp_set_serviceContext ctx) {
-    toServiceUUIDs(ctx.services, FortiosStructureUsage.POLICY_SERVICE)
+    toServiceGroupMemberUUIDs(ctx.services, FortiosStructureUsage.POLICY_SERVICE, true)
         .ifPresent(
             s -> {
               Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
@@ -730,11 +744,95 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_service(Cfp_append_serviceContext ctx) {
-    toServiceUUIDs(ctx.services, FortiosStructureUsage.POLICY_SERVICE)
+    toServiceGroupMemberUUIDs(ctx.services, FortiosStructureUsage.POLICY_SERVICE, true)
         .ifPresent(
             s -> {
               Set<BatfishUUID> service = _currentPolicy.getServiceUUIDs();
               service.addAll(s);
+            });
+  }
+
+  @Override
+  public void enterCfsg_edit(Cfsg_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.service_name());
+    ServiceGroup existing = name.map(_c.getServiceGroups()::get).orElse(null);
+    if (existing != null) {
+      // Make a clone to edit
+      _currentServiceGroup = SerializationUtils.clone(existing);
+    } else {
+      _currentServiceGroup = new ServiceGroup(toString(ctx.service_name().str()), getUUID());
+    }
+    _currentServiceGroupNameValid = name.isPresent();
+  }
+
+  @Override
+  public void exitCfsg_edit(Cfsg_editContext ctx) {
+    String name = _currentServiceGroup.getName();
+    String invalidReason = serviceGroupValid(_currentServiceGroup, _currentServiceGroupNameValid);
+    if (invalidReason == null) { // service group edit block is valid
+      _c.getRenameableObjects().put(_currentServiceGroup.getBatfishUUID(), _currentServiceGroup);
+      _c.defineStructure(FortiosStructureType.SERVICE_GROUP, name, ctx);
+      _c.getServiceGroups().put(name, _currentServiceGroup);
+    } else {
+      warn(ctx, String.format("Service group edit block ignored: %s", invalidReason));
+    }
+    _currentServiceGroup = null;
+  }
+
+  @Override
+  public void exitCfsg_set_comment(Cfsg_set_commentContext ctx) {
+    _currentServiceGroup.setComment(toString(ctx.comment));
+  }
+
+  @Override
+  public void exitCfsg_set_member(Cfsg_set_memberContext ctx) {
+    toServiceGroupMemberUUIDs(
+            ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
+        .ifPresent(
+            newMembers -> {
+              // See if any of the new members is invalid / the parent of the current group
+              ServiceGroup parent =
+                  getParentServiceGroup(
+                      _currentServiceGroup.getBatfishUUID(),
+                      newMembers,
+                      _c.getServiceGroups().values());
+              if (parent != null) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Service group %s cannot be added to %s as it would create a cycle",
+                        parent.getName(), _currentServiceGroup.getName()));
+                return;
+              }
+
+              Set<BatfishUUID> members = _currentServiceGroup.getMemberUUIDs();
+              members.clear();
+              members.addAll(newMembers);
+            });
+  }
+
+  @Override
+  public void exitCfsg_append_member(Cfsg_append_memberContext ctx) {
+    toServiceGroupMemberUUIDs(
+            ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
+        .ifPresent(
+            newMembers -> {
+              // See if any of the new members is invalid / the parent of the current group
+              ServiceGroup parent =
+                  getParentServiceGroup(
+                      _currentServiceGroup.getBatfishUUID(),
+                      newMembers,
+                      _c.getServiceGroups().values());
+              if (parent != null) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Service group %s cannot be added to %s as it would create a cycle",
+                        parent.getName(), _currentServiceGroup.getName()));
+                return;
+              }
+
+              _currentServiceGroup.getMemberUUIDs().addAll(newMembers);
             });
   }
 
@@ -1014,37 +1112,93 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /**
-   * Generate a list of service UUIDs for the supplied Service_names context. Returns {@link
-   * Optional#empty()} if invalid.
+   * Generate a list of service group member UUIDs for the supplied Service_names context. Returns
+   * {@link Optional#empty()} if invalid. If {@code pruneAll} is true, then the special {@code ALL}
+   * service is removed when specified with other services.
+   *
+   * <p>If any service group member contains the current service group as a descendant, then the
+   * context is considered invalid as a cycle would be introduced.
    */
-  private Optional<Set<BatfishUUID>> toServiceUUIDs(
-      Service_namesContext ctx, FortiosStructureUsage usage) {
+  private Optional<Set<BatfishUUID>> toServiceGroupMemberUUIDs(
+      Service_namesContext ctx, FortiosStructureUsage usage, boolean pruneAll) {
     int line = ctx.start.getLine();
     Map<String, Service> servicesMap = _c.getServices();
-    ImmutableSet.Builder<BatfishUUID> serviceUuidsBuilder = ImmutableSet.builder();
-    Set<String> services =
+    Map<String, ServiceGroup> serviceGroupsMap = _c.getServiceGroups();
+
+    ImmutableSet.Builder<BatfishUUID> uuidsBuilder = ImmutableSet.builder();
+    Set<String> members =
         ctx.service_name().stream()
             .map(n -> toString(n.str()))
             .collect(ImmutableSet.toImmutableSet());
-    for (String name : services) {
-      if (name.equals(Policy.ALL_SERVICE) && services.size() > 1) {
+    for (String name : members) {
+      if (pruneAll && name.equals(Policy.ALL_SERVICE) && members.size() > 1) {
         warn(ctx, "Cannot combine 'ALL' with other services");
         return Optional.empty();
       }
       if (servicesMap.containsKey(name)) {
-        serviceUuidsBuilder.add(servicesMap.get(name).getBatfishUUID());
+        uuidsBuilder.add(servicesMap.get(name).getBatfishUUID());
         _c.referenceStructure(FortiosStructureType.SERVICE_CUSTOM, name, usage, line);
+      } else if (serviceGroupsMap.containsKey(name)) {
+        ServiceGroup serviceGroup = serviceGroupsMap.get(name);
+        uuidsBuilder.add(serviceGroup.getBatfishUUID());
+        _c.referenceStructure(FortiosStructureType.SERVICE_GROUP, name, usage, line);
       } else {
         _c.undefined(FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP, name, usage, line);
         warn(
             ctx,
             String.format(
-                "Service %s is undefined and cannot be added to policy %s",
-                name, _currentPolicy.getNumber()));
+                "Service or service group %s is undefined and cannot be referenced", name));
         return Optional.empty();
       }
     }
-    return Optional.of(serviceUuidsBuilder.build());
+    return Optional.of(uuidsBuilder.build());
+  }
+
+  /**
+   * Returns a parent ServiceGroup which directly or indirectly contains the specified
+   * ServiceGroupMember UUID, or {@code null} if none contain it. Searches only the specified parent
+   * UUIDs and their descendants and uses the provided collection of service groups to expand
+   * indirect descendants/map UUIDs to objects.
+   */
+  @Nullable
+  private static ServiceGroup getParentServiceGroup(
+      BatfishUUID childUuid,
+      Collection<BatfishUUID> candidateParents,
+      Collection<ServiceGroup> allServiceGroups) {
+    Map<BatfishUUID, ServiceGroup> allServiceGroupsByUUID =
+        allServiceGroups.stream()
+            .collect(
+                ImmutableMap.toImmutableMap(ServiceGroup::getBatfishUUID, Function.identity()));
+
+    for (BatfishUUID parentUUID : candidateParents) {
+      if (!allServiceGroupsByUUID.containsKey(parentUUID)) {
+        // If the candidate parent doesn't exist (e.g. is a Service, not a group) skip it
+        continue;
+      }
+      ServiceGroup parent = allServiceGroupsByUUID.get(parentUUID);
+      if (serviceGroupContains(parent, childUuid, allServiceGroupsByUUID)) {
+        return parent;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Helper function that returns a boolean indicating if the specified parent ServiceGroup directly
+   * or indirectly contains the a member with the specified UUID. Uses the provided map of service
+   * groups to expand indirect descendants.
+   */
+  static boolean serviceGroupContains(
+      ServiceGroup parent, BatfishUUID uuid, Map<BatfishUUID, ServiceGroup> allServiceGroups) {
+    Set<BatfishUUID> members = parent.getMemberUUIDs();
+    if (parent.getBatfishUUID().equals(uuid) || members.contains(uuid)) {
+      return true;
+    }
+    return members.stream()
+        .anyMatch(
+            m ->
+                allServiceGroups.containsKey(m)
+                    && serviceGroupContains(allServiceGroups.get(m), uuid, allServiceGroups));
   }
 
   /**
@@ -1693,6 +1847,21 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
   }
 
+  /**
+   * Returns message indicating why service group can't be committed in the CLI, or null if it can
+   */
+  @VisibleForTesting
+  public static @Nullable String serviceGroupValid(ServiceGroup s, boolean nameValid) {
+    if (!nameValid) {
+      return "name is invalid";
+    }
+    if (s.getMemberUUIDs().isEmpty()) {
+      return "service group requires at least one member";
+    }
+
+    return null;
+  }
+
   private static @Nullable String staticRouteValid(StaticRoute staticRoute, boolean seqNumValid) {
     if (!seqNumValid) {
       return "sequence number is invalid";
@@ -1770,6 +1939,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * #serviceValid(Service, boolean)}.
    */
   private boolean _currentServiceValid;
+
+  private ServiceGroup _currentServiceGroup;
+  private boolean _currentServiceGroupNameValid;
 
   private StaticRoute _currentStaticRoute;
   private boolean _currentStaticRouteNumValid;

@@ -1,0 +1,26 @@
+config system global
+    set hostname "service_group_warnings"
+end
+config firewall service custom
+    edit "custom_tcp"
+        set tcp-portrange 1
+    next
+end
+config firewall service group
+    edit "longer than longest possible firewall service group name that is accepted by the device"
+    next
+    edit "empty is not allowed"
+        set comment "at least one member is required"
+    next
+    edit "valid"
+        set member custom_tcp
+    next
+    edit "self_ref_not_allowed"
+        set comment "no self ref yet"
+        set member valid
+    next
+    edit valid
+        append member "self_ref_not_allowed"
+        append member "valid"
+    next
+end

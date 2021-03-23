@@ -16,6 +16,11 @@ interface_name: str;
 
 interface_names: interface_name+;
 
+// Up to 79 characters
+service_name: str;
+
+service_names: service_name+;
+
 quoted_text: QUOTED_TEXT+;
 
 ip_address: IP_ADDRESS | SUBNET_MASK;
