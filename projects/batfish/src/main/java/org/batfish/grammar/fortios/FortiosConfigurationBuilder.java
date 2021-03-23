@@ -86,6 +86,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
@@ -573,6 +574,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCrbcne_set_remote_as(Crbcne_set_remote_asContext ctx) {
     toLong(ctx, ctx.bgp_remote_as()).ifPresent(_currentBgpNeighbor::setRemoteAs);
+  }
+
+  @Override
+  public void exitCrbcr_set_status(Crbcr_set_statusContext ctx) {
+    if (toBoolean(ctx.enable_or_disable())) {
+      warn(ctx, "Redistribution into BGP is not yet supported");
+    }
   }
 
   @Override
