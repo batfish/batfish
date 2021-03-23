@@ -7,9 +7,6 @@ import org.batfish.datamodel.Ip;
 
 /** FortiOS datamodel component containing BGP neighbor configuration */
 public class BgpNeighbor implements Serializable {
-  private final @Nonnull Ip _ip;
-  private @Nullable Long _remoteAs;
-
   public BgpNeighbor(Ip ip) {
     _ip = ip;
   }
@@ -25,4 +22,7 @@ public class BgpNeighbor implements Serializable {
   public void setRemoteAs(Long remoteAs) {
     _remoteAs = remoteAs;
   }
+
+  private final @Nonnull Ip _ip;
+  private @Nullable Long _remoteAs;
 }

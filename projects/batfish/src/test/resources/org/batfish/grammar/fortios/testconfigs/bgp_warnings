@@ -3,6 +3,7 @@ config system global
 end
 config router bgp
     set as 4294967296
+    set as hello
     set router-id 0.0.0.0
     config neighbor
         # Invalid neighbor ip
@@ -13,6 +14,7 @@ config router bgp
         edit "1.1.1.1"
             set remote-as 0
             set remote-as 4294967296
+            set remote-as hello
         next
     end
     config redistribute "connected"

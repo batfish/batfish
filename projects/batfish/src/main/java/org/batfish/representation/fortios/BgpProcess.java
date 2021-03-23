@@ -9,10 +9,6 @@ import org.batfish.datamodel.Ip;
 
 /** FortiOS datamodel component containing BGP configuration */
 public final class BgpProcess implements Serializable {
-  private @Nullable Long _as;
-  private @Nullable Ip _routerId;
-  private final Map<Ip, BgpNeighbor> _neighbors;
-
   public BgpProcess() {
     _neighbors = new HashMap<>();
   }
@@ -36,4 +32,8 @@ public final class BgpProcess implements Serializable {
   public void setRouterId(Ip routerId) {
     _routerId = routerId;
   }
+
+  private @Nullable Long _as;
+  private @Nullable Ip _routerId;
+  private final Map<Ip, BgpNeighbor> _neighbors;
 }

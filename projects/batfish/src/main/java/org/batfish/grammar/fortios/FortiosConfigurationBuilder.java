@@ -84,6 +84,9 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsg_append_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cr_bgpContext;
+import org.batfish.grammar.fortios.FortiosParser.Crb_set_asContext;
+import org.batfish.grammar.fortios.FortiosParser.Crb_set_router_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
@@ -531,12 +534,17 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
-  public void exitCrb_set_as(FortiosParser.Crb_set_asContext ctx) {
+  public void enterCr_bgp(Cr_bgpContext ctx) {
+    _c.initBgpProcess();
+  }
+
+  @Override
+  public void exitCrb_set_as(Crb_set_asContext ctx) {
     toLong(ctx, ctx.bgp_as()).ifPresent(_c.getBgpProcess()::setAs);
   }
 
   @Override
-  public void exitCrb_set_router_id(FortiosParser.Crb_set_router_idContext ctx) {
+  public void exitCrb_set_router_id(Crb_set_router_idContext ctx) {
     Ip routerId = toIp(ctx.router_id);
     if (routerId.equals(Ip.ZERO)) {
       warn(ctx, "Cannot use 0.0.0.0 as BGP router-id");

@@ -24,6 +24,7 @@ import static org.batfish.representation.fortios.FortiosConfiguration.computeVrf
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getPolicyName;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -512,11 +513,18 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testBgpExtraction() {
+  public void testBgpExtraction() throws IOException {
     String hostname = "bgp";
     FortiosConfiguration vc = parseVendorConfig(hostname);
-    BgpProcess bgpProcess = vc.getBgpProcess();
 
+    // Ensure no warnings were generated
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    assertThat(
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot()).getWarnings(),
+        anEmptyMap());
+
+    BgpProcess bgpProcess = vc.getBgpProcess();
+    assert bgpProcess != null;
     assertThat(bgpProcess.getAs(), equalTo(0L));
     assertThat(bgpProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
 
@@ -546,10 +554,12 @@ public final class FortiosGrammarTest {
         parseWarnings.getParseWarnings(),
         containsInAnyOrder(
             hasComment("Expected BGP AS in range 0-4294967295, but got '4294967296'"),
+            hasComment("Expected BGP AS in range 0-4294967295, but got 'hello'"),
             hasComment("Cannot use 0.0.0.0 as BGP router-id"),
             hasComment("BGP neighbor edit block ignored: neighbor ID is invalid"),
             hasComment("Expected BGP remote AS in range 1-4294967295, but got '0'"),
             hasComment("Expected BGP remote AS in range 1-4294967295, but got '4294967296'"),
+            hasComment("Expected BGP remote AS in range 1-4294967295, but got 'hello'"),
             hasComment("BGP neighbor edit block ignored: remote-as must be set"),
             hasComment("Redistribution into BGP is not yet supported")));
   }
