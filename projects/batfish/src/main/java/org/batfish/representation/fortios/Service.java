@@ -3,6 +3,7 @@ package org.batfish.representation.fortios;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -223,7 +224,7 @@ public final class Service implements Serializable, ServiceGroupMember {
 
   @Override
   @Nonnull
-  public Stream<HeaderSpace> toHeaderSpaces() {
+  public Stream<HeaderSpace> toHeaderSpaces(Map<String, ServiceGroupMember> serviceGroupMembers) {
     switch (getProtocolEffective()) {
       case TCP_UDP_SCTP:
         return Stream.of(

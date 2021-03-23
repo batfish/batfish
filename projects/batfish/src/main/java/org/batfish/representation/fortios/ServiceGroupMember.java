@@ -1,5 +1,6 @@
 package org.batfish.representation.fortios;
 
+import java.util.Map;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
@@ -13,5 +14,5 @@ public interface ServiceGroupMember extends FortiosRenameableObject {
 
   void setComment(String comment);
 
-  Stream<HeaderSpace> toHeaderSpaces();
+  Stream<HeaderSpace> toHeaderSpaces(Map<String, ServiceGroupMember> serviceGroupMembers);
 }

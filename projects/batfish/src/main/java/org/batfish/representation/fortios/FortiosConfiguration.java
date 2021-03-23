@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
@@ -173,28 +175,38 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   public @Nonnull Map<String, AclLine> getConvertedPolicies(Set<String> viIpSpaces) {
+    Stream<Service> services = _services.values().stream();
+    Stream<ServiceGroup> serviceGroups = _serviceGroups.values().stream();
+    Map<String, ServiceGroupMember> serviceGroupMembers =
+        Stream.concat(services, serviceGroups)
+            .collect(ImmutableMap.toImmutableMap(ServiceGroupMember::getName, Function.identity()));
     Map<String, AclLineMatchExpr> convertedServices =
-        _services.values().stream()
-            .collect(ImmutableMap.toImmutableMap(Service::getName, this::toMatchExpr));
-    // TODO convert ServiceGroup
+        serviceGroupMembers.values().stream()
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    ServiceGroupMember::getName, sgm -> toMatchExpr(sgm, serviceGroupMembers)));
 
     // Convert each policy to an AclLine
     return convertPolicies(_policies, convertedServices, viIpSpaces, _filename, _w);
   }
 
-  /** Convert specified {@link Service} into its corresponding {@link AclLineMatchExpr}. */
+  /**
+   * Convert specified {@link ServiceGroupMember} into its corresponding {@link AclLineMatchExpr}.
+   */
   @VisibleForTesting
   @Nonnull
-  AclLineMatchExpr toMatchExpr(ServiceGroupMember service) {
+  AclLineMatchExpr toMatchExpr(
+      ServiceGroupMember service, Map<String, ServiceGroupMember> serviceGroupMembers) {
     List<AclLineMatchExpr> matchExprs =
         service
-            .toHeaderSpaces()
+            .toHeaderSpaces(serviceGroupMembers)
             .map(MatchHeaderSpace::new)
             .collect(ImmutableList.toImmutableList());
     if (matchExprs.isEmpty()) {
       _w.redFlag(String.format("Service %s does not match any packets", service.getName()));
       return AclLineMatchExprs.FALSE;
     }
+    // TODO better TraceElement
     TraceElement te =
         service instanceof Service ? matchServiceTraceElement((Service) service, _filename) : null;
     return new OrMatchExpr(matchExprs, te);

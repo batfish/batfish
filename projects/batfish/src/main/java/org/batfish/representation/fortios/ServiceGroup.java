@@ -17,9 +17,12 @@ import org.batfish.datamodel.HeaderSpace;
 public final class ServiceGroup implements Serializable, ServiceGroupMember {
 
   @Override
-  public Stream<HeaderSpace> toHeaderSpaces() {
-    // TODO
-    return Stream.empty();
+  public Stream<HeaderSpace> toHeaderSpaces(Map<String, ServiceGroupMember> serviceGroupMembers) {
+    // Guaranteed once extraction is complete
+    assert _member != null;
+
+    return _member.stream()
+        .flatMap(m -> serviceGroupMembers.get(m).toHeaderSpaces(serviceGroupMembers));
   }
 
   @Override

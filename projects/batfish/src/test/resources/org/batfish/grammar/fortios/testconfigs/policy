@@ -30,13 +30,22 @@ config firewall address
     next
 end
 config firewall service custom
-    edit EXPLICIT_DENY
+    edit EXPLICIT_DENY1
         set protocol TCP/UDP/SCTP
         set tcp-portrange 1234
+    next
+    edit EXPLICIT_DENY2
+        set protocol TCP/UDP/SCTP
+        set tcp-portrange 1235
     next
     edit ALL_TCP
         set protocol TCP/UDP/SCTP
         set tcp-portrange 1-65535
+    next
+end
+config firewall service group
+    edit EXPLICIT_DENY_GROUP
+        set member EXPLICIT_DENY2
     next
 end
 config firewall policy
@@ -46,7 +55,7 @@ config firewall policy
         set dstintf port3 port4
         set srcaddr all
         set dstaddr all
-        set service EXPLICIT_DENY
+        set service EXPLICIT_DENY1 EXPLICIT_DENY_GROUP
     next
     edit 2
         set action accept

@@ -35,15 +35,17 @@ public class FortiosConfigurationTest {
     Service service = new Service(svcName, new BatfishUUID(1));
     Warnings w = new Warnings(true, true, true);
     c.setWarnings(w);
-    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service)), equalTo(_zero));
+    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service, null)), equalTo(_zero));
     assertThat(
         w.getRedFlagWarnings(),
         contains(hasText(String.format("Service %s does not match any packets", svcName))));
 
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service)), equalTo(_zero));
+    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service, null)), equalTo(_zero));
   }
+
+  // TODO add ToMatchExpr tests for service groups
 
   @Test
   public void testToMatchExpr_tcpUdpSctp_oneCustom() {
@@ -181,7 +183,7 @@ public class FortiosConfigurationTest {
     c.setFilename(filename);
     service.setProtocol(Service.Protocol.ICMP);
     assertThat(
-        c.toMatchExpr(service).getTraceElement(),
+        c.toMatchExpr(service, null).getTraceElement(),
         equalTo(matchServiceTraceElement(service, filename)));
   }
 
@@ -193,7 +195,7 @@ public class FortiosConfigurationTest {
     Warnings w = new Warnings();
     FortiosConfiguration c = new FortiosConfiguration();
     c.setWarnings(w);
-    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service)), equalTo(expected));
+    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service, null)), equalTo(expected));
     assertThat(w.getRedFlagWarnings(), empty());
   }
 }
