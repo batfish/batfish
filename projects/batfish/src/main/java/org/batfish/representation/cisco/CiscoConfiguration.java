@@ -3841,11 +3841,27 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
       ExpandedCommunityListLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(),
-        new CommunitySetMatchRegex(
-            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-            toJavaRegex(line.getRegex())));
+
+    String regex = line.getRegex();
+    CommunitySetMatchExpr csme;
+
+    // If the line's regex only requires some community in the set to have a particular format,
+    // create a regex on an individual community rather than on the whole set.
+    // Regexes on individual communities have a simpler semantics, and some questions
+    // (e.g. SearchRoutePolicies) do not handle arbitrary community-set regexes.
+    String halfCommRegex = "(_?\\d+)?";
+    String singleCommRegex = halfCommRegex + ":" + halfCommRegex;
+    Pattern p = Pattern.compile(singleCommRegex);
+    if (p.matcher(regex).matches()) {
+      csme = new HasCommunity(toCommunityMatchRegex(regex));
+    } else {
+      csme =
+          new CommunitySetMatchRegex(
+              new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+              toJavaRegex(line.getRegex()));
+    }
+
+    return new CommunitySetAclLine(line.getAction(), csme);
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(
@@ -3875,9 +3891,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull CommunityAclLine toCommunityAclLine(ExpandedCommunityListLine line) {
-    return new CommunityAclLine(
-        line.getAction(),
-        new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
+    return new CommunityAclLine(line.getAction(), toCommunityMatchRegex(line.getRegex()));
   }
 
   private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
@@ -3901,5 +3915,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
+  }
+
+  private static @Nonnull CommunityMatchRegex toCommunityMatchRegex(String regex) {
+    return new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(regex));
   }
 }
