@@ -8,7 +8,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
@@ -44,8 +47,6 @@ public class FortiosConfigurationTest {
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
     assertThat(_aclToBdd.toBdd(c.toMatchExpr(service, null)), equalTo(_zero));
   }
-
-  // TODO add ToMatchExpr tests for service groups
 
   @Test
   public void testToMatchExpr_tcpUdpSctp_oneCustom() {
@@ -174,6 +175,95 @@ public class FortiosConfigurationTest {
   }
 
   @Test
+  public void testToMatchExpr_serviceGroup() {
+    IntegerSpace tcpSrcPorts = IntegerSpace.of(1);
+    IntegerSpace tcpDstPorts = IntegerSpace.of(2);
+    IntegerSpace udpSrcPorts = IntegerSpace.of(3);
+    IntegerSpace udpDstPorts = IntegerSpace.of(4);
+    IntegerSpace sctpSrcPorts = IntegerSpace.of(5);
+    IntegerSpace sctpDstPorts = IntegerSpace.of(6);
+    Service serviceTcp = new Service("service_tcp", new BatfishUUID(1));
+    serviceTcp.setTcpPortRangeSrc(tcpSrcPorts);
+    serviceTcp.setTcpPortRangeDst(tcpDstPorts);
+
+    Service serviceUdp = new Service("service_udp", new BatfishUUID(2));
+    serviceUdp.setUdpPortRangeSrc(udpSrcPorts);
+    serviceUdp.setUdpPortRangeDst(udpDstPorts);
+
+    Service serviceSctp = new Service("service_sctp", new BatfishUUID(3));
+    serviceSctp.setSctpPortRangeSrc(sctpSrcPorts);
+    serviceSctp.setSctpPortRangeDst(sctpDstPorts);
+
+    ServiceGroup serviceGroupChild = new ServiceGroup("service_group_child", new BatfishUUID(4));
+    serviceGroupChild.setMember(ImmutableSet.of("service_tcp", "service_udp"));
+
+    ServiceGroup serviceGroupParent = new ServiceGroup("service_group_parent", new BatfishUUID(5));
+    serviceGroupParent.setMember(ImmutableSet.of("service_group_child", "service_sctp"));
+
+    HeaderSpace tcp =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.TCP)
+            .setSrcPorts(tcpSrcPorts.getSubRanges())
+            .setDstPorts(tcpDstPorts.getSubRanges())
+            .build();
+    HeaderSpace udp =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.UDP)
+            .setSrcPorts(udpSrcPorts.getSubRanges())
+            .setDstPorts(udpDstPorts.getSubRanges())
+            .build();
+    HeaderSpace sctp =
+        HeaderSpace.builder()
+            .setIpProtocols(IpProtocol.SCTP)
+            .setSrcPorts(sctpSrcPorts.getSubRanges())
+            .setDstPorts(sctpDstPorts.getSubRanges())
+            .build();
+
+    // SCTP directly from parent, TCP and UDP indirectly from child
+    BDD expected = _hsToBdd.toBDD(tcp).or(_hsToBdd.toBDD(udp)).or(_hsToBdd.toBDD(sctp));
+    assertConvertsWithoutWarnings(
+        serviceGroupParent,
+        ImmutableSet.of(serviceTcp, serviceUdp, serviceSctp, serviceGroupChild, serviceGroupParent),
+        expected);
+  }
+
+  @Test
+  public void testToMatchExpr_serviceGroupTraceElement() {
+    String filename = "filename";
+    FortiosConfiguration c = new FortiosConfiguration();
+    c.setWarnings(new Warnings());
+    c.setFilename(filename);
+
+    Service service1 = new Service("service1", new BatfishUUID(1));
+    service1.setProtocol(Service.Protocol.ICMP);
+    Service service2 = new Service("service2", new BatfishUUID(2));
+    service2.setProtocol(Service.Protocol.ICMP);
+    Service service3 = new Service("service3", new BatfishUUID(3));
+    service3.setProtocol(Service.Protocol.ICMP);
+    ServiceGroup serviceGroupChild = new ServiceGroup("service_group_child", new BatfishUUID(4));
+    serviceGroupChild.setMember(ImmutableSet.of("service1", "service2"));
+    ServiceGroup serviceGroupParent = new ServiceGroup("service_group_parent", new BatfishUUID(5));
+    serviceGroupParent.setMember(ImmutableSet.of("service_group_child", "service3"));
+
+    assertThat(
+        c.toMatchExpr(
+                serviceGroupParent,
+                ImmutableMap.of(
+                    service1.getName(),
+                    service1,
+                    service2.getName(),
+                    service2,
+                    service3.getName(),
+                    service3,
+                    serviceGroupChild.getName(),
+                    serviceGroupChild,
+                    serviceGroupParent.getName(),
+                    serviceGroupParent))
+            .getTraceElement(),
+        equalTo(matchServiceTraceElement(serviceGroupParent, filename)));
+  }
+
+  @Test
   public void testToMatchExpr_traceElement() {
     String svcName = "name";
     String filename = "filename";
@@ -196,6 +286,27 @@ public class FortiosConfigurationTest {
     FortiosConfiguration c = new FortiosConfiguration();
     c.setWarnings(w);
     assertThat(_aclToBdd.toBdd(c.toMatchExpr(service, null)), equalTo(expected));
+    assertThat(w.getRedFlagWarnings(), empty());
+  }
+
+  /**
+   * Asserts that when converted, the given {@link ServiceGroup} will exactly match the provided
+   * {@link BDD}, without generating conversion warnings.
+   */
+  private void assertConvertsWithoutWarnings(
+      ServiceGroup serviceGroup, Set<ServiceGroupMember> allServiceGroupMembers, BDD expected) {
+    Warnings w = new Warnings();
+    FortiosConfiguration c = new FortiosConfiguration();
+    c.setWarnings(w);
+    assertThat(
+        _aclToBdd.toBdd(
+            c.toMatchExpr(
+                serviceGroup,
+                allServiceGroupMembers.stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(
+                            ServiceGroupMember::getName, Functions.identity())))),
+        equalTo(expected));
     assertThat(w.getRedFlagWarnings(), empty());
   }
 }

@@ -29,7 +29,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -206,10 +205,7 @@ public class FortiosConfiguration extends VendorConfiguration {
       _w.redFlag(String.format("Service %s does not match any packets", service.getName()));
       return AclLineMatchExprs.FALSE;
     }
-    // TODO better TraceElement
-    TraceElement te =
-        service instanceof Service ? matchServiceTraceElement((Service) service, _filename) : null;
-    return new OrMatchExpr(matchExprs, te);
+    return new OrMatchExpr(matchExprs, matchServiceTraceElement(service, _filename));
   }
 
   private void convertInterface(Interface iface, Configuration c) {

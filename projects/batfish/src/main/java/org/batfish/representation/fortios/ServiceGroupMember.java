@@ -19,6 +19,10 @@ public abstract class ServiceGroupMember implements FortiosRenameableObject, Ser
     _comment = comment;
   }
 
+  /**
+   * Convert this member into its corresponding {@link HeaderSpace}s. Uses provided map of all
+   * {@link ServiceGroupMember}s to resolve descendant members.
+   */
   public abstract Stream<HeaderSpace> toHeaderSpaces(
       Map<String, ServiceGroupMember> serviceGroupMembers);
 
