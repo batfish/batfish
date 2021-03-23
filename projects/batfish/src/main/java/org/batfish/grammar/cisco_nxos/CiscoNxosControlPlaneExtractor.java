@@ -88,6 +88,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_UNSUPPRESS_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BUILT_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_QOS_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CONTROL_PLANE_SERVICE_POLICY;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
@@ -293,6 +294,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cm_network_qosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cm_qosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cm_queuingContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cmcpm_access_groupContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cmqm_access_groupContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Cp_service_policyContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Dscp_specContext;
@@ -1526,6 +1528,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         IP_OR_MAC_ACCESS_LIST_ABSTRACT_REF,
         acl.get(),
         CLASS_MAP_CP_MATCH_ACCESS_GROUP,
+        ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitCmqm_access_group(Cmqm_access_groupContext ctx) {
+    Optional<String> acl = toString(ctx, ctx.name);
+    if (!acl.isPresent()) {
+      return;
+    }
+    _c.referenceStructure(
+        IP_OR_MAC_ACCESS_LIST_ABSTRACT_REF,
+        acl.get(),
+        CLASS_MAP_QOS_MATCH_ACCESS_GROUP,
         ctx.name.getStart().getLine());
   }
 

@@ -14,7 +14,6 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
@@ -1700,7 +1699,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               CiscoNxosStructureType.IP_ACCESS_LIST,
               CiscoNxosStructureType.IPV6_ACCESS_LIST,
               CiscoNxosStructureType.MAC_ACCESS_LIST);
-      for (CiscoNxosStructureUsage usage : ImmutableList.of(CLASS_MAP_CP_MATCH_ACCESS_GROUP)) {
+      for (CiscoNxosStructureUsage usage :
+          ImmutableList.of(
+              CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP,
+              CiscoNxosStructureUsage.CLASS_MAP_QOS_MATCH_ACCESS_GROUP)) {
         markAbstractStructure(
             CiscoNxosStructureType.IP_OR_MAC_ACCESS_LIST_ABSTRACT_REF, usage, types);
       }
