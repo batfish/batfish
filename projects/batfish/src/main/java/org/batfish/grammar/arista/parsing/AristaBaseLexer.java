@@ -1,6 +1,5 @@
 package org.batfish.grammar.arista.parsing;
 
-import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -44,17 +43,6 @@ public abstract class AristaBaseLexer extends BatfishLexer {
     return last == '\n' || last == '\r';
   }
 
-  protected boolean _enableIpv6Address = true;
-  protected boolean _enableIpAddress = true;
-
   private int _lastTokenType = -1;
   private int _secondToLastTokenType = -1;
-
-  @Override
-  public @Nonnull String printStateVariables() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("_enableIpAddress: " + _enableIpAddress + "\n");
-    sb.append("_enableIpv6Address: " + _enableIpv6Address + "\n");
-    return sb.toString();
-  }
 }

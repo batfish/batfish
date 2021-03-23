@@ -2840,6 +2840,67 @@
             "          DESCRIPTION:'description'",
             "          text = RAW_TEXT:' descriptive sentence'  <== mode:M_Description",
             "          NEWLINE:'\\n'  <== mode:M_Description))))",
+            "  (stanza",
+            "    (s_vrf_definition",
+            "      VRF:'vrf'",
+            "      DEFINITION:'definition'",
+            "      name = (variable",
+            "        IPV6_ADDRESS:'::1')",
+            "      NEWLINE:'\\n'",
+            "      (vrfd_description",
+            "        (description_line",
+            "          DESCRIPTION:'description'",
+            "          text = RAW_TEXT:' name is ::1 verify it'  <== mode:M_Description",
+            "          NEWLINE:'\\n'  <== mode:M_Description))))",
+            "  (stanza",
+            "    (s_vrf_definition",
+            "      VRF:'vrf'",
+            "      DEFINITION:'definition'",
+            "      name = (variable",
+            "        UINT16:'12345')",
+            "      NEWLINE:'\\n'",
+            "      (vrfd_description",
+            "        (description_line",
+            "          DESCRIPTION:'description'",
+            "          text = RAW_TEXT:' name is 12345 verify it'  <== mode:M_Description",
+            "          NEWLINE:'\\n'  <== mode:M_Description))))",
+            "  (stanza",
+            "    (s_interface",
+            "      INTERFACE:'interface'",
+            "      iname = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Ethernet'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = (dec",
+            "              DEC:'1'  <== mode:M_Interface))))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner",
+            "        (if_vrf",
+            "          VRF:'vrf'",
+            "          (if_vrf_forwarding",
+            "            FORWARDING:'forwarding'",
+            "            (if_vrf_name",
+            "              name = (variable",
+            "                VARIABLE:'vrfName')",
+            "              NEWLINE:'\\n'))))",
+            "      (if_inner",
+            "        (if_vrf",
+            "          VRF:'vrf'",
+            "          (if_vrf_forwarding",
+            "            FORWARDING:'forwarding'",
+            "            (if_vrf_name",
+            "              name = (variable",
+            "                IPV6_ADDRESS:'::1')",
+            "              NEWLINE:'\\n'))))",
+            "      (if_inner",
+            "        (if_vrf",
+            "          VRF:'vrf'",
+            "          (if_vrf_forwarding",
+            "            FORWARDING:'forwarding'",
+            "            (if_vrf_name",
+            "              name = (variable",
+            "                UINT16:'12345')",
+            "              NEWLINE:'\\n'))))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -80386,7 +80447,14 @@
         },
         "configs/arista_queue_monitor" : { },
         "configs/arista_username" : { },
-        "configs/arista_vrf" : { },
+        "configs/arista_vrf" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : "15-18",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/aruba_aaa" : { },
         "configs/aruba_acl" : { },
         "configs/aruba_airgroup" : { },
@@ -85368,6 +85436,15 @@
             "Ethernet1" : {
               "interface" : [
                 5
+              ]
+            }
+          }
+        },
+        "configs/arista_vrf" : {
+          "interface" : {
+            "Ethernet1" : {
+              "interface" : [
+                15
               ]
             }
           }

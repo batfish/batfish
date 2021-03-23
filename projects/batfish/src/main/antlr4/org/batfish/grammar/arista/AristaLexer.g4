@@ -310,8 +310,6 @@ ARM_RF_DOMAIN_PROFILE: 'arm-rf-domain-profile';
 ARP
 :
    'arp'
-   { _enableIpv6Address = false; }
-
 ;
 
 ARNS: 'arns';
@@ -774,7 +772,6 @@ COMMON_NAME: 'common-name';
 COMMUNITY
 :
    'community'
-   { _enableIpv6Address = false; }
 ;
 
 COMMUNITY_LIST
@@ -2101,9 +2098,7 @@ INTERCEPT: 'intercept';
 
 INTERFACE
 :
-   'int' 'erface'?
-   { _enableIpv6Address = false; pushMode(M_Interface);}
-
+   'int' 'erface'? -> pushMode(M_Interface)
 ;
 
 INTERNAL: 'internal';
@@ -4847,8 +4842,6 @@ VRF
   {
     if (lastTokenType() == LOGGING) {
       pushMode( M_Word );
-    } else {
-      _enableIpv6Address = false;
     }
   }
 ;
@@ -5021,45 +5014,6 @@ HEX
    '0x' F_HexDigit+
 ;
 
-VARIABLE
-:
-   (
-      (
-         F_Variable_RequiredVarChar
-         (
-            (
-               {!_enableIpv6Address}?
-
-               F_Variable_VarChar*
-            )
-            |
-            (
-               {_enableIpv6Address}?
-
-               F_Variable_VarChar_Ipv6*
-            )
-         )
-      )
-      |
-      (
-         (
-            F_Variable_VarChar
-            {!_enableIpv6Address}?
-
-            F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
-         )
-         |
-         (
-            F_Variable_VarChar_Ipv6
-            {_enableIpv6Address}?
-
-            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar
-            F_Variable_VarChar_Ipv6*
-         )
-      )
-   )
-;
-
 AMPERSAND
 :
    '&'
@@ -5213,31 +5167,27 @@ FORWARD_SLASH
 
 IP_ADDRESS
 :
-  F_IpAddress {_enableIpAddress}?
+  F_IpAddress
 ;
 
 IP_PREFIX
 :
-  F_IpPrefix {_enableIpAddress}?
+  F_IpPrefix
 ;
 
 IPV6_ADDRESS
 :
-  F_Ipv6Address {_enableIpv6Address}?
+  F_Ipv6Address
 ;
 
 IPV6_PREFIX
 :
-  F_Ipv6Prefix {_enableIpv6Address}?
+  F_Ipv6Prefix
 ;
 
 NEWLINE
 :
   F_Newline+
-  {
-    _enableIpv6Address = true;
-    _enableIpAddress = true;
-  }
 ;
 
 PAREN_LEFT
@@ -5281,6 +5231,13 @@ WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ; // Fragments
+
+// Variable should be last unless we can find a reason not to.
+VARIABLE
+:
+   F_Variable_RequiredVarChar F_Variable_VarChar*
+   | F_Variable_VarChar+ F_Variable_RequiredVarChar F_Variable_VarChar*
+;
 
 fragment
 F_AristaBase64Char
