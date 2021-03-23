@@ -152,9 +152,6 @@ pim_ssm
 
 s_ip_pim
 :
-   NO? IP PIM
-   (
-      VRF vrf = variable
-   )? ip_pim_tail
+   NO? IP PIM ip_pim_tail
 ;
 

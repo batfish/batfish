@@ -488,7 +488,6 @@ cisprf_null
    (
       KEEPALIVE
       | REVERSE_ROUTE
-      | VRF
    ) null_rest_of_line
 ;
 
