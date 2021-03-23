@@ -1,0 +1,12 @@
+! Command: show running-config
+! device: localhost (vEOS, EOS-4.23.0.1F)
+!
+hostname arista_community_list_423
+!
+! A community-list ["standard" is not accepted >= 4.23]
+ip community-list STANDARD_CL permit 1:1 GSHUT
+ip community-list STANDARD_CL deny 459123 internet local-as no-advertise no-export
+
+! An expanded community-list [regexp >= 4.23]
+ip community-list regexp EXPANDED_CL deny _3$
+ip community-list regexp EXPANDED_CL permit .*

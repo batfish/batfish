@@ -284,39 +284,22 @@ interface_rs_stanza
 
 ip_community_list_expanded_stanza
 :
-   IP COMMUNITY_LIST
-   (
-      (
-         (
-            EXPANDED
-         ) name = variable
-      )
-   ) ip_community_list_expanded_tail
-;
-
-ip_community_list_expanded_tail
-:
-   (
-      SEQ dec
-   )? ala = access_list_action DOUBLE_QUOTE?
-   (
-      remainder += ~( NEWLINE | DOUBLE_QUOTE )
-   )+ DOUBLE_QUOTE? NEWLINE
+// expanded on < 4.23, regexp after
+   IP COMMUNITY_LIST (EXPANDED | REGEXP)
+     name = WORD
+     action = access_list_action
+     regexp = WORD
+     NEWLINE
 ;
 
 ip_community_list_standard_stanza
 :
-   IP COMMUNITY_LIST
-     name_cl = variable_community_list
-     ip_community_list_standard_tail
-;
-
-ip_community_list_standard_tail
-:
-   ala = access_list_action
-   (
-      communities += community
-   )+ NEWLINE
+// standard required on < 4.23, absent after.
+   IP COMMUNITY_LIST STANDARD?
+     name_cl = WORD
+     action = access_list_action
+     (communities += literal_standard_community)+
+     NEWLINE
 ;
 
 ip_prefix_list_stanza
@@ -674,11 +657,6 @@ standard_ipv6_access_list_tail
    (
       features += standard_access_list_additional_feature
    )* NEWLINE
-;
-
-variable_community_list
-:
-   ~(NEWLINE | REGEXP)
 ;
 
 xr_mac_specifier

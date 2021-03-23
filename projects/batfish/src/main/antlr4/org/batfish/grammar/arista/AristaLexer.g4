@@ -779,10 +779,7 @@ COMMUNITY
 
 COMMUNITY_LIST
 :
-   'community-list'
-   {
-      _enableIpv6Address = false;
-   }
+   'community-list' -> pushMode(M_CommunityList)
 ;
 
 COMMUNITY_MAP
@@ -1568,8 +1565,6 @@ EXPORTER_MAP: 'exporter-map';
 
 EXPANDED: 'expanded';
 
-EXTCOMM_LIST: 'extcomm-list';
-
 EXTCOMMUNITY
 :
    'extcommunity'
@@ -1813,10 +1808,7 @@ GROUP24: 'group24';
 
 GROUP5: 'group5';
 
-GSHUT
-:
-   [Gg][Ss][Hh][Uu][Tt]
-;
+GSHUT: 'GSHUT';
 
 GT: 'gt';
 
@@ -5018,11 +5010,6 @@ POUND
    '#' -> pushMode ( M_Description )
 ;
 
-STANDARD_COMMUNITY
-:
-  F_StandardCommunity {!_enableIpv6Address}?
-;
-
 MAC_ADDRESS_LITERAL
 :
    F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.' F_HexDigit F_HexDigit
@@ -6193,6 +6180,94 @@ M_COMMENT_NON_NEWLINE
    F_NonNewline+
 ;
 
+////////
+// <4.23
+// ip community-list NAME standard <permit|deny> communities...
+// ip community-list NAME expanded <permit|deny> regex
+// 4.23+
+// ip community-list NAME <permit|deny> communities...
+// ip community-list regexp NAME <permit|deny> regex
+///////
+
+mode M_CommunityList;
+
+M_CommunityList_EXPANDED
+:
+  // expanded list, old style
+  'expanded' -> type(EXPANDED), mode(M_CommunityList_Regexp)
+;
+
+M_CommunityList_REGEXP
+:
+  // expanded list, new style
+  'regexp' -> type(REGEXP), mode(M_CommunityList_Regexp)
+;
+
+M_CommunityList_STANDARD
+:
+  // standard list, old style. Action and communities can be lexed normally
+  'standard' -> type(STANDARD), mode(M_Word)
+;
+
+M_CommunityList_WORD
+:
+  // standard list, communities can be parsed normally
+  F_NonWhitespace+ -> type(WORD), popMode
+;
+
+M_CommunityList_NEWLINE
+:
+  // bail in case of short line
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_CommunityList_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_CommunityList_Regexp;
+
+M_CommunityList_Regexp_WORD
+:
+  // name, now need action
+  F_NonWhitespace+ -> type(WORD), mode(M_CommunityList_Regexp_Action)
+;
+
+M_CommunityList_Regexp_NEWLINE
+:
+  // bail in case of short line
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_CommunityList_Regexp_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_CommunityList_Regexp_Action;
+
+M_CommunityList_Regexp_Action_DENY
+:
+  'deny' -> type(DENY), mode(M_Word)
+;
+
+M_CommunityList_Regexp_Action_PERMIT
+:
+  'permit' -> type(PERMIT), mode(M_Word)
+;
+
+M_CommunityList_Regexp_Action_NEWLINE
+:
+  // bail in case of short line
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_CommunityList_Regexp_Action_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
 mode M_Description;
 
 M_Description_NEWLINE
@@ -6727,16 +6802,16 @@ mode M_Words;
 
 M_Words_WORD
 :
-   F_NonWhitespace+ -> type ( VARIABLE )
+   F_NonWhitespace+ -> type(WORD)
 ;
 
 M_Words_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_Words_WS
 :
-   F_Whitespace+ -> channel ( HIDDEN )
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 

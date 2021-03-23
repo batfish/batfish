@@ -236,13 +236,13 @@ set_community_additive_rm_stanza
       (
          ADD
          (
-            communities += community
+            communities += literal_standard_community
          )+
       )
       |
       (
          (
-            communities += community
+            communities += literal_standard_community
          )+ ADDITIVE
       )
    ) NEWLINE
@@ -273,16 +273,8 @@ set_community_rm_stanza
 :
    COMMUNITY
    (
-      communities += community
+      communities += literal_standard_community
    )+ NEWLINE
-;
-
-set_extcomm_list_rm_stanza
-:
-   EXTCOMM_LIST
-   (
-      comm_list += community
-   )+ DELETE NEWLINE
 ;
 
 set_extcommunity_rm_stanza
@@ -407,7 +399,6 @@ rm_set
     | set_community_list_additive_rm_stanza
     | set_community_list_rm_stanza
     | set_community_none_rm_stanza
-    | set_extcomm_list_rm_stanza
     | set_extcommunity_rm_stanza
     | set_interface_rm_stanza
     | set_ip_default_nexthop_stanza

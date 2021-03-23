@@ -26,16 +26,15 @@ bgp_asn
     | asn4b = FLOAT // dec.dec , but this lexes as FLOAT
 ;
 
-community
+literal_standard_community
 :
-   ACCEPT_OWN
-   | GSHUT
+   GSHUT
    | INTERNET
    | LOCAL_AS
    | NO_ADVERTISE
    | NO_EXPORT
-   | STANDARD_COMMUNITY
-   | uint32
+   | hi = uint16 COLON lo = uint16
+   | u32 = uint32
 ;
 
 description_line
