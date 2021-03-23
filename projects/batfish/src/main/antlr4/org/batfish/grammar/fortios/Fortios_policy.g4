@@ -83,6 +83,4 @@ policy_action: ACCEPT | DENY | IPSEC;
 
 address_names: address_name+;
 
-service_names: service_name+;
-
 interface_or_zone_names: interface_or_zone_name+;

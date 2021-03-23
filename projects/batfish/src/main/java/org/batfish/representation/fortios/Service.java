@@ -14,7 +14,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 
 /** FortiOS datamodel component containing firewall service configuration */
-public final class Service implements FortiosRenameableObject, Serializable {
+public final class Service implements Serializable, ServiceGroupMember {
 
   public static final Protocol DEFAULT_PROTOCOL = Protocol.TCP_UDP_SCTP;
   public static final int DEFAULT_PROTOCOL_NUMBER = 0;
@@ -58,6 +58,7 @@ public final class Service implements FortiosRenameableObject, Serializable {
     return _protocol;
   }
 
+  @Override
   @Nullable
   public String getComment() {
     return _comment;
@@ -156,6 +157,7 @@ public final class Service implements FortiosRenameableObject, Serializable {
     _protocolNumber = protocolNumber;
   }
 
+  @Override
   public void setComment(String comment) {
     _comment = comment;
   }
@@ -219,8 +221,9 @@ public final class Service implements FortiosRenameableObject, Serializable {
   @Nullable private IntegerSpace _sctpPortRangeDst;
   @Nullable private IntegerSpace _sctpPortRangeSrc;
 
+  @Override
   @Nonnull
-  Stream<HeaderSpace> toHeaderSpaces() {
+  public Stream<HeaderSpace> toHeaderSpaces() {
     switch (getProtocolEffective()) {
       case TCP_UDP_SCTP:
         return Stream.of(

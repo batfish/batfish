@@ -95,6 +95,7 @@ import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
+import org.batfish.representation.fortios.ServiceGroup;
 import org.batfish.representation.fortios.StaticRoute;
 import org.batfish.representation.fortios.Zone;
 import org.batfish.representation.fortios.Zone.IntrazoneAction;
@@ -961,6 +962,62 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testServiceGroupExtraction() {
+    String hostname = "service_group";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, ServiceGroup> serviceGroups = vc.getServiceGroups();
+    assertThat(
+        serviceGroups.keySet(),
+        containsInAnyOrder(
+            "this is longest possible firewall service group name that is accepted by device",
+            "grp1",
+            "grp2"));
+
+    ServiceGroup grpLongName =
+        serviceGroups.get(
+            "this is longest possible firewall service group name that is accepted by device");
+    ServiceGroup grp1 = serviceGroups.get("grp1");
+    ServiceGroup grp2 = serviceGroups.get("grp2");
+
+    assertThat(grpLongName.getComment(), equalTo("service group comment"));
+
+    assertThat(grp1.getMember(), contains("custom_tcp3"));
+    assertNull(grp1.getComment());
+    assertThat(grp2.getMember(), contains("custom_tcp3", "grp1"));
+    assertNull(grp2.getComment());
+  }
+
+  @Test
+  public void testServiceGroupWarnings() throws IOException {
+    String hostname = "service_group_warnings";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Illegal value for service name"),
+                allOf(
+                    hasComment("Service group edit block ignored: name is invalid"),
+                    hasText(
+                        containsString(
+                            "longer than longest possible firewall service group name that is"
+                                + " accepted by the device"))),
+                hasComment(
+                    "Service group edit block ignored: service group requires at least one member"),
+                hasComment(
+                    "Service group self_ref_not_allowed cannot be added to valid as it would"
+                        + " create a cycle"))));
+  }
+
+  @Test
   public void testFirewallPolicyExtraction() {
     String hostname = "firewall_policy";
     FortiosConfiguration vc = parseVendorConfig(hostname);
@@ -1267,9 +1324,9 @@ public final class FortiosGrammarTest {
                 hasComment(
                     "Interface/zone port4 is undefined and cannot be added to policy 4294967295"),
                 hasComment(
-                    "Service service1 is undefined and cannot be added to policy 4294967295"),
+                    "Service or service group service1 is undefined and cannot be referenced"),
                 hasComment(
-                    "Service service2 is undefined and cannot be added to policy 4294967295"),
+                    "Service or service group service2 is undefined and cannot be referenced"),
                 hasComment("Address addr1 is undefined and cannot be added to policy 4294967295"),
                 hasComment("Address addr2 is undefined and cannot be added to policy 4294967295"),
                 hasComment("Address addr3 is undefined and cannot be added to policy 4294967295"),
@@ -1480,8 +1537,10 @@ public final class FortiosGrammarTest {
                 hasComment("Address new_addr2 is undefined and cannot be added to policy 1"),
                 hasComment("Interface/zone old_zone1 is undefined and cannot be added to policy 1"),
                 hasComment("Interface/zone new_zone2 is undefined and cannot be added to policy 1"),
-                hasComment("Service old_service1 is undefined and cannot be added to policy 1"),
-                hasComment("Service new_service2 is undefined and cannot be added to policy 1"),
+                hasComment(
+                    "Service or service group old_service1 is undefined and cannot be referenced"),
+                hasComment(
+                    "Service or service group new_service2 is undefined and cannot be referenced"),
                 hasComment("Cannot rename non-existent address undefined"),
                 hasComment("Cannot rename non-existent service custom undefined"),
                 hasComment("Cannot rename non-existent zone undefined"),
