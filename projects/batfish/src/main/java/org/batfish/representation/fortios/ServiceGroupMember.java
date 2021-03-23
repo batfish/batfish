@@ -1,5 +1,6 @@
 package org.batfish.representation.fortios;
 
+import java.io.Serializable;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
@@ -7,11 +8,19 @@ import org.batfish.datamodel.HeaderSpace;
 /**
  * FortiOS datamodel interface representing objects which can be a member of firewall service groups
  */
-public interface ServiceGroupMember extends FortiosRenameableObject {
+public abstract class ServiceGroupMember implements FortiosRenameableObject, Serializable {
   @Nullable
-  String getComment();
+  public String getComment() {
+    return _comment;
+  }
 
-  void setComment(String comment);
+  public void setComment(String comment) {
+    _comment = comment;
+  }
 
-  Stream<HeaderSpace> toHeaderSpaces();
+  public Stream<HeaderSpace> toHeaderSpaces() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nullable private String _comment;
 }
