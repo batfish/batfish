@@ -106,6 +106,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -171,6 +172,8 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.ExpandedCommunityList;
+import org.batfish.representation.arista.ExpandedCommunityListLine;
 import org.batfish.representation.arista.IpAsPathAccessList;
 import org.batfish.representation.arista.IpAsPathAccessListLine;
 import org.batfish.representation.arista.MlagConfiguration;
@@ -178,6 +181,11 @@ import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
 import org.batfish.representation.arista.RouteMap;
 import org.batfish.representation.arista.RouteMapClause;
+import org.batfish.representation.arista.StandardAccessList;
+import org.batfish.representation.arista.StandardAccessListActionLine;
+import org.batfish.representation.arista.StandardAccessListRemarkLine;
+import org.batfish.representation.arista.StandardCommunityList;
+import org.batfish.representation.arista.StandardCommunityListLine;
 import org.batfish.representation.arista.VrrpInterface;
 import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
@@ -250,6 +258,27 @@ public class AristaGrammarTest {
       throws IOException {
     IBatfish iBatfish = getBatfishForConfigurationNames(configurationNames);
     return iBatfish.loadConfigurations(iBatfish.getSnapshot());
+  }
+
+  /** Tests out-of-order lines, remarks, auto-numbering first and later lines. */
+  @Test
+  public void testStandardAccessList() {
+    AristaConfiguration c = parseVendorConfig("standard-access-list");
+    assertThat(c.getStandardAcls(), hasKeys("LIST1"));
+    StandardAccessList list = c.getStandardAcls().get("LIST1");
+    assertThat(
+        list.getLines().values(),
+        contains(
+            new StandardAccessListActionLine(
+                5, LineAction.PERMIT, "5 permit host 1.2.3.4", IpWildcard.parse("1.2.3.4")),
+            new StandardAccessListRemarkLine(10, "hey there"),
+            new StandardAccessListActionLine(
+                15,
+                LineAction.PERMIT,
+                "15 permit 1.2.3.4 255.255.0.255",
+                IpWildcard.parse("1.2.0.4:0.0.255.0")),
+            new StandardAccessListActionLine(30, LineAction.DENY, "30 deny any", IpWildcard.ANY),
+            new StandardAccessListRemarkLine(40, "last line")));
   }
 
   @Test
@@ -1135,10 +1164,47 @@ public class AristaGrammarTest {
     }
   }
 
+  /** A version-independent test for <4.23 and 4.23+ syntax. */
+  private static void testCommunityListExtraction(String hostname) {
+    AristaConfiguration config = parseVendorConfig(hostname);
+    assertThat(config.getStandardCommunityLists(), hasKeys("STANDARD_CL"));
+    {
+      StandardCommunityList list = config.getStandardCommunityLists().get("STANDARD_CL");
+      assertThat(list.getLines(), hasSize(2));
+      StandardCommunityListLine line0 = list.getLines().get(0);
+      StandardCommunityListLine line1 = list.getLines().get(1);
+      assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(
+          line0.getCommunities(),
+          containsInAnyOrder(
+              StandardCommunity.of(1, 1).asLong(), WellKnownCommunity.GRACEFUL_SHUTDOWN));
+      assertThat(line1.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          line1.getCommunities(),
+          containsInAnyOrder(
+              459123L,
+              WellKnownCommunity.INTERNET,
+              WellKnownCommunity.NO_EXPORT_SUBCONFED,
+              WellKnownCommunity.NO_ADVERTISE,
+              WellKnownCommunity.NO_EXPORT));
+    }
+    assertThat(config.getExpandedCommunityLists(), hasKeys("EXPANDED_CL"));
+    {
+      ExpandedCommunityList list = config.getExpandedCommunityLists().get("EXPANDED_CL");
+      assertThat(list.getLines(), hasSize(2));
+      ExpandedCommunityListLine line0 = list.getLines().get(0);
+      ExpandedCommunityListLine line1 = list.getLines().get(1);
+      assertThat(line0.getAction(), equalTo(LineAction.DENY));
+      assertThat(line0.getRegex(), equalTo("_3$"));
+      assertThat(line1.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line1.getRegex(), equalTo(".*"));
+    }
+  }
+
   @Test
   public void testCommunityListExtraction() {
-    AristaConfiguration config = parseVendorConfig("arista_community_list");
-    assertThat(config.getStandardCommunityLists(), hasKey("SOME_CL"));
+    testCommunityListExtraction("arista_community_list_421");
+    testCommunityListExtraction("arista_community_list_423");
   }
 
   @Test
@@ -2327,25 +2393,29 @@ public class AristaGrammarTest {
             originalRoute.setNetwork(allowedIn).build(),
             outputRouteBuilder,
             session,
-            Direction.IN));
+            Direction.IN,
+            null));
     assertFalse(
         importPolicy.processBgpRoute(
             originalRoute.setNetwork(deniedBoth).build(),
             outputRouteBuilder,
             session,
-            Direction.IN));
+            Direction.IN,
+            null));
     assertTrue(
         exportPolicy.processBgpRoute(
             originalRoute.setNetwork(allowedOut).build(),
             outputRouteBuilder,
             session,
-            Direction.OUT));
+            Direction.OUT,
+            null));
     assertFalse(
         exportPolicy.processBgpRoute(
             originalRoute.setNetwork(deniedBoth).build(),
             outputRouteBuilder,
             session,
-            Direction.OUT));
+            Direction.OUT,
+            null));
   }
 
   @Test
@@ -2405,7 +2475,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "9.9.9.9"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2413,7 +2483,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "8.8.8.8"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
     }
     {
@@ -2421,7 +2491,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerEvpnExportPolicyName(DEFAULT_VRF, "8.8.8.8"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2429,7 +2499,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName(DEFAULT_VRF, "7.7.7.7"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
     }
     {
@@ -2437,7 +2507,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf2", "2.2.2.2"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2445,7 +2515,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf2", "2.2.2.22"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2453,7 +2523,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf3", "3.3.3.3"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(nextHopIp));
     }
     {
@@ -2461,7 +2531,7 @@ public class AristaGrammarTest {
       RoutingPolicy policy =
           c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("vrf3", "3.3.3.33"));
       Builder builder = Bgpv4Route.testBuilder();
-      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT);
+      policy.processBgpRoute(originalRoute, builder, session, Direction.OUT, null);
       assertThat(builder.getNextHopIp(), equalTo(UNSET_ROUTE_NEXT_HOP_IP));
     }
   }
@@ -2536,8 +2606,10 @@ public class AristaGrammarTest {
 
     Bgpv4Route acceptRoute = builder.setNetwork(Prefix.parse("10.1.1.0/24")).build();
     Bgpv4Route denyRoute = builder.setNetwork(Prefix.parse("240.1.1.0/24")).build();
-    assertTrue(policy.processBgpRoute(acceptRoute, Bgpv4Route.testBuilder(), null, Direction.IN));
-    assertFalse(policy.processBgpRoute(denyRoute, Bgpv4Route.testBuilder(), null, Direction.IN));
+    assertTrue(
+        policy.processBgpRoute(acceptRoute, Bgpv4Route.testBuilder(), null, Direction.IN, null));
+    assertFalse(
+        policy.processBgpRoute(denyRoute, Bgpv4Route.testBuilder(), null, Direction.IN, null));
   }
 
   @Test

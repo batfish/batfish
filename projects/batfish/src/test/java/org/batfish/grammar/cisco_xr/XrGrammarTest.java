@@ -3,12 +3,15 @@ package org.batfish.grammar.cisco_xr;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -19,6 +22,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -206,6 +210,29 @@ public final class XrGrammarTest {
                 "First line.\nSecond line, with no ignored text.",
                 "login",
                 "First line.\nSecond line.")));
+  }
+
+  @Test
+  public void testBundleEtherSubInterfaces() {
+    Configuration c = parseConfig("bundle-ether-subif");
+    assertThat(
+        c.getAllInterfaces(),
+        hasKeys(
+            "Bundle-Ether500",
+            "Bundle-Ether500.2",
+            "TenGigE0/1",
+            "Bundle-Ether600",
+            "Bundle-Ether600.3",
+            "TenGigE0/2"));
+    assertThat(c.getAllInterfaces().get("Bundle-Ether500"), allOf(isActive(), hasBandwidth(10e9)));
+    assertThat(
+        c.getAllInterfaces().get("Bundle-Ether500.2"),
+        allOf(isActive(), hasBandwidth(10e9), hasEncapsulationVlan(2)));
+    assertThat(
+        c.getAllInterfaces().get("Bundle-Ether600"), allOf(isActive(false), hasBandwidth(10e9)));
+    assertThat(
+        c.getAllInterfaces().get("Bundle-Ether600.3"),
+        allOf(isActive(false), hasBandwidth(10e9), hasEncapsulationVlan(3)));
   }
 
   /**

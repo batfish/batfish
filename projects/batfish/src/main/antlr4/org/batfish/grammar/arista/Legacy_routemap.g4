@@ -8,13 +8,13 @@ options {
 
 as_expr
 :
-   DEC
+   dec
    | AUTO
 ;
 
 continue_rm_stanza
 :
-   CONTINUE DEC? NEWLINE
+   CONTINUE dec? NEWLINE
 ;
 
 ip_policy_list_stanza
@@ -24,7 +24,7 @@ ip_policy_list_stanza
 
 match_as_number_rm_stanza
 :
-   AS_NUMBER num = DEC NEWLINE
+   AS_NUMBER num = dec NEWLINE
 ;
 
 match_as_path_access_list_rm_stanza
@@ -37,7 +37,7 @@ match_as_path_access_list_rm_stanza
 
 match_as_rm_stanza
 :
-   MATCH AS num = DEC NEWLINE
+   MATCH AS num = dec NEWLINE
 ;
 
 match_community_list_rm_stanza
@@ -100,7 +100,7 @@ match_ip_prefix_list_rm_stanza
 
 match_ip_route_source_rm_stanza
 :
-   IP ROUTE_SOURCE src = DEC NEWLINE
+   IP ROUTE_SOURCE src = dec NEWLINE
 ;
 
 match_ipv6_prefix_list_rm_stanza
@@ -136,7 +136,7 @@ match_source_protocol_rm_stanza
        BGP (bgpasn = bgp_asn)?
        | CONNECTED
        | ISIS
-       | OSPF (area = DEC)?
+       | OSPF (area = dec)?
        | RIP
        | STATIC
    )+ NEWLINE
@@ -169,10 +169,7 @@ match_rm_stanza
 
 match_tag_rm_stanza
 :
-   TAG
-   (
-      tag_list += DEC
-   )+ NEWLINE
+   TAG (tag_list += uint32)+ NEWLINE
 ;
 
 no_route_map_stanza
@@ -209,7 +206,7 @@ rm_stanza
 route_map_stanza
 :
    // Both action and number are optional but number must come with action
-   ROUTE_MAP name = variable (rmt = access_list_action (num = DEC)?)? NEWLINE
+   ROUTE_MAP name = variable (rmt = access_list_action (num = dec)?)? NEWLINE
    rm_stanza*
 ;
 
@@ -239,13 +236,13 @@ set_community_additive_rm_stanza
       (
          ADD
          (
-            communities += community
+            communities += literal_standard_community
          )+
       )
       |
       (
          (
-            communities += community
+            communities += literal_standard_community
          )+ ADDITIVE
       )
    ) NEWLINE
@@ -276,16 +273,8 @@ set_community_rm_stanza
 :
    COMMUNITY
    (
-      communities += community
+      communities += literal_standard_community
    )+ NEWLINE
-;
-
-set_extcomm_list_rm_stanza
-:
-   EXTCOMM_LIST
-   (
-      comm_list += community
-   )+ DELETE NEWLINE
 ;
 
 set_extcommunity_rm_stanza
@@ -382,17 +371,17 @@ set_origin_rm_stanza
 
 set_tag_rm_stanza
 :
-   TAG tag = DEC NEWLINE
+   TAG tag = uint32 NEWLINE
 ;
 
 set_traffic_index_rm_stanza_null
 :
-   TRAFFIC_INDEX index = DEC NEWLINE
+   TRAFFIC_INDEX index = dec NEWLINE
 ;
 
 set_weight_rm_stanza
 :
-   WEIGHT weight = DEC NEWLINE
+   WEIGHT weight = dec NEWLINE
 ;
 
 rm_set
@@ -410,7 +399,6 @@ rm_set
     | set_community_list_additive_rm_stanza
     | set_community_list_rm_stanza
     | set_community_none_rm_stanza
-    | set_extcomm_list_rm_stanza
     | set_extcommunity_rm_stanza
     | set_interface_rm_stanza
     | set_ip_default_nexthop_stanza
@@ -434,7 +422,7 @@ rm_set
 rms_distance
 :
 // 1-255
-  DISTANCE distance = DEC NEWLINE
+  DISTANCE distance = dec NEWLINE
 ;
 
 variable_access_list

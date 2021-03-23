@@ -1,26 +1,26 @@
 package org.batfish.representation.arista;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 
 public class StandardAccessList implements Serializable {
 
-  @Nonnull private List<StandardAccessListLine> _lines;
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
+  private final @Nonnull SortedMap<Long, StandardAccessListLine> _lines;
 
   public StandardAccessList(@Nonnull String id) {
     _name = id;
-    _lines = new ArrayList<>();
+    _lines = new TreeMap<>();
   }
 
   public void addLine(@Nonnull StandardAccessListLine line) {
-    _lines.add(line);
+    _lines.put(line.getSeq(), line);
   }
 
   @Nonnull
-  public List<StandardAccessListLine> getLines() {
+  public SortedMap<Long, StandardAccessListLine> getLines() {
     return _lines;
   }
 
@@ -33,9 +33,7 @@ public class StandardAccessList implements Serializable {
     ExtendedAccessList eal = new ExtendedAccessList(_name);
     eal.setParent(this);
     eal.getLines().clear();
-    for (StandardAccessListLine sall : _lines) {
-      eal.addLine(sall.toExtendedAccessListLine());
-    }
+    _lines.forEach((seq, line) -> line.toExtendedAccessListLine().ifPresent(eal::addLine));
     return eal;
   }
 }

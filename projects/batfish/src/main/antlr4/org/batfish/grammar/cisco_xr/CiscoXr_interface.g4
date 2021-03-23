@@ -122,14 +122,19 @@ if_default_gw
    DEFAULT_GW IP_ADDRESS NEWLINE
 ;
 
+if_delay
+:
+   NO? DELAY DEC NEWLINE
+;
+
 if_description
 :
    description_line
 ;
 
-if_delay
+if_encapsulation
 :
-   NO? DELAY DEC NEWLINE
+  ENCAPSULATION DOT1Q vlan = vlan_id NEWLINE
 ;
 
 if_flow_sampler
@@ -669,7 +674,6 @@ if_null_block
       )
       | DUPLEX
       | ENABLE
-      | ENCAPSULATION
       | ENCRYPTION
       | ETHERNET
       | EXIT
@@ -971,7 +975,6 @@ if_null_inner
       | BACKUP
       | BRIDGE_DOMAIN
       | DIALER
-      | ENCAPSULATION
       | L2PROTOCOL
       | MODE
       | PRIORITY
@@ -1649,6 +1652,7 @@ if_inner
    | if_default_gw
    | if_delay
    | if_description
+   | if_encapsulation
    | if_flow_sampler
    | if_hsrp
    | if_hsrp6

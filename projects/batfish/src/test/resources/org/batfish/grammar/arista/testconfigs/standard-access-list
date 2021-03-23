@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname standard-access-list
+!
+ip access-list standard LIST1
+  remark hey there
+  5 permit host 1.2.3.4
+  30 deny any
+  15 permit 1.2.3.4 255.255.0.255
+  remark last line
+!

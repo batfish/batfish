@@ -369,7 +369,7 @@ cipt_mode
 
 cis_key
 :
-   KEY DEC? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
+   KEY dec? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
 ;
 
 cis_null
@@ -387,7 +387,7 @@ cis_null
 
 cis_policy
 :
-   POLICY priority = DEC NEWLINE
+   POLICY priority = dec NEWLINE
    (
       cispol_authentication
       | cispol_encryption        //cisco
@@ -436,7 +436,7 @@ cispol_encryption_aruba
 
 cispol_group
 :
-   GROUP DEC NEWLINE
+   GROUP dec NEWLINE
 ;
 
 cispol_hash
@@ -451,7 +451,7 @@ cispol_hash
 
 cispol_lifetime
 :
-    LIFETIME DEC NEWLINE
+    LIFETIME dec NEWLINE
 ;
 
 cispol_null
@@ -488,7 +488,6 @@ cisprf_null
    (
       KEEPALIVE
       | REVERSE_ROUTE
-      | VRF
    ) null_rest_of_line
 ;
 
@@ -638,7 +637,7 @@ crypto_csr_params
 
 crypto_dynamic_map
 :
-   DYNAMIC_MAP name = variable seq_num = DEC crypto_dynamic_map_null?
+   DYNAMIC_MAP name = variable seq_num = dec crypto_dynamic_map_null?
    (
      NEWLINE
        (
@@ -736,7 +735,7 @@ crypto_map
    MAP name = variable
    (
       crypto_map_null
-      | seq_num = DEC crypto_map_tail
+      | seq_num = dec crypto_map_tail
    )
 ;
 
@@ -900,7 +899,7 @@ kk_null
 ike_encryption
 :
    (
-      AES strength = DEC?
+      AES strength = dec?
    )
    | DES
    | THREE_DES
@@ -928,17 +927,17 @@ ipsec_authentication
 ipsec_encryption
 :
    (
-      ESP_AES strength = DEC?
+      ESP_AES strength = dec?
    )
    | ESP_DES
    | ESP_3DES
    |
    (
-      ESP_GCM strength = DEC?
+      ESP_GCM strength = dec?
    )
    |
    (
-      ESP_GMAC strength = DEC?
+      ESP_GMAC strength = dec?
    )
    | ESP_NULL
    | ESP_SEAL

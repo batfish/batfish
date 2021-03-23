@@ -6196,7 +6196,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_condition(Popsf_conditionContext ctx) {
-    todo(ctx);
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         CONDITION, name, POLICY_STATEMENT_FROM_CONDITION, getLine(ctx.getStart()));

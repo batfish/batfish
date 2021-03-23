@@ -22,16 +22,15 @@ import static org.batfish.representation.arista.AristaStructureType.IPSEC_PROFIL
 import static org.batfish.representation.arista.AristaStructureType.IPSEC_TRANSFORM_SET;
 import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST_EXTENDED;
-import static org.batfish.representation.arista.AristaStructureType.IPV4_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.arista.AristaStructureType.IPV6_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.arista.AristaStructureType.IP_ACCESS_LIST;
+import static org.batfish.representation.arista.AristaStructureType.IP_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.arista.AristaStructureType.ISAKMP_POLICY;
 import static org.batfish.representation.arista.AristaStructureType.ISAKMP_PROFILE;
 import static org.batfish.representation.arista.AristaStructureType.KEYRING;
 import static org.batfish.representation.arista.AristaStructureType.L2TP_CLASS;
-import static org.batfish.representation.arista.AristaStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureType.NAMED_RSA_PUB_KEY;
 import static org.batfish.representation.arista.AristaStructureType.NAT_POOL;
 import static org.batfish.representation.arista.AristaStructureType.PEER_FILTER;
@@ -105,8 +104,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.ISAKMP_PROF
 import static org.batfish.representation.arista.AristaStructureUsage.ISAKMP_PROFILE_SELF_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.ISIS_REDISTRIBUTE_CONNECTED_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.ISIS_REDISTRIBUTE_STATIC_MAP;
-import static org.batfish.representation.arista.AristaStructureUsage.LINE_ACCESS_CLASS_LIST;
-import static org.batfish.representation.arista.AristaStructureUsage.LINE_ACCESS_CLASS_LIST6;
 import static org.batfish.representation.arista.AristaStructureUsage.LOGGING_SOURCE_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
 import static org.batfish.representation.arista.AristaStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
@@ -114,12 +111,9 @@ import static org.batfish.representation.arista.AristaStructureUsage.MLAG_CONFIG
 import static org.batfish.representation.arista.AristaStructureUsage.MLAG_CONFIGURATION_PEER_LINK;
 import static org.batfish.representation.arista.AristaStructureUsage.MSDP_PEER_SA_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
-import static org.batfish.representation.arista.AristaStructureUsage.NTP_ACCESS_GROUP;
-import static org.batfish.representation.arista.AristaStructureUsage.NTP_SOURCE_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF_AREA_FILTER_LIST;
-import static org.batfish.representation.arista.AristaStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.arista.AristaStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
@@ -144,7 +138,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.arista.AristaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
-import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
@@ -162,10 +155,7 @@ import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER
 import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_TRAP_SOURCE;
-import static org.batfish.representation.arista.AristaStructureUsage.SSH_IPV4_ACL;
-import static org.batfish.representation.arista.AristaStructureUsage.SSH_IPV6_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.SYSTEM_SERVICE_POLICY;
-import static org.batfish.representation.arista.AristaStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.arista.AristaStructureUsage.TUNNEL_SOURCE;
@@ -191,13 +181,11 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -238,7 +226,6 @@ import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
@@ -309,6 +296,12 @@ import org.batfish.grammar.arista.AristaParser.Aaa_new_modelContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_actionContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.arista.AristaParser.Access_list_ip_rangeContext;
+import org.batfish.grammar.arista.AristaParser.Acl_extendedContext;
+import org.batfish.grammar.arista.AristaParser.Acl_ipv4_matchContext;
+import org.batfish.grammar.arista.AristaParser.Acl_standardContext;
+import org.batfish.grammar.arista.AristaParser.Aclstd_action_lineContext;
+import org.batfish.grammar.arista.AristaParser.Aclstd_remark_lineContext;
+import org.batfish.grammar.arista.AristaParser.Aclstd_seqContext;
 import org.batfish.grammar.arista.AristaParser.Arista_configurationContext;
 import org.batfish.grammar.arista.AristaParser.As_exprContext;
 import org.batfish.grammar.arista.AristaParser.Bgp_asnContext;
@@ -348,7 +341,6 @@ import org.batfish.grammar.arista.AristaParser.Cmm_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_activated_service_templateContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_service_templateContext;
-import org.batfish.grammar.arista.AristaParser.CommunityContext;
 import org.batfish.grammar.arista.AristaParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Copsl_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cp_ip_access_groupContext;
@@ -362,6 +354,7 @@ import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_peerContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_pfsContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ii_set_transform_setContext;
 import org.batfish.grammar.arista.AristaParser.Crypto_map_t_ipsec_isakmpContext;
+import org.batfish.grammar.arista.AristaParser.DecContext;
 import org.batfish.grammar.arista.AristaParser.Description_lineContext;
 import org.batfish.grammar.arista.AristaParser.Dh_groupContext;
 import org.batfish.grammar.arista.AristaParser.Distribute_list_is_stanzaContext;
@@ -575,7 +568,6 @@ import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlanContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vlan_vniContext;
 import org.batfish.grammar.arista.AristaParser.Eos_vxif_vxlan_vrfContext;
 import org.batfish.grammar.arista.AristaParser.Extended_access_list_additional_featureContext;
-import org.batfish.grammar.arista.AristaParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Extended_access_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Extended_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Extended_ipv6_access_list_tailContext;
@@ -655,16 +647,13 @@ import org.batfish.grammar.arista.AristaParser.Interface_addressContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Interface_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_community_list_expanded_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Ip_community_list_expanded_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_community_list_standard_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Ip_community_list_standard_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.arista.AristaParser.Ip_domain_lookupContext;
 import org.batfish.grammar.arista.AristaParser.Ip_domain_nameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_hostnameContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_poolContext;
 import org.batfish.grammar.arista.AristaParser.Ip_nat_pool_rangeContext;
-import org.batfish.grammar.arista.AristaParser.Ip_prefixContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Ip_route_tailContext;
@@ -677,10 +666,7 @@ import org.batfish.grammar.arista.AristaParser.Ipsec_encryption_arubaContext;
 import org.batfish.grammar.arista.AristaParser.Ipv6_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ipv6_prefix_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Is_type_is_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.L_access_classContext;
-import org.batfish.grammar.arista.AristaParser.L_exec_timeoutContext;
-import org.batfish.grammar.arista.AristaParser.L_login_authenticationContext;
-import org.batfish.grammar.arista.AristaParser.L_transportContext;
+import org.batfish.grammar.arista.AristaParser.Literal_standard_communityContext;
 import org.batfish.grammar.arista.AristaParser.Logging_vrfContext;
 import org.batfish.grammar.arista.AristaParser.Logging_vrf_hostContext;
 import org.batfish.grammar.arista.AristaParser.Logging_vrf_source_interfaceContext;
@@ -698,9 +684,7 @@ import org.batfish.grammar.arista.AristaParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Net_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_route_map_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Ntp_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_serverContext;
-import org.batfish.grammar.arista.AristaParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Null_as_path_regexContext;
 import org.batfish.grammar.arista.AristaParser.Origin_expr_literalContext;
 import org.batfish.grammar.arista.AristaParser.Ospf_areaContext;
@@ -734,7 +718,6 @@ import org.batfish.grammar.arista.AristaParser.Redistribute_connected_is_stanzaC
 import org.batfish.grammar.arista.AristaParser.Redistribute_static_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Rms_distanceContext;
 import org.batfish.grammar.arista.AristaParser.Ro6_distribute_listContext;
-import org.batfish.grammar.arista.AristaParser.Ro_areaContext;
 import org.batfish.grammar.arista.AristaParser.Ro_area_filterlistContext;
 import org.batfish.grammar.arista.AristaParser.Ro_area_nssaContext;
 import org.batfish.grammar.arista.AristaParser.Ro_area_rangeContext;
@@ -749,17 +732,11 @@ import org.batfish.grammar.arista.AristaParser.Ro_networkContext;
 import org.batfish.grammar.arista.AristaParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Ro_passive_interface_defaultContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_bgp_aristaContext;
-import org.batfish.grammar.arista.AristaParser.Ro_redistribute_bgp_ciscoContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_connectedContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_ripContext;
 import org.batfish.grammar.arista.AristaParser.Ro_redistribute_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ro_rfc1583_compatibilityContext;
 import org.batfish.grammar.arista.AristaParser.Ro_router_idContext;
-import org.batfish.grammar.arista.AristaParser.Ro_vrfContext;
-import org.batfish.grammar.arista.AristaParser.Roa_interfaceContext;
-import org.batfish.grammar.arista.AristaParser.Roa_rangeContext;
-import org.batfish.grammar.arista.AristaParser.Roi_costContext;
-import org.batfish.grammar.arista.AristaParser.Roi_passiveContext;
 import org.batfish.grammar.arista.AristaParser.Route_distinguisherContext;
 import org.batfish.grammar.arista.AristaParser.Route_map_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Route_tailContext;
@@ -770,8 +747,6 @@ import org.batfish.grammar.arista.AristaParser.Rr_distribute_listContext;
 import org.batfish.grammar.arista.AristaParser.Rr_networkContext;
 import org.batfish.grammar.arista.AristaParser.Rr_passive_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Rr_passive_interface_defaultContext;
-import org.batfish.grammar.arista.AristaParser.Rs_routeContext;
-import org.batfish.grammar.arista.AristaParser.Rs_vrfContext;
 import org.batfish.grammar.arista.AristaParser.S_aaaContext;
 import org.batfish.grammar.arista.AristaParser.S_access_lineContext;
 import org.batfish.grammar.arista.AristaParser.S_banner_eosContext;
@@ -793,12 +768,7 @@ import org.batfish.grammar.arista.AristaParser.S_ip_source_routeContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_sshContext;
 import org.batfish.grammar.arista.AristaParser.S_ip_tacacs_source_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.S_l2tp_classContext;
-import org.batfish.grammar.arista.AristaParser.S_lineContext;
 import org.batfish.grammar.arista.AristaParser.S_loggingContext;
-import org.batfish.grammar.arista.AristaParser.S_mac_access_listContext;
-import org.batfish.grammar.arista.AristaParser.S_mac_access_list_extendedContext;
-import org.batfish.grammar.arista.AristaParser.S_no_access_list_extendedContext;
-import org.batfish.grammar.arista.AristaParser.S_no_access_list_standardContext;
 import org.batfish.grammar.arista.AristaParser.S_ntpContext;
 import org.batfish.grammar.arista.AristaParser.S_peer_filterContext;
 import org.batfish.grammar.arista.AristaParser.S_policy_mapContext;
@@ -846,11 +816,7 @@ import org.batfish.grammar.arista.AristaParser.Ss_tftp_server_listContext;
 import org.batfish.grammar.arista.AristaParser.Ss_trap_sourceContext;
 import org.batfish.grammar.arista.AristaParser.Ssc_access_controlContext;
 import org.batfish.grammar.arista.AristaParser.Ssc_use_ipv4_aclContext;
-import org.batfish.grammar.arista.AristaParser.Ssh_access_groupContext;
-import org.batfish.grammar.arista.AristaParser.Ssh_serverContext;
 import org.batfish.grammar.arista.AristaParser.Standard_access_list_additional_featureContext;
-import org.batfish.grammar.arista.AristaParser.Standard_access_list_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Standard_access_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.Standard_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Standard_ipv6_access_list_tailContext;
 import org.batfish.grammar.arista.AristaParser.SubrangeContext;
@@ -858,24 +824,19 @@ import org.batfish.grammar.arista.AristaParser.Summary_address_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Suppressed_iis_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Switching_mode_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Switchport_trunk_encapsulationContext;
-import org.batfish.grammar.arista.AristaParser.T_serverContext;
-import org.batfish.grammar.arista.AristaParser.T_source_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Track_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Ts_hostContext;
 import org.batfish.grammar.arista.AristaParser.U_passwordContext;
 import org.batfish.grammar.arista.AristaParser.U_roleContext;
+import org.batfish.grammar.arista.AristaParser.Uint16Context;
 import org.batfish.grammar.arista.AristaParser.Uint32Context;
+import org.batfish.grammar.arista.AristaParser.Uint8Context;
 import org.batfish.grammar.arista.AristaParser.VariableContext;
 import org.batfish.grammar.arista.AristaParser.Variable_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Viaf_vrrpContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_addressContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_preemptContext;
 import org.batfish.grammar.arista.AristaParser.Viafv_priorityContext;
-import org.batfish.grammar.arista.AristaParser.Vlan_idContext;
-import org.batfish.grammar.arista.AristaParser.Vrfc_rdContext;
-import org.batfish.grammar.arista.AristaParser.Vrfc_route_targetContext;
-import org.batfish.grammar.arista.AristaParser.Vrfc_shutdownContext;
-import org.batfish.grammar.arista.AristaParser.Vrfc_vniContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Vrrp_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
@@ -914,13 +875,11 @@ import org.batfish.representation.arista.IsisProcess;
 import org.batfish.representation.arista.IsisRedistributionPolicy;
 import org.batfish.representation.arista.Keyring;
 import org.batfish.representation.arista.LoggingHost;
-import org.batfish.representation.arista.MacAccessList;
 import org.batfish.representation.arista.MatchSemantics;
 import org.batfish.representation.arista.MlagConfiguration;
 import org.batfish.representation.arista.NamedRsaPubKey;
 import org.batfish.representation.arista.NatPool;
 import org.batfish.representation.arista.NssaSettings;
-import org.batfish.representation.arista.OspfNetwork;
 import org.batfish.representation.arista.OspfNetworkType;
 import org.batfish.representation.arista.OspfProcess;
 import org.batfish.representation.arista.OspfRedistributionPolicy;
@@ -960,8 +919,9 @@ import org.batfish.representation.arista.RouteMapSetTagLine;
 import org.batfish.representation.arista.RouteMapSetWeightLine;
 import org.batfish.representation.arista.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.arista.StandardAccessList;
+import org.batfish.representation.arista.StandardAccessListActionLine;
 import org.batfish.representation.arista.StandardAccessListLine;
-import org.batfish.representation.arista.StandardAccessListServiceSpecifier;
+import org.batfish.representation.arista.StandardAccessListRemarkLine;
 import org.batfish.representation.arista.StandardCommunityList;
 import org.batfish.representation.arista.StandardCommunityListLine;
 import org.batfish.representation.arista.StandardIpv6AccessList;
@@ -1037,16 +997,20 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private static int toInteger(TerminalNode t) {
-    return Integer.parseInt(t.getText());
+  private static int toInteger(DecContext ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static int toInteger(Uint16Context ctx) {
+    return Integer.parseInt(ctx.getText());
+  }
+
+  private static int toInteger(Uint8Context ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
-  }
-
-  private static int toInteger(Vlan_idContext ctx) {
-    return Integer.parseInt(ctx.getText(), 10);
   }
 
   private static String toInterfaceName(Interface_nameContext ctx) {
@@ -1110,22 +1074,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return Ip6.parse(t.getText());
   }
 
-  private static long toLong(TerminalNode t) {
-    return Long.parseLong(t.getText());
-  }
-
-  private static long toLong(Token t) {
-    return Long.parseLong(t.getText());
-  }
-
-  private Prefix toPrefix(Ip_prefixContext ctx) {
-    if (ctx.address != null) {
-      return Prefix.create(toIp(ctx.address), toInteger(ctx.mask));
-    } else {
-      return toPrefix(ctx.prefix);
-    }
-  }
-
   private static Prefix toPrefix(Token t) {
     return Prefix.parse(t.getText());
   }
@@ -1167,10 +1115,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private AristaConfiguration _configuration;
 
-  @SuppressWarnings("unused")
-  private List<AaaAccountingCommands> _currentAaaAccountingCommands;
-
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
+
+  private Long _currentAclSeq;
 
   private AristaBgpAggregateNetwork _currentAristaBgpAggregateNetwork;
   private AristaBgpNeighbor _currentAristaBgpNeighbor;
@@ -1187,8 +1134,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private Integer _currentCryptoMapSequenceNum;
 
   private NamedRsaPubKey _currentNamedRsaPubKey;
-
-  private ExpandedCommunityList _currentExpandedCommunityList;
 
   private ExtendedAccessList _currentExtendedAcl;
 
@@ -1210,15 +1155,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private Keyring _currentKeyring;
 
-  private List<String> _currentLineNames;
-
-  @SuppressWarnings("unused")
-  private MacAccessList _currentMacAccessList;
-
-  private Long _currentOspfArea;
-
-  private String _currentOspfInterface;
-
   private OspfProcess _currentOspfProcess;
 
   @Nullable private AristaBgpPeerFilter _currentPeerFilter;
@@ -1235,12 +1171,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private SnmpCommunity _currentSnmpCommunity;
 
-  @SuppressWarnings("unused")
-  private SnmpHost _currentSnmpHost;
-
   private StandardAccessList _currentStandardAcl;
-
-  private StandardCommunityList _currentStandardCommunityList;
 
   private StandardIpv6AccessList _currentStandardIpv6Acl;
 
@@ -1277,11 +1208,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private String _currentTrackingGroup;
 
   private AristaEosVxlan _eosVxlan;
-
-  /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
-   * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
-   */
-  private String _lastKnownOspfProcess;
 
   public AristaControlPlaneExtractor(
       String text, AristaCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
@@ -1367,7 +1293,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       AaaAccountingCommands c = commands.computeIfAbsent(level, k -> new AaaAccountingCommands());
       currentAaaAccountingCommands.add(c);
     }
-    _currentAaaAccountingCommands = currentAaaAccountingCommands;
   }
 
   @Override
@@ -1429,6 +1354,81 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
       }
     }
+  }
+
+  @Override
+  public void enterAcl_extended(Acl_extendedContext ctx) {
+    String name = ctx.name.getText();
+    _currentExtendedAcl =
+        _configuration.getExtendedAcls().computeIfAbsent(name, ExtendedAccessList::new);
+    _configuration.defineStructure(IPV4_ACCESS_LIST_EXTENDED, name, ctx);
+  }
+
+  @Override
+  public void exitAcl_extended(Acl_extendedContext ctx) {
+    _currentExtendedAcl = null;
+  }
+
+  @Override
+  public void enterAcl_standard(Acl_standardContext ctx) {
+    String name = ctx.name.getText();
+    _currentStandardAcl =
+        _configuration.getStandardAcls().computeIfAbsent(name, StandardAccessList::new);
+    _configuration.defineStructure(IP_ACCESS_LIST_STANDARD, name, ctx);
+  }
+
+  @Override
+  public void exitAcl_standard(Acl_standardContext ctx) {
+    _currentStandardAcl = null;
+  }
+
+  @Override
+  public void enterAclstd_seq(Aclstd_seqContext ctx) {
+    if (ctx.seq != null) {
+      _currentAclSeq = toLong(ctx.seq);
+    } else {
+      SortedMap<Long, StandardAccessListLine> lines = _currentStandardAcl.getLines();
+      long lastKey = lines.isEmpty() ? 0L : lines.lastKey();
+      _currentAclSeq = lastKey + 10;
+    }
+  }
+
+  @Override
+  public void exitAclstd_seq(Aclstd_seqContext ctx) {
+    _currentAclSeq = null;
+  }
+
+  public @Nonnull IpWildcard toIpWildcard(Acl_ipv4_matchContext ctx) {
+    if (ctx.host != null) {
+      return IpWildcard.create(toIp(ctx.host));
+    } else if (ctx.prefix != null) {
+      return IpWildcard.create(toPrefix(ctx.prefix));
+    } else if (ctx.wildcard_ip != null) {
+      assert ctx.wildcard_mask != null;
+      // Note: mask in config is bits that matter, so invert for Batfish IpWildcard mask.
+      return IpWildcard.ipWithWildcardMask(
+          toIp(ctx.wildcard_ip), toIp(ctx.wildcard_mask).inverted());
+    } else {
+      assert ctx.ANY() != null;
+      return IpWildcard.ANY;
+    }
+  }
+
+  @Override
+  public void exitAclstd_action_line(Aclstd_action_lineContext ctx) {
+    LineAction action = toLineAction(ctx.action);
+    IpWildcard srcAddress = toIpWildcard(ctx.source);
+    String name = getFullText(ctx.getParent()).trim();
+    StandardAccessListLine line =
+        new StandardAccessListActionLine(_currentAclSeq, action, name, srcAddress);
+    _currentStandardAcl.addLine(line);
+  }
+
+  @Override
+  public void exitAclstd_remark_line(Aclstd_remark_lineContext ctx) {
+    String remark = ctx.text.getText().trim();
+    StandardAccessListLine line = new StandardAccessListRemarkLine(_currentAclSeq, remark);
+    _currentStandardAcl.addLine(line);
   }
 
   @Override
@@ -1550,7 +1550,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void enterCis_key(Cis_keyContext ctx) {
-    int encType = ctx.DEC() != null ? toInteger(ctx.DEC()) : 0;
+    int encType = ctx.dec() != null ? toInteger(ctx.dec()) : 0;
     IkeKeyType ikeKeyType;
     if (encType == 0) {
       ikeKeyType = IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED;
@@ -1592,7 +1592,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
     here */
     _configuration.referenceStructure(
-        ISAKMP_POLICY, priority.toString(), ISAKMP_POLICY_SELF_REF, ctx.priority.getLine());
+        ISAKMP_POLICY,
+        priority.toString(),
+        ISAKMP_POLICY_SELF_REF,
+        ctx.priority.getStart().getLine());
   }
 
   @Override
@@ -1630,7 +1633,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitCispol_group(Cispol_groupContext ctx) {
-    int group = Integer.parseInt(ctx.DEC().getText());
+    int group = toInteger(ctx.dec());
     _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.fromGroupNumber(group));
   }
 
@@ -1649,7 +1652,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitCispol_lifetime(Cispol_lifetimeContext ctx) {
-    _currentIsakmpPolicy.setLifetimeSeconds(Integer.parseInt(ctx.DEC().getText()));
+    _currentIsakmpPolicy.setLifetimeSeconds(toInteger(ctx.dec()));
   }
 
   @Override
@@ -3441,23 +3444,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterExtended_access_list_stanza(Extended_access_list_stanzaContext ctx) {
-    String name;
-    if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else if (ctx.shortname != null) {
-      name = ctx.shortname.getText();
-    } else if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else {
-      throw new BatfishException("Could not determine acl name");
-    }
-    _currentExtendedAcl =
-        _configuration.getExtendedAcls().computeIfAbsent(name, ExtendedAccessList::new);
-    _configuration.defineStructure(IPV4_ACCESS_LIST_EXTENDED, name, ctx);
-  }
-
-  @Override
   public void enterExtended_ipv6_access_list_stanza(Extended_ipv6_access_list_stanzaContext ctx) {
     String name;
     if (ctx.name != null) {
@@ -3491,39 +3477,36 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Invalid community-list name");
-    }
-    _currentExpandedCommunityList =
+  public void exitIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
+    String name = ctx.name.getText();
+    ExpandedCommunityList list =
         _configuration
             .getExpandedCommunityLists()
             .computeIfAbsent(name, ExpandedCommunityList::new);
+
+    LineAction action = toLineAction(ctx.action);
+    String regex = ctx.regexp.getText();
+    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, regex);
+    list.addLine(line);
     _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
-  public void enterIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else if (ctx.name_cl != null) {
-      name = ctx.name_cl.getText();
-    } else {
-      throw new BatfishException("Invalid standard community-list name");
-    }
-    _currentStandardCommunityList =
+  public void exitIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
+    String name = ctx.name_cl.getText();
+    StandardCommunityList list =
         _configuration
             .getStandardCommunityLists()
             .computeIfAbsent(name, StandardCommunityList::new);
     _configuration.defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
+
+    LineAction action = toLineAction(ctx.action);
+    List<Long> communities = new ArrayList<>();
+    for (Literal_standard_communityContext communityCtx : ctx.communities) {
+      communities.add(toLong(communityCtx));
+    }
+    StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
+    list.getLines().add(line);
   }
 
   @Override
@@ -3557,60 +3540,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     IsisProcess proc = currentVrf().getIsisProcess();
     IsoAddress isoAddress = new IsoAddress(ctx.ISO_ADDRESS().getText());
     proc.setNetAddress(isoAddress);
-  }
-
-  @Override
-  public void enterRo_area(Ro_areaContext ctx) {
-    long area;
-    if (ctx.area_int != null) {
-      area = toLong(ctx.area_int);
-    } else if (ctx.area_ip != null) {
-      area = toIp(ctx.area_ip).asLong();
-    } else {
-      throw new BatfishException("Missing area");
-    }
-    _currentOspfArea = area;
-  }
-
-  @Override
-  public void enterRo_vrf(Ro_vrfContext ctx) {
-    Ip routerId = _currentOspfProcess.getRouterId();
-    _lastKnownOspfProcess = _currentOspfProcess.getName();
-    _currentVrf = ctx.name.getText();
-    _currentOspfProcess =
-        currentVrf()
-            .getOspfProcesses()
-            .computeIfAbsent(
-                _currentOspfProcess.getName(),
-                (procName) -> {
-                  OspfProcess p = new OspfProcess(procName);
-                  p.setRouterId(routerId);
-                  return p;
-                });
-  }
-
-  @Override
-  public void enterRoa_interface(Roa_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, OSPF_AREA_INTERFACE, ctx.iname.getStart().getLine());
-    Interface iface = _configuration.getInterfaces().get(ifaceName);
-    if (iface == null) {
-      warn(
-          ctx.iname,
-          String.format("OSPF interface %s not declared before OSPF process", ifaceName));
-      iface = addInterface(ifaceName, ctx.iname, false);
-    }
-    // might cause problems if interfaces are declared after ospf, but
-    // whatever
-    for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
-      Prefix prefix = address.getPrefix();
-      OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
-      _currentOspfProcess.getNetworks().add(network);
-    }
-    iface.setOspfArea(_currentOspfArea);
-    iface.setOspfProcess(_currentOspfProcess.getName());
-    _currentOspfInterface = iface.getName();
   }
 
   @Override
@@ -3665,11 +3594,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     isisProcess.setLevel(IsisLevel.LEVEL_1_2);
     currentVrf().setIsisProcess(isisProcess);
     _currentIsisProcess = isisProcess;
-  }
-
-  @Override
-  public void enterRs_vrf(Rs_vrfContext ctx) {
-    _currentVrf = ctx.name.getText();
   }
 
   @Override
@@ -3781,129 +3705,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterS_line(S_lineContext ctx) {
-    String lineType = ctx.line_type().getText();
-    if (lineType.equals("")) {
-      lineType = "<UNNAMED>";
-    }
-    String nameBase = lineType;
-    Integer slot1 = null;
-    Integer slot2 = null;
-    Integer port1 = null;
-    Integer port2 = null;
-    List<String> names = new ArrayList<>();
-    if (ctx.first != null) {
-      if (ctx.slot1 != null) {
-        slot1 = toInteger(ctx.slot1);
-        slot2 = slot1;
-        if (ctx.port1 != null) {
-          port1 = toInteger(ctx.port1);
-          port2 = port1;
-        }
-      }
-      int first = toInteger(ctx.first);
-      int last;
-      if (ctx.last != null) {
-        if (ctx.slot2 != null) {
-          slot2 = toInteger(ctx.slot2);
-          if (ctx.port2 != null) {
-            port2 = toInteger(ctx.port2);
-          }
-        }
-        last = toInteger(ctx.last);
-      } else {
-        last = first;
-      }
-      if (last < first) {
-        throw new BatfishException("Do not support decreasing line range: " + first + " " + last);
-      }
-      if (slot1 != null && port1 != null) {
-        for (int s = slot1; s <= slot2; s++) {
-          for (int p = port1; p <= port2; p++) {
-            for (int i = first; i <= last; i++) {
-              String name = nameBase + s + "/" + p + "/" + i;
-              names.add(name);
-            }
-          }
-        }
-      } else if (slot1 != null) {
-        for (int s = slot1; s <= slot2; s++) {
-          for (int i = first; i <= last; i++) {
-            String name = nameBase + s + "/" + i;
-            names.add(name);
-          }
-        }
-      } else {
-        for (int i = first; i <= last; i++) {
-          String name = nameBase + i;
-          names.add(name);
-        }
-      }
-    } else {
-      names.add(nameBase);
-    }
-
-    // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
-    // default list is undefined
-    AaaAuthenticationLoginList defaultList =
-        Optional.ofNullable(_configuration.getCf().getAaa())
-            .map(Aaa::getAuthentication)
-            .map(AaaAuthentication::getLogin)
-            .map(AaaAuthenticationLogin::getLists)
-            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
-            .orElse(null);
-
-    for (String name : names) {
-      if (_configuration.getCf().getLines().get(name) == null) {
-        Line line = new Line(name);
-        if (defaultList != null) {
-          // if default list defined, apply it to all lines
-          line.setAaaAuthenticationLoginList(defaultList);
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
-        } else if (_configuration.getCf().getAaa() != null
-            && _configuration.getCf().getAaa().getNewModel()
-            && line.getLineType() != LineType.CON) {
-          // if default list not defined but aaa new-model, apply to all lines except con0
-          line.setAaaAuthenticationLoginList(
-              new AaaAuthenticationLoginList(
-                  Collections.singletonList(AuthenticationMethod.LOCAL)));
-          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
-        }
-        _configuration.getCf().getLines().put(name, line);
-      }
-    }
-    _currentLineNames = names;
-  }
-
-  @Override
   public void enterS_logging(S_loggingContext ctx) {
     if (_configuration.getCf().getLogging() == null) {
       _configuration.getCf().setLogging(new Logging());
     }
-  }
-
-  @Override
-  public void enterS_mac_access_list(S_mac_access_listContext ctx) {
-    String name = ctx.num.getText();
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
-  }
-
-  @Override
-  public void enterS_mac_access_list_extended(S_mac_access_list_extendedContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Could not determine name of extended mac access-list");
-    }
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
 
   @Override
@@ -3975,7 +3780,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRo_auto_cost(Ro_auto_costContext ctx) {
-    long referenceBandwidthDec = Long.parseLong(ctx.DEC().getText());
+    long referenceBandwidthDec = toLong(ctx.refbw);
     long referenceBandwidth;
     if (ctx.MBPS() != null) {
       referenceBandwidth = referenceBandwidthDec * 1_000_000;
@@ -4071,37 +3876,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitVrfc_rd(Vrfc_rdContext ctx) {
-    if (ctx.AUTO() == null) {
-      currentVrf().setRouteDistinguisher(toRouteDistinguisher(ctx.route_distinguisher()));
-    }
-  }
-
-  @Override
-  public void exitVrfc_route_target(Vrfc_route_targetContext ctx) {
-    ExtendedCommunity rt = ctx.AUTO() != null ? null : toRouteTarget(ctx.route_target());
-    if (ctx.IMPORT() != null || ctx.BOTH() != null) {
-      currentVrf().setRouteImportTarget(rt);
-    }
-    if (ctx.EXPORT() != null || ctx.BOTH() != null) {
-      currentVrf().setRouteExportTarget(rt);
-    }
-  }
-
-  @Override
-  public void exitVrfc_shutdown(Vrfc_shutdownContext ctx) {
-    if (ctx.NO() == null) {
-      todo(ctx);
-    }
-    currentVrf().setShutdown(ctx.NO() != null);
-  }
-
-  @Override
-  public void exitVrfc_vni(Vrfc_vniContext ctx) {
-    currentVrf().setVni(toInteger(ctx.vni));
-  }
-
-  @Override
   public void enterS_vrf_definition(S_vrf_definitionContext ctx) {
     _currentVrf = ctx.name.getText();
     initVrf(_currentVrf);
@@ -4127,22 +3901,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       throw new BatfishException("Invalid host");
     }
     Map<String, SnmpHost> hosts = _configuration.getSnmpServer().getHosts();
-    _currentSnmpHost = hosts.computeIfAbsent(hostname, SnmpHost::new);
-  }
-
-  @Override
-  public void enterStandard_access_list_stanza(Standard_access_list_stanzaContext ctx) {
-    String name;
-    if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else {
-      throw new BatfishException("Invalid standard access-list name");
-    }
-    _currentStandardAcl =
-        _configuration.getStandardAcls().computeIfAbsent(name, StandardAccessList::new);
-    _configuration.defineStructure(IPV4_ACCESS_LIST_STANDARD, name, ctx);
+    hosts.computeIfAbsent(hostname, SnmpHost::new);
   }
 
   @Override
@@ -4182,11 +3941,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
     _configuration.referenceStructure(
         INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
-  }
-
-  @Override
-  public void exitAaa_accounting_commands_line(Aaa_accounting_commands_lineContext ctx) {
-    _currentAaaAccountingCommands = null;
   }
 
   @Override
@@ -4375,7 +4129,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       line = ctx.name.getStart().getLine();
     } else {
       name = ctx.num.getText();
-      line = ctx.num.getLine();
+      line = ctx.num.getStart().getLine();
     }
     _configuration.referenceStructure(ACCESS_LIST, name, CLASS_MAP_ACCESS_GROUP, line);
   }
@@ -4406,8 +4160,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
     int statementLine = ctx.getStart().getLine();
     Integer target = null;
-    if (ctx.DEC() != null) {
-      target = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      target = toInteger(ctx.dec());
     }
     RouteMapContinue continueLine = new RouteMapContinue(target, statementLine);
     _currentRouteMapClause.setContinueLine(continueLine);
@@ -4528,11 +4282,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
     String passwordRehash = CommonUtil.sha256Digest(password);
     _configuration.getCf().setEnableSecret(passwordRehash);
-  }
-
-  @Override
-  public void exitExtended_access_list_stanza(Extended_access_list_stanzaContext ctx) {
-    _currentExtendedAcl = null;
   }
 
   @Override
@@ -4940,7 +4689,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_bandwidth(If_bandwidthContext ctx) {
-    double newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
+    double newBandwidthBps = toLong(ctx.bw) * 1000.0D;
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
 
@@ -5085,10 +4834,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.name != null) {
       String name = ctx.name.getText();
       _configuration.referenceStructure(
-          IPV4_ACCESS_LIST_STANDARD,
-          name,
-          INTERFACE_IP_MULTICAST_BOUNDARY,
-          ctx.getStart().getLine());
+          IP_ACCESS_LIST_STANDARD, name, INTERFACE_IP_MULTICAST_BOUNDARY, ctx.getStart().getLine());
     }
   }
 
@@ -5155,13 +4901,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIf_eos_mlag(If_eos_mlagContext ctx) {
-    int mlagId = toInteger(ctx.DEC());
+    int mlagId = toInteger(ctx.dec());
     _currentInterfaces.forEach(iface -> iface.setMlagId(mlagId));
   }
 
   @Override
   public void exitIf_mtu(If_mtuContext ctx) {
-    int mtu = toInteger(ctx.DEC());
+    int mtu = toInteger(ctx.dec());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setMtu(mtu);
     }
@@ -5627,43 +5373,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
-    _currentExpandedCommunityList = null;
-  }
-
-  @Override
-  public void exitIp_community_list_expanded_tail(Ip_community_list_expanded_tailContext ctx) {
-    LineAction action = toLineAction(ctx.ala);
-    StringBuilder regex = new StringBuilder();
-    for (Token remainder : ctx.remainder) {
-      regex.append(remainder.getText());
-    }
-    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, regex.toString());
-    _currentExpandedCommunityList.addLine(line);
-  }
-
-  @Override
-  public void exitIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
-    _currentStandardCommunityList = null;
-  }
-
-  @Override
-  public void exitIp_community_list_standard_tail(Ip_community_list_standard_tailContext ctx) {
-    LineAction action = toLineAction(ctx.ala);
-    List<Long> communities = new ArrayList<>();
-    for (CommunityContext communityCtx : ctx.communities) {
-      Long community = toLong(communityCtx);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'", communityCtx.getText()));
-        return;
-      }
-      communities.add(community);
-    }
-    StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
-    _currentStandardCommunityList.getLines().add(line);
-  }
-
-  @Override
   public void exitIp_dhcp_relay_server(Ip_dhcp_relay_serverContext ctx) {
     if (!_no && ctx.ip != null) {
       Ip ip = toIp(ctx.ip);
@@ -5872,106 +5581,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitL_access_class(L_access_classContext ctx) {
-    boolean ipv6 = (ctx.IPV6() != null);
-    String name = ctx.name.getText();
-    int nameLine = ctx.name.getStart().getLine();
-    BiConsumer<Line, String> setter;
-    AristaStructureType structureType;
-    AristaStructureUsage structureUsage;
-    if (ctx.OUT() != null || ctx.EGRESS() != null) {
-      if (ipv6) {
-        setter = Line::setOutputIpv6AccessList;
-        structureType = IPV6_ACCESS_LIST;
-        structureUsage = LINE_ACCESS_CLASS_LIST6;
-      } else {
-        setter = Line::setOutputAccessList;
-        structureType = IPV4_ACCESS_LIST;
-        structureUsage = LINE_ACCESS_CLASS_LIST;
-      }
-
-    } else {
-      if (ipv6) {
-        setter = Line::setInputIpv6AccessList;
-        structureType = IPV6_ACCESS_LIST;
-        structureUsage = LINE_ACCESS_CLASS_LIST6;
-      } else {
-        setter = Line::setInputAccessList;
-        structureType = IPV4_ACCESS_LIST;
-        structureUsage = LINE_ACCESS_CLASS_LIST;
-      }
-    }
-    _configuration.referenceStructure(structureType, name, structureUsage, nameLine);
-    for (String currentName : _currentLineNames) {
-      Line line = _configuration.getCf().getLines().get(currentName);
-      setter.accept(line, name);
-    }
-  }
-
-  @Override
-  public void exitL_exec_timeout(L_exec_timeoutContext ctx) {
-    int minutes = toInteger(ctx.minutes);
-    int seconds = ctx.seconds != null ? toInteger(ctx.seconds) : 0;
-    for (String lineName : _currentLineNames) {
-      Line line = _configuration.getCf().getLines().get(lineName);
-      line.setExecTimeoutMinutes(minutes);
-      line.setExecTimeoutSeconds(seconds);
-    }
-  }
-
-  @Override
-  public void exitL_login_authentication(L_login_authenticationContext ctx) {
-    String list;
-    if (ctx.DEFAULT() != null) {
-      list = ctx.DEFAULT().getText();
-    } else if (ctx.name != null) {
-      list = ctx.name.getText();
-    } else {
-      throw new BatfishException("Invalid list name");
-    }
-
-    // get the authentication list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is
-    // null or the list is not defined
-    AaaAuthenticationLoginList authList =
-        Optional.ofNullable(_configuration.getCf().getAaa())
-            .map(Aaa::getAuthentication)
-            .map(AaaAuthentication::getLogin)
-            .map(AaaAuthenticationLogin::getLists)
-            .map(lists -> lists.get(list))
-            .orElse(null);
-
-    // if the authentication list has been defined, apply it to all lines in _currentLineNames
-    for (String line : _currentLineNames) {
-      if (authList != null) {
-        _configuration.getCf().getLines().get(line).setAaaAuthenticationLoginList(authList);
-      }
-      // set the name of the login list even if the list hasn't been defined yet because it may be
-      // defined later
-      _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
-    }
-  }
-
-  @Override
-  public void exitL_transport(L_transportContext ctx) {
-    SortedSet<String> protocols =
-        ctx.prot.stream().map(RuleContext::getText).collect(toCollection(TreeSet::new));
-    BiConsumer<Line, SortedSet<String>> setter;
-    if (ctx.INPUT() != null) {
-      setter = Line::setTransportInput;
-    } else if (ctx.OUTPUT() != null) {
-      setter = Line::setTransportOutput;
-    } else if (ctx.PREFERRED() != null) {
-      setter = Line::setTransportPreferred;
-    } else {
-      throw new BatfishException("Invalid or unsupported line transport type");
-    }
-    for (String currentName : _currentLineNames) {
-      Line line = _configuration.getCf().getLines().get(currentName);
-      setter.accept(line, protocols);
-    }
-  }
-
-  @Override
   public void enterLogging_vrf(Logging_vrfContext ctx) {
     _currentVrf = ctx.name.getText();
   }
@@ -6123,9 +5732,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitMatch_tag_rm_stanza(Match_tag_rm_stanzaContext ctx) {
-    Set<Integer> tags = new TreeSet<>();
-    for (Token t : ctx.tag_list) {
-      tags.add(toInteger(t));
+    Set<Long> tags = new TreeSet<>();
+    for (Uint32Context t : ctx.tag_list) {
+      tags.add(toLong(t));
     }
     RouteMapMatchTagLine line = new RouteMapMatchTagLine(tags);
     _currentRouteMapClause.addMatchLine(line);
@@ -6211,18 +5820,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitNtp_access_group(Ntp_access_groupContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    if (!ctx.IPV6().isEmpty()) {
-      _configuration.referenceStructure(IPV6_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
-    } else {
-      // IPv4 unless IPv6 explicit.
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
-    }
-  }
-
-  @Override
   public void exitNtp_server(Ntp_serverContext ctx) {
     Ntp ntp = _configuration.getCf().getNtp();
     String hostname = ctx.hostname.getText();
@@ -6235,14 +5832,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.PREFER() != null) {
       // TODO: implement
     }
-  }
-
-  @Override
-  public void exitNtp_source_interface(Ntp_source_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-    _configuration.setNtpSourceInterface(ifaceName);
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, NTP_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
   }
 
   @Override
@@ -6506,11 +6095,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitRo_area(Ro_areaContext ctx) {
-    _currentOspfArea = null;
-  }
-
-  @Override
   public void exitRo_area_filterlist(Ro_area_filterlistContext ctx) {
     String prefixListName = ctx.list.getText();
     _configuration.referenceStructure(
@@ -6521,7 +6105,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long area = toLong(ctx.area);
     NssaSettings settings = proc.getNssas().computeIfAbsent(area, a -> new NssaSettings());
     if (ctx.default_information_originate != null) {
       settings.setDefaultInformationOriginate(true);
@@ -6536,7 +6120,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitRo_area_range(Ro_area_rangeContext ctx) {
-    long areaNum = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long areaNum = toLong(ctx.area);
     Prefix prefix;
     if (ctx.area_prefix != null) {
       prefix = Prefix.parse(ctx.area_prefix.getText());
@@ -6560,7 +6144,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitRo_area_stub(Ro_area_stubContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long area = toLong(ctx.area);
     StubSettings settings = proc.getStubs().computeIfAbsent(area, a -> new StubSettings());
     if (ctx.no_summary != null) {
       settings.setNoSummary(true);
@@ -6665,14 +6249,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       address = toIp(ctx.ip);
       wildcard = toIp(ctx.wildcard);
     }
-    long area;
-    if (ctx.area_int != null) {
-      area = toLong(ctx.area_int);
-    } else if (ctx.area_ip != null) {
-      area = toIp(ctx.area_ip).asLong();
-    } else {
-      throw new BatfishException("bad area");
-    }
+    long area = toLong(ctx.area);
     OspfWildcardNetwork network = new OspfWildcardNetwork(address, wildcard, area);
     _currentOspfProcess.getWildcardNetworks().add(network);
   }
@@ -6707,37 +6284,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, ctx.map.getLine());
     }
     r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-  }
-
-  @Override
-  public void exitRo_redistribute_bgp_cisco(Ro_redistribute_bgp_ciscoContext ctx) {
-    OspfProcess proc = _currentOspfProcess;
-    RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
-    OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
-    proc.getRedistributionPolicies().put(sourceProtocol, r);
-    long as = toAsNum(ctx.bgp_asn());
-    r.getSpecialAttributes().put(OspfRedistributionPolicy.BGP_AS, as);
-    if (ctx.metric != null) {
-      int metric = toInteger(ctx.metric);
-      r.setMetric(metric);
-    }
-    if (ctx.map != null) {
-      String map = ctx.map.getText();
-      r.setRouteMap(map);
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, OSPF_REDISTRIBUTE_BGP_MAP, ctx.map.getLine());
-    }
-    if (ctx.type != null) {
-      int typeInt = toInteger(ctx.type);
-      OspfMetricType type = OspfMetricType.fromInteger(typeInt);
-      r.setOspfMetricType(type);
-    } else {
-      r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
-    }
-    if (ctx.tag != null) {
-      long tag = toLong(ctx.tag);
-      r.setTag(tag);
-    }
   }
 
   @Override
@@ -6815,13 +6361,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitRo_vrf(Ro_vrfContext ctx) {
-    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
-    _currentOspfProcess = currentVrf().getOspfProcesses().get(_lastKnownOspfProcess);
-    _lastKnownOspfProcess = null;
-  }
-
-  @Override
   public void exitRo6_distribute_list(Ro6_distribute_listContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -6833,42 +6372,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.iname != null) {
       String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
-    }
-  }
-
-  @Override
-  public void exitRoa_interface(Roa_interfaceContext ctx) {
-    _currentOspfInterface = null;
-  }
-
-  @Override
-  public void exitRoa_range(Roa_rangeContext ctx) {
-    Prefix prefix = Prefix.parse(ctx.prefix.getText());
-    boolean advertise = ctx.NOT_ADVERTISE() == null;
-    Long cost = ctx.cost == null ? null : toLong(ctx.cost);
-
-    Map<Prefix, OspfAreaSummary> area =
-        _currentOspfProcess.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
-    area.put(
-        prefix,
-        new OspfAreaSummary(
-            advertise
-                ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
-                : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
-            cost));
-  }
-
-  @Override
-  public void exitRoi_cost(Roi_costContext ctx) {
-    Interface iface = _configuration.getInterfaces().get(_currentOspfInterface);
-    int cost = toInteger(ctx.cost);
-    iface.setOspfCost(cost);
-  }
-
-  @Override
-  public void exitRoi_passive(Roi_passiveContext ctx) {
-    if (ctx.ENABLE() != null) {
-      _currentOspfProcess.getPassiveInterfaces().add(_currentOspfInterface);
     }
   }
 
@@ -6962,47 +6465,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitRs_route(Rs_routeContext ctx) {
-    if (ctx.prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-      String nextHopInterface = null;
-      if (ctx.nhip != null) {
-        nextHopIp = toIp(ctx.nhip);
-      }
-      if (ctx.nhint != null) {
-        nextHopInterface = getCanonicalInterfaceName(ctx.nhint.getText());
-        _configuration.referenceStructure(
-            INTERFACE, nextHopInterface, ROUTER_STATIC_ROUTE, ctx.nhint.getStart().getLine());
-      }
-      int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
-      if (ctx.distance != null) {
-        distance = toInteger(ctx.distance);
-      }
-      Long tag = null;
-      if (ctx.tag != null) {
-        tag = toLong(ctx.tag);
-      }
-
-      boolean permanent = ctx.PERMANENT() != null;
-      Integer track = null;
-      if (ctx.track != null) {
-        // TODO: handle named instead of numbered track
-      }
-      StaticRoute route =
-          new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
-      currentVrf().getStaticRoutes().add(route);
-    } else if (ctx.prefix6 != null) {
-      // TODO: ipv6 static route
-    }
-  }
-
-  @Override
-  public void exitRs_vrf(Rs_vrfContext ctx) {
-    _currentVrf = AristaConfiguration.DEFAULT_VRF_NAME;
-  }
-
-  @Override
   public void exitS_domain_name(S_domain_nameContext ctx) {
     String domainName = ctx.hostname.getText();
     _configuration.setDomainName(domainName);
@@ -7079,25 +6541,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitS_line(S_lineContext ctx) {
-    _currentLineNames = null;
-  }
-
-  @Override
   public void exitS_logging(S_loggingContext ctx) {
     _no = false;
-  }
-
-  @Override
-  public void exitS_no_access_list_extended(S_no_access_list_extendedContext ctx) {
-    String name = ctx.ACL_NUM_EXTENDED().getText();
-    _configuration.getExtendedAcls().remove(name);
-  }
-
-  @Override
-  public void exitS_no_access_list_standard(S_no_access_list_standardContext ctx) {
-    String name = ctx.ACL_NUM_STANDARD().getText();
-    _configuration.getStandardAcls().remove(name);
   }
 
   @Override
@@ -7214,13 +6659,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitSet_community_additive_rm_stanza(Set_community_additive_rm_stanzaContext ctx) {
     ImmutableList.Builder<StandardCommunity> builder = ImmutableList.builder();
-    for (CommunityContext c : ctx.communities) {
-      Long community = toLong(c);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
-        return;
-      }
-      builder.add(StandardCommunity.of(community));
+    for (Literal_standard_communityContext c : ctx.communities) {
+      builder.add(StandardCommunity.of(toLong(c)));
     }
     RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(builder.build());
     _currentRouteMapClause.addSetLine(line);
@@ -7269,13 +6709,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
     List<Long> commList = new ArrayList<>();
-    for (CommunityContext c : ctx.communities) {
-      Long community = toLong(c);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
-        return;
-      }
-      commList.add(community);
+    for (Literal_standard_communityContext c : ctx.communities) {
+      commList.add(toLong(c));
     }
     RouteMapSetCommunityLine line = new RouteMapSetCommunityLine(commList);
     _currentRouteMapClause.addSetLine(line);
@@ -7332,7 +6767,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitSet_weight_rm_stanza(Set_weight_rm_stanzaContext ctx) {
-    RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.DEC()));
+    RouteMapSetWeightLine line = new RouteMapSetWeightLine(toInteger(ctx.dec()));
     _currentRouteMapClause.addSetLine(line);
   }
 
@@ -7380,11 +6815,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
     _configuration.referenceStructure(IP_ACCESS_LIST, acl, SNMP_SERVER_FILE_TRANSFER_ACL, line);
-  }
-
-  @Override
-  public void exitSs_host(Ss_hostContext ctx) {
-    _currentSnmpHost = null;
   }
 
   @Override
@@ -7439,64 +6869,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     int line = ctx.name.getStart().getLine();
     _currentSnmpCommunity.setAccessList(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, SNMP_SERVER_COMMUNITY_ACL4, line);
-  }
-
-  @Override
-  public void exitSsh_access_group(Ssh_access_groupContext ctx) {
-    String acl = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    if (ctx.IPV6() != null) {
-      _configuration.referenceStructure(IPV6_ACCESS_LIST, acl, SSH_IPV6_ACL, line);
-    } else {
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, SSH_IPV4_ACL, line);
-    }
-  }
-
-  @Override
-  public void exitSsh_server(Ssh_serverContext ctx) {
-    if (ctx.acl != null) {
-      String acl = ctx.acl.getText();
-      int line = ctx.acl.getStart().getLine();
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, SSH_IPV4_ACL, line);
-    }
-    if (ctx.acl6 != null) {
-      String acl6 = ctx.acl6.getText();
-      int line = ctx.acl6.getStart().getLine();
-      _configuration.referenceStructure(IPV6_ACCESS_LIST, acl6, SSH_IPV6_ACL, line);
-    }
-  }
-
-  @Override
-  public void exitStandard_access_list_stanza(Standard_access_list_stanzaContext ctx) {
-    _currentStandardAcl = null;
-  }
-
-  @Override
-  public void exitStandard_access_list_tail(Standard_access_list_tailContext ctx) {
-    LineAction action = toLineAction(ctx.ala);
-    AccessListAddressSpecifier srcAddressSpecifier = toAccessListAddressSpecifier(ctx.ipr);
-    StandardAccessListServiceSpecifier serviceSpecifer =
-        computeStandardAccessListServiceSpecifier(ctx);
-    String name = getFullText(ctx).trim();
-    StandardAccessListLine line =
-        new StandardAccessListLine(action, name, serviceSpecifer, srcAddressSpecifier);
-    _currentStandardAcl.addLine(line);
-  }
-
-  private @Nonnull StandardAccessListServiceSpecifier computeStandardAccessListServiceSpecifier(
-      Standard_access_list_tailContext ctx) {
-    Set<Integer> dscps = new TreeSet<>();
-    Set<Integer> ecns = new TreeSet<>();
-    for (Standard_access_list_additional_featureContext feature : ctx.features) {
-      if (feature.DSCP() != null) {
-        int dscpType = toDscpType(feature.dscp_type());
-        dscps.add(dscpType);
-      } else if (feature.ECN() != null) {
-        int ecn = toInteger(feature.ecn);
-        ecns.add(ecn);
-      }
-    }
-    return new StandardAccessListServiceSpecifier(dscps, ecns);
   }
 
   @Override
@@ -7566,20 +6938,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitSwitching_mode_stanza(Switching_mode_stanzaContext ctx) {
     todo(ctx);
-  }
-
-  @Override
-  public void exitT_server(T_serverContext ctx) {
-    String hostname = ctx.hostname.getText();
-    _configuration.getTacacsServers().add(hostname);
-  }
-
-  @Override
-  public void exitT_source_interface(T_source_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-    _configuration.setTacacsSourceInterface(ifaceName);
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, TACACS_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
   }
 
   @Override
@@ -7671,8 +7029,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private int getPortNumber(PortContext ctx) {
-    if (ctx.DEC() != null) {
-      return toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      return toInteger(ctx.dec());
     } else {
       NamedPort namedPort = toNamedPort(ctx);
       return namedPort.number();
@@ -7725,8 +7083,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private AsExpr toAsExpr(As_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      int as = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      int as = toInteger(ctx.dec());
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
       return AutoAs.instance();
@@ -7776,8 +7134,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private int toDscpType(Dscp_typeContext ctx) {
     int val;
-    if (ctx.DEC() != null) {
-      val = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      val = toInteger(ctx.dec());
     } else if (ctx.AF11() != null) {
       val = DscpType.AF11.number();
     } else if (ctx.AF12() != null) {
@@ -7948,8 +7306,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   /** Returns the given IPv4 protocol, or {@code null} if none is specified. */
   private @Nullable IpProtocol toIpProtocol(ProtocolContext ctx) {
-    if (ctx.DEC() != null) {
-      int num = toInteger(ctx.DEC());
+    if (ctx.dec() != null) {
+      int num = toInteger(ctx.dec());
       if (num < 0 || num > 255) {
         return convProblem(IpProtocol.class, ctx, null);
       }
@@ -8018,8 +7376,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private LongExpr toLocalPreferenceLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.dec() != null) {
+      long val = toLong(ctx.dec());
       if (ctx.PLUS() != null) {
         return new IncrementLocalPreference(val);
       } else if (ctx.DASH() != null) {
@@ -8036,32 +7394,32 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private @Nullable Long toLong(CommunityContext ctx) {
-    if (ctx.ACCEPT_OWN() != null) {
-      return WellKnownCommunity.ACCEPT_OWN;
-    } else if (ctx.STANDARD_COMMUNITY() != null) {
-      return StandardCommunity.parse(ctx.getText()).asLong();
-    } else if (ctx.uint32() != null) {
-      return toLong(ctx.uint32());
-    } else if (ctx.INTERNET() != null) {
-      return WellKnownCommunity.INTERNET;
+  private long toLong(Literal_standard_communityContext ctx) {
+    if (ctx.u32 != null) {
+      return toLong(ctx.u32);
+    } else if (ctx.lo != null) {
+      assert ctx.hi != null;
+      int lo = toInteger(ctx.lo);
+      int hi = toInteger(ctx.hi);
+      return StandardCommunity.of(hi, lo).asLong();
     } else if (ctx.GSHUT() != null) {
       return WellKnownCommunity.GRACEFUL_SHUTDOWN;
+    } else if (ctx.INTERNET() != null) {
+      return WellKnownCommunity.INTERNET;
     } else if (ctx.LOCAL_AS() != null) {
       // Cisco LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet forums.
       return WellKnownCommunity.NO_EXPORT_SUBCONFED;
     } else if (ctx.NO_ADVERTISE() != null) {
       return WellKnownCommunity.NO_ADVERTISE;
-    } else if (ctx.NO_EXPORT() != null) {
-      return WellKnownCommunity.NO_EXPORT;
     } else {
-      return convProblem(Long.class, ctx, null);
+      assert ctx.NO_EXPORT() != null;
+      return WellKnownCommunity.NO_EXPORT;
     }
   }
 
-  private @Nullable Long toLong(Uint32Context ctx) {
+  private @Nullable Long toLong(DecContext ctx) {
     try {
-      long val = Long.parseLong(ctx.getText(), 10);
+      long val = Long.parseLong(ctx.getText());
       checkArgument(0 <= val && val <= 0xFFFFFFFFL);
       return val;
     } catch (IllegalArgumentException e) {
@@ -8069,9 +7427,13 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
+  private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
+  }
+
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.dec() != null) {
+      long val = toLong(ctx.dec());
       if (ctx.PLUS() != null) {
         return new IncrementMetric(val);
       } else if (ctx.DASH() != null) {
@@ -8585,7 +7947,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Nonnull
   private RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
-    long dec = toLong(ctx.DEC());
+    long dec = toInteger(ctx.uint16());
     if (ctx.IP_ADDRESS() != null) {
       checkArgument(dec <= 0xFFFFL, "Invalid route distinguisher %s", ctx.getText());
       return RouteDistinguisher.from(toIp(ctx.IP_ADDRESS()), (int) dec);
@@ -8595,7 +7957,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Nonnull
   private ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
-    long la = toLong(ctx.DEC());
+    long la = toInteger(ctx.uint16());
     if (ctx.IP_ADDRESS() != null) {
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
     }

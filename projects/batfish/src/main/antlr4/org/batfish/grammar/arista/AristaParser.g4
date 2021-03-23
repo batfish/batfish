@@ -14,10 +14,8 @@ Arista_vlan,
 Legacy_aaa,
 Legacy_acl,
 Legacy_crypto,
-Legacy_callhome,
 Legacy_interface,
 Legacy_isis,
-Legacy_line,
 Legacy_mpls,
 Legacy_ntp,
 Legacy_ospf,
@@ -25,8 +23,7 @@ Legacy_pim,
 Legacy_qos,
 Legacy_rip,
 Legacy_routemap,
-Legacy_snmp,
-Legacy_static;
+Legacy_snmp;
 
 
 options {
@@ -303,7 +300,7 @@ cp_ip_access_group
       | IPV6
    ) ACCESS_GROUP name = variable
    (
-      VRF vrf = variable
+      VRF vrf = vrf_name
    )?
    (
       IN
@@ -565,7 +562,7 @@ enable_null
 
 enable_password
 :
-   PASSWORD (LEVEL level = DEC)?
+   PASSWORD (LEVEL level = dec)?
    (
       ep_plaintext
       | ep_sha512
@@ -579,7 +576,7 @@ enable_secret
    SECRET
    (
       (
-         DEC pass = variable_secret
+         dec pass = variable_secret
       )
       | double_quoted_string
    ) NEWLINE
@@ -587,7 +584,7 @@ enable_secret
 
 ep_cisco_encryption
 :
-   (type = DEC)? (pass = variable_secret) (LEVEL level = DEC)? (PBKDF2 | ENCRYPTED)?
+   (type = dec)? (pass = variable_secret) (LEVEL level = dec)? (PBKDF2 | ENCRYPTED)?
 ;
 
 ep_plaintext
@@ -989,7 +986,7 @@ ip_dhcp_relay_server
 ip_domain_lookup
 :
    LOOKUP
-   (VRF vrf = variable)?
+   (VRF vrf = vrf_name)?
    (SOURCE_INTERFACE iname = interface_name)?
    NEWLINE
 ;
@@ -997,7 +994,7 @@ ip_domain_lookup
 ip_domain_name
 :
    NAME
-   (VRF vrf = variable)?
+   (VRF vrf = vrf_name)?
    hostname = variable_hostname NEWLINE
 ;
 
@@ -1021,13 +1018,13 @@ ip_nat_pool
    IP NAT POOL name = variable first = IP_ADDRESS last = IP_ADDRESS
    (
       NETMASK mask = IP_ADDRESS
-      | PREFIX_LENGTH prefix_length = DEC
+      | PREFIX_LENGTH prefix_length = dec
    )? NEWLINE
 ;
 
 ip_nat_pool_range
 :
-   IP NAT POOL name = variable PREFIX_LENGTH prefix_length = DEC NEWLINE
+   IP NAT POOL name = variable PREFIX_LENGTH prefix_length = dec NEWLINE
    (
       RANGE first = IP_ADDRESS last = IP_ADDRESS NEWLINE
    )+
@@ -1046,7 +1043,7 @@ ip_probe_null
 
 s_ip_route
 :
-  ROUTE (VRF vrf = variable)? ip_route_tail
+  ROUTE (VRF vrf = vrf_name)? ip_route_tail
 ;
 
 ip_route_tail
@@ -1068,20 +1065,20 @@ ip_route_tail
          (
             ADMIN_DIST
             | ADMIN_DISTANCE
-         )? distance = DEC
+         )? distance = dec
       )
       |
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         TAG tag = DEC
+         TAG tag = dec
       )
       | perm = PERMANENT
       |
       (
-         TRACK track = DEC
+         TRACK track = dec
       )
       |
       (
@@ -1144,7 +1141,7 @@ ip_ssh_pubkey_chain
 
 ip_ssh_version
 :
-   VERSION version = DEC NEWLINE
+   VERSION version = dec NEWLINE
 ;
 
 ipc_association
@@ -1503,7 +1500,7 @@ management_api_null
 
 management_api_vrf
 :
-   VRF name = variable NEWLINE
+   VRF name = vrf_name NEWLINE
    (
       management_api_vrf_null
    )*
@@ -1716,14 +1713,6 @@ no_ip_access_list_stanza
 null_af_multicast_tail
 :
    NSF NEWLINE
-;
-
-vrfd_af_null
-:
-   NO?
-   (
-      MAXIMUM
-   ) null_rest_of_line
 ;
 
 null_imgp_stanza
@@ -1954,25 +1943,16 @@ rmc_null
    ) null_rest_of_line
 ;
 
-role_null
-:
-   NO?
-   (
-      DESCRIPTION
-      | RULE
-   ) null_rest_of_line
-;
-
 route_tail
 :
    iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
    (
       (
          (
-            distance = DEC+
+            distance = dec+
          )?
          (
-            TRACK track = DEC+
+            TRACK track = dec+
          )?
       )
       |
@@ -2143,7 +2123,7 @@ s_control_plane
 :
    CONTROL_PLANE
    (
-      SLOT DEC
+      SLOT dec
    )? NEWLINE s_control_plane_tail*
 ;
 
@@ -2276,7 +2256,7 @@ s_domain
 :
    DOMAIN
    (
-      VRF vrf = variable
+      VRF vrf = vrf_name
    )?
    (
       domain_lookup
@@ -2391,7 +2371,7 @@ s_flow_sampler_map
 
 fsm_mode
 :
-   MODE RANDOM ONE_OUT_OF DEC NEWLINE
+   MODE RANDOM ONE_OUT_OF dec NEWLINE
 ;
 
 s_global_port_security
@@ -2466,7 +2446,8 @@ s_ip
 :
   IP
   (
-    s_ip_as_path
+    s_ip_access_list
+    | s_ip_as_path
     | s_ip_domain_name
     | s_ip_igmp
     | s_ip_name_server
@@ -2514,24 +2495,15 @@ s_ip_domain
 
 s_ip_domain_name
 :
-   DOMAIN_NAME hostname = variable_hostname
-   (
-      USE_VRF variable
-   )? NEWLINE
+   DOMAIN_NAME hostname = variable_hostname NEWLINE
 ;
 
 s_ip_name_server
 :
    NAME_SERVER
-   (
-      VRF vrf = variable
-   )?
-   (
-      hostnames += ip_hostname
-   )+
-   (
-      USE_VRF vrf = variable
-   )? NEWLINE
+     (VRF vrf = vrf_name)?
+     (hostnames += ip_hostname)+
+     NEWLINE
 ;
 
 s_ip_nat
@@ -2556,7 +2528,7 @@ s_ip_probe
 
 s_ip_routing
 :
-  ROUTING (VRF name = variable)? NEWLINE
+  ROUTING (VRF name = vrf_name)? NEWLINE
 ;
 
 s_ip_sla
@@ -2585,26 +2557,14 @@ s_ip_ssh
 s_ip_tacacs_source_interface
 :
    TACACS
-   (
-      VRF vrf = variable
-   )? SOURCE_INTERFACE iname = interface_name NEWLINE
+     (VRF vrf = vrf_name)?
+     SOURCE_INTERFACE iname = interface_name
+     NEWLINE
 ;
 
 s_ip_virtual_router
 :
   VIRTUAL_ROUTER MAC_ADDRESS null_rest_of_line
-;
-
-s_ip_wccp
-:
-   NO? IP WCCP
-   (
-      VRF vrf = variable
-   )?
-   (
-      wccp_id
-      | wccp_null
-   )
 ;
 
 s_ipc
@@ -2752,16 +2712,6 @@ no_ip
   IP no_ip_igmp
 ;
 
-s_no_access_list_extended
-:
-   NO ACCESS_LIST ACL_NUM_EXTENDED NEWLINE
-;
-
-s_no_access_list_standard
-:
-   NO ACCESS_LIST ACL_NUM_STANDARD NEWLINE
-;
-
 s_no_bfd
 :
    NO BFD null_rest_of_line
@@ -2769,7 +2719,7 @@ s_no_bfd
 
 s_no_enable
 :
-   NO ENABLE PASSWORD (LEVEL level = DEC)? NEWLINE
+   NO ENABLE PASSWORD (LEVEL level = dec)? NEWLINE
 ;
 
 s_no_vlan_eos
@@ -2808,7 +2758,7 @@ s_peer_filter
 
 peer_filter_line
 :
-   (seq = DEC)? MATCH
+   (seq = dec)? MATCH
    AS_RANGE asn_range = eos_as_range RESULT action = (ACCEPT | REJECT)
    NEWLINE
 ;
@@ -2838,7 +2788,7 @@ s_privilege
 
 s_process_max_time
 :
-   NO? PROCESS_MAX_TIME DEC NEWLINE
+   NO? PROCESS_MAX_TIME dec NEWLINE
 ;
 
 s_queue_monitor
@@ -2887,9 +2837,6 @@ s_rf
 s_role
 :
    NO? ROLE null_rest_of_line
-   (
-      role_null
-   )*
 ;
 
 s_route
@@ -2951,18 +2898,6 @@ s_spanning_tree
    )
 ;
 
-s_ssh
-:
-   SSH
-   (
-      ssh_access_group
-      | ssh_client
-      | ssh_null
-      | ssh_server
-      | ssh_timeout
-   )
-;
-
 s_statistics
 :
    NO? STATISTICS null_rest_of_line
@@ -3014,16 +2949,6 @@ s_system_inner
 s_system_service_policy
 :
    SERVICE_POLICY TYPE QUEUING (INPUT | OUTPUT) policy_map = variable NEWLINE
-;
-
-s_tacacs
-:
-   TACACS
-   (
-      t_null
-      | t_server
-      | t_source_interface
-   )
 ;
 
 s_tacacs_server
@@ -3150,34 +3075,6 @@ s_vlan_name
    VLAN_NAME name = variable_permissive NEWLINE
 ;
 
-s_voice
-:
-   NO? VOICE
-   (
-      voice_class
-      | voice_null
-      | voice_service
-      | voice_translation_profile
-      | voice_translation_rule
-   )
-;
-
-s_voice_card
-:
-   NO? VOICE_CARD null_rest_of_line
-   (
-      vc_null
-   )*
-;
-
-s_voice_port
-:
-   NO? VOICE_PORT null_rest_of_line
-   (
-      vp_null
-   )*
-;
-
 s_vpc
 :
    NO? VPC null_rest_of_line
@@ -3211,21 +3108,16 @@ s_vpn_dialer
    )*
 ;
 
-// a way to define a VRF on IOS or EOS
+// a way to define a VRF on EOS
 s_vrf_definition
 :
    // DEFINITION is for IOS and older versions of EOS (pre-4.23)
    // INSTANCE is for EOS 4.23 and later
-   VRF (DEFINITION | INSTANCE)? name = variable NEWLINE
+   VRF (DEFINITION | INSTANCE) name = vrf_name NEWLINE
    (
-      vrfd_address_family
-      | vrfd_description
+      vrfd_description
       | vrfd_rd
-      | vrfd_null
    )*
-   (
-      EXIT_VRF NEWLINE
-   )?
 ;
 
 s_web_server
@@ -3331,7 +3223,7 @@ sntp_server
 :
    SERVER hostname = variable
    (
-      VERSION version = DEC
+      VERSION version = dec
    )? NEWLINE
 ;
 
@@ -3402,7 +3294,7 @@ spti_null
 
 srlg_interface_numeric_stanza
 :
-   DEC null_rest_of_line
+   dec null_rest_of_line
 ;
 
 srlg_interface_stanza
@@ -3415,77 +3307,21 @@ srlg_stanza
    SRLG NEWLINE srlg_interface_stanza*
 ;
 
-ssh_access_group
-:
-   ACCESS_GROUP IPV6? name = variable NEWLINE
-;
-
-ssh_client
-:
-   CLIENT null_rest_of_line
-;
-
-ssh_null
-:
-   (
-      IP_ADDRESS
-      | KEY
-      | KEY_EXCHANGE
-      | LOGIN_ATTEMPTS
-      | MGMT_AUTH
-      | STRICTHOSTKEYCHECK
-      | VERSION
-   ) null_rest_of_line
-;
-
-ssh_server
-:
-   SERVER
-   (
-      (
-         IPV4 ACCESS_LIST acl = variable
-      )
-      |
-      (
-         IPV6 ACCESS_LIST acl6 = variable
-      )
-      | LOGGING
-      |
-      (
-         SESSION_LIMIT limit = DEC
-      )
-      | V2
-      |
-      (
-         VRF vrf = variable
-      )
-   )* NEWLINE
-;
-
-ssh_timeout
-:
-   TIMEOUT DEC NEWLINE
-;
-
 stanza
 :
-   appletalk_access_list_stanza
-   | del_stanza
-   | extended_access_list_stanza
+   del_stanza
    | extended_ipv6_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_community_list_expanded_stanza
    | ip_community_list_standard_stanza
    | ip_prefix_list_stanza
    | ipv6_prefix_list_stanza
-   | ipx_sap_access_list_stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
    | no_failover
    | no_ip_access_list_stanza
    | no_ip_prefix_list_stanza
    | no_route_map_stanza
-   | protocol_type_code_access_list_stanza
    | route_map_stanza
    | router_bgp_stanza
    | router_isis_stanza
@@ -3506,8 +3342,6 @@ stanza
    | s_bfd
    | s_bfd_template
    | s_boot
-   | s_call_home
-   | s_callhome
    | s_call_manager_fallback
    | s_class_map
    | s_class_map_ios
@@ -3554,8 +3388,6 @@ stanza
    | s_eos_vxlan_interface
    | s_interface
    | s_ip
-   | s_ip_access_list_eth
-   | s_ip_access_list_session
    | s_ip_default_gateway
    | s_ip_dhcp
    | s_ip_domain
@@ -3565,7 +3397,6 @@ stanza
    | s_ip_sla
    | s_ip_source_route
    | s_ip_ssh
-   | s_ip_wccp
    | s_ipc
    | s_ipv6
    | s_ipv6_router_ospf
@@ -3575,12 +3406,9 @@ stanza
    | s_l2tp_class
    | s_l2vpn
    | s_license
-   | s_line
    | s_logging
    | s_lpts
    | s_management
-   | s_mac_access_list
-   | s_mac_access_list_extended
    | s_map_class
    | s_media_termination
    | s_monitor
@@ -3593,8 +3421,6 @@ stanza
    | s_netdestination6
    | s_netservice
    | s_no
-   | s_no_access_list_extended
-   | s_no_access_list_standard
    | s_no_bfd
    | s_no_enable
    | s_no_vlan_internal_eos
@@ -3619,7 +3445,6 @@ stanza
    | s_router_ospf
    | s_router_ospfv3
    | s_router_rip
-   | s_router_static
    | s_router_vrrp
    | s_sccp
    | s_service
@@ -3629,13 +3454,11 @@ stanza
    | s_snmp_server
    | s_sntp
    | s_spanning_tree
-   | s_ssh
    | s_statistics
    | s_stcapp
    | s_switchport
    | s_system
    | s_table_map
-   | s_tacacs
    | s_tacacs_server
    | s_tap
    | s_telephony_service
@@ -3649,9 +3472,6 @@ stanza
    | s_vlan_eos
    | s_vlan_internal_eos
    | s_vlan_name
-   | s_voice
-   | s_voice_card
-   | s_voice_port
    | s_vpc
    | s_vpdn_group
    | s_vpn
@@ -3663,7 +3483,6 @@ stanza
    | s_wsma
    | s_xconnect_logging
    | srlg_stanza
-   | standard_access_list_stanza
    | standard_ipv6_access_list_stanza
    | switching_mode_stanza
 ;
@@ -3727,58 +3546,9 @@ system_qos_null
    ) null_rest_of_line
 ;
 
-t_null
-:
-   (
-      GROUP
-      | HOST
-   ) null_rest_of_line
-;
-
-t_server
-:
-   SERVER hostname = variable_hostname NEWLINE
-   (
-      t_server_address
-      | t_key
-      | t_server_null
-   )*
-;
-
-t_server_address
-:
-   ADDRESS
-   (
-      (
-         IPV4 IP_ADDRESS
-      )
-      |
-      (
-         IPV6 IPV6_ADDRESS
-      )
-   ) NEWLINE
-;
-
-t_server_null
-:
-   NO?
-   (
-      SINGLE_CONNECTION
-      | TIMEOUT
-   ) null_rest_of_line
-;
-
 t_key
 :
-   KEY DEC? variable_permissive NEWLINE
-;
-
-t_source_interface
-:
-   SOURCE_INTERFACE iname = interface_name
-   (
-      VRF name = variable
-   )? NEWLINE
+   KEY dec? variable_permissive NEWLINE
 ;
 
 tap_null
@@ -3928,9 +3698,9 @@ u_passphrase
 :
    PASSPHRASE
    (
-      GRACETIME gracetime = DEC
-      | LIFETIME lifetime = DEC
-      | WARNTIME warntime = DEC
+      GRACETIME gracetime = dec
+      | LIFETIME lifetime = dec
+      | WARNTIME warntime = dec
    )*
 ;
 
@@ -3976,7 +3746,7 @@ ua_null
 
 up_arista_md5
 :
-   DEC
+   dec
    (
       pass = MD5_ARISTA
    )
@@ -3989,7 +3759,7 @@ up_arista_sha512
 
 up_cisco
 :
-   DEC? up_cisco_tail
+   dec? up_cisco_tail
 ;
 
 up_cisco_tail
@@ -4018,21 +3788,9 @@ ur_null
    ) null_rest_of_line
 ;
 
-vc_null
-:
-   NO?
-   (
-      CODEC
-      | DSP
-      | DSPFARM
-      | VOICE_SERVICE
-      | WATCHDOG
-   ) null_rest_of_line
-;
-
 viaf_vrrp
 :
-   NO? VRRP groupnum = DEC NEWLINE
+   NO? VRRP groupnum = dec NEWLINE
    (
       viafv_address
       | viafv_null
@@ -4059,295 +3817,13 @@ viafv_preempt
 :
    PREEMPT
    (
-      DELAY delay = DEC
+      DELAY delay = dec
    ) NEWLINE
 ;
 
 viafv_priority
 :
-   PRIORITY priority = DEC NEWLINE
-;
-
-voice_class
-:
-   CLASS
-   (
-      voice_class_codec
-      | voice_class_dpg
-      | voice_class_e164
-      | voice_class_h323
-      | voice_class_server_group
-      | voice_class_sip_profiles
-      | voice_class_uri
-   )
-;
-
-voice_class_codec
-:
-   CODEC null_rest_of_line
-   (
-      voice_class_codec_null
-   )*
-;
-
-voice_class_codec_null
-:
-   NO?
-   (
-      CODEC
-   ) null_rest_of_line
-;
-
-voice_class_dpg
-:
-   DPG null_rest_of_line
-   (
-      voice_class_dpg_null
-   )*
-;
-
-voice_class_dpg_null
-:
-    NO?
-    (
-       DESCRIPTION
-       | DIAL_PEER
-    ) null_rest_of_line
-;
-
-voice_class_e164
-:
-   E164_PATTERN_MAP null_rest_of_line
-   (
-      voice_class_e164_null
-   )*
-;
-
-voice_class_e164_null
-:
-   NO?
-   (
-      DESCRIPTION
-      | E164
-      | URL
-   ) null_rest_of_line
-;
-
-voice_class_h323
-:
-   H323 null_rest_of_line
-   (
-      voice_class_h323_null
-   )*
-;
-
-voice_class_h323_null
-:
-   NO?
-   (
-      CALL
-      | H225
-      | TELEPHONY_SERVICE
-   ) null_rest_of_line
-;
-
-voice_class_server_group
-:
-   SERVER_GROUP null_rest_of_line
-   (
-      voice_class_server_group_null
-   )*
-;
-
-voice_class_server_group_null
-:
-   NO?
-      (  DESCRIPTION
-         | IPV4
-      ) null_rest_of_line
-;
-
-voice_class_sip_profiles
-:
-   SIP_PROFILES null_rest_of_line
-   (
-      voice_class_sip_profiles_null
-   )*
-;
-
-voice_class_sip_profiles_null
-:
-   NO?
-   (
-      REQUEST
-   ) null_rest_of_line
-;
-
-voice_class_uri
-:
-    URI null_rest_of_line
-    (
-        HOST null_rest_of_line
-    )
-;
-
-voice_null
-:
-   (
-      ALG_BASED_CAC
-      | CALL
-      | DIALPLAN_PROFILE
-      | HUNT
-      | IEC
-      | LOGGING
-      | REAL_TIME_CONFIG
-      | RTCP_INACTIVITY
-      | RTP
-      | SIP
-      | SIP_MIDCALL_REQ_TIMEOUT
-   ) null_rest_of_line
-;
-
-voice_service
-:
-   SERVICE
-   (
-      voice_service_voip
-   )
-;
-
-voice_service_voip
-:
-   VOIP NEWLINE
-   (
-      voice_service_voip_h323
-      | voice_service_voip_ip_address_trusted_list
-      | voice_service_voip_null
-      | voice_service_voip_sip
-   )*
-;
-
-voice_service_voip_h323
-:
-   H323 NEWLINE
-   (
-      voice_service_voip_h323_null
-   )*
-;
-
-voice_service_voip_h323_null
-:
-   NO?
-   (
-      CALL
-      | H225
-   ) null_rest_of_line
-;
-
-voice_service_voip_ip_address_trusted_list
-:
-   IP ADDRESS TRUSTED LIST NEWLINE
-   (
-      voice_service_voip_ip_address_trusted_list_null
-   )*
-;
-
-voice_service_voip_ip_address_trusted_list_null
-:
-   NO?
-   (
-      IPV4
-   ) null_rest_of_line
-;
-
-voice_service_voip_null
-:
-   NO?
-   (
-      ADDRESS_HIDING
-      | ALLOW_CONNECTIONS
-      | FAX
-      | H225
-      | MEDIA
-      | MODE
-      | MODEM
-      | REDUNDANCY_GROUP
-      | RTP_PORT
-      | SHUTDOWN
-      | SUPPLEMENTARY_SERVICE
-   ) null_rest_of_line
-;
-
-voice_service_voip_sip
-:
-   SIP NEWLINE
-   (
-      voice_service_voip_sip_null
-   )*
-;
-
-voice_service_voip_sip_null
-:
-   NO?
-   (
-      BIND
-      | EARLY_OFFER
-      | ERROR_PASSTHRU
-      | G729
-      | HEADER_PASSING
-      | LISTEN_PORT
-      | MIDCALL_SIGNALING
-      | SIP_PROFILES
-      | TRANSPORT
-   ) null_rest_of_line
-;
-
-voice_translation_profile
-:
-   TRANSLATION_PROFILE null_rest_of_line
-   (
-      voice_translation_profile_null
-   )*
-;
-
-voice_translation_profile_null
-:
-   NO?
-   (
-      TRANSLATE
-   ) null_rest_of_line
-;
-
-voice_translation_rule
-:
-   TRANSLATION_RULE null_rest_of_line
-   (
-      voice_translation_rule_null
-   )*
-;
-
-voice_translation_rule_null
-:
-   NO?
-   (
-      RULE
-   ) null_rest_of_line
-;
-
-vp_null
-:
-   NO?
-   (
-      CALLER_ID
-      | CONNECTION
-      | CPTONE
-      | DESCRIPTION
-      | ECHO_CANCEL
-      | SHUTDOWN
-      | SIGNAL
-      | TIMEOUTS
-      | TIMING
-   ) null_rest_of_line
+   PRIORITY priority = dec NEWLINE
 ;
 
 vpc_null
@@ -4412,79 +3888,6 @@ vpn_null
    ) null_rest_of_line
 ;
 
-vrfc_address_family
-:
-   ADDRESS_FAMILY (IPV4 | IPV6) UNICAST NEWLINE
-   (
-      vrfc_route_target
-   )*
-;
-
-vrfc_rd
-:
-   RD (AUTO | route_distinguisher) NEWLINE
-;
-
-vrfc_route_target
-:
-   ROUTE_TARGET (IMPORT | EXPORT | BOTH) (AUTO | route_target) EVPN? NEWLINE
-;
-
-vrfc_shutdown
-:
-   NO? SHUTDOWN NEWLINE
-;
-
-vrfc_vni
-:
-   VNI vni = DEC NEWLINE
-;
-
-
-vrfc_null
-:
-   NO?
-   (
-      (
-         IP
-         (
-            AMT
-            | AUTO_DISCARD
-            | DOMAIN_LIST
-            | DOMAIN_NAME
-            | IGMP
-            | MROUTE
-            | MSDP
-            | NAME_SERVER
-            | PIM
-         )
-      )
-      | MDT
-   ) null_rest_of_line
-;
-
-vrfd_address_family
-:
-   ADDRESS_FAMILY
-   (
-      IPV4
-      | IPV6
-   )
-   (
-      MULTICAST
-      | UNICAST
-   )?
-   (
-      MAX_ROUTE DEC
-   )? NEWLINE
-   (
-      vrfd_af_null
-   )*
-   (
-      EXIT_ADDRESS_FAMILY NEWLINE
-   )?
-;
-
 vrfd_description
 :
    description_line
@@ -4493,15 +3896,6 @@ vrfd_description
 vrfd_rd
 :
    RD (AUTO | rd = route_distinguisher) NEWLINE
-;
-
-vrfd_null
-:
-   NO?
-   (
-      AUTO_IMPORT
-      | ROUTE_TARGET
-   ) null_rest_of_line
 ;
 
 vrrp_interface
@@ -4514,7 +3908,7 @@ vrrp_interface
 
 wccp_id
 :
-   id = DEC
+   id = dec
    (
       (
          GROUP_LIST group_list = variable
@@ -4529,7 +3923,7 @@ wccp_id
       )
       |
       (
-         PASSWORD DEC? password = variable
+         PASSWORD dec? password = variable
       )
       |
       (

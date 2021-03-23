@@ -103,25 +103,25 @@ pim_rp_candidate
       )
       |
       (
-         INTERVAL DEC
+         INTERVAL dec
       )
       |
       (
-         PRIORITY DEC
+         PRIORITY dec
       )
    )+ NEWLINE
 ;
 
 pim_send_rp_announce
 :
-   SEND_RP_ANNOUNCE interface_name SCOPE ttl = DEC
+   SEND_RP_ANNOUNCE interface_name SCOPE ttl = dec
    (
       (
          GROUP_LIST name = variable
       )
       |
       (
-         INTERVAL DEC
+         INTERVAL dec
       )
    )+ NEWLINE
 ;
@@ -130,7 +130,7 @@ pim_spt_threshold
 :
    SPT_THRESHOLD
    (
-      DEC
+      dec
       | INFINITY
    )
    (
@@ -152,9 +152,6 @@ pim_ssm
 
 s_ip_pim
 :
-   NO? IP PIM
-   (
-      VRF vrf = variable
-   )? ip_pim_tail
+   NO? IP PIM ip_pim_tail
 ;
 

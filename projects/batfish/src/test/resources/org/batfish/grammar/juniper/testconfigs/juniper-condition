@@ -15,3 +15,8 @@ set policy-options policy-statement p2 term t2 then reject
 #
 set interfaces xe-0/0/1 unit 0 family inet address 1.0.0.1/24
 #
+# should be generated because p1 should pass
+set routing-options generate route 1.0.0.0/16 policy p1
+# should not be generated because p2 should fail
+set routing-options generate route 0.0.0.0/0 policy p2
+#

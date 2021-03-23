@@ -2228,22 +2228,22 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           c.getAllInterfaces().put(ifaceName, newInterface);
         });
     /*
-     * Second pass over the interfaces to set dependency pointers correctly for portchannels
+     * Second pass over the interfaces to set dependency pointers correctly for Bundle-Ether
      * and tunnel interfaces
      * TODO: VLAN interfaces
      */
     _interfaces.forEach(
         (ifaceName, iface) -> {
-          // Bundle ID
+          // Physical interface -> Bundle-Ether for its Bundle ID
           Integer bundleId = iface.getBundleId();
           if (bundleId != null) {
             String bundleName = String.format("Bundle-Ether%d", bundleId);
-            org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(bundleName);
-            if (viIface != null) {
-              viIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
+            org.batfish.datamodel.Interface bundleIface = c.getAllInterfaces().get(bundleName);
+            if (bundleIface != null) {
+              bundleIface.addDependency(new Dependency(ifaceName, DependencyType.AGGREGATE));
             }
           }
-          // Portchannel subinterfaces
+          // All subinterfaces
           Matcher m = INTERFACE_WITH_SUBINTERFACE.matcher(iface.getName());
           if (m.matches()) {
             String parentInterfaceName = m.group(1);

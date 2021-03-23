@@ -12,13 +12,13 @@ import org.batfish.datamodel.routing_policy.expr.MatchTag;
 
 public class RouteMapMatchTagLine extends RouteMapMatchLine {
 
-  private Set<Integer> _tags;
+  private final Set<Long> _tags;
 
-  public RouteMapMatchTagLine(Set<Integer> tags) {
+  public RouteMapMatchTagLine(Set<Long> tags) {
     _tags = tags;
   }
 
-  public Set<Integer> getTags() {
+  public Set<Long> getTags() {
     return _tags;
   }
 
@@ -26,7 +26,7 @@ public class RouteMapMatchTagLine extends RouteMapMatchLine {
   public BooleanExpr toBooleanExpr(Configuration c, AristaConfiguration cc, Warnings w) {
     Disjunction d = new Disjunction();
     List<BooleanExpr> disjuncts = d.getDisjuncts();
-    for (int tag : _tags) {
+    for (long tag : _tags) {
       disjuncts.add(new MatchTag(IntComparator.EQ, new LiteralLong(tag)));
     }
     return d.simplify();

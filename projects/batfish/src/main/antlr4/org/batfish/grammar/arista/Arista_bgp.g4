@@ -1132,7 +1132,7 @@ eos_rbafnc_route_map
 
 eos_rbafnc_weight
 :
-  WEIGHT weight = DEC NEWLINE  // weight = 1..65535
+  WEIGHT weight = uint16 NEWLINE  // weight = 1..65535
 ;
 
 // Common to ipv4/ipv6 unicast > bgp. Other address families should just use the rbafbc rules.
@@ -1326,7 +1326,7 @@ eos_rbib_aggregate_route
 
 eos_rbib_allowas_in
 :
-  ALLOWAS_IN (num = DEC)? NEWLINE // num = 1..10
+  ALLOWAS_IN (num = uint8)? NEWLINE // num = 1..10
 ;
 
 eos_rbib_always_compare_med
@@ -1372,8 +1372,8 @@ eos_rbib_convergence
 :
   CONVERGENCE
   (
-    TIME time = DEC
-    | SLOW_PEER TIME time = DEC
+    TIME time = dec
+    | SLOW_PEER TIME time = dec
   )
   NEWLINE
 ;
@@ -1479,7 +1479,7 @@ eos_rbib_listen
 
 eos_rbibl_limit
 :
-  LIMIT num = DEC NEWLINE
+  LIMIT num = dec NEWLINE
 ;
 
 eos_rbibl_range
@@ -1520,7 +1520,7 @@ eos_rbib_next_hop_unchanged
 
 eos_rbib_peer_mac_resolution_timeout
 :
-  PEER_MAC_RESOLUTION_TIMEOUT DEC NEWLINE
+  PEER_MAC_RESOLUTION_TIMEOUT dec NEWLINE
 ;
 
 eos_rbib_redistribute_internal
@@ -1562,19 +1562,19 @@ eos_rbib_transport
 eos_rbibtrans_ipv4
 :
 //536-16344
-  IPV4 MSS mss = DEC NEWLINE
+  IPV4 MSS mss = dec NEWLINE
 ;
 
 eos_rbibtrans_ipv6
 :
 //516-16324
-  IPV6 MSS mss = DEC NEWLINE
+  IPV6 MSS mss = dec NEWLINE
 ;
 
 eos_rbibtrans_listen_port
 :
 // 1-65535
-  LISTEN_PORT lp = DEC NEWLINE
+  LISTEN_PORT lp = uint16 NEWLINE
 ;
 
 eos_rbibtrans_pmtud
@@ -1585,7 +1585,7 @@ eos_rbibtrans_pmtud
 eos_rbibtrans_qos
 :
 // 0-63
-  QOS DSCP dscp = DEC NEWLINE
+  QOS DSCP dscp = dec NEWLINE
 ;
 
 eos_rbi_default
@@ -1607,12 +1607,12 @@ eos_rbidn_monitoring
 
 eos_rbi_default_metric
 :
-  DEFAULT_METRIC metric = DEC NEWLINE
+  DEFAULT_METRIC metric = dec NEWLINE
 ;
 
 eos_rbi_distance
 :
-  DISTANCE BGP external = DEC (internal = DEC local = DEC)? NEWLINE
+  DISTANCE BGP external = dec (internal = dec local = dec)? NEWLINE
 ;
 
 eos_rbi_ip
@@ -1627,16 +1627,15 @@ eos_rbi_ipv6
 
 eos_rbi_dynamic
 :
-// u32
-  DYNAMIC PEER MAX max = DEC NEWLINE
+  DYNAMIC PEER MAX max = uint32 NEWLINE
 ;
 
 eos_rbi_graceful_restart
 :
   GRACEFUL_RESTART
   (
-    RESTART_TIME DEC
-    | STALEPATH_TIME DEC
+    RESTART_TIME dec
+    | STALEPATH_TIME dec
   )* NEWLINE
 ;
 
@@ -1647,7 +1646,7 @@ eos_rbi_graceful_restart_helper
 
 eos_rbi_maximum_paths
 :
-  MAXIMUM_PATHS num = DEC (ECMP ecmp = DEC)? NEWLINE
+  MAXIMUM_PATHS num = dec (ECMP ecmp = dec)? NEWLINE
 ;
 
 eos_rbi_neighbor
@@ -1738,7 +1737,7 @@ eos_rbinc_additional_paths
 
 eos_rbinc_allowas_in
 :
-  ALLOWAS_IN (num = DEC)? NEWLINE
+  ALLOWAS_IN (num = dec)? NEWLINE
 ;
 
 eos_rbinc_auto_local_addr
@@ -1772,7 +1771,7 @@ eos_rbinc_dont_capability_negotiate
 
 eos_rbinc_ebgp_multihop
 :
-  EBGP_MULTIHOP (num = DEC)? NEWLINE
+  EBGP_MULTIHOP (num = dec)? NEWLINE
 ;
 
 eos_rbinc_enforce_first_as
@@ -1782,7 +1781,7 @@ eos_rbinc_enforce_first_as
 
 eos_rbinc_export_localpref
 :
-  EXPORT_LOCALPREF value = DEC NEWLINE
+  EXPORT_LOCALPREF value = dec NEWLINE
 ;
 
 eos_rbinc_fall_over
@@ -1802,7 +1801,7 @@ eos_rbinc_graceful_restart_helper
 
 eos_rbinc_idle_restart_timer
 :
-  IDLE_RESTART_TIMER time = DEC NEWLINE
+  IDLE_RESTART_TIMER time = dec NEWLINE
 ;
 
 eos_rbinc_local_as
@@ -1812,15 +1811,15 @@ eos_rbinc_local_as
 
 eos_rbinc_maximum_accepted_routes
 :
-  MAXIMUM_ACCEPTED_ROUTES num = DEC (WARNING_LIMIT warn_limit = DEC)? NEWLINE
+  MAXIMUM_ACCEPTED_ROUTES num = dec (WARNING_LIMIT warn_limit = dec)? NEWLINE
 ;
 
 eos_rbinc_maximum_routes
 :
-  MAXIMUM_ROUTES num = DEC
+  MAXIMUM_ROUTES num = dec
   (
     WARNING_ONLY
-    | (WARNING_LIMIT warn_limit = DEC PERCENT_LITERAL?)
+    | (WARNING_LIMIT warn_limit = dec PERCENT_LITERAL?)
   )*
   NEWLINE
 ;
@@ -1847,7 +1846,7 @@ eos_rbinc_passive
 
 eos_rbinc_password
 :
-  PASSWORD (encrypt_level = DEC)? variable NEWLINE
+  PASSWORD (encrypt_level = dec)? variable NEWLINE
 ;
 
 eos_rbinc_remote_as
@@ -1898,7 +1897,7 @@ eos_rbinc_soft_reconfiguration
 
 eos_rbinc_timers
 :
-  TIMERS keepalive = DEC hold = DEC NEWLINE
+  TIMERS keepalive = dec hold = dec NEWLINE
 ;
 
 eos_rbinc_update_source
@@ -2829,7 +2828,7 @@ eos_rbir_ospf
     (
       INTERNAL
       | EXTERNAL
-      | (NSSA_EXTERNAL nssa_type = DEC?)
+      | (NSSA_EXTERNAL nssa_type = dec?)
     )
   )?
   (ROUTE_MAP rm = variable)?
@@ -2844,7 +2843,7 @@ eos_rbir_ospf3
     (
       INTERNAL
       | EXTERNAL
-      | (NSSA_EXTERNAL nssa_type = DEC?)
+      | (NSSA_EXTERNAL nssa_type = dec?)
     )
   )?
   (ROUTE_MAP rm = variable)?
@@ -2873,7 +2872,7 @@ eos_rbi_shutdown
 
 eos_rbi_timers
 :
-  TIMERS BGP keepalive = DEC hold = DEC NEWLINE
+  TIMERS BGP keepalive = dec hold = dec NEWLINE
 ;
 
 eos_rbi_ucmp
@@ -2888,19 +2887,19 @@ eos_rbi_ucmp
 
 eos_rbiu_fec
 :
-  FEC THRESHOLD TRIGGER trigger = DEC CLEAR clear = DEC WARNING_ONLY NEWLINE
+  FEC THRESHOLD TRIGGER trigger = dec CLEAR clear = dec WARNING_ONLY NEWLINE
 ;
 
 eos_rbiu_link_bandwidth
 :
-  LINK_BANDWIDTH (ENCODING_WEIGHTED | RECURSIVE | UPDATE_DELAY DEC) NEWLINE
+  LINK_BANDWIDTH (ENCODING_WEIGHTED | RECURSIVE | UPDATE_DELAY dec) NEWLINE
 ;
 
 eos_rbiu_mode
 :
-  MODE mode_num = DEC
+  MODE mode_num = dec
   (
-    next_hops = DEC
+    next_hops = dec
     (oversubscription = FLOAT)?
   )? NEWLINE
 ;
@@ -2910,7 +2909,7 @@ eos_rbi_update
   UPDATE
   (
     WAIT_FOR_CONVERGENCE
-    | WAIT_INSTALL (BATCH_SIZE DEC)?
+    | WAIT_INSTALL (BATCH_SIZE dec)?
   ) NEWLINE
 ;
 
@@ -2965,7 +2964,7 @@ eos_rbnb_host_routes
 
 eos_rbm_port
 :
-  PORT num = DEC NEWLINE
+  PORT num = dec NEWLINE
 ;
 
 eos_rbm_received
@@ -3016,7 +3015,7 @@ eos_rbm_timestamp
 
 eos_rb_vlan
 :
-  VLAN id = DEC NEWLINE
+  VLAN id = dec NEWLINE
   eos_rb_vlan_tail*
 ;
 
@@ -3108,7 +3107,7 @@ eos_rbv_route_target
 
 eos_rb_vrf
 :
-  VRF name = variable NEWLINE
+  VRF name = vrf_name NEWLINE
   (
     eos_rbv_address_family
     | eos_rb_inner

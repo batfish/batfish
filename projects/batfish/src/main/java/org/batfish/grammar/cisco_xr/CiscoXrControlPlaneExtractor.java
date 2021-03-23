@@ -482,6 +482,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bundle_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_delayContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_descriptionContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.If_encapsulationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_address_secondaryContext;
@@ -1935,11 +1936,17 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterIf_description(If_descriptionContext ctx) {
+  public void exitIf_description(If_descriptionContext ctx) {
     String description = getDescription(ctx.description_line());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setDescription(description);
     }
+  }
+
+  @Override
+  public void exitIf_encapsulation(If_encapsulationContext ctx) {
+    int vlan = toInteger(ctx.vlan);
+    _currentInterfaces.forEach(i -> i.setEncapsulationVlan(vlan));
   }
 
   @Override

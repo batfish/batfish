@@ -19628,7 +19628,7 @@
             ],
             "name" : "sshabc",
             "sourceName" : "sshabc",
-            "sourceType" : "standard ipv4 access-list"
+            "sourceType" : "ip access-list standard"
           }
         },
         "ntpServers" : [
@@ -19866,12 +19866,49 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "interfaces" : {
+          "Ethernet1" : {
+            "name" : "Ethernet1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "Ethernet1"
+            ],
+            "mtu" : 1500,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "speed" : 1.0E9,
+            "switchport" : true,
+            "switchportMode" : "ACCESS",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "12345"
+          }
+        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "arista_vrf"
           }
         },
         "vrfs" : {
+          "12345" : {
+            "name" : "12345",
+            "description" : "name is 12345 verify it"
+          },
+          "1:2" : {
+            "name" : "1:2"
+          },
+          "::1" : {
+            "name" : "::1",
+            "description" : "name is ::1 verify it"
+          },
           "default" : {
             "name" : "default"
           },

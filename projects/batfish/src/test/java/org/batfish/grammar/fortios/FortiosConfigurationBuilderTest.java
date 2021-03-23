@@ -1,15 +1,20 @@
 package org.batfish.grammar.fortios;
 
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.policyValid;
+import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.serviceGroupContains;
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.serviceValid;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Service;
+import org.batfish.representation.fortios.ServiceGroup;
 import org.junit.Test;
 
 public class FortiosConfigurationBuilderTest {
@@ -96,6 +101,67 @@ public class FortiosConfigurationBuilderTest {
     Service s = buildCompleteService(); // builds service with TCP dst ports set
     s.setTcpPortRangeDst(null);
     assertThat(serviceValid(s, true), equalTo("TCP/UDP/SCTP portrange cannot all be empty"));
+  }
+
+  @Test
+  public void testServiceGroupContainsDirectly() {
+    ServiceGroup parent = new ServiceGroup("parent", new BatfishUUID(0));
+
+    BatfishUUID childId1 = new BatfishUUID(1);
+    parent.getMemberUUIDs().add(childId1);
+
+    BatfishUUID childId2 = new BatfishUUID(2);
+    parent.getMemberUUIDs().add(childId2);
+
+    assertTrue(serviceGroupContains(parent, childId1, ImmutableMap.of()));
+    assertTrue(serviceGroupContains(parent, childId2, ImmutableMap.of()));
+  }
+
+  @Test
+  public void testServiceGroupContainsIndirectly() {
+    ServiceGroup parent = new ServiceGroup("parent", new BatfishUUID(0));
+
+    BatfishUUID childId1 = new BatfishUUID(1);
+    parent.getMemberUUIDs().add(childId1);
+
+    BatfishUUID childId2 = new BatfishUUID(2);
+    ServiceGroup child2 = new ServiceGroup("child2", childId2);
+    parent.getMemberUUIDs().add(childId2);
+
+    BatfishUUID grandChildId1 = new BatfishUUID(3);
+    ServiceGroup grandChild1 = new ServiceGroup("grandChild1", grandChildId1);
+    child2.getMemberUUIDs().add(grandChildId1);
+
+    BatfishUUID greatGrandChildId1 = new BatfishUUID(4);
+    grandChild1.getMemberUUIDs().add(greatGrandChildId1);
+
+    assertTrue(
+        serviceGroupContains(
+            parent, grandChildId1, ImmutableMap.of(childId2, child2, grandChildId1, grandChild1)));
+    assertTrue(
+        serviceGroupContains(
+            parent,
+            greatGrandChildId1,
+            ImmutableMap.of(childId2, child2, grandChildId1, grandChild1)));
+  }
+
+  @Test
+  public void testServiceGroupContainsNoMatch() {
+    ServiceGroup parent = new ServiceGroup("name", new BatfishUUID(0));
+
+    BatfishUUID childId1 = new BatfishUUID(1);
+    parent.getMemberUUIDs().add(childId1);
+
+    BatfishUUID childId2 = new BatfishUUID(2);
+    ServiceGroup child2 = new ServiceGroup("child2", childId2);
+    parent.getMemberUUIDs().add(childId2);
+
+    BatfishUUID grandChildId1 = new BatfishUUID(3);
+    child2.getMemberUUIDs().add(grandChildId1);
+
+    BatfishUUID orphan = new BatfishUUID(4);
+
+    assertFalse(serviceGroupContains(parent, orphan, ImmutableMap.of(childId2, child2)));
   }
 
   private static Service buildCompleteService() {

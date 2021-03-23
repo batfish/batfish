@@ -243,6 +243,36 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     public String toString() {
       return MoreObjects.toStringHelper(this).add("prefix", _prefix).toString();
     }
+
+    /**
+     * Returns true iff there is a {@link Prefix} key in this subtree included in {@code
+     * prefixRange}.
+     */
+    private boolean intersectsPrefixRange(PrefixRange prefixRange) {
+      // Overview:
+      // - If this prefix's length is greater than prefixRange's max length, return false.
+      // - If this prefix is contained in prefixRange and this node has any elements (making this
+      //   prefix a key), return true.
+      // - If either of this prefix or prefixRange's match prefix contains the other, then check
+      //   this node's children.
+      // - Else return false.
+
+      int currentLength = _prefix.getPrefixLength();
+      int maxLength = prefixRange.getLengthRange().getEnd();
+      if (currentLength > maxLength) {
+        return false;
+      }
+
+      if (prefixRange.includesPrefixRange(PrefixRange.fromPrefix(_prefix))
+          && !_elements.isEmpty()) {
+        return true;
+      }
+
+      Prefix rangePrefix = prefixRange.getPrefix();
+      return (_prefix.containsPrefix(rangePrefix) || rangePrefix.containsPrefix(_prefix))
+          && ((_left != null && _left.intersectsPrefixRange(prefixRange))
+              || (_right != null && _right.intersectsPrefixRange(prefixRange)));
+    }
   }
 
   private @Nullable Node<T> _root;
@@ -429,5 +459,13 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   /** Remove all elements from the multimap. */
   public void clear() {
     _root = null;
+  }
+
+  /**
+   * Returns {@code true} iff there is any intersection between the prefixes that are keys of this
+   * trie and the provided {@code prefixSpace}.
+   */
+  public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
+    return prefixSpace.getPrefixRanges().stream().anyMatch(_root::intersectsPrefixRange);
   }
 }

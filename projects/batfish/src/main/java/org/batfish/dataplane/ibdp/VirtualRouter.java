@@ -29,11 +29,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.AbstractRoute;
@@ -52,12 +54,14 @@ import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibImpl;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Route;
@@ -84,9 +88,13 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.MainRib;
+import org.batfish.datamodel.routing_policy.expr.RibExpr;
+import org.batfish.datamodel.visitors.RibExprVisitor;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
+import org.batfish.dataplane.rib.AbstractRib;
 import org.batfish.dataplane.rib.AnnotatedRib;
 import org.batfish.dataplane.rib.ConnectedRib;
 import org.batfish.dataplane.rib.IsisLevelRib;
@@ -103,6 +111,32 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
 
 public final class VirtualRouter {
+
+  /** Visitor that evaluates a {@link RibExpr}, yielding an {@link AbstractRib} . */
+  @ParametersAreNonnullByDefault
+  public static final class RibExprEvaluator
+      implements RibExprVisitor<GenericRibReadOnly<?>, Void>,
+          BiFunction<RibExpr, PrefixSpace, Boolean> {
+
+    public RibExprEvaluator(GenericRibReadOnly<?> mainRib) {
+      // TODO: cleaner construction, especially when multiple RIBs might be required
+      _mainRib = mainRib;
+    }
+
+    @Nonnull
+    @Override
+    public GenericRibReadOnly<?> visitMainRib(MainRib mainRib, Void arg) {
+      return _mainRib;
+    }
+
+    private final GenericRibReadOnly<?> _mainRib;
+
+    @Override
+    public Boolean apply(RibExpr ribExpr, PrefixSpace prefixSpace) {
+      GenericRibReadOnly<?> rib = ribExpr.accept(this, null);
+      return rib.intersectsPrefixSpace(prefixSpace);
+    }
+  }
 
   /** The BGP routing process. {@code null} if BGP is not configured for this VRF */
   @Nullable BgpRoutingProcess _bgpRoutingProcess;
@@ -194,6 +228,8 @@ public final class VirtualRouter {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
+  @Nonnull private final RibExprEvaluator _ribExprEvaluator;
+
   private static final Logger LOGGER = LogManager.getLogger(VirtualRouter.class);
 
   VirtualRouter(@Nonnull String name, @Nonnull Node node) {
@@ -220,6 +256,7 @@ public final class VirtualRouter {
           new BgpRoutingProcess(
               _vrf.getBgpProcess(), _c, _name, _mainRib, BgpTopology.EMPTY, _prefixTracer);
     }
+    _ribExprEvaluator = new RibExprEvaluator(_mainRib);
   }
 
   @VisibleForTesting
@@ -305,7 +342,7 @@ public final class VirtualRouter {
         .map(
             route -> {
               AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
-              boolean accept = policy.process(route, builder, IN);
+              boolean accept = policy.process(route, builder, IN, _ribExprEvaluator);
               return accept ? new AnnotatedRoute<AbstractRoute>(builder.build(), _name) : null;
             })
         .filter(Objects::nonNull)
@@ -433,7 +470,7 @@ public final class VirtualRouter {
           policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
-              gr, generationPolicy, _mainRib.getTypedRoutes());
+              gr, generationPolicy, _mainRib.getTypedRoutes(), _ribExprEvaluator);
 
       if (grb != null) {
         // Routes have been changed
@@ -1267,7 +1304,7 @@ public final class VirtualRouter {
                   ra -> {
                     AnnotatedRoute<AbstractRoute> annotatedRoute = ra.getRoute();
                     AbstractRouteBuilder<?, ?> routeBuilder = annotatedRoute.getRoute().toBuilder();
-                    if (policy.process(annotatedRoute, routeBuilder, IN)) {
+                    if (policy.process(annotatedRoute, routeBuilder, IN, _ribExprEvaluator)) {
                       // Preserve original route's source VRF
                       return ra.toBuilder()
                           .setRoute(

@@ -15,7 +15,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 
 /** FortiOS datamodel component containing firewall service configuration */
-public final class Service implements Serializable, ServiceGroupMember {
+public final class Service extends ServiceGroupMember implements Serializable {
 
   public static final Protocol DEFAULT_PROTOCOL = Protocol.TCP_UDP_SCTP;
   public static final int DEFAULT_PROTOCOL_NUMBER = 0;
@@ -57,12 +57,6 @@ public final class Service implements Serializable, ServiceGroupMember {
       return DEFAULT_PROTOCOL;
     }
     return _protocol;
-  }
-
-  @Override
-  @Nullable
-  public String getComment() {
-    return _comment;
   }
 
   @Nullable
@@ -158,11 +152,6 @@ public final class Service implements Serializable, ServiceGroupMember {
     _protocolNumber = protocolNumber;
   }
 
-  @Override
-  public void setComment(String comment) {
-    _comment = comment;
-  }
-
   public void setIcmpCode(int icmpCode) {
     _icmpCode = icmpCode;
   }
@@ -211,7 +200,6 @@ public final class Service implements Serializable, ServiceGroupMember {
   @Nonnull private final BatfishUUID _uuid;
   @Nullable private Protocol _protocol;
   @Nullable private Integer _protocolNumber;
-  @Nullable private String _comment;
   @Nullable private Integer _icmpCode;
   @Nullable private Integer _icmpType;
   @Nullable private IpRange _ipRange;

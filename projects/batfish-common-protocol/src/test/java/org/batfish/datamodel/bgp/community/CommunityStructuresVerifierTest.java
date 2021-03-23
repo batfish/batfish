@@ -4,6 +4,7 @@ import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.BO
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.COMMUNITY_MATCH_EXPR_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.COMMUNITY_SET_EXPR_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.COMMUNITY_SET_MATCH_EXPR_VERIFIER;
+import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.RIB_EXPR_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.STATEMENT_VERIFIER;
 import static org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.verify;
 import static org.hamcrest.Matchers.containsString;
@@ -15,6 +16,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.CommunityStructuresVerifierContext;
@@ -46,6 +48,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
@@ -56,6 +59,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
@@ -80,6 +84,7 @@ import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
 import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
+import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -190,6 +195,14 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new SetVarMetricType("a").accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetWeight(new LiteralInt(1)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(Statements.ExitAccept.toStaticStatement().accept(STATEMENT_VERIFIER, ctx));
+  }
+
+  @Test
+  public void testRoutesExprVerifierUnrelated() {
+    // no exception should be thrown while verifying non-community-related structures
+    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
+
+    assertNull(MainRib.instance().accept(RIB_EXPR_VERIFIER, ctx));
   }
 
   @Test
@@ -507,6 +520,17 @@ public final class CommunityStructuresVerifierTest {
                 new MatchCommunities(
                     InputCommunities.instance(), new CommunitySetMatchExprReference("undefined"))))
         .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitRibIntersectsPrefixSpace() {
+    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
+
+    // In the future, RibExpr is anticipated to potentially include communities.
+    assertNull(
+        new RibIntersectsPrefixSpace(
+                MainRib.instance(), new ExplicitPrefixSet(new PrefixSpace(ImmutableList.of())))
+            .accept(BOOLEAN_EXPR_VERIFIER, ctx));
   }
 
   @Test

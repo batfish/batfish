@@ -72,6 +72,11 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
   }
 
   @Override
+  public boolean intersectsPrefixSpace(PrefixSpace prefixSpace) {
+    return _routes.stream().map(AnnotatedRoute::getNetwork).anyMatch(prefixSpace::containsPrefix);
+  }
+
+  @Override
   public boolean containsRoute(AbstractRouteDecorator route) {
     return _routes.contains(route);
   }

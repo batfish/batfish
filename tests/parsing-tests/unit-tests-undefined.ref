@@ -68,6 +68,18 @@
       },
       {
         "File_Name" : "configs/arista_interface",
+        "Struct_Type" : "ip access-list standard",
+        "Ref_Name" : "some_acl",
+        "Context" : "interface ip multicast boundary",
+        "Lines" : {
+          "filename" : "configs/arista_interface",
+          "lines" : [
+            9
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/arista_interface",
         "Struct_Type" : "policy-map",
         "Ref_Name" : "pbr-pmap",
         "Context" : "interface service-policy",
@@ -87,18 +99,6 @@
           "filename" : "configs/arista_interface",
           "lines" : [
             11
-          ]
-        }
-      },
-      {
-        "File_Name" : "configs/arista_interface",
-        "Struct_Type" : "standard ipv4 access-list",
-        "Ref_Name" : "some_acl",
-        "Context" : "interface ip multicast boundary",
-        "Lines" : {
-          "filename" : "configs/arista_interface",
-          "lines" : [
-            9
           ]
         }
       },

@@ -21,5 +21,6 @@ config firewall service group
     next
     edit valid
         append member "self_ref_not_allowed"
+        append member "valid"
     next
 end

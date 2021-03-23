@@ -633,7 +633,12 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("ATM")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Bundle-Ether")) {
-      return InterfaceType.AGGREGATED;
+      if (name.contains(".")) {
+        // Subinterface
+        return InterfaceType.AGGREGATE_CHILD;
+      } else {
+        return InterfaceType.AGGREGATED;
+      }
     } else if (name.startsWith("cmp-mgmt")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Crypto-Engine")) {

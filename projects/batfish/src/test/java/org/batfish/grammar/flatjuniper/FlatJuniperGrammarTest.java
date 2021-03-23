@@ -6042,7 +6042,26 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testConditionConversion() {
     String hostname = "juniper-condition";
+    String rpName = computeConditionRoutingPolicyName("c1");
     Configuration c = parseConfig(hostname);
-    assertThat(c.getRoutingPolicies(), hasKey(computeConditionRoutingPolicyName("c1")));
+    assertThat(c.getRoutingPolicies(), hasKey(rpName));
+    RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+
+    // should crash outside of data plane generation
+    _thrown.expect(IllegalStateException.class);
+    _thrown.expectMessage("Cannot check RIB routes; RIB state is not available at this time.");
+    rp.process(new ConnectedRoute(Prefix.ZERO, "blah"), Bgpv4Route.builder(), Direction.OUT);
+  }
+
+  @Test
+  public void testConditionBehavior() throws IOException {
+    String hostname = "juniper-condition";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Set<AbstractRoute> mainRibRoutes = dp.getRibs().get(hostname).get(DEFAULT_VRF_NAME).getRoutes();
+
+    assertThat(mainRibRoutes, hasItem(hasPrefix(Prefix.strict("1.0.0.0/16"))));
+    assertThat(mainRibRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 }

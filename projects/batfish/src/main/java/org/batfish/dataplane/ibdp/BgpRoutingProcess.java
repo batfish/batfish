@@ -82,6 +82,7 @@ import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.dataplane.ibdp.VirtualRouter.RibExprEvaluator;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.BgpRib;
@@ -220,6 +221,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   @Nonnull private RibDelta<EvpnType3Route> _localType3Routes = RibDelta.empty();
 
+  @Nonnull private final RibExprEvaluator _ribExprEvaluator;
+
   private static final Logger LOGGER = LogManager.getLogger(BgpRoutingProcess.class);
 
   /**
@@ -308,6 +311,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _evpnInitializationDelta = RibDelta.empty();
     _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
     assert _rtVrfMapping != null; // Avoid unused warning
+    _ribExprEvaluator = new RibExprEvaluator(_mainRib);
   }
 
   /**
@@ -564,7 +568,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             // Prevent from funneling to main RIB
             .setNonRouting(true);
     // Hopefully, the direction should not matter here.
-    boolean accept = policy.process(route, bgpBuilder, OUT);
+    boolean accept = policy.process(route, bgpBuilder, OUT, _ribExprEvaluator);
     if (!accept) {
       return RibDelta.empty();
     }
@@ -814,7 +818,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         if (importPolicy != null) {
           acceptIncoming =
               importPolicy.processBgpRoute(
-                  remoteRoute, transformedIncomingRouteBuilder, sessionProperties, IN);
+                  remoteRoute,
+                  transformedIncomingRouteBuilder,
+                  sessionProperties,
+                  IN,
+                  _ribExprEvaluator);
         }
       }
       if (!acceptIncoming) {
@@ -1057,9 +1065,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         generatedRoute.getAttributePolicy() != null
             ? _policies.get(generatedRoute.getAttributePolicy()).orElse(null)
             : null;
+    // This kind of generation policy should not need access to the main rib
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
-            generatedRoute, policy, _mainRib.getTypedRoutes());
+            generatedRoute, policy, _mainRib.getTypedRoutes(), null);
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
             builder.build(), attrPolicy, _process.getRouterId(), nextHopIp, false)
@@ -1165,7 +1174,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         RoutingPolicy importPolicy = _policies.get(importPolicyName).orElse(null);
         if (importPolicy != null) {
           acceptIncoming =
-              importPolicy.processBgpRoute(route, transformedBuilder, sessionProperties, IN);
+              importPolicy.processBgpRoute(
+                  route, transformedBuilder, sessionProperties, IN, _ribExprEvaluator);
         }
       }
       if (!acceptIncoming) {
@@ -1335,7 +1345,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
         exportPolicy.processBgpRoute(
-            exportCandidate, transformedOutgoingRouteBuilder, sessionProperties, Direction.OUT);
+            exportCandidate,
+            transformedOutgoingRouteBuilder,
+            sessionProperties,
+            Direction.OUT,
+            _ribExprEvaluator);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getTailIp();
@@ -1422,7 +1436,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
         exportPolicy.processBgpRoute(
-            exportCandidate, transformedOutgoingRouteBuilder, sessionProperties, Direction.OUT);
+            exportCandidate,
+            transformedOutgoingRouteBuilder,
+            sessionProperties,
+            Direction.OUT,
+            _ribExprEvaluator);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getHeadIp();
@@ -1556,7 +1574,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         if (importPolicy != null) {
           // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
           acceptIncoming =
-              importPolicy.process(transformedOutgoingRoute, transformedIncomingRouteBuilder, IN);
+              importPolicy.process(
+                  transformedOutgoingRoute, transformedIncomingRouteBuilder, IN, _ribExprEvaluator);
         }
       }
       if (acceptIncoming) {
@@ -1698,7 +1717,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           // Process route through import policy, if one exists
           boolean accept = true;
           if (policy != null) {
-            accept = policy.processBgpRoute(route, builder, null, IN);
+            accept = policy.processBgpRoute(route, builder, null, IN, _ribExprEvaluator);
           }
           if (accept) {
             Bgpv4Rib targetRib =

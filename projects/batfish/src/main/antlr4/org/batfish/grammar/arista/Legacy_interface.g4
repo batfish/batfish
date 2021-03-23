@@ -63,7 +63,7 @@ eos_vxif_vxlan_source_interface
 
 eos_vxif_vxlan_udp_port
 :
-   UDP_PORT num = DEC NEWLINE
+   UDP_PORT num = dec NEWLINE
 ;
 
 eos_vxif_vxlan_virtual_router
@@ -75,7 +75,7 @@ eos_vxif_vxlan_virtual_router
 
 eos_vxif_vxlan_vlan
 :
-   VLAN num = DEC
+   VLAN num = dec
    (
       eos_vxif_vxlan_flood
       | eos_vxif_vxlan_vlan_vni
@@ -84,12 +84,12 @@ eos_vxif_vxlan_vlan
 
 eos_vxif_vxlan_vlan_vni
 :
-   VNI num = DEC NEWLINE
+   VNI num = dec NEWLINE
 ;
 
 eos_vxif_vxlan_vrf
 :
-   VRF vrf = VARIABLE VNI vni = DEC NEWLINE
+   VRF vrf = vrf_name VNI vni = dec NEWLINE
 ;
 
 if_autostate
@@ -99,7 +99,7 @@ if_autostate
 
 if_bandwidth
 :
-   BANDWIDTH DEC KBPS? NEWLINE
+   BANDWIDTH bw = uint32 KBPS? NEWLINE
 ;
 
 if_bfd
@@ -117,7 +117,7 @@ if_bfd
 
 if_bfd_authentication
 :
-  AUTHENTICATION KEYED_SHA1 KEYID id = DEC (
+  AUTHENTICATION KEYED_SHA1 KEYID id = dec (
      HEX_KEY hex_key = variable
      | KEY ascii_key = variable
   )NEWLINE
@@ -130,12 +130,12 @@ if_bfd_echo
 
 if_bfd_echo_rx_interval
 :
-  ECHO_RX_INTERVAL ms = DEC NEWLINE
+  ECHO_RX_INTERVAL ms = dec NEWLINE
 ;
 
 if_bfd_interval
 :
-  INTERVAL tx_ms = DEC (MIN_RX | MIN_RX_VAR) tx_ms = DEC MULTIPLIER mult = DEC NEWLINE
+  INTERVAL tx_ms = dec (MIN_RX | MIN_RX_VAR) tx_ms = dec MULTIPLIER mult = dec NEWLINE
 ;
 
 if_bfd_neighbor
@@ -167,12 +167,12 @@ if_channel_group_eos
 
 ifcg_num_eos
 :
-  num = DEC MODE mode_val = (ACTIVE | ON | PASSIVE) NEWLINE
+  num = dec MODE mode_val = (ACTIVE | ON | PASSIVE) NEWLINE
 ;
 
 ifcg_recirculation_eos
 :
-  RECIRCULATION num = DEC NEWLINE
+  RECIRCULATION num = dec NEWLINE
 ;
 
 if_crypto
@@ -259,7 +259,7 @@ if_description
 if_igmp
 :
 // 10-31744
-  IGMP QUERY_MAX_RESPONSE_TIME decisecs = DEC NEWLINE
+  IGMP QUERY_MAX_RESPONSE_TIME decisecs = dec NEWLINE
 ;
 
 if_ip
@@ -470,7 +470,7 @@ ifipo_authentication_eos
 
 ifipo_authentication_enc_type
 :
-  type = DEC password = variable NEWLINE
+  type = dec password = variable NEWLINE
 ;
 
 ifipo_authentication_message_digest
@@ -485,17 +485,17 @@ ifipo_authentication_password
 
 ifipo_cost_eos
 :
-   COST cost = DEC NEWLINE
+   COST cost = dec NEWLINE
 ;
 
 ifipo_dead_interval_eos
 :
-   DEAD_INTERVAL seconds = DEC NEWLINE
+   DEAD_INTERVAL seconds = dec NEWLINE
 ;
 
 ifipo_hello_interval_eos
 :
-   HELLO_INTERVAL seconds = DEC NEWLINE
+   HELLO_INTERVAL seconds = dec NEWLINE
 ;
 
 ifipo_message_digest_key_eos
@@ -511,7 +511,7 @@ ifipo_network_eos
 ifipo_priority_eos
 :
 // 0-255
-  PRIORITY pri = DEC NEWLINE
+  PRIORITY pri = dec NEWLINE
 ;
 
 ifip_pim_eos
@@ -665,12 +665,12 @@ if_isis_circuit_type
 
 if_isis_enable
 :
-   ENABLE num = DEC NEWLINE
+   ENABLE num = dec NEWLINE
 ;
 
 if_isis_hello_interval
 :
-   HELLO_INTERVAL DEC
+   HELLO_INTERVAL dec
    (
       LEVEL_1
       | LEVEL_2
@@ -679,7 +679,7 @@ if_isis_hello_interval
 
 if_isis_metric
 :
-   METRIC metric = DEC
+   METRIC metric = dec
    (
       LEVEL_1
       | LEVEL_2
@@ -698,7 +698,7 @@ if_isis_passive
 
 if_isis_tag
 :
-   TAG tag = DEC NEWLINE
+   TAG tag = dec NEWLINE
 ;
 
 if_l2_protocol
@@ -730,7 +730,7 @@ if_lldp_null
 
 if_load_interval
 :
-   LOAD_INTERVAL li = DEC NEWLINE
+   LOAD_INTERVAL li = dec NEWLINE
 ;
 
 if_logging
@@ -775,7 +775,7 @@ if_member_interface
 
 if_eos_mlag
 :
-   MLAG id = DEC NEWLINE
+   MLAG id = dec NEWLINE
 ;
 
 if_encapsulation_eos
@@ -786,7 +786,7 @@ if_encapsulation_eos
 
 if_encapsulation_dot1q_eos
 :
-  DOT1Q VLAN id = DEC NEWLINE
+  DOT1Q VLAN id = dec NEWLINE
 ;
 
 if_evpn_eos
@@ -842,7 +842,7 @@ if_mpls_null
 
 if_mtu
 :
-   MTU mtu_size = DEC NEWLINE
+   MTU mtu_size = dec NEWLINE
 ;
 
 if_no
@@ -1088,7 +1088,7 @@ if_no_traffic_loopback_eos
 
 if_no_vrrp
 :
-   VRRP groupnum = DEC
+   VRRP groupnum = dec
    (
       if_no_vrrp_preempt
    )
@@ -1376,7 +1376,7 @@ if_routing_dynamic
 
 if_service_instance
 :
-   SERVICE INSTANCE id = DEC ETHERNET NEWLINE
+   SERVICE INSTANCE id = dec ETHERNET NEWLINE
    if_si_inner*
 ;
 
@@ -1392,7 +1392,7 @@ if_si_inner
 
 if_si_bridge_domain
 :
-    BRIDGE_DOMAIN id = DEC SPLIT_HORIZON? NEWLINE
+    BRIDGE_DOMAIN id = dec SPLIT_HORIZON? NEWLINE
 ;
 
 if_si_encapsulation
@@ -1416,7 +1416,7 @@ if_si_no
 
 if_si_no_bridge_domain
 :
-    BRIDGE_DOMAIN id = DEC NEWLINE
+    BRIDGE_DOMAIN id = dec NEWLINE
 ;
 
 if_si_no_encapsulation
@@ -1581,7 +1581,7 @@ if_switchport_access
 :
    ACCESS VLAN
    (
-      vlan = DEC
+      vlan = dec
       | DYNAMIC
    ) NEWLINE
 ;
@@ -1632,24 +1632,24 @@ if_switchport_null
 
 if_switchport_mode_monitor
 :
-   MONITOR BUFFER_LIMIT limit=DEC (BYTES | KBYTES | MBYTES | PACKETS)
+   MONITOR BUFFER_LIMIT limit=dec (BYTES | KBYTES | MBYTES | PACKETS)
 ;
 
 if_switchport_private_vlan_association
 :
-   PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = DEC
-   secondary_vlan_id = DEC NEWLINE
+   PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = dec
+   secondary_vlan_id = dec NEWLINE
 ;
 
 if_switchport_private_vlan_host_association
 :
-   PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = DEC
-   secondary_vlan_id = DEC NEWLINE
+   PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = dec
+   secondary_vlan_id = dec NEWLINE
 ;
 
 if_switchport_private_vlan_mapping
 :
-  PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = DEC
+  PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = dec
   secondary_vlan_list = range NEWLINE
 ;
 
@@ -1677,7 +1677,7 @@ if_switchport_trunk_group_eos
 
 if_switchport_trunk_native
 :
-   TRUNK NATIVE VLAN vlan = DEC NEWLINE
+   TRUNK NATIVE VLAN vlan = dec NEWLINE
 ;
 
 if_traffic_loopback_eos
@@ -1707,7 +1707,7 @@ if_tunnel
 
 if_tx_queue
 :
-  TX_QUEUE num = DEC NEWLINE
+  TX_QUEUE num = dec NEWLINE
   (
     if_txq_no
     | if_txq_null
@@ -1750,18 +1750,19 @@ if_vrf
 
 if_vrf_forwarding
 :
-  // this command is deprecated by 'vrf [VRF_ID]'
+  // EOS < 4.23 - this command is deprecated by 'vrf [VRF_ID]'
   FORWARDING if_vrf_name
 ;
 
 if_vrf_name
 :
-  name = variable NEWLINE
+  // EOS >= 4.23
+  name = vrf_name NEWLINE
 ;
 
 if_vrrp
 :
-   VRRP groupnum = DEC
+   VRRP groupnum = dec
    (
       ifvrrp_advertisement
       | ifvrrp_authentication
@@ -1854,7 +1855,7 @@ iftunnel_bandwidth
    (
       RECEIVE
       | TRANSMIT
-   ) DEC NEWLINE
+   ) dec NEWLINE
 ;
 
 
@@ -1865,14 +1866,14 @@ iftunnel_destination
 
 iftunnel_key
 :
-   KEY keynum = DEC NEWLINE
+   KEY keynum = dec NEWLINE
 ;
 
 iftunnel_mode
 :
    MODE
    (
-     | gre_id = GRE id = DEC // aruba, tunnel ID
+     | gre_id = GRE id = dec // aruba, tunnel ID
      | gre_ipv4 = GRE IPV4 // ios-xr
      | gre_multipoint = GRE MULTIPOINT
      | ipsec_ipv4 = IPSEC IPV4
@@ -1903,7 +1904,7 @@ iftunnel_source
 
 ifvrrp_advertisement
 :
-   ADVERTISEMENT INTERVAL secs = DEC NEWLINE
+   ADVERTISEMENT INTERVAL secs = dec NEWLINE
 ;
 
 ifvrrp_authentication
@@ -1937,17 +1938,17 @@ ifvrrp_preempt
    (
       MINIMUM
       | RELOAD
-   ) DEC NEWLINE
+   ) dec NEWLINE
 ;
 
 ifvrrp_priority
 :
-   PRIORITY priority = DEC NEWLINE
+   PRIORITY priority = dec NEWLINE
 ;
 
 ifvrrp_priority_level
 :
-   PRIORITY_LEVEL priority = DEC NEWLINE
+   PRIORITY_LEVEL priority = dec NEWLINE
 ;
 
 s_eos_vxlan_interface

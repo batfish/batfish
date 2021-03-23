@@ -361,4 +361,47 @@ public class PrefixTrieMultiMapTest {
 
     assertThat(prefixes, contains(ll, lr, l, rl, rr, r, Prefix.ZERO));
   }
+
+  @Test
+  public void testIntersectsPrefixRange() {
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>((Prefix.ZERO));
+    Prefix l = Prefix.parse("0.0.0.0/8");
+    Prefix ll = Prefix.parse("0.0.0.0/16");
+    Prefix lr = Prefix.parse("0.128.0.0/16");
+    Prefix r = Prefix.parse("128.0.0.0/8");
+    Prefix rl = Prefix.parse("128.0.0.0/16");
+    Prefix rr = Prefix.parse("128.128.0.0/16");
+    map.put(l, 0);
+    map.put(ll, 0);
+    map.put(lr, 0);
+    map.put(rr, 0);
+    map.put(rl, 0);
+    map.put(r, 0);
+
+    // prefixes exist with proper length range, but do not match
+    assertFalse(
+        map.intersectsPrefixSpace(
+            new PrefixSpace(PrefixRange.fromPrefix(Prefix.strict("1.128.0.0/16")))));
+    assertFalse(
+        map.intersectsPrefixSpace(
+            new PrefixSpace(PrefixRange.fromPrefix(Prefix.strict("0.192.0.0/16")))));
+
+    // full matches exist but are too short
+    assertFalse(
+        map.intersectsPrefixSpace(
+            new PrefixSpace(PrefixRange.fromPrefix(Prefix.strict("128.128.0.0/24")))));
+    // full matches exist but are too long
+    assertFalse(map.intersectsPrefixSpace(new PrefixSpace(PrefixRange.fromPrefix(Prefix.ZERO))));
+    assertFalse(
+        map.intersectsPrefixSpace(
+            new PrefixSpace(new PrefixRange(Prefix.ZERO, SubRange.singleton(4)))));
+
+    // matched by 128.0.0.0/16
+    assertTrue(
+        map.intersectsPrefixSpace(
+            new PrefixSpace(PrefixRange.fromPrefix(Prefix.strict("128.0.0.0/16")))));
+    assertTrue(
+        map.intersectsPrefixSpace(
+            new PrefixSpace(new PrefixRange(Prefix.strict("128.0.0.0/12"), new SubRange(14, 18)))));
+  }
 }

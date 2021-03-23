@@ -55,6 +55,7 @@ s_snmp_server
       | ss_source_interface
       | ss_tftp_server_list
       | ss_trap_source
+      | ss_vrf
    )
 ;
 
@@ -107,9 +108,8 @@ ss_file_transfer
 
 ss_host
 :
-   HOST
-   (ip4 = IP_ADDRESS | ip6 = IPV6_ADDRESS | host = variable)
-   ss_host_vrf?
+   HOST (ip4 = IP_ADDRESS | ip6 = IPV6_ADDRESS | host = variable)
+     (VRF vrf = vrf_name)?
    (ss_host_informs | ss_host_traps)?
    ss_host_version?
    comm_or_username = variable_snmp_host
@@ -134,7 +134,7 @@ ss_host_traps
 
 ss_host_udp_port
 :
-  UDP_PORT num = DEC
+  UDP_PORT num = dec
 ;
 
 ss_host_version
@@ -145,11 +145,6 @@ ss_host_version
       | NOAUTH
       | PRIV
    )?
-;
-
-ss_host_vrf
-:
-   VRF vrf = variable
 ;
 
 ss_mib
@@ -190,19 +185,14 @@ ss_null
       | TRAPS
       | USER
       | VIEW
-      | VRF
    ) null_rest_of_line
 ;
 
 ss_source_interface
 :
-   SOURCE_INTERFACE
-   (
-      TRAP
-      | TRAPS
-      | INFORM
-      | INFORMS
-   )? iname = interface_name NEWLINE
+  // source-interface: <  4.23
+  // local-interface:  >= 4.23
+  (LOCAL_INTERFACE | SOURCE_INTERFACE) iname = interface_name NEWLINE
 ;
 
 ss_tftp_server_list
@@ -213,6 +203,15 @@ ss_tftp_server_list
 ss_trap_source
 :
    TRAP_SOURCE IPV4? iname = interface_name NEWLINE
+;
+
+ss_vrf
+:
+  VRF name = vrf_name
+  (
+    NEWLINE
+    | ss_source_interface
+  )
 ;
 
 ssc_access_control
@@ -235,7 +234,7 @@ ssc_access_control
          |
          (
             IPV6 acl6 = variable_snmp
-         ) DEC?
+         ) dec?
       )
       | acl4 = variable_snmp
    )* NEWLINE
@@ -267,5 +266,5 @@ variable_snmp
 
 variable_snmp_host
 :
-   ~( NEWLINE | INFORMS | NAME | TRAPS | VERSION | USE_VRF | VRF )
+   ~( NEWLINE | INFORMS | NAME | TRAPS | VERSION | VRF )
 ;

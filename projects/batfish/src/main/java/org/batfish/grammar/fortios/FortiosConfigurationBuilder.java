@@ -3,6 +3,7 @@ package org.batfish.grammar.fortios;
 import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -788,6 +790,21 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
         .ifPresent(
             newMembers -> {
+              // See if any of the new members is invalid / the parent of the current group
+              ServiceGroup parent =
+                  getParentServiceGroup(
+                      _currentServiceGroup.getBatfishUUID(),
+                      newMembers,
+                      _c.getServiceGroups().values());
+              if (parent != null) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Service group %s cannot be added to %s as it would create a cycle",
+                        parent.getName(), _currentServiceGroup.getName()));
+                return;
+              }
+
               Set<BatfishUUID> members = _currentServiceGroup.getMemberUUIDs();
               members.clear();
               members.addAll(newMembers);
@@ -798,7 +815,25 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfsg_append_member(Cfsg_append_memberContext ctx) {
     toServiceGroupMemberUUIDs(
             ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
-        .ifPresent(newMembers -> _currentServiceGroup.getMemberUUIDs().addAll(newMembers));
+        .ifPresent(
+            newMembers -> {
+              // See if any of the new members is invalid / the parent of the current group
+              ServiceGroup parent =
+                  getParentServiceGroup(
+                      _currentServiceGroup.getBatfishUUID(),
+                      newMembers,
+                      _c.getServiceGroups().values());
+              if (parent != null) {
+                warn(
+                    ctx,
+                    String.format(
+                        "Service group %s cannot be added to %s as it would create a cycle",
+                        parent.getName(), _currentServiceGroup.getName()));
+                return;
+              }
+
+              _currentServiceGroup.getMemberUUIDs().addAll(newMembers);
+            });
   }
 
   @Override
@@ -1105,16 +1140,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         _c.referenceStructure(FortiosStructureType.SERVICE_CUSTOM, name, usage, line);
       } else if (serviceGroupsMap.containsKey(name)) {
         ServiceGroup serviceGroup = serviceGroupsMap.get(name);
-        if (_currentServiceGroup != null
-            && serviceGroup.contains(
-                _currentServiceGroup.getBatfishUUID(), serviceGroupsMap.values())) {
-          warn(
-              ctx,
-              String.format(
-                  "Service group %s cannot be added to %s as it would create a cycle",
-                  name, _currentServiceGroup.getName()));
-          return Optional.empty();
-        }
         uuidsBuilder.add(serviceGroup.getBatfishUUID());
         _c.referenceStructure(FortiosStructureType.SERVICE_GROUP, name, usage, line);
       } else {
@@ -1127,6 +1152,53 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       }
     }
     return Optional.of(uuidsBuilder.build());
+  }
+
+  /**
+   * Returns a parent ServiceGroup which directly or indirectly contains the specified
+   * ServiceGroupMember UUID, or {@code null} if none contain it. Searches only the specified parent
+   * UUIDs and their descendants and uses the provided collection of service groups to expand
+   * indirect descendants/map UUIDs to objects.
+   */
+  @Nullable
+  private static ServiceGroup getParentServiceGroup(
+      BatfishUUID childUuid,
+      Collection<BatfishUUID> candidateParents,
+      Collection<ServiceGroup> allServiceGroups) {
+    Map<BatfishUUID, ServiceGroup> allServiceGroupsByUUID =
+        allServiceGroups.stream()
+            .collect(
+                ImmutableMap.toImmutableMap(ServiceGroup::getBatfishUUID, Function.identity()));
+
+    for (BatfishUUID parentUUID : candidateParents) {
+      if (!allServiceGroupsByUUID.containsKey(parentUUID)) {
+        // If the candidate parent doesn't exist (e.g. is a Service, not a group) skip it
+        continue;
+      }
+      ServiceGroup parent = allServiceGroupsByUUID.get(parentUUID);
+      if (serviceGroupContains(parent, childUuid, allServiceGroupsByUUID)) {
+        return parent;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Helper function that returns a boolean indicating if the specified parent ServiceGroup directly
+   * or indirectly contains the a member with the specified UUID. Uses the provided map of service
+   * groups to expand indirect descendants.
+   */
+  static boolean serviceGroupContains(
+      ServiceGroup parent, BatfishUUID uuid, Map<BatfishUUID, ServiceGroup> allServiceGroups) {
+    Set<BatfishUUID> members = parent.getMemberUUIDs();
+    if (parent.getBatfishUUID().equals(uuid) || members.contains(uuid)) {
+      return true;
+    }
+    return members.stream()
+        .anyMatch(
+            m ->
+                allServiceGroups.containsKey(m)
+                    && serviceGroupContains(allServiceGroups.get(m), uuid, allServiceGroups));
   }
 
   /**
