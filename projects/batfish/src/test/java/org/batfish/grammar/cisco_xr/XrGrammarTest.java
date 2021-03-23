@@ -10,6 +10,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLi
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
@@ -221,15 +222,17 @@ public final class XrGrammarTest {
             "Bundle-Ether500.2",
             "TenGigE0/1",
             "Bundle-Ether600",
-            "Bundle-Ether600.2",
+            "Bundle-Ether600.3",
             "TenGigE0/2"));
     assertThat(c.getAllInterfaces().get("Bundle-Ether500"), allOf(isActive(), hasBandwidth(10e9)));
     assertThat(
-        c.getAllInterfaces().get("Bundle-Ether500.2"), allOf(isActive(), hasBandwidth(10e9)));
+        c.getAllInterfaces().get("Bundle-Ether500.2"),
+        allOf(isActive(), hasBandwidth(10e9), hasEncapsulationVlan(2)));
     assertThat(
         c.getAllInterfaces().get("Bundle-Ether600"), allOf(isActive(false), hasBandwidth(10e9)));
     assertThat(
-        c.getAllInterfaces().get("Bundle-Ether600.2"), allOf(isActive(false), hasBandwidth(10e9)));
+        c.getAllInterfaces().get("Bundle-Ether600.3"),
+        allOf(isActive(false), hasBandwidth(10e9), hasEncapsulationVlan(3)));
   }
 
   /**
