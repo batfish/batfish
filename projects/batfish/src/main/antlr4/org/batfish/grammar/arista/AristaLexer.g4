@@ -5,17 +5,8 @@ options {
 }
 
 tokens {
-   ACL_NUM_APPLETALK,
-   ACL_NUM_EXTENDED,
-   ACL_NUM_EXTENDED_MAC,
-   ACL_NUM_IPX_SAP,
-   ACL_NUM_MAC,
-   ACL_NUM_PROTOCOL_TYPE_CODE,
-   ACL_NUM_STANDARD,
    BANNER_DELIMITER_EOS,
    BANNER_BODY,
-   COMMUNITY_LIST_NUM_EXPANDED,
-   COMMUNITY_LIST_NUM_STANDARD,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
@@ -67,9 +58,12 @@ ACCESS_GROUP: 'access-group';
 
 ACCESS_LIST
 :
-   'access-list'
-   {_enableAclNum = true; _enableDec = false;}
-
+  'access-list'
+  {
+    if (lastTokenType() == IP || lastTokenType() == IPV6) {
+      pushMode(M_Ip_access_list);
+    }
+  }
 ;
 
 ACCESS_SESSION: 'access-session';
@@ -316,8 +310,6 @@ ARM_RF_DOMAIN_PROFILE: 'arm-rf-domain-profile';
 ARP
 :
    'arp'
-   { _enableIpv6Address = false; }
-
 ;
 
 ARNS: 'arns';
@@ -607,6 +599,7 @@ BUG_ALERT: 'bug-alert';
 
 BUNDLE: 'bundle';
 
+BURST: 'burst';
 BURST_SIZE: 'burst-size';
 
 BYPASS: 'bypass';
@@ -780,17 +773,11 @@ COMMON_NAME: 'common-name';
 COMMUNITY
 :
    'community'
-   { _enableIpv6Address = false; }
 ;
 
 COMMUNITY_LIST
 :
-   'community-list'
-   {
-      _enableIpv6Address = false;
-      _enableCommunityListNum = true;
-      _enableDec = false;
-   }
+   'community-list' -> pushMode(M_CommunityList)
 ;
 
 COMMUNITY_MAP
@@ -1029,7 +1016,7 @@ DEFAULT_TASKGROUP: 'default-taskgroup';
 
 DEFAULT_TOS_QOS10: 'default-tos-qos10';
 
-DEFINITION: 'definition';
+DEFINITION: 'definition' -> pushMode(M_Word);
 
 DEL: 'Del';
 
@@ -1558,8 +1545,6 @@ EXIT: 'exit';
 
 EXIT_ADDRESS_FAMILY: 'exit-address-family';
 
-EXIT_VRF: 'exit-vrf';
-
 EXPIRE: 'expire';
 
 EXPLICIT_NULL: 'explicit-null';
@@ -1576,8 +1561,6 @@ EXPORTER_MAP: 'exporter-map';
 
 EXPANDED: 'expanded';
 
-EXTCOMM_LIST: 'extcomm-list';
-
 EXTCOMMUNITY
 :
    'extcommunity'
@@ -1590,12 +1573,7 @@ EXTCOMMUNITY
 
 EXTEND: 'extend';
 
-EXTENDED
-:
-   'extended'
-   { _enableDec = true; _enableAclNum = false; }
-
-;
+EXTENDED: 'extended';
 
 EXTENDED_COUNTERS: 'extended-counters';
 
@@ -1826,10 +1804,7 @@ GROUP24: 'group24';
 
 GROUP5: 'group5';
 
-GSHUT
-:
-   [Gg][Ss][Hh][Uu][Tt]
-;
+GSHUT: 'GSHUT';
 
 GT: 'gt';
 
@@ -2114,7 +2089,12 @@ INSTALL_MAP: 'install-map';
 
 INSTALL_OIFS: 'install-oifs';
 
-INSTANCE: 'instance';
+INSTANCE: 'instance'
+{
+  if (lastTokenType() == VRF) {
+    pushMode(M_Word);
+  }
+};
 
 INTEGRITY: 'integrity';
 
@@ -2122,9 +2102,7 @@ INTERCEPT: 'intercept';
 
 INTERFACE
 :
-   'int' 'erface'?
-   { _enableIpv6Address = false; pushMode(M_Interface);}
-
+   'int' 'erface'? -> pushMode(M_Interface)
 ;
 
 INTERNAL: 'internal';
@@ -3645,6 +3623,8 @@ REFLECTION: 'reflection';
 
 REGEX_MODE: 'regex-mode';
 
+REGEXP: 'regexp';
+
 REGISTER_RATE_LIMIT: 'register-rate-limit';
 
 REGISTER_SOURCE: 'register-source';
@@ -3909,10 +3889,7 @@ RTR_ADV: 'rtr-adv';
 
 RTSP: 'rtsp';
 
-RULE
-:
-   'rule' {_enableRegex = true;}
-;
+RULE: 'rule';
 
 RULE_NAME: 'rule-name';
 
@@ -4276,12 +4253,7 @@ STACK_MIB: 'stack-mib';
 
 STALEPATH_TIME: 'stalepath-time';
 
-STANDARD
-:
-   'standard'
-   { _enableDec = true; _enableAclNum = false; }
-
-;
+STANDARD: 'standard';
 
 STANDBY: 'standby';
 
@@ -4742,8 +4714,6 @@ USE_IPV6_ACL: 'use-ipv6-acl';
 
 USE_LINK_ADDRESS: 'use-link-address';
 
-USE_VRF: 'use-vrf';
-
 USER: 'user';
 
 USERINFO
@@ -4868,17 +4838,7 @@ VPN_IPV4: 'vpn-ipv4';
 
 VPN_IPV6: 'vpn-ipv6';
 
-VRF
-:
-  'vrf'
-  {
-    if (lastTokenType() == LOGGING) {
-      pushMode( M_Word );
-    } else {
-      _enableIpv6Address = false;
-    }
-  }
-;
+VRF: 'vrf' -> pushMode(M_Vrf);
 
 VRF_ALSO: 'vrf-also';
 
@@ -5037,11 +4997,6 @@ POUND
    '#' -> pushMode ( M_Description )
 ;
 
-STANDARD_COMMUNITY
-:
-  F_StandardCommunity {!_enableIpv6Address}?
-;
-
 MAC_ADDRESS_LITERAL
 :
    F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.' F_HexDigit F_HexDigit
@@ -5051,56 +5006,6 @@ MAC_ADDRESS_LITERAL
 HEX
 :
    '0x' F_HexDigit+
-;
-
-VARIABLE
-:
-   (
-      (
-         F_Variable_RequiredVarChar
-         (
-            (
-               {!_enableIpv6Address}?
-
-               F_Variable_VarChar*
-            )
-            |
-            (
-               {_enableIpv6Address}?
-
-               F_Variable_VarChar_Ipv6*
-            )
-         )
-      )
-      |
-      (
-         (
-            F_Variable_VarChar
-            {!_enableIpv6Address}?
-
-            F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
-         )
-         |
-         (
-            F_Variable_VarChar_Ipv6
-            {_enableIpv6Address}?
-
-            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar
-            F_Variable_VarChar_Ipv6*
-         )
-      )
-   )
-   {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-
 ;
 
 AMPERSAND
@@ -5223,18 +5128,14 @@ DOLLAR
    '$'
 ;
 
-DEC
-:
-   F_Digit
-   {_enableDec}?
+// Numbers: keep in order
+UINT8: F_Uint8;
+UINT16: F_Uint16;
+UINT32: F_Uint32;
 
-   F_Digit*
-;
-
-DIGIT
-:
-   F_Digit
-;
+// Hope to kill these two eventually
+DEC: F_Digit+;
+DIGIT: F_Digit;
 
 DOUBLE_QUOTE
 :
@@ -5260,34 +5161,27 @@ FORWARD_SLASH
 
 IP_ADDRESS
 :
-  F_IpAddress {_enableIpAddress}?
+  F_IpAddress
 ;
 
 IP_PREFIX
 :
-  F_IpPrefix {_enableIpAddress}?
+  F_IpPrefix
 ;
 
 IPV6_ADDRESS
 :
-  F_Ipv6Address {_enableIpv6Address}?
+  F_Ipv6Address
 ;
 
 IPV6_PREFIX
 :
-  F_Ipv6Prefix {_enableIpv6Address}?
+  F_Ipv6Prefix
 ;
 
 NEWLINE
 :
   F_Newline+
-  {
-    _enableIpv6Address = true;
-    _enableIpAddress = true;
-    _enableDec = true;
-    _enableRegex = false;
-    _enableAclNum = false;
-  }
 ;
 
 PAREN_LEFT
@@ -5315,16 +5209,6 @@ PLUS
    '+'
 ;
 
-REGEX
-:
-   '/' {_enableRegex}?
-   (
-      ~('/' | '\\')
-      |
-      ( '\\' '/')
-   )* '/'
-;
-
 SEMICOLON
 :
    ';'
@@ -5341,6 +5225,12 @@ WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ; // Fragments
+
+// Variable should be last unless we can find a reason not to.
+VARIABLE
+:
+   F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
+;
 
 fragment
 F_AristaBase64Char
@@ -5374,16 +5264,6 @@ F_Base64String
       | F_Base64Char F_Base64Char '=='
       | F_Base64Char F_Base64Char F_Base64Char '='
    )
-;
-
-fragment
-F_DecByte
-:
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
 ;
 
 fragment
@@ -5534,7 +5414,7 @@ F_HexWordLE7
 fragment
 F_IpAddress
 :
-  F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+  F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
 ;
 
 fragment
@@ -5625,6 +5505,16 @@ F_StandardCommunity
 ;
 
 fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
+;
+
+fragment
 F_Uint16
 :
   F_Digit
@@ -5634,6 +5524,26 @@ F_Uint16
   | '65' [0-4] F_Digit F_Digit
   | '655' [0-2] F_Digit
   | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  F_Digit
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  F_Digit
+  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
 ;
 
 fragment
@@ -6220,6 +6130,94 @@ M_COMMENT_NON_NEWLINE
    F_NonNewline+
 ;
 
+////////
+// <4.23
+// ip community-list NAME standard <permit|deny> communities...
+// ip community-list NAME expanded <permit|deny> regex
+// 4.23+
+// ip community-list NAME <permit|deny> communities...
+// ip community-list regexp NAME <permit|deny> regex
+///////
+
+mode M_CommunityList;
+
+M_CommunityList_EXPANDED
+:
+  // expanded list, old style
+  'expanded' -> type(EXPANDED), mode(M_CommunityList_Regexp)
+;
+
+M_CommunityList_REGEXP
+:
+  // expanded list, new style
+  'regexp' -> type(REGEXP), mode(M_CommunityList_Regexp)
+;
+
+M_CommunityList_STANDARD
+:
+  // standard list, old style. Action and communities can be lexed normally
+  'standard' -> type(STANDARD), mode(M_Word)
+;
+
+M_CommunityList_WORD
+:
+  // standard list, communities can be parsed normally
+  F_NonWhitespace+ -> type(WORD), popMode
+;
+
+M_CommunityList_NEWLINE
+:
+  // bail in case of short line
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_CommunityList_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_CommunityList_Regexp;
+
+M_CommunityList_Regexp_WORD
+:
+  // name, now need action
+  F_NonWhitespace+ -> type(WORD), mode(M_CommunityList_Regexp_Action)
+;
+
+M_CommunityList_Regexp_NEWLINE
+:
+  // bail in case of short line
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_CommunityList_Regexp_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
+mode M_CommunityList_Regexp_Action;
+
+M_CommunityList_Regexp_Action_DENY
+:
+  'deny' -> type(DENY), mode(M_Word)
+;
+
+M_CommunityList_Regexp_Action_PERMIT
+:
+  'permit' -> type(PERMIT), mode(M_Word)
+;
+
+M_CommunityList_Regexp_Action_NEWLINE
+:
+  // bail in case of short line
+  F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_CommunityList_Regexp_Action_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
+;
+
 mode M_Description;
 
 M_Description_NEWLINE
@@ -6407,7 +6405,7 @@ M_Interface_TRAPS
 
 M_Interface_VRF
 :
-   'vrf' -> type ( VRF ) , popMode
+   'vrf' -> type (VRF), mode(M_Vrf)
 ;
 
 M_Interface_COLON
@@ -6483,6 +6481,28 @@ M_Interface_SLASH
 M_Interface_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
+;
+
+mode M_Ip_access_list;
+
+M_Ip_access_list_STANDARD
+:
+  'standard' -> type(STANDARD), mode(M_Word)
+;
+
+M_Ip_access_list_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_Ip_access_list_WORD
+:
+  F_NonWhitespace+ -> type(WORD), popMode
+;
+
+M_Ip_access_list_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_ISO_Address;
@@ -6645,7 +6665,7 @@ M_REMARK_NEWLINE
 
 M_REMARK_REMARK
 :
-   F_NonNewline+
+   F_NonNewline+ -> type(RAW_TEXT)
 ;
 
 mode M_RouteMap;
@@ -6667,18 +6687,7 @@ M_RouteMap_NEWLINE
 
 M_RouteMap_VARIABLE
 :
-   F_NonWhitespace+
-   {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-   -> type ( VARIABLE ) , popMode
+   F_NonWhitespace+ -> type ( VARIABLE ) , popMode
 ;
 
 M_RouteMap_WS
@@ -6722,6 +6731,38 @@ M_SnmpServerCommunity_CHAR
    F_NonWhitespace -> mode ( M_Name ), more
 ;
 
+mode M_Vrf;
+
+M_Vrf_DEFINITION
+:
+  'definition' -> type(DEFINITION), mode(M_Word)
+;
+
+M_Vrf_FORWARDING
+:
+  'forwarding' -> type(FORWARDING), mode(M_Word)
+;
+
+M_Vrf_INSTANCE
+:
+  'instance' -> type(INSTANCE), mode(M_Word)
+;
+
+M_Vrf_WORD
+:
+  F_NonWhitespace+ -> type(WORD), popMode
+;
+
+M_Vrf_NEWLINE
+:
+   F_Newline+ -> type (NEWLINE), popMode
+;
+
+M_Vrf_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
+;
+
 mode M_Word;
 
 M_Word_WORD
@@ -6743,16 +6784,16 @@ mode M_Words;
 
 M_Words_WORD
 :
-   F_NonWhitespace+ -> type ( VARIABLE )
+   F_NonWhitespace+ -> type(WORD)
 ;
 
 M_Words_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline+ -> type(NEWLINE), popMode
 ;
 
 M_Words_WS
 :
-   F_Whitespace+ -> channel ( HIDDEN )
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 

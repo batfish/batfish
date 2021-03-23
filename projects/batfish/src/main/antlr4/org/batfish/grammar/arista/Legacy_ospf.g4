@@ -11,38 +11,14 @@ ro_address_family
    ADDRESS_FAMILY IPV4 UNICAST? NEWLINE ro_common*
 ;
 
-ro_area
-:
-   AREA
-   (
-      area_int = DEC
-      | area_ip = IP_ADDRESS
-   ) NEWLINE
-   (
-      ro_common
-      | roa_cost
-      | roa_interface
-      | roa_network_null
-      | roa_range
-   )*
-;
-
 ro_area_default_cost
 :
-   AREA
-   (
-      area_int = DEC
-      | area_ip = IP_ADDRESS
-   ) DEFAULT_COST cost = DEC NEWLINE
+   AREA area = ospf_area DEFAULT_COST cost = dec NEWLINE
 ;
 
 ro_area_filterlist
 :
-   AREA
-   (
-      area_int = DEC
-      | area_ip = IP_ADDRESS
-   ) FILTER_LIST PREFIX list = variable
+   AREA area = ospf_area FILTER_LIST PREFIX list = variable
    (
       IN
       | OUT
@@ -51,21 +27,17 @@ ro_area_filterlist
 
 ro_area_nssa
 :
-   AREA
-   (
-      area_int = DEC
-      | area_ip = IP_ADDRESS
-   ) NSSA
+   AREA area = ospf_area NSSA
    (
       (
          default_information_originate = DEFAULT_INFORMATION_ORIGINATE
          (
             (
-               METRIC metric = DEC
+               METRIC metric = dec
             )
             |
             (
-               METRIC_TYPE metric_type = DEC
+               METRIC_TYPE metric_type = dec
             )
          )*
       )
@@ -76,11 +48,7 @@ ro_area_nssa
 
 ro_area_range
 :
-   AREA
-   (
-      area_int = DEC
-      | area_ip = IP_ADDRESS
-   ) RANGE
+   AREA area = ospf_area RANGE
    (
       (
          area_ip = IP_ADDRESS area_subnet = IP_ADDRESS
@@ -92,17 +60,13 @@ ro_area_range
       | NOT_ADVERTISE
    )?
    (
-      COST cost = DEC
+      COST cost = dec
    )? NEWLINE
 ;
 
 ro_area_stub
 :
-   AREA
-   (
-      area_int = DEC
-      | area_ip = IP_ADDRESS
-   ) STUB
+   AREA area = ospf_area STUB
    (
       no_summary = NO_SUMMARY
    )* NEWLINE
@@ -115,7 +79,8 @@ ro_authentication
 
 ro_auto_cost
 :
-   AUTO_COST REFERENCE_BANDWIDTH DEC
+// 1-4294967: https://www.arista.com/en/um-eos/eos-open-shortest-path-first-version-2#xx1152980
+   AUTO_COST REFERENCE_BANDWIDTH refbw = uint32
    (
       GBPS
       | MBPS
@@ -135,29 +100,29 @@ ro_default_information
    DEFAULT_INFORMATION ORIGINATE
    (
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         METRIC_TYPE metric_type = DEC
+         METRIC_TYPE metric_type = dec
       )
       | ALWAYS
       |
       (
          ROUTE_MAP map = VARIABLE
       )
-      | TAG DEC
+      | TAG dec
    )* NEWLINE
 ;
 
 ro_default_metric
 :
-   NO? DEFAULT_METRIC metric = DEC NEWLINE
+   NO? DEFAULT_METRIC metric = uint32 NEWLINE
 ;
 
 ro_distance
 :
-   DISTANCE value = DEC NEWLINE
+   DISTANCE value = dec NEWLINE
 ;
 
 ro_distribute_list
@@ -182,16 +147,16 @@ ro_max_metric
    MAX_METRIC ROUTER_LSA
    (
       (
-         external_lsa = EXTERNAL_LSA external = DEC?
+         external_lsa = EXTERNAL_LSA external = dec?
       )
       | stub = INCLUDE_STUB
       |
       (
-         on_startup = ON_STARTUP DEC?
+         on_startup = ON_STARTUP dec?
       )
       |
       (
-         summary_lsa = SUMMARY_LSA summary = DEC?
+         summary_lsa = SUMMARY_LSA summary = dec?
       )
       |
       (
@@ -208,7 +173,7 @@ ro_maximum_paths
       (
          MAXIMUM PATHS
       )
-   ) DEC NEWLINE
+   ) dec NEWLINE
 ;
 
 ro_network
@@ -219,11 +184,8 @@ ro_network
          ip = IP_ADDRESS wildcard = IP_ADDRESS
       )
       | prefix = IP_PREFIX
-   ) AREA
-   (
-      area_int = DEC
-      | area_ip = IP_ADDRESS
-   ) NEWLINE
+   ) AREA area = ospf_area
+   NEWLINE
 ;
 
 ro_nssa
@@ -234,7 +196,7 @@ ro_nssa
          DEFAULT_INFORMATION_ORIGINATE
          (
             (
-               METRIC DEC
+               METRIC dec
             )
             |
             (
@@ -319,35 +281,17 @@ ro_passive_interface
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
+ro_priority
+:
+   PRIORITY dec NEWLINE
+;
+
 ro_redistribute_bgp_arista
 :
    REDISTRIBUTE BGP
    (
       ROUTE_MAP map = VARIABLE
    )? NEWLINE
-;
-
-ro_redistribute_bgp_cisco
-:
-   REDISTRIBUTE BGP bgp_asn
-   (
-      (
-         METRIC metric = DEC
-      )
-      |
-      (
-         METRIC_TYPE type = DEC
-      )
-      |
-      (
-         ROUTE_MAP map = VARIABLE
-      )
-      | subnets = SUBNETS
-      |
-      (
-         TAG tag = DEC
-      )
-   )* NEWLINE
 ;
 
 ro_redistribute_connected
@@ -359,17 +303,17 @@ ro_redistribute_connected
    )
    (
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         METRIC_TYPE type = DEC
+         METRIC_TYPE type = dec
       )
       | ROUTE_MAP map = VARIABLE
       | subnets = SUBNETS
       |
       (
-         TAG tag = DEC
+         TAG tag = uint32
       )
    )* NEWLINE
 ;
@@ -389,17 +333,17 @@ ro_redistribute_static
    REDISTRIBUTE STATIC
    (
       (
-         METRIC metric = DEC
+         METRIC metric = dec
       )
       |
       (
-         METRIC_TYPE type = DEC
+         METRIC_TYPE type = dec
       )
       | ROUTE_MAP map = VARIABLE
       | subnets = SUBNETS
       |
       (
-         TAG tag = DEC
+         TAG tag = uint32
       )
    )* NEWLINE
 ;
@@ -415,16 +359,6 @@ ro_summary_address
    NEWLINE
 ;
 
-ro_vrf
-:
-   VRF name = variable NEWLINE
-   (
-      ro_max_metric
-      | ro_redistribute_connected
-      | ro_redistribute_static
-   )*
-;
-
 ro6_area
 :
    AREA null_rest_of_line
@@ -432,7 +366,7 @@ ro6_area
 
 ro6_auto_cost
 :
-   AUTO_COST REFERENCE_BANDWIDTH DEC NEWLINE
+   AUTO_COST REFERENCE_BANDWIDTH dec NEWLINE
 ;
 
 ro6_default_information
@@ -442,7 +376,7 @@ ro6_default_information
 
 ro6_distance
 :
-   DISTANCE value = DEC NEWLINE
+   DISTANCE value = dec NEWLINE
 ;
 
 ro6_distribute_list
@@ -471,7 +405,7 @@ ro6_maximum_paths
       (
          MAXIMUM PATHS
       )
-   ) DEC NEWLINE
+   ) dec NEWLINE
 ;
 
 ro6_null
@@ -495,73 +429,6 @@ ro6_router_id
 ro6_redistribute
 :
    REDISTRIBUTE null_rest_of_line
-;
-
-roa_cost
-:
-   COST cost = DEC NEWLINE
-;
-
-roa_interface
-:
-   INTERFACE iname = interface_name NEWLINE
-   (
-      ro_common
-      | roi_cost
-      | roi_network
-      | roi_priority
-      | roi_passive
-   )*
-;
-
-roa_range
-:
-   RANGE prefix = IP_PREFIX
-   (
-      ADVERTISE
-      | NOT_ADVERTISE
-   )?
-   (
-      COST cost = DEC
-   )? NEWLINE
-;
-
-roa_network_null
-:
-   NETWORK POINT_TO_POINT NEWLINE
-;
-
-roi_cost
-:
-   COST cost = DEC NEWLINE
-;
-
-roi_network
-:
-   NETWORK
-   (
-      BROADCAST
-      | NON_BROADCAST
-      |
-      (
-         POINT_TO_MULTIPOINT NON_BROADCAST?
-      )
-      | POINT_TO_POINT
-   ) NEWLINE
-;
-
-roi_passive
-:
-   PASSIVE
-   (
-      ENABLE
-      | DISABLE
-   )? NEWLINE
-;
-
-roi_priority
-:
-   PRIORITY DEC NEWLINE
 ;
 
 rov3_address_family
@@ -632,13 +499,9 @@ s_ipv6_router_ospf
 
 s_router_ospf
 :
-   ROUTER OSPF name = variable
-   (
-      VRF vrf = variable
-   )? NEWLINE
+   ROUTER OSPF name = variable (VRF vrf = vrf_name)? NEWLINE
    (
       ro_address_family
-      | ro_area
       | ro_area_default_cost
       | ro_area_filterlist
       | ro_area_nssa
@@ -655,6 +518,7 @@ s_router_ospf
       | ro_network
       | ro_passive_interface_default
       | ro_passive_interface
+      | ro_priority
       | ro_redistribute_bgp_arista
       | ro_redistribute_connected
       | ro_redistribute_ospf_null
@@ -662,8 +526,6 @@ s_router_ospf
       | ro_redistribute_static
       | ro_router_id
       | ro_summary_address
-      | ro_vrf
-      | roi_priority
    )*
 ;
 

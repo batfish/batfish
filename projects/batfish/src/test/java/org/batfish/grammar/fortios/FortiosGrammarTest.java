@@ -1014,6 +1014,9 @@ public final class FortiosGrammarTest {
                     "Service group edit block ignored: service group requires at least one member"),
                 hasComment(
                     "Service group self_ref_not_allowed cannot be added to valid as it would"
+                        + " create a cycle"),
+                hasComment(
+                    "Service group valid cannot be added to valid as it would"
                         + " create a cycle"))));
   }
 

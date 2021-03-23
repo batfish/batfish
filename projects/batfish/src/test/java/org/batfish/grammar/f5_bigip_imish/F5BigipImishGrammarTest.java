@@ -232,7 +232,8 @@ public final class F5BigipImishGrammarTest {
       RoutingPolicy rp1, BgpSessionProperties sessionProps) {
     Bgpv4Route.Builder outputBuilder = makeBgpOutputRouteBuilder();
     assertTrue(
-        rp1.processBgpRoute(makeBgpRoute(Prefix.ZERO), outputBuilder, sessionProps, Direction.OUT));
+        rp1.processBgpRoute(
+            makeBgpRoute(Prefix.ZERO), outputBuilder, sessionProps, Direction.OUT, null));
     return outputBuilder.build();
   }
 

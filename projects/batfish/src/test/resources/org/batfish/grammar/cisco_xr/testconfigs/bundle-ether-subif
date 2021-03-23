@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname bundle-ether-subif
+!
+interface Bundle-Ether500
+ mtu 9216
+!
+interface Bundle-Ether500.2
+ vrf VRF
+ ipv4 address 10.0.0.1 255.255.255.254
+ encapsulation dot1q 2
+!
+interface TenGigE0/1
+ bundle id 500 mode active
+!
+!
+! Since Bundle-Ether600 is shut down, should cascade to Bundle-Ether600.2.
+interface Bundle-Ether600
+ shutdown
+ mtu 9216
+!
+interface Bundle-Ether600.3
+ vrf VRF
+ ipv4 address 10.0.0.1 255.255.255.254
+ encapsulation dot1q 3
+!
+interface TenGigE0/2
+ bundle id 600 mode active
+!

@@ -6,4 +6,16 @@ vrf definition vrfName
  rd 2:700
  description descriptive sentence
 !
+vrf definition ::1
+ description name is ::1 verify it
 !
+vrf definition 1:2
+!
+vrf definition 12345
+ description name is 12345 verify it
+!
+interface Ethernet1
+ vrf forwarding vrfName
+ vrf forwarding ::1
+ vrf forwarding 1:2
+ vrf forwarding 12345

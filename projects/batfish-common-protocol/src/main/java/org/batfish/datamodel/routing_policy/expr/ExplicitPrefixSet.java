@@ -5,8 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.visitors.PrefixSpaceExprVisitor;
 
-public class ExplicitPrefixSet extends PrefixSetExpr {
+public class ExplicitPrefixSet extends PrefixSetExpr implements PrefixSpaceExpr {
   private static final String PROP_PREFIX_SPACE = "prefixSpace";
 
   private PrefixSpace _prefixSpace;
@@ -16,6 +17,11 @@ public class ExplicitPrefixSet extends PrefixSetExpr {
 
   public ExplicitPrefixSet(PrefixSpace prefixSpace) {
     _prefixSpace = prefixSpace;
+  }
+
+  @Override
+  public <T, U> T accept(PrefixSpaceExprVisitor<T, U> visitor, U arg) {
+    return visitor.visitExplicitPrefixSet(this, arg);
   }
 
   @Override

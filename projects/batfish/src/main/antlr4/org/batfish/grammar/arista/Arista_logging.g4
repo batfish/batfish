@@ -8,7 +8,7 @@ options {
 
 logging_severity
 :
-  DEC // 0-7
+  dec // 0-7
   | ALERTS
   | CRITICAL
   | DEBUGGING
@@ -64,7 +64,7 @@ logging_on
 
 logging_vrf
 :
-  VRF name = word
+  VRF name = vrf_name
   (
     logging_vrf_host
     | logging_vrf_source_interface
@@ -73,7 +73,7 @@ logging_vrf
 
 logging_vrf_host
 :
-  HOST host=word (portnum=DEC (PROTOCOL (TCP | UDP))?)? NEWLINE
+  HOST host=word (portnum=dec (PROTOCOL (TCP | UDP))?)? NEWLINE
 ;
 
 logging_vrf_source_interface

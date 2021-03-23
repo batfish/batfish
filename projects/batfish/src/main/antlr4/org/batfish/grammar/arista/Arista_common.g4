@@ -24,7 +24,19 @@ ipv6_prefix
 ospf_area
 :
   id_ip = IP_ADDRESS
-  | id = DEC
+  | id = uint32
+;
+
+uint8: UINT8;
+uint16: UINT8 | UINT16;
+uint32: UINT8 | UINT16 | UINT32;
+// TODO: delete all uses of dec, replace with named rules that have a toInt/LongInSpace function
+dec: UINT8 | UINT16 | UINT32 | DEC;
+
+vrf_name
+:
+//1-100 characters
+  WORD
 ;
 
 word
