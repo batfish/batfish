@@ -1,0 +1,66 @@
+config system global
+    set hostname "service_group_rename"
+end
+config firewall address
+    edit "all"
+        set type ipmask
+        set subnet 0.0.0.0  0.0.0.0
+    next
+end
+config firewall service custom
+    edit "service1"
+        set tcp-portrange 1
+    next
+end
+config firewall service group
+    edit "old_group1"
+        set member service1
+    next
+    edit "old_group2"
+        set member service1
+    next
+    # Rename before it is ever referenced
+    rename "old_group1" to "new"_group1
+end
+config firewall policy
+    edit 0
+        set action deny
+        set srcintf any
+        set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service new_group1 old_group2
+    next
+    edit 1
+        set action deny
+        set srcintf any
+        set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service old_group1
+        append service new_group2
+    next
+end
+
+# Rename some objects after they're been referenced
+config firewall service group
+    rename old_group2 to new_group2
+end
+
+# Renaming a non-existent object should fail with a warning
+config firewall service group
+    rename undefined to other
+end
+
+config firewall service group
+    # Renaming a valid object with an unused but invalid name should fail w/ warning
+    rename new_group2 to "a name that very very very very very very very long and is too long to use for this object type"
+
+    # Trying to rename to a named already used should fail w/ warning
+    rename new_group1 to new_group2
+    rename new_group1 to service1
+end
+config firewall service custom
+    # Trying to rename to a named already used should fail w/ warning
+    rename service1 to new_group1
+end
