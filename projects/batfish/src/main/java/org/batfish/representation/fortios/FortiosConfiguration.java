@@ -27,6 +27,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -43,6 +44,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
     _services = new HashMap<>();
+    _serviceGroups = new HashMap<>();
     _staticRoutes = new HashMap<>();
     _zones = new HashMap<>();
   }
@@ -93,6 +95,11 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _services;
   }
 
+  /** name -> service group */
+  public @Nonnull Map<String, ServiceGroup> getServiceGroups() {
+    return _serviceGroups;
+  }
+
   /** route seq num -> static route */
   public @Nonnull Map<String, StaticRoute> getStaticRoutes() {
     return _staticRoutes;
@@ -111,6 +118,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
   private final @Nonnull Map<String, Service> _services;
+  private final @Nonnull Map<String, ServiceGroup> _serviceGroups;
   private final @Nonnull Map<String, StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Zone> _zones;
 
@@ -158,6 +166,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     // Count structure references
     markConcreteStructure(FortiosStructureType.ADDRESS);
     markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
+    markConcreteStructure(FortiosStructureType.SERVICE_GROUP);
     markConcreteStructure(FortiosStructureType.INTERFACE);
     return c;
   }
@@ -167,6 +176,8 @@ public class FortiosConfiguration extends VendorConfiguration {
     Map<String, AclLineMatchExpr> convertedServices =
         _services.values().stream()
             .collect(ImmutableMap.toImmutableMap(Service::getName, this::toMatchExpr));
+    // TODO convert ServiceGroup
+
     // Convert each policy to an AclLine
     return convertPolicies(_policies, convertedServices, viIpSpaces, _filename, _w);
   }
@@ -174,7 +185,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   /** Convert specified {@link Service} into its corresponding {@link AclLineMatchExpr}. */
   @VisibleForTesting
   @Nonnull
-  AclLineMatchExpr toMatchExpr(Service service) {
+  AclLineMatchExpr toMatchExpr(ServiceGroupMember service) {
     List<AclLineMatchExpr> matchExprs =
         service
             .toHeaderSpaces()
@@ -184,7 +195,9 @@ public class FortiosConfiguration extends VendorConfiguration {
       _w.redFlag(String.format("Service %s does not match any packets", service.getName()));
       return AclLineMatchExprs.FALSE;
     }
-    return new OrMatchExpr(matchExprs, matchServiceTraceElement(service, _filename));
+    TraceElement te =
+        service instanceof Service ? matchServiceTraceElement((Service) service, _filename) : null;
+    return new OrMatchExpr(matchExprs, te);
   }
 
   private void convertInterface(Interface iface, Configuration c) {

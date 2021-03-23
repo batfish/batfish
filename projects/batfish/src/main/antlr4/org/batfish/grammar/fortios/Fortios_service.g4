@@ -4,8 +4,9 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-cf_service: SERVICE cfs_custom;
+cf_service: SERVICE (cfs_custom | cfs_group);
 
+// Service custom
 cfs_custom: CUSTOM newline cfsc*;
 
 cfsc: cfsc_edit | cfsc_rename;
@@ -43,8 +44,36 @@ cfsc_set_tcp_portrange: TCP_PORTRANGE value = service_port_ranges newline;
 
 cfsc_set_udp_portrange: UDP_PORTRANGE value = service_port_ranges newline;
 
-// Up to 79 characters
-service_name: str;
+// Service group
+cfs_group: GROUP newline cfsg*;
+
+cfsg: cfsg_edit | cfsg_rename;
+
+cfsg_rename: RENAME current_name = service_name TO new_name = service_name newline;
+
+cfsg_edit: EDIT service_name newline cfsge* NEXT newline;
+
+cfsge
+:
+    (
+        SET (cfsg_set_singletons | cfsg_set_member)
+        | APPEND cfsg_append_member
+        | SELECT cfsg_set_member
+    )
+;
+
+cfsg_set_singletons:
+    cfsg_set_comment
+    | cfsg_set_null
+;
+
+cfsg_set_comment: COMMENT comment = str newline;
+
+cfsg_set_null: COLOR null_rest_of_line;
+
+cfsg_set_member: MEMBER service_names newline;
+
+cfsg_append_member: MEMBER service_names newline;
 
 service_protocol
 :

@@ -1,0 +1,28 @@
+config system global
+    set hostname "service_group"
+end
+config firewall service custom
+    edit "custom_tcp1"
+        set tcp-portrange 1
+    next
+    edit "custom_tcp2"
+        set tcp-portrange 2
+    next
+    edit "custom_tcp3"
+        set tcp-portrange 3
+    next
+end
+config firewall service group
+    edit "this is longest possible firewall service group name that is accepted by device"
+        set comment "service group comment"
+        set member custom_tcp3
+    next
+    edit "grp1"
+        set member custom_tcp3
+    next
+    edit "grp2"
+        set member custom_tcp1 custom_tcp2
+        set member custom_tcp3
+        append member grp1
+    next
+end
