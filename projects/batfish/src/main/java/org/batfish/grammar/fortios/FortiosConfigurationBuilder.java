@@ -790,8 +790,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
         .ifPresent(
             newMembers -> {
-              Set<BatfishUUID> members = _currentServiceGroup.getMemberUUIDs();
-
               // See if any of the new members is invalid / the parent of the current group
               ServiceGroup parent =
                   getParentServiceGroup(
@@ -806,6 +804,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
                         parent.getName(), _currentServiceGroup.getName()));
                 return;
               }
+
+              Set<BatfishUUID> members = _currentServiceGroup.getMemberUUIDs();
               members.clear();
               members.addAll(newMembers);
             });
@@ -817,7 +817,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
         .ifPresent(
             newMembers -> {
-
               // See if any of the new members is invalid / the parent of the current group
               ServiceGroup parent =
                   getParentServiceGroup(
@@ -1162,7 +1161,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * indirect descendants/map UUIDs to objects.
    */
   @Nullable
-  private ServiceGroup getParentServiceGroup(
+  private static ServiceGroup getParentServiceGroup(
       BatfishUUID childUuid,
       Collection<BatfishUUID> candidateParents,
       Collection<ServiceGroup> allServiceGroups) {

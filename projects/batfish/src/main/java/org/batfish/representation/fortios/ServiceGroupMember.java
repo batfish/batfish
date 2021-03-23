@@ -18,9 +18,7 @@ public abstract class ServiceGroupMember implements FortiosRenameableObject, Ser
     _comment = comment;
   }
 
-  public Stream<HeaderSpace> toHeaderSpaces() {
-    throw new UnsupportedOperationException();
-  }
+  public abstract Stream<HeaderSpace> toHeaderSpaces();
 
   @Nullable private String _comment;
 }
