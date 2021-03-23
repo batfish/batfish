@@ -70,13 +70,10 @@ public final class ServiceGroup implements Serializable, ServiceGroupMember {
     if (_memberUuids.contains(uuid)) {
       return true;
     }
-    for (BatfishUUID member : _memberUuids) {
-      if (serviceGroups.containsKey(member)
-          && serviceGroups.get(member).contains(uuid, serviceGroups)) {
-        return true;
-      }
-    }
-    return false;
+    return _memberUuids.stream()
+        .anyMatch(
+            m ->
+                serviceGroups.containsKey(m) && serviceGroups.get(m).contains(uuid, serviceGroups));
   }
 
   @Override
