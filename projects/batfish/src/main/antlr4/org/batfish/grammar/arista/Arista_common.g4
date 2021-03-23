@@ -33,6 +33,12 @@ uint32: UINT8 | UINT16 | UINT32;
 // TODO: delete all uses of dec, replace with named rules that have a toInt/LongInSpace function
 dec: UINT8 | UINT16 | UINT32 | DEC;
 
+vrf_name
+:
+//1-100 characters
+  WORD
+;
+
 word
 :
   WORD

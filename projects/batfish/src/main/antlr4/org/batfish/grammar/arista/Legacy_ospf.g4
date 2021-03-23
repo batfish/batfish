@@ -11,18 +11,6 @@ ro_address_family
    ADDRESS_FAMILY IPV4 UNICAST? NEWLINE ro_common*
 ;
 
-ro_area
-:
-   AREA area = ospf_area NEWLINE
-   (
-      ro_common
-      | roa_cost
-      | roa_interface
-      | roa_network_null
-      | roa_range
-   )*
-;
-
 ro_area_default_cost
 :
    AREA area = ospf_area DEFAULT_COST cost = dec NEWLINE
@@ -293,6 +281,11 @@ ro_passive_interface
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
+ro_priority
+:
+   PRIORITY dec NEWLINE
+;
+
 ro_redistribute_bgp_arista
 :
    REDISTRIBUTE BGP
@@ -364,16 +357,6 @@ ro_summary_address
 :
    SUMMARY_ADDRESS network = IP_ADDRESS mask = IP_ADDRESS NOT_ADVERTISE?
    NEWLINE
-;
-
-ro_vrf
-:
-   VRF name = variable NEWLINE
-   (
-      ro_max_metric
-      | ro_redistribute_connected
-      | ro_redistribute_static
-   )*
 ;
 
 ro6_area
@@ -448,73 +431,6 @@ ro6_redistribute
    REDISTRIBUTE null_rest_of_line
 ;
 
-roa_cost
-:
-   COST cost = dec NEWLINE
-;
-
-roa_interface
-:
-   INTERFACE iname = interface_name NEWLINE
-   (
-      ro_common
-      | roi_cost
-      | roi_network
-      | roi_priority
-      | roi_passive
-   )*
-;
-
-roa_range
-:
-   RANGE prefix = IP_PREFIX
-   (
-      ADVERTISE
-      | NOT_ADVERTISE
-   )?
-   (
-      COST cost = dec
-   )? NEWLINE
-;
-
-roa_network_null
-:
-   NETWORK POINT_TO_POINT NEWLINE
-;
-
-roi_cost
-:
-   COST cost = dec NEWLINE
-;
-
-roi_network
-:
-   NETWORK
-   (
-      BROADCAST
-      | NON_BROADCAST
-      |
-      (
-         POINT_TO_MULTIPOINT NON_BROADCAST?
-      )
-      | POINT_TO_POINT
-   ) NEWLINE
-;
-
-roi_passive
-:
-   PASSIVE
-   (
-      ENABLE
-      | DISABLE
-   )? NEWLINE
-;
-
-roi_priority
-:
-   PRIORITY dec NEWLINE
-;
-
 rov3_address_family
 :
    ADDRESS_FAMILY IPV6 UNICAST? NEWLINE rov3_common*
@@ -583,13 +499,9 @@ s_ipv6_router_ospf
 
 s_router_ospf
 :
-   ROUTER OSPF name = variable
-   (
-      VRF vrf = variable
-   )? NEWLINE
+   ROUTER OSPF name = variable (VRF vrf = vrf_name)? NEWLINE
    (
       ro_address_family
-      | ro_area
       | ro_area_default_cost
       | ro_area_filterlist
       | ro_area_nssa
@@ -606,6 +518,7 @@ s_router_ospf
       | ro_network
       | ro_passive_interface_default
       | ro_passive_interface
+      | ro_priority
       | ro_redistribute_bgp_arista
       | ro_redistribute_connected
       | ro_redistribute_ospf_null
@@ -613,8 +526,6 @@ s_router_ospf
       | ro_redistribute_static
       | ro_router_id
       | ro_summary_address
-      | ro_vrf
-      | roi_priority
    )*
 ;
 

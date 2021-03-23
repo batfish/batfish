@@ -541,7 +541,7 @@ variable_distribute_list
 
 variable_hostname
 :
-   ~( USE_VRF | NEWLINE | VRF )+
+   ~( NEWLINE | VRF )+
 ;
 
 variable_interface_name

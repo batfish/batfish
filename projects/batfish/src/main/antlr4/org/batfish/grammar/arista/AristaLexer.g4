@@ -599,6 +599,7 @@ BUG_ALERT: 'bug-alert';
 
 BUNDLE: 'bundle';
 
+BURST: 'burst';
 BURST_SIZE: 'burst-size';
 
 BYPASS: 'bypass';
@@ -1015,7 +1016,7 @@ DEFAULT_TASKGROUP: 'default-taskgroup';
 
 DEFAULT_TOS_QOS10: 'default-tos-qos10';
 
-DEFINITION: 'definition';
+DEFINITION: 'definition' -> pushMode(M_Word);
 
 DEL: 'Del';
 
@@ -1543,8 +1544,6 @@ EXEC_TIMEOUT: 'exec-timeout';
 EXIT: 'exit';
 
 EXIT_ADDRESS_FAMILY: 'exit-address-family';
-
-EXIT_VRF: 'exit-vrf';
 
 EXPIRE: 'expire';
 
@@ -2090,7 +2089,12 @@ INSTALL_MAP: 'install-map';
 
 INSTALL_OIFS: 'install-oifs';
 
-INSTANCE: 'instance';
+INSTANCE: 'instance'
+{
+  if (lastTokenType() == VRF) {
+    pushMode(M_Word);
+  }
+};
 
 INTEGRITY: 'integrity';
 
@@ -4710,8 +4714,6 @@ USE_IPV6_ACL: 'use-ipv6-acl';
 
 USE_LINK_ADDRESS: 'use-link-address';
 
-USE_VRF: 'use-vrf';
-
 USER: 'user';
 
 USERINFO
@@ -4836,15 +4838,7 @@ VPN_IPV4: 'vpn-ipv4';
 
 VPN_IPV6: 'vpn-ipv6';
 
-VRF
-:
-  'vrf'
-  {
-    if (lastTokenType() == LOGGING) {
-      pushMode( M_Word );
-    }
-  }
-;
+VRF: 'vrf' -> pushMode(M_Vrf);
 
 VRF_ALSO: 'vrf-also';
 
@@ -5235,8 +5229,7 @@ WS
 // Variable should be last unless we can find a reason not to.
 VARIABLE
 :
-   F_Variable_RequiredVarChar F_Variable_VarChar*
-   | F_Variable_VarChar+ F_Variable_RequiredVarChar F_Variable_VarChar*
+   F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
 ;
 
 fragment
@@ -6412,7 +6405,7 @@ M_Interface_TRAPS
 
 M_Interface_VRF
 :
-   'vrf' -> type ( VRF ) , popMode
+   'vrf' -> type (VRF), mode(M_Vrf)
 ;
 
 M_Interface_COLON
@@ -6736,6 +6729,38 @@ M_SnmpServerCommunity_DOUBLE_QUOTE
 M_SnmpServerCommunity_CHAR
 :
    F_NonWhitespace -> mode ( M_Name ), more
+;
+
+mode M_Vrf;
+
+M_Vrf_DEFINITION
+:
+  'definition' -> type(DEFINITION), mode(M_Word)
+;
+
+M_Vrf_FORWARDING
+:
+  'forwarding' -> type(FORWARDING), mode(M_Word)
+;
+
+M_Vrf_INSTANCE
+:
+  'instance' -> type(INSTANCE), mode(M_Word)
+;
+
+M_Vrf_WORD
+:
+  F_NonWhitespace+ -> type(WORD), popMode
+;
+
+M_Vrf_NEWLINE
+:
+   F_Newline+ -> type (NEWLINE), popMode
+;
+
+M_Vrf_WS
+:
+   F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_Word;

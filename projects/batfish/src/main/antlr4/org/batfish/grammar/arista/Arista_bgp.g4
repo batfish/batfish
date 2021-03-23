@@ -3107,7 +3107,7 @@ eos_rbv_route_target
 
 eos_rb_vrf
 :
-  VRF name = variable NEWLINE
+  VRF name = vrf_name NEWLINE
   (
     eos_rbv_address_family
     | eos_rb_inner
