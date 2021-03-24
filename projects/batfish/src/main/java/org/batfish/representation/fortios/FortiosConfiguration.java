@@ -39,6 +39,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public FortiosConfiguration() {
     _addresses = new HashMap<>();
+    _addrgrps = new HashMap<>();
     _interfaces = new HashMap<>();
     _policies = new LinkedHashMap<>();
     _renameableObjects = new HashMap<>();
@@ -69,6 +70,10 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Address> getAddresses() {
     return _addresses;
+  }
+
+  public @Nonnull Map<String, Addrgrp> getAddrgrps() {
+    return _addrgrps;
   }
 
   public @Nonnull Map<String, Interface> getInterfaces() {
@@ -112,6 +117,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   private String _hostname;
   private final @Nonnull Map<String, Address> _addresses;
+  private final @Nonnull Map<String, Addrgrp> _addrgrps;
   private final @Nonnull Map<String, Interface> _interfaces;
   // Note: this is a LinkedHashMap to preserve insertion order
   private final @Nonnull Map<String, Policy> _policies;
@@ -131,6 +137,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     c.setDefaultInboundAction(LineAction.DENY);
 
     // Convert addresses
+    // TODO convert addrgrp
     _addresses
         .values()
         .forEach(address -> c.getIpSpaces().put(address.getName(), address.toIpSpace(_w)));
@@ -165,6 +172,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
     // Count structure references
     markConcreteStructure(FortiosStructureType.ADDRESS);
+    markConcreteStructure(FortiosStructureType.ADDRGRP);
     markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
     markConcreteStructure(FortiosStructureType.SERVICE_GROUP);
     markConcreteStructure(FortiosStructureType.INTERFACE);

@@ -39,6 +39,7 @@ import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.fortios.FortiosParser.Address_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Addrgrp_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Allow_or_denyContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_renameContext;
@@ -52,6 +53,15 @@ import org.batfish.grammar.fortios.FortiosParser.Cfa_set_start_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_subnetContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_wildcardContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_append_exclude_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_append_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_commentContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_excludeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_exclude_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_fabric_objectContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
@@ -148,6 +158,7 @@ import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.grammar.fortios.FortiosParser.Zone_nameContext;
 import org.batfish.representation.fortios.Address;
+import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
@@ -207,34 +218,31 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitFortios_configuration(Fortios_configurationContext ctx) {
     // After renaming is complete, generate object names from UUIDs
     for (Policy policy : _c.getPolicies().values()) {
-      policy.setSrcAddr(
-          policy.getSrcAddrUUIDs().stream()
-              .map(u -> _c.getRenameableObjects().get(u).getName())
-              .collect(ImmutableSet.toImmutableSet()));
-      policy.setDstAddr(
-          policy.getDstAddrUUIDs().stream()
-              .map(u -> _c.getRenameableObjects().get(u).getName())
-              .collect(ImmutableSet.toImmutableSet()));
-      policy.setService(
-          policy.getServiceUUIDs().stream()
-              .map(u -> _c.getRenameableObjects().get(u).getName())
-              .collect(ImmutableSet.toImmutableSet()));
-      policy.setDstIntfZones(
-          policy.getDstIntfZoneUUIDs().stream()
-              .map(u -> _c.getRenameableObjects().get(u).getName())
-              .collect(ImmutableSet.toImmutableSet()));
-      policy.setSrcIntfZones(
-          policy.getSrcIntfZoneUUIDs().stream()
-              .map(u -> _c.getRenameableObjects().get(u).getName())
-              .collect(ImmutableSet.toImmutableSet()));
+      policy.setSrcAddr(toNames(policy.getSrcAddrUUIDs()));
+      policy.setDstAddr(toNames(policy.getDstAddrUUIDs()));
+      policy.setService(toNames(policy.getServiceUUIDs()));
+      policy.setDstIntfZones(toNames(policy.getDstIntfZoneUUIDs()));
+      policy.setSrcIntfZones(toNames(policy.getSrcIntfZoneUUIDs()));
     }
 
     for (ServiceGroup group : _c.getServiceGroups().values()) {
-      group.setMember(
-          group.getMemberUUIDs().stream()
-              .map(u -> _c.getRenameableObjects().get(u).getName())
-              .collect(ImmutableSet.toImmutableSet()));
+      group.setMember(toNames(group.getMemberUUIDs()));
     }
+
+    for (Addrgrp group : _c.getAddrgrps().values()) {
+      group.setExcludeMember(toNames(group.getExcludeMemberUUIDs()));
+      group.setMember(toNames(group.getMemberUUIDs()));
+    }
+  }
+
+  /**
+   * Convert set of {@link BatfishUUID} to a set of {@link
+   * org.batfish.representation.fortios.FortiosRenameableObject} names
+   */
+  private Set<String> toNames(Set<BatfishUUID> uuids) {
+    return uuids.stream()
+        .map(u -> _c.getRenameableObjects().get(u).getName())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
@@ -449,6 +457,143 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void enterCfaddrgrp_edit(Cfaddrgrp_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.address_name());
+    Addrgrp existingAddrgrp = name.map(_c.getAddrgrps()::get).orElse(null);
+    if (existingAddrgrp != null) {
+      // Make a clone to edit
+      _currentAddrgrp = SerializationUtils.clone(existingAddrgrp);
+    } else {
+      _currentAddrgrp = new Addrgrp(toString(ctx.address_name().str()), getUUID());
+    }
+    _currentAddrgrpNameValid = name.isPresent();
+  }
+
+  @Override
+  public void exitCfaddrgrp_edit(Cfaddrgrp_editContext ctx) {
+    // If edited addrgrp is valid, add/update the entry in VS addresses map.
+    String invalidReason = addrgrpValid(_currentAddrgrp, _currentAddrgrpNameValid);
+    if (invalidReason == null) {
+      _c.defineStructure(FortiosStructureType.ADDRGRP, _currentAddrgrp.getName(), ctx);
+      _c.getAddrgrps().put(_currentAddrgrp.getName(), _currentAddrgrp);
+      _c.getRenameableObjects().put(_currentAddrgrp.getBatfishUUID(), _currentAddrgrp);
+    } else {
+      warn(ctx, String.format("Addrgrp edit block ignored: %s", invalidReason));
+    }
+    _currentAddrgrp = null;
+  }
+
+  @Override
+  public void exitCfaddrgrp_set_comment(Cfaddrgrp_set_commentContext ctx) {
+    _currentAddrgrp.setComment(toString(ctx.comment));
+  }
+
+  @Override
+  public void exitCfaddrgrp_set_exclude(Cfaddrgrp_set_excludeContext ctx) {
+    // TODO better validation
+    // some types of address object members will cause `exclude enable` to be rejected
+    _currentAddrgrp.setExclude(toBoolean(ctx.exclude));
+  }
+
+  @Override
+  public void exitCfaddrgrp_set_fabric_object(Cfaddrgrp_set_fabric_objectContext ctx) {
+    todo(ctx);
+    _currentAddrgrp.setFabricObject(toBoolean(ctx.value));
+  }
+
+  @Override
+  public void exitCfaddrgrp_set_type(Cfaddrgrp_set_typeContext ctx) {
+    _currentAddrgrp.setType(toAddrgrpType(ctx, ctx.type));
+  }
+
+  @Override
+  public void exitCfaddrgrp_set_exclude_member(Cfaddrgrp_set_exclude_memberContext ctx) {
+    if (!_currentAddrgrp.getExcludeEffective()) {
+      warn(ctx, "Cannot set exclude-member when exclude is not enabled");
+      return;
+    }
+
+    toAddrgrpMemberUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_EXCLUDE_MEMBER, false)
+        .ifPresent(
+            addresses -> {
+              if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
+                return;
+              }
+
+              Set<BatfishUUID> addrs = _currentAddrgrp.getExcludeMemberUUIDs();
+              addrs.clear();
+              addrs.addAll(addresses);
+            });
+  }
+
+  @Override
+  public void exitCfaddrgrp_set_member(Cfaddrgrp_set_memberContext ctx) {
+    toAddrgrpMemberUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_MEMBER, false)
+        .ifPresent(
+            addresses -> {
+              if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
+                return;
+              }
+
+              Set<BatfishUUID> addrs = _currentAddrgrp.getMemberUUIDs();
+              addrs.clear();
+              addrs.addAll(addresses);
+            });
+  }
+
+  @Override
+  public void exitCfaddrgrp_append_exclude_member(Cfaddrgrp_append_exclude_memberContext ctx) {
+    if (!_currentAddrgrp.getExcludeEffective()) {
+      warn(ctx, "Cannot set exclude-member when exclude is not enabled");
+      return;
+    }
+
+    toAddrgrpMemberUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_EXCLUDE_MEMBER, false)
+        .ifPresent(
+            addresses -> {
+              if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
+                return;
+              }
+
+              Set<BatfishUUID> addrs = _currentAddrgrp.getExcludeMemberUUIDs();
+              addrs.addAll(addresses);
+            });
+  }
+
+  @Override
+  public void exitCfaddrgrp_append_member(Cfaddrgrp_append_memberContext ctx) {
+    toAddrgrpMemberUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_MEMBER, false)
+        .ifPresent(
+            addresses -> {
+              if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
+                return;
+              }
+
+              Set<BatfishUUID> addrs = _currentAddrgrp.getMemberUUIDs();
+              addrs.addAll(addresses);
+            });
+  }
+
+  /**
+   * Check if the supplied addrgrp members are valid for the current addrgrp. Warns and returns
+   * {@code false} if not valid, otherwise returns {@code true}.
+   */
+  private boolean checkAddrgrpMembersValidAndWarn(
+      ParserRuleContext ctx, Set<BatfishUUID> newMembers) {
+    Addrgrp parent =
+        getParentAddrgrp(_currentAddrgrp.getBatfishUUID(), newMembers, _c.getAddrgrps().values());
+    if (parent != null) {
+      warn(
+          ctx,
+          String.format(
+              "Addrgrp %s cannot be added to %s as it would create a cycle",
+              parent.getName(), _currentAddrgrp.getName()));
+      return false;
+    }
+    return true;
+  }
+
+  @Override
   public void enterCsi_edit(Csi_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.interface_name());
     Interface existing = name.map(_c.getInterfaces()::get).orElse(null);
@@ -635,7 +780,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   // List items
   @Override
   public void exitCfp_set_dstaddr(Cfp_set_dstaddrContext ctx) {
-    toAddressUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR)
+    toAddrgrpMemberUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR, true)
         .ifPresent(
             addresses -> {
               Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
@@ -646,7 +791,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_set_srcaddr(Cfp_set_srcaddrContext ctx) {
-    toAddressUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR)
+    toAddrgrpMemberUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR, true)
         .ifPresent(
             addresses -> {
               Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
@@ -698,7 +843,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_dstaddr(Cfp_append_dstaddrContext ctx) {
-    toAddressUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR)
+    toAddrgrpMemberUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_DSTADDR, true)
         .ifPresent(
             a -> {
               Set<BatfishUUID> addrs = _currentPolicy.getDstAddrUUIDs();
@@ -708,7 +853,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_append_srcaddr(Cfp_append_srcaddrContext ctx) {
-    toAddressUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR)
+    toAddrgrpMemberUUIDs(ctx.addresses, FortiosStructureUsage.POLICY_SRCADDR, true)
         .ifPresent(
             a -> {
               Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
@@ -1155,6 +1300,52 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /**
+   * Returns a parent Addrgrp which directly or indirectly contains the specified AddrgrpMember
+   * UUID, or {@code null} if none contain it. Searches only the specified parent UUIDs and their
+   * descendants and uses the provided collection of groups to expand indirect descendants/map UUIDs
+   * to objects.
+   */
+  @Nullable
+  private static Addrgrp getParentAddrgrp(
+      BatfishUUID childUuid,
+      Collection<BatfishUUID> candidateParents,
+      Collection<Addrgrp> allAddrgrps) {
+    Map<BatfishUUID, Addrgrp> allAddrgrpsByUUID =
+        allAddrgrps.stream()
+            .collect(ImmutableMap.toImmutableMap(Addrgrp::getBatfishUUID, Function.identity()));
+
+    for (BatfishUUID parentUUID : candidateParents) {
+      if (!allAddrgrpsByUUID.containsKey(parentUUID)) {
+        // If the candidate parent doesn't exist (e.g. is an Address, not a group) skip it
+        continue;
+      }
+      Addrgrp parent = allAddrgrpsByUUID.get(parentUUID);
+      if (addrgrpContains(parent, childUuid, allAddrgrpsByUUID)) {
+        return parent;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Helper function that returns a boolean indicating if the specified parent Addrgrp directly or
+   * indirectly contains the a member with the specified UUID. Uses the provided map of groups to
+   * expand indirect descendants.
+   */
+  static boolean addrgrpContains(
+      Addrgrp parent, BatfishUUID uuid, Map<BatfishUUID, Addrgrp> allAddrgrps) {
+    Set<BatfishUUID> members = parent.getMemberUUIDs();
+    if (parent.getBatfishUUID().equals(uuid) || members.contains(uuid)) {
+      return true;
+    }
+    return members.stream()
+        .anyMatch(
+            m ->
+                allAddrgrps.containsKey(m)
+                    && addrgrpContains(allAddrgrps.get(m), uuid, allAddrgrps));
+  }
+
+  /**
    * Returns a parent ServiceGroup which directly or indirectly contains the specified
    * ServiceGroupMember UUID, or {@code null} if none contain it. Searches only the specified parent
    * UUIDs and their descendants and uses the provided collection of service groups to expand
@@ -1205,30 +1396,32 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * Generate a list of address UUIDs for the supplied Address_names context. Returns {@link
    * Optional#empty()} if invalid.
    */
-  private Optional<Set<BatfishUUID>> toAddressUUIDs(
-      Address_namesContext ctx, FortiosStructureUsage usage) {
+  private Optional<Set<BatfishUUID>> toAddrgrpMemberUUIDs(
+      Address_namesContext ctx, FortiosStructureUsage usage, boolean pruneAll) {
     int line = ctx.start.getLine();
     Map<String, Address> addressesMap = _c.getAddresses();
+    Map<String, Addrgrp> addrgrpsMap = _c.getAddrgrps();
     ImmutableSet.Builder<BatfishUUID> addressUuidsBuilder = ImmutableSet.builder();
     Set<String> addresses =
         ctx.address_name().stream()
             .map(n -> toString(n.str()))
             .collect(ImmutableSet.toImmutableSet());
     for (String name : addresses) {
-      if (name.equals(Policy.ALL_ADDRESSES) && addresses.size() > 1) {
+      if (pruneAll && name.equals(Policy.ALL_ADDRESSES) && addresses.size() > 1) {
         warn(ctx, "When 'all' is set together with other address(es), it is removed");
         continue;
       }
       if (addressesMap.containsKey(name)) {
         addressUuidsBuilder.add(addressesMap.get(name).getBatfishUUID());
         _c.referenceStructure(FortiosStructureType.ADDRESS, name, usage, line);
+      } else if (addrgrpsMap.containsKey(name)) {
+        addressUuidsBuilder.add(addrgrpsMap.get(name).getBatfishUUID());
+        _c.referenceStructure(FortiosStructureType.ADDRGRP, name, usage, line);
       } else {
         _c.undefined(FortiosStructureType.ADDRESS_OR_ADDRGRP, name, usage, line);
         warn(
             ctx,
-            String.format(
-                "Address %s is undefined and cannot be added to policy %s",
-                name, _currentPolicy.getNumber()));
+            String.format("Address or addrgrp %s is undefined and cannot be referenced", name));
         return Optional.empty();
       }
     }
@@ -1448,6 +1641,16 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     } else {
       assert ctx.MAC() != null;
       return Address.Type.MAC;
+    }
+  }
+
+  private Addrgrp.Type toAddrgrpType(ParserRuleContext ctx, Addrgrp_typeContext addrgrpCtx) {
+    if (addrgrpCtx.DEFAULT() != null) {
+      return Addrgrp.Type.DEFAULT;
+    } else {
+      assert addrgrpCtx.FOLDER() != null;
+      warn(ctx, "Addrgrp type folder is not yet supported");
+      return Addrgrp.Type.FOLDER;
     }
   }
 
@@ -1797,6 +2000,22 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
   }
 
+  /** Returns message indicating why addrgrp can't be committed in the CLI, or null if it can */
+  @VisibleForTesting
+  public static @Nullable String addrgrpValid(Addrgrp a, boolean nameValid) {
+    if (!nameValid) {
+      return "name is invalid";
+    }
+    if (a.getMemberUUIDs().isEmpty()) {
+      return "addrgrp requires at least one member";
+    }
+    if (a.getExcludeEffective() && a.getExcludeMemberUUIDs().isEmpty()) {
+      return "addrgrp requires at least one exclude-member when exclude is enabled";
+    }
+
+    return null;
+  }
+
   /** Returns message indicating why policy can't be committed in the CLI, or null if it can */
   @VisibleForTesting
   public static @Nullable String policyValid(Policy p, boolean valid) {
@@ -1921,6 +2140,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * #addressValid(Address, boolean)}.
    */
   private boolean _currentAddressNameValid;
+
+  private Addrgrp _currentAddrgrp;
+  private boolean _currentAddrgrpNameValid;
 
   private Interface _currentInterface;
   private Policy _currentPolicy;
