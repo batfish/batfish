@@ -1903,6 +1903,7 @@ public final class FortiosGrammarTest {
 
     int dstPortAllowed = 2345;
     int dstPortDenied = 1234;
+    int dstPortDeniedIndirect = 1235;
 
     String port1 = "port1";
     Ip port1Addr = Ip.parse("10.0.1.2");
@@ -1922,6 +1923,8 @@ public final class FortiosGrammarTest {
     // Explicitly denied
     Flow p1ToP3Denied = createFlow(port1, port1Addr, port3Addr, dstPortDenied);
     Flow p2ToP3Denied = createFlow(port2, port2Addr, port4Addr, dstPortDenied);
+    // Denied through a service group member, not directly through service
+    Flow p1ToP3DeniedIndirect = createFlow(port1, port1Addr, port3Addr, dstPortDeniedIndirect);
 
     // No-match, denied
     Flow p3ToP1 = createFlow(port3, port3Addr, port1Addr, dstPortAllowed);
@@ -1937,6 +1940,7 @@ public final class FortiosGrammarTest {
 
     // Explicitly denied
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3DeniedIndirect, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
   }
 

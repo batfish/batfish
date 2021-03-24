@@ -3,14 +3,9 @@ package org.batfish.representation.fortios;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
 import java.io.Serializable;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 
 /** FortiOS datamodel component containing firewall service configuration */
@@ -208,60 +203,4 @@ public final class Service extends ServiceGroupMember implements Serializable {
   @Nullable private IntegerSpace _udpPortRangeSrc;
   @Nullable private IntegerSpace _sctpPortRangeDst;
   @Nullable private IntegerSpace _sctpPortRangeSrc;
-
-  @Override
-  @Nonnull
-  public Stream<HeaderSpace> toHeaderSpaces() {
-    switch (getProtocolEffective()) {
-      case TCP_UDP_SCTP:
-        return Stream.of(
-                buildHeaderSpaceWithPorts(
-                    IpProtocol.TCP, getTcpPortRangeSrcEffective(), getTcpPortRangeDst()),
-                buildHeaderSpaceWithPorts(
-                    IpProtocol.UDP, getUdpPortRangeSrcEffective(), getUdpPortRangeDst()),
-                buildHeaderSpaceWithPorts(
-                    IpProtocol.SCTP, getSctpPortRangeSrcEffective(), getSctpPortRangeDst()))
-            .filter(Objects::nonNull);
-      case ICMP:
-        return Stream.of(buildIcmpHeaderSpace(IpProtocol.ICMP, getIcmpCode(), getIcmpType()));
-      case ICMP6:
-        return Stream.of(buildIcmpHeaderSpace(IpProtocol.IPV6_ICMP, getIcmpCode(), getIcmpType()));
-      case IP:
-        // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
-        // protocol number specifies one of those protocols
-        int protocolNumber = getProtocolNumberEffective();
-        HeaderSpace.Builder hs = HeaderSpace.builder();
-        // Protocol number 0 indicates all protocols.
-        // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
-        return Stream.of(
-            protocolNumber == 0
-                ? hs.build()
-                : hs.setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build());
-      default:
-        throw new UnsupportedOperationException(
-            String.format("Unrecognized service protocol %s", getProtocolEffective()));
-    }
-  }
-
-  /** Returns a {@link HeaderSpace} with the given ports, or null if {@code dstPorts} are null */
-  private static @Nullable HeaderSpace buildHeaderSpaceWithPorts(
-      @Nonnull IpProtocol protocol,
-      @Nullable IntegerSpace srcPorts,
-      @Nullable IntegerSpace dstPorts) {
-    if (dstPorts == null) {
-      return null;
-    }
-    HeaderSpace.Builder headerSpace =
-        HeaderSpace.builder().setIpProtocols(protocol).setDstPorts(dstPorts.getSubRanges());
-    Optional.ofNullable(srcPorts).ifPresent(src -> headerSpace.setSrcPorts(src.getSubRanges()));
-    return headerSpace.build();
-  }
-
-  private static HeaderSpace buildIcmpHeaderSpace(
-      IpProtocol icmpProtocol, @Nullable Integer icmpCode, @Nullable Integer icmpType) {
-    HeaderSpace.Builder headerSpace = HeaderSpace.builder().setIpProtocols(icmpProtocol);
-    Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
-    Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
-    return headerSpace.build();
-  }
 }

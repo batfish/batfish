@@ -12,19 +12,36 @@ public final class FortiosTraceElementCreators {
 
   private FortiosTraceElementCreators() {}
 
-  /** Creates {@link TraceElement} for specified {@link Service}. */
+  /** Creates {@link TraceElement} for specified {@link ServiceGroupMember}. */
   static TraceElement matchServiceTraceElement(Service service, String filename) {
-    TraceElement.Builder te =
-        TraceElement.builder()
-            .add("Matched service ")
-            .add(
-                service.getName(),
-                new VendorStructureId(
-                    filename,
-                    FortiosStructureType.SERVICE_CUSTOM.getDescription(),
-                    service.getName()));
+    TraceElement.Builder te = TraceElement.builder();
+
+    te.add("Matched service ")
+        .add(
+            service.getName(),
+            new VendorStructureId(
+                filename, FortiosStructureType.SERVICE_CUSTOM.getDescription(), service.getName()));
+
     if (service.getComment() != null) {
       te.add(String.format("(%s)", service.getComment()));
+    }
+    return te.build();
+  }
+
+  /** Creates {@link TraceElement} for specified {@link ServiceGroupMember}. */
+  static TraceElement matchServiceGroupTraceElement(ServiceGroup serviceGroup, String filename) {
+    TraceElement.Builder te =
+        TraceElement.builder()
+            .add("Matched service group ")
+            .add(
+                serviceGroup.getName(),
+                new VendorStructureId(
+                    filename,
+                    FortiosStructureType.SERVICE_GROUP.getDescription(),
+                    serviceGroup.getName()));
+
+    if (serviceGroup.getComment() != null) {
+      te.add(String.format("(%s)", serviceGroup.getComment()));
     }
     return te.build();
   }

@@ -12,6 +12,8 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchPolicyTraceElement;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceGroupTraceElement;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.zoneToZoneDefaultTraceElement;
 import static org.batfish.representation.fortios.InterfaceOrZoneUtils.getDefaultIntrazoneAction;
@@ -40,12 +42,15 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OrMatchExpr;
 
 /** Helper functions for generating VI ACLs for {@link FortiosConfiguration}. */
 public final class FortiosPolicyConversions {
@@ -328,6 +333,115 @@ public final class FortiosPolicyConversions {
     line.setTraceElement(matchPolicyTraceElement(policy, filename));
     line.setName(numAndName);
     return Optional.of(line.build());
+  }
+
+  /**
+   * Convert specified {@link ServiceGroupMember} into its corresponding {@link AclLineMatchExpr}.
+   */
+  @VisibleForTesting
+  @Nonnull
+  public static AclLineMatchExpr toMatchExpr(
+      ServiceGroupMember serviceGroupMember,
+      Map<String, ServiceGroupMember> serviceGroupMembers,
+      String filename) {
+    if (serviceGroupMember instanceof Service) {
+      return toMatchExpr((Service) serviceGroupMember, filename);
+    } else {
+      assert serviceGroupMember instanceof ServiceGroup;
+      return toMatchExpr((ServiceGroup) serviceGroupMember, serviceGroupMembers, filename);
+    }
+  }
+
+  @Nonnull
+  private static AclLineMatchExpr toMatchExpr(
+      ServiceGroup serviceGroup,
+      Map<String, ServiceGroupMember> serviceGroupMembers,
+      String filename) {
+    // Guaranteed once extraction is complete
+    assert serviceGroup.getMember() != null;
+
+    ImmutableList<AclLineMatchExpr> exprs =
+        serviceGroup.getMember().stream()
+            .map(m -> toMatchExpr(serviceGroupMembers.get(m), serviceGroupMembers, filename))
+            .collect(ImmutableList.toImmutableList());
+    // Any valid service group should match *some* service group members
+    assert !exprs.isEmpty();
+
+    return new OrMatchExpr(exprs, matchServiceGroupTraceElement(serviceGroup, filename));
+  }
+
+  @Nonnull
+  private static AclLineMatchExpr toMatchExpr(Service service, String filename) {
+    ImmutableList<MatchHeaderSpace> exprs =
+        toHeaderSpaces(service).map(MatchHeaderSpace::new).collect(ImmutableList.toImmutableList());
+    // Any valid service should match *some* packets
+    assert !exprs.isEmpty();
+
+    return new OrMatchExpr(exprs, matchServiceTraceElement(service, filename));
+  }
+
+  @Nonnull
+  private static Stream<HeaderSpace> toHeaderSpaces(Service service) {
+    switch (service.getProtocolEffective()) {
+      case TCP_UDP_SCTP:
+        return Stream.of(
+                buildHeaderSpaceWithPorts(
+                    IpProtocol.TCP,
+                    service.getTcpPortRangeSrcEffective(),
+                    service.getTcpPortRangeDst()),
+                buildHeaderSpaceWithPorts(
+                    IpProtocol.UDP,
+                    service.getUdpPortRangeSrcEffective(),
+                    service.getUdpPortRangeDst()),
+                buildHeaderSpaceWithPorts(
+                    IpProtocol.SCTP,
+                    service.getSctpPortRangeSrcEffective(),
+                    service.getSctpPortRangeDst()))
+            .filter(Objects::nonNull);
+      case ICMP:
+        return Stream.of(
+            buildIcmpHeaderSpace(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()));
+      case ICMP6:
+        return Stream.of(
+            buildIcmpHeaderSpace(
+                IpProtocol.IPV6_ICMP, service.getIcmpCode(), service.getIcmpType()));
+      case IP:
+        // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
+        // protocol number specifies one of those protocols
+        int protocolNumber = service.getProtocolNumberEffective();
+        HeaderSpace.Builder hs = HeaderSpace.builder();
+        // Protocol number 0 indicates all protocols.
+        // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
+        return Stream.of(
+            protocolNumber == 0
+                ? hs.build()
+                : hs.setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build());
+      default:
+        throw new UnsupportedOperationException(
+            String.format("Unrecognized service protocol %s", service.getProtocolEffective()));
+    }
+  }
+
+  /** Returns a {@link HeaderSpace} with the given ports, or null if {@code dstPorts} are null */
+  private static @Nullable HeaderSpace buildHeaderSpaceWithPorts(
+      @Nonnull IpProtocol protocol,
+      @Nullable IntegerSpace srcPorts,
+      @Nullable IntegerSpace dstPorts) {
+    if (dstPorts == null) {
+      return null;
+    }
+    HeaderSpace.Builder headerSpace =
+        HeaderSpace.builder().setIpProtocols(protocol).setDstPorts(dstPorts.getSubRanges());
+    Optional.ofNullable(srcPorts).ifPresent(src -> headerSpace.setSrcPorts(src.getSubRanges()));
+    return headerSpace.build();
+  }
+
+  private static HeaderSpace buildIcmpHeaderSpace(
+      IpProtocol icmpProtocol, @Nullable Integer icmpCode, @Nullable Integer icmpType) {
+    HeaderSpace.Builder headerSpace = HeaderSpace.builder().setIpProtocols(icmpProtocol);
+    Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
+    Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
+    return headerSpace.build();
   }
 
   /** Get human-readable name for the specified policy. */
