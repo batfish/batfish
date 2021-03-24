@@ -980,6 +980,7 @@ import org.batfish.grammar.cisco.CiscoParser.U_passwordContext;
 import org.batfish.grammar.cisco.CiscoParser.U_roleContext;
 import org.batfish.grammar.cisco.CiscoParser.Uint16Context;
 import org.batfish.grammar.cisco.CiscoParser.Uint32Context;
+import org.batfish.grammar.cisco.CiscoParser.Uint8Context;
 import org.batfish.grammar.cisco.CiscoParser.Unsuppress_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Update_source_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_af_group_bgp_tailContext;
@@ -1207,6 +1208,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       return Ip6.ZERO;
     }
+  }
+
+  private static int toInteger(Uint8Context ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   private static int toInteger(DecContext ctx) {
@@ -9690,11 +9695,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   /** Returns the given IPv4 protocol, or {@code null} if none is specified. */
   private @Nullable IpProtocol toIpProtocol(ProtocolContext ctx) {
-    if (ctx.dec() != null) {
-      int num = toInteger(ctx.dec());
-      if (num < 0 || num > 255) {
-        return convProblem(IpProtocol.class, ctx, null);
-      }
+    if (ctx.num != null) {
+      int num = toInteger(ctx.num);
       return IpProtocol.fromNumber(num);
     } else if (ctx.AH() != null || ctx.AHP() != null) {
       // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication header protocol
@@ -9711,6 +9713,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IpProtocol.IPV6_ICMP;
     } else if (ctx.IGMP() != null) {
       return IpProtocol.IGMP;
+    } else if (ctx.IGRP() != null) {
+      // Wikipedia: 9 Interior Gateway Protocol (any private interior gateway, for example Cisco's
+      // IGRP)
+      assert IpProtocol.IGP.number() == 9;
+      return IpProtocol.IGP;
     } else if (ctx.IP() != null) {
       return null;
     } else if (ctx.IPINIP() != null) {
@@ -9721,12 +9728,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IpProtocol.IPV6;
     } else if (ctx.ND() != null) {
       return IpProtocol.IPV6_ICMP;
+    } else if (ctx.NOS() != null) {
+      // Wikipedia: 94  KA9Q NOS compatible IP over IP tunneling
+      assert IpProtocol.IPIP.number() == 94;
+      return IpProtocol.IPIP;
     } else if (ctx.OSPF() != null) {
       return IpProtocol.OSPF;
     } else if (ctx.PIM() != null) {
       return IpProtocol.PIM;
     } else if (ctx.SCTP() != null) {
       return IpProtocol.SCTP;
+    } else if (ctx.SNP() != null) {
+      return IpProtocol.SNP;
     } else if (ctx.TCP() != null) {
       return IpProtocol.TCP;
     } else if (ctx.UDP() != null) {
@@ -9734,7 +9747,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.VRRP() != null) {
       return IpProtocol.VRRP;
     } else {
-      throw convError(IpProtocol.class, ctx);
+      return convProblem(IpProtocol.class, ctx, null);
     }
   }
 
