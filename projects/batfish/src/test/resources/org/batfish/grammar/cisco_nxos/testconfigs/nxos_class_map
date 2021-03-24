@@ -32,6 +32,7 @@ class-map type network-qos cm_network_qos
   match qos-group 3
 
 class-map type qos match-any cm_qos
+  match access-group name acl1
   match dscp 18,20,22
   match precedence 3-4
 

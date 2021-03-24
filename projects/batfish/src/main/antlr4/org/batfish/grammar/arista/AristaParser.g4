@@ -230,9 +230,8 @@ bfd_template_null
 arista_configuration
 :
    NEWLINE?
-   (
-      sl += stanza
-   )+ COLON? NEWLINE? EOF
+   (sl += stanza)+
+   COLON? NEWLINE? EOF
 ;
 
 configure_maintenance

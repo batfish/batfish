@@ -6462,18 +6462,8 @@ ZONE_PAIR: 'zone-pair';
 
 MULTICONFIGPART
 :
-   '############ MultiConfigPart' F_NonNewline* F_Newline+ -> channel ( HIDDEN
+   '############ MultiConfigPart' F_NonNewline* F_Newline -> channel ( HIDDEN
    )
-;
-
-MD5_ARISTA
-:
-   '$1$' F_AristaBase64String '$' F_AristaBase64String
-;
-
-SHA512_ARISTA
-:
-   '$6$' F_AristaBase64String '$' F_AristaBase64String
 ;
 
 POUND
@@ -6621,16 +6611,6 @@ BACKSLASH
    '\\'
 ;
 
-BLANK_LINE
-:
-   (
-      F_Whitespace
-   )* F_Newline
-   {lastTokenType() == NEWLINE}?
-
-   F_Newline* -> channel ( HIDDEN )
-;
-
 BRACE_LEFT
 :
    '{'
@@ -6702,25 +6682,12 @@ COMMENT_LINE
           return false;
       }}).get()
   }?
-  F_NonNewline* F_Newline+ -> channel ( HIDDEN )
+  F_NonNewline* F_Newline -> channel ( HIDDEN )
 ;
 
 COMMENT_TAIL
 :
    '!' F_NonNewline* -> channel ( HIDDEN )
-;
-
-ARISTA_PAGINATION_DISABLED
-:
-   'Pagination disabled.' F_Newline+ -> channel ( HIDDEN )
-;
-
-ARISTA_PROMPT_SHOW_RUN
-:
-   F_NonWhitespace+ [>#]
-   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
-
-   'show' F_Whitespace+ 'run' ( 'n' ( 'i' ( 'n' ( 'g' ( '-' ( 'c' ( 'o' ( 'n' ( 'f' ( 'i' 'g'? )? )? )? )? )? )? )? )? )? )? F_Whitespace* F_Newline+ -> channel ( HIDDEN )
 ;
 
 DASH: '-';
@@ -6774,7 +6741,7 @@ IPV6_PREFIX
 
 NEWLINE
 :
-  F_Newline+
+  F_Newline
   {
     _enableIpv6Address = true;
     _enableIpAddress = true;
@@ -6867,18 +6834,6 @@ DEC
 DIGIT
 :
    F_Digit
-;
-
-fragment
-F_AristaBase64Char
-:
-   [0-9A-Za-z/.]
-;
-
-fragment
-F_AristaBase64String
-:
-   F_AristaBase64Char+
 ;
 
 fragment
@@ -7110,8 +7065,16 @@ F_LowerCaseLetter
    'a' .. 'z'
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
+:
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
+
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
 :
   '\r' '\n'?
   | '\n'
@@ -7321,7 +7284,7 @@ M_AsPathAccessList_DENY
 
 M_AsPathAccessList_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , mode ( DEFAULT_MODE )
+   F_Newline -> type ( NEWLINE ) , mode ( DEFAULT_MODE )
 ;
 
 M_AsPathAccessList_PERMIT
@@ -7463,7 +7426,7 @@ M_Authentication_MODE
 
 M_Authentication_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Authentication_ONEP
@@ -7617,7 +7580,7 @@ M_BannerAsa_BANNER_BODY
 
 M_BannerAsa_NEWLINE
 :
-  F_Newline+ -> type(NEWLINE), popMode
+  F_Newline -> type(NEWLINE), popMode
 ;
 
 mode M_Certificate;
@@ -7679,7 +7642,7 @@ M_Command_QuotedString
 
 M_Command_Newline
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Command_Variable
@@ -7696,7 +7659,7 @@ mode M_COMMENT;
 
 M_COMMENT_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_COMMENT_NON_NEWLINE
@@ -7708,7 +7671,7 @@ mode M_Description;
 
 M_Description_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Description_NON_NEWLINE
@@ -7753,7 +7716,7 @@ M_Extcommunity_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
 
 M_ExtCommunity_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Extcommunity_PERIOD: '.' -> type(PERIOD);
@@ -7939,7 +7902,7 @@ M_Interface_DASH
 
 M_Interface_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Interface_NUMBER
@@ -8048,7 +8011,7 @@ M_Name_NAME
 
 M_Name_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Name_WS
@@ -8100,7 +8063,7 @@ M_NEIGHBOR_SRC_IP
 
 M_NEIGHBOR_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_NEIGHBOR_VARIABLE
@@ -8158,7 +8121,7 @@ M_ObjectGroup_NAME
 
 M_ObjectGroup_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_ObjectGroup_WS
@@ -8170,7 +8133,7 @@ mode M_REMARK;
 
 M_REMARK_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_REMARK_REMARK
@@ -8192,7 +8155,7 @@ M_RouteMap_OUT
 
 M_RouteMap_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_RouteMap_VARIABLE
@@ -8273,7 +8236,7 @@ mode M_SshKey;
 
 M_SshKey_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_SshKey_WS
@@ -8290,7 +8253,7 @@ M_Words_WORD
 
 M_Words_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Words_WS

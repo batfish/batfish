@@ -5038,16 +5038,6 @@ BACKSLASH
    '\\'
 ;
 
-BLANK_LINE
-:
-   (
-      F_Whitespace
-   )* F_Newline
-   {lastTokenType() == NEWLINE}?
-
-   F_Newline* -> channel ( HIDDEN )
-;
-
 BRACE_LEFT
 :
    '{'
@@ -5100,7 +5090,7 @@ COMMENT_LINE
           return false;
       }}).get()
   }?
-  F_NonNewline* F_Newline+ -> channel ( HIDDEN )
+  F_NonNewline* F_Newline -> channel ( HIDDEN )
 ;
 
 COMMENT_TAIL
@@ -5110,7 +5100,7 @@ COMMENT_TAIL
 
 ARISTA_PAGINATION_DISABLED
 :
-   'Pagination disabled.' F_Newline+ -> channel ( HIDDEN )
+   'Pagination disabled.' F_Newline -> channel ( HIDDEN )
 ;
 
 ARISTA_PROMPT_SHOW_RUN
@@ -5118,7 +5108,7 @@ ARISTA_PROMPT_SHOW_RUN
    F_NonWhitespace+ [>#]
    {lastTokenType() == NEWLINE || lastTokenType() == -1}?
 
-   'show' F_Whitespace+ 'run' ( 'n' ( 'i' ( 'n' ( 'g' ( '-' ( 'c' ( 'o' ( 'n' ( 'f' ( 'i' 'g'? )? )? )? )? )? )? )? )? )? )? F_Whitespace* F_Newline+ -> channel ( HIDDEN )
+   'show' F_Whitespace+ 'run' ( 'n' ( 'i' ( 'n' ( 'g' ( '-' ( 'c' ( 'o' ( 'n' ( 'f' ( 'i' 'g'? )? )? )? )? )? )? )? )? )? )? F_Whitespace* F_Newline -> channel ( HIDDEN )
 ;
 
 DASH: '-';
@@ -5181,7 +5171,7 @@ IPV6_PREFIX
 
 NEWLINE
 :
-  F_Newline+
+  F_Newline
 ;
 
 PAREN_LEFT
@@ -5473,8 +5463,16 @@ F_LowerCaseLetter
    'a' .. 'z'
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
+:
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
+
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
 :
   '\r' '\n'?
   | '\n'
@@ -5694,7 +5692,7 @@ M_AsPathAccessList_WORD
 
 M_AsPathAccessList_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline -> type(NEWLINE), popMode
 ;
 
 M_AsPathAccessList_WS
@@ -5716,7 +5714,7 @@ M_AsPathAccessList_Action_PERMIT
 
 M_AsPathAccessList_Action_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline -> type(NEWLINE), popMode
 ;
 
 M_AsPathAccessList_Action_WS
@@ -5843,7 +5841,7 @@ M_Authentication_MODE
 
 M_Authentication_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Authentication_ONEP
@@ -6031,12 +6029,12 @@ mode M_BannerEosText;
 
 M_BannerEos_BANNER_DELIMITER_EOS
 :
-  'EOF' F_Newline+ -> type(BANNER_DELIMITER_EOS), popMode
+  'EOF' F_Newline -> type(BANNER_DELIMITER_EOS), popMode
 ;
 
 M_BannerEos_BODY
 :
-  F_NonNewline* F_Newline+
+  F_NonNewline* F_Newline
   {
     if (bannerEosDelimiterFollows()) {
       setType(BANNER_BODY);
@@ -6105,7 +6103,7 @@ M_Command_QuotedString
 
 M_Command_Newline
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Command_Variable
@@ -6122,7 +6120,7 @@ mode M_COMMENT;
 
 M_COMMENT_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_COMMENT_NON_NEWLINE
@@ -6168,7 +6166,7 @@ M_CommunityList_WORD
 M_CommunityList_NEWLINE
 :
   // bail in case of short line
-  F_Newline+ -> type(NEWLINE), popMode
+  F_Newline -> type(NEWLINE), popMode
 ;
 
 M_CommunityList_WS
@@ -6187,7 +6185,7 @@ M_CommunityList_Regexp_WORD
 M_CommunityList_Regexp_NEWLINE
 :
   // bail in case of short line
-  F_Newline+ -> type(NEWLINE), popMode
+  F_Newline -> type(NEWLINE), popMode
 ;
 
 M_CommunityList_Regexp_WS
@@ -6210,7 +6208,7 @@ M_CommunityList_Regexp_Action_PERMIT
 M_CommunityList_Regexp_Action_NEWLINE
 :
   // bail in case of short line
-  F_Newline+ -> type(NEWLINE), popMode
+  F_Newline -> type(NEWLINE), popMode
 ;
 
 M_CommunityList_Regexp_Action_WS
@@ -6222,7 +6220,7 @@ mode M_Description;
 
 M_Description_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Description_NON_NEWLINE
@@ -6256,7 +6254,7 @@ M_Extcommunity_DEC
 
 M_ExtCommunity_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Extcommunity_RT
@@ -6425,7 +6423,7 @@ M_Interface_DASH
 
 M_Interface_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Interface_NUMBER
@@ -6492,7 +6490,7 @@ M_Ip_access_list_STANDARD
 
 M_Ip_access_list_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline -> type(NEWLINE), popMode
 ;
 
 M_Ip_access_list_WORD
@@ -6532,7 +6530,7 @@ M_Name_NAME
 
 M_Name_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Name_WS
@@ -6589,7 +6587,7 @@ M_NEIGHBOR_SRC_IP
 
 M_NEIGHBOR_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_NEIGHBOR_VARIABLE
@@ -6621,7 +6619,7 @@ M_Prefix_Or_Standard_Acl_WORD
 
 M_Prefix_Or_Standard_Acl_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Prefix_Or_Standard_Acl_WS
@@ -6643,7 +6641,7 @@ M_PrefixList_OUT
 
 M_PrefixList_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_PrefixList_VARIABLE
@@ -6660,7 +6658,7 @@ mode M_REMARK;
 
 M_REMARK_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_REMARK_REMARK
@@ -6682,7 +6680,7 @@ M_RouteMap_OUT
 
 M_RouteMap_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_RouteMap_VARIABLE
@@ -6755,7 +6753,7 @@ M_Vrf_WORD
 
 M_Vrf_NEWLINE
 :
-   F_Newline+ -> type (NEWLINE), popMode
+   F_Newline -> type (NEWLINE), popMode
 ;
 
 M_Vrf_WS
@@ -6772,7 +6770,7 @@ M_Word_WORD
 
 M_Word_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Word_WS
@@ -6789,7 +6787,7 @@ M_Words_WORD
 
 M_Words_NEWLINE
 :
-   F_Newline+ -> type(NEWLINE), popMode
+   F_Newline -> type(NEWLINE), popMode
 ;
 
 M_Words_WS

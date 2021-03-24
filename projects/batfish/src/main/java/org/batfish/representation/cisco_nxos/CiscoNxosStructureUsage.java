@@ -46,6 +46,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   /** This {@link CiscoNxosStructureUsage} should be used for ANY built-in structure of any type. */
   BUILT_IN("built-in structure"),
   CLASS_MAP_CP_MATCH_ACCESS_GROUP("class-map type control-plane match access-group"),
+  CLASS_MAP_QOS_MATCH_ACCESS_GROUP("class-map type qos match access-group"),
   CONTROL_PLANE_SERVICE_POLICY("control-plane service-policy"),
   EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_IN("ip distribute-list eigrp prefix-list in"),
   EIGRP_DISTRIBUTE_LIST_PREFIX_LIST_OUT("ip distribute-list eigrp prefix-list out"),

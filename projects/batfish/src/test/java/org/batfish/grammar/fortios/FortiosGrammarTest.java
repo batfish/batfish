@@ -24,6 +24,7 @@ import static org.batfish.representation.fortios.FortiosConfiguration.computeVrf
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getPolicyName;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -86,6 +87,8 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
+import org.batfish.representation.fortios.BgpNeighbor;
+import org.batfish.representation.fortios.BgpProcess;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
@@ -587,6 +590,57 @@ public final class FortiosGrammarTest {
                     hasText(containsString("exclude-member addr3"))),
                 hasComment("Addrgrp cycles cannot be added to valid as it would create a cycle"),
                 hasComment("Addrgrp valid cannot be added to valid as it would create a cycle"))));
+  }
+
+  public void testBgpExtraction() throws IOException {
+    String hostname = "bgp";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    // Ensure no warnings were generated
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    assertThat(
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot()).getWarnings(),
+        anEmptyMap());
+
+    BgpProcess bgpProcess = vc.getBgpProcess();
+    assert bgpProcess != null;
+    assertThat(bgpProcess.getAs(), equalTo(0L));
+    assertThat(bgpProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+
+    Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
+    Ip ip2222 = Ip.parse("2.2.2.2");
+    Ip ip3333 = Ip.parse("3.3.3.3");
+    assertThat(neighbors.keySet(), containsInAnyOrder(ip2222, ip3333));
+    BgpNeighbor neighbor2222 = neighbors.get(ip2222);
+    BgpNeighbor neighbor3333 = neighbors.get(ip3333);
+    assertThat(neighbor2222.getIp(), equalTo(ip2222));
+    assertThat(neighbor3333.getIp(), equalTo(ip3333));
+    assertThat(neighbor2222.getRemoteAs(), equalTo(1L));
+    assertThat(neighbor3333.getRemoteAs(), equalTo(4294967295L));
+  }
+
+  @Test
+  public void testBgpWarnings() throws IOException {
+    String hostname = "bgp_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings parseWarnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        parseWarnings.getParseWarnings(),
+        containsInAnyOrder(
+            hasComment("Expected BGP AS in range 0-4294967295, but got '4294967296'"),
+            hasComment("Expected BGP AS in range 0-4294967295, but got 'hello'"),
+            hasComment("Cannot use 0.0.0.0 as BGP router-id"),
+            hasComment("BGP neighbor edit block ignored: neighbor ID is invalid"),
+            hasComment("Expected BGP remote AS in range 1-4294967295, but got '0'"),
+            hasComment("Expected BGP remote AS in range 1-4294967295, but got '4294967296'"),
+            hasComment("Expected BGP remote AS in range 1-4294967295, but got 'hello'"),
+            hasComment("BGP neighbor edit block ignored: remote-as must be set"),
+            hasComment("Redistribution into BGP is not yet supported")));
   }
 
   @Test
@@ -1098,6 +1152,102 @@ public final class FortiosGrammarTest {
                 hasComment(
                     "Service group valid cannot be added to valid as it would"
                         + " create a cycle"))));
+  }
+
+  @Test
+  public void testServiceGroupRename() throws IOException {
+    String hostname = "service_group_rename";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPolicies(), hasKeys("0"));
+    assertThat(vc.getServiceGroups(), hasKeys("new_group1", "new_group2"));
+
+    Policy policy = vc.getPolicies().get("0");
+    // Policy should be using renamed structures
+    // Whether or not they were renamed after initial reference
+    assertThat(policy.getService(), containsInAnyOrder("new_group1", "new_group2"));
+  }
+
+  @Test
+  public void testServiceGroupRenameWarnings() throws IOException {
+    String hostname = "service_group_rename";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    // Should get warnings when trying to use a an old structure name
+    // Or trying to use an undefined structure that will be defined (renamed) later
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Service or service group old_group1 is undefined and cannot be referenced"),
+                hasComment(
+                    "Service or service group new_group2 is undefined and cannot be referenced"),
+                hasComment("Cannot rename non-existent service group undefined"),
+                hasComment(
+                    "Renaming service group new_group1 conflicts with an existing object"
+                        + " new_group2, ignoring this rename operation"),
+                hasComment(
+                    "Renaming service group new_group1 conflicts with an existing object service1,"
+                        + " ignoring this rename operation"),
+                hasComment(
+                    "Renaming service custom service1 conflicts with an existing object"
+                        + " new_group1, ignoring this rename operation"),
+                allOf(
+                    hasComment("Illegal value for service name"),
+                    hasText(
+                        containsString(
+                            "a name that very very very very very very very long and is too long"
+                                + " to use for this object type"))),
+                hasComment("Policy edit block ignored: service must be set"))));
+  }
+
+  @Test
+  public void testServiceGroupRenameReferences() throws IOException {
+    String hostname = "service_group_rename";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Should have defs for the renamed structures and rename should be part of the defs
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.SERVICE_GROUP, "new_group1", contains(16, 17, 18, 23)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.SERVICE_GROUP, "new_group2", contains(19, 20, 21, 47)));
+
+    // Should have references for the renamed structures, even if the renaming happened after the
+    // reference
+    assertThat(
+        ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_GROUP, "new_group1", 1));
+    assertThat(
+        ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_GROUP, "new_group2", 1));
+
+    // Should have undefined references where either:
+    //   1. New names are used before the structure is renamed
+    //   2. Old names are used after the structure is renamed
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP, "old_group1"));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP, "new_group2"));
   }
 
   @Test
@@ -1832,6 +1982,7 @@ public final class FortiosGrammarTest {
 
     int dstPortAllowed = 2345;
     int dstPortDenied = 1234;
+    int dstPortDeniedIndirect = 1235;
 
     String port1 = "port1";
     Ip port1Addr = Ip.parse("10.0.1.2");
@@ -1851,6 +2002,8 @@ public final class FortiosGrammarTest {
     // Explicitly denied
     Flow p1ToP3Denied = createFlow(port1, port1Addr, port3Addr, dstPortDenied);
     Flow p2ToP3Denied = createFlow(port2, port2Addr, port4Addr, dstPortDenied);
+    // Denied through a service group member, not directly through service
+    Flow p1ToP3DeniedIndirect = createFlow(port1, port1Addr, port3Addr, dstPortDeniedIndirect);
 
     // No-match, denied
     Flow p3ToP1 = createFlow(port3, port3Addr, port1Addr, dstPortAllowed);
@@ -1866,6 +2019,7 @@ public final class FortiosGrammarTest {
 
     // Explicitly denied
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
+    assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3DeniedIndirect, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
   }
 

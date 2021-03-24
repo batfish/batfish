@@ -41,6 +41,9 @@ import org.batfish.grammar.fortios.FortiosParser.Address_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Addrgrp_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Allow_or_denyContext;
+import org.batfish.grammar.fortios.FortiosParser.Bgp_asContext;
+import org.batfish.grammar.fortios.FortiosParser.Bgp_neighbor_idContext;
+import org.batfish.grammar.fortios.FortiosParser.Bgp_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_set_allow_routingContext;
@@ -89,8 +92,15 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_tcp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_udp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_append_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsg_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cr_bgpContext;
+import org.batfish.grammar.fortios.FortiosParser.Crb_set_asContext;
+import org.batfish.grammar.fortios.FortiosParser.Crb_set_router_idContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
@@ -160,6 +170,7 @@ import org.batfish.grammar.fortios.FortiosParser.Zone_nameContext;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BatfishUUID;
+import org.batfish.representation.fortios.BgpNeighbor;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
@@ -669,7 +680,65 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
-  public void enterCrs_edit(FortiosParser.Crs_editContext ctx) {
+  public void enterCr_bgp(Cr_bgpContext ctx) {
+    _c.initBgpProcess();
+  }
+
+  @Override
+  public void exitCrb_set_as(Crb_set_asContext ctx) {
+    toLong(ctx, ctx.bgp_as()).ifPresent(_c.getBgpProcess()::setAs);
+  }
+
+  @Override
+  public void exitCrb_set_router_id(Crb_set_router_idContext ctx) {
+    Ip routerId = toIp(ctx.router_id);
+    if (routerId.equals(Ip.ZERO)) {
+      warn(ctx, "Cannot use 0.0.0.0 as BGP router-id");
+    } else {
+      _c.getBgpProcess().setRouterId(routerId);
+    }
+  }
+
+  @Override
+  public void enterCrbcn_edit(Crbcn_editContext ctx) {
+    Optional<Ip> neighborId = toIp(ctx, ctx.bgp_neighbor_id());
+    BgpNeighbor existing = neighborId.map(_c.getBgpProcess().getNeighbors()::get).orElse(null);
+    if (existing != null) {
+      // Make a clone to edit
+      _currentBgpNeighbor = SerializationUtils.clone(existing);
+    } else {
+      // If neighbor ID can't be interpreted as an IP, make a dummy BgpNeighbor.
+      // TODO: Shouldn't need a dummy once neighbor ID is strictly parsed as an IP.
+      // Also, the BgpNeighbor constructor can then enforce that neighbor ID isn't 0.0.0.0.
+      _currentBgpNeighbor = new BgpNeighbor(neighborId.orElse(Ip.ZERO));
+    }
+  }
+
+  @Override
+  public void exitCrbcn_edit(Crbcn_editContext ctx) {
+    String invalidReason = bgpNeighborValid(_currentBgpNeighbor);
+    if (invalidReason == null) {
+      _c.getBgpProcess().getNeighbors().put(_currentBgpNeighbor.getIp(), _currentBgpNeighbor);
+    } else {
+      warn(ctx, String.format("BGP neighbor edit block ignored: %s", invalidReason));
+    }
+    _currentBgpNeighbor = null;
+  }
+
+  @Override
+  public void exitCrbcne_set_remote_as(Crbcne_set_remote_asContext ctx) {
+    toLong(ctx, ctx.bgp_remote_as()).ifPresent(_currentBgpNeighbor::setRemoteAs);
+  }
+
+  @Override
+  public void exitCrbcr_set_status(Crbcr_set_statusContext ctx) {
+    if (toBoolean(ctx.enable_or_disable())) {
+      warn(ctx, "Redistribution into BGP is not yet supported");
+    }
+  }
+
+  @Override
+  public void enterCrs_edit(Crs_editContext ctx) {
     Optional<Long> routeNum = toLong(ctx, ctx.route_num());
     StaticRoute existing =
         routeNum.map(Object::toString).map(_c.getStaticRoutes()::get).orElse(null);
@@ -925,6 +994,39 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCfsg_rename(Cfsg_renameContext ctx) {
+    Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
+    Optional<String> newNameOpt = toString(ctx, ctx.new_name);
+    if (!newNameOpt.isPresent() || !currentNameOpt.isPresent()) {
+      return;
+    }
+
+    String currentName = currentNameOpt.get();
+    String newName = newNameOpt.get();
+    if (!_c.getServiceGroups().containsKey(currentName)) {
+      warnRenameNonExistent(ctx, currentName, FortiosStructureType.SERVICE_GROUP);
+      return;
+    }
+    if (_c.getServices().containsKey(newName) || _c.getServiceGroups().containsKey(newName)) {
+      // TODO handle conflicting renames
+      warnRenameConflict(ctx, currentName, newName, FortiosStructureType.SERVICE_GROUP);
+      return;
+    }
+    // Rename refs / def
+    _c.renameStructure(
+        currentName,
+        newName,
+        FortiosStructureType.SERVICE_GROUP,
+        ImmutableSet.of(FortiosStructureType.SERVICE_CUSTOM, FortiosStructureType.SERVICE_GROUP));
+    // Rename the object itself
+    ServiceGroup current = _c.getServiceGroups().remove(currentName);
+    current.setName(newName);
+    _c.getServiceGroups().put(newName, current);
+    // Add the rename as part of the def
+    _c.defineStructure(FortiosStructureType.SERVICE_GROUP, newName, ctx);
+  }
+
+  @Override
   public void exitCfsg_set_comment(Cfsg_set_commentContext ctx) {
     _currentServiceGroup.setComment(toString(ctx.comment));
   }
@@ -1021,8 +1123,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warnRenameNonExistent(ctx, currentName, FortiosStructureType.SERVICE_CUSTOM);
       return;
     }
-    // TODO check service group as well, once that exists
-    if (_c.getServices().containsKey(newName)) {
+    if (_c.getServices().containsKey(newName) || _c.getServiceGroups().containsKey(newName)) {
       // TODO handle conflicting renames
       warnRenameConflict(ctx, currentName, newName, FortiosStructureType.SERVICE_CUSTOM);
       return;
@@ -1816,6 +1917,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return ctx.text != null ? ctx.text.getText() : "";
   }
 
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Bgp_asContext ctx) {
+    return toLongInSpace(messageCtx, ctx.str(), BGP_AS_SPACE, "BGP AS");
+  }
+
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Bgp_remote_asContext ctx) {
+    return toLongInSpace(messageCtx, ctx.str(), BGP_REMOTE_AS_SPACE, "BGP remote AS");
+  }
+
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Policy_numberContext ctx) {
     return toLongInSpace(messageCtx, ctx.str(), POLICY_NUMBER_SPACE, "policy number");
   }
@@ -1932,6 +2041,16 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Integer.parseInt(ctx.getText());
   }
 
+  private @Nonnull Optional<Ip> toIp(ParserRuleContext ctx, Bgp_neighbor_idContext neighborIdCtx) {
+    String ipStr = toString(neighborIdCtx.str());
+    try {
+      return Optional.of(Ip.parse(ipStr));
+    } catch (IllegalArgumentException e) {
+      warn(ctx, String.format("Cannot parse %s as an IP", ipStr));
+      return Optional.empty();
+    }
+  }
+
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
     return Ip.parse(ctx.getText());
   }
@@ -2012,7 +2131,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     if (a.getExcludeEffective() && a.getExcludeMemberUUIDs().isEmpty()) {
       return "addrgrp requires at least one exclude-member when exclude is enabled";
     }
+    return null;
+  }
 
+  private static @Nullable String bgpNeighborValid(BgpNeighbor bgpNeighbor) {
+    if (bgpNeighbor.getIp().equals(Ip.ZERO)) {
+      return "neighbor ID is invalid";
+    } else if (bgpNeighbor.getRemoteAs() == null) {
+      return "remote-as must be set";
+    }
     return null;
   }
 
@@ -2124,6 +2251,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
   private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
 
+  private static final LongSpace BGP_AS_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final LongSpace BGP_REMOTE_AS_SPACE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace IP_PROTOCOL_NUMBER_SPACE =
       IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
@@ -2143,7 +2272,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private Addrgrp _currentAddrgrp;
   private boolean _currentAddrgrpNameValid;
-
+  private BgpNeighbor _currentBgpNeighbor;
   private Interface _currentInterface;
   private Policy _currentPolicy;
   /**

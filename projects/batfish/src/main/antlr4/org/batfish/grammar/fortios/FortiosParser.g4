@@ -3,6 +3,7 @@ parser grammar FortiosParser;
 import
   Fortios_address,
   Fortios_addrgrp,
+  Fortios_bgp,
   Fortios_common,
   Fortios_firewall,
   Fortios_interface,
@@ -18,7 +19,7 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-fortios_configuration: statement+ EOF;
+fortios_configuration: NEWLINE? statement+ EOF;
 
 statement: s_config;
 
