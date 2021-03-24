@@ -5,8 +5,8 @@ import static org.batfish.representation.fortios.FortiosPolicyConversions.conver
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateCrossZoneFilters;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateOutgoingFilters;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getZonesAndUnzonedInterfaces;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.toMatchExpr;
 import static org.batfish.representation.fortios.FortiosRouteConversions.convertStaticRoutes;
-import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -31,9 +31,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.vendor.VendorConfiguration;
 
 public class FortiosConfiguration extends VendorConfiguration {
@@ -183,29 +180,11 @@ public class FortiosConfiguration extends VendorConfiguration {
         serviceGroupMembers.values().stream()
             .collect(
                 ImmutableMap.toImmutableMap(
-                    ServiceGroupMember::getName, sgm -> toMatchExpr(sgm, serviceGroupMembers)));
+                    ServiceGroupMember::getName,
+                    sgm -> toMatchExpr(sgm, serviceGroupMembers, _filename)));
 
     // Convert each policy to an AclLine
     return convertPolicies(_policies, convertedServices, viIpSpaces, _filename, _w);
-  }
-
-  /**
-   * Convert specified {@link ServiceGroupMember} into its corresponding {@link AclLineMatchExpr}.
-   */
-  @VisibleForTesting
-  @Nonnull
-  AclLineMatchExpr toMatchExpr(
-      ServiceGroupMember service, Map<String, ServiceGroupMember> serviceGroupMembers) {
-    List<AclLineMatchExpr> matchExprs =
-        service
-            .toHeaderSpaces(serviceGroupMembers)
-            .map(MatchHeaderSpace::new)
-            .collect(ImmutableList.toImmutableList());
-    if (matchExprs.isEmpty()) {
-      _w.redFlag(String.format("Service %s does not match any packets", service.getName()));
-      return AclLineMatchExprs.FALSE;
-    }
-    return new OrMatchExpr(matchExprs, matchServiceTraceElement(service, _filename));
   }
 
   private void convertInterface(Interface iface, Configuration c) {

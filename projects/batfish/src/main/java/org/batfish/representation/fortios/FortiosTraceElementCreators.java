@@ -13,31 +13,35 @@ public final class FortiosTraceElementCreators {
   private FortiosTraceElementCreators() {}
 
   /** Creates {@link TraceElement} for specified {@link ServiceGroupMember}. */
-  static TraceElement matchServiceTraceElement(
-      ServiceGroupMember serviceGroupMember, String filename) {
+  static TraceElement matchServiceTraceElement(Service service, String filename) {
     TraceElement.Builder te = TraceElement.builder();
 
-    if (serviceGroupMember instanceof Service) {
-      te.add("Matched service ")
-          .add(
-              serviceGroupMember.getName(),
-              new VendorStructureId(
-                  filename,
-                  FortiosStructureType.SERVICE_CUSTOM.getDescription(),
-                  serviceGroupMember.getName()));
-    } else {
-      assert serviceGroupMember instanceof ServiceGroup;
-      te.add("Matched service group ")
-          .add(
-              serviceGroupMember.getName(),
-              new VendorStructureId(
-                  filename,
-                  FortiosStructureType.SERVICE_GROUP.getDescription(),
-                  serviceGroupMember.getName()));
-    }
+    te.add("Matched service ")
+        .add(
+            service.getName(),
+            new VendorStructureId(
+                filename, FortiosStructureType.SERVICE_CUSTOM.getDescription(), service.getName()));
 
-    if (serviceGroupMember.getComment() != null) {
-      te.add(String.format("(%s)", serviceGroupMember.getComment()));
+    if (service.getComment() != null) {
+      te.add(String.format("(%s)", service.getComment()));
+    }
+    return te.build();
+  }
+
+  /** Creates {@link TraceElement} for specified {@link ServiceGroupMember}. */
+  static TraceElement matchServiceGroupTraceElement(ServiceGroup serviceGroup, String filename) {
+    TraceElement.Builder te =
+        TraceElement.builder()
+            .add("Matched service group ")
+            .add(
+                serviceGroup.getName(),
+                new VendorStructureId(
+                    filename,
+                    FortiosStructureType.SERVICE_GROUP.getDescription(),
+                    serviceGroup.getName()));
+
+    if (serviceGroup.getComment() != null) {
+      te.add(String.format("(%s)", serviceGroup.getComment()));
     }
     return te.build();
   }

@@ -3,24 +3,12 @@ package org.batfish.representation.fortios;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.HeaderSpace;
 
 /** FortiOS datamodel component containing firewall service group */
 public final class ServiceGroup extends ServiceGroupMember implements Serializable {
-
-  @Override
-  public Stream<HeaderSpace> toHeaderSpaces(Map<String, ServiceGroupMember> serviceGroupMembers) {
-    // Guaranteed once extraction is complete
-    assert _member != null;
-
-    return _member.stream()
-        .flatMap(m -> serviceGroupMembers.get(m).toHeaderSpaces(serviceGroupMembers));
-  }
 
   @Override
   @Nonnull

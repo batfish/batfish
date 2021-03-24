@@ -1,11 +1,10 @@
 package org.batfish.representation.fortios;
 
-import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.toMatchExpr;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceGroupTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
 import static org.batfish.representation.fortios.Service.DEFAULT_SOURCE_PORT_RANGE;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.base.Functions;
@@ -31,24 +30,6 @@ public class FortiosConfigurationTest {
   private final HeaderSpaceToBDD _hsToBdd = _bddTestbed.getHsToBdd();
 
   @Test
-  public void testToMatchExpr_tcpUdpSctp_defaults() {
-    // Default service with no dst ports specified matches nothing and files warning
-    String svcName = "name";
-    FortiosConfiguration c = new FortiosConfiguration();
-    Service service = new Service(svcName, new BatfishUUID(1));
-    Warnings w = new Warnings(true, true, true);
-    c.setWarnings(w);
-    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service, null)), equalTo(_zero));
-    assertThat(
-        w.getRedFlagWarnings(),
-        contains(hasText(String.format("Service %s does not match any packets", svcName))));
-
-    // behavior is the same if protocol is explicit
-    service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service, null)), equalTo(_zero));
-  }
-
-  @Test
   public void testToMatchExpr_tcpUdpSctp_oneCustom() {
     IntegerSpace tcpDstPorts = IntegerSpace.of(1);
     Service service = new Service("name", new BatfishUUID(1));
@@ -60,10 +41,10 @@ public class FortiosConfigurationTest {
                 .setSrcPorts(DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
                 .setDstPorts(tcpDstPorts.getSubRanges())
                 .build());
-    assertConvertsWithoutWarnings(service, tcp);
+    assertConverts(service, tcp);
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    assertConvertsWithoutWarnings(service, tcp);
+    assertConverts(service, tcp);
   }
 
   @Test
@@ -100,10 +81,10 @@ public class FortiosConfigurationTest {
             .setDstPorts(sctpDstPorts.getSubRanges())
             .build();
     BDD expected = _hsToBdd.toBDD(tcp).or(_hsToBdd.toBDD(udp)).or(_hsToBdd.toBDD(sctp));
-    assertConvertsWithoutWarnings(service, expected);
+    assertConverts(service, expected);
     // behavior is the same if protocol is explicit
     service.setProtocol(Service.Protocol.TCP_UDP_SCTP);
-    assertConvertsWithoutWarnings(service, expected);
+    assertConverts(service, expected);
   }
 
   @Test
@@ -111,7 +92,7 @@ public class FortiosConfigurationTest {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP);
     HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.ICMP).build();
-    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
+    assertConverts(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
@@ -119,7 +100,7 @@ public class FortiosConfigurationTest {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.ICMP6);
     HeaderSpace expected = HeaderSpace.builder().setIpProtocols(IpProtocol.IPV6_ICMP).build();
-    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
+    assertConverts(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
@@ -136,7 +117,7 @@ public class FortiosConfigurationTest {
             .setIcmpCodes(icmpCode)
             .setIcmpTypes(icmpType)
             .build();
-    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
+    assertConverts(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
@@ -153,14 +134,14 @@ public class FortiosConfigurationTest {
             .setIcmpCodes(icmpCode)
             .setIcmpTypes(icmpType)
             .build();
-    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
+    assertConverts(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
   public void testToMatchExpr_ip_default() {
     Service service = new Service("name", new BatfishUUID(1));
     service.setProtocol(Service.Protocol.IP);
-    assertConvertsWithoutWarnings(service, _one);
+    assertConverts(service, _one);
   }
 
   @Test
@@ -171,7 +152,7 @@ public class FortiosConfigurationTest {
     service.setProtocolNumber(protocolNumber);
     HeaderSpace expected =
         HeaderSpace.builder().setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build();
-    assertConvertsWithoutWarnings(service, _hsToBdd.toBDD(expected));
+    assertConverts(service, _hsToBdd.toBDD(expected));
   }
 
   @Test
@@ -221,7 +202,7 @@ public class FortiosConfigurationTest {
 
     // SCTP directly from parent, TCP and UDP indirectly from child
     BDD expected = _hsToBdd.toBDD(tcp).or(_hsToBdd.toBDD(udp)).or(_hsToBdd.toBDD(sctp));
-    assertConvertsWithoutWarnings(
+    assertConverts(
         serviceGroupParent,
         ImmutableSet.of(serviceTcp, serviceUdp, serviceSctp, serviceGroupChild, serviceGroupParent),
         expected);
@@ -246,7 +227,7 @@ public class FortiosConfigurationTest {
     serviceGroupParent.setMember(ImmutableSet.of("service_group_child", "service3"));
 
     assertThat(
-        c.toMatchExpr(
+        toMatchExpr(
                 serviceGroupParent,
                 ImmutableMap.of(
                     service1.getName(),
@@ -258,9 +239,10 @@ public class FortiosConfigurationTest {
                     serviceGroupChild.getName(),
                     serviceGroupChild,
                     serviceGroupParent.getName(),
-                    serviceGroupParent))
+                    serviceGroupParent),
+                filename)
             .getTraceElement(),
-        equalTo(matchServiceTraceElement(serviceGroupParent, filename)));
+        equalTo(matchServiceGroupTraceElement(serviceGroupParent, filename)));
   }
 
   @Test
@@ -273,40 +255,33 @@ public class FortiosConfigurationTest {
     c.setFilename(filename);
     service.setProtocol(Service.Protocol.ICMP);
     assertThat(
-        c.toMatchExpr(service, null).getTraceElement(),
+        toMatchExpr(service, null, filename).getTraceElement(),
         equalTo(matchServiceTraceElement(service, filename)));
   }
 
   /**
    * Asserts that when converted, the given {@link Service} will exactly match the provided {@link
-   * BDD}, without generating conversion warnings.
+   * BDD}.
    */
-  private void assertConvertsWithoutWarnings(Service service, BDD expected) {
-    Warnings w = new Warnings();
-    FortiosConfiguration c = new FortiosConfiguration();
-    c.setWarnings(w);
-    assertThat(_aclToBdd.toBdd(c.toMatchExpr(service, null)), equalTo(expected));
-    assertThat(w.getRedFlagWarnings(), empty());
+  private void assertConverts(Service service, BDD expected) {
+    assertThat(_aclToBdd.toBdd(toMatchExpr(service, null, null)), equalTo(expected));
   }
 
   /**
    * Asserts that when converted, the given {@link ServiceGroup} will exactly match the provided
-   * {@link BDD}, without generating conversion warnings.
+   * {@link BDD}.
    */
-  private void assertConvertsWithoutWarnings(
+  private void assertConverts(
       ServiceGroup serviceGroup, Set<ServiceGroupMember> allServiceGroupMembers, BDD expected) {
-    Warnings w = new Warnings();
-    FortiosConfiguration c = new FortiosConfiguration();
-    c.setWarnings(w);
     assertThat(
         _aclToBdd.toBdd(
-            c.toMatchExpr(
+            toMatchExpr(
                 serviceGroup,
                 allServiceGroupMembers.stream()
                     .collect(
                         ImmutableMap.toImmutableMap(
-                            ServiceGroupMember::getName, Functions.identity())))),
+                            ServiceGroupMember::getName, Functions.identity())),
+                null)),
         equalTo(expected));
-    assertThat(w.getRedFlagWarnings(), empty());
   }
 }
