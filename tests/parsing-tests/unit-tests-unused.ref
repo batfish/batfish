@@ -398,6 +398,43 @@
       },
       {
         "Structure_Type" : "extended ipv4 access-list",
+        "Structure_Name" : "PROTOCOLS",
+        "Source_Lines" : {
+          "filename" : "configs/cisco_acl",
+          "lines" : [
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99
+          ]
+        }
+      },
+      {
+        "Structure_Type" : "extended ipv4 access-list",
         "Structure_Name" : "TEST",
         "Source_Lines" : {
           "filename" : "configs/cisco_acl",
@@ -3908,10 +3945,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 263 results",
+      "notes" : "Found 264 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 263
+      "numResults" : 264
     }
   }
 ]
