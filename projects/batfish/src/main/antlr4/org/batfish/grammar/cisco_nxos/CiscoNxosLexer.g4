@@ -2521,16 +2521,6 @@ ASTERISK
   '*'
 ;
 
-BLANK_LINE
-:
-  (
-    F_Whitespace
-  )* F_Newline
-  {lastTokenType() == NEWLINE|| lastTokenType() == -1}?
-
-  F_Newline* -> channel ( HIDDEN )
-;
-
 COLON
 :
   ':'
@@ -2550,7 +2540,7 @@ COMMENT_LINE
 
   F_NonNewline*
   (
-    F_Newline+
+    F_Newline
     | EOF
   ) -> channel ( HIDDEN )
 ;
@@ -2599,7 +2589,7 @@ MAC_ADDRESS_LITERAL
 
 NEWLINE
 :
-  F_Newline+
+  F_Newline
 ;
 
 PERIOD
@@ -2837,10 +2827,19 @@ F_MacAddress
   F_HexDigit F_HexDigit F_HexDigit F_HexDigit
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
 :
-  [\n\r]
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
+
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
+:
+  '\r' '\n'?
+  | '\n'
 ;
 
 fragment
@@ -2998,7 +2997,7 @@ M_Banner_MOTD
 
 M_Banner_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Banner_WS
@@ -3059,7 +3058,7 @@ M_BannerCleanup_IGNORED
 
 M_BannerCleanup_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 mode M_Class;
@@ -3189,7 +3188,7 @@ M_DoubleQuote_DOUBLE_QUOTE
 M_DoubleQuote_NEWLINE
 :
 // Break out if termination does not occur on same line
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_DoubleQuote_QUOTED_TEXT
@@ -3421,7 +3420,7 @@ mode M_PrefixListOrWord;
 
 M_PrefixListOrWord_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_PrefixListOrWord_PREFIX_LIST
@@ -3465,7 +3464,7 @@ M_Remark_REMARK_TEXT
 
 M_Remark_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Remark_WS
@@ -3600,7 +3599,7 @@ M_Vrf_MEMBER
 
 M_Vrf_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Vrf_WORD
@@ -3618,7 +3617,7 @@ mode M_TwoWords;
 
 M_TwoWords_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_TwoWords_WORD
@@ -3636,7 +3635,7 @@ mode M_Word;
 
 M_Word_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Word_WORD
@@ -3653,7 +3652,7 @@ mode M_Words;
 
 M_Words_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Words_WORD

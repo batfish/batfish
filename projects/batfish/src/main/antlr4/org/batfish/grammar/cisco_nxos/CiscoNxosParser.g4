@@ -42,6 +42,7 @@ options {
 
 cisco_nxos_configuration
 :
+  NEWLINE?
   statement+ EOF
 ;
 
