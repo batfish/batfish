@@ -24,7 +24,6 @@ import org.junit.Test;
 public class FortiosConfigurationTest {
 
   private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
-  private final BDD _zero = _bddTestbed.getPkt().getFactory().zero();
   private final BDD _one = _bddTestbed.getPkt().getFactory().one();
   private final IpAccessListToBdd _aclToBdd = _bddTestbed.getAclToBdd();
   private final HeaderSpaceToBDD _hsToBdd = _bddTestbed.getHsToBdd();
