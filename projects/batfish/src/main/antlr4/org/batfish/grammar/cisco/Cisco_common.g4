@@ -526,7 +526,7 @@ protocol
 :
    AH
    | AHP
-   | dec
+   | num = uint8
    | EIGRP
    | ESP
    | GRE

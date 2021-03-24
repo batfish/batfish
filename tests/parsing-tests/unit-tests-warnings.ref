@@ -225,6 +225,27 @@
         "Comment" : "Unsupported clause in extended access list: ttleq255"
       },
       {
+        "Filename" : "configs/cisco_acl",
+        "Line" : 86,
+        "Text" : "ipsec",
+        "Parser_Context" : "[protocol extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "Could not convert to IpProtocol: ipsec"
+      },
+      {
+        "Filename" : "configs/cisco_acl",
+        "Line" : 93,
+        "Text" : "pptp",
+        "Parser_Context" : "[protocol extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "Could not convert to IpProtocol: pptp"
+      },
+      {
+        "Filename" : "configs/cisco_acl",
+        "Line" : 97,
+        "Text" : "tcp-udp",
+        "Parser_Context" : "[protocol extended_access_list_tail extended_access_list_stanza stanza cisco_configuration]",
+        "Comment" : "Could not convert to IpProtocol: tcp-udp"
+      },
+      {
         "Filename" : "configs/cisco_bgp",
         "Line" : 10,
         "Text" : "filter-list 10 out",
@@ -1339,10 +1360,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 185 results",
+      "notes" : "Found 188 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 185
+      "numResults" : 188
     }
   }
 ]

@@ -66,3 +66,34 @@ ip access-list test-codes
 access-list TEST extended deny ip any any log 7 interval 600
 access-list TEST extended deny ip any any log default
 access-list TEST extended deny ip any any log disable
+
+! extended ACL protocols - frankenparser
+! okay if we have to delete some when we make the parser IOS-specific
+ip access-list PROTOCOLS
+ 10 permit ah any any
+ 20 permit ahp any any
+ 30 permit 5 any any
+ 40 permit eigrp any any
+ 50 permit esp any any
+ 60 permit gre any any
+ 70 permit icmp any any
+ 80 permit icmp6 any any
+ 90 permit icmpv6 any any
+ 100 permit igmp any any
+ 110 permit igrp any any
+ 120 permit ip any any
+ 130 permit ipinip any any
+ 140 permit ipsec any any
+ 150 permit ipv4 any any
+ 160 permit ipv6 any any
+ 170 permit nd any any
+ 180 permit nos any any
+ 190 permit ospf any any
+ 200 permit pim any any
+ 210 permit pptp any any
+ 220 permit sctp any any
+ 230 permit snp any any
+ 240 permit tcp any any
+ 250 permit tcp-udp any any
+ 260 permit udp any any
+ 270 permit vrrp any any
