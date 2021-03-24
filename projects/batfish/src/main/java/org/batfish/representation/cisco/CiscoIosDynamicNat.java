@@ -383,7 +383,6 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     }
 
     // Validate that NAT pool xor interface is configured and valid.
-    // Parser allows unconfigured NAT pool for Arista NAT (nat overload), but it is not supported.
     if ((_natPool == null) == (_interface == null)) {
       // this shouldn't be possible from extraction, but check anyway
       return true;
