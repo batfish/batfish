@@ -71,6 +71,10 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _addresses;
   }
 
+  public @Nullable BgpProcess getBgpProcess() {
+    return _bgpProcess;
+  }
+
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
@@ -110,6 +114,13 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _zones;
   }
 
+  /** Initializes configuration's {@link BgpProcess} if it isn't already initialized */
+  public void initBgpProcess() {
+    if (_bgpProcess == null) {
+      _bgpProcess = new BgpProcess();
+    }
+  }
+
   private String _hostname;
   private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Interface> _interfaces;
@@ -121,6 +132,8 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, ServiceGroup> _serviceGroups;
   private final @Nonnull Map<String, StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Zone> _zones;
+
+  private @Nullable BgpProcess _bgpProcess;
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     Configuration c = new Configuration(_hostname, ConfigurationFormat.FORTIOS);

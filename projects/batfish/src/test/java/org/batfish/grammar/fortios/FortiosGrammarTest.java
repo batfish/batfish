@@ -24,6 +24,7 @@ import static org.batfish.representation.fortios.FortiosConfiguration.computeVrf
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getPolicyName;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -85,6 +86,8 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.Address;
+import org.batfish.representation.fortios.BgpNeighbor;
+import org.batfish.representation.fortios.BgpProcess;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
@@ -507,6 +510,58 @@ public final class FortiosGrammarTest {
     assertThat(
         wildcardToRange.accept(_srcIpBdd),
         equalTo(IpRange.range(Ip.parse("1.1.0.0"), Ip.parse("255.255.0.0")).accept(_srcIpBdd)));
+  }
+
+  @Test
+  public void testBgpExtraction() throws IOException {
+    String hostname = "bgp";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    // Ensure no warnings were generated
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    assertThat(
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot()).getWarnings(),
+        anEmptyMap());
+
+    BgpProcess bgpProcess = vc.getBgpProcess();
+    assert bgpProcess != null;
+    assertThat(bgpProcess.getAs(), equalTo(0L));
+    assertThat(bgpProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+
+    Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
+    Ip ip2222 = Ip.parse("2.2.2.2");
+    Ip ip3333 = Ip.parse("3.3.3.3");
+    assertThat(neighbors.keySet(), containsInAnyOrder(ip2222, ip3333));
+    BgpNeighbor neighbor2222 = neighbors.get(ip2222);
+    BgpNeighbor neighbor3333 = neighbors.get(ip3333);
+    assertThat(neighbor2222.getIp(), equalTo(ip2222));
+    assertThat(neighbor3333.getIp(), equalTo(ip3333));
+    assertThat(neighbor2222.getRemoteAs(), equalTo(1L));
+    assertThat(neighbor3333.getRemoteAs(), equalTo(4294967295L));
+  }
+
+  @Test
+  public void testBgpWarnings() throws IOException {
+    String hostname = "bgp_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings parseWarnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        parseWarnings.getParseWarnings(),
+        containsInAnyOrder(
+            hasComment("Expected BGP AS in range 0-4294967295, but got '4294967296'"),
+            hasComment("Expected BGP AS in range 0-4294967295, but got 'hello'"),
+            hasComment("Cannot use 0.0.0.0 as BGP router-id"),
+            hasComment("BGP neighbor edit block ignored: neighbor ID is invalid"),
+            hasComment("Expected BGP remote AS in range 1-4294967295, but got '0'"),
+            hasComment("Expected BGP remote AS in range 1-4294967295, but got '4294967296'"),
+            hasComment("Expected BGP remote AS in range 1-4294967295, but got 'hello'"),
+            hasComment("BGP neighbor edit block ignored: remote-as must be set"),
+            hasComment("Redistribution into BGP is not yet supported")));
   }
 
   @Test
