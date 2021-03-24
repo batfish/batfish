@@ -592,6 +592,7 @@ public final class FortiosGrammarTest {
                 hasComment("Addrgrp valid cannot be added to valid as it would create a cycle"))));
   }
 
+  @Test
   public void testBgpExtraction() throws IOException {
     String hostname = "bgp";
     FortiosConfiguration vc = parseVendorConfig(hostname);
