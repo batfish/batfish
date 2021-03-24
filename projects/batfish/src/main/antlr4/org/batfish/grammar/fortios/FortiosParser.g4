@@ -18,7 +18,7 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-fortios_configuration: statement+ EOF;
+fortios_configuration: NEWLINE? statement+ EOF;
 
 statement: s_config;
 

@@ -297,9 +297,8 @@ bfd_template_null
 asa_configuration
 :
    NEWLINE?
-   (
-      sl += stanza
-   )+ COLON? NEWLINE? EOF
+   (sl += stanza)+
+   COLON? NEWLINE? EOF
 ;
 
 configure_maintenance

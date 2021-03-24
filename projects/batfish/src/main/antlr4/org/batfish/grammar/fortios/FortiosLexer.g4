@@ -146,13 +146,6 @@ ZONE: 'zone';
 
 // Other Tokens
 
-BLANK_LINE
-:
-  F_Whitespace* F_Newline
-  {lastTokenType() == NEWLINE || lastTokenType() == -1}?
-  F_Newline* -> channel(HIDDEN)
-;
-
 COLON: ':';
 
 HYPHEN: '-';
@@ -161,7 +154,7 @@ COMMENT_LINE
 :
   F_Whitespace* '#'
   {lastTokenType() == NEWLINE || lastTokenType() == -1}?
-  F_NonNewline* (F_Newline+ | EOF) -> channel(HIDDEN)
+  F_NonNewline* (F_Newline | EOF) -> channel(HIDDEN)
 ;
 
 DOUBLE_QUOTE: '"' -> pushMode(M_DoubleQuote);
@@ -198,7 +191,7 @@ MAC_ADDRESS_LITERAL
 
 NEWLINE
 :
-  F_Newline+
+  F_Newline
 ;
 
 SINGLE_QUOTE: ['] -> pushMode(M_SingleQuote);
@@ -433,10 +426,19 @@ F_MacAddress
   F_HexDigit F_HexDigit F_HexDigit F_HexDigit
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
 :
-  '\r'? '\n'
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
+
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
+:
+  '\r' '\n'?
+  | '\n'
 ;
 
 fragment
@@ -573,13 +575,13 @@ M_Str_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> type(UNQUOTE
 
 M_Str_WS: F_Whitespace+ -> type(STR_SEPARATOR);
 
-M_Str_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_Str_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_SingleStr;
 
 M_SingleStr_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_SingleStrValue);
 
-M_SingleStr_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_SingleStr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_SingleStrValue;
 
@@ -593,4 +595,4 @@ M_SingleStrValue_UNQUOTED_WORD_CHARS: (F_WordChar | F_UnquotedEscapedChar)+ -> t
 
 M_SingleStrValue_WS: F_Whitespace+ -> skip, popMode;
 
-M_SingleStrValue_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+M_SingleStrValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
