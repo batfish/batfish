@@ -94,8 +94,6 @@ public class Address extends AddrgrpMember implements Serializable {
 
   @Nullable private Boolean _allowRouting;
   @Nullable private String _associatedInterface;
-  @Nullable private String _comment;
-  @Nullable private Boolean _fabricObject;
   @Nonnull private String _name;
   @Nonnull private final BatfishUUID _uuid;
   @Nullable private Type _type;
