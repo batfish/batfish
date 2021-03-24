@@ -5709,7 +5709,7 @@ ZONE: 'zone';
 
 MULTICONFIGPART
 :
-   '############ MultiConfigPart' F_NonNewline* F_Newline+ -> channel ( HIDDEN
+   '############ MultiConfigPart' F_NonNewline* F_Newline -> channel ( HIDDEN
    )
 ;
 
@@ -5858,16 +5858,6 @@ BACKSLASH
    '\\'
 ;
 
-BLANK_LINE
-:
-   (
-      F_Whitespace
-   )* F_Newline
-   {lastTokenType() == NEWLINE}?
-
-   F_Newline* -> channel ( HIDDEN )
-;
-
 BRACE_LEFT
 :
    '{'
@@ -5905,9 +5895,7 @@ COMMA
 
 COMMENT_LINE
 :
-  (
-    F_Whitespace
-  )* [!#]
+  F_Whitespace* [!#]
   {
     // TODO: in JDK 12. can use inline switch case
     ((java.util.function.Supplier<Boolean>)() -> {
@@ -5919,7 +5907,7 @@ COMMENT_LINE
           return false;
       }}).get()
   }?
-  F_NonNewline* F_Newline+ -> channel ( HIDDEN )
+  F_NonNewline* F_Newline -> channel ( HIDDEN )
 ;
 
 COMMENT_TAIL
@@ -5991,7 +5979,7 @@ IPV6_PREFIX
 
 NEWLINE
 :
-  F_Newline+
+  F_Newline
   {
     if (!_inCommunitySet) {
    	  _enableIpv6Address = true;
@@ -6306,8 +6294,16 @@ F_NameChar
   ~[ \t\r\n\u000C\u00A0(){}"]
 ;
 
+// Any number of newlines, allowing whitespace in between
 fragment
 F_Newline
+:
+  F_NewlineChar (F_Whitespace* F_NewlineChar+)*
+;
+
+// A single newline character [sequence - allowing \r, \r\n, or \n]
+fragment
+F_NewlineChar
 :
   '\r' '\n'?
   | '\n'
@@ -6493,7 +6489,7 @@ M_AsPathAccessList_DENY
 
 M_AsPathAccessList_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , mode ( DEFAULT_MODE )
+   F_Newline -> type ( NEWLINE ) , mode ( DEFAULT_MODE )
 ;
 
 M_AsPathAccessList_PERMIT
@@ -6635,7 +6631,7 @@ M_Authentication_MODE
 
 M_Authentication_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Authentication_ONEP
@@ -6795,7 +6791,7 @@ M_BannerIosDelimiter_BANNER_DELIMITER_IOS
 M_BannerIosDelimiter_NEWLINE
 :
   // illegal, but pop anyway and let parser deal with it
-  F_Newline+ -> type(NEWLINE), popMode
+  F_Newline -> type(NEWLINE), popMode
 ;
 
 mode M_BannerIosText;
@@ -6831,7 +6827,7 @@ M_BannerIosCleanup_IGNORED
 
 M_BannerIosCleanup_NEWLINE
 :
-  F_Newline+ -> type ( NEWLINE ) , popMode
+  F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 mode M_Certificate;
@@ -6893,7 +6889,7 @@ M_Command_QuotedString
 
 M_Command_Newline
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Command_Variable
@@ -6910,7 +6906,7 @@ mode M_COMMENT;
 
 M_COMMENT_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_COMMENT_NON_NEWLINE
@@ -6922,7 +6918,7 @@ mode M_Description;
 
 M_Description_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Description_NON_NEWLINE
@@ -7110,7 +7106,7 @@ M_Interface_DASH
 
 M_Interface_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Interface_NUMBER
@@ -7208,7 +7204,7 @@ M_Name_NAME
 
 M_Name_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Name_PAREN_LEFT
@@ -7265,7 +7261,7 @@ M_NEIGHBOR_SRC_IP
 
 M_NEIGHBOR_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_NEIGHBOR_VARIABLE
@@ -7323,7 +7319,7 @@ M_ObjectGroup_NAME
 
 M_ObjectGroup_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_ObjectGroup_WS
@@ -7335,7 +7331,7 @@ mode M_REMARK;
 
 M_REMARK_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_REMARK_REMARK
@@ -7383,7 +7379,7 @@ mode M_SshKey;
 
 M_SshKey_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_SshKey_WS
@@ -7400,7 +7396,7 @@ M_Words_WORD
 
 M_Words_NEWLINE
 :
-   F_Newline+ -> type ( NEWLINE ) , popMode
+   F_Newline -> type ( NEWLINE ) , popMode
 ;
 
 M_Words_WS
