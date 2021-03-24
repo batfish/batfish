@@ -155,22 +155,18 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIn;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
-import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -380,18 +376,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String mapName = map.getName();
     String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
     return clausePolicyName;
-  }
-
-  static String toJavaRegex(String ciscoRegex) {
-    String withoutQuotes;
-    if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
-      withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
-    } else {
-      withoutQuotes = ciscoRegex;
-    }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
-    return output;
   }
 
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
@@ -3835,17 +3819,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ExpandedCommunityList ipCommunityListExpanded) {
     return new CommunitySetAcl(
         ipCommunityListExpanded.getLines().stream()
-            .map(CiscoConfiguration::toCommunitySetAclLine)
+            .map(CiscoConversions::toCommunitySetAclLine)
             .collect(ImmutableList.toImmutableList()));
-  }
-
-  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
-      ExpandedCommunityListLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(),
-        new CommunitySetMatchRegex(
-            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-            toJavaRegex(line.getRegex())));
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(
@@ -3876,8 +3851,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static @Nonnull CommunityAclLine toCommunityAclLine(ExpandedCommunityListLine line) {
     return new CommunityAclLine(
-        line.getAction(),
-        new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(line.getRegex())));
+        line.getAction(), CiscoConversions.toCommunityMatchRegex(line.getRegex()));
   }
 
   private static @Nonnull CommunityMatchExpr toCommunityMatchExpr(

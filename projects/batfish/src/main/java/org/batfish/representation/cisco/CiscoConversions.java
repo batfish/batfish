@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -95,15 +96,20 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -529,6 +535,58 @@ public class CiscoConversions {
             .map(IpAsPathAccessListLine::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(pathList.getName(), lines);
+  }
+
+  static @Nonnull CommunityMatchRegex toCommunityMatchRegex(String regex) {
+    return new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(regex));
+  }
+
+  static @Nonnull CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
+
+    String regex = line.getRegex();
+
+    // If the line's regex only requires some community in the set to have a particular format,
+    // create a regex on an individual community rather than on the whole set.
+    // Regexes on individual communities have a simpler semantics, and some questions
+    // (e.g. SearchRoutePolicies) do not handle arbitrary community-set regexes.
+    String containsAColon = "(_?\\d+)?:?(\\d+_?)?";
+    String noColon = "_?\\d+|\\d+_?";
+    String singleCommRegex = containsAColon + "|" + noColon;
+    Pattern p = Pattern.compile(singleCommRegex);
+    if (p.matcher(regex).matches()) {
+      return toCommunitySetAclLineOptimized(line);
+    } else {
+      return toCommunitySetAclLineUnoptimized(line);
+    }
+  }
+
+  // This method should only be used if the line's regex has a special form; see
+  // toCommunitySetAclLine(ExpandedCommunityListLine) above.
+  static @Nonnull CommunitySetAclLine toCommunitySetAclLineOptimized(
+      ExpandedCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(), new HasCommunity(toCommunityMatchRegex(line.getRegex())));
+  }
+
+  static @Nonnull CommunitySetAclLine toCommunitySetAclLineUnoptimized(
+      ExpandedCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            toJavaRegex(line.getRegex())));
+  }
+
+  static String toJavaRegex(String ciscoRegex) {
+    String withoutQuotes;
+    if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
+      withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
+    } else {
+      withoutQuotes = ciscoRegex;
+    }
+    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
+    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    return output;
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
