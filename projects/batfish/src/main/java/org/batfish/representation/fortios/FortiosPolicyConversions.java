@@ -49,9 +49,11 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.representation.fortios.Addrgrp.Type;
 
 /** Helper functions for generating VI ACLs for {@link FortiosConfiguration}. */
 public final class FortiosPolicyConversions {
@@ -396,6 +398,11 @@ public final class FortiosPolicyConversions {
       boolean sourceAddr) {
     // Guaranteed once extraction is complete
     assert addrgrp.getMember() != null;
+
+    // Folder types are not supported yet, warning is handled elsewhere
+    if (addrgrp.getTypeEffective() == Type.FOLDER) {
+      return FalseExpr.INSTANCE;
+    }
 
     ImmutableList<AclLineMatchExpr> exprs =
         addrgrp.getMember().stream()
