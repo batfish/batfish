@@ -4,8 +4,10 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
@@ -200,7 +202,11 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
     }
     // Replace the list of children by dumping statements from a pre-order traversal of the
     // StatementTree.
-    ctx.children.clear();
+    //
+    // Rather than clearing the list and adding all the statements, keep all the error nodes then
+    // add all the statements. This makes sure errors make it to the final output.
+    ctx.children =
+        ctx.children.stream().filter(c -> c instanceof ErrorNode).collect(Collectors.toList());
     _statementTree.getSubtrees().forEach(tree -> ctx.children.addAll(_statementsByTree.get(tree)));
   }
 
