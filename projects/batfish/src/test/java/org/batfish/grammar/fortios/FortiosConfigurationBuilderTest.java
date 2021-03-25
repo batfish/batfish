@@ -1,5 +1,6 @@
 package org.batfish.grammar.fortios;
 
+import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.addrgrpContains;
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.policyValid;
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.serviceGroupContains;
 import static org.batfish.grammar.fortios.FortiosConfigurationBuilder.serviceValid;
@@ -11,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Service;
@@ -162,6 +164,69 @@ public class FortiosConfigurationBuilderTest {
     BatfishUUID orphan = new BatfishUUID(4);
 
     assertFalse(serviceGroupContains(parent, orphan, ImmutableMap.of(childId2, child2)));
+  }
+
+  @Test
+  public void testAddrgrpContainsDirectly() {
+    BatfishUUID parentId = new BatfishUUID(0);
+    Addrgrp parent = new Addrgrp("parent", parentId);
+
+    BatfishUUID childId1 = new BatfishUUID(1);
+    parent.getMemberUUIDs().add(childId1);
+
+    BatfishUUID childId2 = new BatfishUUID(2);
+    parent.getMemberUUIDs().add(childId2);
+
+    assertTrue(addrgrpContains(parent, childId1, ImmutableMap.of()));
+    assertTrue(addrgrpContains(parent, childId2, ImmutableMap.of()));
+    assertTrue(addrgrpContains(parent, parentId, ImmutableMap.of()));
+  }
+
+  @Test
+  public void testAddrgrpContainsIndirectly() {
+    Addrgrp parent = new Addrgrp("parent", new BatfishUUID(0));
+
+    BatfishUUID childId1 = new BatfishUUID(1);
+    parent.getMemberUUIDs().add(childId1);
+
+    BatfishUUID childId2 = new BatfishUUID(2);
+    Addrgrp child2 = new Addrgrp("child2", childId2);
+    parent.getMemberUUIDs().add(childId2);
+
+    BatfishUUID grandChildId1 = new BatfishUUID(3);
+    Addrgrp grandChild1 = new Addrgrp("grandChild1", grandChildId1);
+    child2.getMemberUUIDs().add(grandChildId1);
+
+    BatfishUUID greatGrandChildId1 = new BatfishUUID(4);
+    grandChild1.getMemberUUIDs().add(greatGrandChildId1);
+
+    assertTrue(
+        addrgrpContains(
+            parent, grandChildId1, ImmutableMap.of(childId2, child2, grandChildId1, grandChild1)));
+    assertTrue(
+        addrgrpContains(
+            parent,
+            greatGrandChildId1,
+            ImmutableMap.of(childId2, child2, grandChildId1, grandChild1)));
+  }
+
+  @Test
+  public void testAddrgrpContainsNoMatch() {
+    Addrgrp parent = new Addrgrp("name", new BatfishUUID(0));
+
+    BatfishUUID childId1 = new BatfishUUID(1);
+    parent.getMemberUUIDs().add(childId1);
+
+    BatfishUUID childId2 = new BatfishUUID(2);
+    Addrgrp child2 = new Addrgrp("child2", childId2);
+    parent.getMemberUUIDs().add(childId2);
+
+    BatfishUUID grandChildId1 = new BatfishUUID(3);
+    child2.getMemberUUIDs().add(grandChildId1);
+
+    BatfishUUID orphan = new BatfishUUID(4);
+
+    assertFalse(addrgrpContains(parent, orphan, ImmutableMap.of(childId2, child2)));
   }
 
   private static Service buildCompleteService() {

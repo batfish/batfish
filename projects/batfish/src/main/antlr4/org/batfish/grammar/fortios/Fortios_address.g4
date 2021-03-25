@@ -70,6 +70,3 @@ address_type:
     | INTERFACE_SUBNET
     | MAC
 ;
-
-// 1-79 characters
-address_name: str;

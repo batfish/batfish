@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
 /** FortiOS datamodel component containing address configuration */
-public class Address implements FortiosRenameableObject, Serializable {
+public class Address extends AddrgrpMember implements Serializable {
   public enum Type {
     IPMASK,
     IPRANGE,
@@ -87,15 +87,12 @@ public class Address implements FortiosRenameableObject, Serializable {
 
   @Nullable private Boolean _allowRouting;
   @Nullable private String _associatedInterface;
-  @Nullable private String _comment;
-  @Nullable private Boolean _fabricObject;
   @Nonnull private String _name;
   @Nonnull private final BatfishUUID _uuid;
   @Nullable private Type _type;
   @Nonnull private final TypeSpecificFields _typeSpecificFields;
 
   public static final boolean DEFAULT_ALLOW_ROUTING = false;
-  public static final boolean DEFAULT_FABRIC_OBJECT = false;
   public static final Type DEFAULT_TYPE = Type.IPMASK;
 
   public Address(String name, BatfishUUID uuid) {
@@ -115,18 +112,6 @@ public class Address implements FortiosRenameableObject, Serializable {
   /** Interface or zone associated with this address */
   public @Nullable String getAssociatedInterface() {
     return _associatedInterface;
-  }
-
-  public @Nullable String getComment() {
-    return _comment;
-  }
-
-  public @Nullable Boolean getFabricObject() {
-    return _fabricObject;
-  }
-
-  public boolean getFabricObjectEffective() {
-    return firstNonNull(_fabricObject, DEFAULT_FABRIC_OBJECT);
   }
 
   @Override
@@ -165,14 +150,6 @@ public class Address implements FortiosRenameableObject, Serializable {
 
   public void setAssociatedInterface(String associatedInterface) {
     _associatedInterface = associatedInterface;
-  }
-
-  public void setComment(String comment) {
-    _comment = comment;
-  }
-
-  public void setFabricObject(boolean fabricObject) {
-    _fabricObject = fabricObject;
   }
 
   public void setType(Type type) {

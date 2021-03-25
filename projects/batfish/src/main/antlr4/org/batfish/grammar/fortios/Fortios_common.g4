@@ -8,6 +8,11 @@ double_quoted_string: DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE;
 
 single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 
+// 1-79 characters
+address_name: str;
+
+address_names: address_name+;
+
 // 1-15 characters for interface, but 1-35 for zone
 interface_or_zone_name: str;
 
