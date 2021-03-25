@@ -2,10 +2,13 @@ package org.batfish.grammar.palo_alto;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -36,10 +39,19 @@ public class PreprocessPaloAltoExtractor implements PreprocessExtractor {
         Stream.concat(
                 Stream.of(HEADER),
                 tree.children.stream()
-                    .filter(c -> c instanceof Set_lineContext)
-                    .map(ParserRuleContext.class::cast)
-                    .map(s -> d.getFullText(s).trim()))
+                    .map(c -> stringify(c, d))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get))
             .collect(Collectors.joining("\n"));
+  }
+
+  public Optional<String> stringify(ParseTree tree, InsertDeleteApplicator d) {
+    if (tree instanceof Set_lineContext) {
+      return Optional.of(d.getFullText((ParserRuleContext) tree).trim());
+    } else if (tree instanceof ErrorNode) {
+      return Optional.of("#Unrecognized: " + tree.getText().trim());
+    }
+    return Optional.empty();
   }
 
   @Nonnull
