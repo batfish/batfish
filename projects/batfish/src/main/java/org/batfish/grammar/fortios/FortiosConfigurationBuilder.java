@@ -59,6 +59,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfa_set_wildcardContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_append_exclude_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_append_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_excludeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_exclude_memberContext;
@@ -303,8 +304,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warnRenameNonExistent(ctx, currentName, FortiosStructureType.ADDRESS);
       return;
     }
-    // TODO check addrgrp as well, once that exists
-    if (_c.getAddresses().containsKey(newName)) {
+    if (_c.getAddresses().containsKey(newName) || _c.getAddrgrps().containsKey(newName)) {
       // TODO handle conflicting renames
       warnRenameConflict(ctx, currentName, newName, FortiosStructureType.ADDRESS);
       return;
@@ -602,6 +602,39 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return false;
     }
     return true;
+  }
+
+  @Override
+  public void exitCfaddrgrp_rename(Cfaddrgrp_renameContext ctx) {
+    Optional<String> currentNameOpt = toString(ctx, ctx.current_name);
+    Optional<String> newNameOpt = toString(ctx, ctx.new_name);
+    if (!newNameOpt.isPresent() || !currentNameOpt.isPresent()) {
+      return;
+    }
+
+    String currentName = currentNameOpt.get();
+    String newName = newNameOpt.get();
+    if (!_c.getAddrgrps().containsKey(currentName)) {
+      warnRenameNonExistent(ctx, currentName, FortiosStructureType.ADDRGRP);
+      return;
+    }
+    if (_c.getAddresses().containsKey(newName) || _c.getAddrgrps().containsKey(newName)) {
+      // TODO handle conflicting renames
+      warnRenameConflict(ctx, currentName, newName, FortiosStructureType.ADDRGRP);
+      return;
+    }
+    // Rename refs / def
+    _c.renameStructure(
+        currentName,
+        newName,
+        FortiosStructureType.ADDRGRP,
+        ImmutableSet.of(FortiosStructureType.ADDRESS, FortiosStructureType.ADDRGRP));
+    // Rename the object itself
+    Addrgrp current = _c.getAddrgrps().remove(currentName);
+    current.setName(newName);
+    _c.getAddrgrps().put(newName, current);
+    // Add the rename as part of the def
+    _c.defineStructure(FortiosStructureType.ADDRGRP, newName, ctx);
   }
 
   @Override

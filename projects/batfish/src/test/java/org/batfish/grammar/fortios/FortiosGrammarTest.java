@@ -1252,6 +1252,97 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testAddrgrpRename() throws IOException {
+    String hostname = "addrgrp_rename";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPolicies(), hasKeys("0"));
+    assertThat(vc.getAddrgrps(), hasKeys("new_group1", "new_group2"));
+
+    Policy policy = vc.getPolicies().get("0");
+    // Policy should be using renamed structures
+    // Whether or not they were renamed after initial reference
+    assertThat(policy.getSrcAddr(), contains("new_group1"));
+    assertThat(policy.getDstAddr(), contains("new_group2"));
+  }
+
+  @Test
+  public void testAddrgrpRenameWarnings() throws IOException {
+    String hostname = "addrgrp_rename";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    // Should get warnings when trying to use a an old structure name
+    // Or trying to use an undefined structure that will be defined (renamed) later
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Address or addrgrp old_group1 is undefined and cannot be referenced"),
+                hasComment("Address or addrgrp new_group2 is undefined and cannot be referenced"),
+                hasComment("Cannot rename non-existent addrgrp undefined"),
+                hasComment(
+                    "Renaming addrgrp new_group1 conflicts with an existing object"
+                        + " new_group2, ignoring this rename operation"),
+                hasComment(
+                    "Renaming addrgrp new_group1 conflicts with an existing object addr1,"
+                        + " ignoring this rename operation"),
+                hasComment(
+                    "Renaming address addr1 conflicts with an existing object"
+                        + " new_group1, ignoring this rename operation"),
+                allOf(
+                    hasComment("Illegal value for address name"),
+                    hasText(
+                        containsString(
+                            "a name that is very very very very very very very long and is too long"
+                                + " to use for this object type"))),
+                hasComment("Policy edit block ignored: srcaddr must be set"))));
+  }
+
+  @Test
+  public void testAddrgrpRenameReferences() throws IOException {
+    String hostname = "addrgrp_rename";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Should have defs for the renamed structures and rename should be part of the defs
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.ADDRGRP, "new_group1", contains(15, 16, 17, 22)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.ADDRGRP, "new_group2", contains(18, 19, 20, 50)));
+
+    // Should have references for the renamed structures, even if the renaming happened after the
+    // reference
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRGRP, "new_group1", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRGRP, "new_group2", 1));
+
+    // Should have undefined references where either:
+    //   1. New names are used before the structure is renamed
+    //   2. Old names are used after the structure is renamed
+    assertThat(
+        ccae,
+        hasUndefinedReference(filename, FortiosStructureType.ADDRESS_OR_ADDRGRP, "old_group1"));
+    assertThat(
+        ccae,
+        hasUndefinedReference(filename, FortiosStructureType.ADDRESS_OR_ADDRGRP, "new_group2"));
+  }
+
+  @Test
   public void testFirewallPolicyExtraction() {
     String hostname = "firewall_policy";
     FortiosConfiguration vc = parseVendorConfig(hostname);
