@@ -299,6 +299,69 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testSuppress() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            ImmutableList.of(Statements.Suppress.toStaticStatement())));
+    _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferResult result = tbdd.compute(ImmutableSet.of());
+    TransferReturn ret = result.getReturnValue();
+    BDD acceptedAnnouncements = ret.getSecond();
+    BDDRoute outAnnouncements = ret.getFirst();
+
+    BDD expectedBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
+            .not();
+    assertEquals(acceptedAnnouncements, expectedBDD);
+
+    assertEquals(tbdd.iteZero(expectedBDD, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testUnsuppress() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            ImmutableList.of(Statements.Suppress.toStaticStatement())));
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(
+                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            ImmutableList.of(Statements.Unsuppress.toStaticStatement())));
+
+    _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
+
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDD expectedBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))
+            .or(
+                isRelevantFor(
+                        _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))
+                    .not());
+
+    BDDRoute expected = tbdd.iteZero(expectedBDD, _anyRoute);
+
+    assertEquals(expectedBDD, acceptedAnnouncements);
+
+    assertEquals(expected, outAnnouncements);
+  }
+
+  @Test
   public void testSetDefault() {
     _policyBuilder.addStatement(Statements.SetDefaultActionAccept.toStaticStatement());
 
