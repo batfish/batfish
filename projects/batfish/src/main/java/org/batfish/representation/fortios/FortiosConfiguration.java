@@ -205,8 +205,12 @@ public class FortiosConfiguration extends VendorConfiguration {
                     ServiceGroupMember::getName,
                     sgm -> toMatchExpr(sgm, serviceGroupMembers, _filename)));
 
+    Map<String, AddrgrpMember> addrgrpMembers =
+        Stream.concat(_addresses.values().stream(), _addrgrps.values().stream())
+            .collect(ImmutableMap.toImmutableMap(AddrgrpMember::getName, Function.identity()));
+
     // Convert each policy to an AclLine
-    return convertPolicies(_policies, convertedServices, viIpSpaces, _filename, _w);
+    return convertPolicies(_policies, convertedServices, addrgrpMembers, viIpSpaces, _filename, _w);
   }
 
   private void convertInterface(Interface iface, Configuration c) {

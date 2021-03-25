@@ -1333,6 +1333,7 @@ public final class FortiosGrammarTest {
 
   @Test
   public void testFirewallPolicyConversion() {
+    // TODO handle addrgrp conversion test as well
     String hostname = "firewall_policy";
     FortiosConfiguration vc = parseVendorConfig(hostname);
 

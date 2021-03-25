@@ -72,6 +72,34 @@ public final class FortiosTraceElementCreators {
     return te.build();
   }
 
+  /** Creates {@link TraceElement} for specified address used as a source or dest address. */
+  static TraceElement matchAddressTraceElement(
+      String addressName, String filename, boolean sourceAddr) {
+    TraceElement.Builder te =
+        TraceElement.builder()
+            .add(String.format("Matched %s address ", sourceAddr ? "source" : "destination"))
+            .add(
+                addressName,
+                new VendorStructureId(
+                    filename, FortiosStructureType.ADDRESS.getDescription(), addressName));
+    // TODO handle comment
+    return te.build();
+  }
+
+  /** Creates {@link TraceElement} for specified addrgrp used as a source or dest address. */
+  static TraceElement matchAddrgrpTraceElement(
+      String addressName, String filename, boolean sourceAddr) {
+    TraceElement.Builder te =
+        TraceElement.builder()
+            .add(String.format("Matched %s addrgrp ", sourceAddr ? "source" : "destination"))
+            .add(
+                addressName,
+                new VendorStructureId(
+                    filename, FortiosStructureType.ADDRGRP.getDescription(), addressName));
+    // TODO handle comment
+    return te.build();
+  }
+
   /** Creates {@link TraceElement} for specified {@link Policy}. */
   static TraceElement matchPolicyTraceElement(Policy policy, String filename) {
     TraceElement.Builder te = TraceElement.builder().add("Matched policy ");
