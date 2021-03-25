@@ -12,3 +12,4 @@ move rulebase security rules rule2 bottom
 move rulebase security rules rule5 before rule1
 delete rulebase security rules rule1
 move rulebase security rules rule6 after rule4
+this line is unrecognized
