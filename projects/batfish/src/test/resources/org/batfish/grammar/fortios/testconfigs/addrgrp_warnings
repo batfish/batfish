@@ -33,6 +33,9 @@ config firewall addrgrp
     edit "this is longer than the longest firewall addrgrp name that is accepted by device"
         set member addr3
     next
+    edit "valid"
+        set member addr1
+    next
     edit "grp1"
         set comment "no member set"
     next
@@ -40,6 +43,8 @@ config firewall addrgrp
         set member addr1
         set comment "no exclude-member set"
         set exclude enable
+        # Can't exclude addrgrp, only address
+        set exclude-member valid
     next
     edit "grp3"
         set member addr1
@@ -47,9 +52,6 @@ config firewall addrgrp
         set exclude-member addr2
         append exclude-member addr3
     next
-    edit "valid"
-        set member addr1
-     next
     edit "cycles"
         set comment "no cycles yet"
         set member valid
@@ -57,5 +59,9 @@ config firewall addrgrp
     edit "valid"
         append member "cycles"
         append member "valid"
+    next
+    edit "folder"
+        set type folder
+        set member addr5
     next
 end

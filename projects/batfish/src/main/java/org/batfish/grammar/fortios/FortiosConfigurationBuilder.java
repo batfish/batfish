@@ -524,7 +524,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return;
     }
 
-    toAddrgrpMemberUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_EXCLUDE_MEMBER, false)
+    toAddressUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_EXCLUDE_MEMBER)
         .ifPresent(
             addresses -> {
               if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
@@ -559,7 +559,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return;
     }
 
-    toAddrgrpMemberUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_EXCLUDE_MEMBER, false)
+    toAddressUUIDs(ctx.address_names(), FortiosStructureUsage.ADDRGRP_EXCLUDE_MEMBER)
         .ifPresent(
             addresses -> {
               if (!checkAddrgrpMembersValidAndWarn(ctx, addresses)) {
@@ -1528,6 +1528,32 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   /**
    * Generate a list of address UUIDs for the supplied Address_names context. Returns {@link
+   * Optional#empty()} if invalid.
+   */
+  private Optional<Set<BatfishUUID>> toAddressUUIDs(
+      Address_namesContext ctx, FortiosStructureUsage usage) {
+    int line = ctx.start.getLine();
+    Map<String, Address> addressesMap = _c.getAddresses();
+    ImmutableSet.Builder<BatfishUUID> addressUuidsBuilder = ImmutableSet.builder();
+    Set<String> addresses =
+        ctx.address_name().stream()
+            .map(n -> toString(n.str()))
+            .collect(ImmutableSet.toImmutableSet());
+    for (String name : addresses) {
+      if (addressesMap.containsKey(name)) {
+        addressUuidsBuilder.add(addressesMap.get(name).getBatfishUUID());
+        _c.referenceStructure(FortiosStructureType.ADDRESS, name, usage, line);
+      } else {
+        _c.undefined(FortiosStructureType.ADDRESS, name, usage, line);
+        warn(ctx, String.format("Address %s is undefined and cannot be referenced", name));
+        return Optional.empty();
+      }
+    }
+    return Optional.of(addressUuidsBuilder.build());
+  }
+
+  /**
+   * Generate a list of addrgrp member UUIDs for the supplied Address_names context. Returns {@link
    * Optional#empty()} if invalid.
    */
   private Optional<Set<BatfishUUID>> toAddrgrpMemberUUIDs(

@@ -5,6 +5,7 @@ import static org.batfish.representation.fortios.FortiosPolicyConversions.conver
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateCrossZoneFilters;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateOutgoingFilters;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getZonesAndUnzonedInterfaces;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.toIpSpace;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toMatchExpr;
 import static org.batfish.representation.fortios.FortiosRouteConversions.convertStaticRoutes;
 
@@ -152,7 +153,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
     _addresses
         .values()
-        .forEach(address -> c.getIpSpaces().put(address.getName(), address.toIpSpace(_w)));
+        .forEach(address -> c.getIpSpaces().put(address.getName(), toIpSpace(address, _w)));
 
     // Convert policies. Must happen after c._ipSpaces is populated (addresses are converted)
     // Convert each policy to an AclLine
