@@ -509,6 +509,16 @@ public class TransferBDD {
                   ite(unreachable(result), result.getReturnAssignedValue(), factory.one()));
           break;
 
+        case Suppress:
+          curP.debug("Suppress");
+          result = suppressedValue(result, true);
+          break;
+
+        case Unsuppress:
+          curP.debug("Unsuppress");
+          result = suppressedValue(result, false);
+          break;
+
         default:
           throw new BatfishException(
               "Unhandled statement in route policy analysis: " + ss.getType());
@@ -773,10 +783,13 @@ public class TransferBDD {
       } else {
         result = exitValue(result, false);
       }
-      // Set all the values to 0 if the return is not true;
+
       TransferReturn ret = result.getReturnValue();
-      BDDRoute retVal = iteZero(ret.getSecond(), ret.getFirst());
-      result = result.setReturnValue(new TransferReturn(retVal, ret.getSecond()));
+      // Only accept routes that are not suppressed
+      BDD finalAccepts = ret.getSecond().diff(result.getSuppressedValue());
+      // Set all the values to 0 if the route is not accepted;
+      BDDRoute retVal = iteZero(finalAccepts, ret.getFirst());
+      result = result.setReturnValue(new TransferReturn(retVal, finalAccepts));
     }
     return result;
   }
@@ -904,11 +917,13 @@ public class TransferBDD {
     BDDRoute route = ite(guard, r1.getReturnValue().getFirst(), r2.getReturnValue().getFirst());
     BDD accepted = ite(guard, r1.getReturnValue().getSecond(), r2.getReturnValue().getSecond());
 
+    BDD suppressed = ite(guard, r1.getSuppressedValue(), r2.getSuppressedValue());
     BDD exitAsgn = ite(guard, r1.getExitAssignedValue(), r2.getExitAssignedValue());
     BDD retAsgn = ite(guard, r1.getReturnAssignedValue(), r2.getReturnAssignedValue());
     BDD fallThrough = ite(guard, r1.getFallthroughValue(), r2.getFallthroughValue());
 
-    return new TransferResult(new TransferReturn(route, accepted), exitAsgn, fallThrough, retAsgn);
+    return new TransferResult(
+        new TransferReturn(route, accepted), suppressed, exitAsgn, fallThrough, retAsgn);
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
@@ -1122,6 +1137,15 @@ public class TransferBDD {
    */
   private static BDD unreachable(TransferResult currState) {
     return currState.getReturnAssignedValue().or(currState.getExitAssignedValue());
+  }
+
+  /*
+   * Create the result of reaching a suppress or unsuppress statement.
+   */
+  private TransferResult suppressedValue(TransferResult r, boolean val) {
+    BDD notReached = unreachable(r);
+    BDD b = ite(notReached, r.getSuppressedValue(), mkBDD(val));
+    return r.setSuppressedValue(b);
   }
 
   /*
