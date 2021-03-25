@@ -1,4 +1,5 @@
 ####BATFISH PRE-PROCESSED PALO ALTO CONFIG####
+#Unrecognized: this line is unrecognized
 set deviceconfig system hostname preprocess-flat-pa
 set rulebase security rules rule4 action allow
 set rulebase security rules rule6 action allow
