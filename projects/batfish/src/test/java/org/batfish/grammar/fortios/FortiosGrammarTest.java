@@ -582,6 +582,7 @@ public final class FortiosGrammarTest {
                 hasComment(
                     "Addrgrp edit block ignored: addrgrp requires at least one exclude-member when"
                         + " exclude is enabled"),
+                hasComment("Address valid is undefined and cannot be referenced"),
                 allOf(
                     hasComment("Cannot set exclude-member when exclude is not enabled"),
                     hasText(containsString("exclude-member addr2"))),
@@ -589,7 +590,8 @@ public final class FortiosGrammarTest {
                     hasComment("Cannot set exclude-member when exclude is not enabled"),
                     hasText(containsString("exclude-member addr3"))),
                 hasComment("Addrgrp cycles cannot be added to valid as it would create a cycle"),
-                hasComment("Addrgrp valid cannot be added to valid as it would create a cycle"))));
+                hasComment("Addrgrp valid cannot be added to valid as it would create a cycle"),
+                hasComment("Addrgrp type folder is not yet supported"))));
   }
 
   @Test

@@ -1,6 +1,7 @@
 package org.batfish.representation.fortios;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVICE;
@@ -41,13 +42,19 @@ import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -522,6 +529,53 @@ public final class FortiosPolicyConversions {
     Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
     Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
     return headerSpace.build();
+  }
+
+  public static IpSpace toIpSpace(Address a, Warnings w) {
+    // TODO Investigate & support _allowRouting, _associatedInterface, _fabricObject
+    switch (a.getTypeEffective()) {
+      case IPMASK:
+        Ip subnetIp = a.getTypeSpecificFields().getIp1Effective();
+        Ip subnetMask = a.getTypeSpecificFields().getIp2Effective();
+        // Throw if mask is invalid; such an address should not have made it through extraction
+        checkState(
+            subnetMask.isValidNetmask1sLeading(),
+            String.format(
+                "Cannot convert address %s: %s is an invalid mask", a.getName(), subnetMask));
+        return Prefix.create(subnetIp, subnetMask).toIpSpace();
+      case IPRANGE:
+        Ip startIp = a.getTypeSpecificFields().getIp1Effective();
+        Ip endIp = a.getTypeSpecificFields().getIp2Effective();
+        // Throw if end IP is zero; such an address should not have made it through extraction.
+        // ("end IP cannot be 0" is the warning the CLI gives when end-ip was not set.)
+        checkState(
+            !endIp.equals(Ip.ZERO),
+            String.format("Cannot convert address %s: end IP cannot be 0", a.getName()));
+        // Shouldn't have made it through extraction if end IP > start IP; let range throw if so
+        return IpRange.range(startIp, endIp);
+      case WILDCARD:
+        Ip ip = a.getTypeSpecificFields().getIp1Effective();
+        // Invert mask because IpWildcard interprets set bits as "don't care", whereas FortiOS
+        // interprets unset bits as "don't care"
+        Ip mask = a.getTypeSpecificFields().getIp2Effective().inverted();
+        return IpWildcard.ipWithWildcardMask(ip, mask).toIpSpace();
+      case INTERFACE_SUBNET:
+        // TODO test what IPs this actually includes. Docs say it will:
+        //  "automatically create an address object that matches the interface subnet"
+        //  but it's unclear because it supports both "set subnet" and "set interface".
+      case DYNAMIC: // Based on SDN connectors, whose addresses aren't known statically
+      case FQDN: // Based on domain names
+      case GEOGRAPHY: // Based on countries
+      case MAC: // Based on MAC addresses
+        // Unsupported address types.
+        w.redFlag(
+            String.format(
+                "Addresses of type %s are unsupported and will be considered unmatchable.",
+                a.getType()));
+        return EmptyIpSpace.INSTANCE;
+      default:
+        throw new IllegalStateException("Unrecognized address type " + a.getTypeEffective());
+    }
   }
 
   /** Get human-readable name for the specified policy. */

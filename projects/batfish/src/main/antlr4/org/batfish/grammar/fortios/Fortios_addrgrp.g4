@@ -14,11 +14,9 @@ cfaddrgrp_edit: EDIT address_name newline cfaddrgrpe* NEXT newline;
 
 cfaddrgrpe
 :
-    (
-        SET (cfaddrgrp_set_singletons | cfaddrgrp_set_lists)
-        | SELECT cfaddrgrp_set_lists
-        | APPEND cfaddrgrp_append_lists
-    )
+    SET (cfaddrgrp_set_singletons | cfaddrgrp_set_lists)
+    | SELECT cfaddrgrp_set_lists
+    | APPEND cfaddrgrp_append_lists
 ;
 
 cfaddrgrp_set_singletons:
@@ -47,10 +45,8 @@ cfaddrgrp_set_null:
 
 cfaddrgrp_set_lists
 :
-    (
-        cfaddrgrp_set_exclude_member
-        | cfaddrgrp_set_member
-    )
+    cfaddrgrp_set_exclude_member
+    | cfaddrgrp_set_member
 ;
 
 cfaddrgrp_set_exclude_member: EXCLUDE_MEMBER address_names newline;
@@ -59,10 +55,8 @@ cfaddrgrp_set_member: MEMBER address_names newline;
 
 cfaddrgrp_append_lists
 :
-    (
-        cfaddrgrp_append_exclude_member
-        | cfaddrgrp_append_member
-    )
+    cfaddrgrp_append_exclude_member
+    | cfaddrgrp_append_member
 ;
 
 cfaddrgrp_append_exclude_member: EXCLUDE_MEMBER address_names newline;
