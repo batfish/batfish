@@ -86,6 +86,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.Address;
+import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BgpNeighbor;
 import org.batfish.representation.fortios.BgpProcess;
 import org.batfish.representation.fortios.FortiosConfiguration;
@@ -510,6 +511,87 @@ public final class FortiosGrammarTest {
     assertThat(
         wildcardToRange.accept(_srcIpBdd),
         equalTo(IpRange.range(Ip.parse("1.1.0.0"), Ip.parse("255.255.0.0")).accept(_srcIpBdd)));
+  }
+
+  @Test
+  public void testAddrgrpExtraction() {
+    String hostname = "addrgrp";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Addrgrp> addrgrps = vc.getAddrgrps();
+    assertThat(
+        addrgrps,
+        hasKeys(
+            "this is longest possible firewall addrgrp group name that is accepted by device",
+            "grp1",
+            "grp2"));
+
+    Addrgrp grpLongName =
+        addrgrps.get(
+            "this is longest possible firewall addrgrp group name that is accepted by device");
+    Addrgrp grp1 = addrgrps.get("grp1");
+    Addrgrp grp2 = addrgrps.get("grp2");
+
+    // Check defaults
+    assertNull(grpLongName.getComment());
+    assertNull(grpLongName.getExclude());
+    assertThat(grpLongName.getExcludeEffective(), equalTo(Addrgrp.DEFAULT_EXCLUDE));
+    assertNull(grpLongName.getFabricObject());
+    assertThat(grpLongName.getFabricObjectEffective(), equalTo(Addrgrp.DEFAULT_FABRIC_OBJECT));
+    assertNull(grpLongName.getType());
+    assertThat(grpLongName.getTypeEffective(), equalTo(Addrgrp.DEFAULT_TYPE));
+
+    assertTrue(grp1.getExclude());
+    assertTrue(grp1.getExcludeEffective());
+    assertThat(grp1.getType(), equalTo(Addrgrp.Type.FOLDER));
+    assertThat(grp1.getTypeEffective(), equalTo(Addrgrp.Type.FOLDER));
+    assertThat(grp1.getMember(), containsInAnyOrder("addr1", "addr5"));
+    assertThat(grp1.getExcludeMember(), containsInAnyOrder("addr4", "addr5"));
+
+    assertThat(grp2.getComment(), equalTo("some addrgrp comment"));
+    assertFalse(grp2.getExclude());
+    assertFalse(grp2.getExcludeEffective());
+    assertThat(grp2.getType(), equalTo(Addrgrp.Type.DEFAULT));
+    assertThat(grp2.getTypeEffective(), equalTo(Addrgrp.Type.DEFAULT));
+    assertThat(grp2.getMember(), containsInAnyOrder("addr4", "grp1"));
+  }
+
+  @Test
+  public void testAddrgrpWarnings() throws IOException {
+    String hostname = "addrgrp_warnings";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Illegal value for address name"),
+                allOf(
+                    hasComment("Addrgrp edit block ignored: name is invalid"),
+                    hasText(
+                        containsString(
+                            "this is longer than the longest firewall addrgrp name that is"
+                                + " accepted by device"))),
+                hasComment("Addrgrp edit block ignored: addrgrp requires at least one member"),
+                hasComment(
+                    "Addrgrp edit block ignored: addrgrp requires at least one exclude-member when"
+                        + " exclude is enabled"),
+                hasComment("Address valid is undefined and cannot be referenced"),
+                allOf(
+                    hasComment("Cannot set exclude-member when exclude is not enabled"),
+                    hasText(containsString("exclude-member addr2"))),
+                allOf(
+                    hasComment("Cannot set exclude-member when exclude is not enabled"),
+                    hasText(containsString("exclude-member addr3"))),
+                hasComment("Addrgrp cycles cannot be added to valid as it would create a cycle"),
+                hasComment("Addrgrp valid cannot be added to valid as it would create a cycle"),
+                hasComment("Addrgrp type folder is not yet supported"))));
   }
 
   @Test
@@ -1481,10 +1563,10 @@ public final class FortiosGrammarTest {
                     "Service or service group service1 is undefined and cannot be referenced"),
                 hasComment(
                     "Service or service group service2 is undefined and cannot be referenced"),
-                hasComment("Address addr1 is undefined and cannot be added to policy 4294967295"),
-                hasComment("Address addr2 is undefined and cannot be added to policy 4294967295"),
-                hasComment("Address addr3 is undefined and cannot be added to policy 4294967295"),
-                hasComment("Address addr4 is undefined and cannot be added to policy 4294967295"),
+                hasComment("Address or addrgrp addr1 is undefined and cannot be referenced"),
+                hasComment("Address or addrgrp addr2 is undefined and cannot be referenced"),
+                hasComment("Address or addrgrp addr3 is undefined and cannot be referenced"),
+                hasComment("Address or addrgrp addr4 is undefined and cannot be referenced"),
                 hasComment("Cannot combine 'ALL' with other services"),
                 allOf(
                     hasComment("When 'all' is set together with other address(es), it is removed"),
@@ -1687,8 +1769,8 @@ public final class FortiosGrammarTest {
         warnings,
         hasParseWarnings(
             containsInAnyOrder(
-                hasComment("Address old_addr1 is undefined and cannot be added to policy 1"),
-                hasComment("Address new_addr2 is undefined and cannot be added to policy 1"),
+                hasComment("Address or addrgrp old_addr1 is undefined and cannot be referenced"),
+                hasComment("Address or addrgrp new_addr2 is undefined and cannot be referenced"),
                 hasComment("Interface/zone old_zone1 is undefined and cannot be added to policy 1"),
                 hasComment("Interface/zone new_zone2 is undefined and cannot be added to policy 1"),
                 hasComment(

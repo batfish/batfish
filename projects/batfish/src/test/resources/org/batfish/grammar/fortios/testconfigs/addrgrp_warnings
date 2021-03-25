@@ -1,0 +1,67 @@
+config system global
+    set hostname "addrgrp_warnings"
+end
+
+config firewall address
+    edit "addr1"
+        set type iprange
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+    next
+    edit "addr2"
+        set type iprange
+        set start-ip 2.2.2.0
+        set end-ip 2.2.2.255
+    next
+    edit "addr3"
+        set type iprange
+        set start-ip 3.3.3.0
+        set end-ip 3.3.3.255
+    next
+    edit "addr4"
+        set type iprange
+        set start-ip 4.4.4.0
+        set end-ip 4.4.4.255
+    next
+    edit "addr5"
+        set type iprange
+        set start-ip 5.5.5.0
+        set end-ip 5.5.5.255
+    next
+end
+config firewall addrgrp
+    edit "this is longer than the longest firewall addrgrp name that is accepted by device"
+        set member addr3
+    next
+    edit "valid"
+        set member addr1
+    next
+    edit "grp1"
+        set comment "no member set"
+    next
+    edit "grp2"
+        set member addr1
+        set comment "no exclude-member set"
+        set exclude enable
+        # Can't exclude addrgrp, only address
+        set exclude-member valid
+    next
+    edit "grp3"
+        set member addr1
+        set comment "exclude is not enabled"
+        set exclude-member addr2
+        append exclude-member addr3
+    next
+    edit "cycles"
+        set comment "no cycles yet"
+        set member valid
+    next
+    edit "valid"
+        append member "cycles"
+        append member "valid"
+    next
+    edit "folder"
+        set type folder
+        set member addr5
+    next
+end

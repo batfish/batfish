@@ -3,6 +3,8 @@ package org.batfish.representation.fortios;
 import org.batfish.vendor.StructureUsage;
 
 public enum FortiosStructureUsage implements StructureUsage {
+  ADDRGRP_EXCLUDE_MEMBER("addrgrp exclude-member"),
+  ADDRGRP_MEMBER("addrgrp member"),
   INTERFACE_SELF_REF("system interface"),
   POLICY_DSTADDR("firewall policy dstaddr"),
   POLICY_DSTINTF("firewall policy dstintf"),
