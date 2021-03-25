@@ -46,8 +46,10 @@ public class TransferResult {
   @Nonnull private final BDD _returnAssignedValue;
 
   /**
-   * _returnValue.getSecond().and(_exitAssignedValue) represents all scenarios in which the policy
-   * exits and permits the route
+   * Some examples of how to use the information in this object:
+   *
+   * <p>_returnValue.getSecond().and(_exitAssignedValue) represents all scenarios in which the
+   * policy exits and permits the route
    *
    * <p>_returnValue.getSecond().not().and(_exitAssignedValue) represents all scenarios in which the
    * * policy exits and denies the route
