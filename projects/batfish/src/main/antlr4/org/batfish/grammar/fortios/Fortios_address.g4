@@ -64,7 +64,7 @@ cfa_set_null:
 
 cfaec_tagging: EDIT tagging_name newline cfaect_edit* NEXT newline;
 
-cfaect_edit: UNIMPLEMENTED_PLACEHOLDER newline;
+cfaect_edit: SET unimplemented;
 
 address_type:
     IPMASK

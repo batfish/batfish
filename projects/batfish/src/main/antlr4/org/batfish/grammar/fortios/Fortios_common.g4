@@ -65,6 +65,8 @@ newline: STR_SEPARATOR? NEWLINE;
 
 null_rest_of_line: ~NEWLINE* NEWLINE;
 
+unimplemented: UNIMPLEMENTED_PLACEHOLDER newline;
+
 uint8: UINT8;
 
 uint16
