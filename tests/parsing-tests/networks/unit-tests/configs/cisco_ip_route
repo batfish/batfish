@@ -3,7 +3,7 @@ hostname cisco_ip_route
 !
 ip route 1.2.3.4/32 2.3.4.5
 !
-ip route 1.2.37.104 255.255.255.248 GigabitEthernet3/0/0.212 tag 32361
+ip route 1.2.37.104 255.255.255.248 GigabitEthernet3/0/0.212 tag 32361 track 3
 ip route 1.2.39.17 255.255.255.255 Serial5/0:2
 ip route 1.2.39.22 255.255.255.255 1.2.32.39 210
 ip route 1.2.39.32 255.255.255.255 Serial5/1:5 1.2.32.59 240
