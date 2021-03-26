@@ -1,0 +1,69 @@
+config system global
+    set hostname "addrgrp_rename"
+end
+config firewall address
+    edit "addr1"
+        set type ipmask
+        set subnet 1.0.0.0 255.0.0.0
+    next
+    edit "addr2"
+        set type ipmask
+        set subnet 2.0.0.0 255.0.0.0
+    next
+end
+config firewall addrgrp
+    edit old_group1
+        set member addr1
+    next
+    edit old_group2
+        set member addr2
+    next
+    # Rename before it is ever referenced
+    rename "old_group1" to "new"_group1
+end
+config firewall service custom
+    edit "service1"
+        set tcp-portrange 1
+    next
+end
+config firewall policy
+    edit 0
+        set action deny
+        set srcintf any
+        set dstintf any
+        set srcaddr new_group1
+        set dstaddr old_group2
+        set service service1
+    next
+    edit 1
+        set action deny
+        set srcintf any
+        set dstintf any
+        set srcaddr old_group1
+        set dstaddr new_group2
+        set service service1
+    next
+end
+
+# Rename after an object has been referenced
+config firewall addrgrp
+    rename old_group2 to new_group2
+end
+
+# Renaming a non-existent object should fail with a warning
+config firewall addrgrp
+    rename undefined to other
+end
+
+config firewall addrgrp
+    # Renaming a valid object with an unused but invalid name should fail w/ warning
+    rename new_group2 to "a name that is very very very very very very very long and is too long to use for this object type"
+
+    # Trying to rename to an already used name should fail w/ warning
+    rename new_group1 to new_group2
+    rename new_group1 to addr1
+end
+config firewall address
+    # Trying to rename to an already used name should fail w/ warning
+    rename addr1 to new_group1
+end
