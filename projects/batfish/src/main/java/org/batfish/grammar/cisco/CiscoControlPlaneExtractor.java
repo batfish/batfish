@@ -1327,9 +1327,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private CiscoConfiguration _configuration;
 
-  @SuppressWarnings("unused")
-  private List<AaaAccountingCommands> _currentAaaAccountingCommands;
-
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
   private IpAsPathAccessList _currentAsPathAcl;
@@ -1375,9 +1372,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Keyring _currentKeyring;
 
   private List<String> _currentLineNames;
-
-  @SuppressWarnings("unused")
-  private MacAccessList _currentMacAccessList;
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
 
@@ -1566,7 +1560,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       AaaAccountingCommands c = commands.computeIfAbsent(level, k -> new AaaAccountingCommands());
       currentAaaAccountingCommands.add(c);
     }
-    _currentAaaAccountingCommands = currentAaaAccountingCommands;
   }
 
   @Override
@@ -3286,8 +3279,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_mac_access_list(S_mac_access_listContext ctx) {
     String name = ctx.num.getText();
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
+    _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
     _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
 
@@ -3302,8 +3294,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Could not determine name of extended mac access-list");
     }
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
+    _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
     _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
 
@@ -3595,11 +3586,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentVrrpInterface = getCanonicalInterfaceName(ctx.iface.getText());
     _configuration.referenceStructure(
         INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
-  }
-
-  @Override
-  public void exitAaa_accounting_commands_line(Aaa_accounting_commands_lineContext ctx) {
-    _currentAaaAccountingCommands = null;
   }
 
   @Override
