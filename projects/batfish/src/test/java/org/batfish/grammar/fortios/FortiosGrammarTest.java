@@ -41,6 +41,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,6 +64,7 @@ import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -76,6 +78,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
@@ -1502,6 +1505,60 @@ public final class FortiosGrammarTest {
       assertThat(aclToBdd.toPermitAndDenyBdds(any), equalTo(expected));
       assertThat(aclToBdd.toPermitAndDenyBdds(zonePolicy), equalTo(expected));
     }
+  }
+
+  @Test
+  public void testFirewallPolicyAddrgrpConversion() {
+    String hostname = "firewall_policy_addrgrp";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    String policyName = "1";
+
+    Map<String, AclLine> convertedPolicies =
+        vc.getConvertedPolicies(
+            ImmutableSet.<String>builder()
+                .addAll(vc.getAddresses().keySet())
+                .addAll(vc.getAddrgrps().keySet())
+                .build());
+    assertThat(convertedPolicies, hasKeys(policyName));
+
+    AclLine policyAclLine = convertedPolicies.get(policyName);
+
+    // Create IpAccessListToBdd to convert ACLs.
+    Map<String, IpSpace> namedIpSpaces =
+        ImmutableMap.<String, IpSpace>builder()
+            .put("addr1", Prefix.parse("10.0.1.0/24").toIpSpace())
+            .put("addr1b", Prefix.parse("10.0.1.64/29").toIpSpace())
+            .put("addr2", Prefix.parse("10.0.2.0/24").toIpSpace())
+            .put("all", UniverseIpSpace.INSTANCE)
+            .put(
+                "grp1_parent",
+                AclIpSpace.builder()
+                    .thenRejecting(new IpSpaceReference("addr1b"))
+                    .thenPermitting(new IpSpaceReference("addr1"))
+                    .build())
+            .put("grp2", AclIpSpace.builder().thenPermitting(new IpSpaceReference("addr2")).build())
+            .build();
+    IpAccessListToBdd aclToBdd =
+        new IpAccessListToBddImpl(
+            _pkt, BDDSourceManager.empty(_pkt), ImmutableMap.of(), namedIpSpaces);
+
+    // Make BDDs representing components of defined policy
+    BDD addr1AsSrc = _srcIpBdd.toBDD(Prefix.parse("10.0.1.0/24"));
+    BDD addr1bAsSrc = _srcIpBdd.toBDD(Prefix.parse("10.0.1.64/29"));
+    BDD addr2AsDst = _dstIpBdd.toBDD(Prefix.parse("10.0.2.0/24"));
+    BDD service11 =
+        _bddTestbed.toBDD(
+            HeaderSpace.builder()
+                .setIpProtocols(IpProtocol.TCP)
+                .setSrcPorts(Service.DEFAULT_SOURCE_PORT_RANGE.getSubRanges())
+                .setDstPorts(SubRange.singleton(11))
+                .build());
+
+    BDD srcAddrs = addr1AsSrc.diff(addr1bAsSrc);
+    PermitAndDenyBdds expected =
+        new PermitAndDenyBdds(service11.and(srcAddrs).and(addr2AsDst), _zero);
+    assertThat(aclToBdd.toPermitAndDenyBdds(policyAclLine), equalTo(expected));
   }
 
   @Test

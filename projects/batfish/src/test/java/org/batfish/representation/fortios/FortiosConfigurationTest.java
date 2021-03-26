@@ -20,6 +20,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.HeaderSpaceToBDD;
 import org.batfish.common.bdd.IpAccessListToBdd;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
@@ -28,6 +29,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.junit.Rule;
@@ -405,9 +407,30 @@ public class FortiosConfigurationTest {
             });
   }
 
+  @Test
+  public void testToIpSpace_addrgrp() {
+    Addrgrp addrgrp = new Addrgrp("addrgrp", new BatfishUUID(3));
+    addrgrp.setExclude(true);
+    addrgrp.setExcludeMember(ImmutableSet.of("exclude1"));
+    addrgrp.setMember(ImmutableSet.of("include1", "include2"));
+
+    assertConvertsWithoutWarnings(
+        addrgrp,
+        AclIpSpace.builder()
+            .thenRejecting(new IpSpaceReference("exclude1"))
+            .thenPermitting(new IpSpaceReference("include1"), new IpSpaceReference("include2"))
+            .build());
+  }
+
   private static void assertConvertsWithoutWarnings(Address address, IpSpace expected) {
     Warnings w = new Warnings(true, true, true);
     assertThat(toIpSpace(address, w), equalTo(expected));
+    assertThat(w.getRedFlagWarnings(), empty());
+  }
+
+  private static void assertConvertsWithoutWarnings(Addrgrp addrgrp, IpSpace expected) {
+    Warnings w = new Warnings(true, true, true);
+    assertThat(toIpSpace(addrgrp, w), equalTo(expected));
     assertThat(w.getRedFlagWarnings(), empty());
   }
 }
