@@ -26,6 +26,9 @@ service_name: str;
 
 service_names: service_name+;
 
+// Up to 63 characters
+tagging_name: str;
+
 quoted_text: QUOTED_TEXT+;
 
 ip_address: IP_ADDRESS | SUBNET_MASK;

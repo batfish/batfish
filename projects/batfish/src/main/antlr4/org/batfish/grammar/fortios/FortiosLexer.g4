@@ -7,6 +7,7 @@ options {
 tokens {
   QUOTED_TEXT,
   STR_SEPARATOR,
+  UNIMPLEMENTED_PLACEHOLDER,
   UNQUOTED_WORD_CHARS
 }
 
@@ -131,6 +132,7 @@ STATUS: 'status';
 SUBNET: 'subnet';
 SUB_TYPE: 'sub-type';
 SYSTEM: 'system';
+TAGGING: 'tagging';
 TCP_PORTRANGE: 'tcp-portrange';
 TCP_UDP_SCTP: 'TCP/UDP/SCTP';
 TO: 'to' -> pushMode(M_SingleStr);
