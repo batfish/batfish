@@ -260,6 +260,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_T
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TRAP_SOURCE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV4_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.STATIC_ROUTE_TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SYSTEM_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_INTERFACE;
@@ -6110,6 +6111,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.track != null) {
       track = toInteger(ctx.track);
+      _configuration.referenceStructure(
+          TRACK, Integer.toString(track), STATIC_ROUTE_TRACK, ctx.track.getStart().getLine());
     }
     StaticRoute route =
         new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
@@ -8190,6 +8193,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Integer track = null;
     if (ctx.track != null) {
       track = toInteger(ctx.track);
+      _configuration.referenceStructure(
+          TRACK, Integer.toString(track), STATIC_ROUTE_TRACK, ctx.track.getStart().getLine());
     }
 
     if (ctx.TUNNELED() != null) {
