@@ -74,18 +74,6 @@
         }
       },
       {
-        "Structure_Type" : "crypto-dynamic-map-set",
-        "Structure_Name" : "abcd",
-        "Source_Lines" : {
-          "filename" : "configs/aruba_crypto",
-          "lines" : [
-            4,
-            5,
-            6
-          ]
-        }
-      },
-      {
         "Structure_Type" : "route-map",
         "Structure_Name" : "rmap",
         "Source_Lines" : {
@@ -225,140 +213,6 @@
             15,
             16,
             17
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp peer-group",
-        "Structure_Name" : "ucr",
-        "Source_Lines" : {
-          "filename" : "configs/bgp_foundry",
-          "lines" : [
-            7
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "extended ipv6 access-list",
-        "Structure_Name" : "ipv6-acl-foo",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_acl",
-          "lines" : [
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            29
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "standard ipv4 access-list",
-        "Structure_Name" : "50",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_acl",
-          "lines" : [
-            5,
-            6,
-            7,
-            8
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "standard ipv4 access-list",
-        "Structure_Name" : "51",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_acl",
-          "lines" : [
-            10,
-            11,
-            12
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "standard ipv4 access-list",
-        "Structure_Name" : "99",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_acl",
-          "lines" : [
-            14,
-            15,
-            16
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "docsis-policy",
-        "Structure_Name" : "1",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_cable",
-          "lines" : [
-            48
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "ipv4 prefix-list",
-        "Structure_Name" : "A+C",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_prefix_list",
-          "lines" : [
-            7
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "ipv4 prefix-list",
-        "Structure_Name" : "foo",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_prefix_list",
-          "lines" : [
-            5,
-            6
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "ipv6 prefix-list",
-        "Structure_Name" : "bar",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_prefix_list",
-          "lines" : [
-            8,
-            9
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "route-map",
-        "Structure_Name" : "bar",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_route_map",
-          "lines" : [
-            9,
-            10,
-            11
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "route-map",
-        "Structure_Name" : "foo",
-        "Source_Lines" : {
-          "filename" : "configs/cadant_route_map",
-          "lines" : [
-            5,
-            6,
-            7
           ]
         }
       },
@@ -1880,56 +1734,6 @@
           "filename" : "configs/f5_bigip/f5_bigip_structured_with_imish",
           "lines" : [
             40
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "extended ipv6 access-list",
-        "Structure_Name" : "RT404888-Caltech",
-        "Source_Lines" : {
-          "filename" : "configs/foundry_access_list",
-          "lines" : [
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp peer-group",
-        "Structure_Name" : "bippety",
-        "Source_Lines" : {
-          "filename" : "configs/foundry_bgp",
-          "lines" : [
-            11
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "bgp peer-group",
-        "Structure_Name" : "boop",
-        "Source_Lines" : {
-          "filename" : "configs/foundry_bgp",
-          "lines" : [
-            18
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "policy-map",
-        "Structure_Name" : "limitarp",
-        "Source_Lines" : {
-          "filename" : "configs/foundry_misc",
-          "lines" : [
-            41,
-            42
           ]
         }
       },
@@ -3945,10 +3749,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 264 results",
+      "notes" : "Found 248 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 264
+      "numResults" : 248
     }
   }
 ]

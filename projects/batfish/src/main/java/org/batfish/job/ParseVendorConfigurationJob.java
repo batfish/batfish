@@ -155,7 +155,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    *
    * @throws BatfishException if the given file is for an unsupported or unhandled format
    */
-  @SuppressWarnings("fallthrough")
   private VendorConfiguration parseFile(ConfigurationFormat format) {
     BatfishCombinedParser<?, ?> combinedParser = null;
     ControlPlaneExtractor extractor = null;
@@ -179,7 +178,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         case FORCE10:
         case FOUNDRY:
           {
-            CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText, _settings, format);
+            CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText, _settings);
             combinedParser = ciscoParser;
             extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser, format, _warnings);
             break;

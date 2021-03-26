@@ -94,7 +94,7 @@ public class OspfProcess implements Serializable {
 
   public static double getReferenceOspfBandwidth(ConfigurationFormat format) {
     switch (format) {
-      case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
+      case ARUBAOS:
       case CADANT: // Internet claims they use the Cisco defaults.
       case CISCO_IOS: // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/command/iro-cr-book/ospf-a1.html#wp3271966058
       case FORCE10: // http://www.dell.com/support/manuals/us/en/19/force10-s4810/s4810_9.9.0.0_cli_pub/auto-cost
@@ -112,7 +112,7 @@ public class OspfProcess implements Serializable {
     }
 
     switch (format) {
-      case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
+      case ARUBAOS:
       case CADANT: // Vetted IOS; assuming the rest use IOS defaults.
       case CISCO_IOS:
       case FORCE10:
