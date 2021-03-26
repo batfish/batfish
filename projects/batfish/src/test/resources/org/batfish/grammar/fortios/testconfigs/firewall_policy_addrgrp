@@ -1,0 +1,42 @@
+config system global
+    set hostname "firewall_policy_addrgrp"
+end
+config firewall service custom
+    edit "custom_tcp_11"
+        set tcp-portrange 11
+    next
+end
+config firewall address
+    edit addr1
+        set subnet 10.0.1.0 255.255.255.0
+    next
+    edit addr1b
+        set subnet 10.0.1.64/29
+    next
+    edit addr2
+        set subnet 10.0.2.0 255.255.255.0
+    next
+end
+config firewall addrgrp
+    edit grp1_child
+        set member addr1
+        set exclude enable
+        set exclude-member addr1b
+    next
+    edit grp1_parent
+        set member grp1_child
+    next
+    edit grp2
+        set member addr2
+    next
+end
+config firewall policy
+    edit 1
+        set action accept
+        set srcintf any
+        set dstintf any
+        set srcaddr grp1_parent
+        set dstaddr grp2
+        set service custom_tcp_11
+    next
+end

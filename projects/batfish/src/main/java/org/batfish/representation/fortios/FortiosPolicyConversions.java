@@ -39,6 +39,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -235,13 +236,14 @@ public final class FortiosPolicyConversions {
   static Map<String, AclLine> convertPolicies(
       Map<String, Policy> policies,
       Map<String, AclLineMatchExpr> convertedServices,
+      Map<String, AddrgrpMember> addrgrpMembers,
       Set<String> namedIpSpaces,
       String filename,
       Warnings w) {
     return policies.values().stream()
         .map(
             p ->
-                convertPolicy(p, convertedServices, namedIpSpaces, filename, w)
+                convertPolicy(p, convertedServices, addrgrpMembers, namedIpSpaces, filename, w)
                     .map(line -> Maps.immutableEntry(p.getNumber(), line)))
         .filter(Optional::isPresent)
         .collect(ImmutableMap.toImmutableMap(e -> e.get().getKey(), e -> e.get().getValue()));
@@ -258,6 +260,7 @@ public final class FortiosPolicyConversions {
   public static Optional<AclLine> convertPolicy(
       Policy policy,
       Map<String, AclLineMatchExpr> convertedServices,
+      Map<String, AddrgrpMember> addrgrpMembers,
       Set<String> namedIpSpaces,
       String filename,
       Warnings w) {
@@ -304,9 +307,11 @@ public final class FortiosPolicyConversions {
                 addr -> {
                   HeaderSpace hs =
                       HeaderSpace.builder().setSrcIps(new IpSpaceReference(addr)).build();
-                  return new MatchHeaderSpace(hs, matchSourceAddressTraceElement(addr, filename));
+                  return new MatchHeaderSpace(
+                      hs, matchSourceAddressTraceElement(addrgrpMembers.get(addr), filename));
                 })
             .collect(ImmutableList.toImmutableList());
+
     List<AclLineMatchExpr> dstAddrExprs =
         Sets.intersection(dstAddrs, namedIpSpaces).stream()
             .map(
@@ -314,13 +319,15 @@ public final class FortiosPolicyConversions {
                   HeaderSpace hs =
                       HeaderSpace.builder().setDstIps(new IpSpaceReference(addr)).build();
                   return new MatchHeaderSpace(
-                      hs, matchDestinationAddressTraceElement(addr, filename));
+                      hs, matchDestinationAddressTraceElement(addrgrpMembers.get(addr), filename));
                 })
             .collect(ImmutableList.toImmutableList());
+
     List<AclLineMatchExpr> svcExprs =
         Sets.intersection(services, convertedServices.keySet()).stream()
             .map(convertedServices::get)
             .collect(ImmutableList.toImmutableList());
+
     if (srcAddrExprs.isEmpty() || dstAddrExprs.isEmpty() || services.isEmpty()) {
       String emptyField =
           srcAddrExprs.isEmpty()
@@ -449,6 +456,20 @@ public final class FortiosPolicyConversions {
     Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
     Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
     return headerSpace.build();
+  }
+
+  public static IpSpace toIpSpace(Addrgrp a, Warnings w) {
+    // Guaranteed by extraction
+    assert a.getMember() != null && a.getExcludeMember() != null;
+
+    AclIpSpace.Builder builder = AclIpSpace.builder();
+    for (String excludeMember : a.getExcludeMember()) {
+      builder.thenRejecting(new IpSpaceReference(excludeMember));
+    }
+    for (String member : a.getMember()) {
+      builder.thenPermitting(new IpSpaceReference(member));
+    }
+    return builder.build();
   }
 
   public static IpSpace toIpSpace(Address a, Warnings w) {
