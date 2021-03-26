@@ -1,22 +1,9 @@
 config system global
     set hostname "firewall_policy_addrgrp"
 end
-config system interface
-    edit "port1"
-        set vdom "root"
-        set ip 10.0.1.1/24
-    next
-    edit port2
-        set vdom "root"
-        set ip 10.0.2.1/24
-    next
-end
 config firewall service custom
     edit "custom_tcp_11"
         set tcp-portrange 11
-    next
-    edit ALL
-        set protocol IP
     next
 end
 config firewall address

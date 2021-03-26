@@ -49,46 +49,54 @@ public final class FortiosTraceElementCreators {
   /** Creates {@link TraceElement} for specified addrgrp member used as a source address. */
   static TraceElement matchSourceAddressTraceElement(AddrgrpMember addr, String filename) {
     if (addr instanceof Address) {
-      return matchAddressTraceElement(addr.getName(), filename, true);
+      return matchAddressTraceElement((Address) addr, filename, true);
     }
     assert addr instanceof Addrgrp;
-    return matchAddrgrpTraceElement(addr.getName(), filename, true);
+    return matchAddrgrpTraceElement((Addrgrp) addr, filename, true);
   }
 
   /** Creates {@link TraceElement} for specified addrgrp member used as a dest address. */
   static TraceElement matchDestinationAddressTraceElement(AddrgrpMember addr, String filename) {
     if (addr instanceof Address) {
-      return matchAddressTraceElement(addr.getName(), filename, false);
+      return matchAddressTraceElement((Address) addr, filename, false);
     }
     assert addr instanceof Addrgrp;
-    return matchAddrgrpTraceElement(addr.getName(), filename, false);
+    return matchAddrgrpTraceElement((Addrgrp) addr, filename, false);
   }
 
   /** Creates {@link TraceElement} for specified address used as a source or dest address. */
-  static TraceElement matchAddressTraceElement(
-      String addressName, String filename, boolean sourceAddr) {
+  private static TraceElement matchAddressTraceElement(
+      Address address, String filename, boolean sourceAddr) {
+    String name = address.getName();
+    String comment = address.getComment();
     TraceElement.Builder te =
         TraceElement.builder()
             .add(String.format("Matched %s address ", sourceAddr ? "source" : "destination"))
             .add(
-                addressName,
+                name,
                 new VendorStructureId(
-                    filename, FortiosStructureType.ADDRESS.getDescription(), addressName));
-    // TODO handle comment
+                    filename, FortiosStructureType.ADDRESS.getDescription(), name));
+    if (comment != null) {
+      te.add(String.format("(%s)", comment));
+    }
     return te.build();
   }
 
   /** Creates {@link TraceElement} for specified addrgrp used as a source or dest address. */
-  static TraceElement matchAddrgrpTraceElement(
-      String addressName, String filename, boolean sourceAddr) {
+  private static TraceElement matchAddrgrpTraceElement(
+      Addrgrp addrgrp, String filename, boolean sourceAddr) {
+    String name = addrgrp.getName();
+    String comment = addrgrp.getComment();
     TraceElement.Builder te =
         TraceElement.builder()
             .add(String.format("Matched %s addrgrp ", sourceAddr ? "source" : "destination"))
             .add(
-                addressName,
+                name,
                 new VendorStructureId(
-                    filename, FortiosStructureType.ADDRGRP.getDescription(), addressName));
-    // TODO handle comment
+                    filename, FortiosStructureType.ADDRGRP.getDescription(), name));
+    if (comment != null) {
+      te.add(String.format("(%s)", comment));
+    }
     return te.build();
   }
 
