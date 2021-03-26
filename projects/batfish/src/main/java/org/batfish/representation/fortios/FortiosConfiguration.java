@@ -149,11 +149,12 @@ public class FortiosConfiguration extends VendorConfiguration {
     c.setDefaultInboundAction(LineAction.DENY);
 
     // Convert addresses
-    // TODO convert addrgrp
-
     _addresses
         .values()
         .forEach(address -> c.getIpSpaces().put(address.getName(), toIpSpace(address, _w)));
+    _addrgrps
+        .values()
+        .forEach(addrgrp -> c.getIpSpaces().put(addrgrp.getName(), toIpSpace(addrgrp, _w)));
 
     // Convert policies. Must happen after c._ipSpaces is populated (addresses are converted)
     // Convert each policy to an AclLine

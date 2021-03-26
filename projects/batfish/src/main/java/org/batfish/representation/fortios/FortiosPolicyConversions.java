@@ -11,11 +11,11 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
-import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchAddressTraceElement;
-import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchAddrgrpTraceElement;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchPolicyTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceGroupTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
+import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.zoneToZoneDefaultTraceElement;
 import static org.batfish.representation.fortios.InterfaceOrZoneUtils.getDefaultIntrazoneAction;
 import static org.batfish.representation.fortios.InterfaceOrZoneUtils.getIncludedInterfaces;
@@ -28,7 +28,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.List;
@@ -40,6 +39,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -56,11 +56,9 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.representation.fortios.Addrgrp.Type;
 
 /** Helper functions for generating VI ACLs for {@link FortiosConfiguration}. */
 public final class FortiosPolicyConversions {
@@ -303,34 +301,26 @@ public final class FortiosPolicyConversions {
     ImmutableList.Builder<AclLineMatchExpr> matchConjuncts = ImmutableList.builder();
 
     // Match src addresses, dst addresses, and services
-    //    List<AclLineMatchExpr> srcAddrExprs =
-    //        Sets.intersection(srcAddrs, namedIpSpaces).stream()
-    //            .map(
-    //                addr -> {
-    //                  HeaderSpace hs =
-    //                      HeaderSpace.builder().setSrcIps(new IpSpaceReference(addr)).build();
-    //                  return new MatchHeaderSpace(hs, matchSourceAddressTraceElement(addr,
-    // filename));
-    //                })
-    //            .collect(ImmutableList.toImmutableList());
     List<AclLineMatchExpr> srcAddrExprs =
         Sets.intersection(srcAddrs, namedIpSpaces).stream()
-            .map(addr -> toMatchExpr(addrgrpMembers.get(addr), addrgrpMembers, filename, true))
+            .map(
+                addr -> {
+                  HeaderSpace hs =
+                      HeaderSpace.builder().setSrcIps(new IpSpaceReference(addr)).build();
+                  return new MatchHeaderSpace(
+                      hs, matchSourceAddressTraceElement(addrgrpMembers.get(addr), filename));
+                })
             .collect(ImmutableList.toImmutableList());
 
-    //    List<AclLineMatchExpr> dstAddrExprs =
-    //        Sets.intersection(dstAddrs, namedIpSpaces).stream()
-    //            .map(
-    //                addr -> {
-    //                  HeaderSpace hs =
-    //                      HeaderSpace.builder().setDstIps(new IpSpaceReference(addr)).build();
-    //                  return new MatchHeaderSpace(
-    //                      hs, matchDestinationAddressTraceElement(addr, filename));
-    //                })
-    //            .collect(ImmutableList.toImmutableList());
     List<AclLineMatchExpr> dstAddrExprs =
         Sets.intersection(dstAddrs, namedIpSpaces).stream()
-            .map(addr -> toMatchExpr(addrgrpMembers.get(addr), addrgrpMembers, filename, false))
+            .map(
+                addr -> {
+                  HeaderSpace hs =
+                      HeaderSpace.builder().setDstIps(new IpSpaceReference(addr)).build();
+                  return new MatchHeaderSpace(
+                      hs, matchDestinationAddressTraceElement(addrgrpMembers.get(addr), filename));
+                })
             .collect(ImmutableList.toImmutableList());
 
     List<AclLineMatchExpr> svcExprs =
@@ -338,13 +328,11 @@ public final class FortiosPolicyConversions {
             .map(convertedServices::get)
             .collect(ImmutableList.toImmutableList());
 
-    SetView<String> convertedSrcAddrs = Sets.intersection(srcAddrs, namedIpSpaces);
-    SetView<String> convertedDstAddrs = Sets.intersection(dstAddrs, namedIpSpaces);
-    if (convertedSrcAddrs.isEmpty() || convertedDstAddrs.isEmpty() || services.isEmpty()) {
+    if (srcAddrExprs.isEmpty() || dstAddrExprs.isEmpty() || services.isEmpty()) {
       String emptyField =
-          convertedSrcAddrs.isEmpty()
+          srcAddrExprs.isEmpty()
               ? "source addresses"
-              : convertedDstAddrs.isEmpty() ? "destination addresses" : "services";
+              : dstAddrExprs.isEmpty() ? "destination addresses" : "services";
       w.redFlag(
           String.format(
               "Policy %s will not match any packets because none of its %s were successfully"
@@ -359,67 +347,6 @@ public final class FortiosPolicyConversions {
     line.setTraceElement(matchPolicyTraceElement(policy, filename));
     line.setName(numAndName);
     return Optional.of(line.build());
-  }
-
-  /**
-   * Convert specified {@link AddrgrpMember} into its corresponding {@link AclLineMatchExpr}.
-   * Converts to an expression matching source addresses if {@code sourceAddr} is true, otherwise an
-   * expression matching destination addresses.
-   */
-  @VisibleForTesting
-  @Nonnull
-  public static AclLineMatchExpr toMatchExpr(
-      AddrgrpMember member,
-      Map<String, AddrgrpMember> addrgrpMembers,
-      String filename,
-      boolean soureAddr) {
-    if (member instanceof Address) {
-      return toMatchExpr((Address) member, filename, soureAddr);
-    } else {
-      assert member instanceof Addrgrp;
-      return toMatchExpr((Addrgrp) member, addrgrpMembers, filename, soureAddr);
-    }
-  }
-
-  @Nonnull
-  private static AclLineMatchExpr toMatchExpr(
-      Address address, String filename, boolean sourceAddr) {
-    // TODO figure out src vs dst
-    HeaderSpace.Builder hs = HeaderSpace.builder();
-    IpSpaceReference ref = new IpSpaceReference(address.getName());
-
-    if (sourceAddr) {
-      hs.setSrcIps(ref);
-    } else {
-      hs.setDstIps(ref);
-    }
-    return new MatchHeaderSpace(
-        hs.build(), matchAddressTraceElement(address.getName(), filename, sourceAddr));
-  }
-
-  @Nonnull
-  private static AclLineMatchExpr toMatchExpr(
-      Addrgrp addrgrp,
-      Map<String, AddrgrpMember> addrgrpMembers,
-      String filename,
-      boolean sourceAddr) {
-    // Guaranteed once extraction is complete
-    assert addrgrp.getMember() != null;
-
-    // Folder types are not supported yet, warning is handled elsewhere
-    if (addrgrp.getTypeEffective() == Type.FOLDER) {
-      return FalseExpr.INSTANCE;
-    }
-
-    ImmutableList<AclLineMatchExpr> exprs =
-        addrgrp.getMember().stream()
-            .map(m -> toMatchExpr(addrgrpMembers.get(m), addrgrpMembers, filename, sourceAddr))
-            .collect(ImmutableList.toImmutableList());
-    // Any valid group should match *some* members
-    assert !exprs.isEmpty();
-
-    return new OrMatchExpr(
-        exprs, matchAddrgrpTraceElement(addrgrp.getName(), filename, sourceAddr));
   }
 
   /**
@@ -529,6 +456,20 @@ public final class FortiosPolicyConversions {
     Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
     Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
     return headerSpace.build();
+  }
+
+  public static IpSpace toIpSpace(Addrgrp a, Warnings w) {
+    // Guaranteed by extraction
+    assert a.getMember() != null && a.getExcludeMember() != null;
+
+    AclIpSpace.Builder builder = AclIpSpace.builder();
+    for (String excludeMember : a.getExcludeMember()) {
+      builder.thenRejecting(new IpSpaceReference(excludeMember));
+    }
+    for (String member : a.getMember()) {
+      builder.thenPermitting(new IpSpaceReference(member));
+    }
+    return builder.build();
   }
 
   public static IpSpace toIpSpace(Address a, Warnings w) {

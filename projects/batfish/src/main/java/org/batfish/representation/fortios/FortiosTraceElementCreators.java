@@ -46,30 +46,22 @@ public final class FortiosTraceElementCreators {
     return te.build();
   }
 
-  /** Creates {@link TraceElement} for specified address used as a destination address. */
-  static TraceElement matchDestinationAddressTraceElement(String addressName, String filename) {
-    TraceElement.Builder te =
-        TraceElement.builder()
-            .add("Matched destination address ")
-            .add(
-                addressName,
-                new VendorStructureId(
-                    filename, FortiosStructureType.ADDRESS.getDescription(), addressName));
-    // TODO handle comment
-    return te.build();
+  /** Creates {@link TraceElement} for specified addrgrp member used as a source address. */
+  static TraceElement matchSourceAddressTraceElement(AddrgrpMember addr, String filename) {
+    if (addr instanceof Address) {
+      return matchAddressTraceElement(addr.getName(), filename, true);
+    }
+    assert addr instanceof Addrgrp;
+    return matchAddrgrpTraceElement(addr.getName(), filename, true);
   }
 
-  /** Creates {@link TraceElement} for specified address used as a source address. */
-  static TraceElement matchSourceAddressTraceElement(String addressName, String filename) {
-    TraceElement.Builder te =
-        TraceElement.builder()
-            .add("Matched source address ")
-            .add(
-                addressName,
-                new VendorStructureId(
-                    filename, FortiosStructureType.ADDRESS.getDescription(), addressName));
-    // TODO handle comment
-    return te.build();
+  /** Creates {@link TraceElement} for specified addrgrp member used as a dest address. */
+  static TraceElement matchDestinationAddressTraceElement(AddrgrpMember addr, String filename) {
+    if (addr instanceof Address) {
+      return matchAddressTraceElement(addr.getName(), filename, false);
+    }
+    assert addr instanceof Addrgrp;
+    return matchAddrgrpTraceElement(addr.getName(), filename, false);
   }
 
   /** Creates {@link TraceElement} for specified address used as a source or dest address. */
