@@ -1546,6 +1546,18 @@
         }
       },
       {
+        "File_Name" : "configs/cisco_ip_route",
+        "Struct_Type" : "track",
+        "Ref_Name" : "3",
+        "Context" : "ip route track",
+        "Lines" : {
+          "filename" : "configs/cisco_ip_route",
+          "lines" : [
+            6
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cisco_isis",
         "Struct_Type" : "route-map",
         "Ref_Name" : "connected-to-isis",
@@ -4460,10 +4472,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 362 results",
+      "notes" : "Found 363 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 362
+      "numResults" : 363
     }
   }
 ]

@@ -26780,6 +26780,9 @@
             "        TAG:'tag'",
             "        tag = (dec",
             "          UINT16:'32361')",
+            "        TRACK:'track'",
+            "        track = (dec",
+            "          UINT8:'3')",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (ip_route_stanza",
@@ -87063,6 +87066,13 @@
                 9
               ]
             }
+          },
+          "track" : {
+            "3" : {
+              "ip route track" : [
+                6
+              ]
+            }
           }
         },
         "configs/cisco_isis" : {
@@ -92363,6 +92373,13 @@
             "Serial5/1:5" : {
               "ip route next-hop interface" : [
                 9
+              ]
+            }
+          },
+          "track" : {
+            "3" : {
+              "ip route track" : [
+                6
               ]
             }
           }
