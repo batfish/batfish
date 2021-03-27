@@ -32,7 +32,7 @@
                 "type": "prefix",
                 "optional": true,
                 "displayName": "Network"
-            },
+            }
         }
     },
     "network": "${network}",
