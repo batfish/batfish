@@ -21,8 +21,14 @@ test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp
 # validate bgpEdges
 test -raw tests/questions/stable/bgpEdges.ref validate-template bgpEdges nodes=".*", remoteNodes=".*"
 
+# validate bgpRib
+test -raw tests/questions/stable/bgpRib.ref validate-template bgpRib network="1.1.1.1/24", nodes="n1", vrfs="default"
+
 # validate eigrpEdges
 test -raw tests/questions/stable/eigrpEdges.ref validate-template eigrpEdges nodes=".*", remoteNodes=".*"
+
+# validate evpnRib
+test -raw tests/questions/stable/evpnRib.ref validate-template evpnRib network="1.1.1.1/24", nodes="n1", vrfs="default"
 
 # validate ipsecEdges
 test -raw tests/questions/stable/ipsecEdges.ref validate-template ipsecEdges nodes=".*", remoteNodes=".*"
