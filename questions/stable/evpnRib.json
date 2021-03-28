@@ -1,0 +1,42 @@
+{
+    "class": "org.batfish.question.routes.RoutesQuestion",
+    "differential": false,
+    "instance": {
+        "description": "Returns routes in the EVPN RIB.",
+        "instanceName": "evpnRib",
+        "longDescription": "Shows EVPN routes for specified VRF and node(s).",
+        "orderedVariableNames": [
+            "nodes",
+            "network",
+            "vrfs"
+        ],
+        "tags": [
+            "dataplane",
+            "routing"
+        ],
+        "variables": {
+            "nodes": {
+                "description": "Examine routes on nodes matching this specifier",
+                "type": "nodeSpec",
+                "optional": true,
+                "displayName": "Nodes"
+            },
+            "vrfs": {
+                "description": "Examine routes on VRFs matching this name or regex",
+                "type": "vrf",
+                "optional": true,
+                "displayName": "VRFs"
+            },
+            "network": {
+                "description": "Examine routes for networks matching this prefix",
+                "type": "prefix",
+                "optional": true,
+                "displayName": "Network"
+            }
+        }
+    },
+    "network": "${network}",
+    "nodes": "${nodes}",
+    "vrfs": "${vrfs}",
+    "rib": "evpn"
+}

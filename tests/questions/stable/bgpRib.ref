@@ -1,0 +1,47 @@
+{
+  "class" : "org.batfish.question.routes.RoutesQuestion",
+  "network" : "1.1.1.0/24",
+  "nodes" : "n1",
+  "protocols" : "all",
+  "rib" : "BGP",
+  "vrfs" : "default",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Returns routes in the BGP RIB.",
+    "instanceName" : "qname",
+    "longDescription" : "Shows BGP routes for specified VRF and node(s).",
+    "orderedVariableNames" : [
+      "nodes",
+      "network",
+      "vrfs"
+    ],
+    "tags" : [
+      "dataplane",
+      "routing"
+    ],
+    "variables" : {
+      "network" : {
+        "description" : "Examine routes for networks matching this prefix",
+        "displayName" : "Network",
+        "optional" : true,
+        "type" : "prefix",
+        "value" : "1.1.1.1/24"
+      },
+      "nodes" : {
+        "description" : "Examine routes on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "n1"
+      },
+      "vrfs" : {
+        "description" : "Examine routes on VRFs matching this name or regex",
+        "displayName" : "VRFs",
+        "optional" : true,
+        "type" : "vrf",
+        "value" : "default"
+      }
+    }
+  }
+}
