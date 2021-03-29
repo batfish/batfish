@@ -97,7 +97,6 @@ ADDRESS
       pushMode(M_Word);
     }
   }
-
 ;
 
 ADDRESS_FAMILY: 'address-family';
@@ -1683,7 +1682,16 @@ POP2: 'pop2';
 
 POP3: 'pop3';
 
-PORT: 'port';
+PORT
+:
+  'port'
+  // All other instances are followed by tokens in default mode
+  {
+    if (secondToLastTokenType() == OBJECT_GROUP) {
+      pushMode(M_Word);
+    }
+  }
+;
 
 PORT_CHANNEL
 :
