@@ -594,7 +594,10 @@ public final class FortiosGrammarTest {
                     hasText(containsString("exclude-member addr3"))),
                 hasComment("Addrgrp cycles cannot be added to valid as it would create a cycle"),
                 hasComment("Addrgrp valid cannot be added to valid as it would create a cycle"),
-                hasComment("Addrgrp type folder is not yet supported"))));
+                hasComment("Addrgrp type folder is not yet supported"),
+                allOf(
+                    hasComment("The type of address group can not be changed"),
+                    hasText(containsString("type default"))))));
   }
 
   @Test
