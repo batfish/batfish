@@ -453,8 +453,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     Address.Type newType = toAddressType(ctx.type);
     Address prevAddress = _c.getAddresses().get(_currentAddress.getName());
     if (prevAddress != null
-        && Addrgrp.validExcludeMemberType(prevAddress.getTypeEffective())
-        && !Addrgrp.validExcludeMemberType(newType)) {
+        && validExcludeMemberType(prevAddress.getTypeEffective())
+        && !validExcludeMemberType(newType)) {
       // Note: this can warn even when the type-change is okay / isn't used as addrgrp exclude
       warn(ctx, "If this address is used as an addrgrp exclude, it's type cannot be changed");
     }
@@ -2282,6 +2282,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return "device must be set";
     }
     return null;
+  }
+
+  /**
+   * Returns a boolean indicating if the specified address type is valid to use for an exclude
+   * member for an addrgrp.
+   */
+  private static boolean validExcludeMemberType(Address.Type type) {
+    return type == Address.Type.IPRANGE || type == Address.Type.IPMASK;
   }
 
   /**

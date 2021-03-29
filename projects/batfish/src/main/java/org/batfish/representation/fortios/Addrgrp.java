@@ -19,14 +19,6 @@ public class Addrgrp extends AddrgrpMember implements Serializable {
   public static final Type DEFAULT_TYPE = Type.DEFAULT;
   public static final boolean DEFAULT_EXCLUDE = false;
 
-  /**
-   * Returns a boolean indicating if the specified address type is valid to use for an exclude
-   * member.
-   */
-  public static boolean validExcludeMemberType(Address.Type type) {
-    return type == Address.Type.IPRANGE || type == Address.Type.IPMASK;
-  }
-
   @Override
   public @Nonnull String getName() {
     return _name;
