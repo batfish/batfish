@@ -179,7 +179,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         case FORCE10:
         case FOUNDRY:
           {
-            CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText, _settings, format);
+            CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText, _settings);
             combinedParser = ciscoParser;
             extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser, format, _warnings);
             break;

@@ -9,28 +9,6 @@ options {
    tokenVocab = CiscoLexer;
 }
 
-@members {
-   private boolean _cadant;
-
-   private boolean _multilineBgpNeighbors;
-
-   public void setCadant(boolean b) {
-      _cadant = b;
-   }
-
-   public void setMultilineBgpNeighbors(boolean multilineBgpNeighbors) {
-      _multilineBgpNeighbors = multilineBgpNeighbors;
-   }
-
-   @Override
-   public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n",
-         _cadant,
-         _multilineBgpNeighbors
-      );
-   }
-}
-
 address_aiimgp_stanza
 :
    ADDRESS null_rest_of_line
@@ -1132,16 +1110,6 @@ ip_ssh_null
    ) null_rest_of_line
 ;
 
-ip_ssh_private_key
-:
-   PRIVATE_KEY ~END_CADANT+ END_CADANT
-;
-
-ip_ssh_public_key
-:
-   PUBLIC_KEY ~END_CADANT+ END_CADANT
-;
-
 ip_ssh_pubkey_chain
 :
    PUBKEY_CHAIN NEWLINE
@@ -2107,17 +2075,6 @@ s_authentication
    AUTHENTICATION null_rest_of_line
 ;
 
-s_banner_cadant
-:
-  BANNER type = cadant_banner_type NEWLINE body = BANNER_BODY? BANNER_DELIMITER_CADANT // delimiter includes newline
-;
-
-cadant_banner_type
-:
-  LOGIN
-  | MOTD
-;
-
 s_banner_ios
 :
   banner_header = ios_banner_header banner = ios_delimited_banner NEWLINE
@@ -2585,9 +2542,7 @@ s_ip_ssh
 :
    NO? IP SSH
    (
-      ip_ssh_private_key
-      | ip_ssh_pubkey_chain
-      | ip_ssh_public_key
+      ip_ssh_pubkey_chain
       | ip_ssh_version
       | ip_ssh_null
    )
@@ -3478,7 +3433,6 @@ stanza
    | s_archive
    | s_arp_access_list_extended
    | s_authentication
-   | s_banner_cadant
    | s_banner_ios
    | s_bfd
    | s_bfd_template
@@ -3516,7 +3470,6 @@ stanza
    | s_event_monitor
    | s_flow
    | s_flow_sampler_map
-   | s_foundry_mac_access_list
    | s_gatekeeper
    | s_global_port_security
    | s_guest_access_email
@@ -3530,7 +3483,6 @@ stanza
    | s_interface
    | s_ip
    | s_ip_access_list_eth
-   | s_ip_access_list_session
    | s_ip_default_gateway
    | s_ip_dhcp
    | s_ip_domain
@@ -3555,14 +3507,7 @@ stanza
    | s_l2tp_class
    | s_l2vpn
    | s_license
-   |
-   {!_cadant}?
-
-   s_line
-   |
-   {_cadant}?
-
-   s_line_cadant
+   | s_line
    | s_logging
    | s_lpts
    | s_management

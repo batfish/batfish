@@ -42,7 +42,6 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Proposal;
@@ -433,7 +432,7 @@ public final class CiscoGrammarTest {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings, format);
+    CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings);
     CiscoControlPlaneExtractor extractor =
         new CiscoControlPlaneExtractor(src, ciscoParser, format, new Warnings());
     ParserRuleContext tree =
@@ -588,21 +587,6 @@ public final class CiscoGrammarTest {
     assertThat(byType.keySet(), hasSize(2));
     assertThat(byType, hasKey("ip_acl_udef"));
     assertThat(byType, hasKey("mac_acl_udef"));
-  }
-
-  @Test
-  public void testArubaConfigurationFormat() throws IOException {
-    Configuration arubaConfig = parseConfig("arubaConfiguration");
-
-    assertThat(arubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.ARUBAOS)));
-  }
-
-  @Test
-  public void testCadantBanner() throws IOException {
-    Configuration c = parseConfig("cadant_banner");
-    assertThat(
-        c.getVendorFamily().getCisco().getBanners().get("login"),
-        equalTo("Some text\nSome more text\n"));
   }
 
   @Test

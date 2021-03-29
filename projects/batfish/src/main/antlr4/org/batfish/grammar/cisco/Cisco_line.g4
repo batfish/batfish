@@ -203,11 +203,3 @@ s_line
       | description_line
    )*
 ;
-
-s_line_cadant
-:
-   LINE line_type_cadant start_line = dec end_line = dec?
-   (
-      lc_null
-   )
-;

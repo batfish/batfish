@@ -1,9 +1,0 @@
-shelfname ""                                                                                                                                
-hostname "cadant_banner"
-#
-configure
-banner login
-Some text
-Some more text
-/end
-#

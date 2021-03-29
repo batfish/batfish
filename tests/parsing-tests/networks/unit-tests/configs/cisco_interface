@@ -306,7 +306,6 @@ interface tunnel0
  tunnel bandwidth transmit 1000000
  tunnel destination 3.4.5.6
  tunnel key 123
- tunnel mode gre ipv4
  tunnel mode gre multipoint
  tunnel path-mtu-discovery
  tunnel source 2.3.4.5

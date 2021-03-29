@@ -1,7 +1,0 @@
-!
-hostname arubaConfiguration
-!
-ip access-list eth accessListName
-  permit any
-!
-netservice netserviceName udp 67 68 alg dhcp
