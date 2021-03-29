@@ -4,4 +4,6 @@ package org.batfish.representation.cisco_nxos;
 public interface ObjectGroupVisitor<T> {
 
   T visitObjectGroupIpAddress(ObjectGroupIpAddress objectGroupIpAddress);
+
+  T visitObjectGroupIpPort(ObjectGroupIpPort objectGroupIpPort);
 }

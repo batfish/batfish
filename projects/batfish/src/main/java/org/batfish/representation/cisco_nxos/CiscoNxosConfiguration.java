@@ -1008,7 +1008,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertObjectGroups() {
-    _objectGroups.values().stream()
+    _objectGroups
+        .values()
         .forEach(
             objectGroup ->
                 objectGroup.accept(
@@ -1018,6 +1019,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                           ObjectGroupIpAddress objectGroupIpAddress) {
                         _c.getIpSpaces()
                             .put(objectGroupIpAddress.getName(), toIpSpace(objectGroupIpAddress));
+                        return null;
+                      }
+
+                      @Override
+                      public Void visitObjectGroupIpPort(ObjectGroupIpPort objectGroupIpPort) {
+                        // TODO: how do we convert these, if at all?
                         return null;
                       }
                     }));
@@ -1742,6 +1749,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoNxosStructureType.IPV6_PREFIX_LIST);
     markConcreteStructure(CiscoNxosStructureType.NVE);
     markConcreteStructure(CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS);
+    markConcreteStructure(CiscoNxosStructureType.OBJECT_GROUP_IP_PORT);
     markConcreteStructure(CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE);
     markConcreteStructure(CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS);
     markConcreteStructure(CiscoNxosStructureType.POLICY_MAP_QOS);
@@ -2902,7 +2910,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * Optional#empty} if unsupported.
    */
   private @Nonnull Optional<IntegerSpace> toPorts(PortSpec portSpec) {
-    // TODO: return an abstract space of integers to allow for named port spaces
+    // TODO: rewrite to allow for better tracing?
     return portSpec.accept(
         new PortSpecVisitor<Optional<IntegerSpace>>() {
           @Override
@@ -2913,8 +2921,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public Optional<IntegerSpace> visitPortGroupPortSpec(
               PortGroupPortSpec portGroupPortSpec) {
-            // TODO: support port groups
-            return Optional.empty();
+            Optional<ObjectGroupIpPort> group =
+                Optional.ofNullable(_objectGroups.get(portGroupPortSpec.getName()))
+                    .filter(g -> g instanceof ObjectGroupIpPort)
+                    .map(g -> ((ObjectGroupIpPort) g));
+            if (!group.isPresent()) {
+              return Optional.empty();
+            }
+            IntegerSpace[] ports =
+                group.get().getLines().values().stream()
+                    .map(ObjectGroupIpPortLine::getPorts)
+                    .toArray(IntegerSpace[]::new);
+            return Optional.of(IntegerSpace.unionOf(ports));
           }
         });
   }
