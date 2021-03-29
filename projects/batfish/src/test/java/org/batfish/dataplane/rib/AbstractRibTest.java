@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.GenericRibReadOnly;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -147,7 +146,7 @@ public class AbstractRibTest {
   }
 
   /**
-   * Ensure that {@link GenericRibReadOnly#longestPrefixMatch(Ip,
+   * Ensure that {@link org.batfish.datamodel.GenericRibReadOnly#longestPrefixMatch(Ip,
    * org.batfish.datamodel.ResolutionRestriction)} returns correct routes when the RIB is non-empty
    */
   @Test
@@ -165,7 +164,7 @@ public class AbstractRibTest {
   }
 
   /**
-   * Ensure that {@link GenericRibReadOnly#longestPrefixMatch(Ip,
+   * Ensure that {@link org.batfish.datamodel.GenericRibReadOnly#longestPrefixMatch(Ip,
    * org.batfish.datamodel.ResolutionRestriction)} returns correct routes when the RIB is non-empty
    * and restriction is applied.
    */

@@ -1,5 +1,6 @@
 package org.batfish.dataplane;
 
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.FibActionMatchers.hasInterfaceName;
 import static org.batfish.datamodel.matchers.FibActionMatchers.isFibForwardActionThat;
@@ -259,7 +260,7 @@ public final class FibImplTest {
     rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
     rib.mergeRoute(annotateRoute(testRoute));
 
-    Fib fib = new FibImpl(rib, null);
+    Fib fib = new FibImpl(rib, alwaysTrue());
     Set<AbstractRoute> fibRoutesEth1 = getTopLevelRoutesByInterface(fib, "Eth1");
 
     /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
@@ -397,7 +398,7 @@ public final class FibImplTest {
     rib.mergeRoute(annotateRoute(ecmpForwardingRoute1));
     rib.mergeRoute(annotateRoute(ecmpForwardingRoute2));
 
-    Fib fib = new FibImpl(rib, null);
+    Fib fib = new FibImpl(rib, alwaysTrue());
 
     /* 2.2.2.0/24 should resolve to eth3 and eth4*/
     assertThat(getTopLevelRoutesByInterface(fib, "Eth3"), hasItem(hasPrefix(TEST_PREFIX)));

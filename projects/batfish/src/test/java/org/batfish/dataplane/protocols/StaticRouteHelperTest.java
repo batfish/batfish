@@ -1,5 +1,6 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.hamcrest.Matchers.equalTo;
@@ -36,7 +37,7 @@ public final class StaticRouteHelperTest {
             .setNextHopIp(nextHop)
             .setAdministrativeCost(1)
             .build();
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, null), equalTo(false));
+    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(false));
   }
 
   /** Do not activate if no match for nextHop IP exists */
@@ -53,7 +54,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, null), equalTo(false));
+    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(false));
   }
 
   /** Activate if next hop IP matches a route */
@@ -76,7 +77,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, null), equalTo(true));
+    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /** Do not activate if the route to the next hop IP has same prefix as route in question. */
@@ -99,7 +100,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, null), equalTo(false));
+    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(false));
   }
 
   /** Activate the route with next hop IP within route's prefix, if it is already in the RIB */
@@ -114,7 +115,7 @@ public final class StaticRouteHelperTest {
     _rib.mergeRoute(annotateRoute(sr));
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, null), equalTo(true));
+    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /** Activate if route exists for the same prefix but next hop is different */
@@ -146,7 +147,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, null), equalTo(true));
+    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /** Allow activation in the RIB even if there would be a FIB resolution loop. */
@@ -180,7 +181,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, null), equalTo(true));
+    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /** Allow installation of a covered/more specific route */
@@ -197,7 +198,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, null), equalTo(true));
+    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
   /**
@@ -276,7 +277,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertFalse(shouldActivateNextHopIpRoute(sr, _rib, null));
+    assertFalse(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()));
   }
 
   /**
