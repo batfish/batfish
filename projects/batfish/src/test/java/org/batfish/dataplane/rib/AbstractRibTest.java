@@ -1,5 +1,6 @@
 package org.batfish.dataplane.rib;
 
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfIntraAreaRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -128,8 +130,8 @@ public class AbstractRibTest {
   /** Ensure that empty RIB doesn't have any prefix matches */
   @Test
   public void testLongestPrefixMatchWhenEmpty() {
-    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1"), null), empty());
-    assertThat(_rib.longestPrefixMatch(Ip.parse("0.0.0.0"), null), empty());
+    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1"), alwaysTrue()), empty());
+    assertThat(_rib.longestPrefixMatch(Ip.parse("0.0.0.0"), alwaysTrue()), empty());
   }
 
   /** Ensure that longestPrefixMatch finds route in root (guarantee no off-by-one length error) */
@@ -141,37 +143,58 @@ public class AbstractRibTest {
             .setAdministrativeCost(1)
             .build();
     _rib.mergeRouteGetDelta(r);
-    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1"), 32, null), contains(r));
+    assertThat(_rib.longestPrefixMatch(Ip.parse("1.1.1.1"), 32, alwaysTrue()), contains(r));
   }
 
   /**
-   * Ensure that {@link GenericRibReadOnly#longestPrefixMatch(Ip, java.util.function.Predicate)}
-   * returns correct routes when the RIB is non-empty
+   * Ensure that {@link GenericRibReadOnly#longestPrefixMatch(Ip,
+   * org.batfish.datamodel.ResolutionRestriction)} returns correct routes when the RIB is non-empty
    */
   @Test
   public void testLongestPrefixMatch() {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
-    Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"), null);
+    Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"), alwaysTrue());
     assertThat(match, contains(routes.get(3)));
 
-    match = _rib.longestPrefixMatch(Ip.parse("10.1.1.2"), null);
+    match = _rib.longestPrefixMatch(Ip.parse("10.1.1.2"), alwaysTrue());
     assertThat(match, contains(routes.get(1)));
 
-    match = _rib.longestPrefixMatch(Ip.parse("11.1.1.1"), null);
+    match = _rib.longestPrefixMatch(Ip.parse("11.1.1.1"), alwaysTrue());
+    assertThat(match, empty());
+  }
+
+  /**
+   * Ensure that {@link GenericRibReadOnly#longestPrefixMatch(Ip,
+   * org.batfish.datamodel.ResolutionRestriction)} returns correct routes when the RIB is non-empty
+   * and restriction is applied.
+   */
+  @Test
+  public void testLongestPrefixMatchRestriction() {
+    ResolutionRestriction<StaticRoute> restriction = r -> r.getNetwork().getPrefixLength() < 32;
+
+    List<StaticRoute> routes = setupOverlappingRoutes();
+
+    Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"), restriction);
+    assertThat(match, contains(routes.get(1)));
+
+    match = _rib.longestPrefixMatch(Ip.parse("10.1.1.2"), restriction);
+    assertThat(match, contains(routes.get(1)));
+
+    match = _rib.longestPrefixMatch(Ip.parse("11.1.1.1"), restriction);
     assertThat(match, empty());
   }
 
   /**
    * Ensure that {@link GenericRibReadOnly#longestPrefixMatch(Ip, int,
-   * java.util.function.Predicate)} returns correct routes when the RIB is non-empty
+   * org.batfish.datamodel.ResolutionRestriction)} returns correct routes when the RIB is non-empty
    */
   @Test
   public void testLongestPrefixMatchConstrained() {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     // Only the first route matches with prefix len of <= 8
-    Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"), 8, null);
+    Set<StaticRoute> match = _rib.longestPrefixMatch(Ip.parse("10.1.1.1"), 8, alwaysTrue());
     assertThat(match, contains(routes.get(0)));
   }
 
@@ -389,11 +412,11 @@ public class AbstractRibTest {
     _rib.mergeRoute(r32);
     _rib.mergeRoute(r18);
 
-    assertThat(_rib.longestPrefixMatch(ip, 32, null), contains(r32));
-    assertThat(_rib.longestPrefixMatch(ip, 31, null), contains(r18));
-    assertThat(_rib.longestPrefixMatch(ip, 19, null), contains(r18));
-    assertThat(_rib.longestPrefixMatch(ip, 18, null), contains(r18));
-    assertThat(_rib.longestPrefixMatch(ip, 17, null), empty());
+    assertThat(_rib.longestPrefixMatch(ip, 32, alwaysTrue()), contains(r32));
+    assertThat(_rib.longestPrefixMatch(ip, 31, alwaysTrue()), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 19, alwaysTrue()), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 18, alwaysTrue()), contains(r18));
+    assertThat(_rib.longestPrefixMatch(ip, 17, alwaysTrue()), empty());
   }
 
   @Test
@@ -414,7 +437,7 @@ public class AbstractRibTest {
         b.setNetwork(Prefix.parse("1.2.3.4/8")).setNonForwarding(false).build());
 
     // Looking for 1.2.3.4, should skip the /32 and /31, and then find the single forwarding /30
-    Set<StaticRoute> routes = _rib.longestPrefixMatch(Ip.parse("1.2.3.4"), null);
+    Set<StaticRoute> routes = _rib.longestPrefixMatch(Ip.parse("1.2.3.4"), alwaysTrue());
     assertThat(routes, contains(hasPrefix(Prefix.parse("1.2.3.4/30"))));
   }
 

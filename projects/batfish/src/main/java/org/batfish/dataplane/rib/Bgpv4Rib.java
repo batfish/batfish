@@ -1,5 +1,7 @@
 package org.batfish.dataplane.rib;
 
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
+
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,9 +50,11 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       - routes with protocol AGGREGATE (for locally-generated routes/aggregates)
       - routes that have a next vrf as the next hop
     */
+    // TODO: implement resolution restriction
     if (shouldCheckNextHopReachability(route)
         .map(
-            nextHopIp -> _mainRib != null && _mainRib.longestPrefixMatch(nextHopIp, null).isEmpty())
+            nextHopIp ->
+                _mainRib != null && _mainRib.longestPrefixMatch(nextHopIp, alwaysTrue()).isEmpty())
         .orElse(false)) {
       /*
       TODO: when backups are enabled again, we should probably put this in as a backup

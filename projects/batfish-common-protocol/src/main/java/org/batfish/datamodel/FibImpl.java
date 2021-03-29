@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -88,7 +87,7 @@ public final class FibImpl implements Fib {
   private transient Supplier<Set<FibEntry>> _entries;
 
   public <R extends AbstractRouteDecorator> FibImpl(
-      @Nonnull GenericRib<R> rib, @Nullable Predicate<R> restriction) {
+      @Nonnull GenericRib<R> rib, ResolutionRestriction<R> restriction) {
     _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
     rib.getTypedRoutes()
         .forEach(
@@ -118,14 +117,15 @@ public final class FibImpl implements Fib {
    *
    * @param rib {@link GenericRib} for which to do the resolution.
    * @param route {@link AbstractRoute} with a next hop IP to be resolved.
-   * @param restriction A restriction on which routes may be used to
+   * @param restriction A restriction on which routes may be used to recursively resolve next-hop
+   *     IPs
    * @return A map (interface name -&gt; last hop IP -&gt; last taken route) for
    * @throws BatfishException if resolution depth is exceeded (high likelihood of a routing loop) OR
    *     an invalid route in the RIB has been encountered.
    */
   @VisibleForTesting
   <R extends AbstractRouteDecorator> Set<FibEntry> resolveRoute(
-      GenericRib<R> rib, AbstractRoute route, @Nullable Predicate<R> restriction) {
+      GenericRib<R> rib, AbstractRoute route, ResolutionRestriction<R> restriction) {
     ResolutionTreeNode resolutionRoot = ResolutionTreeNode.root(route);
     buildResolutionTree(
         rib,
@@ -196,7 +196,7 @@ public final class FibImpl implements Fib {
       int maxPrefixLength,
       @Nullable AbstractRoute parentRoute,
       ResolutionTreeNode treeNode,
-      @Nullable Predicate<R> restriction) {
+      ResolutionRestriction<R> restriction) {
     Prefix network = route.getNetwork();
     if (seenNetworks.contains(network)) {
       // Don't enter a resolution loop
@@ -254,7 +254,7 @@ public final class FibImpl implements Fib {
                         }
                       }
                       // Recursive routes must pass restriction if present.
-                      return restriction == null || restriction.test(r);
+                      return restriction.test(r);
                     })
                 .stream()
                 .map(AbstractRouteDecorator::getAbstractRoute)

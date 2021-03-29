@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
 
@@ -96,13 +95,15 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
 
   @Override
   public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(
-      Ip address, Predicate<AnnotatedRoute<AbstractRoute>> restriction) {
+      Ip address, ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction) {
     return _longestPrefixMatchResults.get(address);
   }
 
   @Override
   public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(
-      Ip address, int maxPrefixLength, Predicate<AnnotatedRoute<AbstractRoute>> restriction) {
+      Ip address,
+      int maxPrefixLength,
+      ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction) {
     throw new UnsupportedOperationException();
   }
 

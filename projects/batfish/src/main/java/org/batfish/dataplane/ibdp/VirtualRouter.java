@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.exportNonIsisRouteToIsis;
@@ -31,7 +32,6 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -63,6 +63,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Route;
@@ -231,7 +232,8 @@ public final class VirtualRouter {
 
   @Nonnull private final RibExprEvaluator _ribExprEvaluator;
 
-  @Nullable private final Predicate<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
+  @Nonnull
+  private final ResolutionRestriction<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
 
   private static final Logger LOGGER = LogManager.getLogger(VirtualRouter.class);
 
@@ -243,7 +245,7 @@ public final class VirtualRouter {
     String resolutionPolicy = _vrf.getResolutionPolicy();
     _resolutionRestriction =
         resolutionPolicy == null
-            ? null
+            ? alwaysTrue()
             : _c.getRoutingPolicies().get(resolutionPolicy)::processReadOnly;
     // Main RIB + delta builder
     _mainRib = new Rib();

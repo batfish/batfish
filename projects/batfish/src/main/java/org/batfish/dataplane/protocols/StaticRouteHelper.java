@@ -1,11 +1,10 @@
 package org.batfish.dataplane.protocols;
 
 import java.util.Set;
-import java.util.function.Predicate;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 
@@ -24,7 +23,7 @@ public class StaticRouteHelper {
    *     next-hops
    */
   public static <R extends AbstractRouteDecorator> boolean shouldActivateNextHopIpRoute(
-      StaticRoute route, GenericRib<R> rib, @Nullable Predicate<R> restriction) {
+      StaticRoute route, GenericRib<R> rib, ResolutionRestriction<R> restriction) {
     boolean recursive = route.getRecursive();
     Set<R> matchingRoutes =
         rib.longestPrefixMatch(
@@ -39,7 +38,7 @@ public class StaticRouteHelper {
                 return false;
               }
               // Recursive routes must pass restriction if present.
-              return restriction == null || restriction.test(r);
+              return restriction.test(r);
             });
 
     // If matchingRoutes is empty, cannot activate because next hop ip is unreachable
@@ -49,6 +48,7 @@ public class StaticRouteHelper {
             routeToNextHop ->
                 // Next hop has to be reachable through a route with a different prefix
                 !routeToNextHop.getNetwork().equals(route.getNetwork())
+                    // TODO: fix properly and stop allowing self-activation
                     || route.equals(routeToNextHop));
   }
 }

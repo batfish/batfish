@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,6 +18,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.PrefixTrieMultiMap;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
@@ -93,20 +93,14 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return _root.get(route.getNetwork()).contains(route);
   }
 
-  private boolean hasAllowedForwardingRoute(Set<R> routes, @Nullable Predicate<R> restriction) {
+  private boolean hasAllowedForwardingRoute(Set<R> routes, ResolutionRestriction<R> restriction) {
     return routes.stream()
-        .anyMatch(
-            r ->
-                !r.getAbstractRoute().getNonForwarding()
-                    && (restriction == null || restriction.test(r)));
+        .anyMatch(r -> !r.getAbstractRoute().getNonForwarding() && restriction.test(r));
   }
 
-  private boolean onlyAllowedForwardingRoutes(Set<R> routes, @Nullable Predicate<R> restriction) {
+  private boolean onlyAllowedForwardingRoutes(Set<R> routes, ResolutionRestriction<R> restriction) {
     return routes.stream()
-        .noneMatch(
-            r ->
-                r.getAbstractRoute().getNonForwarding()
-                    || (restriction != null && !restriction.test(r)));
+        .noneMatch(r -> r.getAbstractRoute().getNonForwarding() || !restriction.test(r));
   }
 
   /**
@@ -118,7 +112,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
    */
   @Nonnull
   Set<R> getLongestPrefixMatch(
-      Ip address, int maxPrefixLength, @Nullable Predicate<R> restriction) {
+      Ip address, int maxPrefixLength, ResolutionRestriction<R> restriction) {
     for (int pl = maxPrefixLength; pl >= 0; pl--) {
       Set<R> routes = _root.longestPrefixMatch(address, pl);
       if (hasAllowedForwardingRoute(routes, restriction)) {
@@ -126,10 +120,7 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
           return routes;
         }
         return routes.stream()
-            .filter(
-                r ->
-                    !r.getAbstractRoute().getNonForwarding()
-                        && (restriction == null || restriction.test(r)))
+            .filter(r -> !r.getAbstractRoute().getNonForwarding() && restriction.test(r))
             .collect(ImmutableSet.toImmutableSet());
       }
     }
