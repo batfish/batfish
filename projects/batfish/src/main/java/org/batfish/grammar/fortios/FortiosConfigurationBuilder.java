@@ -514,6 +514,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfaddrgrp_set_type(Cfaddrgrp_set_typeContext ctx) {
+    Addrgrp prevGrp = _c.getAddrgrps().get(_currentAddrgrp.getName());
+    if (prevGrp != null) {
+      warn(ctx, "The type of address group can not be changed");
+      return;
+    }
     _currentAddrgrp.setType(toAddrgrpType(ctx, ctx.type));
   }
 
