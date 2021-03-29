@@ -3,6 +3,7 @@ config system global
 end
 config firewall address
     edit "tagging"
+        # This nested config block isn't supported yet
         config tagging
             edit foobar
                 set tags tag1
