@@ -1,0 +1,7 @@
+#
+set system host-name juniper-resolution
+#
+set routing-options resolution rib inet.0 import respol
+#
+set policy-options policy-statement respol term t1 from route-filter 0.0.0.0/0 prefix-length-range /24-/24
+set policy-options policy-statement respol term t1 then accept

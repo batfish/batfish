@@ -5,6 +5,8 @@ set routing-options static route 1.0.0.0/8 next-hop 10.0.0.1
 set routing-instances ri2 routing-options static route 2.0.0.0/8 next-hop 10.0.0.2
 set routing-options static route 3.0.0.0/8 no-install
 set routing-options static route 4.0.0.0/8 next-hop ge-0/0/0.0
+set routing-options static route 6.0.0.0/8 next-hop 10.0.0.1
+set routing-options static route 6.0.0.0/8 resolve
 #
 set routing-instances ri3 routing-options static route 5.5.5.0/24 preference 150
 set routing-instances ri3 routing-options static route 5.5.5.0/24 next-hop 2.3.4.5

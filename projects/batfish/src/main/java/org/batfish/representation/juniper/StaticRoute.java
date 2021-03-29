@@ -33,6 +33,8 @@ public class StaticRoute implements Serializable {
 
   private Prefix _prefix;
 
+  @Nullable private Boolean _resolve;
+
   /**
    * Each qualified next hop will produce a separate static route using properties of the static
    * route and overriding with properties of {@link QualifiedNextHop}
@@ -41,7 +43,7 @@ public class StaticRoute implements Serializable {
 
   private Long _tag;
 
-  private Boolean _noInstall;
+  @Nullable private Boolean _noInstall;
 
   public StaticRoute(Prefix prefix) {
     _communities = new TreeSet<>();
@@ -127,5 +129,14 @@ public class StaticRoute implements Serializable {
 
   public void setTag(long tag) {
     _tag = tag;
+  }
+
+  @Nullable
+  public Boolean getResolve() {
+    return _resolve;
+  }
+
+  public void setResolve(@Nullable Boolean resolve) {
+    _resolve = resolve;
   }
 }

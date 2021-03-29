@@ -2635,6 +2635,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return String.format("~RIB_GROUP_IMPORT_POLICY_%s_%s~", rg.getName(), protocol);
   }
 
+  @Nonnull
+  @VisibleForTesting
+  public static String generateResolutionRibImportPolicyName(String routingInstanceName) {
+    return String.format("~RESOLUTION_IMPORT_POLICY_%s~", routingInstanceName);
+  }
+
   @VisibleForTesting
   @Nullable
   static RibId toRibId(String hostname, String rib, @Nullable Warnings w) {
@@ -2932,6 +2938,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // static route corresponding to the next hop
     Boolean noInstall = firstNonNull(route.getNoInstall(), Boolean.FALSE);
+    // TOOD: return routing-instance-level default setting instead of false
+    Boolean resolve = firstNonNull(route.getResolve(), Boolean.FALSE);
     viStaticRoutes.add(
         org.batfish.datamodel.StaticRoute.builder()
             .setNetwork(route.getPrefix())
@@ -2943,6 +2951,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setMetric(route.getMetric())
             .setTag(firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG))
             .setNonForwarding(noInstall)
+            .setRecursive(resolve)
             .build());
 
     // populating static routes from each qualified next hop while overriding applicable properties
@@ -2964,6 +2973,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                       qualifiedNextHop.getTag(),
                       firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG)))
               .setNonForwarding(noInstall)
+              .setRecursive(resolve)
               .build());
     }
     return viStaticRoutes.build();
@@ -3439,6 +3449,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
       }
+      convertResolution(ri);
     }
 
     // static nats
@@ -3568,6 +3579,41 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _c.computeRoutingPolicySources(_w);
 
     return _c;
+  }
+
+  private void convertResolution(RoutingInstance ri) {
+    Resolution resolution = ri.getResolution();
+    if (resolution == null) {
+      return;
+    }
+    ResolutionRib rib = resolution.getRib();
+    if (rib == null) {
+      return;
+    }
+    if (!rib.getName().equals(RIB_IPV4_UNICAST)) {
+      // TODO: support other resolution ribs
+      return;
+    }
+    List<BooleanExpr> policyCalls =
+        rib.getImportPolicies().stream()
+            .map(CallExpr::new)
+            .collect(ImmutableList.toImmutableList());
+
+    String policyName = generateResolutionRibImportPolicyName(ri.getName());
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(policyName)
+        .setStatements(
+            ImmutableList.of(
+                // Add default policy
+                new SetDefaultPolicy(DEFAULT_REJECT_POLICY_NAME),
+                // Construct a policy chain based on defined import policies
+                new If(
+                    new FirstMatchChain(policyCalls),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                    ImmutableList.of(ReturnFalse.toStaticStatement()))))
+        .build();
+    _c.getVrfs().get(ri.getName()).setResolutionPolicy(policyName);
   }
 
   private void convertFirewallFiltersToIpAccessLists() {
