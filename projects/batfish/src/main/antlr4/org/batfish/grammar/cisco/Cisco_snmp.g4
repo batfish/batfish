@@ -140,14 +140,6 @@ ss_host_generic
             traps += variable_snmp_host
          )*
       )
-      |
-      // cadant
-
-      (
-         ss_host_name
-         | ss_host_traps
-         | ss_host_version
-      )+
    ) NEWLINE
 ;
 

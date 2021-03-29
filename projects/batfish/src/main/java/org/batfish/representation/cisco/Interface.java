@@ -83,7 +83,7 @@ public class Interface implements Serializable {
     if (name.startsWith("Ethernet")) {
       switch (format) {
         case ALCATEL_AOS:
-        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
+        case ARUBAOS:
         case CADANT:
         case CISCO_ASA:
         case CISCO_IOS:

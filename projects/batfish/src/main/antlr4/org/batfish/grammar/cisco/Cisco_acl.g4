@@ -83,36 +83,9 @@ appletalk_access_list_stanza
    ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
 ;
 
-aruba_access_list_action
-:
-   action = access_list_action
-   | CAPTIVE
-   |
-   (
-      DST_NAT dstnat = dec
-   )
-   | SRC_NAT
-;
-
-aruba_app
-:
-   BITTORRENT
-   | BITTORRENT_APPLICATION
-;
-
-aruba_appcategory
-:
-   PEER_TO_PEER
-;
-
 bandwidth_irs_stanza
 :
    BANDWIDTH null_rest_of_line
-;
-
-cadant_stdacl_name
-:
-   NAME name = variable_permissive NEWLINE
 ;
 
 etype
@@ -583,82 +556,6 @@ ipaclsession_ip6_range
    | USER
 ;
 
-ipaclsession_line
-:
-   src = ipaclsession_ip_range dst = ipaclsession_ip_range svc =
-   ipaclsession_service action = aruba_access_list_action
-   (
-      (
-         DOT1P_PRIORITY d1ppri = dec
-      )
-      | LOG
-      |
-      (
-         QUEUE
-         (
-            HIGH
-         )
-      )
-      |
-      (
-         TOS tos = dec
-      )
-   )* NEWLINE
-;
-
-ipaclsession_line6
-:
-   IPV6 src = ipaclsession_ip6_range dst = ipaclsession_ip6_range svc =
-   ipaclsession_service6 action = aruba_access_list_action
-   (
-      LOG
-      |
-      (
-         QUEUE
-         (
-            HIGH
-         )
-      )
-   )* NEWLINE
-;
-
-ipaclsession_service
-:
-   (
-      APP app = aruba_app
-   )
-   |
-   (
-      APPCATEGORY appcat = aruba_appcategory
-   )
-   |
-   (
-      prot = protocol ps = netservice_port_specifier?
-   )
-   | netsvc = variable
-;
-
-ipaclsession_service6
-:
-   (
-      (
-         (
-            TCP
-            | UDP
-         ) ps = netservice_port_specifier?
-      )
-      |
-      (
-         ICMPV6 is = netservice_icmpv6_specifier?
-      )
-      |
-      (
-         prot = protocol
-      )
-   )
-   | netsvc = variable
-;
-
 ipv6_prefix_list_tail
 :
    (
@@ -881,59 +778,11 @@ s_ethernet_services_tail
    xr_mac_specifier NEWLINE
 ;
 
-s_foundry_mac_access_list
-:
-   ACCESS_LIST num = ACL_NUM_FOUNDRY_L2 action = access_list_action
-   (
-      (
-         src_address = MAC_ADDRESS_LITERAL src_wildcard = MAC_ADDRESS_LITERAL
-      )
-      | src_any = ANY
-   )
-   (
-      (
-         dst_address = MAC_ADDRESS_LITERAL dst_wildcard = MAC_ADDRESS_LITERAL
-      )
-      | dst_any = ANY
-   )
-   (
-      vlan = dec
-      | vlan_any = ANY
-   )
-   (
-      (
-         ETYPE etype
-      )
-      | LOG_ENABLE
-      |
-      (
-         PRIORITY priority = dec
-      )
-      |
-      (
-         PRIORITY_FORCE priority_force = dec
-      )
-      |
-      (
-         PRIORITY_MAPPING priority_mapping = dec
-      )
-   )* NEWLINE
-;
-
 s_ip_access_list_eth
 :
    IP ACCESS_LIST ETH name = variable NEWLINE
    (
       ipacleth_line
-   )*
-;
-
-s_ip_access_list_session
-:
-   IP ACCESS_LIST SESSION name = variable NEWLINE
-   (
-      ipaclsession_line
-      | ipaclsession_line6
    )*
 ;
 
@@ -1045,7 +894,6 @@ standard_access_list_stanza
          NEWLINE
          (
             standard_access_list_tail
-            | cadant_stdacl_name
             | standard_access_list_null_tail
          )*
       )
