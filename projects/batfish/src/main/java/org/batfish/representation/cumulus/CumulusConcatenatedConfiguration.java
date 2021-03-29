@@ -5,7 +5,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.SPEED_CONVERSION_FACTOR;
 import static org.batfish.representation.cumulus.CumulusConversions.convertBgpProcess;
 import static org.batfish.representation.cumulus.CumulusConversions.convertClags;
@@ -531,6 +533,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
         .setOwner(c)
         .setVrf(getOrCreateVrf(c, vrfName))
         .setBandwidth(bandwidth)
+        .setMtu(ifaceName.equals(LOOPBACK_INTERFACE_NAME) ? DEFAULT_LOOPBACK_MTU : DEFAULT_PORT_MTU)
         .build();
   }
 

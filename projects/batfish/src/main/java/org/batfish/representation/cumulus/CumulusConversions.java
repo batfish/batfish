@@ -163,7 +163,6 @@ public final class CumulusConversions {
    */
   public static final double SPEED_CONVERSION_FACTOR = 10e6;
 
-  // Follow the default setting of Cisco.
   // TODO: need to verify this
   public static final double DEFAULT_LOOPBACK_BANDWIDTH = 8e9;
 
@@ -172,6 +171,14 @@ public final class CumulusConversions {
    * value in absence of explicit information.
    */
   public static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
+
+  public static final int DEFAULT_LOOPBACK_MTU = 65536;
+
+  /**
+   * Bandwidth cannot be determined from name alone, so we choose the following made-up plausible
+   * value in absence of explicit information.
+   */
+  public static final int DEFAULT_PORT_MTU = 1500;
 
   public static @Nonnull String computeBgpCommonExportPolicyName(String vrfName) {
     return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrfName);

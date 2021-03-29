@@ -3,12 +3,17 @@ package org.batfish.grammar.cumulus_concatenated;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_MTU;
+import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -256,10 +261,10 @@ public class CumulusConcatenatedGrammarTest {
     assertThat(c.getAllInterfaces().keySet(), contains("lo", "swp1", "swp2"));
 
     Interface lo = c.getAllInterfaces().get("lo");
-    assertEquals(lo.getAddress(), ConcreteInterfaceAddress.parse("1.1.1.1/32"));
+    assertThat(lo, allOf(hasAddress("1.1.1.1/32"), hasMtu(DEFAULT_LOOPBACK_MTU)));
 
     Interface swp1 = c.getAllInterfaces().get("swp1");
-    assertEquals(swp1.getAddress(), ConcreteInterfaceAddress.parse("2.2.2.2/24"));
+    assertThat(swp1, allOf(hasAddress("2.2.2.2/24"), hasMtu(DEFAULT_PORT_MTU)));
 
     Interface swp2 = c.getAllInterfaces().get("swp2");
     assertEquals(swp2.getAddress(), ConcreteInterfaceAddress.parse("3.3.3.3/24"));
