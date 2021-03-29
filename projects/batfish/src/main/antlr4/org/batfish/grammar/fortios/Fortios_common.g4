@@ -78,6 +78,8 @@ unimplemented_edit_stanza
     ) unimplemented
 ;
 
+// This must be a separate rule from unimplemented_edit_stanza, since its parent context is lost on recovery
+// This should only be used directly from unimplemented_edit_stanza
 unimplemented: UNIMPLEMENTED_PLACEHOLDER newline;
 
 uint8: UINT8;
