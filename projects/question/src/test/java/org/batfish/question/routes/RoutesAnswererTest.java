@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.function.Predicate;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.datamodel.AbstractRoute;
@@ -62,6 +61,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -550,12 +550,13 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public Set<R> longestPrefixMatch(Ip address, Predicate<R> restriction) {
+    public Set<R> longestPrefixMatch(Ip address, ResolutionRestriction<R> restriction) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public Set<R> longestPrefixMatch(Ip address, int maxPrefixLength, Predicate<R> restriction) {
+    public Set<R> longestPrefixMatch(
+        Ip address, int maxPrefixLength, ResolutionRestriction<R> restriction) {
       throw new UnsupportedOperationException();
     }
 
