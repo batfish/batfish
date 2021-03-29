@@ -79,4 +79,14 @@ config firewall address
         set interface "undefined_iface"
         set subnet 1.1.1.0 255.255.255.0
     next
+    edit type_change
+        set type iprange
+        set start-ip 1.1.1.0
+        set end-ip 1.1.1.255
+    next
+    edit type_change
+        # Should generate a warning, since it's changing from a valid to potentially invalid type
+        set type wildcard
+        set wildcard 1.1.0.1 255.255.0.255
+    next
 end
