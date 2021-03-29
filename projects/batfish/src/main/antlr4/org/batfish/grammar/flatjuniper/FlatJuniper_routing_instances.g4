@@ -230,6 +230,29 @@ ro_null
    ) null_filler
 ;
 
+ro_resolution
+:
+  RESOLUTION
+  (
+    apply
+    | rores_rib
+  )
+;
+
+rores_rib
+:
+  RIB name = variable
+  (
+    apply
+    | roresr_import
+  )
+;
+
+roresr_import
+:
+  IMPORT name = variable
+;
+
 ro_rib
 :
    RIB name = VARIABLE
@@ -733,6 +756,7 @@ s_routing_options
       | ro_interface_routes
       | ro_martians
       | ro_null
+      | ro_resolution
       | ro_rib
       | ro_rib_groups
       | ro_route_distinguisher_id

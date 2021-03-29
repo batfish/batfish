@@ -87,6 +87,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.RESOLUTION_RIB_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
@@ -102,6 +103,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTE
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
 import static org.batfish.representation.juniper.Nat.Type.SOURCE;
+import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -443,6 +445,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfac
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_resolutionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_rib_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
@@ -473,6 +476,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_point_to_pointCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_export_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_ribContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_discardContext;
@@ -482,6 +487,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_installContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_qualified_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_resolveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_preferenceContext;
@@ -780,6 +786,8 @@ import org.batfish.representation.juniper.PsThenReject;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.QualifiedNextHop;
 import org.batfish.representation.juniper.RegexCommunityMember;
+import org.batfish.representation.juniper.Resolution;
+import org.batfish.representation.juniper.ResolutionRib;
 import org.batfish.representation.juniper.RibGroup;
 import org.batfish.representation.juniper.Route4FilterLine;
 import org.batfish.representation.juniper.Route4FilterLineAddressMask;
@@ -2096,6 +2104,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private final Map<Token, String> _tokenInputs;
 
+  private Resolution _currentResolution;
+
+  private ResolutionRib _currentResolutionRib;
+
   public ConfigurationBuilder(
       FlatJuniperCombinedParser parser,
       String text,
@@ -2985,6 +2997,38 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRor_import_policy(Ror_import_policyContext ctx) {
     _currentRibGroup.addImportPolicy(ctx.name.getText());
+  }
+
+  @Override
+  public void enterRo_resolution(Ro_resolutionContext ctx) {
+    _currentResolution = _currentRoutingInstance.getOrCreateResolution();
+  }
+
+  @Override
+  public void exitRo_resolution(Ro_resolutionContext ctx) {
+    _currentResolution = null;
+  }
+
+  @Override
+  public void enterRores_rib(Rores_ribContext ctx) {
+    String name = ctx.name.getText();
+    if (!name.equals(RIB_IPV4_UNICAST)) {
+      todo(ctx, "Resolution ribs other than inet.0 are currently unsupported");
+    }
+    _currentResolutionRib = _currentResolution.getOrReplaceRib(name);
+  }
+
+  @Override
+  public void exitRores_rib(Rores_ribContext ctx) {
+    _currentResolutionRib = null;
+  }
+
+  @Override
+  public void exitRoresr_import(Roresr_importContext ctx) {
+    String name = ctx.name.getText();
+    _currentResolutionRib.addImportPolicy(name);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, RESOLUTION_RIB_IMPORT_POLICY, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -5380,6 +5424,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRosr_no_install(Rosr_no_installContext ctx) {
     _currentStaticRoute.setNoInstall(ctx.NO_INSTALL() != null);
+  }
+
+  @Override
+  public void exitRosr_resolve(Rosr_resolveContext ctx) {
+    _currentStaticRoute.setResolve(true);
   }
 
   @Override

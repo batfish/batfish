@@ -142,6 +142,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.computeCon
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.generateInstanceImportPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.generateResolutionRibImportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilterTerm;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingSecurityPolicyTerm;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
@@ -368,6 +369,9 @@ import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenTag;
+import org.batfish.representation.juniper.Resolution;
+import org.batfish.representation.juniper.ResolutionRib;
+import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
@@ -5043,11 +5047,13 @@ public final class FlatJuniperGrammarTest {
                             .setNetwork(Prefix.parse("1.2.3.4/24"))
                             .setNextHopIp(Ip.parse("10.0.0.1"))
                             .setAdministrativeCost(250)
+                            .setRecursive(false)
                             .build(),
                         StaticRoute.testBuilder()
                             .setNetwork(Prefix.parse("2.3.4.5/24"))
                             .setNextHopIp(Ip.parse("10.0.0.2"))
                             .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build())))));
   }
 
@@ -5064,17 +5070,26 @@ public final class FlatJuniperGrammarTest {
                             .setNetwork(Prefix.parse("1.0.0.0/8"))
                             .setNextHopIp(Ip.parse("10.0.0.1"))
                             .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build(),
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("3.0.0.0/8"))
                             .setNextHop(NextHopDiscard.instance())
                             .setNonForwarding(true)
+                            .setRecursive(false)
                             .setAdministrativeCost(5)
                             .build(),
                         StaticRoute.builder()
                             .setNetwork(Prefix.parse("4.0.0.0/8"))
                             .setNextHopInterface("ge-0/0/0.0")
                             .setAdministrativeCost(5)
+                            .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("6.0.0.0/8"))
+                            .setNextHopIp(Ip.parse("10.0.0.1"))
+                            .setAdministrativeCost(5)
+                            .setRecursive(true)
                             .build()))),
             hasVrf(
                 "ri2",
@@ -5084,6 +5099,7 @@ public final class FlatJuniperGrammarTest {
                             .setNetwork(Prefix.parse("2.0.0.0/8"))
                             .setNextHopIp(Ip.parse("10.0.0.2"))
                             .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build())))));
 
     assertThat(
@@ -5097,12 +5113,14 @@ public final class FlatJuniperGrammarTest {
                         .setNetwork(Prefix.parse("5.5.5.0/24"))
                         .setNextHopIp(Ip.parse("2.3.4.5"))
                         .setAdministrativeCost(150)
+                        .setRecursive(false)
                         .build(),
                     // inherits admin from the static route preference
                     StaticRoute.builder()
                         .setNetwork(Prefix.parse("5.5.5.0/24"))
                         .setNextHopInterface("ge-0/0/0.0")
                         .setAdministrativeCost(150)
+                        .setRecursive(false)
                         .build(),
                     // qualified next-hop overrides admin and tag
                     StaticRoute.builder()
@@ -5110,6 +5128,7 @@ public final class FlatJuniperGrammarTest {
                         .setNextHopIp(Ip.parse("1.2.3.4"))
                         .setAdministrativeCost(180)
                         .setTag(12L)
+                        .setRecursive(false)
                         .build()))));
   }
 
@@ -6063,5 +6082,36 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(mainRibRoutes, hasItem(hasPrefix(Prefix.strict("1.0.0.0/16"))));
     assertThat(mainRibRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
+  }
+
+  @Test
+  public void testResolutionExtraction() {
+    String hostname = "juniper-resolution";
+    JuniperConfiguration jc = parseJuniperConfig(hostname);
+    Resolution r = jc.getMasterLogicalSystem().getDefaultRoutingInstance().getResolution();
+
+    assertNotNull(r);
+
+    ResolutionRib rr = r.getRib();
+
+    assertNotNull(rr);
+    assertThat(rr.getName(), equalTo(RoutingInformationBase.RIB_IPV4_UNICAST));
+    assertThat(rr.getImportPolicies(), contains("respol"));
+    assertThat(jc.getMasterLogicalSystem().getPolicyStatements(), hasKeys(("respol")));
+  }
+
+  @Test
+  public void testResolutionConversion() {
+    String hostname = "juniper-resolution";
+    Configuration c = parseConfig(hostname);
+    String resolutionPolicyName = generateResolutionRibImportPolicyName(DEFAULT_VRF_NAME);
+
+    assertThat(c.getDefaultVrf().getResolutionPolicy(), equalTo(resolutionPolicyName));
+    assertThat(c.getRoutingPolicies(), hasKey(resolutionPolicyName));
+
+    RoutingPolicy r = c.getRoutingPolicies().get(resolutionPolicyName);
+
+    assertTrue(r.processReadOnly(new ConnectedRoute(Prefix.create(ZERO, 24), "blah")));
+    assertFalse(r.processReadOnly(new ConnectedRoute(Prefix.create(ZERO, 25), "blah")));
   }
 }

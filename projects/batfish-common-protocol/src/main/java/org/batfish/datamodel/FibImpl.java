@@ -86,12 +86,13 @@ public final class FibImpl implements Fib {
 
   private transient Supplier<Set<FibEntry>> _entries;
 
-  public FibImpl(@Nonnull GenericRib<? extends AbstractRouteDecorator> rib) {
+  public <R extends AbstractRouteDecorator> FibImpl(
+      @Nonnull GenericRib<R> rib, ResolutionRestriction<R> restriction) {
     _root = new PrefixTrieMultiMap<>(Prefix.ZERO);
     rib.getTypedRoutes()
         .forEach(
             r -> {
-              Set<FibEntry> s = resolveRoute(rib, r.getAbstractRoute());
+              Set<FibEntry> s = resolveRoute(rib, r.getAbstractRoute(), restriction);
               _root.putAll(r.getNetwork(), s);
             });
     initSuppliers();
@@ -116,13 +117,15 @@ public final class FibImpl implements Fib {
    *
    * @param rib {@link GenericRib} for which to do the resolution.
    * @param route {@link AbstractRoute} with a next hop IP to be resolved.
+   * @param restriction A restriction on which routes may be used to recursively resolve next-hop
+   *     IPs
    * @return A map (interface name -&gt; last hop IP -&gt; last taken route) for
    * @throws BatfishException if resolution depth is exceeded (high likelihood of a routing loop) OR
    *     an invalid route in the RIB has been encountered.
    */
   @VisibleForTesting
-  Set<FibEntry> resolveRoute(
-      GenericRib<? extends AbstractRouteDecorator> rib, AbstractRoute route) {
+  <R extends AbstractRouteDecorator> Set<FibEntry> resolveRoute(
+      GenericRib<R> rib, AbstractRoute route, ResolutionRestriction<R> restriction) {
     ResolutionTreeNode resolutionRoot = ResolutionTreeNode.root(route);
     buildResolutionTree(
         rib,
@@ -132,7 +135,8 @@ public final class FibImpl implements Fib {
         0,
         Prefix.MAX_PREFIX_LENGTH,
         null,
-        resolutionRoot);
+        resolutionRoot,
+        restriction);
     Builder<FibEntry> collector = ImmutableSet.builder();
     collectEntries(resolutionRoot, new Stack<>(), collector);
     return collector.build();
@@ -183,15 +187,16 @@ public final class FibImpl implements Fib {
    * number of leaf {@link ResolutionTreeNode}. Leaf nodes must contain non-null {@link
    * ResolutionTreeNode#_finalNextHopIp}
    */
-  private void buildResolutionTree(
-      GenericRib<? extends AbstractRouteDecorator> rib,
+  private <R extends AbstractRouteDecorator> void buildResolutionTree(
+      GenericRib<R> rib,
       AbstractRoute route,
       Ip mostRecentNextHopIp,
       Set<Prefix> seenNetworks,
       int depth,
       int maxPrefixLength,
       @Nullable AbstractRoute parentRoute,
-      ResolutionTreeNode treeNode) {
+      ResolutionTreeNode treeNode,
+      ResolutionRestriction<R> restriction) {
     Prefix network = route.getNetwork();
     if (seenNetworks.contains(network)) {
       // Don't enter a resolution loop
@@ -219,7 +224,8 @@ public final class FibImpl implements Fib {
             depth + 1,
             maxPrefixLength - 1,
             null,
-            treeNode);
+            treeNode,
+            restriction);
         return;
       }
     }
@@ -228,14 +234,30 @@ public final class FibImpl implements Fib {
 
       @Override
       public Void visitNextHopIp(NextHopIp nextHopIp) {
-        Set<? extends AbstractRouteDecorator> nextHopLongestPrefixMatchRoutes =
-            rib.longestPrefixMatch(nextHopIp.getIp(), maxPrefixLength);
-
-        /* Filter out any non-forwarding routes from the matches */
         Set<AbstractRoute> forwardingRoutes =
-            nextHopLongestPrefixMatchRoutes.stream()
+            rib
+                .longestPrefixMatch(
+                    nextHopIp.getIp(),
+                    maxPrefixLength,
+                    r -> {
+                      if (route.getProtocol() == RoutingProtocol.STATIC) {
+                        // TODO: factor out common code with
+                        // StaticRouteHelper.shouldActivateNextHopIpRoute
+                        if (r.getAbstractRoute().getProtocol() == RoutingProtocol.CONNECTED) {
+                          // All static routes can be activated by a connected route.
+                          return true;
+                        }
+                        if (!((StaticRoute) route).getRecursive()) {
+                          // Non-recursive static routes cannot be activated by non-connected
+                          // routes.
+                          return false;
+                        }
+                      }
+                      // Recursive routes must pass restriction if present.
+                      return restriction.test(r);
+                    })
+                .stream()
                 .map(AbstractRouteDecorator::getAbstractRoute)
-                .filter(r -> !r.getNonForwarding())
                 .collect(ImmutableSet.toImmutableSet());
 
         if (forwardingRoutes.isEmpty()) {
@@ -249,7 +271,8 @@ public final class FibImpl implements Fib {
               depth + 1,
               maxPrefixLength - 1,
               parentRoute,
-              treeNode);
+              treeNode,
+              restriction);
         } else {
           // We have at least one valid longest-prefix match
           for (AbstractRoute nextHopLongestPrefixMatchRoute : forwardingRoutes) {
@@ -261,7 +284,8 @@ public final class FibImpl implements Fib {
                 depth + 1,
                 Prefix.MAX_PREFIX_LENGTH,
                 route,
-                ResolutionTreeNode.withParent(nextHopLongestPrefixMatchRoute, treeNode, null));
+                ResolutionTreeNode.withParent(nextHopLongestPrefixMatchRoute, treeNode, null),
+                restriction);
           }
         }
         return null;

@@ -1,5 +1,7 @@
 package org.batfish.question.lpmroutes;
 
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -77,8 +79,9 @@ public class LpmRoutesAnswerer extends Answerer {
           continue;
         }
 
+        // TODO: implement resolution restriction
         toRow(
-                vrfEntry.getValue().longestPrefixMatch(ip),
+                vrfEntry.getValue().longestPrefixMatch(ip, alwaysTrue()),
                 nodeEntry.getKey(),
                 vrfEntry.getKey(),
                 ip,

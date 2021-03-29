@@ -94,12 +94,16 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
   }
 
   @Override
-  public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(Ip address) {
+  public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(
+      Ip address, ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction) {
     return _longestPrefixMatchResults.get(address);
   }
 
   @Override
-  public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(Ip address, int maxPrefixLength) {
+  public Set<AnnotatedRoute<AbstractRoute>> longestPrefixMatch(
+      Ip address,
+      int maxPrefixLength,
+      ResolutionRestriction<AnnotatedRoute<AbstractRoute>> restriction) {
     throw new UnsupportedOperationException();
   }
 

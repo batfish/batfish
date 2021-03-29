@@ -55,6 +55,7 @@ public class RoutingInstance implements Serializable {
   private Ip _routerId;
   private SnmpServer _snmpServer;
   private final JuniperSystem _system;
+  @Nullable private Resolution _resolution;
 
   public RoutingInstance(String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
@@ -308,5 +309,16 @@ public class RoutingInstance implements Serializable {
     GeneratedRoute route = new GeneratedRoute(Prefix.ZERO);
     initAbstractAggregateRouteDefaults(route);
     return route;
+  }
+
+  public @Nullable Resolution getResolution() {
+    return _resolution;
+  }
+
+  public @Nonnull Resolution getOrCreateResolution() {
+    if (_resolution == null) {
+      _resolution = new Resolution();
+    }
+    return _resolution;
   }
 }

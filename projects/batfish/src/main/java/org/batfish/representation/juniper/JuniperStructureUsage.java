@@ -56,6 +56,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   POLICY_STATEMENT_THEN_ADD_COMMUNITY("policy-statement then add community"),
   POLICY_STATEMENT_THEN_DELETE_COMMUNITY("policy-statement then delete community"),
   POLICY_STATEMENT_THEN_SET_COMMUNITY("policy-statement then set community"),
+  RESOLUTION_RIB_IMPORT_POLICY("routing-instance resolution rib import"),
   ROUTING_INSTANCE_INTERFACE("routing-instance interface"),
   ROUTING_INSTANCE_VRF_EXPORT("routing-instance vrf-export"),
   ROUTING_INSTANCE_VRF_IMPORT("routing-instance vrf-import"),

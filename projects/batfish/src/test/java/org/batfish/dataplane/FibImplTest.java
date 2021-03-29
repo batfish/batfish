@@ -1,5 +1,6 @@
 package org.batfish.dataplane;
 
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.FibActionMatchers.hasInterfaceName;
 import static org.batfish.datamodel.matchers.FibActionMatchers.isFibForwardActionThat;
@@ -22,6 +23,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
@@ -45,7 +47,7 @@ import org.junit.runners.JUnit4;
 
 /** Tests of {@link FibImpl} */
 @RunWith(JUnit4.class)
-public class FibImplTest {
+public final class FibImplTest {
   @Rule public TemporaryFolder folder = new TemporaryFolder();
 
   private static final Ip DST_IP = Ip.parse("3.3.3.3");
@@ -198,7 +200,7 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(nonForwardingRoute));
     rib.mergeRoute(annotateRoute(forwardingRoute));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl(rib, null);
     Set<AbstractRoute> fibRoutes = getTopLevelRoutesByInterface(fib, "Eth1");
 
     assertThat(fibRoutes, not(hasItem(hasPrefix(Prefix.parse("1.1.1.0/24")))));
@@ -219,7 +221,7 @@ public class FibImplTest {
 
     rib.mergeRoute(annotateRoute(nextVrfRoute));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl(rib, null);
 
     assertThat(
         fib.allEntries(),
@@ -258,7 +260,7 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
     rib.mergeRoute(annotateRoute(testRoute));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl(rib, alwaysTrue());
     Set<AbstractRoute> fibRoutesEth1 = getTopLevelRoutesByInterface(fib, "Eth1");
 
     /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
@@ -267,6 +269,83 @@ public class FibImplTest {
     /* Nothing can resolve to "eth2" */
     Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
     assertThat(fibRoutesEth2, empty());
+  }
+
+  @Test
+  public void testResolutionWhenNextHopMatchesRestrictionViolatingRoute() {
+    Rib rib = new Rib();
+
+    StaticRoute restrictionViolatingRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopInterface("Eth2")
+            .setAdministrativeCost(1)
+            .build();
+
+    StaticRoute forwardingLessSpecificRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/31"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+
+    StaticRoute testRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setNextHopIp(Ip.parse("1.1.1.1")) // matches both routes defined above
+            .setAdministrativeCost(1)
+            .build();
+
+    rib.mergeRoute(annotateRoute(restrictionViolatingRoute));
+    rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
+    rib.mergeRoute(annotateRoute(testRoute));
+
+    Fib fib = new FibImpl(rib, r -> !r.getAbstractRoute().getNextHopInterface().equals("Eth2"));
+    Set<AbstractRoute> fibRoutesEth1 = getTopLevelRoutesByInterface(fib, "Eth1");
+
+    /* 2.2.2.0/24 should resolve to the "forwardingLessSpecificRoute" and thus eth1 */
+    assertThat(fibRoutesEth1, hasItem(hasPrefix(Prefix.parse("2.2.2.0/24"))));
+
+    // Only the route violating the restriction can resolve to eth2; nothing should recursively
+    // resolve to Eth2.
+    Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
+    assertThat(fibRoutesEth2, contains(restrictionViolatingRoute));
+  }
+
+  @Test
+  public void
+      testResolutionWhenRecursiveStaticRouteNextHopMatchesRestrictionViolatingConnectedRoute() {
+    Rib rib = new Rib();
+
+    ConnectedRoute restrictionViolatingRoute =
+        new ConnectedRoute(Prefix.strict("1.1.1.1/32"), "Eth2");
+
+    StaticRoute forwardingLessSpecificRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/31"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+
+    StaticRoute testRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("2.2.2.0/24"))
+            .setNextHopIp(Ip.parse("1.1.1.1")) // matches both routes defined above
+            .setAdministrativeCost(1)
+            .setRecursive(true)
+            .build();
+
+    rib.mergeRoute(annotateRoute(restrictionViolatingRoute));
+    rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
+    rib.mergeRoute(annotateRoute(testRoute));
+
+    Fib fib = new FibImpl(rib, r -> !r.getAbstractRoute().getNextHopInterface().equals("Eth2"));
+
+    // The route violating the restriction uses eth2; the recursive static route also resolves to
+    // eth2 despite the route for 1.1.1.1/32 violating restriction because the former route is a
+    // recursive static route and the latter route is a connected route.
+    Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
+    assertThat(fibRoutesEth2, containsInAnyOrder(testRoute, restrictionViolatingRoute));
   }
 
   @Test
@@ -319,7 +398,7 @@ public class FibImplTest {
     rib.mergeRoute(annotateRoute(ecmpForwardingRoute1));
     rib.mergeRoute(annotateRoute(ecmpForwardingRoute2));
 
-    Fib fib = new FibImpl(rib);
+    Fib fib = new FibImpl(rib, alwaysTrue());
 
     /* 2.2.2.0/24 should resolve to eth3 and eth4*/
     assertThat(getTopLevelRoutesByInterface(fib, "Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
@@ -333,5 +412,67 @@ public class FibImplTest {
     /* Nothing can resolve to eth2 */
     Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
     assertThat(fibRoutesEth2, empty());
+  }
+
+  @Test
+  public void testResolutionWhenNextHopRouteDoesNotMatchRestrictionWithECMP() {
+    Rib rib = new Rib();
+
+    StaticRoute restrictionViolatingRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopInterface("Eth2")
+            .setAdministrativeCost(1)
+            .build();
+
+    StaticRoute ecmpForwardingRoute1 =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopInterface("Eth3")
+            .setAdministrativeCost(1)
+            .build();
+    StaticRoute ecmpForwardingRoute2 =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopInterface("Eth4")
+            .setAdministrativeCost(1)
+            .build();
+
+    StaticRoute forwardingLessSpecificRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/31"))
+            .setNextHopInterface("Eth1")
+            .setAdministrativeCost(1)
+            .build();
+
+    final Prefix TEST_PREFIX = Prefix.parse("2.2.2.0/24");
+    StaticRoute testRoute =
+        StaticRoute.testBuilder()
+            .setNetwork(TEST_PREFIX)
+            .setNextHopIp(Ip.parse("1.1.1.1")) // matches multiple routes defined above
+            .setAdministrativeCost(1)
+            .build();
+
+    rib.mergeRoute(annotateRoute(restrictionViolatingRoute));
+    rib.mergeRoute(annotateRoute(forwardingLessSpecificRoute));
+    rib.mergeRoute(annotateRoute(testRoute));
+    rib.mergeRoute(annotateRoute(ecmpForwardingRoute1));
+    rib.mergeRoute(annotateRoute(ecmpForwardingRoute2));
+
+    Fib fib = new FibImpl(rib, r -> !r.getAbstractRoute().getNextHopInterface().equals("Eth2"));
+
+    /* 2.2.2.0/24 should resolve to eth3 and eth4*/
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth3"), hasItem(hasPrefix(TEST_PREFIX)));
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth4"), hasItem(hasPrefix(TEST_PREFIX)));
+
+    /* 2.2.2.0/24 should NOT resolve to "forwardingLessSpecificRoute" (and thus Eth1)
+     * because more specific route exists to eth3/4
+     */
+    assertThat(getTopLevelRoutesByInterface(fib, "Eth1"), not(hasItem(hasPrefix(TEST_PREFIX))));
+
+    // Only the route violating the restriction can resolve to eth2; nothing should recursively
+    // resolve to Eth2.
+    Set<AbstractRoute> fibRoutesEth2 = getTopLevelRoutesByInterface(fib, "Eth2");
+    assertThat(fibRoutesEth2, contains(restrictionViolatingRoute));
   }
 }

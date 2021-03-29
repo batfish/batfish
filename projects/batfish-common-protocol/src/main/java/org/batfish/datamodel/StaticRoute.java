@@ -31,6 +31,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   private static final String PROP_NEXT_VRF = "nextVrf";
 
   private final long _metric;
+  private final boolean _recursive;
 
   private transient int _hashCode;
 
@@ -52,7 +53,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         metric,
         tag,
         false,
-        false);
+        false,
+        true);
   }
 
   private StaticRoute(
@@ -62,10 +64,12 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       long metric,
       long tag,
       boolean nonForwarding,
-      boolean nonRouting) {
+      boolean nonRouting,
+      boolean recursive) {
     super(network, administrativeCost, tag, nonRouting, nonForwarding);
     _metric = metric;
     _nextHop = nextHop;
+    _recursive = recursive;
   }
 
   @Override
@@ -87,6 +91,11 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     return RoutingProtocol.STATIC;
   }
 
+  @JsonIgnore
+  public boolean getRecursive() {
+    return _recursive;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -106,9 +115,13 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @ParametersAreNonnullByDefault
   public static final class Builder extends AbstractRouteBuilder<Builder, StaticRoute> {
 
+    private boolean _recursive;
+
     private Builder() {
       // Tmp hack until parent builder is fixed and doesn't default to primitives
       setAdmin(Route.UNSET_ROUTE_ADMIN);
+      // Default to true to match behavior predating this flag
+      _recursive = true;
     }
 
     @Nonnull
@@ -126,7 +139,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           getMetric(),
           getTag(),
           getNonForwarding(),
-          getNonRouting());
+          getNonRouting(),
+          _recursive);
     }
 
     @Nonnull
@@ -139,6 +153,12 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     public Builder setAdministrativeCost(int administrativeCost) {
       // Call method on parent builder. Keep backwards-compatible API.
       setAdmin(administrativeCost);
+      return this;
+    }
+
+    @Nonnull
+    public Builder setRecursive(boolean recursive) {
+      _recursive = recursive;
       return this;
     }
   }
@@ -155,7 +175,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           .thenComparing(StaticRoute::getAdministrativeCost)
           .thenComparing(StaticRoute::getTag)
           .thenComparing(StaticRoute::getNonRouting)
-          .thenComparing(StaticRoute::getNonForwarding);
+          .thenComparing(StaticRoute::getNonForwarding)
+          .thenComparing(StaticRoute::getRecursive);
 
   @Override
   public Builder toBuilder() {
@@ -166,7 +187,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         .setTag(_tag)
         .setAdmin(getAdministrativeCost())
         .setNonRouting(getNonRouting())
-        .setNonForwarding(getNonForwarding());
+        .setNonForwarding(getNonForwarding())
+        .setRecursive(getRecursive());
   }
 
   @Override
@@ -184,7 +206,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
         && getNonRouting() == rhs.getNonRouting()
         && _metric == rhs._metric
         && _nextHop.equals(rhs._nextHop)
-        && _tag == rhs._tag;
+        && _tag == rhs._tag
+        && _recursive == rhs._recursive;
   }
 
   @Override
@@ -193,7 +216,14 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
     if (h == 0) {
       h =
           Objects.hash(
-              _network, _admin, getNonForwarding(), getNonRouting(), _metric, _nextHop, _tag);
+              _network,
+              _admin,
+              getNonForwarding(),
+              getNonRouting(),
+              _metric,
+              _nextHop,
+              _tag,
+              _recursive);
       _hashCode = h;
     }
     return h;
