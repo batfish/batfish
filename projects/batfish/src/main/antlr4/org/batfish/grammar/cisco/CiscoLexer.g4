@@ -6733,15 +6733,9 @@ FORWARD_SLASH
    '/'
 ;
 
-IP_ADDRESS
-:
-  F_IpAddress {_enableIpAddress}?
-;
+IP_ADDRESS: F_IpAddress;
 
-IP_PREFIX
-:
-  F_IpPrefix {_enableIpAddress}?
-;
+IP_PREFIX: F_IpPrefix;
 
 IPV6_ADDRESS
 :
@@ -6758,7 +6752,6 @@ NEWLINE
   F_Newline
   {
     _enableIpv6Address = true;
-    _enableIpAddress = true;
     _enableDec = true;
     _enableRegex = false;
     _enableAclNum = false;
