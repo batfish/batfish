@@ -62,9 +62,7 @@ cfa_set_null:
         | SUB_TYPE
     ) null_rest_of_line;
 
-cfaec_tagging: EDIT tagging_name newline cfaect_edit* NEXT newline;
-
-cfaect_edit: SET unimplemented;
+cfaec_tagging: EDIT tagging_name newline unimplemented_edit_stanza* NEXT newline;
 
 address_type:
     IPMASK

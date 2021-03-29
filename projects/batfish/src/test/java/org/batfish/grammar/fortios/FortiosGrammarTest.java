@@ -1884,7 +1884,7 @@ public final class FortiosGrammarTest {
         (FortiosConfiguration)
             batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
 
-    // Confirm correct unrecognized lines exist
+    // Confirm unrecognized lines exist as expected
     Warnings warnings =
         getOnlyElement(
             batfish
@@ -1899,6 +1899,7 @@ public final class FortiosGrammarTest {
                 hasText(containsString("set tags tag1")))));
 
     // Confirm config after unrecognized lines are still applied as expected
+    // i.e. context is not lost
     assertThat(vc.getAddresses(), hasKeys("tagging"));
     Address addr = vc.getAddresses().get("tagging");
     assertThat(addr.getTypeEffective(), equalTo(Address.Type.IPMASK));

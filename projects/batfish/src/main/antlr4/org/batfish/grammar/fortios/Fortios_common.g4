@@ -65,6 +65,19 @@ newline: STR_SEPARATOR? NEWLINE;
 
 null_rest_of_line: ~NEWLINE* NEWLINE;
 
+// General, catch-all rule for unimplemented edit blocks
+unimplemented_edit_stanza
+:
+    (
+        SET
+        | UNSET
+        | SELECT
+        | UNSELECT
+        | APPEND
+        | CLEAR
+    ) unimplemented
+;
+
 unimplemented: UNIMPLEMENTED_PLACEHOLDER newline;
 
 uint8: UINT8;
