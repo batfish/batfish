@@ -21,9 +21,11 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
    * {@link AbstractRoute#getNonForwarding()} returns false.
    *
    * @param address the IP address to match
+   * @param restriction A predicate restricting which routes may be returned. Note that in general
+   *     this may shorten the longest prefix.
    * @return a set of routes with the maximum allowable prefix length that match the {@code address}
    */
-  Set<R> longestPrefixMatch(Ip address);
+  Set<R> longestPrefixMatch(Ip address, ResolutionRestriction<R> restriction);
 
   /**
    * Execute a constrained longest prefix match for a given IP address.
@@ -31,15 +33,18 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
    * <p><strong>Note</strong>: this function returns only forwarding routes, aka, routes where
    * {@link AbstractRoute#getNonForwarding()} returns false.
    *
-   * <p>Most callers should use {@link #longestPrefixMatch(Ip)}; this function may be used when the
-   * longest prefix matches are unsatisfactory and less specific routes are required.
+   * <p>Most callers should use {@link #longestPrefixMatch(Ip, ResolutionRestriction)}; this
+   * function may be used when the longest prefix matches are unsatisfactory and less specific
+   * routes are required.
    *
    * @param address the IP address to match
    * @param maxPrefixLength the maximum prefix length allowed (i.e., do not match more specific
    *     routes). This is a less than or equal constraint.
+   * @param restriction A predicate restricting which routes may be returned. Note that in general
+   *     this may shorten the longest prefix.
    * @return a set of routes that match the {@code address} given the constraint.
    */
-  Set<R> longestPrefixMatch(Ip address, int maxPrefixLength);
+  Set<R> longestPrefixMatch(Ip address, int maxPrefixLength, ResolutionRestriction<R> restriction);
 
   /**
    * Compare the preferability of one route with anther

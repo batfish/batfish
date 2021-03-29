@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.IsisProtocolHelper.exportNonIsisRouteToIsis;
@@ -62,6 +63,7 @@ import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Route;
@@ -230,6 +232,9 @@ public final class VirtualRouter {
 
   @Nonnull private final RibExprEvaluator _ribExprEvaluator;
 
+  @Nonnull
+  private final ResolutionRestriction<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
+
   private static final Logger LOGGER = LogManager.getLogger(VirtualRouter.class);
 
   VirtualRouter(@Nonnull String name, @Nonnull Node node) {
@@ -237,6 +242,11 @@ public final class VirtualRouter {
     _c = node.getConfiguration();
     _name = name;
     _vrf = _c.getVrfs().get(name);
+    String resolutionPolicy = _vrf.getResolutionPolicy();
+    _resolutionRestriction =
+        resolutionPolicy == null
+            ? alwaysTrue()
+            : _c.getRoutingPolicies().get(resolutionPolicy)::processReadOnly;
     // Main RIB + delta builder
     _mainRib = new Rib();
     _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, _mainRib);
@@ -516,7 +526,7 @@ public final class VirtualRouter {
    */
   void activateStaticRoutes() {
     for (StaticRoute sr : _staticNextHopRib.getTypedRoutes()) {
-      if (shouldActivateNextHopIpRoute(sr, _mainRib)) {
+      if (shouldActivateNextHopIpRoute(sr, _mainRib, _resolutionRestriction)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
         /*
@@ -530,7 +540,7 @@ public final class VirtualRouter {
 
   /** Compute the FIB from the main RIB */
   public void computeFib() {
-    _fib = new FibImpl(_mainRib);
+    _fib = new FibImpl(_mainRib, _resolutionRestriction);
   }
 
   void initBgpAggregateRoutes() {

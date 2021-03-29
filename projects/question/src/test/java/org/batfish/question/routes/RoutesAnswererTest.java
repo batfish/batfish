@@ -61,6 +61,7 @@ import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -549,12 +550,13 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public Set<R> longestPrefixMatch(Ip address) {
+    public Set<R> longestPrefixMatch(Ip address, ResolutionRestriction<R> restriction) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
+    public Set<R> longestPrefixMatch(
+        Ip address, int maxPrefixLength, ResolutionRestriction<R> restriction) {
       throw new UnsupportedOperationException();
     }
 

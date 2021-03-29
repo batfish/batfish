@@ -1,6 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -297,7 +298,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (Ip.AUTO.equals(nextHopIp)) {
       return Long.MAX_VALUE;
     }
-    Set<AnnotatedRoute<AbstractRoute>> s = _mainRib.longestPrefixMatch(nextHopIp);
+    // TODO: implement resolution restriction
+    Set<AnnotatedRoute<AbstractRoute>> s = _mainRib.longestPrefixMatch(nextHopIp, alwaysTrue());
     return s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getAbstractRoute().getMetric();
   }
 

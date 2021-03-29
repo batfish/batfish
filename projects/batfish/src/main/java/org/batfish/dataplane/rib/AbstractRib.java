@@ -14,6 +14,7 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
@@ -172,13 +173,14 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   public abstract int comparePreference(R lhs, R rhs);
 
   @Override
-  public @Nonnull Set<R> longestPrefixMatch(Ip address) {
-    return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
+  public @Nonnull Set<R> longestPrefixMatch(Ip address, ResolutionRestriction<R> restriction) {
+    return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH, restriction);
   }
 
   @Override
-  public @Nonnull Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
-    return _tree.getLongestPrefixMatch(address, maxPrefixLength);
+  public @Nonnull Set<R> longestPrefixMatch(
+      Ip address, int maxPrefixLength, ResolutionRestriction<R> restriction) {
+    return _tree.getLongestPrefixMatch(address, maxPrefixLength, restriction);
   }
 
   /**
