@@ -134,7 +134,6 @@ SUBNET: 'subnet';
 SUB_TYPE: 'sub-type';
 SYSTEM: 'system';
 TAGGING: 'tagging';
-TAGS: 'tags' -> pushMode(M_Str);
 TCP_PORTRANGE: 'tcp-portrange';
 TCP_UDP_SCTP: 'TCP/UDP/SCTP';
 TO: 'to' -> pushMode(M_SingleStr);
