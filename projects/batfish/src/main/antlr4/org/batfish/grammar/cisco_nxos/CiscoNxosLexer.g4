@@ -207,7 +207,16 @@ AUTHENTICATE: 'authenticate';
 
 AUTHENTICATION: 'authentication';
 
-AUTHENTICATION_KEY: 'authentication-key';
+AUTHENTICATION_KEY
+:
+  'authentication-key'
+  // All other known instances are followed by keywords or tokens in default mode
+  {
+    if (lastTokenType() == OSPF) {
+      pushMode(M_Password);
+    }
+  }
+;
 
 AUTHORIZATION: 'authorization';
 
