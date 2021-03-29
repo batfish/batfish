@@ -33,6 +33,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.IP_PR
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_PORT;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OSPF_AREA;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS;
@@ -123,7 +124,9 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTE
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.INTERFACE_VRF_MEMBER;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_ADDRGROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_DESTINATION_PORTGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_ADDRGROUP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_ACCESS_LIST_SOURCE_PORTGROUP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_PREFIX_LIST;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_ADDRESS_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.IP_PIM_RP_CANDIDATE_INTERFACE;
@@ -472,7 +475,9 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_peer_ipContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Nvm_suppress_arpContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Object_group_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ogip_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ogip_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ogipa_lineContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ogipp_lineContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_default_costContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ospf_area_range_costContext;
@@ -773,6 +778,8 @@ import org.batfish.representation.cisco_nxos.NveVni;
 import org.batfish.representation.cisco_nxos.ObjectGroup;
 import org.batfish.representation.cisco_nxos.ObjectGroupIpAddress;
 import org.batfish.representation.cisco_nxos.ObjectGroupIpAddressLine;
+import org.batfish.representation.cisco_nxos.ObjectGroupIpPort;
+import org.batfish.representation.cisco_nxos.ObjectGroupIpPortLine;
 import org.batfish.representation.cisco_nxos.OspfArea;
 import org.batfish.representation.cisco_nxos.OspfAreaAuthentication;
 import org.batfish.representation.cisco_nxos.OspfAreaNssa;
@@ -936,6 +943,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       IntegerSpace.of(Range.closed(1, 10));
   private static final IntegerSpace OBJECT_GROUP_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 64));
+  private static final IntegerSpace OBJECT_GROUP_PORT_GT_SPACE =
+      IntegerSpace.of(Range.closed(0, 65534));
+  private static final IntegerSpace OBJECT_GROUP_PORT_LT_SPACE =
+      IntegerSpace.of(Range.closed(1, 65535));
   private static final LongSpace OBJECT_GROUP_SEQUENCE_RANGE =
       LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace OSPF_AREA_DEFAULT_COST_RANGE =
@@ -1299,6 +1310,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private List<Nve> _currentNves;
   private List<NveVni> _currentNveVnis;
   private ObjectGroupIpAddress _currentObjectGroupIpAddress;
+  private ObjectGroupIpPort _currentObjectGroupIpPort;
   private OspfArea _currentOspfArea;
   private OspfProcess _currentOspfProcess;
   private RouteMapEntry _currentRouteMapEntry;
@@ -3292,6 +3304,82 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
+  public void enterOgip_port(Ogip_portContext ctx) {
+    Optional<String> nameOrErr = toString(ctx, ctx.name);
+    if (!nameOrErr.isPresent()) {
+      _currentObjectGroupIpPort = new ObjectGroupIpPort("dummy");
+      return;
+    }
+    String name = nameOrErr.get();
+    ObjectGroup existing = _c.getObjectGroups().get(name);
+    if (existing != null) {
+      if (!(existing instanceof ObjectGroupIpPort)) {
+        warn(
+            ctx,
+            String.format(
+                "Cannot create object-group '%s' of type ip port because an object-group of a"
+                    + " different type already exists with that name.",
+                name));
+        _currentObjectGroupIpPort = new ObjectGroupIpPort("dummy");
+        return;
+      }
+      _currentObjectGroupIpPort = (ObjectGroupIpPort) existing;
+    } else {
+      _currentObjectGroupIpPort = new ObjectGroupIpPort(name);
+      _c.defineStructure(OBJECT_GROUP_IP_PORT, name, ctx);
+      _c.getObjectGroups().put(name, _currentObjectGroupIpPort);
+    }
+  }
+
+  @Override
+  public void exitOgip_port(Ogip_portContext ctx) {
+    _currentObjectGroupIpPort = null;
+  }
+
+  @Override
+  public void exitOgipp_line(Ogipp_lineContext ctx) {
+    long seq;
+    if (ctx.seq != null) {
+      Optional<Long> seqOrErr =
+          toLongInSpace(ctx, ctx.seq, OBJECT_GROUP_SEQUENCE_RANGE, "object-group sequence number");
+      if (!seqOrErr.isPresent()) {
+        return;
+      }
+      seq = seqOrErr.get();
+    } else if (_currentObjectGroupIpPort.getLines().isEmpty()) {
+      seq = 10L;
+    } else {
+      seq = _currentObjectGroupIpPort.getLines().lastKey() + 10L;
+    }
+    IntegerSpace ports;
+    if (ctx.eq != null) {
+      ports = IntegerSpace.of(toInteger(ctx.eq));
+    } else if (ctx.gt != null) {
+      Optional<Integer> gtOrErr =
+          toIntegerInSpace(ctx, ctx.gt, OBJECT_GROUP_PORT_GT_SPACE, "object-group ip port gt");
+      if (!gtOrErr.isPresent()) {
+        return;
+      }
+      ports = IntegerSpace.of(Range.closed(gtOrErr.get() + 1, 65535));
+    } else if (ctx.lt != null) {
+      Optional<Integer> ltOrErr =
+          toIntegerInSpace(ctx, ctx.lt, OBJECT_GROUP_PORT_LT_SPACE, "object-group ip port lt");
+      if (!ltOrErr.isPresent()) {
+        return;
+      }
+      ports = IntegerSpace.of(Range.closed(0, ltOrErr.get() - 1));
+    } else if (ctx.neq != null) {
+      ports = IntegerSpace.PORTS.difference(IntegerSpace.of(toInteger(ctx.neq)));
+    } else {
+      assert ctx.range1 != null && ctx.range2 != null;
+      int range1 = toInteger(ctx.range1);
+      int range2 = toInteger(ctx.range2);
+      ports = IntegerSpace.of(Range.closed(Math.min(range1, range2), Math.max(range1, range2)));
+    }
+    _currentObjectGroupIpPort.getLines().put(seq, new ObjectGroupIpPortLine(seq, ports));
+  }
+
+  @Override
   public void enterPm_control_plane(Pm_control_planeContext ctx) {
     Optional<String> nameOrError = toString(ctx, ctx.name);
     if (!nameOrError.isPresent()) {
@@ -4982,8 +5070,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
     if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
-    } else {
-      _currentTcpOptionsBuilder.setDstPortSpec(portSpec.get());
+      return;
+    }
+    PortSpec spec = portSpec.get();
+    _currentTcpOptionsBuilder.setDstPortSpec(spec);
+    if (spec instanceof PortGroupPortSpec) {
+      _c.referenceStructure(
+          OBJECT_GROUP_IP_PORT,
+          ((PortGroupPortSpec) spec).getName(),
+          IP_ACCESS_LIST_DESTINATION_PORTGROUP,
+          ctx.getStart().getLine());
     }
   }
 
@@ -4992,8 +5088,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
     if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
-    } else {
-      _currentTcpOptionsBuilder.setSrcPortSpec(portSpec.get());
+      return;
+    }
+    PortSpec spec = portSpec.get();
+    _currentTcpOptionsBuilder.setSrcPortSpec(spec);
+    if (spec instanceof PortGroupPortSpec) {
+      _c.referenceStructure(
+          OBJECT_GROUP_IP_PORT,
+          ((PortGroupPortSpec) spec).getName(),
+          IP_ACCESS_LIST_SOURCE_PORTGROUP,
+          ctx.getStart().getLine());
     }
   }
 
@@ -5041,8 +5145,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
     if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
-    } else {
-      _currentUdpOptionsBuilder.setDstPortSpec(portSpec.get());
+      return;
+    }
+    PortSpec spec = portSpec.get();
+    _currentUdpOptionsBuilder.setDstPortSpec(spec);
+    if (spec instanceof PortGroupPortSpec) {
+      _c.referenceStructure(
+          OBJECT_GROUP_IP_PORT,
+          ((PortGroupPortSpec) spec).getName(),
+          IP_ACCESS_LIST_DESTINATION_PORTGROUP,
+          ctx.getStart().getLine());
     }
   }
 
@@ -5051,8 +5163,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     Optional<PortSpec> portSpec = toPortSpec(ctx, ctx.port);
     if (!portSpec.isPresent()) {
       _currentActionIpAccessListLineUnusable = true;
-    } else {
-      _currentUdpOptionsBuilder.setSrcPortSpec(portSpec.get());
+      return;
+    }
+    PortSpec spec = portSpec.get();
+    _currentUdpOptionsBuilder.setSrcPortSpec(spec);
+    if (spec instanceof PortGroupPortSpec) {
+      _c.referenceStructure(
+          OBJECT_GROUP_IP_PORT,
+          ((PortGroupPortSpec) spec).getName(),
+          IP_ACCESS_LIST_SOURCE_PORTGROUP,
+          ctx.getStart().getLine());
     }
   }
 
@@ -6857,8 +6977,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<PortSpec> toPortSpec(
       ParserRuleContext messageCtx, Acllal4tcp_port_specContext ctx) {
     if (ctx.literal != null) {
-      return toIntegerSpace(messageCtx, ctx.literal)
-          .map(literalPorts -> new LiteralPortSpec(literalPorts));
+      return toIntegerSpace(messageCtx, ctx.literal).map(LiteralPortSpec::new);
     } else if (ctx.group != null) {
       return Optional.of(toPortSpec(ctx.group));
     } else {
@@ -6871,8 +6990,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private @Nonnull Optional<PortSpec> toPortSpec(
       ParserRuleContext messageCtx, Acllal4udp_port_specContext ctx) {
     if (ctx.literal != null) {
-      return toIntegerSpace(messageCtx, ctx.literal)
-          .map(literalPorts -> new LiteralPortSpec(literalPorts));
+      return toIntegerSpace(messageCtx, ctx.literal).map(LiteralPortSpec::new);
     } else if (ctx.group != null) {
       return Optional.of(toPortSpec(ctx.group));
     } else {

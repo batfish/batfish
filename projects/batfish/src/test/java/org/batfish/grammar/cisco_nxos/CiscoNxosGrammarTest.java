@@ -322,6 +322,8 @@ import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.representation.cisco_nxos.NveVni;
 import org.batfish.representation.cisco_nxos.ObjectGroupIpAddress;
 import org.batfish.representation.cisco_nxos.ObjectGroupIpAddressLine;
+import org.batfish.representation.cisco_nxos.ObjectGroupIpPort;
+import org.batfish.representation.cisco_nxos.ObjectGroupIpPortLine;
 import org.batfish.representation.cisco_nxos.OspfArea;
 import org.batfish.representation.cisco_nxos.OspfAreaAuthentication;
 import org.batfish.representation.cisco_nxos.OspfAreaNssa;
@@ -2997,7 +2999,7 @@ public final class CiscoNxosGrammarTest {
                           IntegerSpace.of(Range.closed(6, Integer.MAX_VALUE))))),
               toTcpIfBDD(matchDstPort(IntegerSpace.of(Range.closed(0, 9)))),
               toTcpIfBDD(matchDstPort(TCP_PORT_RANGE.difference(IntegerSpace.of(15)))),
-              toTcpIfBDD(AclLineMatchExprs.FALSE), // TODO: support portgroup
+              toTcpIfBDD(matchDstPort(65432)),
               toTcpIfBDD(matchDstPort(IntegerSpace.of(Range.closed(20, 25))))));
     }
     {
@@ -3054,7 +3056,7 @@ public final class CiscoNxosGrammarTest {
                           IntegerSpace.of(Range.closed(6, Integer.MAX_VALUE))))),
               toTcpIfBDD(matchSrcPort(IntegerSpace.of(Range.closed(0, 9)))),
               toTcpIfBDD(matchSrcPort(TCP_PORT_RANGE.difference(IntegerSpace.of(15)))),
-              toTcpIfBDD(AclLineMatchExprs.FALSE), // TODO: support portgroup
+              toTcpIfBDD(matchSrcPort(54321)),
               toTcpIfBDD(matchSrcPort(IntegerSpace.of(Range.closed(20, 25))))));
     }
     // TODO: support HTTP method matching
@@ -3138,7 +3140,7 @@ public final class CiscoNxosGrammarTest {
                           IntegerSpace.of(Range.closed(6, Integer.MAX_VALUE))))),
               toUdpIfBDD(matchDstPort(IntegerSpace.of(Range.closed(0, 9)))),
               toUdpIfBDD(matchDstPort(UDP_PORT_RANGE.difference(IntegerSpace.of(15)))),
-              toUdpIfBDD(AclLineMatchExprs.FALSE), // TODO: support portgroup
+              toUdpIfBDD(matchDstPort(65432)),
               toUdpIfBDD(matchDstPort(IntegerSpace.of(Range.closed(20, 25))))));
     }
     {
@@ -3189,7 +3191,7 @@ public final class CiscoNxosGrammarTest {
                           IntegerSpace.of(Range.closed(6, Integer.MAX_VALUE))))),
               toUdpIfBDD(matchSrcPort(IntegerSpace.of(Range.closed(0, 9)))),
               toUdpIfBDD(matchSrcPort(UDP_PORT_RANGE.difference(IntegerSpace.of(15)))),
-              toUdpIfBDD(AclLineMatchExprs.FALSE), // TODO: support portgroup
+              toUdpIfBDD(matchSrcPort(54321)),
               toUdpIfBDD(matchSrcPort(IntegerSpace.of(Range.closed(20, 25))))));
     }
     // TODO: support UDP VXLAN matching
@@ -4915,6 +4917,48 @@ public final class CiscoNxosGrammarTest {
                       Prefix.parse("10.0.0.0/24").toIpSpace())
                   .accept(_srcIpBdd)));
     }
+  }
+
+  @Test
+  public void testObjectGroupIpPortExtraction() {
+    String hostname = "nxos_object_group_ip_port";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getObjectGroups(), hasKeys("og_indices", "og_syntax"));
+    {
+      ObjectGroupIpPort group = (ObjectGroupIpPort) vc.getObjectGroups().get("og_indices");
+      assertThat(group.getLines(), hasKeys(10L, 13L, 15L, 25L));
+      assertThat(
+          group.getLines().values().stream()
+              .map(ObjectGroupIpPortLine::getLine)
+              .collect(ImmutableList.toImmutableList()),
+          contains(10L, 13L, 15L, 25L));
+    }
+    {
+      ObjectGroupIpPort group = (ObjectGroupIpPort) vc.getObjectGroups().get("og_syntax");
+      Iterator<ObjectGroupIpPortLine> lines = group.getLines().values().iterator();
+      ObjectGroupIpPortLine line = lines.next();
+      assertThat(line.getPorts(), equalTo(IntegerSpace.of(10)));
+      line = lines.next();
+      assertThat(line.getPorts(), equalTo(IntegerSpace.of(Range.closed(0, 49))));
+      line = lines.next();
+      assertThat(line.getPorts(), equalTo(IntegerSpace.of(Range.closed(51, 65535))));
+      line = lines.next();
+      assertThat(
+          line.getPorts(),
+          equalTo(IntegerSpace.of(Range.closed(0, 65535)).difference(IntegerSpace.of(7))));
+      line = lines.next();
+      assertThat(line.getPorts(), equalTo(IntegerSpace.of(Range.closed(5, 7))));
+      line = lines.next();
+      assertThat(line.getPorts(), equalTo(IntegerSpace.of(Range.closed(6, 8))));
+      assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
+  public void testObjectGroupIpPortConversion() throws IOException {
+    parseConfig("nxos_object_group_ip_port");
+    // Conversion is actually tested in the IP Access List tests, just make sure no crashes.
   }
 
   @Test

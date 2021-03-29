@@ -28,6 +28,7 @@ public enum CiscoNxosStructureType implements StructureType {
   MAC_ACCESS_LIST("mac access-list"),
   NVE("nve"),
   OBJECT_GROUP_IP_ADDRESS("object-group ip address"),
+  OBJECT_GROUP_IP_PORT("object-group ip port"),
   OSPF_AREA("router ospf area"),
   POLICY_MAP_CONTROL_PLANE("policy-map type control-plane"),
   POLICY_MAP_NETWORK_QOS("policy-map type network-qos"),
