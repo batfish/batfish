@@ -31,6 +31,7 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -230,6 +231,8 @@ public final class VirtualRouter {
 
   @Nonnull private final RibExprEvaluator _ribExprEvaluator;
 
+  @Nullable private final Predicate<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
+
   private static final Logger LOGGER = LogManager.getLogger(VirtualRouter.class);
 
   VirtualRouter(@Nonnull String name, @Nonnull Node node) {
@@ -237,6 +240,11 @@ public final class VirtualRouter {
     _c = node.getConfiguration();
     _name = name;
     _vrf = _c.getVrfs().get(name);
+    String resolutionPolicy = _vrf.getResolutionPolicy();
+    _resolutionRestriction =
+        resolutionPolicy == null
+            ? null
+            : _c.getRoutingPolicies().get(resolutionPolicy)::processReadOnly;
     // Main RIB + delta builder
     _mainRib = new Rib();
     _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, _mainRib);
@@ -516,7 +524,7 @@ public final class VirtualRouter {
    */
   void activateStaticRoutes() {
     for (StaticRoute sr : _staticNextHopRib.getTypedRoutes()) {
-      if (shouldActivateNextHopIpRoute(sr, _mainRib)) {
+      if (shouldActivateNextHopIpRoute(sr, _mainRib, _resolutionRestriction)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
         /*
@@ -530,7 +538,7 @@ public final class VirtualRouter {
 
   /** Compute the FIB from the main RIB */
   public void computeFib() {
-    _fib = new FibImpl(_mainRib);
+    _fib = new FibImpl(_mainRib, _resolutionRestriction);
   }
 
   void initBgpAggregateRoutes() {

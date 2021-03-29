@@ -78,7 +78,7 @@ public class LpmRoutesAnswerer extends Answerer {
         }
 
         toRow(
-                vrfEntry.getValue().longestPrefixMatch(ip),
+                vrfEntry.getValue().longestPrefixMatch(ip, null),
                 nodeEntry.getKey(),
                 vrfEntry.getKey(),
                 ip,

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -92,30 +93,43 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return _root.get(route.getNetwork()).contains(route);
   }
 
-  private boolean hasForwardingRoute(Set<R> routes) {
-    return routes.stream().anyMatch(r -> !r.getAbstractRoute().getNonForwarding());
+  private boolean hasAllowedForwardingRoute(Set<R> routes, @Nullable Predicate<R> restriction) {
+    return routes.stream()
+        .anyMatch(
+            r ->
+                !r.getAbstractRoute().getNonForwarding()
+                    && (restriction == null || restriction.test(r)));
   }
 
-  private boolean onlyForwardingRoutes(Set<R> routes) {
-    return routes.stream().noneMatch(r -> r.getAbstractRoute().getNonForwarding());
+  private boolean onlyAllowedForwardingRoutes(Set<R> routes, @Nullable Predicate<R> restriction) {
+    return routes.stream()
+        .noneMatch(
+            r ->
+                r.getAbstractRoute().getNonForwarding()
+                    || (restriction != null && !restriction.test(r)));
   }
 
   /**
-   * Returns a set of routes in this tree which 1) are forwarding routes, 2) match the given IP
-   * address, and 3) have the longest prefix length within the specified maximum.
+   * Returns a set of routes in this tree which 1) are forwarding routes and match restriction if
+   * present, 2) match the given IP address, and 3) have the longest prefix length within the
+   * specified maximum.
    *
    * <p>Returns the empty set if there are no forwarding routes that match.
    */
   @Nonnull
-  Set<R> getLongestPrefixMatch(Ip address, int maxPrefixLength) {
+  Set<R> getLongestPrefixMatch(
+      Ip address, int maxPrefixLength, @Nullable Predicate<R> restriction) {
     for (int pl = maxPrefixLength; pl >= 0; pl--) {
       Set<R> routes = _root.longestPrefixMatch(address, pl);
-      if (hasForwardingRoute(routes)) {
-        if (onlyForwardingRoutes(routes)) {
+      if (hasAllowedForwardingRoute(routes, restriction)) {
+        if (onlyAllowedForwardingRoutes(routes, restriction)) {
           return routes;
         }
         return routes.stream()
-            .filter(r -> !r.getAbstractRoute().getNonForwarding())
+            .filter(
+                r ->
+                    !r.getAbstractRoute().getNonForwarding()
+                        && (restriction == null || restriction.test(r)))
             .collect(ImmutableSet.toImmutableSet());
       }
     }

@@ -25,6 +25,7 @@ import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.eigrp.EigrpProcess;
@@ -192,6 +193,15 @@ public class RoutingPolicy implements Serializable {
   @JsonProperty(PROP_STATEMENTS)
   public List<Statement> getStatements() {
     return _statements;
+  }
+
+  /**
+   * @return True if the policy accepts the route. Clients should only call this when state and
+   *     transformations are not needed.
+   */
+  public boolean processReadOnly(AbstractRouteDecorator inputRoute) {
+    // arbitrarily choose OUT direction, BGP route builder.
+    return process(inputRoute, Bgpv4Route.builder(), null, Direction.OUT, null);
   }
 
   /** @return True if the policy accepts the route. */

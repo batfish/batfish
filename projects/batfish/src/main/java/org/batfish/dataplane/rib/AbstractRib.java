@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultimap;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -172,13 +173,14 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   public abstract int comparePreference(R lhs, R rhs);
 
   @Override
-  public @Nonnull Set<R> longestPrefixMatch(Ip address) {
-    return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
+  public @Nonnull Set<R> longestPrefixMatch(Ip address, @Nullable Predicate<R> restriction) {
+    return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH, restriction);
   }
 
   @Override
-  public @Nonnull Set<R> longestPrefixMatch(Ip address, int maxPrefixLength) {
-    return _tree.getLongestPrefixMatch(address, maxPrefixLength);
+  public @Nonnull Set<R> longestPrefixMatch(
+      Ip address, int maxPrefixLength, @Nullable Predicate<R> restriction) {
+    return _tree.getLongestPrefixMatch(address, maxPrefixLength, restriction);
   }
 
   /**

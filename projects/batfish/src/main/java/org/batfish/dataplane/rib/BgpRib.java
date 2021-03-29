@@ -297,7 +297,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (Ip.AUTO.equals(nextHopIp)) {
       return Long.MAX_VALUE;
     }
-    Set<AnnotatedRoute<AbstractRoute>> s = _mainRib.longestPrefixMatch(nextHopIp);
+    Set<AnnotatedRoute<AbstractRoute>> s = _mainRib.longestPrefixMatch(nextHopIp, null);
     return s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getAbstractRoute().getMetric();
   }
 

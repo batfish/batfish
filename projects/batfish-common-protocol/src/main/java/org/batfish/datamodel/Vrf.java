@@ -94,6 +94,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_KERNEL_ROUTES = "kernelRoutes";
   private static final String PROP_OSPF_PROCESS = "ospfProcess";
   private static final String PROP_OSPF_PROCESSES = "ospfProcesses";
+  private static final String PROP_RESOLUTION_POLICY = "resolutionPolicy";
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
   private static final String PROP_VRF_LEAKING_CONFIGS = "vrfLeakingConfigs";
@@ -116,6 +117,7 @@ public class Vrf extends ComparableStructure<String> {
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
   @Nonnull private SortedMap<String, OspfProcess> _ospfProcesses;
+  @Nullable private String _resolutionPolicy;
   private RipProcess _ripProcess;
   private SnmpServer _snmpServer;
   private SortedSet<StaticRoute> _staticRoutes;
@@ -373,6 +375,17 @@ public class Vrf extends ComparableStructure<String> {
             .putAll(_ospfProcesses)
             .put(ospfProcess.getProcessId(), ospfProcess)
             .build();
+  }
+
+  @JsonProperty(PROP_RESOLUTION_POLICY)
+  @Nullable
+  public String getResolutionPolicy() {
+    return _resolutionPolicy;
+  }
+
+  @JsonProperty(PROP_RESOLUTION_POLICY)
+  public void setResolutionPolicy(@Nullable String resolutionPolicy) {
+    _resolutionPolicy = resolutionPolicy;
   }
 
   @JsonProperty(PROP_RIP_PROCESS)

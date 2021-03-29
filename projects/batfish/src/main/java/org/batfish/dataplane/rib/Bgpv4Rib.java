@@ -49,7 +49,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       - routes that have a next vrf as the next hop
     */
     if (shouldCheckNextHopReachability(route)
-        .map(nextHopIp -> _mainRib != null && _mainRib.longestPrefixMatch(nextHopIp).isEmpty())
+        .map(
+            nextHopIp -> _mainRib != null && _mainRib.longestPrefixMatch(nextHopIp, null).isEmpty())
         .orElse(false)) {
       /*
       TODO: when backups are enabled again, we should probably put this in as a backup
