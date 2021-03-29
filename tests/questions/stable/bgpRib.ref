@@ -10,7 +10,7 @@
   "instance" : {
     "description" : "Returns routes in the BGP RIB.",
     "instanceName" : "qname",
-    "longDescription" : "Shows BGP routes for specified VRF and node(s).",
+    "longDescription" : "Shows BGP routes for specified VRF and node(s). This question is not available in Batfish containers on dockerhub prior to March 29, 2021.",
     "orderedVariableNames" : [
       "nodes",
       "network",
