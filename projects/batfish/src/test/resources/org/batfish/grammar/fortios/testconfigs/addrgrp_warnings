@@ -61,7 +61,13 @@ config firewall addrgrp
         append member "valid"
     next
     edit "folder"
+        # No warning for changing type during initial declaration
+        set type default
         set type folder
         set member addr5
+    next
+    edit folder
+        # Type cannot be changed on an existing addrgrp
+        set type default
     next
 end
