@@ -568,6 +568,7 @@ i_ip_ospf
   OSPF
   (
     iipo_authentication
+    | iipo_authentication_key
     | iipo_bfd
     | iipo_cost
     | iipo_dead_interval
@@ -711,6 +712,11 @@ iipoa_message_digest
 iipoa_null
 :
   NULL NEWLINE
+;
+
+iipo_authentication_key
+:
+  AUTHENTICATION_KEY key = cisco_nxos_password NEWLINE
 ;
 
 iipo_bfd
