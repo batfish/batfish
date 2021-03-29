@@ -352,7 +352,7 @@ public final class FortiosGrammarTest {
     warningMatchers.add(hasComment("No interface named undefined_iface"));
 
     warningMatchers.add(
-        hasComment("If this address is used as an addrgrp exclude, it's type cannot be changed"));
+        hasComment("If this address is used as an addrgrp exclude, its type cannot be changed"));
 
     // Warn on all type-specific fields set for inappropriate types
     for (String f : ImmutableList.of("start-ip", "end-ip", "interface", "wildcard")) {
