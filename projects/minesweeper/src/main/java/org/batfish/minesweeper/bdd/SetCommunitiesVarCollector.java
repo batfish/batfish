@@ -34,7 +34,14 @@ public class SetCommunitiesVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetDifference(
       CommunitySetDifference communitySetDifference, Configuration arg) {
-    throw new UnsupportedOperationException("Community set differences are not supported");
+    if (communitySetDifference.getInitial().equals(InputCommunities.instance())) {
+      // a common pattern is to remove specific input communities (e.g. all standard ones)
+      // before adding new ones.
+      // TODO: handle this idiom properly rather than just ignoring it
+      return ImmutableSet.of();
+    } else {
+      throw new UnsupportedOperationException("Community set differences are not supported");
+    }
   }
 
   @Override
