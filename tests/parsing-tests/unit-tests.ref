@@ -73377,12 +73377,6 @@
               "numReferrers" : 2
             }
           },
-          "router ospf area" : {
-            "1" : {
-              "definitionLines" : "40",
-              "numReferrers" : 0
-            }
-          },
           "vrf" : {
             "OTHER" : {
               "definitionLines" : "6",

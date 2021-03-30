@@ -34,7 +34,6 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.MAC_A
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.NVE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_PORT;
-import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OSPF_AREA;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.POLICY_MAP_QOS;
@@ -2659,7 +2658,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   public void enterRo_area(Ro_areaContext ctx) {
     long areaId = toLong(ctx.id);
     _currentOspfArea = _currentOspfProcess.getAreas().computeIfAbsent(areaId, OspfArea::new);
-    _c.defineStructure(OSPF_AREA, Long.toString(areaId), ctx);
   }
 
   @Override
