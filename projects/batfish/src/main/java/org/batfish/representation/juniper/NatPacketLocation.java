@@ -1,8 +1,10 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.Ordering;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /** Represents how packets enter and exit a Nat */
@@ -38,7 +40,8 @@ public final class NatPacketLocation implements Serializable, Comparable<NatPack
   }
 
   private static final Comparator<NatPacketLocation> COMPARATOR =
-      Comparator.comparing(NatPacketLocation::getType).thenComparing(NatPacketLocation::getName);
+      Comparator.comparing(NatPacketLocation::getType, Comparator.nullsFirst(Ordering.natural()))
+          .thenComparing(NatPacketLocation::getName, Comparator.nullsFirst(Ordering.natural()));
 
   private String _name;
 
@@ -64,17 +67,17 @@ public final class NatPacketLocation implements Serializable, Comparable<NatPack
     return _type == Type.ZoneType ? _name : null;
   }
 
-  public void setInterface(@Nullable String interfaceName) {
+  public void setInterface(@Nonnull String interfaceName) {
     _name = interfaceName;
     _type = Type.InterfaceType;
   }
 
-  public void setRoutingInstance(@Nullable String routingInstance) {
+  public void setRoutingInstance(@Nonnull String routingInstance) {
     _name = routingInstance;
     _type = Type.RoutingInstanceType;
   }
 
-  public void setZone(@Nullable String zone) {
+  public void setZone(@Nonnull String zone) {
     _name = zone;
     _type = Type.ZoneType;
   }
@@ -101,7 +104,7 @@ public final class NatPacketLocation implements Serializable, Comparable<NatPack
   }
 
   @Override
-  public int compareTo(NatPacketLocation o) {
+  public int compareTo(@Nonnull NatPacketLocation o) {
     return COMPARATOR.compare(this, o);
   }
 }
