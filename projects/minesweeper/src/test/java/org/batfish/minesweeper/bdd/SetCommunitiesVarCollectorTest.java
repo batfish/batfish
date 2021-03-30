@@ -9,15 +9,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
-import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -57,18 +53,6 @@ public class SetCommunitiesVarCollectorTest {
     Set<CommunityVar> result = _varCollector.visitCommunityExprsSet(ces, _baseConfig);
 
     assertEquals(ImmutableSet.of(cvar1, cvar2), result);
-  }
-
-  @Test
-  public void testVisitCommunitySetDifference() {
-    CommunitySetDifference csd =
-        new CommunitySetDifference(
-            new InputCommunities(),
-            new CommunityMatchRegex(ColonSeparatedRendering.instance(), "^20:"));
-
-    Set<CommunityVar> result = _varCollector.visitCommunitySetDifference(csd, _baseConfig);
-
-    assertEquals(ImmutableSet.of(), result);
   }
 
   @Test
