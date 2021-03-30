@@ -2946,6 +2946,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 route.getPrefix(), nextTable));
         return ImmutableSet.of();
       }
+      if (!ribId.getRibName().equals(RibId.DEFAULT_RIB_NAME)) {
+        _w.unimplemented(
+            String.format("next-table support is currently limited to %s", RIB_IPV4_UNICAST));
+        return ImmutableSet.of();
+      }
       nextVrf = ribId.getVrfName();
     }
     if (nextVrf != null && !route.getQualifiedNextHops().isEmpty()) {
