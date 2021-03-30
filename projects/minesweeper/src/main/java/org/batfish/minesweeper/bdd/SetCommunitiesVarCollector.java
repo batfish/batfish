@@ -34,14 +34,7 @@ public class SetCommunitiesVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetDifference(
       CommunitySetDifference communitySetDifference, Configuration arg) {
-    Set<CommunityVar> s1 = communitySetDifference.getInitial().accept(this, arg);
-    // TODO: handle set differences; for now we handle the special case when the first
-    //  operand in the difference is empty, so that the second operand is irrelevant
-    if (s1.isEmpty()) {
-      return s1;
-    } else {
-      throw new BatfishException("Community set differences are not supported");
-    }
+    throw new UnsupportedOperationException("Community set differences are not supported");
   }
 
   @Override
@@ -72,7 +65,7 @@ public class SetCommunitiesVarCollector
   @Override
   public Set<CommunityVar> visitInputCommunities(
       InputCommunities inputCommunities, Configuration arg) {
-    return inputCommunities.accept(new CommunitySetExprVarCollector(), arg);
+    throw new UnsupportedOperationException("Input communities is not supported");
   }
 
   @Override
