@@ -629,7 +629,7 @@ public class TransferBDD {
       Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
       // set all atomic predicates associated with these communities to 1 if this statement
       // is reached
-      addCommunities(comms, curP, result);
+      addOrRemoveCommunities(comms, curP, result, true);
 
     } else if (stmt instanceof SetCommunity) {
       curP.debug("SetCommunity");
@@ -672,7 +672,7 @@ public class TransferBDD {
                 .filter(e -> !e.equals(InputCommunities.instance()))
                 .flatMap(e -> e.accept(new SetCommunitiesVarCollector(), _conf).stream())
                 .collect(ImmutableSet.toImmutableSet());
-        addCommunities(comms, curP, result);
+        addOrRemoveCommunities(comms, curP, result, true);
       } else {
         /**
          * TODO: the SetCommunitiesVarCollector does not support some kinds of expressions, such as
@@ -688,16 +688,7 @@ public class TransferBDD {
       curP.debug("DeleteCommunity");
       DeleteCommunity ac = (DeleteCommunity) stmt;
       Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
-      // set all atomic predicates associated with these communities to 0 on this path
-      Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
-      BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-      for (int ap : commAPs) {
-        curP.indent().debug("Value: " + ap);
-        BDD comm = commAPBDDs[ap];
-        BDD newValue = ite(unreachable(result), comm, factory.zero());
-        curP.indent().debug("New Value: " + newValue);
-        commAPBDDs[ap] = newValue;
-      }
+      addOrRemoveCommunities(comms, curP, result, false);
     } else if (stmt instanceof CallStatement) {
 
       /*
@@ -1121,26 +1112,28 @@ public class TransferBDD {
   }
 
   /**
-   * A helper for route analysis of AddCommunity and uses of SetCommunities that add communities.
-   * Given a set of CommunityVars that are added by the statement, we set their BDDs to 1.
+   * A helper for route analysis of AddCommunity, DeleteCommunity, and uses of SetCommunities that
+   * add communities. Given a set of CommunityVars that are added by the statement, we set their
+   * BDDs to either 1 or 0, depending on the value of the boolean parameter.
    */
-  private void addCommunities(
-      Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result) {
+  private void addOrRemoveCommunities(
+      Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
+    BDD newCommVal = mkBDD(add);
     Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
     BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
     for (int ap : commAPs) {
       curP.indent().debug("Value: " + ap);
       BDD comm = commAPBDDs[ap];
-      BDD newValue = ite(unreachable(result), comm, factory.one());
+      BDD newValue = ite(unreachable(result), comm, newCommVal);
       curP.indent().debug("New Value: " + newValue);
       commAPBDDs[ap] = newValue;
     }
   }
 
   /**
-   * A helper for route analysis of DeleteCommunity and uses of SetCommunities that delete
-   * communities. Given a BDD representing the set of communities to be deleted, we set to 0 all
-   * community atomic predicates that are in the to-be-deleted set.
+   * A helper for analysis of uses of SetCommunities that delete communities. Given a BDD
+   * representing the set of communities to be deleted, we set to 0 all community atomic predicates
+   * that are in the to-be-deleted set.
    */
   private void deleteCommunities(
       BDD toDelete, TransferParam<BDDRoute> curP, TransferResult result) {
