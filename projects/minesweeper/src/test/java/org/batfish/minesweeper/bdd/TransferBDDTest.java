@@ -40,9 +40,14 @@ import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
@@ -903,6 +908,59 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testDeleteCommunityWithSetCommunities() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    new CommunitySetDifference(
+                        InputCommunities.instance(),
+                        new CommunityIs(StandardCommunity.parse("4:44")))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _g =
+        new Graph(
+            _batfish,
+            _batfish.getSnapshot(),
+            null,
+            null,
+            // add another community to be tracked by the analysis
+            ImmutableSet.of(new LiteralCommunity(StandardCommunity.parse("3:33"))),
+            null);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRoute = new BDDRoute(_g);
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // each atomic predicate for community 4:44 has the 0 BDD
+    for (int ap :
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().zero(),
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+
+    // each atomic predicate for community 3:33 is unchanged
+    for (int ap :
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
+      assertEquals(
+          anyRoute.getCommunityAtomicPredicates()[ap],
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+  }
+
+  @Test
   public void testSetCommunity() {
     RoutingPolicy policy =
         _policyBuilder
@@ -999,6 +1057,56 @@ public class TransferBDDTest {
             .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
       assertEquals(
           outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+  }
+
+  @Test
+  public void testAddCommunityWithSetCommunities() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("4:44"))))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _g =
+        new Graph(
+            _batfish,
+            _batfish.getSnapshot(),
+            null,
+            null,
+            // add another community to be tracked by the analysis
+            ImmutableSet.of(new LiteralCommunity(StandardCommunity.parse("3:33"))),
+            null);
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDDRoute anyRoute = new BDDRoute(_g);
+
+    // each atomic predicate for community 4:44 has the 1 BDD
+    for (int ap :
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+      assertEquals(
+          outAnnouncements.getFactory().one(), outAnnouncements.getCommunityAtomicPredicates()[ap]);
+    }
+    // each atomic predicate for community 3:33 is unchanged
+    for (int ap :
+        _g.getCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("3:33")))) {
+      assertEquals(
+          anyRoute.getCommunityAtomicPredicates()[ap],
+          outAnnouncements.getCommunityAtomicPredicates()[ap]);
     }
   }
 

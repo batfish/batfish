@@ -32,6 +32,8 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
@@ -627,18 +629,7 @@ public class TransferBDD {
       Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
       // set all atomic predicates associated with these communities to 1 if this statement
       // is reached
-      Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
-      BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-      for (int ap : commAPs) {
-        curP.indent().debug("Value: " + ap);
-        BDD comm = commAPBDDs[ap];
-        // on paths where the route policy has already hit a Return or Exit statement earlier,
-        // this AddCommunity statement will not be reached so the atomic predicate's value should
-        // be unchanged; otherwise it should be set to 1.
-        BDD newValue = ite(unreachable(result), comm, factory.one());
-        curP.indent().debug("New Value: " + newValue);
-        commAPBDDs[ap] = newValue;
-      }
+      addOrRemoveCommunities(comms, curP, result, true);
 
     } else if (stmt instanceof SetCommunity) {
       curP.debug("SetCommunity");
@@ -661,31 +652,43 @@ public class TransferBDD {
       SetCommunities sc = (SetCommunities) stmt;
       org.batfish.datamodel.routing_policy.communities.CommunitySetExpr setExpr =
           sc.getCommunitySetExpr();
-      /**
-       * TODO: the SetCommunitiesVarCollector does not support some kinds of expressions, such as
-       * set differences, for the same reason as described above regarding limitations of
-       * SetCommunity. again the right solution is to create a visitor to gather community atomic
-       * predicates. (note that SetCommunity and SetCommunities use two different data models for
-       * expressions, both named CommunitySetExpr but in different packages.)
-       */
-      Set<CommunityVar> comms = setExpr.accept(new SetCommunitiesVarCollector(), _conf);
-      setCommunities(comms, curP, result);
-
+      if (setExpr instanceof CommunitySetDifference
+          && ((CommunitySetDifference) setExpr).getInitial().equals(InputCommunities.instance())) {
+        // this SetCommunities expression has the form (InputCommunities - Expr)
+        // so we directly treat it as a deletion of communities
+        BDD toDelete =
+            ((CommunitySetDifference) setExpr)
+                .getRemovalCriterion()
+                .accept(new CommunityMatchExprToBDD(), new Arg(this, curP.getData()));
+        deleteCommunities(toDelete, curP, result);
+      } else if (setExpr instanceof CommunitySetUnion
+          && ((CommunitySetUnion) setExpr).getExprs().contains(InputCommunities.instance())) {
+        // this SetCommunities expression has the form (InputCommunities U Expr U ... U Expr)
+        // so we directly treat it as an addition of communities
+        Set<org.batfish.datamodel.routing_policy.communities.CommunitySetExpr> exprs =
+            ((CommunitySetUnion) setExpr).getExprs();
+        Set<CommunityVar> comms =
+            exprs.stream()
+                .filter(e -> !e.equals(InputCommunities.instance()))
+                .flatMap(e -> e.accept(new SetCommunitiesVarCollector(), _conf).stream())
+                .collect(ImmutableSet.toImmutableSet());
+        addOrRemoveCommunities(comms, curP, result, true);
+      } else {
+        /**
+         * TODO: the SetCommunitiesVarCollector does not support some kinds of expressions, such as
+         * set differences, for the same reason as described above regarding limitations of
+         * SetCommunity. again the right solution is to create a visitor to gather community atomic
+         * predicates. (note that SetCommunity and SetCommunities use two different data models for
+         * expressions, both named CommunitySetExpr but in different packages.)
+         */
+        Set<CommunityVar> comms = setExpr.accept(new SetCommunitiesVarCollector(), _conf);
+        setCommunities(comms, curP, result);
+      }
     } else if (stmt instanceof DeleteCommunity) {
       curP.debug("DeleteCommunity");
       DeleteCommunity ac = (DeleteCommunity) stmt;
       Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
-      // set all atomic predicates associated with these communities to 0 on this path
-      Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
-      BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-      for (int ap : commAPs) {
-        curP.indent().debug("Value: " + ap);
-        BDD comm = commAPBDDs[ap];
-        BDD newValue = ite(unreachable(result), comm, factory.zero());
-        curP.indent().debug("New Value: " + newValue);
-        commAPBDDs[ap] = newValue;
-      }
-
+      addOrRemoveCommunities(comms, curP, result, false);
     } else if (stmt instanceof CallStatement) {
 
       /*
@@ -1106,6 +1109,44 @@ public class TransferBDD {
       return x.getList().size();
     }
     throw new BatfishException("Error[prependLength]: unreachable");
+  }
+
+  /**
+   * A helper for route analysis of AddCommunity, DeleteCommunity, and uses of SetCommunities that
+   * add communities. Given a set of CommunityVars that are added by the statement, we set their
+   * BDDs to either 1 or 0, depending on the value of the boolean parameter.
+   */
+  private void addOrRemoveCommunities(
+      Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
+    BDD newCommVal = mkBDD(add);
+    Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+    for (int ap : commAPs) {
+      curP.indent().debug("Value: " + ap);
+      BDD comm = commAPBDDs[ap];
+      BDD newValue = ite(unreachable(result), comm, newCommVal);
+      curP.indent().debug("New Value: " + newValue);
+      commAPBDDs[ap] = newValue;
+    }
+  }
+
+  /**
+   * A helper for analysis of uses of SetCommunities that delete communities. Given a BDD
+   * representing the set of communities to be deleted, we set to 0 all community atomic predicates
+   * that are in the to-be-deleted set.
+   */
+  private void deleteCommunities(
+      BDD toDelete, TransferParam<BDDRoute> curP, TransferResult result) {
+    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+    for (int ap = 0; ap < commAPBDDs.length; ap++) {
+      curP.indent().debug("Value: " + ap);
+      BDD comm = commAPBDDs[ap];
+      if (!comm.diffSat(toDelete)) {
+        BDD newValue = ite(unreachable(result), comm, factory.zero());
+        curP.indent().debug("New Value: " + newValue);
+        commAPBDDs[ap] = newValue;
+      }
+    }
   }
 
   /*
