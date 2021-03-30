@@ -7,6 +7,7 @@ options {
 tokens {
   QUOTED_TEXT,
   STR_SEPARATOR,
+  UNIMPLEMENTED_PLACEHOLDER,
   UNQUOTED_WORD_CHARS
 }
 
@@ -36,6 +37,7 @@ ASSOCIATED_INTERFACE: 'associated-interface' -> pushMode(M_Str);
 AUTH: 'auth';
 BGP: 'bgp';
 BUFFER: 'buffer' -> pushMode(M_Str);
+CLEAR: 'clear';
 COLOR: 'color';
 COMMENT: 'comment' -> pushMode(M_Str);
 COMMENTS: 'comments' -> pushMode(M_Str);
@@ -131,6 +133,7 @@ STATUS: 'status';
 SUBNET: 'subnet';
 SUB_TYPE: 'sub-type';
 SYSTEM: 'system';
+TAGGING: 'tagging';
 TCP_PORTRANGE: 'tcp-portrange';
 TCP_UDP_SCTP: 'TCP/UDP/SCTP';
 TO: 'to' -> pushMode(M_SingleStr);
@@ -138,6 +141,7 @@ TRAFFIC_QUOTA: 'traffic-quota';
 TUNNEL: 'tunnel';
 TYPE: 'type';
 UDP_PORTRANGE: 'udp-portrange';
+UNSELECT: 'unselect';
 UNSET: 'unset';
 UP: 'up';
 UTM: 'utm';
