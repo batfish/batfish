@@ -5048,9 +5048,37 @@ public final class CiscoNxosGrammarTest {
       assertThat(proc, hasArea(1L, hasNssa(NssaSettingsMatchers.hasSuppressType3())));
     }
     // TODO: convert and test "a_nssa_rm" - OSPF NSSA with route-map
-    // TODO: convert and test "a_r" - OSPF area range
-    // TODO: convert and test "a_r_cost" - OSPF area range-specific cost
-    // TODO: convert and test "a_r_not_advertise" - OSPF area range advertisement suppression
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_r");
+      Prefix prefix = Prefix.parse("1.1.1.1/32");
+      Map<Prefix, OspfAreaSummary> summaries = proc.getAreas().get(0L).getSummaries();
+      assertThat(summaries, hasKeys(prefix));
+
+      OspfAreaSummary summary = summaries.get(prefix);
+      assertThat(summary.getBehavior(), is(SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD));
+      assertThat(summary.getMetric(), nullValue());
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_r_cost");
+      Prefix prefix = Prefix.parse("1.1.1.1/32");
+      Map<Prefix, OspfAreaSummary> summaries = proc.getAreas().get(0L).getSummaries();
+      assertThat(summaries, hasKeys(prefix));
+
+      OspfAreaSummary summary = summaries.get(prefix);
+      assertThat(summary.getBehavior(), is(SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD));
+      assertThat(summary.getMetric(), equalTo(5L));
+    }
+    {
+      org.batfish.datamodel.ospf.OspfProcess proc =
+          defaultVrf.getOspfProcesses().get("a_r_not_advertise");
+      Prefix prefix = Prefix.parse("1.1.1.1/32");
+      Map<Prefix, OspfAreaSummary> summaries = proc.getAreas().get(0L).getSummaries();
+      assertThat(summaries, hasKeys(prefix));
+
+      OspfAreaSummary summary = summaries.get(prefix);
+      assertThat(summary.getBehavior(), is(SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD));
+      assertThat(summary.getMetric(), nullValue());
+    }
     {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("a_stub");
       assertThat(proc, hasArea(1L, hasStub(notNullValue())));
@@ -5248,22 +5276,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(proc.getRouterId(), equalTo(Ip.parse("192.0.2.1")));
       assertThat(proc, hasArea(0L, OspfAreaMatchers.hasInterfaces(contains("Ethernet1/4"))));
     }
-    {
-      org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("sa");
-      Prefix p0 = Prefix.parse("192.168.0.0/24");
-      Prefix p1 = Prefix.create(Ip.parse("192.168.1.0"), Ip.parse("255.255.255.0"));
-      Prefix p2 = Prefix.create(Ip.parse("192.168.2.0"), Ip.parse("255.255.255.0"));
-      Map<Prefix, OspfAreaSummary> summaries = proc.getAreas().get(0L).getSummaries();
-
-      assertThat(summaries, hasKeys(p0, p1, p2));
-      assertThat(
-          summaries.get(p0).getBehavior(), is(SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD));
-      assertThat(
-          summaries.get(p1).getBehavior(), is(SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD));
-      assertThat(
-          summaries.get(p2).getBehavior(), is(SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD));
-      // TODO: convert and test tags
-    }
+    // TODO: convert and test "sa" - OSPF summary-address
     // TODO: convert and test OSPF timers
     {
       org.batfish.datamodel.ospf.OspfProcess proc = defaultVrf.getOspfProcesses().get("with_vrf");

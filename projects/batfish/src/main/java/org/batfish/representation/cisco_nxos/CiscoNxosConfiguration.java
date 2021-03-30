@@ -2578,14 +2578,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         org.batfish.datamodel.ospf.OspfProcess.builder()
             .setAllAdminCosts(firstNonNull(proc.getDistance(), OSPF_ADMIN_COST));
 
-    // compute summaries to be used by all VI areas
-    Map<Prefix, OspfAreaSummary> summaries =
-        proc.getSummaryAddresses().entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Entry::getKey,
-                    summaryByPrefix -> toOspfAreaSummary(summaryByPrefix.getValue())));
-
     // convert areas
     Multimap<Long, IpWildcard> wildcardsByAreaId =
         ImmutableMultimap.copyOf(
@@ -2610,8 +2602,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                 vrfName,
                                 proc,
                                 area,
-                                wildcardsByAreaId.get(area.getId()),
-                                summaries))))
+                                wildcardsByAreaId.get(area.getId())))))
         .setReferenceBandwidth(
             OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR * proc.getAutoCostReferenceBandwidthMbps());
 
@@ -2635,12 +2626,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return builder;
   }
 
-  private @Nonnull OspfAreaSummary toOspfAreaSummary(OspfSummaryAddress ospfSummaryAddress) {
+  private @Nonnull OspfAreaSummary toOspfAreaSummary(OspfAreaRange areaRange) {
+    // Convert to @Nullable Long from @Nullable Integer
+    Long cost = areaRange.getCost() == null ? null : areaRange.getCost().longValue();
     return new OspfAreaSummary(
-        ospfSummaryAddress.getNotAdvertise()
+        areaRange.getNotAdvertise()
             ? SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD
             : SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD,
-        null);
+        cost);
   }
 
   private void createOspfExportPolicy(
@@ -2749,8 +2742,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       String vrfName,
       OspfProcess proc,
       OspfArea area,
-      Collection<IpWildcard> wildcards,
-      Map<Prefix, OspfAreaSummary> summaries) {
+      Collection<IpWildcard> wildcards) {
     org.batfish.datamodel.ospf.OspfArea.Builder builder =
         org.batfish.datamodel.ospf.OspfArea.builder().setNumber(area.getId());
     if (area.getTypeSettings() != null) {
@@ -2771,7 +2763,32 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               });
     }
     builder.setInterfaces(computeAreaInterfaces(processName, vrfName, proc, area, wildcards));
-    builder.setSummaries(summaries);
+
+    Map<Prefix, OspfAreaRange> ranges = area.getRanges();
+    // If there are any ospf area range commands, summarize routes leaving this area.
+    if (!ranges.isEmpty()) {
+      // Will hold the converted OspfAreaSummary objects.
+      ImmutableMap.Builder<Prefix, OspfAreaSummary> summaries = ImmutableMap.builder();
+      // Will deny all suppressed routes, permitting the rest.
+      ImmutableList.Builder<RouteFilterLine> lines = ImmutableList.builder();
+      ranges.forEach(
+          (network, range) -> {
+            summaries.put(network, toOspfAreaSummary(range));
+            PrefixRange suppressedNetworks =
+                range.getNotAdvertise()
+                    ? PrefixRange.sameAsOrMoreSpecificThan(network)
+                    : PrefixRange.moreSpecificThan(network);
+            lines.add(new RouteFilterLine(LineAction.DENY, suppressedNetworks));
+          });
+      lines.add(RouteFilterLine.PERMIT_ALL);
+
+      RouteFilterList summaryFilter =
+          new RouteFilterList(
+              "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + area.getId() + "~", lines.build());
+      _c.getRouteFilterLists().put(summaryFilter.getName(), summaryFilter);
+      builder.setSummaryFilter(summaryFilter.getName());
+      builder.setSummaries(summaries.build());
+    }
     return builder.build();
   }
 
