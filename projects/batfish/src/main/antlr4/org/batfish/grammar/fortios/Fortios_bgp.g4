@@ -44,7 +44,7 @@ crbcne
 
 crbcne_set_remote_as: REMOTE_AS bgp_remote_as newline;
 
-crbcne_set_update_source: UPDATE_SOURCE interface_name;
+crbcne_set_update_source: UPDATE_SOURCE interface_name newline;
 
 crbc_redistribute: REDISTRIBUTE bgp_redist_protocol newline crbcr*;
 

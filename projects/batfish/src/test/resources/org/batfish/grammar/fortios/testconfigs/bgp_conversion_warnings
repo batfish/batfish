@@ -1,30 +1,32 @@
 config system global
-    set hostname "bgp"
+    set hostname "bgp_conversion_warnings"
 end
 config system interface
     edit "port1"
         set vdom "root"
-        set ip 10.10.10.1 255.255.255.0
         set type physical
     next
     edit "port2"
         set vdom "root"
-        set ip 11.11.11.1 255.255.255.0
         set type physical
-        set vrf 5
+        set status down
     next
 end
 config router bgp
-    # Test max and min AS
-    set as 4294967295
-    set as 0
     set router-id 1.1.1.1
     config neighbor
         edit "2.2.2.2"
+            # Update-source with no concrete address
             set remote-as 1
             set update-source port1
         next
-        edit "11.11.11.2"
+        edit "3.3.3.3"
+            # Inactive update-source
+            set remote-as 4294967295
+            set update-source port2
+        next
+        edit "4.4.4.4"
+            # No update-source
             set remote-as 4294967295
         next
     end

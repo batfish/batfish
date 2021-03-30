@@ -1,0 +1,13 @@
+config system global
+    set hostname "bgp_no_router_id"
+end
+config router bgp
+    config neighbor
+        edit "2.2.2.2"
+            # No update source, but warning shouldn't show up because
+            # without a router ID, the neighbor won't be converted.
+            set remote-as 1
+            set update-source port1
+        next
+    end
+end
