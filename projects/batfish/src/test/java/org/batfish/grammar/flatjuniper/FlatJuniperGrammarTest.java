@@ -315,6 +315,7 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
@@ -5090,6 +5091,12 @@ public final class FlatJuniperGrammarTest {
                             .setNextHopIp(Ip.parse("10.0.0.1"))
                             .setAdministrativeCost(5)
                             .setRecursive(true)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("7.0.0.0/8"))
+                            .setNextHop(NextHopVrf.of("ri2"))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build()))),
             hasVrf(
                 "ri2",
@@ -5128,6 +5135,12 @@ public final class FlatJuniperGrammarTest {
                         .setNextHopIp(Ip.parse("1.2.3.4"))
                         .setAdministrativeCost(180)
                         .setTag(12L)
+                        .setRecursive(false)
+                        .build(),
+                    StaticRoute.builder()
+                        .setNetwork(Prefix.parse("8.0.0.0/8"))
+                        .setNextHop(NextHopVrf.of(DEFAULT_VRF_NAME))
+                        .setAdministrativeCost(5)
                         .setRecursive(false)
                         .build()))));
   }

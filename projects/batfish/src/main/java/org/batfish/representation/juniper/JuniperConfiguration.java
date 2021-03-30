@@ -134,6 +134,7 @@ import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
@@ -2934,6 +2935,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private Set<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {
+    String nextTable = route.getNextTable();
+    String nextVrf = null;
+    if (nextTable != null) {
+      RibId ribId = toRibId(getHostname(), nextTable, _w);
+      if (ribId == null) {
+        _w.redFlag(
+            String.format(
+                "Static route for prefix %s contains illegal next-table value: %s",
+                route.getPrefix(), nextTable));
+        return ImmutableSet.of();
+      }
+      nextVrf = ribId.getVrfName();
+    }
+    if (nextVrf != null && !route.getQualifiedNextHops().isEmpty()) {
+      _w.redFlag(
+          String.format(
+              "Static route for prefix %s illegally contains both next-table and"
+                  + " qualified-next-hop",
+              route.getPrefix()));
+      return ImmutableSet.of();
+    }
+
     ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
 
     // static route corresponding to the next hop
@@ -2946,7 +2969,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setNextHop(
                 route.getDrop() || noInstall
                     ? NextHopDiscard.instance()
-                    : NextHop.legacyConverter(route.getNextHopInterface(), route.getNextHopIp()))
+                    : nextVrf != null
+                        ? NextHopVrf.of(nextVrf)
+                        : NextHop.legacyConverter(
+                            route.getNextHopInterface(), route.getNextHopIp()))
             .setAdministrativeCost(route.getDistance())
             .setMetric(route.getMetric())
             .setTag(firstNonNull(route.getTag(), Route.UNSET_ROUTE_TAG))
