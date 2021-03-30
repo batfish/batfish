@@ -1884,6 +1884,38 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testNestedConfigRecovery() throws IOException {
+    String hostname = "nested_config_recovery";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Confirm unrecognized lines exist as expected
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarning(
+            allOf(
+                hasComment("This syntax is unrecognized"),
+                hasText(containsString("set tags tag1")))));
+
+    // Confirm config after unrecognized lines are still applied as expected
+    // i.e. context is not lost
+    assertThat(vc.getAddresses(), hasKeys("tagging"));
+    Address addr = vc.getAddresses().get("tagging");
+    assertThat(addr.getTypeEffective(), equalTo(Address.Type.IPMASK));
+    assertThat(addr.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.1.1.0")));
+    assertThat(addr.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("255.255.255.0")));
+  }
+
+  @Test
   public void testRename() throws IOException {
     String hostname = "rename";
     Batfish batfish = getBatfishForConfigurationNames(hostname);

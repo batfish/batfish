@@ -26,6 +26,9 @@ service_name: str;
 
 service_names: service_name+;
 
+// Up to 63 characters
+tagging_name: str;
+
 quoted_text: QUOTED_TEXT+;
 
 ip_address: IP_ADDRESS | SUBNET_MASK;
@@ -61,6 +64,23 @@ mac_address_literal: MAC_ADDRESS_LITERAL;
 newline: STR_SEPARATOR? NEWLINE;
 
 null_rest_of_line: ~NEWLINE* NEWLINE;
+
+// General, catch-all rule for unimplemented edit blocks
+unimplemented_edit_stanza
+:
+    (
+        SET
+        | UNSET
+        | SELECT
+        | UNSELECT
+        | APPEND
+        | CLEAR
+    ) unimplemented
+;
+
+// This must be a separate rule from unimplemented_edit_stanza, since its parent context is lost on recovery
+// This should only be used directly from unimplemented_edit_stanza
+unimplemented: UNIMPLEMENTED_PLACEHOLDER newline;
 
 uint8: UINT8;
 

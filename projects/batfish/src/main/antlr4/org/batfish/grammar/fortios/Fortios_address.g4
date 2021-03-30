@@ -12,7 +12,9 @@ cfa_rename: RENAME current_name = address_name TO new_name = address_name newlin
 
 cfa_edit: EDIT address_name newline cfae* NEXT newline;
 
-cfae: SET cfa_set_singletons;
+cfae: SET cfa_set_singletons | CONFIG cfae_config;
+
+cfae_config: TAGGING newline cfaec_tagging END newline;
 
 cfa_set_singletons:
     cfa_set_allow_routing
@@ -59,6 +61,8 @@ cfa_set_null:
         | SDN
         | SUB_TYPE
     ) null_rest_of_line;
+
+cfaec_tagging: EDIT tagging_name newline unimplemented_edit_stanza* NEXT newline;
 
 address_type:
     IPMASK

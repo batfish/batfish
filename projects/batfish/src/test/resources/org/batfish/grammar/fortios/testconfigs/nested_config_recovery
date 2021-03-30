@@ -1,0 +1,14 @@
+config system global
+    set hostname "nested_config_recovery"
+end
+config firewall address
+    edit "tagging"
+        # This nested config block isn't supported yet
+        config tagging
+            edit foobar
+                set tags tag1
+            next
+        end
+        set subnet 1.1.1.0/24
+    next
+end
