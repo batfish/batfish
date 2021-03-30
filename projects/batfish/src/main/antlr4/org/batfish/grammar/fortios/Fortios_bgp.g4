@@ -36,12 +36,17 @@ crbcn_edit: EDIT bgp_neighbor_id newline crbcne* NEXT newline;
 
 crbcne
 :
-    SET crbcne_set_remote_as
+    SET (
+        crbcne_set_remote_as
+        | crbcne_set_update_source
+    )
 ;
 
 crbcne_set_remote_as: REMOTE_AS bgp_remote_as newline;
 
-crbc_redistribute: REDISTRIBUTE protocol = str newline crbcr*;
+crbcne_set_update_source: UPDATE_SOURCE interface_name;
+
+crbc_redistribute: REDISTRIBUTE bgp_redist_protocol newline crbcr*;
 
 crbcr
 :
@@ -58,3 +63,5 @@ bgp_remote_as: str;
 
 // An IP (but not using ip_address rule because EDIT pushes str mode)
 bgp_neighbor_id: str;
+
+bgp_redist_protocol: str;

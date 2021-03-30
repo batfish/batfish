@@ -1,5 +1,6 @@
 package org.batfish.representation.fortios;
 
+import static org.batfish.representation.fortios.FortiosBgpConversions.convertBgp;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.convertPolicies;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateCrossZoneFilters;
@@ -175,6 +176,11 @@ public class FortiosConfiguration extends VendorConfiguration {
         _zones.values().stream()
             .collect(
                 ImmutableMap.toImmutableMap(Zone::getName, FortiosConfiguration::convertZone)));
+
+    // Convert BGP. Must happen after interface conversion
+    if (_bgpProcess != null) {
+      convertBgp(_bgpProcess, c, _w);
+    }
 
     // TODO Are FortiOS static routes really global? Can't set their VRFs. Perhaps they should
     //  only exist in their device's VRF.

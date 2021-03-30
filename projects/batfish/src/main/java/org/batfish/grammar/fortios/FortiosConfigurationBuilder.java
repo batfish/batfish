@@ -1,6 +1,7 @@
 package org.batfish.grammar.fortios;
 
 import static org.batfish.grammar.fortios.FortiosLexer.UNQUOTED_WORD_CHARS;
+import static org.batfish.representation.fortios.FortiosStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -776,6 +777,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCrbcne_set_remote_as(Crbcne_set_remote_asContext ctx) {
     toLong(ctx, ctx.bgp_remote_as()).ifPresent(_currentBgpNeighbor::setRemoteAs);
+  }
+
+  @Override
+  public void exitCrbcne_set_update_source(FortiosParser.Crbcne_set_update_sourceContext ctx) {
+    toInterface(ctx, ctx.interface_name(), BGP_UPDATE_SOURCE_INTERFACE)
+        .ifPresent(_currentBgpNeighbor::setUpdateSource);
   }
 
   @Override
