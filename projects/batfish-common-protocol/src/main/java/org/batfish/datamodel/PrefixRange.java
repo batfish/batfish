@@ -51,6 +51,12 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
         prefix, new SubRange(prefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH));
   }
 
+  /** Returns a {@link PrefixRange} that represents this prefix and all more specific prefixes. */
+  public static PrefixRange sameAsOrMoreSpecificThan(Prefix prefix) {
+    return new PrefixRange(
+        prefix, new SubRange(prefix.getPrefixLength() + 1, Prefix.MAX_PREFIX_LENGTH));
+  }
+
   public SubRange getLengthRange() {
     return _lengthRange;
   }
