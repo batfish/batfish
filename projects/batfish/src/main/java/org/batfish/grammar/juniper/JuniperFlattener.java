@@ -91,7 +91,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _currentTree.addFlatStatementIndex(_allFlatStatements.size());
     _lineMap.setOriginalLine(
         _allFlatStatements.size() + _headerLineCount, 0, ctx.getStart().getLine());
-    _allFlatStatements.add(getFullText(ctx));
+    _allFlatStatements.add(getFullText(ctx).trim());
+    _currentTree = _currentTree.getParent();
   }
 
   @Override
