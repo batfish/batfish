@@ -1,5 +1,7 @@
 package org.batfish.grammar.juniper;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -36,9 +38,12 @@ class FlatStatementTree {
     _lines.add(flatStatementIndex);
   }
 
-  private void addFlatStatementsTo(ImmutableSet.Builder<Integer> flatStatementIndices) {
+  @VisibleForTesting static final int MAX_DEPTH = 32;
+
+  private void addFlatStatementsTo(ImmutableSet.Builder<Integer> flatStatementIndices, int depth) {
+    checkState(depth <= MAX_DEPTH, "Exceeded max statement tree depth of %s", MAX_DEPTH);
     flatStatementIndices.addAll(_lines.build());
-    _children.values().forEach(child -> child.addFlatStatementsTo(flatStatementIndices));
+    _children.values().forEach(child -> child.addFlatStatementsTo(flatStatementIndices, depth + 1));
   }
 
   /** Returns subtree for {@code partialStatementText}. Creates if absent. */
@@ -54,7 +59,7 @@ class FlatStatementTree {
   /** Returns all flat statement indices stored in this tree. */
   public @Nonnull Set<Integer> getFlatStatementIndices() {
     ImmutableSet.Builder<Integer> flatStatements = ImmutableSet.builder();
-    addFlatStatementsTo(flatStatements);
+    addFlatStatementsTo(flatStatements, 0);
     return flatStatements.build();
   }
 

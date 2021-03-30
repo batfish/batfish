@@ -7,6 +7,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
+import java.util.Collections;
+import java.util.List;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
@@ -19,6 +22,39 @@ import org.junit.Test;
 
 public class JuniperFlattenerTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
+
+  /** Test that sequences of flat lines do not create a linear tree. */
+  @Test
+  public void testFlatLinesDoNotNest() {
+    String hostname = "flatten-flat-lines-no-nesting";
+
+    List<String> copies =
+        Collections.nCopies(
+            FlatStatementTree.MAX_DEPTH + 1, "set routing-options autonomous-system 5");
+
+    String text =
+        String.join(
+            "\n",
+            ImmutableList.<String>builder()
+                .add("system { host-name " + hostname + " }")
+                .addAll(copies)
+                .build());
+
+    Flattener flattener =
+        Batfish.flatten(
+            text,
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            new Warnings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    assert flattener instanceof JuniperFlattener;
+    // Should not throw
+    String flatText = flattener.getFlattenedConfigurationText();
+
+    // All the copies should still be there in sequence
+    assertThat(flatText, containsString(String.join("\n", copies)));
+  }
 
   /** Test for https://github.com/batfish/batfish/issues/6149. */
   @Test
