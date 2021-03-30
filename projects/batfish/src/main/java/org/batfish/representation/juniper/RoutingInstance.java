@@ -44,7 +44,7 @@ public class RoutingInstance implements Serializable {
   @Nonnull private final IsisSettings _isisSettings;
   @Nullable private Integer _loops;
   private BgpGroup _masterBgpGroup;
-  private String _name;
+  private final @Nonnull String _name;
   private Map<String, NamedBgpGroup> _namedBgpGroups;
   private final Map<String, NodeDevice> _nodeDevices;
   private Map<Long, OspfArea> _ospfAreas;
@@ -57,7 +57,7 @@ public class RoutingInstance implements Serializable {
   private final JuniperSystem _system;
   @Nullable private Resolution _resolution;
 
-  public RoutingInstance(String name) {
+  public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
     _appliedRibGroups = new HashMap<>();
     _confederationMembers = new TreeSet<>();
@@ -173,7 +173,7 @@ public class RoutingInstance implements Serializable {
     return _masterBgpGroup;
   }
 
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
