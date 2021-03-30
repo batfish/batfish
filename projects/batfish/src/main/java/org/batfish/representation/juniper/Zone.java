@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 
 public final class Zone implements Serializable {
 
@@ -30,7 +31,7 @@ public final class Zone implements Serializable {
 
   private final List<String> _interfaces;
 
-  private final String _name;
+  private final @Nonnull String _name;
 
   private ConcreteFirewallFilter _toHostFilter;
 
@@ -38,7 +39,7 @@ public final class Zone implements Serializable {
 
   private final Set<String> _screens;
 
-  public Zone(String name, AddressBook globalAddressBook) {
+  public Zone(@Nonnull String name, AddressBook globalAddressBook) {
     _name = name;
     _addressBook = globalAddressBook;
     _addressBookType = AddressBookType.GLOBAL;
