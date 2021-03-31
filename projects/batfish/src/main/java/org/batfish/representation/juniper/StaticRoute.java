@@ -33,6 +33,8 @@ public class StaticRoute implements Serializable {
 
   private Prefix _prefix;
 
+  @Nullable private String _nextTable;
+
   @Nullable private Boolean _resolve;
 
   /**
@@ -138,5 +140,18 @@ public class StaticRoute implements Serializable {
 
   public void setResolve(@Nullable Boolean resolve) {
     _resolve = resolve;
+  }
+
+  /**
+   * The name of a delegate routing instance/table that should traffic matching this route in its
+   * own routing instance.
+   */
+  @Nullable
+  public String getNextTable() {
+    return _nextTable;
+  }
+
+  public void setNextTable(@Nullable String nextTable) {
+    _nextTable = nextTable;
   }
 }
