@@ -7,9 +7,11 @@ set routing-options static route 3.0.0.0/8 no-install
 set routing-options static route 4.0.0.0/8 next-hop ge-0/0/0.0
 set routing-options static route 6.0.0.0/8 next-hop 10.0.0.1
 set routing-options static route 6.0.0.0/8 resolve
+set routing-options static route 7.0.0.0/8 next-table ri2.inet.0
 #
 set routing-instances ri3 routing-options static route 5.5.5.0/24 preference 150
 set routing-instances ri3 routing-options static route 5.5.5.0/24 next-hop 2.3.4.5
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop ge-0/0/0.0
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 preference 180
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 tag 12
+set routing-instances ri3 routing-options static route 8.0.0.0/8 next-table inet.0
