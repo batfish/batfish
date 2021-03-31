@@ -144,6 +144,7 @@ UDP_PORTRANGE: 'udp-portrange';
 UNSELECT: 'unselect';
 UNSET: 'unset';
 UP: 'up';
+UPDATE_SOURCE: 'update-source' -> pushMode(M_Str);
 UTM: 'utm';
 UUID: 'uuid' -> pushMode(M_Str);
 VDOM: 'vdom' -> pushMode(M_Str);
