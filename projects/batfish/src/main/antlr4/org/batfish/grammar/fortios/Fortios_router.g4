@@ -5,6 +5,7 @@ options {
 }
 
 c_router: ROUTER (
-    cr_bgp
+    cr_access_list
+    | cr_bgp
     | cr_static
 );
