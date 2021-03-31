@@ -8,6 +8,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
@@ -67,6 +68,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
@@ -618,23 +620,70 @@ public final class FortiosGrammarTest {
 
     BgpProcess bgpProcess = vc.getBgpProcess();
     assert bgpProcess != null;
-    assertThat(bgpProcess.getAs(), equalTo(0L));
+    assertThat(bgpProcess.getAs(), equalTo(1L));
     assertThat(bgpProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
 
     Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
-    Ip ip2222 = Ip.parse("2.2.2.2");
-    Ip ip3333 = Ip.parse("3.3.3.3");
-    assertThat(neighbors.keySet(), containsInAnyOrder(ip2222, ip3333));
-    BgpNeighbor neighbor2222 = neighbors.get(ip2222);
-    BgpNeighbor neighbor3333 = neighbors.get(ip3333);
-    assertThat(neighbor2222.getIp(), equalTo(ip2222));
-    assertThat(neighbor3333.getIp(), equalTo(ip3333));
-    assertThat(neighbor2222.getRemoteAs(), equalTo(1L));
-    assertThat(neighbor3333.getRemoteAs(), equalTo(4294967295L));
+    Ip ip1 = Ip.parse("2.2.2.2");
+    Ip ip2 = Ip.parse("11.11.11.2");
+    assertThat(neighbors.keySet(), containsInAnyOrder(ip1, ip2));
+    BgpNeighbor neighbor1 = neighbors.get(ip1);
+    BgpNeighbor neighbor2 = neighbors.get(ip2);
+    assertThat(neighbor1.getIp(), equalTo(ip1));
+    assertThat(neighbor2.getIp(), equalTo(ip2));
+    assertThat(neighbor1.getRemoteAs(), equalTo(1L));
+    assertThat(neighbor2.getRemoteAs(), equalTo(4294967295L));
+    assertThat(neighbor1.getUpdateSource(), equalTo("port1"));
+    assertNull(neighbor2.getUpdateSource());
   }
 
   @Test
-  public void testBgpWarnings() throws IOException {
+  public void testBgpConversion() throws IOException {
+    String hostname = "bgp";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Ensure no warnings were generated
+    assertThat(
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot()).getWarnings(),
+        anEmptyMap());
+
+    // Neighbor IDs
+    Ip ip1 = Ip.parse("2.2.2.2");
+    Ip ip2 = Ip.parse("11.11.11.2");
+
+    // Default VRF BGP process: should only have neighbor 1
+    org.batfish.datamodel.BgpProcess bgpProcessDefaultVrf =
+        c.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
+    assertThat(bgpProcessDefaultVrf, hasRouterId(Ip.parse("1.1.1.1")));
+
+    Map<Prefix, BgpActivePeerConfig> defaultVrfNeighbors =
+        bgpProcessDefaultVrf.getActiveNeighbors();
+    assertThat(defaultVrfNeighbors, hasKeys(ip1.toPrefix()));
+    BgpActivePeerConfig neighbor1 = defaultVrfNeighbors.get(ip1.toPrefix());
+    assertThat(neighbor1.getLocalAs(), equalTo(1L));
+    // port1 is the explicit update-source
+    assertThat(neighbor1.getLocalIp(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(neighbor1.getPeerAddress(), equalTo(ip1));
+    assertThat(neighbor1.getRemoteAsns().enumerate(), contains(1L));
+
+    // VRF 5 BGP process: should only have neighbor 2
+    org.batfish.datamodel.BgpProcess bgpProcessVrf5 =
+        c.getVrfs().get(computeVrfName("root", 5)).getBgpProcess();
+    assertThat(bgpProcessVrf5, hasRouterId(Ip.parse("1.1.1.1")));
+
+    Map<Prefix, BgpActivePeerConfig> vrf5Neighbors = bgpProcessVrf5.getActiveNeighbors();
+    assertThat(defaultVrfNeighbors, hasKeys(ip1.toPrefix()));
+    BgpActivePeerConfig neighbor2 = vrf5Neighbors.get(ip2.toPrefix());
+    assertThat(neighbor2.getLocalAs(), equalTo(1L));
+    // port2 is the inferred update-source (its network includes ip2)
+    assertThat(neighbor2.getLocalIp(), equalTo(Ip.parse("11.11.11.1")));
+    assertThat(neighbor2.getPeerAddress(), equalTo(ip2));
+    assertThat(neighbor2.getRemoteAsns().enumerate(), contains(4294967295L));
+  }
+
+  @Test
+  public void testBgpExtractionWarnings() throws IOException {
     String hostname = "bgp_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings parseWarnings =
@@ -655,6 +704,77 @@ public final class FortiosGrammarTest {
             hasComment("Expected BGP remote AS in range 1-4294967295, but got 'hello'"),
             hasComment("BGP neighbor edit block ignored: remote-as must be set"),
             hasComment("Redistribution into BGP is not yet supported")));
+  }
+
+  @Test
+  public void testBgpConversionWarnings() throws IOException {
+    String hostname = "bgp_conversion_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                "Ignoring BGP neighbor 2.2.2.2: Update-source port1 has no address"),
+            WarningMatchers.hasText(
+                "BGP neighbor 3.3.3.3 has an inactive update-source interface port2. Attempting to"
+                    + " infer another update-source for this neighbor"),
+            WarningMatchers.hasText(
+                "Ignoring BGP neighbor 3.3.3.3: Unable to infer its update source"),
+            WarningMatchers.hasText(
+                "Ignoring BGP neighbor 4.4.4.4: Unable to infer its update source"),
+            WarningMatchers.hasText(
+                "Interface port3 has unsupported type WL_MESH and will not be converted"),
+            WarningMatchers.hasText(
+                "Ignoring BGP neighbor 5.5.5.5: Unable to infer its update source")));
+  }
+
+  @Test
+  public void testBgpConversionNoAs() throws IOException {
+    String hostname = "bgp_no_as";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(WarningMatchers.hasText("Ignoring BGP process: No AS configured")));
+  }
+
+  @Test
+  public void testBgpConversionInvalidAs() throws IOException {
+    String hostname = "bgp_invalid_as";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "Ignoring BGP process: AS 4294967295 is proscribed by RFC 7300")));
+  }
+
+  @Test
+  public void testBgpConversionNoRouterId() throws IOException {
+    String hostname = "bgp_no_router_id";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(WarningMatchers.hasText("Ignoring BGP process: No router ID configured")));
   }
 
   @Test

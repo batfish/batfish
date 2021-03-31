@@ -1,0 +1,43 @@
+config system global
+    set hostname "bgp_conversion_warnings"
+end
+config system interface
+    edit "port1"
+        set vdom "root"
+        set type physical
+    next
+    edit "port2"
+        set vdom "root"
+        set type physical
+        set status down
+    next
+    edit "port3"
+        set vdom "root"
+        set type wl-mesh
+    next
+end
+config router bgp
+    set router-id 1.1.1.1
+    set as 1
+    config neighbor
+        edit "2.2.2.2"
+            # Update-source with no concrete address
+            set remote-as 1
+            set update-source port1
+        next
+        edit "3.3.3.3"
+            # Inactive update-source
+            set remote-as 1
+            set update-source port2
+        next
+        edit "4.4.4.4"
+            # No update-source
+            set remote-as 1
+        next
+        edit "5.5.5.5"
+            # Update-source that is not converted
+            set remote-as 1
+            set update-source port3
+        next
+    end
+end
