@@ -1,0 +1,20 @@
+config system global
+    set hostname "access_list_warnings"
+end
+config router access-list
+    edit "longer_than_longest_access_list_name_possible"
+    next
+    edit "acl_name1"
+        set comments "comment for acl_name1"
+        config rule
+            edit 1
+                # Must either set prefix or wildcard
+                set exact-match enable
+            next
+            edit 4294967296
+                set action permit
+                set prefix 1.2.3.4/24
+            next
+        end
+    next
+end

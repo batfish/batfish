@@ -8,6 +8,9 @@ double_quoted_string: DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE;
 
 single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 
+// 1-35 characters
+access_list_name: str;
+
 // 1-79 characters
 address_name: str;
 
@@ -42,6 +45,8 @@ ip_address_with_mask_or_prefix
     ip_address subnet_mask
     | ip_prefix
 ;
+
+ip_address_with_mask_or_prefix_or_any: ip_address_with_mask_or_prefix | ANY;
 
 // For ip_address_with_mask_or_prefix contexts where the mask can be invalid
 ip_address_with_maybe_invalid_mask_or_prefix
@@ -112,3 +117,5 @@ up_or_down: UP | DOWN;
 port_range: port_low = uint16 (HYPHEN port_high = uint16)?;
 
 allow_or_deny: ALLOW | DENY;
+
+permit_or_deny: PERMIT | DENY;
