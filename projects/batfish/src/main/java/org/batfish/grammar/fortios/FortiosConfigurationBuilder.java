@@ -102,6 +102,7 @@ import org.batfish.grammar.fortios.FortiosParser.Crb_set_router_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrm_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
@@ -154,6 +155,7 @@ import org.batfish.grammar.fortios.FortiosParser.Port_rangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Route_distanceContext;
+import org.batfish.grammar.fortios.FortiosParser.Route_map_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_port_rangeContext;
@@ -181,6 +183,7 @@ import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
+import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -840,6 +843,32 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCrs_set_status(Crs_set_statusContext ctx) {
     _currentStaticRoute.setStatus(
         toBoolean(ctx.enabled) ? StaticRoute.Status.ENABLE : StaticRoute.Status.DISABLE);
+  }
+
+  @Override
+  public void enterCrrm_edit(Crrm_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.route_map_name());
+    RouteMap existing = name.map(_c.getRouteMaps()::get).orElse(null);
+    _currentRouteMapNameValid = name.isPresent();
+    if (existing != null) {
+      // Make a clone to edit
+      _currentRouteMap = SerializationUtils.clone(existing);
+    } else {
+      _currentRouteMap = new RouteMap(toString(ctx.route_map_name().str()));
+    }
+  }
+
+  @Override
+  public void exitCrrm_edit(Crrm_editContext ctx) {
+    // If edited item is valid, add/update the entry in VS map
+    if (_currentRouteMapNameValid) { // is valid
+      String name = _currentRouteMap.getName();
+      _c.defineStructure(FortiosStructureType.ROUTE_MAP, name, ctx);
+      _c.getRouteMaps().put(name, _currentRouteMap);
+    } else {
+      warn(ctx, "Route-map edit block ignored: name is invalid");
+    }
+    _currentRouteMap = null;
   }
 
   @Override
@@ -1887,6 +1916,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Route_map_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "policy name", ROUTE_MAP_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Service_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "service name", SERVICE_NAME_PATTERN);
   }
@@ -2329,6 +2363,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
   private static final Pattern POLICY_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
+  // TODO determine more precise limitations on allowed chars for route-map name
+  private static final Pattern ROUTE_MAP_NAME_PATTERN = Pattern.compile("^[^ \r\n()'\"#<>]{1,35}$");
   private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
   private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
@@ -2365,6 +2401,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private boolean _currentPolicyValid;
 
   private Replacemsg _currentReplacemsg;
+
+  private RouteMap _currentRouteMap;
+  private boolean _currentRouteMapNameValid;
+
   private Service _currentService;
   /**
    * Whether the current service has invalid lines that would prevent committing the service in CLI.
