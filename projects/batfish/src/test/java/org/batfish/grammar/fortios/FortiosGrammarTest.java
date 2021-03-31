@@ -2220,7 +2220,6 @@ public final class FortiosGrammarTest {
   public void testAccessList() throws IOException {
     String hostname = "access_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    // batfish.getSettings().setDisableUnrecognized(false);
     FortiosConfiguration vc =
         (FortiosConfiguration)
             batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
@@ -2231,7 +2230,7 @@ public final class FortiosGrammarTest {
 
     assertThat(longName.getRules(), anEmptyMap());
     // Rules should be in insert order
-    assertThat(acl1.getRules(), hasKeys("12", "1", "2"));
+    assertThat(acl1.getRules().keySet(), contains("12", "1", "2"));
     AccessListRule rule12 = acl1.getRules().get("12");
     AccessListRule rule1 = acl1.getRules().get("1");
     AccessListRule rule2 = acl1.getRules().get("2");

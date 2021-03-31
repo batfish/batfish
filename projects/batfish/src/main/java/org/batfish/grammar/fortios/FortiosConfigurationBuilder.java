@@ -100,7 +100,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cr_bgpContext;
 import org.batfish.grammar.fortios.FortiosParser.Cral_editContext;
-import org.batfish.grammar.fortios.FortiosParser.Crale_set_commentContext;
+import org.batfish.grammar.fortios.FortiosParser.Crale_set_commentsContext;
 import org.batfish.grammar.fortios.FortiosParser.Cralecr_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cralecre_set_actionContext;
 import org.batfish.grammar.fortios.FortiosParser.Cralecre_set_exact_matchContext;
@@ -1437,7 +1437,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
-  public void exitCrale_set_comment(Crale_set_commentContext ctx) {
+  public void exitCrale_set_comments(Crale_set_commentsContext ctx) {
     _currentAccessList.setComments(toString(ctx.comment));
   }
 

@@ -10,9 +10,9 @@ cral_edit: EDIT access_list_name newline crale* NEXT newline;
 
 crale: crale_set | crale_config;
 
-crale_set: SET crale_set_comment;
+crale_set: SET crale_set_comments;
 
-crale_set_comment: COMMENT comment = str newline;
+crale_set_comments: COMMENTS comment = str newline;
 
 crale_config: CONFIG cralec_rule;
 
