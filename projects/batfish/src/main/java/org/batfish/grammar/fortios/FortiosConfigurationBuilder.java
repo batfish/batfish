@@ -1423,28 +1423,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
   }
 
-  /**
-   * Returns message indicating why this access-list can't be committed in the CLI, or null if it
-   * can
-   */
-  private static @Nullable String getAccessListInvalidReason(AccessList acl, boolean nameValid) {
-    if (!nameValid) {
-      return "name is invalid";
-    }
-    return null;
-  }
-
   @Override
   public void exitCral_edit(Cral_editContext ctx) {
     // If edited item is valid, add/update the entry in VS map
-    String invalidReason =
-        getAccessListInvalidReason(_currentAccessList, _currentAccessListNameValid);
-    if (invalidReason == null) { // is valid
+    if (_currentAccessListNameValid) { // is valid
       String name = _currentAccessList.getName();
       _c.defineStructure(FortiosStructureType.ACCESS_LIST, name, ctx);
       _c.getAccessLists().put(name, _currentAccessList);
     } else {
-      warn(ctx, String.format("Access-list edit block ignored: %s", invalidReason));
+      warn(ctx, "Access-list edit block ignored: name is invalid");
     }
     _currentAccessList = null;
   }
