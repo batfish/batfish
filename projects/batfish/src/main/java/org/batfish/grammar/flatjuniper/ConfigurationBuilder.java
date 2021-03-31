@@ -89,6 +89,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.RESOLUTION_RIB_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_SELF_REFERENCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT;
@@ -2895,6 +2896,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentLogicalSystem.getRoutingInstances().computeIfAbsent(name, RoutingInstance::new);
     _currentRoutingInstance.getGlobalMasterInterface().setParent(_currentMasterInterface);
     _configuration.defineFlattenedStructure(ROUTING_INSTANCE, name, ctx, _parser);
+    _configuration.referenceStructure(
+        ROUTING_INSTANCE, name, ROUTING_INSTANCE_SELF_REFERENCE, getLine(ctx.name.getStart()));
   }
 
   @Override
@@ -3873,7 +3876,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterBfiu_rib_group(Bfiu_rib_groupContext ctx) {
     String groupName = unquote(ctx.name.getText());
     _configuration.referenceStructure(
-        RIB_GROUP, groupName, BGP_FAMILY_INET_UNICAST_RIB_GROUP, ctx.name.getStart().getLine());
+        RIB_GROUP, groupName, BGP_FAMILY_INET_UNICAST_RIB_GROUP, getLine(ctx.name.getStart()));
     _currentBgpGroup.setRibGroup(groupName);
   }
 
@@ -4221,7 +4224,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentFwTerm.getThens().add(new FwThenRoutingInstance(name));
     _currentFilter.setUsedForFBF(true);
     _configuration.referenceStructure(
-        ROUTING_INSTANCE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, ctx.getStart().getLine());
+        ROUTING_INSTANCE, name, FIREWALL_FILTER_THEN_ROUTING_INSTANCE, getLine(ctx.getStart()));
   }
 
   @Override
@@ -5386,7 +5389,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRoi_rib_group(Roi_rib_groupContext ctx) {
     String groupName = unquote(ctx.name.getText());
     _configuration.referenceStructure(
-        RIB_GROUP, groupName, INTERFACE_ROUTING_OPTIONS, ctx.name.getStart().getLine());
+        RIB_GROUP, groupName, INTERFACE_ROUTING_OPTIONS, getLine(ctx.name.getStart()));
     if (ctx.INET() != null) {
       _currentRoutingInstance.applyRibGroup(RoutingProtocol.CONNECTED, groupName);
       _currentRoutingInstance.applyRibGroup(RoutingProtocol.LOCAL, groupName);
