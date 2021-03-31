@@ -64,8 +64,12 @@ public final class FortiosBgpConversions {
   }
 
   public static void convertBgp(BgpProcess bgpProcess, Configuration c, Warnings w) {
-    if (bgpProcess.getAsEffective() == 0) {
+    long as = bgpProcess.getAsEffective();
+    if (as == 0L) {
       w.redFlag("Ignoring BGP process: No AS configured");
+      return;
+    } else if (as == 65535L || as == 4294967295L) {
+      w.redFlag(String.format("Ignoring BGP process: AS %s is proscribed by RFC 7300", as));
       return;
     }
     // TODO Infer router-id if not explicitly configured

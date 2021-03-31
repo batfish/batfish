@@ -620,7 +620,7 @@ public final class FortiosGrammarTest {
 
     BgpProcess bgpProcess = vc.getBgpProcess();
     assert bgpProcess != null;
-    assertThat(bgpProcess.getAs(), equalTo(4294967295L));
+    assertThat(bgpProcess.getAs(), equalTo(1L));
     assertThat(bgpProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
 
     Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
@@ -661,7 +661,7 @@ public final class FortiosGrammarTest {
         bgpProcessDefaultVrf.getActiveNeighbors();
     assertThat(defaultVrfNeighbors, hasKeys(ip1.toPrefix()));
     BgpActivePeerConfig neighbor1 = defaultVrfNeighbors.get(ip1.toPrefix());
-    assertThat(neighbor1.getLocalAs(), equalTo(4294967295L));
+    assertThat(neighbor1.getLocalAs(), equalTo(1L));
     // port1 is the explicit update-source
     assertThat(neighbor1.getLocalIp(), equalTo(Ip.parse("10.10.10.1")));
     assertThat(neighbor1.getPeerAddress(), equalTo(ip1));
@@ -675,7 +675,7 @@ public final class FortiosGrammarTest {
     Map<Prefix, BgpActivePeerConfig> vrf5Neighbors = bgpProcessVrf5.getActiveNeighbors();
     assertThat(defaultVrfNeighbors, hasKeys(ip1.toPrefix()));
     BgpActivePeerConfig neighbor2 = vrf5Neighbors.get(ip2.toPrefix());
-    assertThat(neighbor2.getLocalAs(), equalTo(4294967295L));
+    assertThat(neighbor2.getLocalAs(), equalTo(1L));
     // port2 is the inferred update-source (its network includes ip2)
     assertThat(neighbor2.getLocalIp(), equalTo(Ip.parse("11.11.11.1")));
     assertThat(neighbor2.getPeerAddress(), equalTo(ip2));
@@ -741,6 +741,22 @@ public final class FortiosGrammarTest {
     assertThat(
         warnings.getRedFlagWarnings(),
         contains(WarningMatchers.hasText("Ignoring BGP process: No AS configured")));
+  }
+
+  @Test
+  public void testBgpConversionInvalidAs() throws IOException {
+    String hostname = "bgp_invalid_as";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "Ignoring BGP process: AS 4294967295 is proscribed by RFC 7300")));
   }
 
   @Test

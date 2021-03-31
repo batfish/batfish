@@ -15,9 +15,9 @@ config system interface
     next
 end
 config router bgp
-    # Test min and max AS (`set as 0` effectively clears the process AS)
+    # `set as 0` effectively clears the process AS
     set as 0
-    set as 4294967295
+    set as 1
     set router-id 1.1.1.1
     config neighbor
         edit "2.2.2.2"
