@@ -1,6 +1,6 @@
 package org.batfish.representation.fortios;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 import java.io.Serializable;
 import javax.annotation.Nonnull;
