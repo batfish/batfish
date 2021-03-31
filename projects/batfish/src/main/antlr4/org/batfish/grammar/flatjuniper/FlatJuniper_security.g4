@@ -1648,7 +1648,7 @@ sesopt_ipip
 
 sez_security_zone
 :
-   SECURITY_ZONE zone
+   SECURITY_ZONE (zone | wildcard)
    (
       apply
       | sezs_address_book
@@ -1687,7 +1687,7 @@ sezs_host_inbound_traffic
 
 sezs_interfaces
 :
-   INTERFACES interface_id
+   INTERFACES (interface_id | wildcard)
    (
       apply
       | sezs_host_inbound_traffic
