@@ -1415,21 +1415,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     Optional<String> name = toString(ctx, ctx.access_list_name());
     AccessList existing = name.map(_c.getAccessLists()::get).orElse(null);
     _currentAccessListNameValid = name.isPresent();
-    if (existing != null) {
-      // Make a clone to edit
-      _currentAccessList = SerializationUtils.clone(existing);
-    } else {
-      _currentAccessList = new AccessList(toString(ctx.access_list_name().str()));
+    _currentAccessList =
+        existing == null ? new AccessList(toString(ctx.access_list_name().str())) : existing;
+
+    if (_currentAccessListNameValid && existing == null) {
+      assert name.isPresent(); // Guaranteed by _currentAccessListNameValid
+      _c.getAccessLists().put(name.get(), _currentAccessList);
     }
   }
 
   @Override
   public void exitCral_edit(Cral_editContext ctx) {
-    // If edited item is valid, add/update the entry in VS map
-    if (_currentAccessListNameValid) { // is valid
-      String name = _currentAccessList.getName();
-      _c.defineStructure(FortiosStructureType.ACCESS_LIST, name, ctx);
-      _c.getAccessLists().put(name, _currentAccessList);
+    // If edited item is valid, update definition
+    if (_currentAccessListNameValid) {
+      _c.defineStructure(FortiosStructureType.ACCESS_LIST, _currentAccessList.getName(), ctx);
     } else {
       warn(ctx, "Access-list edit block ignored: name is invalid");
     }

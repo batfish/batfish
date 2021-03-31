@@ -2229,7 +2229,7 @@ public final class FortiosGrammarTest {
     AccessList acl1 = vc.getAccessLists().get("acl_name1");
 
     assertThat(longName.getRules(), anEmptyMap());
-    // Rules should be in insert order
+    // Rules should be in original insert order
     assertThat(acl1.getRules().keySet(), contains("12", "1", "2"));
     AccessListRule rule12 = acl1.getRules().get("12");
     AccessListRule rule1 = acl1.getRules().get("1");
@@ -2246,8 +2246,8 @@ public final class FortiosGrammarTest {
     // Explicitly (re)configured values
     assertThat(acl1.getComments(), equalTo("comment for acl_name1"));
     assertThat(rule12.getPrefix(), equalTo(Prefix.ZERO));
-    assertThat(rule1.getAction(), equalTo(AccessListRule.Action.PERMIT));
-    assertThat(rule1.getActionEffective(), equalTo(AccessListRule.Action.PERMIT));
+    assertThat(rule1.getAction(), equalTo(AccessListRule.Action.DENY));
+    assertThat(rule1.getActionEffective(), equalTo(AccessListRule.Action.DENY));
     assertTrue(rule1.getExactMatch());
     assertTrue(rule1.getExactMatchEffective());
     assertThat(rule1.getPrefix(), equalTo(Prefix.parse("1.2.3.0/24")));
