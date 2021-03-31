@@ -728,7 +728,7 @@ public final class FortiosGrammarTest {
             WarningMatchers.hasText(
                 "Ignoring BGP neighbor 4.4.4.4: Unable to infer its update source"),
             WarningMatchers.hasText(
-                "Interface port3 has unsupported type AGGREGATE and will not be converted"),
+                "Interface port3 has unsupported type WL_MESH and will not be converted"),
             WarningMatchers.hasText(
                 "Ignoring BGP neighbor 5.5.5.5: Unable to infer its update source")));
   }

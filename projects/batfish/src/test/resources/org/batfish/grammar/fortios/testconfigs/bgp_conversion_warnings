@@ -13,7 +13,7 @@ config system interface
     next
     edit "port3"
         set vdom "root"
-        set type aggregate
+        set type wl-mesh
     next
 end
 config router bgp
