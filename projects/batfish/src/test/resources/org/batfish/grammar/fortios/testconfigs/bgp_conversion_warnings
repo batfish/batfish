@@ -11,6 +11,10 @@ config system interface
         set type physical
         set status down
     next
+    edit "port3"
+        set vdom "root"
+        set type aggregate
+    next
 end
 config router bgp
     set router-id 1.1.1.1
@@ -23,12 +27,17 @@ config router bgp
         next
         edit "3.3.3.3"
             # Inactive update-source
-            set remote-as 4294967295
+            set remote-as 1
             set update-source port2
         next
         edit "4.4.4.4"
             # No update-source
-            set remote-as 4294967295
+            set remote-as 1
+        next
+        edit "5.5.5.5"
+            # Update-source that is not converted
+            set remote-as 1
+            set update-source port3
         next
     end
 end
