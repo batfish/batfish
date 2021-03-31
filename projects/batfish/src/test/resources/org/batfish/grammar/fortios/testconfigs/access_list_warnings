@@ -5,7 +5,7 @@ config router access-list
     edit "longer_than_longest_access_list_name_possible"
     next
     edit "acl_name1"
-        set comment "comment for acl_name1"
+        set comments "comment for acl_name1"
         config rule
             edit 1
                 # Must either set prefix or wildcard
