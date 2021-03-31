@@ -90,7 +90,7 @@ IPSEC: 'ipsec';
 LOOPBACK: 'loopback';
 MAC: 'mac';
 MAIL: 'mail';
-MATCH_IP_ADDRESS: 'match-ip-address';
+MATCH_IP_ADDRESS: 'match-ip-address' -> pushMode(M_Str);
 MEMBER: 'member' -> pushMode(M_Str);
 MTU: 'mtu';
 MTU_OVERRIDE: 'mtu-override';
