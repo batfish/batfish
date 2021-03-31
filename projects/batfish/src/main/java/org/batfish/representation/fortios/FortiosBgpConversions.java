@@ -64,6 +64,10 @@ public final class FortiosBgpConversions {
   }
 
   public static void convertBgp(BgpProcess bgpProcess, Configuration c, Warnings w) {
+    if (bgpProcess.getAsEffective() == 0) {
+      w.redFlag("Ignoring BGP process: No AS configured");
+      return;
+    }
     // TODO Infer router-id if not explicitly configured
     Ip routerId = bgpProcess.getRouterId();
     if (routerId == null) {
