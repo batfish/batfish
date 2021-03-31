@@ -1738,54 +1738,6 @@
         }
       },
       {
-        "Structure_Type" : "routing-instance",
-        "Structure_Name" : "fabric",
-        "Source_Lines" : {
-          "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
-          "lines" : [
-            200,
-            201,
-            202,
-            203,
-            204,
-            205,
-            206,
-            207,
-            208,
-            209,
-            210,
-            211,
-            213,
-            214,
-            217,
-            218,
-            221,
-            222,
-            223,
-            224,
-            225,
-            226,
-            229,
-            230,
-            231,
-            232,
-            233
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "routing-instance",
-        "Structure_Name" : "vr",
-        "Source_Lines" : {
-          "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
-          "lines" : [
-            196,
-            197,
-            198
-          ]
-        }
-      },
-      {
         "Structure_Type" : "route-policy",
         "Structure_Name" : "FOO",
         "Source_Lines" : {
@@ -2704,16 +2656,6 @@
         }
       },
       {
-        "Structure_Type" : "routing-instance",
-        "Structure_Name" : "SOME_INSTANCE",
-        "Source_Lines" : {
-          "filename" : "configs/juniper_interfaces",
-          "lines" : [
-            24
-          ]
-        }
-      },
-      {
         "Structure_Type" : "vlan",
         "Structure_Name" : "unused-vlan",
         "Source_Lines" : {
@@ -2721,16 +2663,6 @@
           "lines" : [
             26,
             27
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "routing-instance",
-        "Structure_Name" : "ROUTING_INSTANCE",
-        "Source_Lines" : {
-          "filename" : "configs/juniper_misc",
-          "lines" : [
-            9
           ]
         }
       },
@@ -2920,21 +2852,6 @@
             7,
             8,
             9
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "routing-instance",
-        "Structure_Name" : "ROUTING_INSTANCE_NAME",
-        "Source_Lines" : {
-          "filename" : "configs/juniper_rib_groups",
-          "lines" : [
-            20,
-            21,
-            22,
-            23,
-            24,
-            25
           ]
         }
       },
@@ -3739,10 +3656,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 247 results",
+      "notes" : "Found 242 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 247
+      "numResults" : 242
     }
   }
 ]
