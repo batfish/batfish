@@ -88,6 +88,8 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.fortios.AccessList;
+import org.batfish.representation.fortios.AccessListRule;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BgpNeighbor;
@@ -2212,6 +2214,84 @@ public final class FortiosGrammarTest {
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3DeniedIndirect, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
+  }
+
+  @Test
+  public void testAccessList() throws IOException {
+    String hostname = "access_list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    // batfish.getSettings().setDisableUnrecognized(false);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getAccessLists(), hasKeys("the_longest_access_list_name_possib", "acl_name1"));
+    AccessList longName = vc.getAccessLists().get("the_longest_access_list_name_possib");
+    AccessList acl1 = vc.getAccessLists().get("acl_name1");
+
+    assertThat(longName.getRules(), anEmptyMap());
+    // Rules should be in insert order
+    assertThat(acl1.getRules(), hasKeys("12", "1", "2"));
+    AccessListRule rule12 = acl1.getRules().get("12");
+    AccessListRule rule1 = acl1.getRules().get("1");
+    AccessListRule rule2 = acl1.getRules().get("2");
+
+    // Defaults
+    assertNull(longName.getComments());
+    assertNull(rule12.getAction());
+    assertThat(rule12.getActionEffective(), equalTo(AccessListRule.DEFAULT_ACTION));
+    assertNull(rule12.getExactMatch());
+    assertThat(rule12.getExactMatchEffective(), equalTo(AccessListRule.DEFAULT_EXACT_MATCH));
+    assertNull(rule12.getWildcard());
+
+    // Explicitly (re)configured values
+    assertThat(acl1.getComments(), equalTo("comment for acl_name1"));
+    assertThat(rule12.getPrefix(), equalTo(Prefix.ZERO));
+    assertThat(rule1.getAction(), equalTo(AccessListRule.Action.PERMIT));
+    assertThat(rule1.getActionEffective(), equalTo(AccessListRule.Action.PERMIT));
+    assertTrue(rule1.getExactMatch());
+    assertTrue(rule1.getExactMatchEffective());
+    assertThat(rule1.getPrefix(), equalTo(Prefix.parse("1.2.3.0/24")));
+    assertNull(rule1.getWildcard());
+    assertThat(rule2.getAction(), equalTo(AccessListRule.Action.PERMIT));
+    assertThat(rule2.getActionEffective(), equalTo(AccessListRule.Action.PERMIT));
+    assertFalse(rule2.getExactMatch());
+    assertFalse(rule2.getExactMatchEffective());
+    assertThat(
+        rule2.getWildcard(),
+        equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("1.0.0.0"), Ip.parse("0.255.255.255"))));
+    assertNull(rule2.getPrefix());
+  }
+
+  @Test
+  public void testAccessListWarnings() throws IOException {
+    String hostname = "access_list_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Access-list edit block ignored: name is invalid"),
+                hasComment("Illegal value for access-list name"),
+                hasComment("Access-list rule edit block ignored: name is invalid"),
+                hasComment(
+                    "Expected access-list rule number in range 0-4294967295, but got '4294967296'"),
+                hasComment(
+                    "Access-list rule edit block ignored: prefix or wildcard must be set"))));
+
+    // None of the invalid access-lists or rule should make it into VS model
+    assertThat(vc.getAccessLists(), hasKeys("acl_name1"));
+    assertThat(vc.getAccessLists().get("acl_name1").getRules(), anEmptyMap());
   }
 
   ////////////////////////

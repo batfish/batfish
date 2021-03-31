@@ -1,0 +1,27 @@
+config system global
+    set hostname "access_list"
+end
+config router access-list
+    edit "the_longest_access_list_name_possib"
+    next
+    edit "acl_name1"
+        set comment "comment for acl_name1"
+        config rule
+            edit 12
+                set prefix any
+            next
+            edit 1
+                set action permit
+                set exact-match enable
+                set wildcard 1.2.3.4 255.0.0.0
+                set prefix 1.2.3.4/24
+            next
+            edit 2
+                set action permit
+                set exact-match disable
+                set prefix 1.2.3.4/24
+                set wildcard 1.2.3.4 255.0.0.0
+            next
+        end
+    next
+end

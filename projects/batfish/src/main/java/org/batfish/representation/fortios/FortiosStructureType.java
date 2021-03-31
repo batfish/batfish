@@ -3,6 +3,7 @@ package org.batfish.representation.fortios;
 import org.batfish.vendor.StructureType;
 
 public enum FortiosStructureType implements StructureType {
+  ACCESS_LIST("access-list"),
   ADDRESS("address"),
   ADDRGRP("addrgrp"),
   ADDRESS_OR_ADDRGRP("address or addrgrp"),
