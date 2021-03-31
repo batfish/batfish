@@ -72039,11 +72039,11 @@
           "routing-instance" : {
             "fabric" : {
               "definitionLines" : "200-211,213-214,217-218,221-226,229-233",
-              "numReferrers" : 0
+              "numReferrers" : 17
             },
             "vr" : {
               "definitionLines" : "196-198",
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           }
         },
@@ -72749,7 +72749,7 @@
           "routing-instance" : {
             "SOME_INSTANCE" : {
               "definitionLines" : "24",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "vlan" : {
@@ -72776,7 +72776,7 @@
           "routing-instance" : {
             "ROUTING_INSTANCE" : {
               "definitionLines" : "9",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -72922,7 +72922,7 @@
           "routing-instance" : {
             "ROUTING_INSTANCE_NAME" : {
               "definitionLines" : "20-25",
-              "numReferrers" : 0
+              "numReferrers" : 6
             }
           }
         },
@@ -77708,6 +77708,18 @@
                 112
               ]
             }
+          },
+          "routing-instance" : {
+            "fabric" : {
+              "routing-instance" : [
+                200
+              ]
+            },
+            "vr" : {
+              "routing-instance" : [
+                196
+              ]
+            }
           }
         },
         "configs/host2" : {
@@ -78668,6 +78680,13 @@
               ]
             }
           },
+          "routing-instance" : {
+            "SOME_INSTANCE" : {
+              "routing-instance" : [
+                24
+              ]
+            }
+          },
           "vlan" : {
             "bippetyboppety" : {
               "interface vlan" : [
@@ -78703,6 +78722,13 @@
           "interface" : {
             "lo0.0" : {
               "routing-instances vtep-source-interface" : [
+                9
+              ]
+            }
+          },
+          "routing-instance" : {
+            "ROUTING_INSTANCE" : {
+              "routing-instance" : [
                 9
               ]
             }
@@ -78887,6 +78913,18 @@
               "routing-options interface-routes" : [
                 3,
                 4
+              ]
+            }
+          },
+          "routing-instance" : {
+            "ROUTING_INSTANCE_NAME" : {
+              "routing-instance" : [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25
               ]
             }
           }
@@ -82282,7 +82320,15 @@
         "configs/juniper_bgp_enforce_fist_as" : { },
         "configs/juniper_bgp_remove_private_as" : { },
         "configs/juniper_extended_community" : { },
-        "configs/juniper_firewall" : { },
+        "configs/juniper_firewall" : {
+          "routing-instance" : {
+            "OTHER_INSTANCE" : {
+              "firewall filter then routing-instance" : [
+                38
+              ]
+            }
+          }
+        },
         "configs/juniper_forwarding_options" : {
           "dhcp-relay server-group" : {
             "site-dhcp" : {

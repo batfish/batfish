@@ -8,6 +8,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
@@ -67,6 +68,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
@@ -88,6 +90,8 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.fortios.AccessList;
+import org.batfish.representation.fortios.AccessListRule;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BgpNeighbor;
@@ -620,23 +624,70 @@ public final class FortiosGrammarTest {
 
     BgpProcess bgpProcess = vc.getBgpProcess();
     assert bgpProcess != null;
-    assertThat(bgpProcess.getAs(), equalTo(0L));
+    assertThat(bgpProcess.getAs(), equalTo(1L));
     assertThat(bgpProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
 
     Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
-    Ip ip2222 = Ip.parse("2.2.2.2");
-    Ip ip3333 = Ip.parse("3.3.3.3");
-    assertThat(neighbors.keySet(), containsInAnyOrder(ip2222, ip3333));
-    BgpNeighbor neighbor2222 = neighbors.get(ip2222);
-    BgpNeighbor neighbor3333 = neighbors.get(ip3333);
-    assertThat(neighbor2222.getIp(), equalTo(ip2222));
-    assertThat(neighbor3333.getIp(), equalTo(ip3333));
-    assertThat(neighbor2222.getRemoteAs(), equalTo(1L));
-    assertThat(neighbor3333.getRemoteAs(), equalTo(4294967295L));
+    Ip ip1 = Ip.parse("2.2.2.2");
+    Ip ip2 = Ip.parse("11.11.11.2");
+    assertThat(neighbors.keySet(), containsInAnyOrder(ip1, ip2));
+    BgpNeighbor neighbor1 = neighbors.get(ip1);
+    BgpNeighbor neighbor2 = neighbors.get(ip2);
+    assertThat(neighbor1.getIp(), equalTo(ip1));
+    assertThat(neighbor2.getIp(), equalTo(ip2));
+    assertThat(neighbor1.getRemoteAs(), equalTo(1L));
+    assertThat(neighbor2.getRemoteAs(), equalTo(4294967295L));
+    assertThat(neighbor1.getUpdateSource(), equalTo("port1"));
+    assertNull(neighbor2.getUpdateSource());
   }
 
   @Test
-  public void testBgpWarnings() throws IOException {
+  public void testBgpConversion() throws IOException {
+    String hostname = "bgp";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Ensure no warnings were generated
+    assertThat(
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot()).getWarnings(),
+        anEmptyMap());
+
+    // Neighbor IDs
+    Ip ip1 = Ip.parse("2.2.2.2");
+    Ip ip2 = Ip.parse("11.11.11.2");
+
+    // Default VRF BGP process: should only have neighbor 1
+    org.batfish.datamodel.BgpProcess bgpProcessDefaultVrf =
+        c.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
+    assertThat(bgpProcessDefaultVrf, hasRouterId(Ip.parse("1.1.1.1")));
+
+    Map<Prefix, BgpActivePeerConfig> defaultVrfNeighbors =
+        bgpProcessDefaultVrf.getActiveNeighbors();
+    assertThat(defaultVrfNeighbors, hasKeys(ip1.toPrefix()));
+    BgpActivePeerConfig neighbor1 = defaultVrfNeighbors.get(ip1.toPrefix());
+    assertThat(neighbor1.getLocalAs(), equalTo(1L));
+    // port1 is the explicit update-source
+    assertThat(neighbor1.getLocalIp(), equalTo(Ip.parse("10.10.10.1")));
+    assertThat(neighbor1.getPeerAddress(), equalTo(ip1));
+    assertThat(neighbor1.getRemoteAsns().enumerate(), contains(1L));
+
+    // VRF 5 BGP process: should only have neighbor 2
+    org.batfish.datamodel.BgpProcess bgpProcessVrf5 =
+        c.getVrfs().get(computeVrfName("root", 5)).getBgpProcess();
+    assertThat(bgpProcessVrf5, hasRouterId(Ip.parse("1.1.1.1")));
+
+    Map<Prefix, BgpActivePeerConfig> vrf5Neighbors = bgpProcessVrf5.getActiveNeighbors();
+    assertThat(defaultVrfNeighbors, hasKeys(ip1.toPrefix()));
+    BgpActivePeerConfig neighbor2 = vrf5Neighbors.get(ip2.toPrefix());
+    assertThat(neighbor2.getLocalAs(), equalTo(1L));
+    // port2 is the inferred update-source (its network includes ip2)
+    assertThat(neighbor2.getLocalIp(), equalTo(Ip.parse("11.11.11.1")));
+    assertThat(neighbor2.getPeerAddress(), equalTo(ip2));
+    assertThat(neighbor2.getRemoteAsns().enumerate(), contains(4294967295L));
+  }
+
+  @Test
+  public void testBgpExtractionWarnings() throws IOException {
     String hostname = "bgp_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Warnings parseWarnings =
@@ -657,6 +708,77 @@ public final class FortiosGrammarTest {
             hasComment("Expected BGP remote AS in range 1-4294967295, but got 'hello'"),
             hasComment("BGP neighbor edit block ignored: remote-as must be set"),
             hasComment("Redistribution into BGP is not yet supported")));
+  }
+
+  @Test
+  public void testBgpConversionWarnings() throws IOException {
+    String hostname = "bgp_conversion_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                "Ignoring BGP neighbor 2.2.2.2: Update-source port1 has no address"),
+            WarningMatchers.hasText(
+                "BGP neighbor 3.3.3.3 has an inactive update-source interface port2. Attempting to"
+                    + " infer another update-source for this neighbor"),
+            WarningMatchers.hasText(
+                "Ignoring BGP neighbor 3.3.3.3: Unable to infer its update source"),
+            WarningMatchers.hasText(
+                "Ignoring BGP neighbor 4.4.4.4: Unable to infer its update source"),
+            WarningMatchers.hasText(
+                "Interface port3 has unsupported type WL_MESH and will not be converted"),
+            WarningMatchers.hasText(
+                "Ignoring BGP neighbor 5.5.5.5: Unable to infer its update source")));
+  }
+
+  @Test
+  public void testBgpConversionNoAs() throws IOException {
+    String hostname = "bgp_no_as";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(WarningMatchers.hasText("Ignoring BGP process: No AS configured")));
+  }
+
+  @Test
+  public void testBgpConversionInvalidAs() throws IOException {
+    String hostname = "bgp_invalid_as";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "Ignoring BGP process: AS 4294967295 is proscribed by RFC 7300")));
+  }
+
+  @Test
+  public void testBgpConversionNoRouterId() throws IOException {
+    String hostname = "bgp_no_router_id";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings.getRedFlagWarnings(),
+        contains(WarningMatchers.hasText("Ignoring BGP process: No router ID configured")));
   }
 
   @Test
@@ -2245,6 +2367,83 @@ public final class FortiosGrammarTest {
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3DeniedIndirect, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
+  }
+
+  @Test
+  public void testAccessList() throws IOException {
+    String hostname = "access_list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getAccessLists(), hasKeys("the_longest_access_list_name_possib", "acl_name1"));
+    AccessList longName = vc.getAccessLists().get("the_longest_access_list_name_possib");
+    AccessList acl1 = vc.getAccessLists().get("acl_name1");
+
+    assertThat(longName.getRules(), anEmptyMap());
+    // Rules should be in original insert order
+    assertThat(acl1.getRules().keySet(), contains("12", "1", "2"));
+    AccessListRule rule12 = acl1.getRules().get("12");
+    AccessListRule rule1 = acl1.getRules().get("1");
+    AccessListRule rule2 = acl1.getRules().get("2");
+
+    // Defaults
+    assertNull(longName.getComments());
+    assertNull(rule12.getAction());
+    assertThat(rule12.getActionEffective(), equalTo(AccessListRule.DEFAULT_ACTION));
+    assertNull(rule12.getExactMatch());
+    assertThat(rule12.getExactMatchEffective(), equalTo(AccessListRule.DEFAULT_EXACT_MATCH));
+    assertNull(rule12.getWildcard());
+
+    // Explicitly (re)configured values
+    assertThat(acl1.getComments(), equalTo("comment for acl_name1"));
+    assertThat(rule12.getPrefix(), equalTo(Prefix.ZERO));
+    assertThat(rule1.getAction(), equalTo(AccessListRule.Action.DENY));
+    assertThat(rule1.getActionEffective(), equalTo(AccessListRule.Action.DENY));
+    assertTrue(rule1.getExactMatch());
+    assertTrue(rule1.getExactMatchEffective());
+    assertThat(rule1.getPrefix(), equalTo(Prefix.parse("1.2.3.0/24")));
+    assertNull(rule1.getWildcard());
+    assertThat(rule2.getAction(), equalTo(AccessListRule.Action.PERMIT));
+    assertThat(rule2.getActionEffective(), equalTo(AccessListRule.Action.PERMIT));
+    assertFalse(rule2.getExactMatch());
+    assertFalse(rule2.getExactMatchEffective());
+    assertThat(
+        rule2.getWildcard(),
+        equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("1.0.0.0"), Ip.parse("0.255.255.255"))));
+    assertNull(rule2.getPrefix());
+  }
+
+  @Test
+  public void testAccessListWarnings() throws IOException {
+    String hostname = "access_list_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Access-list edit block ignored: name is invalid"),
+                hasComment("Illegal value for access-list name"),
+                hasComment("Access-list rule edit block ignored: name is invalid"),
+                hasComment(
+                    "Expected access-list rule number in range 0-4294967295, but got '4294967296'"),
+                hasComment(
+                    "Access-list rule edit block ignored: prefix or wildcard must be set"))));
+
+    // None of the invalid access-lists or rule should make it into VS model
+    assertThat(vc.getAccessLists(), hasKeys("acl_name1"));
+    assertThat(vc.getAccessLists().get("acl_name1").getRules(), anEmptyMap());
   }
 
   ////////////////////////

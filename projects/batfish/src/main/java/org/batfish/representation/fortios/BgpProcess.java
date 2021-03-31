@@ -1,5 +1,7 @@
 package org.batfish.representation.fortios;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +19,10 @@ public final class BgpProcess implements Serializable {
     return _as;
   }
 
+  public long getAsEffective() {
+    return firstNonNull(_as, DEFAULT_AS);
+  }
+
   public @Nonnull Map<Ip, BgpNeighbor> getNeighbors() {
     return _neighbors;
   }
@@ -32,6 +38,8 @@ public final class BgpProcess implements Serializable {
   public void setRouterId(Ip routerId) {
     _routerId = routerId;
   }
+
+  public static long DEFAULT_AS = 0L;
 
   private @Nullable Long _as;
   private @Nullable Ip _routerId;

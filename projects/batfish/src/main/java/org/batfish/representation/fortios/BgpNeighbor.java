@@ -19,10 +19,19 @@ public class BgpNeighbor implements Serializable {
     return _remoteAs;
   }
 
+  public @Nullable String getUpdateSource() {
+    return _updateSource;
+  }
+
   public void setRemoteAs(Long remoteAs) {
     _remoteAs = remoteAs;
   }
 
+  public void setUpdateSource(String updateSource) {
+    _updateSource = updateSource;
+  }
+
   private final @Nonnull Ip _ip;
   private @Nullable Long _remoteAs;
+  private @Nullable String _updateSource;
 }

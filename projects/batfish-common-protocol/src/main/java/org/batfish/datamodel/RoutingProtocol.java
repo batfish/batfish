@@ -129,6 +129,7 @@ public enum RoutingProtocol {
           case CUMULUS_CONCATENATED:
           case CUMULUS_NCLU:
           case FORCE10:
+          case FORTIOS:
           case FOUNDRY:
           case F5:
           case F5_BIGIP_STRUCTURED:
@@ -257,6 +258,7 @@ public enum RoutingProtocol {
           case CUMULUS_CONCATENATED:
           case CUMULUS_NCLU:
           case FORCE10:
+          case FORTIOS:
           case FOUNDRY:
           case F5:
           case F5_BIGIP_STRUCTURED:

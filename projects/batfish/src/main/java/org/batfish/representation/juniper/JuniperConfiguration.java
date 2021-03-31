@@ -3597,9 +3597,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN,
         JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN);
 
-    markConcreteStructure(
-        JuniperStructureType.ROUTING_INSTANCE,
-        JuniperStructureUsage.POLICY_STATEMENT_FROM_INSTANCE);
+    markConcreteStructure(JuniperStructureType.ROUTING_INSTANCE);
 
     markConcreteStructure(JuniperStructureType.SECURITY_POLICY);
     markConcreteStructure(JuniperStructureType.SECURITY_POLICY_TERM);

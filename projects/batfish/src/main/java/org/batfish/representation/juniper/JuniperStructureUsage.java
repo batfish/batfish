@@ -58,6 +58,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   POLICY_STATEMENT_THEN_SET_COMMUNITY("policy-statement then set community"),
   RESOLUTION_RIB_IMPORT_POLICY("routing-instance resolution rib import"),
   ROUTING_INSTANCE_INTERFACE("routing-instance interface"),
+  ROUTING_INSTANCE_SELF_REFERENCE("routing-instance"),
   ROUTING_INSTANCE_VRF_EXPORT("routing-instance vrf-export"),
   ROUTING_INSTANCE_VRF_IMPORT("routing-instance vrf-import"),
   ROUTING_OPTIONS_INSTANCE_IMPORT("routing-options instance-import"),
