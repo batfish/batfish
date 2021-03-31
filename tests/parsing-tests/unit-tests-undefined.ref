@@ -3457,6 +3457,18 @@
         }
       },
       {
+        "File_Name" : "configs/juniper_firewall",
+        "Struct_Type" : "routing-instance",
+        "Ref_Name" : "OTHER_INSTANCE",
+        "Context" : "firewall filter then routing-instance",
+        "Lines" : {
+          "filename" : "configs/juniper_firewall",
+          "lines" : [
+            38
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/juniper_forwarding_options",
         "Struct_Type" : "dhcp-relay server-group",
         "Ref_Name" : "site-dhcp",
@@ -4171,10 +4183,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 338 results",
+      "notes" : "Found 339 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 338
+      "numResults" : 339
     }
   }
 ]
