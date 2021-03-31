@@ -36,6 +36,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
+import org.batfish.grammar.fortios.FortiosParser.Access_list_or_prefix_list_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_typeContext;
@@ -103,6 +104,10 @@ import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrm_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrme_set_commentsContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrmecr_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrmecre_set_actionContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrmecre_set_match_ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
@@ -155,6 +160,7 @@ import org.batfish.grammar.fortios.FortiosParser.Port_rangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Route_distanceContext;
+import org.batfish.grammar.fortios.FortiosParser.Route_map_actionContext;
 import org.batfish.grammar.fortios.FortiosParser.Route_map_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_namesContext;
@@ -184,6 +190,7 @@ import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.RouteMap;
+import org.batfish.representation.fortios.RouteMapRule;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -869,6 +876,55 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, "Route-map edit block ignored: name is invalid");
     }
     _currentRouteMap = null;
+  }
+
+  @Override
+  public void exitCrrme_set_comments(Crrme_set_commentsContext ctx) {
+    _currentRouteMap.setComments(toString(ctx.comment));
+  }
+
+  @Override
+  public void enterCrrmecr_edit(Crrmecr_editContext ctx) {
+    Optional<Long> name = toLong(ctx, ctx.route_map_rule_number());
+    RouteMapRule existing =
+        name.map(l -> _currentRouteMap.getRules().get(l.toString())).orElse(null);
+    _currentRouteMapRuleNameValid = name.isPresent();
+    if (existing != null) {
+      // Make a clone to edit
+      _currentRouteMapRule = SerializationUtils.clone(existing);
+    } else {
+      _currentRouteMapRule = new RouteMapRule(toString(ctx.route_map_rule_number().str()));
+    }
+  }
+
+  @Override
+  public void exitCrrmecr_edit(Crrmecr_editContext ctx) {
+    // If edited item is valid, add/update the entry in VS map
+    if (_currentRouteMapRuleNameValid) { // is valid
+      String name = _currentRouteMapRule.getNumber();
+      _currentRouteMap.getRules().put(name, _currentRouteMapRule);
+    } else {
+      warn(ctx, "Route-map rule edit block ignored: name is invalid");
+    }
+    _currentRouteMapRule = null;
+  }
+
+  @Override
+  public void exitCrrmecre_set_action(Crrmecre_set_actionContext ctx) {
+    _currentRouteMapRule.setAction(toAction(ctx.route_map_action()));
+  }
+
+  @Override
+  public void exitCrrmecre_set_match_ip_address(Crrmecre_set_match_ip_addressContext ctx) {
+    toAccessListOrPrefixList(ctx.access_list_or_prefix_list_name())
+        .ifPresent(_currentRouteMapRule::setMatchIpAddress);
+  }
+
+  private Optional<String> toAccessListOrPrefixList(Access_list_or_prefix_list_nameContext ctx) {
+    String name = toString(ctx.str());
+    // TODO check if name exists in access-lists
+    // TODO check if name exists in prefix-lists
+    return Optional.of(name);
   }
 
   @Override
@@ -1783,6 +1839,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return IntegerSpace.of(low);
   }
 
+  private @Nonnull RouteMapRule.Action toAction(Route_map_actionContext ctx) {
+    if (ctx.permit_or_deny().PERMIT() != null) {
+      return RouteMapRule.Action.PERMIT;
+    }
+    assert ctx.permit_or_deny().DENY() != null;
+    return RouteMapRule.Action.DENY;
+  }
+
   private @Nonnull Policy.Action toAction(Policy_actionContext ctx) {
     if (ctx.ACCEPT() != null) {
       return Action.ACCEPT;
@@ -1900,6 +1964,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
     return Prefix.parse(ctx.getText());
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Access_list_or_prefix_list_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "access-list or prefix-list", ACCESS_LIST_NAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(
@@ -2035,6 +2104,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Policy_numberContext ctx) {
     return toLongInSpace(messageCtx, ctx.str(), POLICY_NUMBER_SPACE, "policy number");
+  }
+
+  private Optional<Long> toLong(
+      ParserRuleContext ctx, FortiosParser.Route_map_rule_numberContext num) {
+    return toLongInSpace(ctx, num.str(), ROUTE_MAP_RULE_NUM_SPACE, "route-map rule number");
   }
 
   private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Route_numContext routeNum) {
@@ -2355,6 +2429,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     private final Set<BatfishUUID> _zones;
   }
 
+  // TODO determine more precise limitations on allowed chars; at least no spaces or quotes
+  private static final Pattern ACCESS_LIST_NAME_PATTERN =
+      Pattern.compile("^[^ \r\n()'\"#<>]{1,35}$");
   private static final Pattern ADDRESS_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
   private static final Pattern DEVICE_HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
   private static final Pattern ESCAPED_DOUBLE_QUOTED_CHAR_PATTERN =
@@ -2375,6 +2452,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
   private static final LongSpace POLICY_NUMBER_SPACE = LongSpace.of(Range.closed(0L, 4294967294L));
+  private static final LongSpace ROUTE_MAP_RULE_NUM_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
   private static final LongSpace STATIC_ROUTE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
@@ -2404,6 +2483,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private RouteMap _currentRouteMap;
   private boolean _currentRouteMapNameValid;
+
+  private RouteMapRule _currentRouteMapRule;
+  private boolean _currentRouteMapRuleNameValid;
 
   private Service _currentService;
   /**
