@@ -8,6 +8,9 @@ double_quoted_string: DOUBLE_QUOTE text = quoted_text? DOUBLE_QUOTE;
 
 single_quoted_string: SINGLE_QUOTE text = quoted_text? SINGLE_QUOTE;
 
+// 1-35 characters
+access_list_or_prefix_list_name: str;
+
 // 1-79 characters
 address_name: str;
 
