@@ -13,12 +13,14 @@ csie: SET csi_set_singletons;
 csi_set_singletons:
     csi_set_alias
     | csi_set_description
+    | csi_set_interface
     | csi_set_ip
     | csi_set_mtu
     | csi_set_mtu_override
     | csi_set_status
     | csi_set_type
     | csi_set_vdom
+    | csi_set_vlanid
     | csi_set_vrf
     | csi_set_null
 ;
@@ -26,6 +28,8 @@ csi_set_singletons:
 csi_set_alias: ALIAS alias = interface_alias newline;
 
 csi_set_description: DESCRIPTION description = str newline;
+
+csi_set_interface: INTERFACE interface_name newline;
 
 csi_set_ip: IP ip = ip_address_with_mask_or_prefix newline;
 
@@ -38,6 +42,8 @@ csi_set_status: STATUS status = up_or_down newline;
 csi_set_type: TYPE type = interface_type newline;
 
 csi_set_vdom: VDOM vdom = str newline;
+
+csi_set_vlanid: VLANID vlanid newline;
 
 csi_set_vrf: VRF value = vrf newline;
 

@@ -52,6 +52,8 @@ config system interface
     edit "vlan"
         set vdom "root"
         set type vlan
+        set interface port1
+        set vlanid 4094
     next
     edit "wl"
         set vdom "root"

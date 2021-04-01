@@ -13,6 +13,13 @@ config system interface
         set vdom "root"
         set type vlan
     next
+    edit "vlan1"
+        set vdom "root"
+        set interface port1
+        set vlanid 1
+        set interface iface_undefined
+        set vlanid 4095
+    next
 end
 config system zone
     edit conflict
