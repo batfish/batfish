@@ -553,7 +553,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfaddrgrp_set_type(Cfaddrgrp_set_typeContext ctx) {
     Addrgrp prevGrp = _c.getAddrgrps().get(_currentAddrgrp.getName());
     if (prevGrp != null) {
-      warn(ctx, "The type of address group can not be changed");
+      warn(ctx, "The type of address group cannot be changed");
       return;
     }
     _currentAddrgrp.setType(toAddrgrpType(ctx, ctx.type));
@@ -682,18 +682,31 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void enterCsi_edit(Csi_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.interface_name());
-    Interface existing = name.map(_c.getInterfaces()::get).orElse(null);
-    if (existing == null) {
-      // TODO edit block validation / committing
-      _currentInterface = new Interface(toString(ctx.interface_name().str()));
-      return;
+    _currentInterface =
+        name.map(_c.getInterfaces()::get)
+            .orElseGet(() -> new Interface(toString(ctx.interface_name().str())));
+    _currentInterfaceNameValid = name.isPresent();
+  }
+
+  /** Returns message indicating why interface can't be committed in the CLI, or null if it can */
+  public static @Nullable String interfaceValid(Interface iface, boolean nameValid) {
+    if (!nameValid) {
+      return "name is invalid";
     }
-    _currentInterface = existing;
+    if (iface.getTypeEffective() == Type.VLAN) {
+      if (iface.getInterface() == null) {
+        return "interface must be set";
+      }
+      if (iface.getVlanid() == null) {
+        return "vlanid must be set";
+      }
+    }
+    // TODO better validation for types other than VLAN
+    return null;
   }
 
   @Override
   public void exitCsi_edit(Csi_editContext ctx) {
-    // TODO better validation
     String name = _currentInterface.getName();
     if (_c.getZones().containsKey(name)) {
       warn(ctx, "Interface edit block ignored: name conflicts with a zone name");
@@ -721,6 +734,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCsi_set_type(Csi_set_typeContext ctx) {
+    Interface prev = _c.getInterfaces().get(_currentInterface.getName());
+    if (prev != null) {
+      warn(ctx, "The type of an interface cannot be changed");
+      return;
+    }
     _currentInterface.setType(toInterfaceType(ctx.type));
   }
 
@@ -2632,6 +2650,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private boolean _currentAddrgrpNameValid;
   private BgpNeighbor _currentBgpNeighbor;
   private Interface _currentInterface;
+  private boolean _currentInterfaceNameValid;
   private Policy _currentPolicy;
   /**
    * Whether the current policy has invalid lines that would prevent committing the policy in CLI.
