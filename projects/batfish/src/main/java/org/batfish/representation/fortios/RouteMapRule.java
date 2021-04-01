@@ -45,7 +45,7 @@ public class RouteMapRule implements Serializable {
     _number = number;
   }
 
-  @Nonnull private String _number;
+  @Nonnull private final String _number;
   @Nullable private Action _action;
   @Nullable private String _matchIpAddress;
 }

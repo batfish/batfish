@@ -875,10 +875,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void enterCrrm_edit(Crrm_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.route_map_name());
-    RouteMap existing = name.map(_c.getRouteMaps()::get).orElse(null);
-    _currentRouteMapNameValid = name.isPresent();
     _currentRouteMap =
-        existing == null ? new RouteMap(toString(ctx.route_map_name().str())) : existing;
+        name.map(_c.getRouteMaps()::get).orElse(new RouteMap(toString(ctx.route_map_name().str())));
+    _currentRouteMapNameValid = name.isPresent();
   }
 
   @Override
