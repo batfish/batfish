@@ -72788,13 +72788,13 @@
             },
             "ge-0/0/0.0" : {
               "definitionLines" : "33",
-              "numReferrers" : 2
+              "numReferrers" : 4
             }
           },
           "nat pool" : {
             "POOL" : {
               "definitionLines" : "6,23",
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "nat rule" : {
@@ -78745,8 +78745,24 @@
               "interface" : [
                 33
               ],
+              "nat rule-set rule from interface" : [
+                25
+              ],
+              "nat rule-set rule to interface" : [
+                9
+              ],
               "security zones security-zone interfaces" : [
                 34
+              ]
+            }
+          },
+          "nat pool" : {
+            "POOL" : {
+              "nat destination rule-set rule then pool" : [
+                31
+              ],
+              "nat source rule-set rule then pool" : [
+                21
               ]
             }
           }
