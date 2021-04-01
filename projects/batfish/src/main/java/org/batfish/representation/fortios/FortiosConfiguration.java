@@ -45,6 +45,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _policies = new LinkedHashMap<>();
     _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
+    _routeMaps = new HashMap<>();
     _services = new HashMap<>();
     _serviceGroups = new HashMap<>();
     _staticRoutes = new HashMap<>();
@@ -104,6 +105,11 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _renameableObjects;
   }
 
+  /** name -> route-map */
+  public @Nonnull Map<String, RouteMap> getRouteMaps() {
+    return _routeMaps;
+  }
+
   /** name -> service */
   public @Nonnull Map<String, Service> getServices() {
     return _services;
@@ -140,6 +146,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Policy> _policies;
   private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
+  private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, Service> _services;
   private final @Nonnull Map<String, ServiceGroup> _serviceGroups;
   private final @Nonnull Map<String, StaticRoute> _staticRoutes;

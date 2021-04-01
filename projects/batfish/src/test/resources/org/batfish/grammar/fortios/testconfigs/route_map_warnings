@@ -1,0 +1,29 @@
+config system global
+    set hostname "route_map_warnings"
+end
+config router access-list
+    edit "acl_name1"
+        set comments "comment for acl_name1"
+        config rule
+            edit 1
+                set prefix 10.10.0.0/16
+            next
+        end
+    next
+end
+config router route-map
+    edit "too_long_to_use_for_a_route_map_name"
+    next
+    edit "route_map1"
+        config rule
+            edit 4294967296
+            next
+            edit 1
+                set match-ip-address "acl_name1"
+            next
+            edit 1
+                set match-ip-address "acl_undefined"
+            next
+        end
+    next
+end
