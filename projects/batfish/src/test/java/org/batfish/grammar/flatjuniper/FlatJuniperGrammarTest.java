@@ -4287,6 +4287,14 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testName() {
+    JuniperConfiguration c = parseJuniperConfig("name");
+    assertThat(c.getMasterLogicalSystem().getPolicyStatements(), hasKeys("XX"));
+    PolicyStatement ps = c.getMasterLogicalSystem().getPolicyStatements().get("XX");
+    assertThat(ps.getTerms(), hasKeys("10/8"));
+  }
+
+  @Test
   public void testNatDest() {
     Configuration config = parseConfig("nat-dest");
 
