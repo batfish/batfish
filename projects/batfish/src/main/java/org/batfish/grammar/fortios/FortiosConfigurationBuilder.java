@@ -877,18 +877,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     Optional<String> name = toString(ctx, ctx.route_map_name());
     RouteMap existing = name.map(_c.getRouteMaps()::get).orElse(null);
     _currentRouteMapNameValid = name.isPresent();
-    if (existing != null) {
-      // Make a clone to edit
-      _currentRouteMap = SerializationUtils.clone(existing);
-    } else {
-      _currentRouteMap = new RouteMap(toString(ctx.route_map_name().str()));
-    }
+    _currentRouteMap =
+        existing == null ? new RouteMap(toString(ctx.route_map_name().str())) : existing;
   }
 
   @Override
   public void exitCrrm_edit(Crrm_editContext ctx) {
     // If edited item is valid, add/update the entry in VS map
-    if (_currentRouteMapNameValid) { // is valid
+    if (_currentRouteMapNameValid) {
       String name = _currentRouteMap.getName();
       _c.defineStructure(FortiosStructureType.ROUTE_MAP, name, ctx);
       _c.getRouteMaps().put(name, _currentRouteMap);
@@ -920,7 +916,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCrrmecr_edit(Crrmecr_editContext ctx) {
     // If edited item is valid, add/update the entry in VS map
-    if (_currentRouteMapRuleNameValid) { // is valid
+    if (_currentRouteMapRuleNameValid) {
       String name = _currentRouteMapRule.getNumber();
       _currentRouteMap.getRules().put(name, _currentRouteMapRule);
     } else {
@@ -942,9 +938,18 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private Optional<String> toAccessListOrPrefixList(Access_list_or_prefix_list_nameContext ctx) {
     String name = toString(ctx.access_list_name().str());
-    // TODO check if name exists in access-lists
+    int line = ctx.start.getLine();
+    FortiosStructureUsage usage = FortiosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS;
+    if (_c.getAccessLists().containsKey(name)) {
+      _c.referenceStructure(FortiosStructureType.ACCESS_LIST, name, usage, line);
+      return Optional.of(name);
+    }
     // TODO check if name exists in prefix-lists
-    return Optional.of(name);
+    warn(
+        ctx,
+        String.format("Access-list or prefix-list %s is undefined and cannot be referenced", name));
+    _c.undefined(FortiosStructureType.ACCESS_LIST_OR_PREFIX_LIST, name, usage, line);
+    return Optional.empty();
   }
 
   @Override
@@ -2111,7 +2116,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Route_map_nameContext ctx) {
-    return toString(messageCtx, ctx.str(), "policy name", ROUTE_MAP_NAME_PATTERN);
+    return toString(messageCtx, ctx.str(), "route-map name", ROUTE_MAP_NAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(

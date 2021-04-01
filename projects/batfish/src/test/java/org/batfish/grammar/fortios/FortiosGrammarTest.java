@@ -2050,7 +2050,8 @@ public final class FortiosGrammarTest {
     assertThat(vc.getRouteMaps(), hasKeys("longest_route_map_name_allowed_by_f", "route_map1"));
     RouteMap longName = vc.getRouteMaps().get("longest_route_map_name_allowed_by_f");
     RouteMap rm1 = vc.getRouteMaps().get("route_map1");
-    assertThat(rm1.getRules(), hasKeys("9999", "1", "2"));
+    // Original rule ordering should be preserved
+    assertThat(rm1.getRules().keySet(), contains("9999", "1", "2"));
     RouteMapRule rule9999 = rm1.getRules().get("9999");
     RouteMapRule rule1 = rm1.getRules().get("1");
     RouteMapRule rule2 = rm1.getRules().get("2");
@@ -2063,11 +2064,49 @@ public final class FortiosGrammarTest {
     assertNull(rule9999.getMatchIpAddress());
 
     // Explicitly configured properties
+    assertThat(rm1.getComments(), equalTo("comment for route_map1"));
     assertThat(rule1.getAction(), equalTo(RouteMapRule.Action.PERMIT));
     assertThat(rule1.getActionEffective(), equalTo(RouteMapRule.Action.PERMIT));
     assertThat(rule1.getMatchIpAddress(), equalTo("acl_name1"));
     assertThat(rule2.getAction(), equalTo(RouteMapRule.Action.DENY));
     assertThat(rule2.getActionEffective(), equalTo(RouteMapRule.Action.DENY));
+  }
+
+  @Test
+  public void testRouteMapWarnings() throws IOException {
+    String hostname = "route_map_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Access-list or prefix-list acl_undefined is undefined and cannot be"
+                        + " referenced"),
+                hasComment(
+                    "Expected route-map rule number in range 0-4294967295, but got '4294967296'"),
+                hasComment("Route-map rule edit block ignored: name is invalid"),
+                allOf(
+                    hasComment("Illegal value for route-map name"),
+                    hasText(containsString("too_long_to_use_for_a_route_map_name"))),
+                hasComment("Route-map edit block ignored: name is invalid"))));
+
+    // Ensure existing route-map rule is not obliterated by an invalid edit
+    assertThat(vc.getRouteMaps(), hasKeys("route_map1"));
+    RouteMap rm1 = vc.getRouteMaps().get("route_map1");
+    assertThat(rm1.getRules(), hasKeys("1"));
+    RouteMapRule rule1 = rm1.getRules().get("1");
+    assertThat(rule1.getMatchIpAddress(), equalTo("acl_name1"));
   }
 
   @Test

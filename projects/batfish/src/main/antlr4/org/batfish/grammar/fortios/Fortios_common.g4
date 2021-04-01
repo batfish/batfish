@@ -17,6 +17,9 @@ access_list_name: str;
 // 1-79 characters
 address_name: str;
 
+// 1-35 characters
+route_map_name: str;
+
 address_names: address_name+;
 
 // 1-15 characters for interface, but 1-35 for zone
