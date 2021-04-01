@@ -104,6 +104,8 @@ import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
+import org.batfish.representation.fortios.RouteMap;
+import org.batfish.representation.fortios.RouteMapRule;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -2035,6 +2037,76 @@ public final class FortiosGrammarTest {
     assertThat(addr.getTypeEffective(), equalTo(Address.Type.IPMASK));
     assertThat(addr.getTypeSpecificFields().getIp1(), equalTo(Ip.parse("1.1.1.0")));
     assertThat(addr.getTypeSpecificFields().getIp2(), equalTo(Ip.parse("255.255.255.0")));
+  }
+
+  @Test
+  public void testRouteMap() throws IOException {
+    String hostname = "route_map";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getRouteMaps(), hasKeys("longest_route_map_name_allowed_by_f", "route_map1"));
+    RouteMap longName = vc.getRouteMaps().get("longest_route_map_name_allowed_by_f");
+    RouteMap rm1 = vc.getRouteMaps().get("route_map1");
+    // Original rule ordering should be preserved
+    assertThat(rm1.getRules().keySet(), contains("9999", "1", "2"));
+    RouteMapRule rule9999 = rm1.getRules().get("9999");
+    RouteMapRule rule1 = rm1.getRules().get("1");
+    RouteMapRule rule2 = rm1.getRules().get("2");
+
+    // Defaults
+    assertNull(longName.getComments());
+    assertThat(longName.getRules(), anEmptyMap());
+    assertNull(rule9999.getAction());
+    assertThat(rule9999.getActionEffective(), equalTo(RouteMapRule.DEFAULT_ACTION));
+    assertNull(rule9999.getMatchIpAddress());
+
+    // Explicitly configured properties
+    assertThat(rm1.getComments(), equalTo("comment for route_map1"));
+    assertThat(rule1.getAction(), equalTo(RouteMapRule.Action.PERMIT));
+    assertThat(rule1.getActionEffective(), equalTo(RouteMapRule.Action.PERMIT));
+    assertThat(rule1.getMatchIpAddress(), equalTo("acl_name1"));
+    assertThat(rule2.getAction(), equalTo(RouteMapRule.Action.DENY));
+    assertThat(rule2.getActionEffective(), equalTo(RouteMapRule.Action.DENY));
+  }
+
+  @Test
+  public void testRouteMapWarnings() throws IOException {
+    String hostname = "route_map_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Access-list or prefix-list acl_undefined is undefined and cannot be"
+                        + " referenced"),
+                hasComment(
+                    "Expected route-map rule number in range 0-4294967295, but got '4294967296'"),
+                hasComment("Route-map rule edit block ignored: name is invalid"),
+                allOf(
+                    hasComment("Illegal value for route-map name"),
+                    hasText(containsString("too_long_to_use_for_a_route_map_name"))),
+                hasComment("Route-map edit block ignored: name is invalid"))));
+
+    // Ensure existing route-map rule is not obliterated by an invalid edit
+    assertThat(vc.getRouteMaps(), hasKeys("route_map1"));
+    RouteMap rm1 = vc.getRouteMaps().get("route_map1");
+    assertThat(rm1.getRules(), hasKeys("1"));
+    RouteMapRule rule1 = rm1.getRules().get("1");
+    assertThat(rule1.getMatchIpAddress(), equalTo("acl_name1"));
   }
 
   @Test
