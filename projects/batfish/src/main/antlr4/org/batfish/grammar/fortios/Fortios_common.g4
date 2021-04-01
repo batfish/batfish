@@ -125,3 +125,6 @@ port_range: port_low = uint16 (HYPHEN port_high = uint16)?;
 allow_or_deny: ALLOW | DENY;
 
 permit_or_deny: PERMIT | DENY;
+
+// 1-4094
+vlanid: uint16;

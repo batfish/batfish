@@ -157,6 +157,7 @@ UTM: 'utm';
 UUID: 'uuid' -> pushMode(M_Str);
 VDOM: 'vdom' -> pushMode(M_Str);
 VLAN: 'vlan';
+VLANID: 'vlanid';
 VRF: 'vrf';
 WEBPROXY: 'webproxy';
 WILDCARD: 'wildcard';
