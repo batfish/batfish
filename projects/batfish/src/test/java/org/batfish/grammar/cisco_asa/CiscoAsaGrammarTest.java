@@ -108,9 +108,11 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -145,16 +147,22 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Line;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.EigrpInterfaceSettingsMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityContext;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
@@ -164,10 +172,14 @@ import org.batfish.representation.cisco_asa.AsaConfiguration;
 import org.batfish.representation.cisco_asa.AsaNat;
 import org.batfish.representation.cisco_asa.AsaNat.Section;
 import org.batfish.representation.cisco_asa.EigrpProcess;
+import org.batfish.representation.cisco_asa.ExpandedCommunityList;
+import org.batfish.representation.cisco_asa.ExpandedCommunityListLine;
 import org.batfish.representation.cisco_asa.NetworkObject;
 import org.batfish.representation.cisco_asa.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco_asa.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco_asa.OspfNetworkType;
+import org.batfish.representation.cisco_asa.StandardCommunityList;
+import org.batfish.representation.cisco_asa.StandardCommunityListLine;
 import org.batfish.representation.cisco_asa.WildcardAddressSpecifier;
 import org.junit.Rule;
 import org.junit.Test;
@@ -2071,5 +2083,163 @@ public final class CiscoAsaGrammarTest {
         equalTo(
             new FirewallSessionInterfaceInfo(
                 Action.POST_NAT_FIB_LOOKUP, ImmutableSet.of("outside"), null, null)));
+  }
+
+  @Test
+  public void testCommunityListExpandedConversion() throws IOException {
+    String hostname = "asa-community-list-expanded";
+    Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
+
+    // Each list should be converted to both a CommunitySetMatchExpr.
+    {
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
+
+        // deny regex _1:1.*2:2_
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
+
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+        assertFalse(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
+
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
+    }
+  }
+
+  @Test
+  public void testCommunityListExpandedExtraction() {
+    String hostname = "asa-community-list-expanded";
+    AsaConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getExpandedCommunityLists(), hasKeys("cl_test"));
+    {
+      ExpandedCommunityList cl = vc.getExpandedCommunityLists().get("cl_test");
+      Iterator<ExpandedCommunityListLine> lines = cl.getLines().iterator();
+      ExpandedCommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo("_1:1.*2:2_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_1:1_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_2:2_"));
+
+      assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
+  public void testCommunityListStandardConversion() throws IOException {
+    String hostname = "asa-community-list-standard";
+    Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
+
+    // Each list should be converted to both a CommunitySetMatchExpr.
+    {
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_values", "cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_values");
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        // permit internet
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.INTERNET)));
+        // permit no-advertise
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_ADVERTISE)));
+        // permit no-export
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_EXPORT)));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
+
+        // deny 1:1 2:2
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+
+        // permit 2:2
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
+    }
+  }
+
+  @Test
+  public void testCommunityListStandardExtraction() {
+    String hostname = "asa-community-list-standard";
+    AsaConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getStandardCommunityLists(), hasKeys("cl_values", "cl_test"));
+    {
+      StandardCommunityList cl = vc.getStandardCommunityLists().get("cl_values");
+      assertThat(
+          cl.getLines().stream()
+              .map(StandardCommunityListLine::getCommunities)
+              .map(Iterables::getOnlyElement)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              StandardCommunity.of(4294967295L),
+              StandardCommunity.of(1, 1),
+              StandardCommunity.INTERNET,
+              StandardCommunity.NO_ADVERTISE,
+              StandardCommunity.NO_EXPORT));
+    }
+    {
+      StandardCommunityList cl = vc.getStandardCommunityLists().get("cl_test");
+      Iterator<StandardCommunityListLine> lines = cl.getLines().iterator();
+      StandardCommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          line.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(2, 2)));
+
+      assertFalse(lines.hasNext());
+    }
   }
 }
