@@ -2455,6 +2455,36 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testAccessListReference() throws IOException {
+    String hostname = "access_list_reference";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename,
+            FortiosStructureType.ACCESS_LIST,
+            "acl_name1",
+            contains(5, 6, 9, 10, 11, 12, 13, 14, 15, 16)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.ACCESS_LIST, "acl_name2", contains(7, 8)));
+
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ACCESS_LIST, "acl_name1", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ACCESS_LIST, "acl_name2", 0));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.ACCESS_LIST_OR_PREFIX_LIST, "acl_undefined"));
+  }
+
+  @Test
   public void testAccessListWarnings() throws IOException {
     String hostname = "access_list_warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
