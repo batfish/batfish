@@ -130,12 +130,14 @@ import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_aliasContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_descriptionContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtuContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtu_overrideContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_vlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vrfContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
@@ -185,6 +187,7 @@ import org.batfish.grammar.fortios.FortiosParser.Subnet_maskContext;
 import org.batfish.grammar.fortios.FortiosParser.Uint16Context;
 import org.batfish.grammar.fortios.FortiosParser.Uint8Context;
 import org.batfish.grammar.fortios.FortiosParser.Up_or_downContext;
+import org.batfish.grammar.fortios.FortiosParser.VlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.grammar.fortios.FortiosParser.Zone_nameContext;
@@ -742,6 +745,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCsi_set_interface(Csi_set_interfaceContext ctx) {
+    toInterface(ctx, ctx.interface_name(), FortiosStructureUsage.INTERFACE_INTERFACE)
+        .ifPresent(_currentInterface::setInterface);
+  }
+
+  @Override
   public void exitCsi_set_mtu(Csi_set_mtuContext ctx) {
     toInteger(ctx, ctx.value).ifPresent(m -> _currentInterface.setMtu(m));
   }
@@ -749,6 +758,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsi_set_vrf(Csi_set_vrfContext ctx) {
     toInteger(ctx, ctx.value).ifPresent(v -> _currentInterface.setVrf(v));
+  }
+
+  @Override
+  public void exitCsi_set_vlanid(Csi_set_vlanidContext ctx) {
+    toInteger(ctx, ctx.vlanid()).ifPresent(v -> _currentInterface.setVlanid(v));
   }
 
   @Override
@@ -2342,6 +2356,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         ctx, routeDistance.uint8(), ADMIN_DISTANCE_SPACE, "route administrative distance");
   }
 
+  private Optional<Integer> toInteger(ParserRuleContext ctx, VlanidContext vlanid) {
+    return toIntegerInSpace(ctx, vlanid.uint16(), VLANID_SPACE, "vlanid");
+  }
+
   private Optional<Integer> toInteger(ParserRuleContext ctx, VrfContext vrf) {
     return toIntegerInSpace(ctx, vrf.uint8(), VRF_SPACE, "vrf");
   }
@@ -2594,6 +2612,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
   private static final LongSpace STATIC_ROUTE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final IntegerSpace VLANID_SPACE = IntegerSpace.of(Range.closed(1, 4094));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
 
   private AccessList _currentAccessList;

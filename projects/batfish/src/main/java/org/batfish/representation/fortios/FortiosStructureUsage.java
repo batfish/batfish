@@ -7,6 +7,8 @@ public enum FortiosStructureUsage implements StructureUsage {
   ADDRGRP_MEMBER("addrgrp member"),
   BGP_UPDATE_SOURCE_INTERFACE("bgp update-source"),
   INTERFACE_SELF_REF("system interface"),
+  /** VLAN interface's parent interface */
+  INTERFACE_INTERFACE("system interface set interface"),
   POLICY_DSTADDR("firewall policy dstaddr"),
   POLICY_DSTINTF("firewall policy dstintf"),
   POLICY_SELF_REF("firewall policy"),

@@ -853,11 +853,14 @@ public final class FortiosGrammarTest {
     assertThat(tunnel.getMtu(), equalTo(65535));
     assertThat(tunnel.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
 
+    assertThat(vlan.getType(), equalTo(Type.VLAN));
+    assertThat(vlan.getInterface(), equalTo("port1"));
+    assertThat(vlan.getVlanid(), equalTo(4094));
+
     assertThat(loopback.getType(), equalTo(Type.LOOPBACK));
     assertThat(agg.getType(), equalTo(Type.AGGREGATE));
     assertThat(emac.getType(), equalTo(Type.EMAC_VLAN));
     assertThat(redundant.getType(), equalTo(Type.REDUNDANT));
-    assertThat(vlan.getType(), equalTo(Type.VLAN));
     assertThat(wl.getType(), equalTo(Type.WL_MESH));
   }
 
@@ -967,11 +970,13 @@ public final class FortiosGrammarTest {
                 allOf(
                     hasComment("Illegal value for interface alias"),
                     hasText(containsString("alias string is too long to associate with iface"))),
-                hasComment("Interface edit block ignored: name conflicts with a zone name"))));
+                hasComment("Interface edit block ignored: name conflicts with a zone name"),
+                hasComment("Expected vlanid in range 1-4094, but got '4095'"),
+                hasComment("Interface iface_undefined is undefined"))));
 
     // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
     // object is created when the name conflicts
-    assertThat(vc.getInterfaces(), hasKeys("port1"));
+    assertThat(vc.getInterfaces(), hasKeys("port1", "vlan1"));
   }
 
   @Test
