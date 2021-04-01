@@ -36,6 +36,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -47,8 +48,6 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -77,7 +76,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -91,7 +89,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
@@ -100,22 +97,28 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunityConjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -536,22 +539,6 @@ public class AsaConversions {
             .map(IpAsPathAccessListLine::toAsPathAccessListLine)
             .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(pathList.getName(), lines);
-  }
-
-  static CommunityList toCommunityList(ExpandedCommunityList ecList) {
-    List<CommunityListLine> cllList =
-        ecList.getLines().stream()
-            .map(AsaConversions::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new CommunityList(ecList.getName(), cllList, false);
-  }
-
-  public static CommunityList toCommunityList(StandardCommunityList scList) {
-    List<CommunityListLine> cllList =
-        scList.getLines().stream()
-            .map(AsaConversions::toCommunityListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new CommunityList(scList.getName(), cllList, false);
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
@@ -1602,21 +1589,89 @@ public class AsaConversions {
         .build();
   }
 
-  private static CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
-    String javaRegex = AsaConfiguration.toJavaRegex(eclLine.getRegex());
-    return new CommunityListLine(eclLine.getAction(), new RegexCommunitySet(javaRegex));
+  @Nonnull
+  static CommunitySetMatchExpr toCommunitySetMatchExpr(
+      ExpandedCommunityList ipCommunityListExpanded) {
+    return new CommunitySetAcl(
+        ipCommunityListExpanded.getLines().stream()
+            .map(AsaConversions::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
   }
 
-  private static CommunityListLine toCommunityListLine(StandardCommunityListLine sclLine) {
-    Collection<Long> lineCommunities = sclLine.getCommunities();
-    org.batfish.datamodel.routing_policy.expr.CommunitySetExpr expr =
-        lineCommunities.size() == 1
-            ? new LiteralCommunity(StandardCommunity.of(lineCommunities.iterator().next()))
-            : new LiteralCommunityConjunction(
-                lineCommunities.stream()
-                    .map(StandardCommunity::of)
-                    .collect(ImmutableSet.toImmutableSet()));
-    return new CommunityListLine(sclLine.getAction(), expr);
+  @Nonnull
+  static CommunitySetMatchExpr toCommunitySetMatchExpr(
+      StandardCommunityList ipCommunityListStandard) {
+    return new CommunitySetAcl(
+        ipCommunityListStandard.getLines().stream()
+            .map(AsaConversions::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Nonnull
+  private static CommunitySetAclLine toCommunitySetAclLine(StandardCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchAll(
+            line.getCommunities().stream()
+                .map(community -> new HasCommunity(new CommunityIs(community)))
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  @Nonnull
+  private static CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
+
+    String regex = line.getRegex();
+
+    // If the line's regex only requires some community in the set to have a particular format,
+    // create a regex on an individual community rather than on the whole set.
+    // Regexes on individual communities have a simpler semantics, and some questions
+    // (e.g. SearchRoutePolicies) do not handle arbitrary community-set regexes.
+    String containsAColon = "(_?\\d+)?:?(\\d+_?)?";
+    String noColon = "_?\\d+|\\d+_?";
+    String singleCommRegex = containsAColon + "|" + noColon;
+    Pattern p = Pattern.compile(singleCommRegex);
+    if (p.matcher(regex).matches()) {
+      return toCommunitySetAclLineOptimized(line);
+    } else {
+      return toCommunitySetAclLineUnoptimized(line);
+    }
+  }
+
+  // This method should only be used if the line's regex has a special form; see
+  // toCommunitySetAclLine(ExpandedCommunityListLine) above.
+  @Nonnull
+  private static CommunitySetAclLine toCommunitySetAclLineOptimized(
+      ExpandedCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(), new HasCommunity(toCommunityMatchRegex(line.getRegex())));
+  }
+
+  @Nonnull
+  private static CommunityMatchRegex toCommunityMatchRegex(String regex) {
+    return new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(regex));
+  }
+
+  @Nonnull
+  private static CommunitySetAclLine toCommunitySetAclLineUnoptimized(
+      ExpandedCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            toJavaRegex(line.getRegex())));
+  }
+
+  @Nonnull
+  private static String toJavaRegex(String ciscoRegex) {
+    String withoutQuotes;
+    if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
+      withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
+    } else {
+      withoutQuotes = ciscoRegex;
+    }
+    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
+    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    return output;
   }
 
   private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {

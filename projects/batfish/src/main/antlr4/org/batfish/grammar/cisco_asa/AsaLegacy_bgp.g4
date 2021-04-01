@@ -884,19 +884,7 @@ router_id_rb_stanza
    BGP router_id_bgp_tail
 ;
 
-send_community_bgp_tail
-:
-   (
-      (
-         SEND_COMMUNITY EXTENDED? BOTH?
-      )
-      | SEND_COMMUNITY_EBGP
-      |
-      (
-         SEND_EXTENDED_COMMUNITY_EBGP INHERITANCE_DISABLE?
-      )
-   ) NEWLINE
-;
+send_community_bgp_tail: SEND_COMMUNITY NEWLINE;
 
 session_group_rb_stanza
 :

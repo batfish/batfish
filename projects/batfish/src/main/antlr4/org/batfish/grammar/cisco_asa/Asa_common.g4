@@ -33,17 +33,16 @@ both_export_import
   | IMPORT
 ;
 
-community
+standard_community
 :
-   ACCEPT_OWN
-   | GSHUT
-   | INTERNET
-   | LOCAL_AS
+   INTERNET
    | NO_ADVERTISE
    | NO_EXPORT
-   | STANDARD_COMMUNITY
+   | literal_standard_community
    | uint32
 ;
+
+literal_standard_community: STANDARD_COMMUNITY;
 
 dec
 :
@@ -113,11 +112,6 @@ eigrp_metric
 exit_line
 :
    EXIT NEWLINE
-;
-
-extended_community_route_target
-:
-   ec_ga_la_literal
 ;
 
 icmp_object_type
@@ -561,17 +555,6 @@ route_distinguisher
 route_target
 :
    (IP_ADDRESS | bgp_asn) COLON dec
-;
-
-community_set_elem_half
-:
-   value = dec
-   |
-   (
-      BRACKET_LEFT first = dec PERIOD PERIOD last = dec BRACKET_RIGHT
-   )
-   | ASTERISK
-   | PRIVATE_AS
 ;
 
 service_group_protocol
