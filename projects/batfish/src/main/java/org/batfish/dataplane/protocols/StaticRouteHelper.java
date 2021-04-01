@@ -4,6 +4,8 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.GenericRib;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -25,9 +27,10 @@ public class StaticRouteHelper {
   public static <R extends AbstractRouteDecorator> boolean shouldActivateNextHopIpRoute(
       StaticRoute route, GenericRib<R> rib, ResolutionRestriction<R> restriction) {
     boolean recursive = route.getRecursive();
+    Ip nextHopIp = route.getNextHopIp();
     Set<R> matchingRoutes =
         rib.longestPrefixMatch(
-            route.getNextHopIp(),
+            nextHopIp,
             r -> {
               if (r.getAbstractRoute().getProtocol() == RoutingProtocol.CONNECTED) {
                 // All static routes can be activated by a connected route.
@@ -41,14 +44,18 @@ public class StaticRouteHelper {
               return restriction.test(r);
             });
 
-    // If matchingRoutes is empty, cannot activate because next hop ip is unreachable
+    // - If matchingRoutes is empty, cannot activate because the next hop ip is unreachable.
+    // - If the prefix of the route to be activated contains the route's next hop, then
+    //   a matching route must have a longer prefix. Otherwise, the route will become its own
+    //   longest prefix match upon activation, creating a loop.
+    Prefix network = route.getNetwork();
+    int prefixLength = network.getPrefixLength();
+    boolean containsOwnNextHop = network.containsIp(route.getNextHopIp());
     return matchingRoutes.stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
         .anyMatch(
             routeToNextHop ->
-                // Next hop has to be reachable through a route with a different prefix
-                !routeToNextHop.getNetwork().equals(route.getNetwork())
-                    // TODO: fix properly and stop allowing self-activation
-                    || route.equals(routeToNextHop));
+                !containsOwnNextHop
+                    || routeToNextHop.getNetwork().getPrefixLength() > prefixLength);
   }
 }

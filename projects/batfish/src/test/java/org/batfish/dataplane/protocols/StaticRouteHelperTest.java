@@ -103,16 +103,20 @@ public final class StaticRouteHelperTest {
     assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(false));
   }
 
-  /** Activate the route with next hop IP within route's prefix, if it is already in the RIB */
+  /**
+   * Activate a route matching its own next-hop IP if there is a more specific matching route
+   * already in the RIB
+   */
   @Test
   public void testShouldActivateIfExists() {
+    StaticRoute matching =
+        StaticRoute.testBuilder().setNetwork(Prefix.strict("1.1.1.1/32")).build();
     StaticRoute sr =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
             .setNextHopIp(Ip.parse("1.1.1.1"))
-            .setAdministrativeCost(1)
             .build();
-    _rib.mergeRoute(annotateRoute(sr));
+    _rib.mergeRoute(annotateRoute(matching));
 
     // Test & Assert
     assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
@@ -184,7 +188,10 @@ public final class StaticRouteHelperTest {
     assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
   }
 
-  /** Allow installation of a covered/more specific route */
+  /**
+   * Do not allow installation of a route that would become longest prefix match for its own next
+   * hop IP.
+   */
   @Test
   public void testShouldActivateIfCovered() {
     _rib.mergeRoute(annotateRoute(new ConnectedRoute(Prefix.parse("9.9.0.0/16"), "Eth0")));
@@ -198,7 +205,7 @@ public final class StaticRouteHelperTest {
             .build();
 
     // Test & Assert
-    assertThat(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()), equalTo(true));
+    assertFalse(shouldActivateNextHopIpRoute(sr, _rib, alwaysTrue()));
   }
 
   /**
