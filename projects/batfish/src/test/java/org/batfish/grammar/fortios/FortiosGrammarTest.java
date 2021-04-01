@@ -972,7 +972,13 @@ public final class FortiosGrammarTest {
                     hasText(containsString("alias string is too long to associate with iface"))),
                 hasComment("Interface edit block ignored: name conflicts with a zone name"),
                 hasComment("Expected vlanid in range 1-4094, but got '4095'"),
-                hasComment("Interface iface_undefined is undefined"))));
+                hasComment("Interface iface_undefined is undefined"),
+                allOf(
+                    hasComment("The type of an interface cannot be changed"),
+                    hasText(containsString("type loopback"))),
+                hasComment("Interface edit block ignored: name is invalid"),
+                hasComment("Interface edit block ignored: vlanid must be set"),
+                hasComment("Interface edit block ignored: interface must be set"))));
 
     // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
     // object is created when the name conflicts

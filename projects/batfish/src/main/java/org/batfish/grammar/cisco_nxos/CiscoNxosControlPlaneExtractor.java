@@ -4695,7 +4695,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!iface.isPresent()) {
       return;
     }
-    todo(ctx);
+    // already warning at parent stanza
     _c.referenceStructure(INTERFACE, iface.get(), TRACK_INTERFACE, ctx.getStart().getLine());
   }
 

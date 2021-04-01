@@ -24,7 +24,15 @@ config system interface
         set vlanid 4095
     next
     edit "vlan1"
-        set type emac-vlan
+        set type loopback
+    next
+    edit "missing_vlanid"
+        set vdom root
+        set interface port1
+    next
+    edit "missing_iface"
+        set vdom root
+        set vlanid 999
     next
 end
 config system zone

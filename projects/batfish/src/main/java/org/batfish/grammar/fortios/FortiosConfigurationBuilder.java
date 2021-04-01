@@ -689,9 +689,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /** Returns message indicating why interface can't be committed in the CLI, or null if it can */
-  public static @Nullable String interfaceValid(Interface iface, boolean nameValid) {
+  public static @Nullable String interfaceValid(
+      Interface iface, Set<String> zoneNames, boolean nameValid) {
     if (!nameValid) {
       return "name is invalid";
+    }
+    if (zoneNames.contains(iface.getName())) {
+      return "name conflicts with a zone name";
     }
     if (iface.getTypeEffective() == Type.VLAN) {
       if (iface.getInterface() == null) {
@@ -708,9 +712,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsi_edit(Csi_editContext ctx) {
     String name = _currentInterface.getName();
-    if (_c.getZones().containsKey(name)) {
-      warn(ctx, "Interface edit block ignored: name conflicts with a zone name");
-    } else if (INTERFACE_NAME_PATTERN.matcher(name).matches()) {
+    String invalidReason =
+        interfaceValid(_currentInterface, _c.getZones().keySet(), _currentInterfaceNameValid);
+    if (invalidReason == null) {
       _c.defineStructure(FortiosStructureType.INTERFACE, name, ctx);
       _c.referenceStructure(
           FortiosStructureType.INTERFACE,
@@ -718,6 +722,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           FortiosStructureUsage.INTERFACE_SELF_REF,
           ctx.start.getLine());
       _c.getInterfaces().put(name, _currentInterface);
+    } else {
+      warn(ctx, String.format("Interface edit block ignored: %s", invalidReason));
     }
     _currentInterface = null;
   }
