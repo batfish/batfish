@@ -50,7 +50,7 @@ public class StaticRouteHelper {
     //   longest prefix match upon activation, creating a loop.
     Prefix network = route.getNetwork();
     int prefixLength = network.getPrefixLength();
-    boolean containsOwnNextHop = network.containsIp(route.getNextHopIp());
+    boolean containsOwnNextHop = network.containsIp(nextHopIp);
     return matchingRoutes.stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
         .anyMatch(
