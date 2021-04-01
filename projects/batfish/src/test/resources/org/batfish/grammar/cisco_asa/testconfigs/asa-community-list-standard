@@ -1,0 +1,17 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-community-list-standard
+!
+
+!!! list for testing values
+community-list standard cl_values permit 4294967295
+community-list standard cl_values permit 1:1
+community-list standard cl_values permit internet
+community-list standard cl_values permit no-advertise
+community-list standard cl_values permit no-export
+
+!!! list for testing match semantics
+community-list standard cl_test deny 1:1 2:2
+community-list standard cl_test permit 1:1
+community-list standard cl_test permit 2:2

@@ -27,7 +27,7 @@ import static org.batfish.representation.cisco_asa.AsaConversions.matchOwnAsn;
 import static org.batfish.representation.cisco_asa.AsaConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco_asa.AsaConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco_asa.AsaConversions.resolveTunnelIfaceNames;
-import static org.batfish.representation.cisco_asa.AsaConversions.toCommunityList;
+import static org.batfish.representation.cisco_asa.AsaConversions.toCommunitySetMatchExpr;
 import static org.batfish.representation.cisco_asa.AsaConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco_asa.AsaConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco_asa.AsaConversions.toIkePhase1Proposal;
@@ -85,7 +85,6 @@ import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -2850,15 +2849,8 @@ public final class AsaConfiguration extends VendorConfiguration {
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
-    // convert standard/expanded community lists and community-sets to community lists
-    for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      CommunityList cList = toCommunityList(scList);
-      c.getCommunityLists().put(cList.getName(), cList);
-    }
-    for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
-      CommunityList cList = toCommunityList(ecList);
-      c.getCommunityLists().put(cList.getName(), cList);
-    }
+    // convert standard/expanded community lists
+    convertCommunityLists(c);
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -4213,5 +4205,17 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   public Map<String, TrackMethod> getTrackingGroups() {
     return _trackingGroups;
+  }
+
+  private void convertCommunityLists(Configuration c) {
+    // create CommunitySetMatchExpr for route-map match community
+    _standardCommunityLists.forEach(
+        (name, ipCommunityListStandard) ->
+            c.getCommunitySetMatchExprs()
+                .put(name, toCommunitySetMatchExpr(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach(
+        (name, ipCommunityListExpanded) ->
+            c.getCommunitySetMatchExprs()
+                .put(name, toCommunitySetMatchExpr(ipCommunityListExpanded)));
   }
 }

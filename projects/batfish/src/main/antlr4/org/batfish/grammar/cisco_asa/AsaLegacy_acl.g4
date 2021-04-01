@@ -421,77 +421,6 @@ ip_as_path_access_list_tail
    )? action = access_list_action as_path_regex = RAW_TEXT NEWLINE
 ;
 
-ip_community_list_expanded_stanza
-:
-   IP COMMUNITY_LIST
-   (
-      (
-         (
-            EXPANDED
-            | EXTENDED
-         ) name = variable
-      )
-      | num = COMMUNITY_LIST_NUM_EXPANDED
-   ) ip_community_list_expanded_tail
-;
-
-ip_community_list_expanded_tail
-:
-   (
-      SEQ dec
-   )? ala = access_list_action DOUBLE_QUOTE?
-   (
-      remainder += ~( NEWLINE | DOUBLE_QUOTE )
-   )+ DOUBLE_QUOTE? NEWLINE
-;
-
-ip_community_list_standard_stanza
-:
-   IP COMMUNITY_LIST
-   (
-      (
-         STANDARD name = variable
-      )
-      | num = COMMUNITY_LIST_NUM_STANDARD
-      | name_cl = variable_community_list
-   ) ip_community_list_standard_tail
-;
-
-ip_community_list_standard_tail
-:
-   ala = access_list_action
-   (
-      communities += community
-   )+ NEWLINE
-;
-
-ip_extcommunity_list
-:
-  EXTCOMMUNITY_LIST
-  (
-    ip_extcommunity_list_expanded
-    | ip_extcommunity_list_standard
-  )
-;
-
-ip_extcommunity_list_expanded
-:
-  (
-    EXPANDED name = variable
-    | num = COMMUNITY_LIST_NUM_EXPANDED
-  )
-  null_rest_of_line
-;
-
-ip_extcommunity_list_standard
-:
-  (
-    STANDARD name = variable
-    | num = COMMUNITY_LIST_NUM_STANDARD
-  )
-  null_rest_of_line
-;
-
 ip_prefix_list_stanza
 :
    (
@@ -1090,12 +1019,6 @@ standard_ipv6_access_list_tail
    (
       features += standard_access_list_additional_feature
    )* NEWLINE
-;
-
-variable_community_list
-:
-   ~( NEWLINE | COMMUNITY_LIST_NUM_STANDARD | COMMUNITY_LIST_NUM_EXPANDED | DEC | UINT8 | UINT16 | UINT32
-   )
 ;
 
 xr_mac_specifier
