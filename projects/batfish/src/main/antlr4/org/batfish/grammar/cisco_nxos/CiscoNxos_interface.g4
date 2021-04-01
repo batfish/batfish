@@ -759,7 +759,7 @@ ospf_hello_interval
 
 iipo_message_digest_key
 :
-  MESSAGE_DIGEST_KEY null_rest_of_line
+  MESSAGE_DIGEST_KEY key_id = uint8 MD5 cisco_nxos_password NEWLINE
 ;
 
 iipo_network

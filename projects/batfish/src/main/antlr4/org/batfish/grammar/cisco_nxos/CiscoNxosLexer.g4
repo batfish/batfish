@@ -1290,10 +1290,12 @@ MCAST_GROUP: 'mcast-group';
 MD5
 :
   'md5'
-  // password follows if preceded by 'auth' or 'authentication-key <number>'
+  // password follows if preceded by 'auth', 'authentication-key <number>', 'message-digest-key <number>'
   {
     if (lastTokenType() == AUTH || secondToLastTokenType() == AUTHENTICATION_KEY) {
       pushMode(M_Word);
+    } else if (secondToLastTokenType() == MESSAGE_DIGEST_KEY) {
+      pushMode(M_Password);
     }
   }
 ;
@@ -1324,10 +1326,7 @@ MERGE_FAILURE: 'merge-failure';
 
 MESSAGE_DIGEST: 'message-digest';
 
-MESSAGE_DIGEST_KEY
-:
-  'message-digest-key' -> pushMode ( M_Password )
-;
+MESSAGE_DIGEST_KEY: 'message-digest-key';
 
 METHOD: 'method';
 
