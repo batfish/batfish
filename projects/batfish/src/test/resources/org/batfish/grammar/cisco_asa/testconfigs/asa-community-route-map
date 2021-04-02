@@ -1,0 +1,21 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-community-route-map
+!
+
+!!! Referenced structures
+community-list expanded community_list_expanded permit _1:[0-2]_3:4
+community-list standard community_list_standard permit 1:1 2:2
+
+route-map match_community_standard permit 10
+  match community community_list_standard
+
+route-map match_community_expanded permit 10
+  match community community_list_expanded
+
+route-map set_community permit 10
+  set community 1:1 2:2
+
+route-map set_community_additive permit 10
+  set community 1:1 2:2 additive
