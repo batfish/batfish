@@ -6,14 +6,15 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 @ParametersAreNonnullByDefault
 public class StandardCommunityListLine implements Serializable {
 
   private final @Nonnull LineAction _action;
-  private final @Nonnull Set<Long> _communities;
+  private final @Nonnull Set<StandardCommunity> _communities;
 
-  public StandardCommunityListLine(LineAction action, Iterable<Long> communities) {
+  public StandardCommunityListLine(LineAction action, Iterable<StandardCommunity> communities) {
     _action = action;
     _communities = ImmutableSet.copyOf(communities);
   }
@@ -22,7 +23,7 @@ public class StandardCommunityListLine implements Serializable {
     return _action;
   }
 
-  public @Nonnull Set<Long> getCommunities() {
+  public @Nonnull Set<StandardCommunity> getCommunities() {
     return _communities;
   }
 }

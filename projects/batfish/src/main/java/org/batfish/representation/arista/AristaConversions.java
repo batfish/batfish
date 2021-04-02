@@ -15,15 +15,19 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,6 +42,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -47,8 +52,25 @@ import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.Layer3VniConfig;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunityIn;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -717,6 +739,142 @@ final class AristaConversions {
 
   private static String getTextDesc(Prefix prefix, Vrf v) {
     return String.format("BGP neighbor %s in vrf %s", prefix.toString(), v.getName());
+  }
+
+  @Nonnull
+  static CommunitySetMatchExpr toCommunitySetMatchExpr(
+      ExpandedCommunityList ipCommunityListExpanded) {
+    return new CommunitySetAcl(
+        ipCommunityListExpanded.getLines().stream()
+            .map(AristaConversions::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Nonnull
+  static CommunitySetMatchExpr toCommunitySetMatchExpr(
+      StandardCommunityList ipCommunityListStandard) {
+    return new CommunitySetAcl(
+        ipCommunityListStandard.getLines().stream()
+            .map(AristaConversions::toCommunitySetAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Nonnull
+  private static CommunitySetAclLine toCommunitySetAclLine(StandardCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchAll(
+            line.getCommunities().stream()
+                .map(community -> new HasCommunity(new CommunityIs(community)))
+                .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  @Nonnull
+  static CommunityMatchExpr toCommunityMatchExpr(ExpandedCommunityList ipCommunityListExpanded) {
+    return new CommunityAcl(
+        ipCommunityListExpanded.getLines().stream()
+            .map(AristaConversions::toCommunityAclLine)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Nonnull
+  private static CommunityAclLine toCommunityAclLine(ExpandedCommunityListLine line) {
+    return new CommunityAclLine(
+        line.getAction(), AristaConversions.toCommunityMatchRegex(line.getRegex()));
+  }
+
+  @Nonnull
+  static CommunityMatchExpr toCommunityMatchExpr(StandardCommunityList ipCommunityListStandard) {
+    Set<Community> whitelist = new HashSet<>();
+    Set<Community> blacklist = new HashSet<>();
+    for (StandardCommunityListLine line : ipCommunityListStandard.getLines()) {
+      if (line.getCommunities().size() != 1) {
+        continue;
+      }
+      Community community = Iterables.getOnlyElement(line.getCommunities());
+      if (line.getAction() == LineAction.PERMIT) {
+        if (!blacklist.contains(community)) {
+          whitelist.add(community);
+        }
+      } else {
+        // DENY
+        if (!whitelist.contains(community)) {
+          blacklist.add(community);
+        }
+      }
+    }
+    return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
+  }
+
+  @Nonnull
+  static CommunityMatchRegex toCommunityMatchRegex(String regex) {
+    return new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(regex));
+  }
+
+  @Nonnull
+  static CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
+
+    String regex = line.getRegex();
+
+    // If the line's regex only requires some community in the set to have a particular format,
+    // create a regex on an individual community rather than on the whole set.
+    // Regexes on individual communities have a simpler semantics, and some questions
+    // (e.g. SearchRoutePolicies) do not handle arbitrary community-set regexes.
+    String containsAColon = "(_?\\d+)?:?(\\d+_?)?";
+    String noColon = "_?\\d+|\\d+_?";
+    String singleCommRegex = containsAColon + "|" + noColon;
+    Pattern p = Pattern.compile(singleCommRegex);
+    if (p.matcher(regex).matches()) {
+      return toCommunitySetAclLineOptimized(line);
+    } else {
+      return toCommunitySetAclLineUnoptimized(line);
+    }
+  }
+
+  // This method should only be used if the line's regex has a special form; see
+  // toCommunitySetAclLine(ExpandedCommunityListLine) above.
+  @Nonnull
+  static CommunitySetAclLine toCommunitySetAclLineOptimized(ExpandedCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(), new HasCommunity(toCommunityMatchRegex(line.getRegex())));
+  }
+
+  @Nonnull
+  static CommunitySetAclLine toCommunitySetAclLineUnoptimized(ExpandedCommunityListLine line) {
+    return new CommunitySetAclLine(
+        line.getAction(),
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            toJavaRegex(line.getRegex())));
+  }
+
+  @Nonnull
+  static String toJavaRegex(String ciscoRegex) {
+    String withoutQuotes;
+    if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
+      withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
+    } else {
+      withoutQuotes = ciscoRegex;
+    }
+    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
+    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    return output;
+  }
+
+  @Nonnull
+  static CommunitySet toCommunitySet(StandardCommunityList list) {
+    return CommunitySet.of(
+        list.getLines().stream()
+            .filter(
+                line -> line.getAction() == LineAction.PERMIT && line.getCommunities().size() == 1)
+            .flatMap(line -> line.getCommunities().stream())
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  @Nonnull
+  static CommunitySet toCommunitySet(ExpandedCommunityList list) {
+    // Cannot use expanded list for setting communities
+    return CommunitySet.empty();
   }
 
   private AristaConversions() {} // prevent instantiation of utility class.

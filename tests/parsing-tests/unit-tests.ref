@@ -1885,13 +1885,14 @@
             "      (rm_stanza",
             "        (rm_set",
             "          SET:'set'",
-            "          (set_community_list_additive_rm_stanza",
+            "          (rms_community",
             "            COMMUNITY:'community'",
-            "            COMMUNITY_LIST:'community-list'",
-            "            (variable",
-            "              WORD:'COMM_LIST_NAME'  <== mode:M_CommunityList)",
-            "            ADDITIVE:'additive'",
-            "            NEWLINE:'\\n')))))",
+            "            (rmsc_community_list",
+            "              COMMUNITY_LIST:'community-list'",
+            "              (community_list_name",
+            "                WORD:'COMM_LIST_NAME'  <== mode:M_CommunityList)",
+            "              ADDITIVE:'additive'",
+            "              NEWLINE:'\\n'))))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -74849,7 +74850,7 @@
         "configs/arista_community_list_named" : {
           "community-list" : {
             "COMM_LIST_NAME" : {
-              "route-map set community additive" : [
+              "route-map set community community-list additive" : [
                 11
               ]
             }

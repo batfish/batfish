@@ -11,6 +11,9 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENG
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getVrfForVlan;
+import static org.batfish.representation.arista.AristaConversions.toCommunityMatchExpr;
+import static org.batfish.representation.arista.AristaConversions.toCommunitySet;
+import static org.batfish.representation.arista.AristaConversions.toCommunitySetMatchExpr;
 import static org.batfish.representation.arista.Conversions.computeDistributeListPolicies;
 import static org.batfish.representation.arista.Conversions.convertCryptoMapSet;
 import static org.batfish.representation.arista.Conversions.getIsakmpKeyGeneratedName;
@@ -18,7 +21,6 @@ import static org.batfish.representation.arista.Conversions.getRsaPubKeyGenerate
 import static org.batfish.representation.arista.Conversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.arista.Conversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.arista.Conversions.resolveTunnelIfaceNames;
-import static org.batfish.representation.arista.Conversions.toCommunityList;
 import static org.batfish.representation.arista.Conversions.toIkePhase1Key;
 import static org.batfish.representation.arista.Conversions.toIkePhase1Policy;
 import static org.batfish.representation.arista.Conversions.toIkePhase1Proposal;
@@ -86,7 +88,6 @@ import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.BumTransportMethod;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -2113,15 +2114,8 @@ public final class AristaConfiguration extends VendorConfiguration {
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
-    // convert standard/expanded community lists and community-sets to community lists
-    for (StandardCommunityList scList : _standardCommunityLists.values()) {
-      CommunityList cList = toCommunityList(scList);
-      c.getCommunityLists().put(cList.getName(), cList);
-    }
-    for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
-      CommunityList cList = toCommunityList(ecList);
-      c.getCommunityLists().put(cList.getName(), cList);
-    }
+    // convert standard/expanded community lists
+    convertIpCommunityLists(c);
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
@@ -2593,10 +2587,10 @@ public final class AristaConfiguration extends VendorConfiguration {
         AristaStructureUsage.WCCP_SERVICE_LIST);
 
     markCommunityLists(
-        AristaStructureUsage.ROUTE_MAP_ADD_COMMUNITY,
-        AristaStructureUsage.ROUTE_MAP_DELETE_COMMUNITY,
+        AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_ADDITIVE,
+        AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_DELETE,
         AristaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST,
-        AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY);
+        AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST);
 
     markConcreteStructure(AristaStructureType.PREFIX_LIST);
     markConcreteStructure(AristaStructureType.PREFIX6_LIST);
@@ -2934,5 +2928,33 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   public Map<String, TrackMethod> getTrackingGroups() {
     return _trackingGroups;
+  }
+
+  private void convertIpCommunityLists(Configuration c) {
+    // create CommunitySetMatchExpr for route-map match community
+    _standardCommunityLists.forEach(
+        (name, ipCommunityListStandard) ->
+            c.getCommunitySetMatchExprs()
+                .put(name, toCommunitySetMatchExpr(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach(
+        (name, ipCommunityListExpanded) ->
+            c.getCommunitySetMatchExprs()
+                .put(name, toCommunitySetMatchExpr(ipCommunityListExpanded)));
+
+    // create CommunityMatchExpr for route-map set community community-list delete
+    _standardCommunityLists.forEach(
+        (name, ipCommunityListStandard) ->
+            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach(
+        (name, ipCommunityListExpanded) ->
+            c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(ipCommunityListExpanded)));
+
+    // create CommunitySet for route-map set community community-list [additive]
+    _standardCommunityLists.forEach(
+        (name, ipCommunityListStandard) ->
+            c.getCommunitySets().put(name, toCommunitySet(ipCommunityListStandard)));
+    _expandedCommunityLists.forEach(
+        (name, ipCommunityListExpanded) ->
+            c.getCommunitySets().put(name, toCommunitySet(ipCommunityListExpanded)));
   }
 }
