@@ -1,0 +1,35 @@
+config system global
+    set hostname "access_list"
+end
+config router access-list
+    edit "acl_name1"
+    next
+    edit "acl_name2"
+    next
+    edit "acl_name1"
+        set comments "comment for acl_name1"
+        config rule
+            edit 1
+                set prefix any
+            next
+        end
+    next
+end
+config router route-map
+    edit "route_map1"
+        config rule
+            edit 1
+                set action permit
+                set match-ip-address "acl_name1"
+            next
+            edit 2
+                set action deny
+                set match-ip-address "acl_name1"
+            next
+            edit 3
+                set action deny
+                set match-ip-address "acl_undefined"
+            next
+        end
+    next
+end
