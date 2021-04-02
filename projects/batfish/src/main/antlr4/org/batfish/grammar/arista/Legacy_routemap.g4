@@ -224,59 +224,6 @@ set_as_path_tag_rm_stanza
    AS_PATH TAG NEWLINE
 ;
 
-set_comm_list_delete_rm_stanza
-:
-   COMM_LIST name = variable DELETE NEWLINE
-;
-
-set_community_additive_rm_stanza
-:
-   COMMUNITY
-   (
-      (
-         ADD
-         (
-            communities += literal_standard_community
-         )+
-      )
-      |
-      (
-         (
-            communities += literal_standard_community
-         )+ ADDITIVE
-      )
-   ) NEWLINE
-;
-
-set_community_list_additive_rm_stanza
-:
-   COMMUNITY COMMUNITY_LIST
-   (
-      comm_lists += variable
-   )+ ADDITIVE NEWLINE
-;
-
-set_community_list_rm_stanza
-:
-   COMMUNITY COMMUNITY_LIST
-   (
-      comm_lists += variable
-   )+ NEWLINE
-;
-
-set_community_none_rm_stanza
-:
-   COMMUNITY NONE NEWLINE
-;
-
-set_community_rm_stanza
-:
-   COMMUNITY
-   (
-      communities += literal_standard_community
-   )+ NEWLINE
-;
-
 set_extcommunity_rm_stanza
 :
    EXTCOMMUNITY
@@ -389,16 +336,11 @@ rm_set
   SET
   (
     // EOS up here
-    rms_distance
+    rms_community
+    | rms_distance
     // Legacy below
     | set_as_path_prepend_rm_stanza
     | set_as_path_tag_rm_stanza
-    | set_comm_list_delete_rm_stanza
-    | set_community_rm_stanza
-    | set_community_additive_rm_stanza
-    | set_community_list_additive_rm_stanza
-    | set_community_list_rm_stanza
-    | set_community_none_rm_stanza
     | set_extcommunity_rm_stanza
     | set_interface_rm_stanza
     | set_ip_default_nexthop_stanza
@@ -418,6 +360,33 @@ rm_set
     | set_weight_rm_stanza
   )
 ;
+
+rms_community
+:
+  COMMUNITY
+  (
+    rmsc_communities
+    | rmsc_community_list
+    | rmsc_none
+  )
+;
+
+rmsc_communities
+:
+  communities += literal_standard_community+ (ADDITIVE | DELETE)? NEWLINE
+;
+
+rmsc_community_list
+:
+  COMMUNITY_LIST names += community_list_name+ (ADDITIVE | DELETE)? NEWLINE
+;
+
+community_list_name
+:
+  ~(ADDITIVE | DELETE | NEWLINE)
+;
+
+rmsc_none: NONE NEWLINE;
 
 rms_distance
 :

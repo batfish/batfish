@@ -1,9 +1,13 @@
 package org.batfish.representation.arista;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.LineAction;
 
 public class RouteMapClause implements Serializable {
@@ -22,12 +26,79 @@ public class RouteMapClause implements Serializable {
 
   private List<RouteMapSetLine> _setList;
 
+  @Nullable private RouteMapSetCommunity _setCommunity;
+
+  @Nullable private RouteMapSetCommunityNone _setCommunityNone;
+
+  @Nullable private RouteMapSetCommunityList _setCommunityList;
+
+  @Nullable private RouteMapSetCommunityDelete _setCommunityDelete;
+
+  @Nullable private RouteMapSetCommunityListDelete _setCommunityListDelete;
+
+  @Nullable private RouteMapMatchCommunity _matchCommunity;
+
   public RouteMapClause(@Nonnull LineAction action, String name, int num) {
     _action = action;
     _mapName = name;
     _seqNum = num;
     _matchList = new ArrayList<>();
     _setList = new ArrayList<>();
+  }
+
+  @Nullable
+  public RouteMapSetCommunity getSetCommunity() {
+    return _setCommunity;
+  }
+
+  public void setSetCommunity(@Nullable RouteMapSetCommunity setCommunity) {
+    _setCommunity = setCommunity;
+  }
+
+  @Nullable
+  public RouteMapSetCommunityNone getSetCommunityNone() {
+    return _setCommunityNone;
+  }
+
+  public void setSetCommunityNone(@Nullable RouteMapSetCommunityNone setCommunityNone) {
+    _setCommunityNone = setCommunityNone;
+  }
+
+  @Nullable
+  public RouteMapSetCommunityList getSetCommunityList() {
+    return _setCommunityList;
+  }
+
+  public void setSetCommunityList(@Nullable RouteMapSetCommunityList setCommunityList) {
+    _setCommunityList = setCommunityList;
+  }
+
+  @Nullable
+  public RouteMapSetCommunityDelete getSetCommunityDelete() {
+    return _setCommunityDelete;
+  }
+
+  public void setSetCommunityDelete(@Nullable RouteMapSetCommunityDelete setCommunityDelete) {
+    _setCommunityDelete = setCommunityDelete;
+  }
+
+  @Nullable
+  public RouteMapSetCommunityListDelete getSetCommunityListDelete() {
+    return _setCommunityListDelete;
+  }
+
+  public void setSetCommunityListDelete(
+      @Nullable RouteMapSetCommunityListDelete setCommunityListDelete) {
+    _setCommunityListDelete = setCommunityListDelete;
+  }
+
+  @Nullable
+  public RouteMapMatchCommunity getMatchCommunity() {
+    return _matchCommunity;
+  }
+
+  public void setMatchCommunity(@Nullable RouteMapMatchCommunity matchCommunity) {
+    _matchCommunity = matchCommunity;
   }
 
   public void addMatchLine(RouteMapMatchLine line) {
@@ -40,6 +111,15 @@ public class RouteMapClause implements Serializable {
 
   public @Nonnull LineAction getAction() {
     return _action;
+  }
+
+  /**
+   * Return {@code true} iff set commmunity additive or set community community-list additive is
+   * set.
+   */
+  public boolean getAdditive() {
+    return (_setCommunity != null && _setCommunity.getAdditive())
+        || (_setCommunityList != null && _setCommunityList.getAdditive());
   }
 
   public RouteMapContinue getContinueLine() {
@@ -55,7 +135,8 @@ public class RouteMapClause implements Serializable {
   }
 
   public List<RouteMapMatchLine> getMatchList() {
-    return _matchList;
+    return Stream.concat(_matchList.stream(), Stream.of(_matchCommunity).filter(Objects::nonNull))
+        .collect(ImmutableList.toImmutableList());
   }
 
   public int getSeqNum() {
@@ -63,7 +144,16 @@ public class RouteMapClause implements Serializable {
   }
 
   public List<RouteMapSetLine> getSetList() {
-    return _setList;
+    return Stream.concat(
+            _setList.stream(),
+            Stream.of(
+                    _setCommunityDelete,
+                    _setCommunityListDelete,
+                    _setCommunity,
+                    _setCommunityList,
+                    _setCommunityNone)
+                .filter(Objects::nonNull))
+        .collect(ImmutableList.toImmutableList());
   }
 
   public void setAction(@Nonnull LineAction action) {
@@ -76,5 +166,32 @@ public class RouteMapClause implements Serializable {
 
   public void setIgnore(boolean b) {
     _ignore = b;
+  }
+
+  /** Clear set community lines not ending in additive. */
+  public void clearNonAdditiveSetCommunity() {
+    if (_setCommunity != null && !_setCommunity.getAdditive()) {
+      _setCommunity = null;
+    }
+    if (_setCommunityList != null && !_setCommunityList.getAdditive()) {
+      _setCommunityList = null;
+    }
+    _setCommunityNone = null;
+  }
+
+  /** Clear set community lines not ending in delete */
+  public void clearNonDeleteSetCommunity() {
+    _setCommunity = null;
+    _setCommunityList = null;
+    _setCommunityNone = null;
+  }
+
+  /** Clear all set community lines of all types. */
+  public void clearSetCommunity() {
+    _setCommunityList = null;
+    _setCommunity = null;
+    _setCommunityDelete = null;
+    _setCommunityListDelete = null;
+    _setCommunityNone = null;
   }
 }
