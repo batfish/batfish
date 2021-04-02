@@ -4,10 +4,12 @@ end
 config system interface
     edit "port10"
         set vdom "root"
+        set type physical
         set ip 10.0.10.1/24
     next
     edit "port20"
         set vdom "root"
+        set type physical
         set ip 10.0.20.1/24
     next
 end

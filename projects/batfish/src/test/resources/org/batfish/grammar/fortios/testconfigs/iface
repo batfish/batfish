@@ -17,6 +17,8 @@ config system interface
         set description no_spaces_descr
         set mtu-override enable
         set mtu 1234
+        set vlanid 1236
+        set interface port1
     next
     edit "longest if name"
         set vdom "root"
@@ -25,6 +27,8 @@ config system interface
         set ip 169.254.1.1/24
         set status up
         set type vlan
+        set vlanid 1235
+        set interface port1
         set vrf 31
     next
     edit "tunnel"

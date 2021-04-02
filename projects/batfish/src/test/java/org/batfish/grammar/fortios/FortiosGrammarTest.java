@@ -607,7 +607,7 @@ public final class FortiosGrammarTest {
                 hasComment("Addrgrp valid cannot be added to valid as it would create a cycle"),
                 hasComment("Addrgrp type folder is not yet supported"),
                 allOf(
-                    hasComment("The type of address group can not be changed"),
+                    hasComment("The type of address group cannot be changed"),
                     hasText(containsString("type default"))))));
   }
 
@@ -972,7 +972,13 @@ public final class FortiosGrammarTest {
                     hasText(containsString("alias string is too long to associate with iface"))),
                 hasComment("Interface edit block ignored: name conflicts with a zone name"),
                 hasComment("Expected vlanid in range 1-4094, but got '4095'"),
-                hasComment("Interface iface_undefined is undefined"))));
+                hasComment("Interface iface_undefined is undefined"),
+                allOf(
+                    hasComment("The type of an interface cannot be changed"),
+                    hasText(containsString("type loopback"))),
+                hasComment("Interface edit block ignored: name is invalid"),
+                hasComment("Interface edit block ignored: vlanid must be set"),
+                hasComment("Interface edit block ignored: interface must be set"))));
 
     // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
     // object is created when the name conflicts
@@ -2194,15 +2200,15 @@ public final class FortiosGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 74)));
+            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 76)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 71)));
+            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 73)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.ZONE, "new_zone2", contains(39, 40, 41, 77)));
+            filename, FortiosStructureType.ZONE, "new_zone2", contains(41, 42, 43, 79)));
 
     // Should have references for the renamed structures, even if the renaming happened after the
     // reference
