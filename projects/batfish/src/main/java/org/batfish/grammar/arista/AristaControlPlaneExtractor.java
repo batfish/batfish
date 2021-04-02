@@ -983,7 +983,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   private static Ip6Wildcard getIpWildcard(Access_list_ip6_rangeContext ctx) {
-    if (ctx.ipv6 != null) {
+    if (ctx.prefix6 != null) {
       return Ip6Wildcard.parse(ctx.prefix6.getText());
     } else if (ctx.ANY() != null) {
       return Ip6Wildcard.ANY;
