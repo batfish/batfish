@@ -1,5 +1,6 @@
 package org.batfish.grammar.cisco_asa;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_USER_DEFINED;
@@ -15,6 +16,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -129,6 +131,7 @@ import org.batfish.common.bdd.BDDMatchers;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -149,7 +152,9 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LineType;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
@@ -178,6 +183,11 @@ import org.batfish.representation.cisco_asa.NetworkObject;
 import org.batfish.representation.cisco_asa.NetworkObjectAddressSpecifier;
 import org.batfish.representation.cisco_asa.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco_asa.OspfNetworkType;
+import org.batfish.representation.cisco_asa.RouteMap;
+import org.batfish.representation.cisco_asa.RouteMapClause;
+import org.batfish.representation.cisco_asa.RouteMapMatchCommunityListLine;
+import org.batfish.representation.cisco_asa.RouteMapSetAdditiveCommunityLine;
+import org.batfish.representation.cisco_asa.RouteMapSetCommunityLine;
 import org.batfish.representation.cisco_asa.StandardCommunityList;
 import org.batfish.representation.cisco_asa.StandardCommunityListLine;
 import org.batfish.representation.cisco_asa.WildcardAddressSpecifier;
@@ -2240,6 +2250,138 @@ public final class CiscoAsaGrammarTest {
       assertThat(line.getCommunities(), contains(StandardCommunity.of(2, 2)));
 
       assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
+  public void testCommunityRouteMapExtraction() {
+    String hostname = "asa-community-route-map";
+    AsaConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getRouteMaps(),
+        hasKeys(
+            "match_community_standard",
+            "match_community_expanded",
+            "set_community",
+            "set_community_additive"));
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_community_standard");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapMatchCommunityListLine match =
+          (RouteMapMatchCommunityListLine) getOnlyElement(entry.getMatchList());
+      assertThat(match.getListNames(), contains("community_list_standard"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_community_expanded");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapMatchCommunityListLine match =
+          (RouteMapMatchCommunityListLine) getOnlyElement(entry.getMatchList());
+      assertThat(match.getListNames(), contains("community_list_expanded"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityLine set = (RouteMapSetCommunityLine) getOnlyElement(entry.getSetList());
+      assertThat(
+          set.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_additive");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetAdditiveCommunityLine set =
+          (RouteMapSetAdditiveCommunityLine) getOnlyElement(entry.getSetList());
+      assertThat(
+          set.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+    }
+  }
+
+  @Test
+  public void testCommunityRouteMapConversion() throws IOException {
+    String hostname = "asa-community-route-map";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getRoutingPolicies().keySet().stream()
+            .filter(name -> !name.contains("~"))
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(
+            "match_community_standard",
+            "match_community_expanded",
+            "set_community",
+            "set_community_additive"));
+
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.testBuilder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.ZERO)
+            .setTag(0L)
+            .build();
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_community_standard");
+      assertFalse(rp.processReadOnly(base));
+      Bgpv4Route routeOnlyOneCommunity =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1))).build();
+      assertFalse(rp.processReadOnly(routeOnlyOneCommunity));
+      Bgpv4Route routeBothCommunities =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+      assertTrue(rp.processReadOnly(routeBothCommunities));
+      Bgpv4Route routeBothCommunitiesAndMore =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(2, 2),
+                      StandardCommunity.of(3, 3)))
+              .build();
+      assertTrue(rp.processReadOnly(routeBothCommunitiesAndMore));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_community_expanded");
+      assertFalse(rp.processReadOnly(base));
+      Bgpv4Route routeOnlyOneCommunity =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 4)))
+              .build();
+      assertTrue(rp.processReadOnly(routeOnlyOneCommunity));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // Standard communities should be replaced, while extended communities should be preserved.
+      assertThat(route, hasCommunities(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_additive");
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(
+              StandardCommunity.of(1, 1), StandardCommunity.of(2, 2), StandardCommunity.of(3, 3)));
     }
   }
 }
