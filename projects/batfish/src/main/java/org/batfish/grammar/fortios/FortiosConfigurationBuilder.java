@@ -76,6 +76,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_moveContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_actionContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_commentsContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_dstaddrContext;
@@ -1020,6 +1021,42 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, String.format("Policy edit block ignored: %s", invalidReason));
     }
     _currentPolicy = null;
+  }
+
+  @Override
+  public void exitCfp_move(Cfp_moveContext ctx) {
+    Optional<Long> nameOpt = toLong(ctx, ctx.name);
+    Optional<Long> pivotOpt = toLong(ctx, ctx.pivot);
+    if (!nameOpt.isPresent() || !pivotOpt.isPresent()) {
+      return;
+    }
+    String name = nameOpt.get().toString();
+    String pivot = pivotOpt.get().toString();
+    if (!_c.getPolicies().containsKey(name)) {
+      warn(ctx, "Cannot move a non-existent policy");
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_MOVE,
+          ctx.start.getLine());
+      return;
+    }
+    if (!_c.getPolicies().containsKey(pivot)) {
+      warn(ctx, "Cannot move around a non-existent policy");
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_MOVE_PIVOT,
+          ctx.start.getLine());
+      return;
+    }
+
+    if (ctx.after_or_before().AFTER() != null) {
+      _c.getPolicies().moveAfter(name, pivot);
+    } else {
+      assert ctx.after_or_before().BEFORE() != null;
+      _c.getPolicies().moveBefore(name, pivot);
+    }
   }
 
   @Override

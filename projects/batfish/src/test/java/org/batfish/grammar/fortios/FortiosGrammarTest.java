@@ -1867,7 +1867,11 @@ public final class FortiosGrammarTest {
                     hasText("addr20 all")),
                 allOf(
                     hasComment("When 'any' is set together with other interfaces, it is removed"),
-                    hasText("any port10")))));
+                    hasText("any port10")),
+                hasComment("Expected policy number in range 0-4294967294, but got 'foobar'"),
+                hasComment("Expected policy number in range 0-4294967294, but got 'barbaz'"),
+                hasComment("Cannot move a non-existent policy"),
+                hasComment("Cannot move around a non-existent policy"))));
 
     Warnings conversionWarnings =
         batfish
@@ -2417,6 +2421,17 @@ public final class FortiosGrammarTest {
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3DeniedIndirect, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
+  }
+
+  @Test
+  public void testPolicyMove() throws IOException {
+    String hostname = "policy_move";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPolicies().keySet(), contains("5", "1", "2", "4", "3"));
   }
 
   @Test

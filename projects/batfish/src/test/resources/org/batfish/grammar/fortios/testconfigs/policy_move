@@ -1,0 +1,54 @@
+config system global
+    set hostname "policy_move"
+end
+config firewall address
+    edit "all"
+        set type ipmask
+        set subnet 0.0.0.0  0.0.0.0
+    next
+end
+config firewall service custom
+    edit ALL_TCP
+        set protocol TCP/UDP/SCTP
+        set tcp-portrange 1-65535
+    next
+end
+config firewall policy
+    edit 1
+        set srcintf any
+        set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service ALL_TCP
+    next
+    edit 2
+        set srcintf any
+        set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service ALL_TCP
+    next
+    edit 3
+        set srcintf any
+        set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service ALL_TCP
+    next
+    edit 4
+        set srcintf any
+        set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service ALL_TCP
+    next
+    edit 5
+        set srcintf any
+        set dstintf any
+        set srcaddr all
+        set dstaddr all
+        set service ALL_TCP
+    next
+    move 5 before 1
+    move 4 after 2
+end
