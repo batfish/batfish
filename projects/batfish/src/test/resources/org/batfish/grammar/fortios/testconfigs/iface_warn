@@ -15,10 +15,24 @@ config system interface
     next
     edit "vlan1"
         set vdom "root"
+        set type emac-vlan
+        # Ok to change type before initial next
+        set type vlan
         set interface port1
         set vlanid 1
         set interface iface_undefined
         set vlanid 4095
+    next
+    edit "vlan1"
+        set type loopback
+    next
+    edit "missing_vlanid"
+        set vdom root
+        set interface port1
+    next
+    edit "missing_iface"
+        set vdom root
+        set vlanid 999
     next
 end
 config system zone
