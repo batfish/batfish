@@ -982,13 +982,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return ctx.text != null ? ctx.text.getText().trim() : "";
   }
 
-  private static Ip6 getIp(Access_list_ip6_rangeContext ctx) {
-    if (ctx.ip != null) {
-      return toIp6(ctx.ip);
-    } else if (ctx.prefix6 != null) {
-      return Prefix6.parse(ctx.prefix6.getText()).getAddress();
+  private static Ip6Wildcard getIpWildcard(Access_list_ip6_rangeContext ctx) {
+    if (ctx.ipv6 != null) {
+      return Ip6Wildcard.parse(ctx.prefix6.getText());
+    } else if (ctx.ANY() != null) {
+      return Ip6Wildcard.ANY;
     } else {
-      return Ip6.ZERO;
+      assert ctx.ipv6 != null;
+      return Ip6Wildcard.parse(ctx.ipv6.getText());
     }
   }
 
@@ -4518,13 +4519,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         // Just IP. Same as if 'host' was specified
         return new WildcardAddressSpecifier(IpWildcard.create(toIp(ctx.ip)));
       }
-    } else if (ctx.ANY() != null || ctx.ANY4() != null) {
+    } else if (ctx.ANY() != null) {
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.prefix != null) {
       return new WildcardAddressSpecifier(IpWildcard.create(Prefix.parse(ctx.prefix.getText())));
-    } else if (ctx.iface != null) {
-      todo(ctx);
-      return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else {
       throw convError(AccessListAddressSpecifier.class, ctx);
     }
@@ -4539,12 +4537,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitExtended_ipv6_access_list_tail(Extended_ipv6_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
     IpProtocol protocol = toIpProtocol(ctx.prot);
-    Ip6 srcIp = getIp(ctx.srcipr);
-    Ip6 srcWildcard = getWildcard(ctx.srcipr);
-    Ip6 dstIp = getIp(ctx.dstipr);
-    Ip6 dstWildcard = getWildcard(ctx.dstipr);
-    String srcAddressGroup = getAddressGroup(ctx.srcipr);
-    String dstAddressGroup = getAddressGroup(ctx.dstipr);
+    Ip6Wildcard srcIps = getIpWildcard(ctx.srcipr);
+    Ip6Wildcard dstIps = getIpWildcard(ctx.dstipr);
     List<SubRange> srcPortRanges =
         ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.emptyList();
     List<SubRange> dstPortRanges =
@@ -4663,10 +4657,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
             name,
             action,
             protocol,
-            new Ip6Wildcard(srcIp, srcWildcard),
-            srcAddressGroup,
-            new Ip6Wildcard(dstIp, dstWildcard),
-            dstAddressGroup,
+            srcIps,
+            dstIps,
             srcPortRanges,
             dstPortRanges,
             dscps,
@@ -6947,8 +6939,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitStandard_ipv6_access_list_tail(Standard_ipv6_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
-    Ip6 srcIp = getIp(ctx.ipr);
-    Ip6 srcWildcard = getWildcard(ctx.ipr);
+    Ip6Wildcard srcIps = getIpWildcard(ctx.ipr);
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();
     for (Standard_access_list_additional_featureContext feature : ctx.features) {
@@ -6967,8 +6958,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       name = getFullText(ctx).trim();
     }
     StandardIpv6AccessListLine line =
-        new StandardIpv6AccessListLine(
-            name, action, new Ip6Wildcard(srcIp, srcWildcard), dscps, ecns);
+        new StandardIpv6AccessListLine(name, action, srcIps, dscps, ecns);
     _currentStandardIpv6Acl.addLine(line);
   }
 
@@ -7083,15 +7073,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  @Nullable
-  private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
-    if (ctx.address_group != null) {
-      return ctx.address_group.getText();
-    } else {
-      return null;
-    }
-  }
-
   private String getCanonicalInterfaceName(String ifaceName) {
     return _configuration.canonicalizeInterfaceName(ifaceName);
   }
@@ -7108,23 +7089,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
-  }
-
-  private Ip6 getWildcard(Access_list_ip6_rangeContext ctx) {
-    if (ctx.wildcard != null) {
-      return toIp6(ctx.wildcard);
-    } else if (ctx.ANY() != null || ctx.ANY6() != null || ctx.address_group != null) {
-      return Ip6.MAX;
-    } else if (ctx.HOST() != null) {
-      return Ip6.ZERO;
-    } else if (ctx.prefix6 != null) {
-      return Prefix6.parse(ctx.prefix6.getText()).getPrefixWildcard();
-    } else if (ctx.ip != null) {
-      // basically same as host
-      return Ip6.ZERO;
-    } else {
-      throw convError(Ip.class, ctx);
-    }
   }
 
   private void initInterface(Interface iface, Interface_nameContext ctx) {

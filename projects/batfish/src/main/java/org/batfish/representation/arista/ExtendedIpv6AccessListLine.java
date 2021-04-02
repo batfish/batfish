@@ -17,8 +17,6 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
   private final Set<Integer> _dscps;
 
-  private final String _dstAddressGroup;
-
   private final Ip6Wildcard _dstIpWildcard;
 
   private final List<SubRange> _dstPortRanges;
@@ -33,8 +31,6 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
   private final @Nullable IpProtocol _protocol;
 
-  private final String _srcAddressGroup;
-
   private final Ip6Wildcard _srcIpWildcard;
 
   private final List<SubRange> _srcPortRanges;
@@ -46,9 +42,7 @@ public class ExtendedIpv6AccessListLine implements Serializable {
       LineAction action,
       @Nullable IpProtocol protocol,
       Ip6Wildcard srcIpWildcard,
-      @Nullable String srcAddressGroup,
       Ip6Wildcard dstIpWildcard,
-      @Nullable String dstAddressGroup,
       List<SubRange> srcPortRanges,
       List<SubRange> dstPortRanges,
       Set<Integer> dscps,
@@ -60,10 +54,8 @@ public class ExtendedIpv6AccessListLine implements Serializable {
     _action = action;
     _protocol = protocol;
     _srcIpWildcard = srcIpWildcard;
-    _srcAddressGroup = srcAddressGroup;
     _dscps = dscps;
     _dstIpWildcard = dstIpWildcard;
-    _dstAddressGroup = dstAddressGroup;
     _ecns = ecns;
     _srcPortRanges = srcPortRanges;
     _dstPortRanges = dstPortRanges;
@@ -82,10 +74,6 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
   public Set<Integer> getDscps() {
     return _dscps;
-  }
-
-  public String getDstAddressGroup() {
-    return _dstAddressGroup;
   }
 
   public List<SubRange> getDstPorts() {
@@ -114,10 +102,6 @@ public class ExtendedIpv6AccessListLine implements Serializable {
 
   public Ip6Wildcard getSourceIpWildcard() {
     return _srcIpWildcard;
-  }
-
-  public String getSrcAddressGroup() {
-    return _srcAddressGroup;
   }
 
   public List<SubRange> getSrcPorts() {
