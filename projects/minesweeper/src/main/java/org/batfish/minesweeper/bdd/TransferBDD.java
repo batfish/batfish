@@ -125,11 +125,14 @@ public class TransferBDD {
 
   private final List<Statement> _statements;
 
+  private final BDDRoute _initialRoute;
+
   public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
     _graph = g;
     _conf = conf;
     _statements = statements;
 
+    _initialRoute = new BDDRoute(g);
     _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     _asPathRegexAtomicPredicates =
         _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
@@ -394,9 +397,12 @@ public class TransferBDD {
         throw new BatfishException(
             "Matching for communities other than the input communities is not supported: " + mc);
       }
+      // Once we model static statements like SetReadIntermediateBgpAttributes, that will
+      // determine which BDDRoute to use in this visitor.  For now we only handle the case when
+      // we are looking at the original input route attributes.
       BDD mcPredicate =
           mc.getCommunitySetMatchExpr()
-              .accept(new CommunitySetMatchExprToBDD(), new Arg(this, p.getData()));
+              .accept(new CommunitySetMatchExprToBDD(), new Arg(this, _initialRoute));
       TransferReturn ret = new TransferReturn(p.getData(), mcPredicate);
       return fromExpr(ret);
 
@@ -661,6 +667,13 @@ public class TransferBDD {
                 .getRemovalCriterion()
                 .accept(new CommunityMatchExprToBDD(), new Arg(this, curP.getData()));
         deleteCommunities(toDelete, curP, result);
+      } else if (true) {
+        CommunityAPDispositions dispositions =
+            setExpr.accept(
+                new SetCommunitiesVisitor(),
+                new SetCommunitiesVisitor.Arg(
+                    this, curP.getData().getCommunityAtomicPredicates().length));
+        updateCommunities(dispositions, curP, result);
       } else if (setExpr instanceof CommunitySetUnion
           && ((CommunitySetUnion) setExpr).getExprs().contains(InputCommunities.instance())) {
         // this SetCommunities expression has the form (InputCommunities U Expr U ... U Expr)
@@ -1111,15 +1124,9 @@ public class TransferBDD {
     throw new BatfishException("Error[prependLength]: unreachable");
   }
 
-  /**
-   * A helper for route analysis of AddCommunity, DeleteCommunity, and uses of SetCommunities that
-   * add communities. Given a set of CommunityVars that are added by the statement, we set their
-   * BDDs to either 1 or 0, depending on the value of the boolean parameter.
-   */
-  private void addOrRemoveCommunities(
-      Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
+  private void addOrRemoveCommunityAPs(
+      Set<Integer> commAPs, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
     BDD newCommVal = mkBDD(add);
-    Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
     BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
     for (int ap : commAPs) {
       curP.indent().debug("Value: " + ap);
@@ -1128,6 +1135,17 @@ public class TransferBDD {
       curP.indent().debug("New Value: " + newValue);
       commAPBDDs[ap] = newValue;
     }
+  }
+
+  /**
+   * A helper for route analysis of AddCommunity, DeleteCommunity, and uses of SetCommunities that
+   * add communities. Given a set of CommunityVars that are added by the statement, we set their
+   * BDDs to either 1 or 0, depending on the value of the boolean parameter.
+   */
+  private void addOrRemoveCommunities(
+      Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
+    Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
+    addOrRemoveCommunityAPs(commAPs, curP, result, add);
   }
 
   /**
@@ -1147,6 +1165,12 @@ public class TransferBDD {
         commAPBDDs[ap] = newValue;
       }
     }
+  }
+
+  private void updateCommunities(
+      CommunityAPDispositions dispositions, TransferParam<BDDRoute> curP, TransferResult result) {
+    addOrRemoveCommunityAPs(dispositions.getMustExist(), curP, result, true);
+    addOrRemoveCommunityAPs(dispositions.getMustNotExist(), curP, result, false);
   }
 
   /*
