@@ -32,7 +32,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ISAKMP_PO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.KEYRING;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.L2TP_CLASS;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.NAMED_RSA_PUB_KEY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.NETWORK_OBJECT_GROUP;
@@ -770,8 +769,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ip_tacacs_source_interfaceCo
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_l2tp_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_loggingContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_mac_access_listContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_mac_access_list_extendedContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ntpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ospfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ripContext;
@@ -3012,30 +3009,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.NO() != null) {
       _no = true;
     }
-  }
-
-  @Override
-  public void enterS_mac_access_list(S_mac_access_listContext ctx) {
-    String name = ctx.num.getText();
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
-  }
-
-  @Override
-  public void enterS_mac_access_list_extended(S_mac_access_list_extendedContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Could not determine name of extended mac access-list");
-    }
-    _currentMacAccessList =
-        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
-    _configuration.defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
 
   @Override
