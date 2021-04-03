@@ -2010,15 +2010,6 @@ rmc_null
    ) null_rest_of_line
 ;
 
-role_null
-:
-   NO?
-   (
-      DESCRIPTION
-      | RULE
-   ) null_rest_of_line
-;
-
 route_tail
 :
    iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
@@ -2835,14 +2826,6 @@ s_rf
    )
 ;
 
-s_role
-:
-   NO? ROLE null_rest_of_line
-   (
-      role_null
-   )*
-;
-
 s_route
 :
    ROUTE route_tail
@@ -3103,18 +3086,6 @@ s_vlan_internal_cisco
 s_vlan_name
 :
    VLAN_NAME name = variable_permissive NEWLINE
-;
-
-s_voice
-:
-   NO? VOICE
-   (
-      voice_class
-      | voice_null
-      | voice_service
-      | voice_translation_profile
-      | voice_translation_rule
-   )
 ;
 
 s_voice_card
@@ -3554,7 +3525,6 @@ stanza
    | s_radius_server
    | s_redundancy
    | s_rf
-   | s_role
    | s_route
    | s_router_eigrp
    | s_router_ospf
@@ -3590,7 +3560,6 @@ stanza
    | s_vlan_cisco
    | s_vlan_internal_cisco
    | s_vlan_name
-   | s_voice
    | s_voice_card
    | s_voice_port
    | s_vpc
@@ -4013,272 +3982,6 @@ vlan_null
       | TB_VLAN1
       | TB_VLAN2
       | UNTAGGED
-   ) null_rest_of_line
-;
-
-voice_class
-:
-   CLASS
-   (
-      voice_class_codec
-      | voice_class_dpg
-      | voice_class_e164
-      | voice_class_h323
-      | voice_class_server_group
-      | voice_class_sip_profiles
-      | voice_class_uri
-   )
-;
-
-voice_class_codec
-:
-   CODEC null_rest_of_line
-   (
-      voice_class_codec_null
-   )*
-;
-
-voice_class_codec_null
-:
-   NO?
-   (
-      CODEC
-   ) null_rest_of_line
-;
-
-voice_class_dpg
-:
-   DPG null_rest_of_line
-   (
-      voice_class_dpg_null
-   )*
-;
-
-voice_class_dpg_null
-:
-    NO?
-    (
-       DESCRIPTION
-       | DIAL_PEER
-    ) null_rest_of_line
-;
-
-voice_class_e164
-:
-   E164_PATTERN_MAP null_rest_of_line
-   (
-      voice_class_e164_null
-   )*
-;
-
-voice_class_e164_null
-:
-   NO?
-   (
-      DESCRIPTION
-      | E164
-      | URL
-   ) null_rest_of_line
-;
-
-voice_class_h323
-:
-   H323 null_rest_of_line
-   (
-      voice_class_h323_null
-   )*
-;
-
-voice_class_h323_null
-:
-   NO?
-   (
-      CALL
-      | H225
-      | TELEPHONY_SERVICE
-   ) null_rest_of_line
-;
-
-voice_class_server_group
-:
-   SERVER_GROUP null_rest_of_line
-   (
-      voice_class_server_group_null
-   )*
-;
-
-voice_class_server_group_null
-:
-   NO?
-      (  DESCRIPTION
-         | IPV4
-      ) null_rest_of_line
-;
-
-voice_class_sip_profiles
-:
-   SIP_PROFILES null_rest_of_line
-   (
-      voice_class_sip_profiles_null
-   )*
-;
-
-voice_class_sip_profiles_null
-:
-   NO?
-   (
-      REQUEST
-   ) null_rest_of_line
-;
-
-voice_class_uri
-:
-    URI null_rest_of_line
-    (
-        HOST null_rest_of_line
-    )
-;
-
-voice_null
-:
-   (
-      ALG_BASED_CAC
-      | CALL
-      | DIALPLAN_PROFILE
-      | HUNT
-      | IEC
-      | LOGGING
-      | REAL_TIME_CONFIG
-      | RTCP_INACTIVITY
-      | RTP
-      | SIP
-      | SIP_MIDCALL_REQ_TIMEOUT
-   ) null_rest_of_line
-;
-
-voice_service
-:
-   SERVICE
-   (
-      voice_service_voip
-   )
-;
-
-voice_service_voip
-:
-   VOIP NEWLINE
-   (
-      voice_service_voip_h323
-      | voice_service_voip_ip_address_trusted_list
-      | voice_service_voip_null
-      | voice_service_voip_sip
-   )*
-;
-
-voice_service_voip_h323
-:
-   H323 NEWLINE
-   (
-      voice_service_voip_h323_null
-   )*
-;
-
-voice_service_voip_h323_null
-:
-   NO?
-   (
-      CALL
-      | H225
-   ) null_rest_of_line
-;
-
-voice_service_voip_ip_address_trusted_list
-:
-   IP ADDRESS TRUSTED LIST NEWLINE
-   (
-      voice_service_voip_ip_address_trusted_list_null
-   )*
-;
-
-voice_service_voip_ip_address_trusted_list_null
-:
-   NO?
-   (
-      IPV4
-   ) null_rest_of_line
-;
-
-voice_service_voip_null
-:
-   NO?
-   (
-      ADDRESS_HIDING
-      | ALLOW_CONNECTIONS
-      | FAX
-      | H225
-      | MEDIA
-      | MODE
-      | MODEM
-      | REDUNDANCY_GROUP
-      | RTP_PORT
-      | SHUTDOWN
-      | SUPPLEMENTARY_SERVICE
-   ) null_rest_of_line
-;
-
-voice_service_voip_sip
-:
-   SIP NEWLINE
-   (
-      voice_service_voip_sip_null
-   )*
-;
-
-voice_service_voip_sip_null
-:
-   NO?
-   (
-      BIND
-      | EARLY_OFFER
-      | ERROR_PASSTHRU
-      | G729
-      | HEADER_PASSING
-      | LISTEN_PORT
-      | MIDCALL_SIGNALING
-      | SIP_PROFILES
-      | TRANSPORT
-   ) null_rest_of_line
-;
-
-voice_translation_profile
-:
-   TRANSLATION_PROFILE null_rest_of_line
-   (
-      voice_translation_profile_null
-   )*
-;
-
-voice_translation_profile_null
-:
-   NO?
-   (
-      TRANSLATE
-   ) null_rest_of_line
-;
-
-voice_translation_rule
-:
-   TRANSLATION_RULE null_rest_of_line
-   (
-      voice_translation_rule_null
-   )*
-;
-
-voice_translation_rule_null
-:
-   NO?
-   (
-      RULE
    ) null_rest_of_line
 ;
 

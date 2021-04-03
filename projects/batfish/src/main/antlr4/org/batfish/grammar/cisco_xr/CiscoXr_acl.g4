@@ -752,12 +752,6 @@ s_netservice
    )? NEWLINE
 ;
 
-variable_community_list
-:
-   ~( NEWLINE | COMMUNITY_LIST_NUM_STANDARD | COMMUNITY_LIST_NUM_EXPANDED | DEC
-   )
-;
-
 xr_mac_specifier
 :
    ANY
