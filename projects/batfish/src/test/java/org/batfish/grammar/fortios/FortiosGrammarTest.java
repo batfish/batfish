@@ -1877,8 +1877,8 @@ public final class FortiosGrammarTest {
                 allOf(
                     hasComment("When 'any' is set together with other interfaces, it is removed"),
                     hasText("any port10")),
-                hasComment("Cannot move a non-existent policy"),
-                hasComment("Cannot move around a non-existent policy"))));
+                hasComment("Cannot move a non-existent policy 99999"),
+                hasComment("Cannot move around a non-existent policy 99999"))));
 
     Warnings conversionWarnings =
         batfish

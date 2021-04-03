@@ -1028,7 +1028,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     String name = toString(ctx.name.str());
     String pivot = toString(ctx.pivot.str());
     if (!_c.getPolicies().containsKey(name)) {
-      warn(ctx, "Cannot move a non-existent policy");
+      warn(ctx, String.format("Cannot move a non-existent policy %s", name));
       _c.undefined(
           FortiosStructureType.POLICY,
           name,
@@ -1037,7 +1037,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return;
     }
     if (!_c.getPolicies().containsKey(pivot)) {
-      warn(ctx, "Cannot move around a non-existent policy");
+      warn(ctx, String.format("Cannot move around a non-existent policy %s", pivot));
       _c.undefined(
           FortiosStructureType.POLICY,
           name,
