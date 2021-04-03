@@ -5,16 +5,6 @@ options {
 }
 
 tokens {
-   ACL_NUM_APPLETALK,
-   ACL_NUM_EXTENDED,
-   ACL_NUM_EXTENDED_IPX,
-   ACL_NUM_EXTENDED_MAC,
-   ACL_NUM_IPX,
-   ACL_NUM_IPX_SAP,
-   ACL_NUM_MAC,
-   ACL_NUM_OTHER,
-   ACL_NUM_PROTOCOL_TYPE_CODE,
-   ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
    BANNER_DELIMITER_IOS,
    BANNER_BODY,
@@ -76,7 +66,7 @@ ACCESS_GROUP: 'access-group';
 ACCESS_LIST
 :
    'access-list'
-   {_enableAclNum = true; _enableDec = false;_inAccessList = true;}
+   {_enableDec = false;_inAccessList = true;}
 
 ;
 
@@ -1866,7 +1856,7 @@ EXTEND: 'extend';
 EXTENDED
 :
    'extended'
-   { _enableDec = true; _enableAclNum = false; }
+   { _enableDec = true; }
 
 ;
 
@@ -4857,7 +4847,7 @@ STALE_ROUTE: 'stale-route';
 STANDARD
 :
    'standard'
-   { _enableDec = true; _enableAclNum = false; }
+   { _enableDec = true; }
 
 ;
 
@@ -5772,59 +5762,11 @@ VARIABLE
       )
    )
    {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
       if (_enableCommunityListNum) {
          _enableCommunityListNum = false;
          _enableDec = true;
       }
    }
-
-;
-
-ACL_NUM
-:
-   F_Digit
-   {_enableAclNum}?
-
-   F_Digit*
-   {
-	int val = Integer.parseInt(getText());
-	if ((1 <= val && val <= 99) || (1300 <= val && val <= 1999)) {
-		_type = ACL_NUM_STANDARD;
-	}
-	else if ((100 <= val && val <= 199) || (2000 <= val && val <= 2699)) {
-		_type = ACL_NUM_EXTENDED;
-	}
-	else if (200 <= val && val <= 299) {
-		_type = ACL_NUM_PROTOCOL_TYPE_CODE;
-	}
-	else if (600 <= val && val <= 699) {
-		_type = ACL_NUM_APPLETALK;
-	}
-   else if (700 <= val && val <= 799) {
-      _type = ACL_NUM_MAC;
-   }
-	else if (800 <= val && val <= 899) {
-		_type = ACL_NUM_IPX;
-	}
-	else if (900 <= val && val <= 999) {
-		_type = ACL_NUM_EXTENDED_IPX;
-	}
-	else if (1000 <= val && val <= 1099) {
-		_type = ACL_NUM_IPX_SAP;
-	}
-	else if (1100 <= val && val <= 1199) {
-		_type = ACL_NUM_EXTENDED_MAC;
-	}
-	else {
-		_type = ACL_NUM_OTHER;
-	}
-	_enableDec = true;
-	_enableAclNum = false;
-}
 
 ;
 
@@ -5987,7 +5929,6 @@ NEWLINE
    	_enableIpAddress = true;
     _enableDec = true;
     _enableRegex = false;
-    _enableAclNum = false;
     _inAccessList = false;
   }
 ;

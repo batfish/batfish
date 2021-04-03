@@ -836,15 +836,13 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
   }
 
-  private void markIpOrMacAcls(CiscoXrStructureUsage... usages) {
+  private void markIpAcls(CiscoXrStructureUsage... usages) {
     for (CiscoXrStructureUsage usage : usages) {
       markAbstractStructure(
           CiscoXrStructureType.ACCESS_LIST,
           usage,
           Arrays.asList(
-              CiscoXrStructureType.IPV4_ACCESS_LIST,
-              CiscoXrStructureType.IPV6_ACCESS_LIST,
-              CiscoXrStructureType.MAC_ACCESS_LIST));
+              CiscoXrStructureType.IPV4_ACCESS_LIST, CiscoXrStructureType.IPV6_ACCESS_LIST));
     }
   }
 
@@ -2496,7 +2494,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoXrStructureType.IPV6_ACCESS_LIST);
 
     // mark references to ACLs that may not appear in data model
-    markIpOrMacAcls(
+    markIpAcls(
         CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST);
     markAcls(
         CiscoXrStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
