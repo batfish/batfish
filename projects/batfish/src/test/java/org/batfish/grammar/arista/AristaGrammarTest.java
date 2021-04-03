@@ -2625,6 +2625,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testIpv6AccessListParsing() {
+    // Don't crash or warn
+    parseConfig("ipv6_acl");
+  }
+
+  @Test
   public void testIpv6RouteParsing() {
     // Don't crash
     parseConfig("ipv6_route");
