@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +39,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -50,7 +50,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _addresses = new HashMap<>();
     _addrgrps = new HashMap<>();
     _interfaces = new HashMap<>();
-    _policies = new LinkedHashMap<>();
+    _policies = new InsertOrderedMap<>();
     _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
     _routeMaps = new HashMap<>();
@@ -99,7 +99,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   /** name -> policy */
-  public @Nonnull Map<String, Policy> getPolicies() {
+  public @Nonnull InsertOrderedMap<String, Policy> getPolicies() {
     return _policies;
   }
 
@@ -150,8 +150,8 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Addrgrp> _addrgrps;
   private final @Nonnull Map<String, Interface> _interfaces;
-  // Note: this is a LinkedHashMap to preserve insertion order
-  private final @Nonnull Map<String, Policy> _policies;
+  // Note: using InsertOrderedMap to preserve insertion order and permit reordering policies
+  private final @Nonnull InsertOrderedMap<String, Policy> _policies;
   private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
