@@ -286,8 +286,10 @@ public final class XrGrammarTest {
     Configuration c = parseConfig("community-set");
     CommunityContext ctx = CommunityContext.builder().build();
 
+    // TODO: test wellknown
+
     // Test CommunityMatchExprs
-    assertThat(c.getCommunityMatchExprs(), hasKeys("universe", "mixed"));
+    assertThat(c.getCommunityMatchExprs(), hasKeys("universe", "mixed", "wellknown"));
     {
       CommunityMatchExpr expr = c.getCommunityMatchExprs().get("universe");
       assertTrue(expr.accept(ctx.getCommunityMatchExprEvaluator(), StandardCommunity.of(1L)));
@@ -307,7 +309,7 @@ public final class XrGrammarTest {
     }
 
     // Test CommunitySetExprs
-    assertThat(c.getCommunitySetExprs(), hasKeys("universe", "mixed"));
+    assertThat(c.getCommunitySetExprs(), hasKeys("universe", "mixed", "wellknown"));
     {
       CommunitySetExpr expr = c.getCommunitySetExprs().get("universe");
       assertThat(
@@ -327,7 +329,9 @@ public final class XrGrammarTest {
             computeCommunitySetMatchAnyName("universe"),
             computeCommunitySetMatchEveryName("universe"),
             computeCommunitySetMatchAnyName("mixed"),
-            computeCommunitySetMatchEveryName("mixed")));
+            computeCommunitySetMatchEveryName("mixed"),
+            computeCommunitySetMatchAnyName("wellknown"),
+            computeCommunitySetMatchEveryName("wellknown")));
     {
       CommunitySetMatchExpr expr =
           c.getCommunitySetMatchExprs().get(computeCommunitySetMatchAnyName("universe"));
