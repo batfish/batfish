@@ -8110,10 +8110,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private @Nullable Long toLong(CommunityContext ctx) {
     if (ctx.ACCEPT_OWN() != null) {
       return WellKnownCommunity.ACCEPT_OWN;
-    } else if (ctx.STANDARD_COMMUNITY() != null) {
-      return StandardCommunity.parse(ctx.getText()).asLong();
-    } else if (ctx.uint32() != null) {
-      return toLong(ctx.uint32());
+    } else if (ctx.hi != null) {
+      assert ctx.lo != null;
+      return StandardCommunity.of(toInteger(ctx.hi), toInteger(ctx.lo)).asLong();
+    } else if (ctx.u32 != null) {
+      return toLong(ctx.u32);
     } else if (ctx.INTERNET() != null) {
       return WellKnownCommunity.INTERNET;
     } else if (ctx.GSHUT() != null) {

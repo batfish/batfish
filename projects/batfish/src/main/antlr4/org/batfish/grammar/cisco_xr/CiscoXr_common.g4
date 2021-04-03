@@ -39,8 +39,8 @@ community
    | LOCAL_AS
    | NO_ADVERTISE
    | NO_EXPORT
-   | STANDARD_COMMUNITY
-   | uint32
+   | hi = uint16 COLON lo = uint16
+   | u32 = uint32
 ;
 
 description_line
@@ -566,6 +566,7 @@ route_policy_params_list
 
 community_set_elem
 :
+   // TODO: differentiate elems from different community set contexts (set, match, etc.)
    community
    |
    (
@@ -577,11 +578,14 @@ community_set_elem
 
 community_set_elem_half
 :
-   value = DEC
+   // TODO: differentiate elems from different community set contexts (set, match, etc.)
+   // TODO: remove legacy alternatives
+   value = uint16
    | var = RP_VARIABLE
+   | var = PARAMETER
    |
    (
-      BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
+      BRACKET_LEFT (first = uint16) (PERIOD PERIOD | DOTDOT) (last = uint16) BRACKET_RIGHT
    )
    | ASTERISK
    | PRIVATE_AS
@@ -646,6 +650,7 @@ switchport_trunk_encapsulation
 uint16
 :
   d = DEC {isUint16($d)}?
+  | d = UINT16
 ;
 
 uint32
@@ -661,7 +666,7 @@ variable
 variable_aclname
 :
    (
-      ~( ETH | EXTENDED | IN | NEWLINE | OUT | REMARK | STANDARD | SESSION | WS )
+      ~( ETH | IN | NEWLINE | OUT | REMARK | SESSION | WS )
    )+
 ;
 
@@ -695,7 +700,7 @@ variable_max_metric
 variable_permissive
 :
    (
-      ~( EXTENDED | NEWLINE | STANDARD | WS )
+      ~( NEWLINE | WS )
    )+
 ;
 
