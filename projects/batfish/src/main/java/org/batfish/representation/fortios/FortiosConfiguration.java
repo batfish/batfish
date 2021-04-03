@@ -271,14 +271,9 @@ public class FortiosConfiguration extends VendorConfiguration {
       viIface.setEncapsulationVlan(iface.getVlanid());
     }
 
-    String ifaceName = iface.getName();
-    Set<Dependency> dependencies =
-        getInterfaces().values().stream()
-            .filter(i -> ifaceName.equals(i.getInterface()))
-            .map(i -> new Dependency(i.getName(), DependencyType.AGGREGATE))
-            .collect(ImmutableSet.toImmutableSet());
-    if (!dependencies.isEmpty()) {
-      viIface.setDependencies(dependencies);
+    if (iface.getInterface() != null) {
+      viIface.setDependencies(
+          ImmutableSet.of(new Dependency(iface.getInterface(), DependencyType.BIND)));
     }
 
     // TODO Is this the right VI field for interface alias?

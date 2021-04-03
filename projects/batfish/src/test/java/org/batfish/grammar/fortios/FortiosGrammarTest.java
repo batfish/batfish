@@ -947,19 +947,14 @@ public final class FortiosGrammarTest {
     Stream.of(longName, tunnel, loopback, vlan)
         .forEach(iface -> assertNull(iface.getDescription()));
 
-    // Check dependencies
-    assertThat(
-        port1.getDependencies(),
-        equalTo(
-            ImmutableSet.of(
-                new Dependency("port2", DependencyType.AGGREGATE),
-                new Dependency("longest if name", DependencyType.AGGREGATE),
-                new Dependency("vlan", DependencyType.AGGREGATE))));
-
-    // Check VLAN properties
+    // Check VLAN properties and dependencies
+    Dependency port1Dependency = new Dependency("port1", DependencyType.BIND);
     assertThat(port2.getEncapsulationVlan(), equalTo(1236));
+    assertThat(port2.getDependencies(), contains(port1Dependency));
     assertThat(longName.getEncapsulationVlan(), equalTo(1235));
+    assertThat(longName.getDependencies(), contains(port1Dependency));
     assertThat(vlan.getEncapsulationVlan(), equalTo(4094));
+    assertThat(vlan.getDependencies(), contains(port1Dependency));
   }
 
   @Test
