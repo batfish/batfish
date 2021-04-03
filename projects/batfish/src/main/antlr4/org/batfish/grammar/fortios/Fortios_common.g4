@@ -128,3 +128,5 @@ permit_or_deny: PERMIT | DENY;
 
 // 1-4094
 vlanid: uint16;
+
+after_or_before: AFTER | BEFORE;

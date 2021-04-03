@@ -81,4 +81,7 @@ config firewall policy
         set dstaddr addr20
         set service service10
     next
+    # Non-existent names
+    move 3 before 99999
+    move 99999 before 3
 end
