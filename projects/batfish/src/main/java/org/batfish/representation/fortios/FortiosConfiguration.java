@@ -30,6 +30,10 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.collections.InsertOrderedMap;
@@ -190,6 +194,10 @@ public class FortiosConfiguration extends VendorConfiguration {
             .collect(
                 ImmutableMap.toImmutableMap(Zone::getName, FortiosConfiguration::convertZone)));
 
+    // Convert access-lists
+    _accessLists.forEach(
+        (name, accessList) -> c.getRouteFilterLists().put(name, convertAccessList(accessList)));
+
     // Convert BGP. Must happen after interface conversion
     if (_bgpProcess != null) {
       convertBgp(_bgpProcess, c, _w);
@@ -303,6 +311,34 @@ public class FortiosConfiguration extends VendorConfiguration {
       default:
         return null;
     }
+  }
+
+  private static @Nonnull RouteFilterList convertAccessList(AccessList accessList) {
+    RouteFilterList rfl = new RouteFilterList(accessList.getName());
+    rfl.setLines(
+        accessList.getRules().values().stream()
+            .map(
+                rule -> {
+                  LineAction action =
+                      rule.getActionEffective() == AccessListRule.Action.PERMIT
+                          ? LineAction.PERMIT
+                          : LineAction.DENY;
+                  if (rule.getPrefix() != null) {
+                    int prefixLength = rule.getPrefix().getPrefixLength();
+                    SubRange lengthRange =
+                        rule.getExactMatchEffective()
+                            ? SubRange.singleton(prefixLength)
+                            : new SubRange(prefixLength, Prefix.MAX_PREFIX_LENGTH);
+                    return new RouteFilterLine(action, rule.getPrefix(), lengthRange);
+                  } else {
+                    assert rule.getWildcard() != null;
+                    // Can match network of any length as long as the IP matches the wildcard
+                    return new RouteFilterLine(
+                        action, rule.getWildcard(), new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
+                  }
+                })
+            .collect(ImmutableList.toImmutableList()));
+    return rfl;
   }
 
   private static @Nonnull org.batfish.datamodel.Zone convertZone(Zone zone) {

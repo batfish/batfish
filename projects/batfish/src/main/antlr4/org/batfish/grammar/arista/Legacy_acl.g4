@@ -8,38 +8,17 @@ options {
 
 access_list_ip_range
 :
-   (
-      ip = IP_ADDRESS wildcard = IP_ADDRESS
-   )
-   | ANY
-   | ANY4
-   |
-   (
-      HOST? ip = IP_ADDRESS
-   )
-   | prefix = IP_PREFIX
-   |
-   (
-      INTERFACE iface = variable
-   )
+   ip = IP_ADDRESS wildcard = IP_ADDRESS
+ | prefix = IP_PREFIX
+ | HOST ip = IP_ADDRESS
+ | ANY
 ;
 
 access_list_ip6_range
 :
-   (
-      ip = IPV6_ADDRESS wildcard = IPV6_ADDRESS
-   )
-   | ANY
-   | ANY6
-   |
-   (
-      HOST? ipv6 = IPV6_ADDRESS
-   )
-   | prefix6 = IPV6_PREFIX
-   |
-   (
-      ADDRGROUP address_group = variable
-   )
+   prefix6 = IPV6_PREFIX
+ | HOST ipv6 = IPV6_ADDRESS
+ | ANY
 ;
 
 access_list_mac_range

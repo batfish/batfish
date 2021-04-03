@@ -467,7 +467,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         assert ctx.subnet.ip != null && ctx.subnet.mask != null;
         // Convert to wildcard to get canonicalized IP (CLI automatically zeroes out bits in the IP
         // that are zeros in the mask, even if the mask is invalid).
-        IpWildcard wildcard = toIpWildcard(ctx.subnet.ip, ctx.subnet.mask);
+        IpWildcard wildcard = toIpWildcard(ctx.subnet.ip, ctx.subnet.mask, true);
         _currentAddress.getTypeSpecificFields().setIp1(wildcard.getIp());
         _currentAddress.getTypeSpecificFields().setIp2(toIp(ctx.subnet.mask));
       }
@@ -495,7 +495,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfa_set_wildcard(Cfa_set_wildcardContext ctx) {
     if (_currentAddress.getType() == Address.Type.WILDCARD) {
       // Convert to wildcard; canonicalizes IP based on mask bits
-      IpWildcard wildcard = toIpWildcard(ctx.wildcard);
+      IpWildcard wildcard = toIpWildcard(ctx.wildcard, true);
       // Set IP and mask in _currentAddress. Invert mask bits because IpWildcard interprets set bits
       // as "don't matter" while FortiOS interprets unset bits as "don't matter".
       _currentAddress.getTypeSpecificFields().setIp1(wildcard.getIp());
@@ -1668,7 +1668,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCralecre_set_wildcard(Cralecre_set_wildcardContext ctx) {
-    _currentAccessListRule.setWildcard(toIpWildcard(ctx.ip_wildcard()));
+    // In this context, FortiOS defies their usual wildcard convention and uses a "Cisco-style"
+    // wildcard, meaning that 0s in the mask indicate bits that matter. This matches the convention
+    // in the VI IpWildcard class, so do not invert the mask bits when converting this wildcard.
+    _currentAccessListRule.setWildcard(toIpWildcard(ctx.ip_wildcard(), false));
   }
 
   private IntrazoneAction toIntrazoneAction(Allow_or_denyContext ctx) {
@@ -2456,23 +2459,29 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /**
-   * Creates an {@link IpWildcard} from the given wildcard context. Note that the context's mask is
-   * assumed to be in conventional FortiOS format, i.e. 1s indicate bits that matter. The convention
-   * in the {@link IpWildcard} class is the opposite, i.e. 0s in the mask indicate bits that matter.
+   * Creates an {@link IpWildcard} from the given wildcard context.
+   *
+   * @param invertMask Whether to invert the mask when converting. In {@link IpWildcard}, 0s
+   *     indicate bits that matter, so this param should be true if {@code ctx} is from a context
+   *     where the 1s in the mask indicate bits that matter.
    */
-  private static @Nonnull IpWildcard toIpWildcard(Ip_wildcardContext ctx) {
-    return toIpWildcard(ctx.ip, ctx.mask);
+  private static @Nonnull IpWildcard toIpWildcard(Ip_wildcardContext ctx, boolean invertMask) {
+    return toIpWildcard(ctx.ip, ctx.mask, invertMask);
   }
 
   /**
-   * Creates an {@link IpWildcard} from the given IP and mask. Note that the provided mask is
-   * assumed to be in conventional FortiOS format, i.e. 1s indicate bits that matter. The convention
-   * in the {@link IpWildcard} class is the opposite, i.e. 0s in the mask indicate bits that matter.
+   * Creates an {@link IpWildcard} from the given IP and mask.
+   *
+   * @param invertMask Whether to invert the mask when converting. In {@link IpWildcard}, 0s
+   *     indicate bits that matter, so this param should be true if {@code mask} is from a context
+   *     where the 1s in the mask indicate bits that matter.
    */
-  private static @Nonnull IpWildcard toIpWildcard(Ip_addressContext ip, Ip_addressContext mask) {
+  private static @Nonnull IpWildcard toIpWildcard(
+      Ip_addressContext ip, Ip_addressContext mask, boolean invertMask) {
     // Invert mask because in FortiOS, bits that are set matter, whereas the opposite is true for
     // the mask in IpWildcard
-    return IpWildcard.ipWithWildcardMask(toIp(ip), toIp(mask).inverted());
+    Ip maskIp = toIp(mask);
+    return IpWildcard.ipWithWildcardMask(toIp(ip), invertMask ? maskIp.inverted() : maskIp);
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {

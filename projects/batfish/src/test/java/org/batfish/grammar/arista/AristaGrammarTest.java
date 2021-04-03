@@ -1,5 +1,6 @@
 package org.batfish.grammar.arista;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
@@ -21,6 +22,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbo
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -94,6 +96,7 @@ import com.google.common.collect.Range;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,7 +109,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -165,7 +167,12 @@ import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityContext;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.main.Batfish;
@@ -181,6 +188,12 @@ import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
 import org.batfish.representation.arista.RouteMap;
 import org.batfish.representation.arista.RouteMapClause;
+import org.batfish.representation.arista.RouteMapMatchCommunity;
+import org.batfish.representation.arista.RouteMapSetCommunity;
+import org.batfish.representation.arista.RouteMapSetCommunityDelete;
+import org.batfish.representation.arista.RouteMapSetCommunityList;
+import org.batfish.representation.arista.RouteMapSetCommunityListDelete;
+import org.batfish.representation.arista.RouteMapSetCommunityNone;
 import org.batfish.representation.arista.StandardAccessList;
 import org.batfish.representation.arista.StandardAccessListActionLine;
 import org.batfish.representation.arista.StandardAccessListRemarkLine;
@@ -402,7 +415,7 @@ public class AristaGrammarTest {
     Bgpv4Route expectedDefaultRoute =
         Bgpv4Route.testBuilder()
             .setCommunities(
-                ImmutableSet.of(StandardCommunity.of(7274718L), StandardCommunity.of(21823932L)))
+                ImmutableSet.of(StandardCommunity.of(111, 222), StandardCommunity.of(333, 444)))
             .setNetwork(Prefix.ZERO)
             .setNextHopIp(Ip.parse("10.1.1.1"))
             .setReceivedFromIp(Ip.parse("10.1.1.1"))
@@ -1176,17 +1189,16 @@ public class AristaGrammarTest {
       assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
       assertThat(
           line0.getCommunities(),
-          containsInAnyOrder(
-              StandardCommunity.of(1, 1).asLong(), WellKnownCommunity.GRACEFUL_SHUTDOWN));
+          containsInAnyOrder(StandardCommunity.of(1, 1), StandardCommunity.GRACEFUL_SHUTDOWN));
       assertThat(line1.getAction(), equalTo(LineAction.DENY));
       assertThat(
           line1.getCommunities(),
           containsInAnyOrder(
-              459123L,
-              WellKnownCommunity.INTERNET,
-              WellKnownCommunity.NO_EXPORT_SUBCONFED,
-              WellKnownCommunity.NO_ADVERTISE,
-              WellKnownCommunity.NO_EXPORT));
+              StandardCommunity.of(459123L),
+              StandardCommunity.INTERNET,
+              StandardCommunity.NO_EXPORT_SUBCONFED,
+              StandardCommunity.NO_ADVERTISE,
+              StandardCommunity.NO_EXPORT));
     }
     assertThat(config.getExpandedCommunityLists(), hasKeys("EXPANDED_CL"));
     {
@@ -1313,7 +1325,7 @@ public class AristaGrammarTest {
       assertThat(neighbor.getEnforceFirstAs(), equalTo(true));
       assertThat(neighbor.getIpv4UnicastAddressFamily(), notNullValue());
       assertThat(neighbor.getGeneratedRoutes(), hasSize(1));
-      GeneratedRoute defaultOriginate = Iterables.getOnlyElement(neighbor.getGeneratedRoutes());
+      GeneratedRoute defaultOriginate = getOnlyElement(neighbor.getGeneratedRoutes());
       assertThat(defaultOriginate.getGenerationPolicy(), nullValue());
       assertThat(defaultOriginate.getAttributePolicy(), nullValue());
       Ipv4UnicastAddressFamily af = neighbor.getIpv4UnicastAddressFamily();
@@ -2613,6 +2625,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testIpv6AccessListParsing() {
+    // Don't crash or warn
+    parseConfig("ipv6_acl");
+  }
+
+  @Test
   public void testIpv6RouteParsing() {
     // Don't crash
     parseConfig("ipv6_route");
@@ -2902,6 +2920,705 @@ public class AristaGrammarTest {
               .collect(ImmutableList.toImmutableList()),
           contains(
               Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8"), Prefix.parse("30.0.0.0/8")));
+    }
+  }
+
+  @Test
+  public void testIpCommunityListExpandedConversion() throws IOException {
+    String hostname = "arista_ip_community_list_expanded";
+    Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
+
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
+    {
+      // Test CommunityMatchExpr conversion
+      assertThat(c.getCommunityMatchExprs(), hasKeys("cl_test"));
+      CommunityMatchExprEvaluator eval = ctx.getCommunityMatchExprEvaluator();
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
+
+        // no single community matched by regex _1:1.*2:2_, so deny line is NOP
+
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        assertFalse(expr.accept(eval, StandardCommunity.of(11, 11)));
+
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, StandardCommunity.of(2, 2)));
+      }
+    }
+    {
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
+
+        // deny regex _1:1.*2:2_
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
+
+        // permit regex _1:1_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+        assertFalse(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
+
+        // permit regex _2:2_
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
+    }
+    {
+      // Test CommunitySet conversion
+      assertThat(c.getCommunitySets(), hasKeys("cl_test"));
+      {
+        CommunitySet set = c.getCommunitySets().get("cl_test");
+        assertThat(set.getCommunities(), empty());
+      }
+    }
+  }
+
+  @Test
+  public void testIpCommunityListExpandedExtraction() {
+    String hostname = "arista_ip_community_list_expanded";
+    AristaConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getExpandedCommunityLists(), hasKeys("cl_test"));
+    {
+      ExpandedCommunityList cl = vc.getExpandedCommunityLists().get("cl_test");
+      Iterator<ExpandedCommunityListLine> lines = cl.getLines().iterator();
+      ExpandedCommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(line.getRegex(), equalTo("_1:1.*2:2_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_1:1_"));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getRegex(), equalTo("_2:2_"));
+
+      assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
+  public void testIpCommunityListStandardConversion() throws IOException {
+    String hostname = "arista_ip_community_list_standard";
+    Configuration c = parseConfig(hostname);
+    CommunityContext ctx = CommunityContext.builder().build();
+
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
+    {
+      // Test CommunityMatchExpr conversion
+      assertThat(c.getCommunityMatchExprs(), hasKeys("cl_values", "cl_test"));
+      CommunityMatchExprEvaluator eval = ctx.getCommunityMatchExprEvaluator();
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_values");
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit internet
+        assertTrue(expr.accept(eval, StandardCommunity.INTERNET));
+        // permit local-AS
+        assertTrue(expr.accept(eval, StandardCommunity.NO_EXPORT_SUBCONFED));
+        // permit no-advertise
+        assertTrue(expr.accept(eval, StandardCommunity.NO_ADVERTISE));
+        // permit no-export
+        assertTrue(expr.accept(eval, StandardCommunity.NO_EXPORT));
+      }
+      {
+        CommunityMatchExpr expr = c.getCommunityMatchExprs().get("cl_test");
+
+        // no single community matched by 1:1 2:2, so deny line is NOP
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, StandardCommunity.of(1, 1)));
+        // permit 2:2
+        assertTrue(expr.accept(eval, StandardCommunity.of(2, 2)));
+      }
+    }
+    {
+      // Test CommunitySetMatchExpr conversion
+      assertThat(c.getCommunitySetMatchExprs(), hasKeys("cl_values", "cl_test"));
+      CommunitySetMatchExprEvaluator eval = ctx.getCommunitySetMatchExprEvaluator();
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_values");
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        // permit internet
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.INTERNET)));
+        // permit local-AS
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_EXPORT_SUBCONFED)));
+        // permit no-advertise
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_ADVERTISE)));
+        // permit no-export
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.NO_EXPORT)));
+      }
+      {
+        CommunitySetMatchExpr expr = c.getCommunitySetMatchExprs().get("cl_test");
+
+        // deny 1:1 2:2
+        assertFalse(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+        assertFalse(
+            expr.accept(
+                eval,
+                CommunitySet.of(
+                    StandardCommunity.of(1, 1),
+                    StandardCommunity.of(2, 2),
+                    StandardCommunity.of(3, 3))));
+
+        // permit 1:1
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
+        assertTrue(
+            expr.accept(
+                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+
+        // permit 2:2
+        assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
+      }
+    }
+    {
+      // Test CommunitySet conversion
+      assertThat(c.getCommunitySets(), hasKeys("cl_values", "cl_test"));
+      {
+        CommunitySet set = c.getCommunitySets().get("cl_values");
+        assertThat(
+            set.getCommunities(),
+            containsInAnyOrder(
+                StandardCommunity.of(1, 1),
+                StandardCommunity.INTERNET,
+                StandardCommunity.NO_EXPORT_SUBCONFED,
+                StandardCommunity.NO_ADVERTISE,
+                StandardCommunity.NO_EXPORT));
+      }
+      {
+        CommunitySet set = c.getCommunitySets().get("cl_test");
+        assertThat(
+            set.getCommunities(),
+            containsInAnyOrder(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+      }
+    }
+  }
+
+  @Test
+  public void testIpCommunityListStandardExtraction() {
+    String hostname = "arista_ip_community_list_standard";
+    AristaConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getStandardCommunityLists(), hasKeys("cl_values", "cl_test"));
+    {
+      StandardCommunityList cl = vc.getStandardCommunityLists().get("cl_values");
+      assertThat(
+          cl.getLines().stream()
+              .map(StandardCommunityListLine::getCommunities)
+              .map(Iterables::getOnlyElement)
+              .collect(ImmutableList.toImmutableList()),
+          contains(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.INTERNET,
+              StandardCommunity.NO_EXPORT_SUBCONFED,
+              StandardCommunity.NO_ADVERTISE,
+              StandardCommunity.NO_EXPORT));
+    }
+    {
+      StandardCommunityList cl = vc.getStandardCommunityLists().get("cl_test");
+      Iterator<StandardCommunityListLine> lines = cl.getLines().iterator();
+      StandardCommunityListLine line;
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.DENY));
+      assertThat(
+          line.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(1, 1)));
+
+      line = lines.next();
+      assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(line.getCommunities(), contains(StandardCommunity.of(2, 2)));
+
+      assertFalse(lines.hasNext());
+    }
+  }
+
+  @Test
+  public void testRouteMapCommunityExtraction() {
+    String hostname = "arista_route_map_community";
+    AristaConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getRouteMaps(),
+        hasKeys(
+            "match_community_standard",
+            "match_community_expanded",
+            "set_community",
+            "set_community_additive",
+            "set_community_delete",
+            "set_community_none",
+            "set_community_list_expanded",
+            "set_community_list_standard",
+            "set_community_list_standard_single",
+            "set_community_list_additive_expanded",
+            "set_community_list_additive_standard",
+            "set_community_list_additive_standard_single",
+            "set_community_list_delete_expanded",
+            "set_community_list_delete_expanded_single",
+            "set_community_list_delete_standard",
+            "set_community_list_delete_standard_single"));
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_community_standard");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause clause = getOnlyElement(rm.getClauses().values());
+      assertThat(clause.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(clause.getSeqNum(), equalTo(10));
+      RouteMapMatchCommunity match = clause.getMatchCommunity();
+      assertThat(clause.getMatchList(), contains(match));
+      assertThat(match.getListNames(), contains("community_list_standard"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("match_community_expanded");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapMatchCommunity match = entry.getMatchCommunity();
+      assertThat(entry.getMatchList(), contains(match));
+      assertThat(match.getListNames(), contains("community_list_expanded"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunity set = entry.getSetCommunity();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(
+          set.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+      assertFalse(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_additive");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunity set = entry.getSetCommunity();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(
+          set.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+      assertTrue(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_delete");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityDelete set = entry.getSetCommunityDelete();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(
+          set.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(1, 2)));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_none");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityNone set = entry.getSetCommunityNone();
+      assertThat(entry.getSetList(), contains(set));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_expanded");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityList set = entry.getSetCommunityList();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_expanded"));
+      assertFalse(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_standard");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityList set = entry.getSetCommunityList();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_standard"));
+      assertFalse(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_standard_single");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityList set = entry.getSetCommunityList();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_standard_single"));
+      assertFalse(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_additive_expanded");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityList set = entry.getSetCommunityList();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_expanded"));
+      assertTrue(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_additive_standard");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityList set = entry.getSetCommunityList();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_standard"));
+      assertTrue(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_additive_standard_single");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityList set = entry.getSetCommunityList();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_standard_single"));
+      assertTrue(set.getAdditive());
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_delete_expanded");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityListDelete set = entry.getSetCommunityListDelete();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_expanded"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_delete_expanded_single");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityListDelete set = entry.getSetCommunityListDelete();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_expanded_single"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_delete_standard");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityListDelete set = entry.getSetCommunityListDelete();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_standard"));
+    }
+    {
+      RouteMap rm = vc.getRouteMaps().get("set_community_list_delete_standard_single");
+      assertThat(rm.getClauses().keySet(), contains(10));
+      RouteMapClause entry = getOnlyElement(rm.getClauses().values());
+      assertThat(entry.getAction(), equalTo(LineAction.PERMIT));
+      assertThat(entry.getSeqNum(), equalTo(10));
+      RouteMapSetCommunityListDelete set = entry.getSetCommunityListDelete();
+      assertThat(entry.getSetList(), contains(set));
+      assertThat(set.getCommunityLists(), contains("community_list_standard_single"));
+    }
+  }
+
+  @Test
+  public void testRouteMapCommunityConversion() {
+    String hostname = "arista_route_map_community";
+    Configuration c = parseConfig(hostname);
+    Set<String> topLevelPolicies =
+        c.getRoutingPolicies().keySet().stream()
+            .filter(name -> !name.contains("~"))
+            .collect(ImmutableSet.toImmutableSet());
+    assertThat(
+        topLevelPolicies,
+        containsInAnyOrder(
+            "match_community_standard",
+            "match_community_expanded",
+            "set_community",
+            "set_community_additive",
+            "set_community_delete",
+            "set_community_none",
+            "set_community_list_expanded",
+            "set_community_list_standard",
+            "set_community_list_standard_single",
+            "set_community_list_additive_expanded",
+            "set_community_list_additive_standard",
+            "set_community_list_additive_standard_single",
+            "set_community_list_delete_expanded",
+            "set_community_list_delete_expanded_single",
+            "set_community_list_delete_standard",
+            "set_community_list_delete_standard_single"));
+    Ip origNextHopIp = Ip.parse("192.0.2.254");
+    Bgpv4Route base =
+        Bgpv4Route.testBuilder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(origNextHopIp)
+            .setNetwork(Prefix.ZERO)
+            .setTag(0L)
+            .build();
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_community_standard");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route routeOnlyOneCommunity =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(1, 1))).build();
+      assertRoutingPolicyDeniesRoute(rp, routeOnlyOneCommunity);
+      Bgpv4Route routeBothCommunities =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)))
+              .build();
+      assertTrue(rp.processReadOnly(routeBothCommunities));
+      Bgpv4Route routeBothCommunitiesAndMore =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(2, 2),
+                      StandardCommunity.of(3, 3)))
+              .build();
+      assertTrue(rp.processReadOnly(routeBothCommunitiesAndMore));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("match_community_expanded");
+      assertRoutingPolicyDeniesRoute(rp, base);
+      Bgpv4Route routeBothCommunities =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 4)))
+              .build();
+      assertTrue(rp.processReadOnly(routeBothCommunities));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(3, 3), ExtendedCommunity.target(1L, 1L)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // Standard communities should be replaced, while extended communities should be preserved.
+      assertThat(
+          route,
+          hasCommunities(
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(1, 2),
+              ExtendedCommunity.target(1L, 1L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_additive");
+      Bgpv4Route inRoute =
+          base.toBuilder().setCommunities(ImmutableSet.of(StandardCommunity.of(3, 3))).build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(
+              StandardCommunity.of(1, 1), StandardCommunity.of(1, 2), StandardCommunity.of(3, 3)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_delete");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      ExtendedCommunity.target(1L, 1L),
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(1, 2),
+                      StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // TODO: confirm vendor behavior
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_none");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(1, 1)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_expanded");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // TODO: confirm vendor behavior
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_standard");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // TODO: confirm vendor behavior
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_standard_single");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(1, 1)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_additive_expanded");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // TODO: confirm vendor behavior
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_additive_standard");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // TODO: confirm vendor behavior
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_additive_standard_single");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(1L, 1L),
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(3, 3)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_delete_expanded");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      ExtendedCommunity.target(1L, 1L),
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // TODO: confirm vendor behavior
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(
+              ExtendedCommunity.target(1L, 1L),
+              StandardCommunity.of(1, 1),
+              StandardCommunity.of(3, 3)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_delete_expanded_single");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      ExtendedCommunity.target(1L, 1L),
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // TODO: confirm vendor behavior
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_delete_standard");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(1, 1)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      // TODO: confirm vendor behavior
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(1, 1)));
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("set_community_list_delete_standard_single");
+      Bgpv4Route inRoute =
+          base.toBuilder()
+              .setCommunities(
+                  ImmutableSet.of(
+                      ExtendedCommunity.target(1L, 1L),
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.of(3, 3)))
+              .build();
+      Bgpv4Route route = processRouteIn(rp, inRoute);
+      assertThat(
+          route.getCommunities().getCommunities(),
+          containsInAnyOrder(ExtendedCommunity.target(1L, 1L), StandardCommunity.of(3, 3)));
     }
   }
 }

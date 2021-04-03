@@ -84,6 +84,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -2435,7 +2436,7 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAccessList() throws IOException {
+  public void testAccessListExtraction() throws IOException {
     String hostname = "access_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     FortiosConfiguration vc =
@@ -2455,29 +2456,52 @@ public final class FortiosGrammarTest {
 
     // Defaults
     assertNull(longName.getComments());
-    assertNull(rule12.getAction());
-    assertThat(rule12.getActionEffective(), equalTo(AccessListRule.DEFAULT_ACTION));
-    assertNull(rule12.getExactMatch());
-    assertThat(rule12.getExactMatchEffective(), equalTo(AccessListRule.DEFAULT_EXACT_MATCH));
-    assertNull(rule12.getWildcard());
+    assertNull(rule2.getAction());
+    assertThat(rule2.getActionEffective(), equalTo(AccessListRule.DEFAULT_ACTION));
+    assertNull(rule2.getExactMatch());
+    assertThat(rule2.getExactMatchEffective(), equalTo(AccessListRule.DEFAULT_EXACT_MATCH));
+    assertNull(rule2.getWildcard());
 
     // Explicitly (re)configured values
     assertThat(acl1.getComments(), equalTo("comment for acl_name1"));
-    assertThat(rule12.getPrefix(), equalTo(Prefix.ZERO));
+    assertThat(rule12.getAction(), equalTo(AccessListRule.Action.PERMIT));
+    assertThat(rule12.getActionEffective(), equalTo(AccessListRule.Action.PERMIT));
+    assertTrue(rule12.getExactMatch());
+    assertTrue(rule12.getExactMatchEffective());
+    assertThat(rule12.getPrefix(), equalTo(Prefix.parse("1.2.3.0/24")));
+    assertNull(rule12.getWildcard());
     assertThat(rule1.getAction(), equalTo(AccessListRule.Action.DENY));
     assertThat(rule1.getActionEffective(), equalTo(AccessListRule.Action.DENY));
-    assertTrue(rule1.getExactMatch());
-    assertTrue(rule1.getExactMatchEffective());
-    assertThat(rule1.getPrefix(), equalTo(Prefix.parse("1.2.3.0/24")));
-    assertNull(rule1.getWildcard());
-    assertThat(rule2.getAction(), equalTo(AccessListRule.Action.PERMIT));
-    assertThat(rule2.getActionEffective(), equalTo(AccessListRule.Action.PERMIT));
-    assertFalse(rule2.getExactMatch());
-    assertFalse(rule2.getExactMatchEffective());
+    assertFalse(rule1.getExactMatch());
+    assertFalse(rule1.getExactMatchEffective());
     assertThat(
-        rule2.getWildcard(),
+        rule1.getWildcard(),
         equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("1.0.0.0"), Ip.parse("0.255.255.255"))));
-    assertNull(rule2.getPrefix());
+    assertNull(rule1.getPrefix());
+    assertThat(rule2.getPrefix(), equalTo(Prefix.ZERO));
+  }
+
+  @Test
+  public void testAccessListConversion() throws IOException {
+    String hostname = "access_list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(
+        c.getRouteFilterLists(), hasKeys("the_longest_access_list_name_possib", "acl_name1"));
+    RouteFilterList longName = c.getRouteFilterLists().get("the_longest_access_list_name_possib");
+    RouteFilterList acl1 = c.getRouteFilterLists().get("acl_name1");
+
+    // Access-list with no lines doesn't permit anything
+    assertThat(longName.getLines(), empty());
+    assertFalse(longName.permits(Prefix.ZERO));
+
+    // acl1 permits 1.2.3.0/24, then denies everything in 1.0.0.0/8, then permits all
+    assertTrue(acl1.permits(Prefix.parse("1.2.3.0/24")));
+    assertFalse(acl1.permits(Prefix.parse("1.2.3.0/25"))); // permit 1.2.3.0/24 is exact-match
+    assertFalse(acl1.permits(Prefix.parse("1.2.3.0/23")));
+    assertFalse(acl1.permits(Prefix.parse("1.0.0.0/8")));
+    assertTrue(acl1.permits(Prefix.parse("0.0.0.0/0")));
   }
 
   @Test
