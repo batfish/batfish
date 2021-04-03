@@ -13,6 +13,7 @@ import static org.batfish.representation.fortios.FortiosRouteConversions.convert
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,8 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -37,6 +40,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.collections.InsertOrderedMap;
+import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.vendor.VendorConfiguration;
 
 public class FortiosConfiguration extends VendorConfiguration {
@@ -267,6 +271,19 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setAddress(iface.getIp())
             .setMtu(iface.getMtuEffective())
             .setType(type);
+
+    if (iface.getTypeEffective() == Type.VLAN) {
+      // Handled by extraction
+      assert iface.getVlanid() != null && iface.getInterface() != null;
+
+      viIface.setEncapsulationVlan(iface.getVlanid());
+    }
+
+    if (iface.getInterface() != null) {
+      viIface.setDependencies(
+          ImmutableSet.of(new Dependency(iface.getInterface(), DependencyType.BIND)));
+    }
+
     // TODO Is this the right VI field for interface alias?
     Optional.ofNullable(iface.getAlias())
         .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
@@ -302,12 +319,12 @@ public class FortiosConfiguration extends VendorConfiguration {
         return InterfaceType.PHYSICAL;
       case TUNNEL:
         return InterfaceType.TUNNEL;
-      case EMAC_VLAN:
       case VLAN:
-        return InterfaceType.VLAN;
+        return InterfaceType.LOGICAL;
       case AGGREGATE: // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
       case REDUNDANT: // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
       case WL_MESH: // TODO Support this type
+      case EMAC_VLAN: // TODO Support this type
       default:
         return null;
     }

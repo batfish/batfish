@@ -45,7 +45,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
     _bannerIosDelimiter = null;
   }
 
-  protected boolean _enableAclNum = false;
   protected boolean _enableDec = true;
   protected boolean _enableIpv6Address = true;
   protected boolean _enableIpAddress = true;
@@ -62,7 +61,6 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
   @Override
   public @Nonnull String printStateVariables() {
     StringBuilder sb = new StringBuilder();
-    sb.append("_enableAclNum: " + _enableAclNum + "\n");
     sb.append("_enableCommunityListNum: " + _enableCommunityListNum + "\n");
     sb.append("_enableDec: " + _enableDec + "\n");
     sb.append("_enableIpAddress: " + _enableIpAddress + "\n");

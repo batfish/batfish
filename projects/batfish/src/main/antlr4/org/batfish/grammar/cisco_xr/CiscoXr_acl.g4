@@ -106,11 +106,6 @@ appletalk_access_list_null_tail
    )? NEWLINE
 ;
 
-appletalk_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
-;
-
 as_path_set_elem
 :
    ios_regex = aspse_ios_regex
@@ -506,11 +501,6 @@ ipx_sap_access_list_null_tail
    action = access_list_action null_rest_of_line
 ;
 
-ipx_sap_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_IPX_SAP ipx_sap_access_list_null_tail
-;
-
 irs_stanza
 :
    bandwidth_irs_stanza
@@ -673,12 +663,6 @@ protocol_type_code_access_list_null_tail
    action = access_list_action null_rest_of_line
 ;
 
-protocol_type_code_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_PROTOCOL_TYPE_CODE
-   protocol_type_code_access_list_null_tail
-;
-
 rs_stanza
 :
    interface_rs_stanza
@@ -734,36 +718,6 @@ s_ip_access_list_eth
    (
       ipacleth_line
    )*
-;
-
-s_mac_access_list
-:
-   ACCESS_LIST num = ACL_NUM_MAC action = access_list_action address =
-   MAC_ADDRESS_LITERAL wildcard = MAC_ADDRESS_LITERAL NEWLINE
-;
-
-s_mac_access_list_extended
-:
-   (
-      ACCESS_LIST num = ACL_NUM_EXTENDED_MAC s_mac_access_list_extended_tail
-   )
-   |
-   (
-      MAC ACCESS_LIST EXTENDED? name = variable_permissive EXTENDED? NEWLINE
-      s_mac_access_list_extended_tail*
-   )
-;
-
-s_mac_access_list_extended_tail
-:
-   (
-      (SEQ | SEQUENCE)? num = DEC
-   )?
-   action = access_list_action src = access_list_mac_range dst = access_list_mac_range
-   (
-      vlan = DEC
-      | vlan_any = ANY
-   )? mac_access_list_additional_feature* NEWLINE
 ;
 
 s_netdestination

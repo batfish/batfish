@@ -74,6 +74,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -896,58 +898,64 @@ public final class FortiosGrammarTest {
     Map<String, org.batfish.datamodel.Interface> ifaces = c.getAllInterfaces();
     assertThat(
         ifaces.keySet(),
-        containsInAnyOrder(
-            "port1", "port2", "longest if name", "tunnel", "loopback123", "emac", "vlan"));
+        containsInAnyOrder("port1", "port2", "longest if name", "tunnel", "loopback123", "vlan"));
     org.batfish.datamodel.Interface port1 = ifaces.get("port1");
     org.batfish.datamodel.Interface port2 = ifaces.get("port2");
     org.batfish.datamodel.Interface longName = ifaces.get("longest if name");
     org.batfish.datamodel.Interface tunnel = ifaces.get("tunnel");
     org.batfish.datamodel.Interface loopback = ifaces.get("loopback123");
-    org.batfish.datamodel.Interface emac = ifaces.get("emac");
     org.batfish.datamodel.Interface vlan = ifaces.get("vlan");
 
     // Check active
     assertFalse(tunnel.getActive()); // explicitly set to down
-    Stream.of(port1, port2, longName, loopback, emac, vlan)
+    Stream.of(port1, port2, longName, loopback, vlan)
         .forEach(iface -> assertTrue(iface.getName() + " is up", iface.getActive()));
 
     // Check VRFs
     assertThat(longName.getVrf().getName(), equalTo(computeVrfName("root", 31)));
     String defaultVrf = computeVrfName("root", 0);
-    Stream.of(port1, port2, tunnel, loopback, emac, vlan)
+    Stream.of(port1, port2, tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getVrf().getName(), equalTo(defaultVrf)));
 
     // Check addresses
     assertThat(port1.getAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
     assertThat(longName.getAddress(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
-    Stream.of(port2, tunnel, loopback, emac, vlan).forEach(iface -> assertNull(iface.getAddress()));
+    Stream.of(port2, tunnel, loopback, vlan).forEach(iface -> assertNull(iface.getAddress()));
 
     // Check interface types
     assertThat(port1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
-    assertThat(port2.getInterfaceType(), equalTo(InterfaceType.VLAN));
-    assertThat(longName.getInterfaceType(), equalTo(InterfaceType.VLAN));
+    assertThat(port2.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+    assertThat(longName.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
     assertThat(tunnel.getInterfaceType(), equalTo(InterfaceType.TUNNEL));
     assertThat(loopback.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
-    assertThat(emac.getInterfaceType(), equalTo(InterfaceType.VLAN));
-    assertThat(vlan.getInterfaceType(), equalTo(InterfaceType.VLAN));
+    assertThat(vlan.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
 
     // Check MTUs
     assertThat(port2.getMtu(), equalTo(1234));
-    Stream.of(port1, longName, tunnel, loopback, emac, vlan)
+    Stream.of(port1, longName, tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getMtu(), equalTo(Interface.DEFAULT_INTERFACE_MTU)));
 
     // Check aliases
     assertThat(port1.getDeclaredNames(), contains("longest possibl alias str"));
     assertThat(port2.getDeclaredNames(), contains("no_spaces"));
     assertThat(longName.getDeclaredNames(), contains(""));
-    Stream.of(tunnel, loopback, emac, vlan)
+    Stream.of(tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getDeclaredNames(), empty()));
 
     // Check descriptions
     assertThat(port1.getDescription(), equalTo("quoted description w/ spaces and more"));
     assertThat(port2.getDescription(), equalTo("no_spaces_descr"));
-    Stream.of(longName, tunnel, loopback, emac, vlan)
+    Stream.of(longName, tunnel, loopback, vlan)
         .forEach(iface -> assertNull(iface.getDescription()));
+
+    // Check VLAN properties and dependencies
+    Dependency port1Dependency = new Dependency("port1", DependencyType.BIND);
+    assertThat(port2.getEncapsulationVlan(), equalTo(1236));
+    assertThat(port2.getDependencies(), contains(port1Dependency));
+    assertThat(longName.getEncapsulationVlan(), equalTo(1235));
+    assertThat(longName.getDependencies(), contains(port1Dependency));
+    assertThat(vlan.getEncapsulationVlan(), equalTo(4094));
+    assertThat(vlan.getDependencies(), contains(port1Dependency));
   }
 
   @Test

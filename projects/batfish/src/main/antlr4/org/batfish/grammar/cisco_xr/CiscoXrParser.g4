@@ -3424,21 +3424,18 @@ ssh_timeout
 // old top-level rules (from hybrid cisco parser)
 stanza
 :
-   appletalk_access_list_stanza
-   | as_path_set_stanza
+   as_path_set_stanza
    | community_set_stanza
    | del_stanza
    | ip_as_path_regex_mode_stanza
    | ip_prefix_list_stanza
    | ip_route_stanza
    | ipv6_prefix_list_stanza
-   | ipx_sap_access_list_stanza
    | multicast_routing_stanza
    | no_aaa_group_server_stanza
    | no_failover
    | no_ip_prefix_list_stanza
    | prefix_set_stanza
-   | protocol_type_code_access_list_stanza
    | route_policy_stanza
    | router_bgp_stanza
    | router_hsrp_stanza
@@ -3528,8 +3525,6 @@ stanza
    | s_logging
    | s_lpts
    | s_management
-   | s_mac_access_list
-   | s_mac_access_list_extended
    | s_map_class
    | s_media_termination
    | s_monitor
