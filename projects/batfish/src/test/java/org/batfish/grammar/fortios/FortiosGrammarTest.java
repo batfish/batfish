@@ -1877,8 +1877,6 @@ public final class FortiosGrammarTest {
                 allOf(
                     hasComment("When 'any' is set together with other interfaces, it is removed"),
                     hasText("any port10")),
-                hasComment("Expected policy number in range 0-4294967294, but got 'foobar'"),
-                hasComment("Expected policy number in range 0-4294967294, but got 'barbaz'"),
                 hasComment("Cannot move a non-existent policy"),
                 hasComment("Cannot move around a non-existent policy"))));
 

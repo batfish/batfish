@@ -1025,13 +1025,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCfp_move(Cfp_moveContext ctx) {
-    Optional<Long> nameOpt = toLong(ctx, ctx.name);
-    Optional<Long> pivotOpt = toLong(ctx, ctx.pivot);
-    if (!nameOpt.isPresent() || !pivotOpt.isPresent()) {
-      return;
-    }
-    String name = nameOpt.get().toString();
-    String pivot = pivotOpt.get().toString();
+    String name = toString(ctx.name.str());
+    String pivot = toString(ctx.pivot.str());
     if (!_c.getPolicies().containsKey(name)) {
       warn(ctx, "Cannot move a non-existent policy");
       _c.undefined(

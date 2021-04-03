@@ -81,10 +81,7 @@ config firewall policy
         set dstaddr addr20
         set service service10
     next
-    # Invalid names
-    move foobar before 3
-    move 3 before barbaz
-    # Valid but non-existent names
+    # Non-existent names
     move 3 before 99999
     move 99999 before 3
 end
