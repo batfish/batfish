@@ -47,6 +47,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -86,6 +87,8 @@ import org.batfish.representation.cisco_xr.Ipv6AccessList;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.OspfProcess;
+import org.batfish.representation.cisco_xr.XrCommunitySet;
+import org.batfish.representation.cisco_xr.XrCommunitySetHighLowRangeExprs;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -258,12 +261,35 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testCommunitySet() {
+  public void testCommunitySetExtraction() {
+    String hostname = "community-set";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getCommunitySets(), hasKeys("mixed", "universe", "wellknown"));
+    {
+      XrCommunitySet set = vc.getCommunitySets().get("wellknown");
+      assertThat(
+          set.getElements(),
+          contains(
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.ACCEPT_OWN),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.GRACEFUL_SHUTDOWN),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.INTERNET),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.NO_EXPORT_SUBCONFED),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.NO_ADVERTISE),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.NO_EXPORT)));
+    }
+    // TODO: test other sets
+  }
+
+  @Test
+  public void testCommunitySetConversion() {
     Configuration c = parseConfig("community-set");
     CommunityContext ctx = CommunityContext.builder().build();
 
+    // TODO: test wellknown
+
     // Test CommunityMatchExprs
-    assertThat(c.getCommunityMatchExprs(), hasKeys("universe", "mixed"));
+    assertThat(c.getCommunityMatchExprs(), hasKeys("universe", "mixed", "wellknown"));
     {
       CommunityMatchExpr expr = c.getCommunityMatchExprs().get("universe");
       assertTrue(expr.accept(ctx.getCommunityMatchExprEvaluator(), StandardCommunity.of(1L)));
@@ -283,7 +309,7 @@ public final class XrGrammarTest {
     }
 
     // Test CommunitySetExprs
-    assertThat(c.getCommunitySetExprs(), hasKeys("universe", "mixed"));
+    assertThat(c.getCommunitySetExprs(), hasKeys("universe", "mixed", "wellknown"));
     {
       CommunitySetExpr expr = c.getCommunitySetExprs().get("universe");
       assertThat(
@@ -303,7 +329,9 @@ public final class XrGrammarTest {
             computeCommunitySetMatchAnyName("universe"),
             computeCommunitySetMatchEveryName("universe"),
             computeCommunitySetMatchAnyName("mixed"),
-            computeCommunitySetMatchEveryName("mixed")));
+            computeCommunitySetMatchEveryName("mixed"),
+            computeCommunitySetMatchAnyName("wellknown"),
+            computeCommunitySetMatchEveryName("wellknown")));
     {
       CommunitySetMatchExpr expr =
           c.getCommunitySetMatchExprs().get(computeCommunitySetMatchAnyName("universe"));

@@ -6,6 +6,15 @@ community-set universe
   *:*
 end-set
 
+community-set wellknown
+  accept-own,
+  graceful-shutdown,
+  internet,
+  local-AS,
+  no-advertise,
+  no-export
+end-set
+
 community-set mixed
   ios-regex '_1234:.*',
   1:2,
