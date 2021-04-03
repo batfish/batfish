@@ -34,7 +34,7 @@ bgp_asn
 community
 :
    ACCEPT_OWN
-   | GSHUT
+   | GRACEFUL_SHUTDOWN
    | INTERNET
    | LOCAL_AS
    | NO_ADVERTISE

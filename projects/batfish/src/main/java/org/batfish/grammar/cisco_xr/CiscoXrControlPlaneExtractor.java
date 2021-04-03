@@ -7614,6 +7614,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private @Nullable XrCommunitySetElem toCommunitySetElemExpr(Community_set_elemContext ctx) {
     if (ctx.prefix != null) {
+      assert ctx.suffix != null;
       Uint16RangeExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
       Uint16RangeExpr suffix = toCommunitySetElemHalfExpr(ctx.suffix);
       return new XrCommunitySetHighLowRangeExprs(prefix, suffix);
@@ -8117,7 +8118,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return toLong(ctx.u32);
     } else if (ctx.INTERNET() != null) {
       return WellKnownCommunity.INTERNET;
-    } else if (ctx.GSHUT() != null) {
+    } else if (ctx.GRACEFUL_SHUTDOWN() != null) {
       return WellKnownCommunity.GRACEFUL_SHUTDOWN;
     } else if (ctx.LOCAL_AS() != null) {
       // CiscoXr LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet forums.

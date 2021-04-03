@@ -11,7 +11,6 @@ tokens {
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
    DOTDOT,
-   GRACEFUL_SHUTDOWN,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
@@ -2045,6 +2044,8 @@ GRACEFUL: 'graceful';
 
 GRACEFUL_RESTART: 'graceful-restart';
 
+GRACEFUL_SHUTDOWN: 'graceful-shutdown';
+
 GRACETIME: 'gracetime';
 
 GRANT: 'grant';
@@ -2092,11 +2093,6 @@ GROUP21: 'group21';
 GROUP24: 'group24';
 
 GROUP5: 'group5';
-
-GSHUT
-:
-   [Gg][Ss][Hh][Uu][Tt]
-;
 
 GT: 'gt';
 
@@ -7260,6 +7256,7 @@ M_Words_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+// route-policy set community expression
 mode M_CommunitySetExpr;
 
 M_CommunitySetExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
@@ -7286,6 +7283,8 @@ M_CommunitySetExprElem_COLON: ':' -> type(COLON);
 M_CommunitySetExprElem_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_CommunitySetExprElem_WS: F_Whitespace+ -> channel(HIDDEN);
 
+// route-policy community matches-{any,all} / delete community in expression
+// TODO: push here from delete community in
 mode M_CommunitySetMatchExpr;
 
 M_CommunitySetMatchExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;

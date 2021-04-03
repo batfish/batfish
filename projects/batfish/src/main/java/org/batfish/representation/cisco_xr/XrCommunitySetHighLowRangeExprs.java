@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco_xr;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -34,6 +35,23 @@ public final class XrCommunitySetHighLowRangeExprs implements XrCommunitySetElem
 
   public @Nonnull Uint16RangeExpr getLowRangeExpr() {
     return _lowRangeExpr;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    XrCommunitySetHighLowRangeExprs that = (XrCommunitySetHighLowRangeExprs) o;
+    return _highRangeExpr.equals(that._highRangeExpr) && _lowRangeExpr.equals(that._lowRangeExpr);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_highRangeExpr, _lowRangeExpr);
   }
 
   private final Uint16RangeExpr _highRangeExpr;
