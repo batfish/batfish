@@ -2377,11 +2377,7 @@ public final class FortiosGrammarTest {
         .build();
   }
 
-  /**
-   * Test that policies are converted correctly for use as interface outgoing filters. This test is
-   * currently ignored because of a bug in how we convert policies - deny rules that don't match
-   * still end up denying traffic.
-   */
+  /** Test that policies are converted correctly for use as interface outgoing filters. */
   @Test
   public void testInterfaceOutgoingFilterPolicyConversion() throws IOException {
     String hostname = "policy";
