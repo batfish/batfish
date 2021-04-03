@@ -8,22 +8,25 @@ config router access-list
         set comments "comment for acl_name1"
         config rule
             edit 12
-                set prefix any
+                # Permits 1.2.3.0/24 (set in later edit block)
+                set action permit
+                set exact-match enable
+                set wildcard 1.2.3.4 0.255.255.255
+                set prefix 1.2.3.4/28
             next
             edit 1
+                # Denies everything in 1.0.0.0/8
                 set action deny
-                set exact-match enable
-                set wildcard 1.2.3.4 255.0.0.0
-                set prefix 1.2.3.4/24
-            next
-            edit 2
-                set action permit
                 set exact-match disable
                 set prefix 1.2.3.4/24
-                set wildcard 1.2.3.4 255.0.0.0
+                set wildcard 1.2.3.4 0.255.255.255
+            next
+            edit 2
+                # Permits everything else
+                set prefix any
             next
             edit 12
-                set prefix any
+                set prefix 1.2.3.4/24
             next
         end
     next
