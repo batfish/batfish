@@ -1,0 +1,4 @@
+#
+set system host-name firewall-global-address-book-range-error
+#
+set security address-book global address INVALID range-address 5.5.5.7 to 5.5.5.5

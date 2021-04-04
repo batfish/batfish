@@ -4,6 +4,7 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
@@ -204,6 +205,7 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -1664,6 +1666,19 @@ public final class FlatJuniperGrammarTest {
             containsIp(inside),
             containsIp(max),
             not(containsIp(after))));
+  }
+
+  @Test
+  public void testFirewallGlobalAddressBookRangeError() {
+    _thrown.expect(BatfishException.class);
+    _thrown.expect(
+        hasStackTrace(
+            allOf(
+                containsString("WillNotCommitException"),
+                containsString(
+                    "Range must be from low to high: address INVALID range-address 5.5.5.7 to"
+                        + " 5.5.5.5"))));
+    parseConfig("firewall-global-address-book-range-error");
   }
 
   @Test
