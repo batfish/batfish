@@ -40,7 +40,6 @@ community
    | NO_ADVERTISE
    | NO_EXPORT
    | hi = uint16 COLON lo = uint16
-   | u32 = uint32
 ;
 
 description_line
