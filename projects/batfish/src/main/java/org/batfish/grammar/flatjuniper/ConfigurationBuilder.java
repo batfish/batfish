@@ -135,6 +135,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.WillNotCommitException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -3249,6 +3250,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.RANGE_ADDRESS() != null) {
       Ip lower = Ip.parse(ctx.lower_limit.getText());
       Ip upper = Ip.parse(ctx.upper_limit.getText());
+      if (lower.compareTo(upper) > 0) {
+        // Lower is bigger, Juniper will reject this.
+        throw new WillNotCommitException("Range must be from low to high: " + getFullText(ctx));
+      }
       AddressBookEntry addressEntry = new AddressRangeAddressBookEntry(name, lower, upper);
       _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.DESCRIPTION() != null) {
