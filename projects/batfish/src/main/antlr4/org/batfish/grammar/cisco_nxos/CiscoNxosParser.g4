@@ -6,6 +6,7 @@ import
   CiscoNxos_bgp,
   CiscoNxos_class_map,
   CiscoNxos_crypto,
+  CiscoNxos_dhcp,
   CiscoNxos_eigrp,
   CiscoNxos_evpn,
   CiscoNxos_fex,
@@ -159,6 +160,7 @@ s_ip
     ip_access_list
     | ip_as_path_access_list
     | ip_community_list
+    | ip_dhcp
     | ip_domain_name
     | ip_name_server
     | ip_null
@@ -279,6 +281,7 @@ s_ipv6
   IPV6
   (
     ipv6_access_list
+    | ipv6_dhcp
     | ipv6_prefix_list
   )
 ;

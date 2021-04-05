@@ -637,6 +637,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testDhcpParsing() {
+    // TODO: make into an extraction test, convert what's important
+    assertThat(parseVendorConfig("dhcp"), notNullValue());
+  }
+
+  @Test
   public void testBgpExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp");
     BgpGlobalConfiguration bgpGlobal = vc.getBgpGlobalConfiguration();
