@@ -2,6 +2,7 @@ package org.batfish.representation.cisco_xr;
 
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -76,6 +77,23 @@ public class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStateme
         XrInlineCommunitySet inlineCommunitySet, Configuration arg) {
       return Optional.of(toCommunityMatchExpr(inlineCommunitySet.getCommunitySet(), arg));
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    XrRoutePolicyDeleteCommunityStatement that = (XrRoutePolicyDeleteCommunityStatement) o;
+    return _negated == that._negated && _expr.equals(that._expr);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr, _negated);
   }
 
   private static final Statement INVALID = new Comment("(invalid community-set reference)");

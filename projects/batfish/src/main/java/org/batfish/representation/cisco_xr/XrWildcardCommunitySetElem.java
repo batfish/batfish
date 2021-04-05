@@ -16,6 +16,16 @@ public final class XrWildcardCommunitySetElem implements XrCommunitySetElem {
     return visitor.visitWildcardCommunitySetElem(this);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj || obj instanceof XrWildcardCommunitySetElem;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0xe37bb8a8; // randomly generated
+  }
+
   private static final XrWildcardCommunitySetElem INSTANCE = new XrWildcardCommunitySetElem();
 
   private XrWildcardCommunitySetElem() {}

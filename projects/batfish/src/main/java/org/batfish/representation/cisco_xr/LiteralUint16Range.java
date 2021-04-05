@@ -20,5 +20,22 @@ public class LiteralUint16Range implements Uint16RangeExpr {
     return _range;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    LiteralUint16Range that = (LiteralUint16Range) o;
+    return _range.equals(that._range);
+  }
+
+  @Override
+  public int hashCode() {
+    return _range.hashCode();
+  }
+
   private final @Nonnull SubRange _range;
 }

@@ -2,6 +2,7 @@ package org.batfish.representation.cisco_xr;
 
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunitySetExpr;
 
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -79,6 +80,23 @@ public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    XrRoutePolicySetCommunity that = (XrRoutePolicySetCommunity) o;
+    return _additive == that._additive && _expr.equals(that._expr);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_additive, _expr);
+  }
+
   private final boolean _additive;
-  private final XrCommunitySetExpr _expr;
+  @Nonnull private final XrCommunitySetExpr _expr;
 }

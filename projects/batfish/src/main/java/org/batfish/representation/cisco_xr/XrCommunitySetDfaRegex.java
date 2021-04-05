@@ -8,7 +8,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * community attributes via a Cisco IOS-XR DFA regex.
  */
 @ParametersAreNonnullByDefault
-public class XrCommunitySetDfaRegex implements XrCommunitySetElem {
+public final class XrCommunitySetDfaRegex implements XrCommunitySetElem {
 
   public XrCommunitySetDfaRegex(String regex) {
     _regex = regex;
@@ -21,6 +21,23 @@ public class XrCommunitySetDfaRegex implements XrCommunitySetElem {
 
   public @Nonnull String getRegex() {
     return _regex;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    XrCommunitySetDfaRegex that = (XrCommunitySetDfaRegex) o;
+    return _regex.equals(that._regex);
+  }
+
+  @Override
+  public int hashCode() {
+    return _regex.hashCode();
   }
 
   private final @Nonnull String _regex;

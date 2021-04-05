@@ -64,6 +64,23 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    RoutePolicyDispositionStatement that = (RoutePolicyDispositionStatement) o;
+    return _dispositionType == that._dispositionType;
+  }
+
+  @Override
+  public int hashCode() {
+    return Integer.hashCode(_dispositionType.ordinal());
+  }
+
   public RoutePolicyDispositionType getDispositionType() {
     return _dispositionType;
   }

@@ -68,5 +68,22 @@ public class XrRoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean 
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    XrRoutePolicyBooleanCommunityMatchesAny that = (XrRoutePolicyBooleanCommunityMatchesAny) o;
+    return _expr.equals(that._expr);
+  }
+
+  @Override
+  public int hashCode() {
+    return _expr.hashCode();
+  }
+
   private final @Nonnull XrCommunitySetExpr _expr;
 }

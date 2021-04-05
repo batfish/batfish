@@ -20,4 +20,14 @@ public final class WildcardUint16RangeExpr implements Uint16RangeExpr {
   public <T, U> T accept(Uint16RangeExprVisitor<T, U> visitor, U arg) {
     return visitor.visitWildcardUint16RangeExpr(this);
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj || obj instanceof WildcardUint16RangeExpr;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0x0fc88b43; // randomly generated
+  }
 }

@@ -16,6 +16,16 @@ public final class PrivateAs implements Uint16RangeExpr {
     return visitor.visitPrivateAs(this);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj || obj instanceof PrivateAs;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0x956498d7; // randomly generated
+  }
+
   private static final PrivateAs INSTANCE = new PrivateAs();
 
   private PrivateAs() {}

@@ -18,5 +18,15 @@ public final class PeerAs implements Uint16RangeExpr {
 
   private static final PeerAs INSTANCE = new PeerAs();
 
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj || obj instanceof PeerAs;
+  }
+
+  @Override
+  public int hashCode() {
+    return 0xd8e56dbe; // randomly generated
+  }
+
   private PeerAs() {}
 }
