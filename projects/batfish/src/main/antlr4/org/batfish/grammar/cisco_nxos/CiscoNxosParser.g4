@@ -285,6 +285,7 @@ s_ipv6
     ipv6_access_list
     | ipv6_dhcp
     | ipv6_prefix_list
+    | ipv6_route
   )
 ;
 
