@@ -613,13 +613,13 @@ public class AclTracerTest {
   @Test
   public void testNotMatchExpr_withoutTraceElement() {
     List<TraceTree> trace = trace(not(falseExpr("false")));
-    assertThat(trace, contains(isTraceTree("false")));
+    assertThat(trace, empty());
   }
 
   @Test
   public void testNotMatchExpr_withTraceElement() {
     List<TraceTree> trace = trace(not("not", falseExpr("false")));
-    assertThat(trace, contains(isTraceTree("not", isTraceTree("false"))));
+    assertThat(trace, contains(isTraceTree("not")));
   }
 
   @Test
