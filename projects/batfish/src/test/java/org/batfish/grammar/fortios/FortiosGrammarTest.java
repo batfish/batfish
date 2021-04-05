@@ -2438,6 +2438,8 @@ public final class FortiosGrammarTest {
         (FortiosConfiguration)
             batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
 
+    // 3 doesn't show up since it is deleted
+    // 1 is last, since it was deleted then re-created
     assertThat(vc.getPolicies().keySet(), contains("2", "1"));
   }
 
