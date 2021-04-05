@@ -1,6 +1,7 @@
 package org.batfish.representation.fortios;
 
 import static org.batfish.representation.fortios.FortiosBgpConversions.convertBgp;
+import static org.batfish.representation.fortios.FortiosBgpConversions.convertRouteMap;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.convertPolicies;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateCrossZoneFilters;
@@ -201,6 +202,10 @@ public class FortiosConfiguration extends VendorConfiguration {
     // Convert access-lists
     _accessLists.forEach(
         (name, accessList) -> c.getRouteFilterLists().put(name, convertAccessList(accessList)));
+
+    // Convert route-maps. Must happen after access-list conversion (and prefix-list conversion once
+    // they are supported)
+    _routeMaps.values().forEach(routeMap -> convertRouteMap(routeMap, c, _w));
 
     // Convert BGP. Must happen after interface conversion
     if (_bgpProcess != null) {
