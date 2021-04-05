@@ -1,9 +1,12 @@
 package org.batfish.representation.fortios;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.Warnings;
@@ -13,6 +16,15 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /** Helper functions for generating VI BGP structures for {@link FortiosConfiguration}. */
 public final class FortiosBgpConversions {
@@ -141,5 +153,42 @@ public final class FortiosBgpConversions {
     // TODO: Redistribution policy, import/export policies
 
     c.getVrfs().get(vrf).setBgpProcess(viProc);
+  }
+
+  public static void convertRouteMap(RouteMap routeMap, Configuration c, Warnings w) {
+    String rmName = routeMap.getName();
+    List<Statement> statements =
+        routeMap.getRules().values().stream()
+            .map(
+                rule -> {
+                  String listName = rule.getMatchIpAddress();
+                  Statement action =
+                      rule.getActionEffective() == RouteMapRule.Action.PERMIT
+                          ? Statements.ReturnTrue.toStaticStatement()
+                          : Statements.ReturnFalse.toStaticStatement();
+                  Statement statement;
+                  if (listName != null) {
+                    if (!c.getRouteFilterLists().containsKey(listName)) {
+                      w.redFlag(
+                          String.format(
+                              "Ignoring rule %s in route-map %s: List %s does not exist or was not"
+                                  + " converted",
+                              rule.getNumber(), rmName, listName));
+                      return null;
+                    }
+                    BooleanExpr guard =
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(), new NamedPrefixSet(listName));
+                    statement = new If(guard, ImmutableList.of(action));
+                  } else {
+                    // Rule matches unconditionally. TODO Confirm behavior
+                    statement = new If(BooleanExprs.TRUE, ImmutableList.of(action));
+                  }
+                  statement.setComment(String.format("Match rule %s", rule.getNumber()));
+                  return statement;
+                })
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+    RoutingPolicy.builder().setOwner(c).setName(rmName).setStatements(statements).build();
   }
 }
