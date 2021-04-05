@@ -2356,6 +2356,10 @@ public final class FortiosGrammarTest {
             FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP,
             "UNDEFINED",
             FortiosStructureUsage.POLICY_SERVICE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.POLICY, "2", FortiosStructureUsage.POLICY_DELETE));
   }
 
   @Test
@@ -2461,6 +2465,19 @@ public final class FortiosGrammarTest {
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3DeniedIndirect, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
+  }
+
+  @Test
+  public void testPolicyDelete() throws IOException {
+    String hostname = "policy_delete";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // 3 doesn't show up since it is deleted
+    // 1 is last, since it was deleted then re-created
+    assertThat(vc.getPolicies().keySet(), contains("2", "1"));
   }
 
   @Test
