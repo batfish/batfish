@@ -27,6 +27,7 @@ import
   CiscoNxos_ospfv3,
   CiscoNxos_policy_map,
   CiscoNxos_rip,
+  CiscoNxos_rmon,
   CiscoNxos_route_map,
   CiscoNxos_snmp,
   CiscoNxos_static,
@@ -72,6 +73,7 @@ statement
   | s_nv
   | s_object_group
   | s_policy_map
+  | s_rmon
   | s_role
   | s_route_map
   | s_router
