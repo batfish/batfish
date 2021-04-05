@@ -173,6 +173,8 @@ AREA: 'area';
 
 ARP: 'arp';
 
+ARP_INSPECT: 'arp-inspect';
+
 AS_NUMBER: 'as-number';
 
 AS_OVERRIDE: 'as-override';
@@ -517,6 +519,8 @@ DETAIL: 'detail';
 
 DHCP: 'dhcp';
 
+DHCP_SNOOP: 'dhcp-snoop';
+
 DHCP_SNOOPING_VLAN: 'dhcp-snooping-vlan';
 
 DIR: 'dir';
@@ -693,6 +697,8 @@ EXEC_TIMEOUT: 'exec-timeout';
 EXEMPT: 'exempt';
 
 EXIST_MAP: 'exist-map';
+
+EXP: 'exp';
 
 EXPANDED
 :
@@ -1381,6 +1387,8 @@ MONITOR
   }
 ;
 
+MPLS: 'mpls';
+
 MROUTER: 'mrouter';
 
 MS: 'ms';
@@ -1939,6 +1947,8 @@ ROUTE_TYPE: 'route-type';
 ROUTER: 'router';
 
 ROUTER_ADVERTISEMENT: 'router-advertisement';
+
+ROUTER_ALERT: 'router-alert';
 
 ROUTER_ID: 'router-id';
 

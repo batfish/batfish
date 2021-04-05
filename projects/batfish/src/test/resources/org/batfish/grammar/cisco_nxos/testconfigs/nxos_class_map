@@ -24,6 +24,12 @@ class-map type control-plane match-any cm_cp
   match exception multicast sg-rpf-failure
   match exception nat-flow
   match exception ttl-failure
+  match protocol arp
+  match protocol mpls
+  match protocol mpls exp 6
+  match protocol mpls router-alert
+  match redirect arp-inspect
+  match redirect dhcp-snoop
 
 class-map type network-qos cm_network_qos
   description some network-qos class
