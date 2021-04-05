@@ -535,6 +535,14 @@ uint32
   | UINT32
 ;
 
+uint64
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+;
+
 uint8_range_set
 :
   ranges += uint8_range
