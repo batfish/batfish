@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.Set;
@@ -322,5 +323,23 @@ public final class BgpRoute {
       _weight = weight;
       return this;
     }
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .omitNullValues()
+        .add("network", _network)
+        .add("metric", _metric)
+        .add("asPath", _asPath)
+        .add("communities", _communities)
+        .add("localPreference", _localPreference)
+        .add("nextHopIp", _nextHopIp)
+        .add("originatorIp", _originatorIp)
+        .add("originType", _originType)
+        .add("protocol", _protocol)
+        .add("srcProtocol", _srcProtocol)
+        .add("weight", _weight)
+        .toString();
   }
 }
