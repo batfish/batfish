@@ -56,6 +56,13 @@ public class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStateme
         new CommunitySetExprToCommunityMatchExpr();
 
     @Override
+    public Optional<CommunityMatchExpr> visitCommunitySetParameterReference(
+        XrCommunitySetParameterReference xrCommunitySetParameterReference) {
+      // TODO: implement route-policy parameters
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<CommunityMatchExpr> visitCommunitySetReference(
         XrCommunitySetReference communitySetReference, Configuration arg) {
       // return reference to computed CommunityMatchExpr if it exists, else empty Optional.

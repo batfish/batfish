@@ -90,12 +90,12 @@ boolean_as_path_passes_through_rp_stanza
 
 boolean_community_matches_any_rp_stanza
 :
-   COMMUNITY MATCHES_ANY rp_community_set
+   COMMUNITY MATCHES_ANY community_set_match_expr
 ;
 
 boolean_community_matches_every_rp_stanza
 :
-   COMMUNITY MATCHES_EVERY rp_community_set
+   COMMUNITY MATCHES_EVERY community_set_match_expr
 ;
 
 boolean_destination_rp_stanza
@@ -170,7 +170,8 @@ delete_community_rp_stanza
    DELETE COMMUNITY
    (
       ALL
-      | NOT? IN rp_community_set
+      // abuse of common syntax - treated as a single community match expression
+      | NOT? IN community_set_match_expr
    ) NEWLINE
 ;
 
@@ -261,13 +262,50 @@ route_policy_params_list
    )*
 ;
 
-rp_community_set
+community_set_expr
 :
-   name = variable
-   | PAREN_LEFT elems += community_set_elem
-   (
-      COMMA elems += community_set_elem
-   )* PAREN_RIGHT
+   name = community_set_name
+   | inline = PAREN_LEFT elems += community_set_expr_elem (COMMA elems += community_set_expr_elem)* PAREN_RIGHT
+   | param = parameter
+;
+
+community_set_expr_elem
+:
+  literal = literal_community
+  | hi = community_set_expr_elem_half COLON lo = community_set_expr_elem_half
+;
+
+community_set_expr_elem_half
+:
+  value = uint16
+  | param = parameter // stateful
+  | PEERAS // stateful
+;
+
+community_set_match_expr
+:
+   name = community_set_name
+   | PAREN_LEFT elems += community_set_match_expr_elem (COMMA elems += community_set_match_expr_elem)* PAREN_RIGHT
+   | param = parameter
+;
+
+community_set_match_expr_elem
+:
+  ASTERISK
+  | literal_community
+  | hi = community_set_match_expr_elem_half COLON lo = community_set_match_expr_elem_half
+  | DFA_REGEX COMMUNITY_SET_REGEX
+  | IOS_REGEX COMMUNITY_SET_REGEX
+;
+
+community_set_match_expr_elem_half
+:
+  ASTERISK
+  | value = uint16
+  | param = parameter // stateful
+  | BRACKET_LEFT first = uint16 DOTDOT last = uint16 BRACKET_RIGHT
+  | PEERAS // stateful
+  | PRIVATE_AS
 ;
 
 rp_extcommunity_set_rt
@@ -345,7 +383,7 @@ rp_stanza
 
 set_community_rp_stanza
 :
-   SET COMMUNITY rp_community_set ADDITIVE? NEWLINE
+   SET COMMUNITY community_set_expr ADDITIVE? NEWLINE
 ;
 
 set_extcommunity_rp_stanza

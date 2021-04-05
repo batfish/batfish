@@ -948,8 +948,11 @@ COMMUNITY
 :
   'community'
   {
+    int ltt = lastTokenType();
     if (lastTokenType() == SET) {
       pushMode(M_CommunitySetExpr);
+    } else if (ltt == DELETE) {
+      pushMode(M_DeleteCommunity);
     }
   }
 ;
@@ -959,7 +962,7 @@ COMMUNITY_MAP
    'community-map' -> pushMode ( M_Name )
 ;
 
-COMMUNITY_SET: 'community-set';
+COMMUNITY_SET: 'community-set' -> pushMode(M_CommunitySet);
 
 COMPARE_ROUTERID: 'compare-routerid';
 
@@ -2210,7 +2213,7 @@ HOST_UNKNOWN: 'host-unknown';
 
 HOST_UNREACHABLE: 'host-unreachable';
 
-HOSTNAME: 'hostname';
+HOSTNAME: 'hostname' -> pushMode(M_Hostname);
 
 HOSTNAMEPREFIX: 'hostnameprefix';
 
@@ -6236,6 +6239,18 @@ F_LocalAs
   [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
 ;
 
+fragment
+F_CommunitySetRegexComponentChar
+:
+  ~[':&<> ]
+;
+
+fragment
+F_CommunitySetRegex
+:
+  ['] F_CommunitySetRegexComponentChar* ':' F_CommunitySetRegexComponentChar* [']
+;
+
 mode M_Alias;
 
 M_Alias_VARIABLE
@@ -7011,23 +7026,30 @@ M_Interface_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_Hostname;
+
+M_Hostname_WORD: ([A-Za-z0-9_] | '-')+ -> type(WORD), popMode;
+
+M_Hostname_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+M_Hostname_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_DfaRegex;
+
+M_DfaRegex_COMMUNITY_SET_REGEX: F_CommunitySetRegex -> type(COMMUNITY_SET_REGEX), popMode;
+
+M_DfaRegex_WS: F_Whitespace+ -> channel(HIDDEN);
+
 mode M_IosRegex;
 
-M_IosRegex_COMMUNITY_SET_REGEX
-:
-   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\'' -> type ( COMMUNITY_SET_REGEX ) ,
-   popMode
-;
+M_IosRegex_COMMUNITY_SET_REGEX: F_CommunitySetRegex -> type(COMMUNITY_SET_REGEX), popMode;
 
 M_IosRegex_AS_PATH_SET_REGEX
 :
    '\'' ~'\''* '\'' -> type ( AS_PATH_SET_REGEX ) , popMode
 ;
 
-M_IosRegex_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
+M_IosRegex_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_ISO_Address;
 
@@ -7256,6 +7278,41 @@ M_Words_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+// community-set definition
+mode M_CommunitySet;
+
+M_CommunitySet_WORD: F_Word+ -> type(WORD);
+M_CommunitySet_NEWLINE: F_Newline -> type(NEWLINE), mode(M_CommunitySetElem);
+M_CommunitySet_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_CommunitySetElem;
+M_CommunitySetElem_ACCEPT_OWN: 'accept-own' -> type(ACCEPT_OWN);
+M_CommunitySetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_DfaRegex);
+M_CommunitySetElem_GRACEFUL_SHUTDOWN: 'graceful-shutdown' -> type(GRACEFUL_SHUTDOWN);
+M_CommunitySetElem_INTERNET: 'internet' -> type(INTERNET);
+M_CommunitySetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_IosRegex);
+M_CommunitySetElem_LOCAL_AS: F_LocalAs -> type(LOCAL_AS);
+M_CommunitySetElem_NO_ADVERTISE: 'no-advertise' -> type(NO_ADVERTISE);
+M_CommunitySetElem_NO_EXPORT: 'no-export' -> type(NO_EXPORT);
+M_CommunitySetElem_PRIVATE_AS: 'private-as' -> type(PRIVATE_AS);
+
+M_CommunitySetElem_ASTERISK: '*' -> type(ASTERISK);
+M_CommunitySetElem_BRACKET_LEFT: '[' -> type(BRACKET_LEFT);
+M_CommunitySetElem_BRACKET_RIGHT: ']' -> type(BRACKET_RIGHT);
+M_CommunitySetElem_COMMA: ',' -> type(COMMA);
+M_CommunitySetElem_DOTDOT: '..' -> type(DOTDOT);
+M_CommunitySetElem_END_SET: 'end-set' -> type(END_SET), popMode;
+M_CommunitySetElem_UINT16: F_Uint16 -> type(UINT16);
+M_CommunitySetElem_COLON: ':' -> type(COLON);
+
+// NEWLINE can be interspersed between any other tokens in this mode
+M_CommunitySetElem_NEWLINE: F_Newline -> channel(HIDDEN);
+
+// TODO: save remarks
+M_CommunitySetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
+
+M_CommunitySetElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
 // route-policy set community expression
 mode M_CommunitySetExpr;
 
@@ -7284,7 +7341,6 @@ M_CommunitySetExprElem_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_CommunitySetExprElem_WS: F_Whitespace+ -> channel(HIDDEN);
 
 // route-policy community matches-{any,all} / delete community in expression
-// TODO: push here from delete community in
 mode M_CommunitySetMatchExpr;
 
 M_CommunitySetMatchExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
@@ -7293,9 +7349,11 @@ M_CommunitySetMatchExpr_WORD: F_Word+ -> type(WORD), popMode;
 M_CommunitySetMatchExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_CommunitySetMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);
 
+// community matches-{any-all} / delete community single community match expression
 mode M_CommunitySetMatchExprElem;
 
 M_CommunitySetMatchExprElem_ACCEPT_OWN: 'accept-own' -> type(ACCEPT_OWN);
+M_CommunitySetMatchExprElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_DfaRegex);
 M_CommunitySetMatchExprElem_GRACEFUL_SHUTDOWN: 'graceful-shutdown' -> type(GRACEFUL_SHUTDOWN);
 M_CommunitySetMatchExprElem_INTERNET: 'internet' -> type(INTERNET);
 M_CommunitySetMatchExprElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_IosRegex);
@@ -7316,3 +7374,12 @@ M_CommunitySetMatchExprElem_PAREN_RIGHT: ')' -> type(PAREN_RIGHT), popMode;
 M_CommunitySetMatchExprElem_COLON: ':' -> type(COLON);
 M_CommunitySetMatchExprElem_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_CommunitySetMatchExprElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_DeleteCommunity;
+
+M_DeleteCommunity_ALL: 'all' -> type(ALL), popMode;
+M_DeleteCommunity_NOT: 'not' -> type(NOT);
+M_DeleteCommunity_IN: 'in' -> type(IN), mode(M_CommunitySetMatchExpr);
+
+M_DeleteCommunity_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_DeleteCommunity_WS: F_Whitespace+ -> channel(HIDDEN);

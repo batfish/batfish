@@ -5,18 +5,18 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * An element of a {@link XrCommunitySet} specifying a space of standard communities or standard
- * community attributes via a Cisco IOS-style regex.
+ * community attributes via a Cisco IOS-XR DFA regex.
  */
 @ParametersAreNonnullByDefault
-public class XrCommunitySetIosRegex implements XrCommunitySetElem {
+public class XrCommunitySetDfaRegex implements XrCommunitySetElem {
 
-  public XrCommunitySetIosRegex(String regex) {
+  public XrCommunitySetDfaRegex(String regex) {
     _regex = regex;
   }
 
   @Override
   public <T, U> T accept(XrCommunitySetElemVisitor<T, U> visitor, U arg) {
-    return visitor.visitCommunitySetIosRegex(this, arg);
+    return visitor.visitCommunitySetDfaRegex(this, arg);
   }
 
   public @Nonnull String getRegex() {

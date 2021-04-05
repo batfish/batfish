@@ -37,6 +37,13 @@ public class XrRoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolea
         new MatchesEveryCommunitySetExprToCommunitySetMatchExpr();
 
     @Override
+    public Optional<CommunitySetMatchExpr> visitCommunitySetParameterReference(
+        XrCommunitySetParameterReference xrCommunitySetParameterReference) {
+      // TODO: implement route-policy parameters
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<CommunitySetMatchExpr> visitCommunitySetReference(
         XrCommunitySetReference communitySetReference, Configuration arg) {
       // return reference to computed match-every CommunitySetMatchExpr if it exists, else empty

@@ -57,6 +57,13 @@ public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
     private static final XrToViCommunitySetExpr INSTANCE = new XrToViCommunitySetExpr();
 
     @Override
+    public Optional<CommunitySetExpr> visitCommunitySetParameterReference(
+        XrCommunitySetParameterReference xrCommunitySetParameterReference) {
+      // TODO: implement route-policy parameters
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<CommunitySetExpr> visitCommunitySetReference(
         XrCommunitySetReference communitySetReference, Configuration arg) {
       // return reference to computed CommunitySetExpr if it exists, else empty Optional.
