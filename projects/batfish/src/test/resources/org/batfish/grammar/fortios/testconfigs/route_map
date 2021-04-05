@@ -2,8 +2,14 @@ config system global
     set hostname "route_map"
 end
 config router access-list
-    edit "acl_name1"
-        set comments "comment for acl_name1"
+    edit "acl1"
+        config rule
+            edit 1
+                set prefix 10.10.10.0/24
+            next
+        end
+    next
+    edit "acl2"
         config rule
             edit 1
                 set prefix 10.10.0.0/16
@@ -18,15 +24,16 @@ config router route-map
         set comments "comment for route_map1"
         config rule
             edit 9999
+                set action permit
+                set match-ip-address "acl1"
             next
             edit 1
-                set action permit
-                set match-ip-address "acl_name1"
+                set action deny
+                set match-ip-address "acl2"
             next
             edit 2
-                set action deny
             next
-            edit 1
+            edit 9999
                 set action permit
             next
         end

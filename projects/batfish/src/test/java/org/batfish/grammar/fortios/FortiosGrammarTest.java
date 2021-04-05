@@ -69,6 +69,7 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
@@ -91,6 +92,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.AccessList;
@@ -2062,12 +2065,9 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testRouteMap() throws IOException {
+  public void testRouteMapExtraction() {
     String hostname = "route_map";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    FortiosConfiguration vc =
-        (FortiosConfiguration)
-            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+    FortiosConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getRouteMaps(), hasKeys("longest_route_map_name_allowed_by_f", "route_map1"));
     RouteMap longName = vc.getRouteMaps().get("longest_route_map_name_allowed_by_f");
@@ -2081,17 +2081,54 @@ public final class FortiosGrammarTest {
     // Defaults
     assertNull(longName.getComments());
     assertThat(longName.getRules(), anEmptyMap());
-    assertNull(rule9999.getAction());
-    assertThat(rule9999.getActionEffective(), equalTo(RouteMapRule.DEFAULT_ACTION));
-    assertNull(rule9999.getMatchIpAddress());
+    assertNull(rule2.getAction());
+    assertThat(rule2.getActionEffective(), equalTo(RouteMapRule.DEFAULT_ACTION));
+    assertNull(rule2.getMatchIpAddress());
 
     // Explicitly configured properties
     assertThat(rm1.getComments(), equalTo("comment for route_map1"));
-    assertThat(rule1.getAction(), equalTo(RouteMapRule.Action.PERMIT));
-    assertThat(rule1.getActionEffective(), equalTo(RouteMapRule.Action.PERMIT));
-    assertThat(rule1.getMatchIpAddress(), equalTo("acl_name1"));
-    assertThat(rule2.getAction(), equalTo(RouteMapRule.Action.DENY));
-    assertThat(rule2.getActionEffective(), equalTo(RouteMapRule.Action.DENY));
+    assertThat(rule9999.getAction(), equalTo(RouteMapRule.Action.PERMIT));
+    assertThat(rule9999.getActionEffective(), equalTo(RouteMapRule.Action.PERMIT));
+    assertThat(rule9999.getMatchIpAddress(), equalTo("acl1"));
+    assertThat(rule1.getAction(), equalTo(RouteMapRule.Action.DENY));
+    assertThat(rule1.getActionEffective(), equalTo(RouteMapRule.Action.DENY));
+    assertThat(rule1.getMatchIpAddress(), equalTo("acl2"));
+  }
+
+  @Test
+  public void testRouteMapConversion() throws IOException {
+    String hostname = "route_map";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getRoutingPolicies(), hasKeys("longest_route_map_name_allowed_by_f", "route_map1"));
+    RoutingPolicy longName = c.getRoutingPolicies().get("longest_route_map_name_allowed_by_f");
+    RoutingPolicy rm1 = c.getRoutingPolicies().get("route_map1");
+
+    // This route-map has no rules
+    assertThat(longName.getStatements(), empty());
+
+    // rm1 permits 10.10.10.0/24 or longer, then denies 10.10.0.0/16 or longer, then permits all
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder();
+    Environment.Builder envBuilder = Environment.builder(c);
+
+    // Networks permitted by rule 9999
+    rb.setNetwork(Prefix.parse("10.10.10.0/24"));
+    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    rb.setNetwork(Prefix.parse("10.10.10.128/25"));
+    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+
+    // Networks denied by rule 1
+    rb.setNetwork(Prefix.parse("10.10.0.0/16"));
+    assertFalse(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    rb.setNetwork(Prefix.parse("10.10.128.0/17"));
+    assertFalse(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+
+    // Networks permitted by rule 2
+    rb.setNetwork(Prefix.parse("10.10.0.0/15"));
+    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    rb.setNetwork(Prefix.ZERO);
+    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
   }
 
   @Test
