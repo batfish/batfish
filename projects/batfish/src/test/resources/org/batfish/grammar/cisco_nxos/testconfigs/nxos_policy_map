@@ -10,9 +10,13 @@ class-map match-any cm_qos2
 
 policy-map type control-plane pm_control_plane
   class cm_control_plane
+    logging drop threshold 100 level 7
     police cir 0 bps bc 0 bytes conform transmit violate drop
     police cir 12345 kbps bc 1234567 bytes conform transmit violate drop
     police cir 12 mbps bc 1234567 bytes conform transmit violate drop
+    police cir 12345 kbps bc 250 ms conform transmit violate drop
+    police cir 8 gbps bc 5 mbytes conform transmit violate transmit
+    police cir 5 pir 40 be 5 us
     police pps 500
     set cos 1
 

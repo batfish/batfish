@@ -62,9 +62,17 @@ pmcp_class
 :
   CLASS name = class_map_cp_name NEWLINE
   (
-    pmcpc_police
+    pmcpc_logging
+    | pmcpc_police
     | pmcpc_set
   )*
+;
+
+pmcpc_logging
+:
+// threshold: 1-80000000000 (80 billion)
+// level: 1-7
+  LOGGING DROP THRESHOLD threshold = uint64 (LEVEL level = uint8)? NEWLINE
 ;
 
 pmcpc_police
