@@ -479,9 +479,15 @@ public final class Interface extends ComparableStructure<String> {
 
   /** Type of interface dependency. Informs failure analysis and bandwidth computation */
   public enum DependencyType {
-    /** Aggregate dependency, part of one-to-many dependencies */
+    /**
+     * Aggregate dependency: interface which depends its constituents (aggregate interface stays up
+     * as long as one of its dependencies is up)
+     */
     AGGREGATE,
-    /** A bind dependency, one-to-one, required for fate sharing */
+    /**
+     * A bind dependency: required for fate sharing (bind interface goes down if its dependency goes
+     * down)
+     */
     BIND
   }
 
