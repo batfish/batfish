@@ -75,6 +75,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcintfContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_deleteContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_moveContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_actionContext;
@@ -1021,6 +1022,21 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, String.format("Policy edit block ignored: %s", invalidReason));
     }
     _currentPolicy = null;
+  }
+
+  @Override
+  public void exitCfp_delete(Cfp_deleteContext ctx) {
+    String name = toString(ctx.name.str());
+    if (!_c.getPolicies().containsKey(name)) {
+      warn(ctx, String.format("Cannot delete a non-existent policy %s", name));
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_DELETE,
+          ctx.start.getLine());
+      return;
+    }
+    _c.getPolicies().remove(name);
   }
 
   @Override

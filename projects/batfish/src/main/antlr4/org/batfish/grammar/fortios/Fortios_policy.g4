@@ -6,7 +6,9 @@ options {
 
 cf_policy: POLICY newline cfp*;
 
-cfp: cfp_edit | cfp_move;
+cfp: cfp_edit | cfp_move | cfp_delete;
+
+cfp_delete: DELETE name = policy_number newline;
 
 cfp_move: MOVE name = policy_number after_or_before pivot = policy_number newline;
 
