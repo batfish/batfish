@@ -20,10 +20,14 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests of {@link BgpRouteDiff}. */
 public class BgpRouteDiffTest {
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
   @Test
   public void testJsonSerialization() {
     BgpRouteDiff diff = new BgpRouteDiff(PROP_AS_PATH, "A", "B");
@@ -106,5 +110,16 @@ public class BgpRouteDiffTest {
             new BgpRouteDiff(PROP_COMMUNITIES, "[0:1, 0:2]", "[0:2, 0:3]"),
             new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2"),
             new BgpRouteDiff(PROP_METRIC, "1", "2")));
+  }
+
+  @Test
+  public void testUnsupported() {
+    BgpRoute r1 = builder().setNextHopIp(Ip.parse("1.2.3.4")).build();
+    BgpRoute r2 = builder().setNextHopIp(Ip.parse("1.2.3.5")).build();
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("1.2.3.4");
+    _thrown.expectMessage("1.2.3.5");
+    routeDiffs(r1, r2);
   }
 }

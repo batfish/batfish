@@ -109,7 +109,10 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             .setMetric(route2.getMetric())
             .build()
             .equals(route2),
-        "routeDiffs only supports differences of fields: " + ROUTE_DIFF_FIELD_NAMES);
+        "routeDiffs only supports differences of fields: %s, not %s vs %s",
+        ROUTE_DIFF_FIELD_NAMES,
+        route1,
+        route2);
 
     return Stream.of(
             routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
