@@ -64,4 +64,5 @@ config firewall policy
         append dstaddr addr2
         append service service2
     next
+    delete 2
 end

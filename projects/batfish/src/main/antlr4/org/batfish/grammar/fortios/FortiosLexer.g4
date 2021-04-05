@@ -49,6 +49,7 @@ CONFIG: 'config';
 COUNTRY: 'country';
 CUSTOM: 'custom';
 DEFAULT: 'default';
+DELETE: 'delete' -> pushMode(M_Str);
 DENY: 'deny';
 DESCRIPTION: 'description' -> pushMode(M_Str);
 DEVICE: 'device' -> pushMode(M_Str);
