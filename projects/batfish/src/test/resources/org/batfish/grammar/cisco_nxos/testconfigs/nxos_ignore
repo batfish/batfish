@@ -23,6 +23,11 @@ errdisable recovery cause storm-control
 errdisable recovery cause udld
 no ip domain-lookup
 ip domain-list example.com
+rmon event 1 log trap public description FATAL(1) owner PMON@FATAL
+rmon event 2 log trap public description CRITICAL(2) owner PMON@CRITICAL
+rmon event 3 log trap public description ERROR(3) owner PMON@ERROR
+rmon event 4 log trap public description WARNING(4) owner PMON@WARNING
+rmon event 5 log trap public description INFORMATION(5) owner PMON@INFO
 service dhcp
 username xxxxxxx password 5 xxxxxxx role network-admin
 username xxxxxxx password 5 xxxxxxx role network-operator

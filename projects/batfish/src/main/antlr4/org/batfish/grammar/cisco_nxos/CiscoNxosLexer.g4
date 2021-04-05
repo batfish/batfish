@@ -1897,6 +1897,8 @@ RIP
   }
 ;
 
+RMON: 'rmon' -> pushMode ( M_Remark );
+
 ROBUSTNESS_VARIABLE: 'robustness-variable';
 
 ROLE: 'role';
