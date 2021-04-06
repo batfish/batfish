@@ -15,10 +15,16 @@ crb
 crb_set_singletons
 :
     crb_set_as
+    | crb_set_ebgp_multipath
+    | crb_set_ibgp_multipath
     | crb_set_router_id
 ;
 
 crb_set_as: AS bgp_as newline;
+
+crb_set_ebgp_multipath: EBGP_MULTIPATH enable_or_disable newline;
+
+crb_set_ibgp_multipath: IBGP_MULTIPATH enable_or_disable newline;
 
 crb_set_router_id: ROUTER_ID router_id = ip_address newline;
 

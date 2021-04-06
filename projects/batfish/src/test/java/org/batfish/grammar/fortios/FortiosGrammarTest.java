@@ -8,6 +8,8 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -634,6 +636,10 @@ public final class FortiosGrammarTest {
     assert bgpProcess != null;
     assertThat(bgpProcess.getAs(), equalTo(1L));
     assertThat(bgpProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertNull(bgpProcess.getEbgpMultipath());
+    assertNull(bgpProcess.getIbgpMultipath());
+    assertFalse(bgpProcess.getEbgpMultipathEffective());
+    assertFalse(bgpProcess.getIbgpMultipathEffective());
 
     Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
     Ip ip1 = Ip.parse("2.2.2.2");
@@ -668,6 +674,8 @@ public final class FortiosGrammarTest {
     org.batfish.datamodel.BgpProcess bgpProcessDefaultVrf =
         c.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
     assertThat(bgpProcessDefaultVrf, hasRouterId(Ip.parse("1.1.1.1")));
+    assertThat(bgpProcessDefaultVrf, hasMultipathEbgp(false));
+    assertThat(bgpProcessDefaultVrf, hasMultipathIbgp(false));
 
     Map<Prefix, BgpActivePeerConfig> defaultVrfNeighbors =
         bgpProcessDefaultVrf.getActiveNeighbors();
@@ -754,6 +762,44 @@ public final class FortiosGrammarTest {
     assertThat(
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()).getWarnings(),
         not(hasKey(hostname)));
+  }
+
+  @Test
+  public void testBgpMultipath() throws IOException {
+    // Tests extraction and conversion for ebgp-multipath and ibgp-multipath properties when
+    // explicitly set. Defaults are tested in testBgpExtraction/testBgpConversion. Can't test more
+    // than one option per config because each config can only have one top-level BGP configuration.
+    String hostname1 = "bgp_multipath_1";
+    String hostname2 = "bgp_multipath_2";
+
+    // First config has multipath enabled for EBGP, disabled for IBGP; vice versa for second config
+    FortiosConfiguration vc1 = parseVendorConfig(hostname1);
+    BgpProcess vcProc1 = vc1.getBgpProcess();
+    assert vcProc1 != null;
+    assertThat(vcProc1.getEbgpMultipath(), equalTo(true));
+    assertThat(vcProc1.getIbgpMultipath(), equalTo(false));
+    assertThat(vcProc1.getEbgpMultipathEffective(), equalTo(true));
+    assertThat(vcProc1.getIbgpMultipathEffective(), equalTo(false));
+
+    FortiosConfiguration vc2 = parseVendorConfig(hostname2);
+    BgpProcess vcProc2 = vc2.getBgpProcess();
+    assert vcProc2 != null;
+    assertThat(vcProc2.getEbgpMultipath(), equalTo(false));
+    assertThat(vcProc2.getIbgpMultipath(), equalTo(true));
+    assertThat(vcProc2.getEbgpMultipathEffective(), equalTo(false));
+    assertThat(vcProc2.getIbgpMultipathEffective(), equalTo(true));
+
+    Configuration c1 = parseConfig(hostname1);
+    org.batfish.datamodel.BgpProcess proc1 =
+        c1.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
+    assertThat(proc1, hasMultipathEbgp(true));
+    assertThat(proc1, hasMultipathIbgp(false));
+
+    Configuration c2 = parseConfig(hostname2);
+    org.batfish.datamodel.BgpProcess proc2 =
+        c2.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
+    assertThat(proc2, hasMultipathEbgp(false));
+    assertThat(proc2, hasMultipathIbgp(true));
   }
 
   @Test
