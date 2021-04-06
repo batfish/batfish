@@ -36,7 +36,7 @@ public final class DistributeList implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof DistributeList)) {
       return false;
     }
     DistributeList that = (DistributeList) o;

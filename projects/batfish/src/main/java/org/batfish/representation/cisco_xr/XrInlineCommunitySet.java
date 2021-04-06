@@ -25,7 +25,7 @@ public final class XrInlineCommunitySet implements XrCommunitySetExpr {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof XrInlineCommunitySet)) {
       return false;
     }
     XrInlineCommunitySet that = (XrInlineCommunitySet) o;
