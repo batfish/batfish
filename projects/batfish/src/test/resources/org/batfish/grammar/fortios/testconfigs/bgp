@@ -14,6 +14,12 @@ config system interface
         set vrf 5
     next
 end
+config router route-map
+    edit rm1
+    next
+    edit rm2
+    next
+end
 config router bgp
     # `set as 0` effectively clears the process AS
     set as 0
@@ -22,6 +28,8 @@ config router bgp
     config neighbor
         edit "2.2.2.2"
             set remote-as 1
+            set route-map-in rm1
+            set route-map-out rm2
             set update-source port1
         next
         edit "11.11.11.2"

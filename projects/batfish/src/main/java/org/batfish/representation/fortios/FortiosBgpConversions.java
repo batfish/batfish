@@ -16,6 +16,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -147,6 +148,11 @@ public final class FortiosBgpConversions {
           .setPeerAddress(neighbor.getIp())
           .setRemoteAs(neighbor.getRemoteAs())
           .setBgpProcess(viProc)
+          .setIpv4UnicastAddressFamily(
+              Ipv4UnicastAddressFamily.builder()
+                  .setImportPolicy(neighbor.getRouteMapIn())
+                  .setExportPolicy(neighbor.getRouteMapOut())
+                  .build())
           .build();
     }
 

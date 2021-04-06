@@ -5,6 +5,8 @@ import org.batfish.vendor.StructureUsage;
 public enum FortiosStructureUsage implements StructureUsage {
   ADDRGRP_EXCLUDE_MEMBER("addrgrp exclude-member"),
   ADDRGRP_MEMBER("addrgrp member"),
+  BGP_NEIGHBOR_ROUTE_MAP_IN("bgp neighbor route-map-in"),
+  BGP_NEIGHBOR_ROUTE_MAP_OUT("bgp neighbor route-map-out"),
   BGP_UPDATE_SOURCE_INTERFACE("bgp update-source"),
   INTERFACE_SELF_REF("system interface"),
   /** VLAN interface's parent interface */

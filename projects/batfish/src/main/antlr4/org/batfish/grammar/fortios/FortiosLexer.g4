@@ -117,6 +117,8 @@ REMOTE_AS: 'remote-as' -> pushMode(M_Str);
 RENAME: 'rename' -> pushMode(M_SingleStr);
 REPLACEMSG: 'replacemsg';
 ROUTE_MAP: 'route-map';
+ROUTE_MAP_IN: 'route-map-in' -> pushMode(M_Str);
+ROUTE_MAP_OUT: 'route-map-out' -> pushMode(M_Str);
 ROUTER: 'router';
 ROUTER_ID: 'router-id';
 RULE: 'rule';

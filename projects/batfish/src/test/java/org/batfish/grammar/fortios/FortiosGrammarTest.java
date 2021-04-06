@@ -91,6 +91,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -643,6 +644,10 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getIp(), equalTo(ip2));
     assertThat(neighbor1.getRemoteAs(), equalTo(1L));
     assertThat(neighbor2.getRemoteAs(), equalTo(4294967295L));
+    assertThat(neighbor1.getRouteMapIn(), equalTo("rm1"));
+    assertThat(neighbor1.getRouteMapOut(), equalTo("rm2"));
+    assertNull(neighbor2.getRouteMapIn());
+    assertNull(neighbor2.getRouteMapOut());
     assertThat(neighbor1.getUpdateSource(), equalTo("port1"));
     assertNull(neighbor2.getUpdateSource());
   }
@@ -676,6 +681,9 @@ public final class FortiosGrammarTest {
     assertThat(neighbor1.getLocalIp(), equalTo(Ip.parse("10.10.10.1")));
     assertThat(neighbor1.getPeerAddress(), equalTo(ip1));
     assertThat(neighbor1.getRemoteAsns().enumerate(), contains(1L));
+    AddressFamily ipv4Af1 = neighbor1.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
+    assertThat(ipv4Af1.getImportPolicy(), equalTo("rm1"));
+    assertThat(ipv4Af1.getExportPolicy(), equalTo("rm2"));
 
     // VRF 5 BGP process: should only have neighbor 2
     org.batfish.datamodel.BgpProcess bgpProcessVrf5 =
@@ -690,6 +698,9 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getLocalIp(), equalTo(Ip.parse("11.11.11.1")));
     assertThat(neighbor2.getPeerAddress(), equalTo(ip2));
     assertThat(neighbor2.getRemoteAsns().enumerate(), contains(4294967295L));
+    AddressFamily ipv4Af2 = neighbor2.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
+    assertNull(ipv4Af2.getImportPolicy());
+    assertNull(ipv4Af2.getExportPolicy());
   }
 
   @Test
