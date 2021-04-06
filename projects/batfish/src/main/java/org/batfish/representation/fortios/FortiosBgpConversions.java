@@ -78,7 +78,7 @@ public final class FortiosBgpConversions {
   public static void convertBgp(BgpProcess bgpProcess, Configuration c, Warnings w) {
     long as = bgpProcess.getAsEffective();
     if (as == 0L) {
-      w.redFlag("Ignoring BGP process: No AS configured");
+      // this is the standard way to disable BGP in FortiOS
       return;
     } else if (as == 65535L || as == 4294967295L) {
       w.redFlag(String.format("Ignoring BGP process: AS %s is proscribed by RFC 7300", as));
