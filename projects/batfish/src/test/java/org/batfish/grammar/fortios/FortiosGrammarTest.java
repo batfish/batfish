@@ -33,7 +33,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -747,14 +749,11 @@ public final class FortiosGrammarTest {
   public void testBgpConversionNoAs() throws IOException {
     String hostname = "bgp_no_as";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Warnings warnings =
-        batfish
-            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
-            .getWarnings()
-            .get(hostname);
+    // No warnings generated, indicating that BGP conversion was skipped (if it had attempted to
+    // convert the neighbor, it would have generated a warning)
     assertThat(
-        warnings.getRedFlagWarnings(),
-        contains(WarningMatchers.hasText("Ignoring BGP process: No AS configured")));
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()).getWarnings(),
+        not(hasKey(hostname)));
   }
 
   @Test
