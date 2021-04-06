@@ -11,6 +11,7 @@ public enum FortiosStructureUsage implements StructureUsage {
   INTERFACE_SELF_REF("system interface"),
   /** VLAN interface's parent interface */
   INTERFACE_INTERFACE("system interface set interface"),
+  POLICY_CLONE("firewall policy clone"),
   POLICY_DSTADDR("firewall policy dstaddr"),
   POLICY_DSTINTF("firewall policy dstintf"),
   POLICY_SELF_REF("firewall policy"),
