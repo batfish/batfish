@@ -6,7 +6,9 @@ options {
 
 cf_policy: POLICY newline cfp*;
 
-cfp: cfp_edit | cfp_move | cfp_delete;
+cfp: cfp_clone | cfp_delete | cfp_edit | cfp_move;
+
+cfp_clone: CLONE name = policy_number TO to = policy_number newline;
 
 cfp_delete: DELETE name = policy_number newline;
 
