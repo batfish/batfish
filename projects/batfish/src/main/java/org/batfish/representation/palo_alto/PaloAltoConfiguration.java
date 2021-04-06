@@ -33,7 +33,8 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationOverrideRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedAddressTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedDestinationAddressTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
@@ -631,9 +632,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert !srcExprs.isEmpty();
     conjuncts.add(
         rule.getNegateSource()
-            // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
-            // And(Not(...)) to push Not further down in trace
-            ? new AndMatchExpr(negateMatchIps(srcExprs), matchSourceAddressTraceElement())
+            // TODO: for negation, only the top-level trace element survives, so we need to
+            // make the negated trace element much more interesting.
+            ? new NotMatchExpr(new OrMatchExpr(srcExprs), matchNegatedSourceAddressTraceElement())
             : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -643,9 +644,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert !dstExprs.isEmpty();
     conjuncts.add(
         rule.getNegateDestination()
-            // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
-            // And(Not(...)) to push Not further down in trace
-            ? new AndMatchExpr(negateMatchIps(dstExprs), matchDestinationAddressTraceElement())
+            // TODO: for negation, only the top-level trace element survives, so we need to
+            // make the negated trace element much more interesting.
+            ? new NotMatchExpr(
+                new OrMatchExpr(dstExprs), matchNegatedDestinationAddressTraceElement())
             : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -688,7 +690,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
         // Add match expr which corresponds to this rule matching and *not* matching preceding rules
         ImmutableList.Builder<AclLineMatchExpr> childMatchExprs = ImmutableList.builder();
-        preceding.build().forEach(p -> childMatchExprs.add(new NotMatchExpr(p)));
+        childMatchExprs.add(
+            new NotMatchExpr(
+                new OrMatchExpr(preceding.build(), "Matched a different override rule")));
         childMatchExprs.add(ruleAcl);
         appMatchExprs.add(
             new AndMatchExpr(
@@ -1451,16 +1455,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Negate source and destination IPs for specified list of {@link MatchHeaderSpace}, and wrap with
-   * negate trace element
-   */
-  private List<AclLineMatchExpr> negateMatchIps(List<MatchHeaderSpace> sources) {
-    return sources.stream()
-        .map(e -> new NotMatchExpr(e, matchNegatedAddressTraceElement()))
-        .collect(ImmutableList.toImmutableList());
-  }
-
-  /**
    * Convert specified firewall rule into an {@link ExprAclLine}. This should only be called once
    * per rule, during initial conversion (i.e. during {@code convertSecurityRules}).
    */
@@ -1483,9 +1477,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (!srcExprs.isEmpty()) {
       conjuncts.add(
           rule.getNegateSource()
-              // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
-              // And(Not(...)) to push Not further down in trace
-              ? new AndMatchExpr(negateMatchIps(srcExprs), matchSourceAddressTraceElement())
+              // TODO: for negation, only the top-level trace element survives, so we need to
+              // make the negated trace element much more interesting.
+              ? new NotMatchExpr(new OrMatchExpr(srcExprs), matchNegatedSourceAddressTraceElement())
               : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
     }
 
@@ -1496,9 +1490,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (!dstExprs.isEmpty()) {
       conjuncts.add(
           rule.getNegateDestination()
-              // Tracing past NotExpr does not work well, so convert from Not(Or(...)) to
-              // And(Not(...)) to push Not further down in trace
-              ? new AndMatchExpr(negateMatchIps(dstExprs), matchDestinationAddressTraceElement())
+              // TODO: for negation, only the top-level trace element survives, so we need to
+              // make the negated trace element much more interesting.
+              ? new NotMatchExpr(
+                  new OrMatchExpr(dstExprs), matchNegatedDestinationAddressTraceElement())
               : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
     }
 
