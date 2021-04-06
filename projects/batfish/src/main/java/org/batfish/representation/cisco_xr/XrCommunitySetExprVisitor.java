@@ -8,6 +8,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
  */
 @ParametersAreNonnullByDefault
 public interface XrCommunitySetExprVisitor<T, U> {
+  T visitCommunitySetParameterReference(
+      XrCommunitySetParameterReference xrCommunitySetParameterReference);
 
   T visitCommunitySetReference(XrCommunitySetReference communitySetReference, U arg);
 

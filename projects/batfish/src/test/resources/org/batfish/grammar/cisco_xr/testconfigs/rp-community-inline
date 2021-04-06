@@ -1,0 +1,56 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname rp-community-inline
+!
+
+route-policy set-well-known
+  set community (accept-own)
+  pass
+end-policy
+
+route-policy set-literal
+  set community (1:1)
+  pass
+end-policy
+
+route-policy set-peeras
+  set community (peeras:1)
+  pass
+end-policy
+
+route-policy matches-any
+  if community matches-any (1:1, 2:2) then
+    pass
+  endif
+end-policy
+
+route-policy matches-every
+  if community matches-every (1:1, 2:2) then
+    pass
+  endif
+end-policy
+
+route-policy delete-well-known
+  delete community in (accept-own)
+  pass
+end-policy
+
+route-policy delete-literal
+  delete community in (1:1)
+  pass
+end-policy
+
+route-policy delete-halves
+  delete community in (1:[2..3], [4..5]:6, *:7, 8:*, peeras:9, private-as:10)
+  pass
+end-policy
+
+route-policy delete-all
+  delete community in (*)
+  pass
+end-policy
+
+route-policy delete-regex
+  delete community in (ios-regex '_1234:.*', dfa-regex '_5678:.*')
+  pass
+end-policy

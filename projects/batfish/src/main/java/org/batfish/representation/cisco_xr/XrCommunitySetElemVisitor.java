@@ -11,5 +11,9 @@ public interface XrCommunitySetElemVisitor<T, U> {
 
   T visitCommunitySetHighLowRangeExprs(XrCommunitySetHighLowRangeExprs highLowRangeExprs, U arg);
 
+  T visitCommunitySetDfaRegex(XrCommunitySetDfaRegex xrCommunitySetDfaRegex, U arg);
+
   T visitCommunitySetIosRegex(XrCommunitySetIosRegex communitySetIosRegex, U arg);
+
+  T visitWildcardCommunitySetElem(XrWildcardCommunitySetElem xrWildcardCommunitySetElem);
 }

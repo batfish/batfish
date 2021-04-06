@@ -10,7 +10,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 
-public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
+public final class RoutePolicyDispositionStatement extends RoutePolicyStatement {
 
   private RoutePolicyDispositionType _dispositionType;
 
@@ -62,6 +62,23 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
       default:
         throw new BatfishException("Invalid disposition type");
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RoutePolicyDispositionStatement)) {
+      return false;
+    }
+    RoutePolicyDispositionStatement that = (RoutePolicyDispositionStatement) o;
+    return _dispositionType == that._dispositionType;
+  }
+
+  @Override
+  public int hashCode() {
+    return _dispositionType.ordinal();
   }
 
   public RoutePolicyDispositionType getDispositionType() {
