@@ -13,4 +13,10 @@ public interface Uint16RangeExprVisitor<T, U> {
   T visitLiteralUint16Range(LiteralUint16Range literalUint16Range, U arg);
 
   T visitUint16Reference(Uint16Reference uint16Reference, U arg);
+
+  T visitWildcardUint16RangeExpr(WildcardUint16RangeExpr wildcardUint16RangeExpr);
+
+  T visitPrivateAs(PrivateAs privateAs);
+
+  T visitPeerAs(PeerAs peerAs);
 }

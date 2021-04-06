@@ -31,7 +31,7 @@ bgp_asn
     | asn4b = asn_dotted
 ;
 
-community
+literal_community
 :
    ACCEPT_OWN
    | GRACEFUL_SHUTDOWN
@@ -563,33 +563,6 @@ route_policy_params_list
    )*
 ;
 
-community_set_elem
-:
-   // TODO: differentiate elems from different community set contexts (set, match, etc.)
-   community
-   |
-   (
-     prefix = community_set_elem_half COLON suffix = community_set_elem_half
-   )
-   | DFA_REGEX COMMUNITY_SET_REGEX
-   | IOS_REGEX COMMUNITY_SET_REGEX
-;
-
-community_set_elem_half
-:
-   // TODO: differentiate elems from different community set contexts (set, match, etc.)
-   // TODO: remove legacy alternatives
-   value = uint16
-   | var = RP_VARIABLE
-   | var = PARAMETER
-   |
-   (
-      BRACKET_LEFT (first = uint16) (PERIOD PERIOD | DOTDOT) (last = uint16) BRACKET_RIGHT
-   )
-   | ASTERISK
-   | PRIVATE_AS
-;
-
 rp_subrange
 :
    first = int_expr
@@ -724,3 +697,7 @@ vlan_id
   {isVlanId($v)}?
 
 ;
+
+community_set_name: WORD;
+
+parameter: PARAMETER;
