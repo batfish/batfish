@@ -1055,12 +1055,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return;
     }
 
-    String toName = to.get().toString();
-    if (_c.getPolicies().containsKey(toName)) {
-      warn(ctx, String.format("Cannot clone, %s already exists", toName));
+    String toNumber = to.get().toString();
+    if (_c.getPolicies().containsKey(toNumber)) {
+      warn(ctx, String.format("Cannot clone, policy %s already exists", toNumber));
       return;
     }
-    _c.getPolicies().put(toName, SerializationUtils.clone(existing));
+    Policy clone = SerializationUtils.clone(existing);
+    clone.setNumber(toNumber);
+    _c.getPolicies().put(toNumber, clone);
+    _c.defineStructure(FortiosStructureType.POLICY, toNumber, ctx);
   }
 
   @Override

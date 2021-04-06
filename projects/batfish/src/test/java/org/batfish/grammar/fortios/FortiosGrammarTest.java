@@ -1932,7 +1932,7 @@ public final class FortiosGrammarTest {
                     hasComment("Cannot create a cloned policy with an invalid name"),
                     hasText("clone 3 to foobar")),
                 hasComment("Expected policy number in range 0-4294967294, but got 'foobar'"),
-                hasComment("Cannot clone, 1 already exists"))));
+                hasComment("Cannot clone, policy 1 already exists"))));
 
     Warnings conversionWarnings =
         batfish
@@ -2359,6 +2359,10 @@ public final class FortiosGrammarTest {
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr2"));
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr3"));
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.POLICY, "1"));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.POLICY, "2", contains(70)));
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr1", 2));
@@ -2532,7 +2536,7 @@ public final class FortiosGrammarTest {
 
     assertThat(vc.getPolicies().keySet(), contains("1", "2", "3", "4"));
 
-    // Confirm the clone has the correct properties
+    // Confirm the clone has the correct properties, i.e. everything identical to parent except num
     Policy clone = vc.getPolicies().get("3");
     assertThat(clone.getAction(), equalTo(Action.ACCEPT));
     assertThat(clone.getDstIntf(), contains("any"));
@@ -2540,6 +2544,7 @@ public final class FortiosGrammarTest {
     assertThat(clone.getDstAddr(), contains("all"));
     assertThat(clone.getSrcAddr(), contains("all"));
     assertThat(clone.getService(), contains("ALL_TCP"));
+    assertThat(clone.getNumber(), equalTo("3"));
   }
 
   @Test

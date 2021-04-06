@@ -151,6 +151,10 @@ public final class Policy implements Serializable {
     _name = name;
   }
 
+  public void setNumber(String number) {
+    _number = number;
+  }
+
   public void setService(Set<String> service) {
     _service = ImmutableSet.copyOf(service);
   }

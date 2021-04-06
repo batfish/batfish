@@ -64,6 +64,10 @@ config firewall policy
         append dstaddr addr2
         append service service2
     next
+    # Deleting a non-existent policy
     delete 2
+    # Valid policy clone
+    clone 1 to 2
+    # Cloning a non-existent policy
     clone 3 to 4
 end
