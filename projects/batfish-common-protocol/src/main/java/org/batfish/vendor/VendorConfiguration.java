@@ -281,6 +281,48 @@ public abstract class VendorConfiguration implements Serializable {
     _answerElement.getUndefinedReferences().put(getFilename(), _undefinedReferences);
   }
 
+  /**
+   * Delete the definition for the specified structure. Returns {@code true} if the delete was
+   * successful, otherwise returns {@code false}.
+   */
+  private boolean deleteStructureDefinition(String name, StructureType type) {
+
+    SortedMap<String, DefinedStructureInfo> defsByName =
+        _structureDefinitions.get(type.getDescription());
+    if (defsByName == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot delete structure %s (%s): %s is undefined.",
+              name, type.getDescription(), name));
+      return false;
+    }
+
+    defsByName.remove(name);
+    return true;
+  }
+
+  /** Delete any existing references to the specified structure. */
+  private void deleteStructureReferences(String name, StructureType type) {
+    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> refsByName =
+        _structureReferences.get(type);
+    if (refsByName != null) {
+      refsByName.remove(name);
+    }
+  }
+
+  /**
+   * Delete the specified structure in its definition as well as references. Returns {@code false}
+   * and warns if the delete request is unsuccessful (e.g. no corresponding structure), otherwise
+   * returns {@code true}.
+   */
+  public boolean deleteStructure(String name, StructureType type) {
+    boolean succeeded = deleteStructureDefinition(name, type);
+    if (succeeded) {
+      deleteStructureReferences(name, type);
+    }
+    return succeeded;
+  }
+
   public void setFilename(String filename) {
     _filename = filename;
   }

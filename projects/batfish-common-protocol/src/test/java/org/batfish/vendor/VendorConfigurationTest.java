@@ -3,11 +3,13 @@ package org.batfish.vendor;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyIterable;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -88,6 +90,72 @@ public final class VendorConfigurationTest {
     c.setAnswerElement(new ConvertConfigurationAnswerElement());
     c.setWarnings(new Warnings(true, true, true));
     return c;
+  }
+
+  @Test
+  public void testDeleteStructureUndefined() {
+    String origName = "origName";
+    int origLine = 1;
+
+    VendorConfiguration c = buildVendorConfiguration();
+
+    // Same-named structure of a different type
+    c.defineSingleLineStructure(_testStructureType2, origName, origLine);
+    c.referenceStructure(_testStructureType2, origName, _testStructureUsage, 11);
+
+    // Try to delete a structure defined in the same namespace, but of a different type
+    assertFalse(c.deleteStructure(origName, _testStructureType1));
+
+    // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
+    c.setAnswerElement(new ConvertConfigurationAnswerElement());
+    // Should produce an appropriate warning and indicate the rename did not succeed
+    assertThat(
+        c.getWarnings(),
+        hasRedFlag(hasText("Cannot delete structure origName (type1): origName is undefined.")));
+
+    // Reference should be unaffected since the delete did not succeed
+    assertThat(
+        c.getAnswerElement(),
+        hasReferencedStructure(FILENAME, _testStructureType2, origName, _testStructureUsage));
+  }
+
+  @Test
+  public void testDeleteStructureValid() {
+    String origName = "origName";
+    int origLine = 1;
+    int origRefLine = 11;
+
+    String unaffectedName = "unaffectedName";
+    int otherLine = 2;
+    int otherRefLine = 22;
+
+    VendorConfiguration c = buildVendorConfiguration();
+
+    c.defineSingleLineStructure(_testStructureType1, origName, origLine);
+    c.defineSingleLineStructure(_testStructureType1, unaffectedName, otherLine);
+    c.referenceStructure(_testStructureType1, origName, _testStructureUsage, origRefLine);
+    c.referenceStructure(_testStructureType1, unaffectedName, _testStructureUsage, otherRefLine);
+    assertTrue(c.deleteStructure(origName, _testStructureType1));
+
+    // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
+    c.setAnswerElement(new ConvertConfigurationAnswerElement());
+    // No warnings
+    assertThat(c.getWarnings(), hasRedFlags(emptyIterable()));
+    // Has no definition or reference for the old name
+    assertThat(
+        c.getAnswerElement(), not(hasDefinedStructure(FILENAME, _testStructureType1, origName)));
+    assertThat(
+        c.getAnswerElement(),
+        not(hasReferencedStructure(FILENAME, _testStructureType1, origName, _testStructureUsage)));
+
+    // Unaffected reference and definition should persist
+    assertThat(
+        c.getAnswerElement(),
+        hasDefinedStructureWithDefinitionLines(
+            FILENAME, _testStructureType1, unaffectedName, contains(otherLine)));
+    assertThat(
+        c.getAnswerElement(),
+        hasReferencedStructure(FILENAME, _testStructureType1, unaffectedName, _testStructureUsage));
   }
 
   @Test
