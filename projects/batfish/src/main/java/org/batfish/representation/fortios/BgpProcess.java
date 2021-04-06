@@ -23,6 +23,22 @@ public final class BgpProcess implements Serializable {
     return firstNonNull(_as, DEFAULT_AS);
   }
 
+  public @Nullable Boolean getEbgpMultipath() {
+    return _ebgpMultipath;
+  }
+
+  public boolean getEbgpMultipathEffective() {
+    return firstNonNull(_ebgpMultipath, DEFAULT_EBGP_MULTIPATH);
+  }
+
+  public @Nullable Boolean getIbgpMultipath() {
+    return _ibgpMultipath;
+  }
+
+  public boolean getIbgpMultipathEffective() {
+    return firstNonNull(_ibgpMultipath, DEFAULT_IBGP_MULTIPATH);
+  }
+
   public @Nonnull Map<Ip, BgpNeighbor> getNeighbors() {
     return _neighbors;
   }
@@ -35,13 +51,25 @@ public final class BgpProcess implements Serializable {
     _as = as;
   }
 
+  public void setEbgpMultipath(boolean ebgpMultipath) {
+    _ebgpMultipath = ebgpMultipath;
+  }
+
+  public void setIbgpMultipath(boolean ibgpMultipath) {
+    _ibgpMultipath = ibgpMultipath;
+  }
+
   public void setRouterId(Ip routerId) {
     _routerId = routerId;
   }
 
   public static long DEFAULT_AS = 0L;
+  public static boolean DEFAULT_EBGP_MULTIPATH = false;
+  public static boolean DEFAULT_IBGP_MULTIPATH = false;
 
   private @Nullable Long _as;
+  private @Nullable Boolean _ebgpMultipath;
+  private @Nullable Boolean _ibgpMultipath;
   private @Nullable Ip _routerId;
   private final Map<Ip, BgpNeighbor> _neighbors;
 }

@@ -124,6 +124,8 @@ public final class FortiosBgpConversions {
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     org.batfish.datamodel.BgpProcess viProc =
         new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin);
+    viProc.setMultipathEbgp(bgpProcess.getEbgpMultipathEffective());
+    viProc.setMultipathIbgp(bgpProcess.getIbgpMultipathEffective());
 
     // Convert neighbors
     long localAs = bgpProcess.getAsEffective();

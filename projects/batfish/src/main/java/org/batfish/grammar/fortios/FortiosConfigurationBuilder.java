@@ -802,6 +802,16 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCrb_set_ebgp_multipath(FortiosParser.Crb_set_ebgp_multipathContext ctx) {
+    _c.getBgpProcess().setEbgpMultipath(toBoolean(ctx.enable_or_disable()));
+  }
+
+  @Override
+  public void exitCrb_set_ibgp_multipath(FortiosParser.Crb_set_ibgp_multipathContext ctx) {
+    _c.getBgpProcess().setIbgpMultipath(toBoolean(ctx.enable_or_disable()));
+  }
+
+  @Override
   public void exitCrb_set_router_id(Crb_set_router_idContext ctx) {
     Ip routerId = toIp(ctx.router_id);
     if (routerId.equals(Ip.ZERO)) {
