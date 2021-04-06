@@ -40,7 +40,7 @@ public final class DistributeList implements Serializable {
       return false;
     }
     DistributeList that = (DistributeList) o;
-    return _filterType == that._filterType && Objects.equals(_filterName, that._filterName);
+    return _filterType == that._filterType && _filterName.equals(that._filterName);
   }
 
   @Override
