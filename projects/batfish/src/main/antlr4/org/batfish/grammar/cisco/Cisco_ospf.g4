@@ -611,7 +611,11 @@ s_router_ospf
    (
       VRF vrf = variable
    )? NEWLINE
-   (
+   ro_inner*
+;
+
+ro_inner
+:
       ro_address_family
       | ro_area
       | ro_auto_cost
@@ -636,7 +640,6 @@ s_router_ospf
       | ro_summary_address
       | ro_vrf
       | roi_priority
-   )*
 ;
 
 s_router_ospfv3
