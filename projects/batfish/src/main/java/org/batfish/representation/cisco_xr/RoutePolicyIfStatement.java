@@ -3,12 +3,13 @@ package org.batfish.representation.cisco_xr;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-public class RoutePolicyIfStatement extends RoutePolicyStatement {
+public final class RoutePolicyIfStatement extends RoutePolicyStatement {
 
   private RoutePolicyElseBlock _elseBlock;
 
@@ -79,5 +80,25 @@ public class RoutePolicyIfStatement extends RoutePolicyStatement {
 
   public List<RoutePolicyStatement> getStatements() {
     return _stmtList;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RoutePolicyIfStatement)) {
+      return false;
+    }
+    RoutePolicyIfStatement that = (RoutePolicyIfStatement) o;
+    return Objects.equals(_elseBlock, that._elseBlock)
+        && _elseIfBlocks.equals(that._elseIfBlocks)
+        && _guard.equals(that._guard)
+        && _stmtList.equals(that._stmtList);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_elseBlock, _elseIfBlocks, _guard, _stmtList);
   }
 }

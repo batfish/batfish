@@ -420,9 +420,14 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Cmm_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cmm_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cmm_activated_service_templateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cmm_service_templateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.CommunityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_elemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_elem_halfContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_expr_elemContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_expr_elem_halfContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_match_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_match_expr_elemContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_match_expr_elem_halfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Copsl_access_listContext;
@@ -473,6 +478,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Failover_linkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Flan_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Flan_unitContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hash_commentContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Host_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Icmp_object_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_autostateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bandwidthContext;
@@ -569,6 +575,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.L_access_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.L_exec_timeoutContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.L_login_authenticationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.L_transportContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Literal_communityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_bufferedContext;
@@ -638,6 +645,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.On_subnetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Origin_exprContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Origin_expr_literalContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Os_descriptionContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.ParameterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_default_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_is_stanzaContext;
@@ -734,7 +742,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_isis_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_community_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_extcommunity_set_rtContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_isis_metric_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_metric_typeContext;
@@ -938,10 +945,12 @@ import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.OspfRedistributionPolicy;
 import org.batfish.representation.cisco_xr.OspfWildcardNetwork;
+import org.batfish.representation.cisco_xr.PeerAs;
 import org.batfish.representation.cisco_xr.Prefix6List;
 import org.batfish.representation.cisco_xr.Prefix6ListLine;
 import org.batfish.representation.cisco_xr.PrefixList;
 import org.batfish.representation.cisco_xr.PrefixListLine;
+import org.batfish.representation.cisco_xr.PrivateAs;
 import org.batfish.representation.cisco_xr.ProtocolObjectGroup;
 import org.batfish.representation.cisco_xr.ProtocolObjectGroupProtocolLine;
 import org.batfish.representation.cisco_xr.ProtocolObjectGroupReferenceLine;
@@ -1021,11 +1030,14 @@ import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.VrrpGroup;
 import org.batfish.representation.cisco_xr.VrrpInterface;
 import org.batfish.representation.cisco_xr.WildcardAddressSpecifier;
+import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
 import org.batfish.representation.cisco_xr.XrCommunitySet;
+import org.batfish.representation.cisco_xr.XrCommunitySetDfaRegex;
 import org.batfish.representation.cisco_xr.XrCommunitySetElem;
 import org.batfish.representation.cisco_xr.XrCommunitySetExpr;
 import org.batfish.representation.cisco_xr.XrCommunitySetHighLowRangeExprs;
 import org.batfish.representation.cisco_xr.XrCommunitySetIosRegex;
+import org.batfish.representation.cisco_xr.XrCommunitySetParameterReference;
 import org.batfish.representation.cisco_xr.XrCommunitySetReference;
 import org.batfish.representation.cisco_xr.XrInlineCommunitySet;
 import org.batfish.representation.cisco_xr.XrRoutePolicyBooleanCommunityMatchesAny;
@@ -1033,6 +1045,7 @@ import org.batfish.representation.cisco_xr.XrRoutePolicyBooleanCommunityMatchesE
 import org.batfish.representation.cisco_xr.XrRoutePolicyDeleteAllStatement;
 import org.batfish.representation.cisco_xr.XrRoutePolicyDeleteCommunityStatement;
 import org.batfish.representation.cisco_xr.XrRoutePolicySetCommunity;
+import org.batfish.representation.cisco_xr.XrWildcardCommunitySetElem;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
@@ -1830,8 +1843,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             n ->
                 new XrCommunitySet(
                     ctx.community_set_elem_list().elems.stream()
-                        .map(this::toCommunitySetElemExpr)
-                        .filter(Objects::nonNull)
+                        .map(this::toXrCommunitySetElem)
                         .collect(ImmutableList.toImmutableList())));
   }
 
@@ -6869,16 +6881,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
-    String hostname;
-    if (ctx.quoted_name != null) {
-      hostname = unquote(ctx.quoted_name.getText());
-    } else {
-      StringBuilder sb = new StringBuilder();
-      for (Token namePart : ctx.name_parts) {
-        sb.append(namePart.getText());
-      }
-      hostname = sb.toString();
-    }
+    String hostname = toString(ctx.hostname);
     _configuration.setHostname(hostname);
     _configuration.getCf().setHostname(hostname);
   }
@@ -7612,44 +7615,125 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private @Nullable XrCommunitySetElem toCommunitySetElemExpr(Community_set_elemContext ctx) {
-    if (ctx.prefix != null) {
-      assert ctx.suffix != null;
-      Uint16RangeExpr prefix = toCommunitySetElemHalfExpr(ctx.prefix);
-      Uint16RangeExpr suffix = toCommunitySetElemHalfExpr(ctx.suffix);
-      return new XrCommunitySetHighLowRangeExprs(prefix, suffix);
-    } else if (ctx.community() != null) {
-      Long value = toLong(ctx.community());
-      if (value == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", ctx.community().getText()));
-        return convProblem(XrCommunitySetElem.class, ctx, null);
-      }
+  @Nonnull
+  private XrCommunitySetElem toXrCommunitySetElem(Community_set_expr_elemContext ctx) {
+    if (ctx.literal != null) {
+      long value = toLong(ctx.literal);
       return XrCommunitySetHighLowRangeExprs.of(value);
-    } else if (ctx.IOS_REGEX() != null) {
-      return new XrCommunitySetIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
     } else {
-      return convProblem(XrCommunitySetElem.class, ctx, null);
+      assert ctx.hi != null;
+      assert ctx.lo != null;
+      Uint16RangeExpr prefix = toUint16RangeExpr(ctx.hi);
+      Uint16RangeExpr suffix = toUint16RangeExpr(ctx.lo);
+      return new XrCommunitySetHighLowRangeExprs(prefix, suffix);
     }
   }
 
-  private Uint16RangeExpr toCommunitySetElemHalfExpr(Community_set_elem_halfContext ctx) {
+  @Nonnull
+  private XrCommunitySetElem toXrCommunitySetElem(Community_set_match_expr_elemContext ctx) {
+    if (ctx.ASTERISK() != null) {
+      return XrWildcardCommunitySetElem.instance();
+    } else if (ctx.literal_community() != null) {
+      long value = toLong(ctx.literal_community());
+      return XrCommunitySetHighLowRangeExprs.of(value);
+    } else if (ctx.hi != null) {
+      assert ctx.lo != null;
+      Uint16RangeExpr prefix = toUint16RangeExpr(ctx.hi);
+      Uint16RangeExpr suffix = toUint16RangeExpr(ctx.lo);
+      return new XrCommunitySetHighLowRangeExprs(prefix, suffix);
+    } else if (ctx.DFA_REGEX() != null) {
+      todo(ctx);
+      return new XrCommunitySetDfaRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+    } else {
+      assert ctx.IOS_REGEX() != null;
+      return new XrCommunitySetIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+    }
+  }
+
+  @Nonnull
+  private XrCommunitySetElem toXrCommunitySetElem(Community_set_elemContext ctx) {
+    if (ctx.ASTERISK() != null) {
+      return XrWildcardCommunitySetElem.instance();
+    } else if (ctx.literal_community() != null) {
+      long value = toLong(ctx.literal_community());
+      return XrCommunitySetHighLowRangeExprs.of(value);
+    } else if (ctx.hi != null) {
+      assert ctx.lo != null;
+      Uint16RangeExpr prefix = toUint16RangeExpr(ctx.hi);
+      Uint16RangeExpr suffix = toUint16RangeExpr(ctx.lo);
+      return new XrCommunitySetHighLowRangeExprs(prefix, suffix);
+    } else if (ctx.DFA_REGEX() != null) {
+      todo(ctx);
+      return new XrCommunitySetDfaRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+    } else {
+      assert ctx.IOS_REGEX() != null;
+      return new XrCommunitySetIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+    }
+  }
+
+  @Nonnull
+  private Uint16RangeExpr toUint16RangeExpr(Community_set_expr_elem_halfContext ctx) {
     if (ctx.value != null) {
       int value = toInteger(ctx.value);
       return new LiteralUint16(value);
-    } else if (ctx.var != null) {
-      String var = ctx.var.getText();
-      return new Uint16Reference(var);
+    } else if (ctx.param != null) {
+      todo(ctx);
+      return new Uint16Reference(toString(ctx.param));
+    } else {
+      assert ctx.PEERAS() != null;
+      todo(ctx);
+      return PeerAs.instance();
+    }
+  }
+
+  @Nonnull
+  private Uint16RangeExpr toUint16RangeExpr(Community_set_match_expr_elem_halfContext ctx) {
+    if (ctx.ASTERISK() != null) {
+      return WildcardUint16RangeExpr.instance();
+    } else if (ctx.value != null) {
+      int value = toInteger(ctx.value);
+      return new LiteralUint16(value);
+    } else if (ctx.param != null) {
+      todo(ctx);
+      return new Uint16Reference(toString(ctx.param));
     } else if (ctx.first != null) {
+      assert ctx.last != null;
       int first = toInteger(ctx.first);
       int last = toInteger(ctx.last);
       SubRange range = new SubRange(first, last);
       return new LiteralUint16Range(range);
-    } else if (ctx.ASTERISK() != null) {
-      return new LiteralUint16Range(new SubRange(0, 65535));
+    } else if (ctx.PEERAS() != null) {
+      todo(ctx);
+      return PeerAs.instance();
     } else {
-      // For an unhandled expression, treat it as matching everything.
-      return convProblem(
-          Uint16RangeExpr.class, ctx, new LiteralUint16Range(new SubRange(0, 65535)));
+      todo(ctx);
+      assert ctx.PRIVATE_AS() != null;
+      return PrivateAs.instance();
+    }
+  }
+
+  @Nonnull
+  private static String toString(ParameterContext ctx) {
+    return ctx.getText();
+  }
+
+  @Nonnull
+  private Uint16RangeExpr toUint16RangeExpr(Community_set_elem_halfContext ctx) {
+    if (ctx.ASTERISK() != null) {
+      return WildcardUint16RangeExpr.instance();
+    } else if (ctx.value != null) {
+      int value = toInteger(ctx.value);
+      return new LiteralUint16(value);
+    } else if (ctx.first != null) {
+      assert ctx.last != null;
+      int first = toInteger(ctx.first);
+      int last = toInteger(ctx.last);
+      SubRange range = new SubRange(first, last);
+      return new LiteralUint16Range(range);
+    } else {
+      todo(ctx);
+      assert ctx.PRIVATE_AS() != null;
+      return PrivateAs.instance();
     }
   }
 
@@ -8075,6 +8159,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
+  @Nonnull
+  private static String toString(Host_nameContext ctx) {
+    return ctx.getText();
+  }
+
   private String toLoggingSeverity(Logging_severityContext ctx) {
     if (ctx.DEC() != null) {
       int severityNum = toInteger(ctx.DEC());
@@ -8108,7 +8197,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private @Nullable Long toLong(CommunityContext ctx) {
+  @Nonnull
+  private static long toLong(Literal_communityContext ctx) {
     if (ctx.ACCEPT_OWN() != null) {
       return WellKnownCommunity.ACCEPT_OWN;
     } else if (ctx.hi != null) {
@@ -8123,10 +8213,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return WellKnownCommunity.NO_EXPORT_SUBCONFED;
     } else if (ctx.NO_ADVERTISE() != null) {
       return WellKnownCommunity.NO_ADVERTISE;
-    } else if (ctx.NO_EXPORT() != null) {
-      return WellKnownCommunity.NO_EXPORT;
     } else {
-      return convProblem(Long.class, ctx, null);
+      assert ctx.NO_EXPORT() != null;
+      return WellKnownCommunity.NO_EXPORT;
     }
   }
 
@@ -8701,14 +8790,14 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_community_matches_any_rp_stanzaContext ctx) {
     XrCommunitySetExpr communitySet =
-        toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_COMMUNITY_MATCHES_ANY);
+        toXrCommunitySetExpr(ctx.community_set_match_expr(), ROUTE_POLICY_COMMUNITY_MATCHES_ANY);
     return new XrRoutePolicyBooleanCommunityMatchesAny(communitySet);
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(
       Boolean_community_matches_every_rp_stanzaContext ctx) {
     XrCommunitySetExpr communitySet =
-        toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_COMMUNITY_MATCHES_EVERY);
+        toXrCommunitySetExpr(ctx.community_set_match_expr(), ROUTE_POLICY_COMMUNITY_MATCHES_EVERY);
     return new XrRoutePolicyBooleanCommunityMatchesEvery(communitySet);
   }
 
@@ -8856,20 +8945,43 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return new RoutePolicyBooleanTagIs(cmp, rhs);
   }
 
-  private XrCommunitySetExpr toRoutePolicyCommunitySet(
-      Rp_community_setContext ctx, CiscoXrStructureUsage usage) {
+  private XrCommunitySetExpr toXrCommunitySetExpr(
+      Community_set_match_exprContext ctx, CiscoXrStructureUsage usage) {
     if (ctx.name != null) {
       String name = ctx.name.getText();
       _configuration.referenceStructure(COMMUNITY_SET, name, usage, ctx.name.getStart().getLine());
       return new XrCommunitySetReference(name);
+    } else if (ctx.param != null) {
+      todo(ctx);
+      return new XrCommunitySetParameterReference(toString(ctx.param));
     } else {
       // inline
+      assert !ctx.elems.isEmpty();
       return new XrInlineCommunitySet(
           new XrCommunitySet(
               ctx.elems.stream()
-                  .map(this::toCommunitySetElemExpr)
-                  .filter(Objects::nonNull)
-                  .collect(Collectors.toList())));
+                  .map(this::toXrCommunitySetElem)
+                  .collect(ImmutableList.toImmutableList())));
+    }
+  }
+
+  private XrCommunitySetExpr toXrCommunitySetExpr(
+      Community_set_exprContext ctx, CiscoXrStructureUsage usage) {
+    if (ctx.name != null) {
+      String name = ctx.name.getText();
+      _configuration.referenceStructure(COMMUNITY_SET, name, usage, ctx.name.getStart().getLine());
+      return new XrCommunitySetReference(name);
+    } else if (ctx.param != null) {
+      todo(ctx);
+      return new XrCommunitySetParameterReference(toString(ctx.param));
+    } else {
+      // inline
+      assert !ctx.elems.isEmpty();
+      return new XrInlineCommunitySet(
+          new XrCommunitySet(
+              ctx.elems.stream()
+                  .map(this::toXrCommunitySetElem)
+                  .collect(ImmutableList.toImmutableList())));
     }
   }
 
@@ -8956,7 +9068,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       boolean negated = (ctx.NOT() != null);
       return new XrRoutePolicyDeleteCommunityStatement(
           negated,
-          toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_DELETE_COMMUNITY_IN));
+          toXrCommunitySetExpr(ctx.community_set_match_expr(), ROUTE_POLICY_DELETE_COMMUNITY_IN));
     }
   }
 
@@ -9039,7 +9151,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_community_rp_stanzaContext ctx) {
     XrCommunitySetExpr cset =
-        toRoutePolicyCommunitySet(ctx.rp_community_set(), ROUTE_POLICY_SET_COMMUNITY);
+        toXrCommunitySetExpr(ctx.community_set_expr(), ROUTE_POLICY_SET_COMMUNITY);
     boolean additive = (ctx.ADDITIVE() != null);
     return new XrRoutePolicySetCommunity(cset, additive);
   }

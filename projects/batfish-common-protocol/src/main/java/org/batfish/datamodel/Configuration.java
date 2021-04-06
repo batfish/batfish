@@ -134,7 +134,6 @@ public final class Configuration implements Serializable {
 
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
   private static final String PROP_AUTHENTICATION_KEY_CHAINS = "authenticationKeyChains";
-  private static final String PROP_COMMUNITY_LISTS = "communityLists";
   private static final String PROP_COMMUNITY_MATCH_EXPRS = "communityMatchExprs";
   private static final String PROP_COMMUNITY_SET_EXPRS = "communitySetExprs";
   private static final String PROP_COMMUNITY_SET_MATCH_EXPRS = "communitySetMatchExprs";
@@ -186,8 +185,6 @@ public final class Configuration implements Serializable {
   private Map<String, AsPathAccessList> _asPathAccessLists;
 
   private Map<String, AuthenticationKeyChain> _authenticationKeyChains;
-
-  private Map<String, CommunityList> _communityLists;
 
   private Map<String, CommunityMatchExpr> _communityMatchExprs;
   private Map<String, CommunitySetExpr> _communitySetExprs;
@@ -288,7 +285,6 @@ public final class Configuration implements Serializable {
     _name = hostname.toLowerCase();
     _asPathAccessLists = new TreeMap<>();
     _authenticationKeyChains = new TreeMap<>();
-    _communityLists = new TreeMap<>();
     _communityMatchExprs = new HashMap<>();
     _communitySetExprs = new HashMap<>();
     _communitySetMatchExprs = new HashMap<>();
@@ -377,12 +373,6 @@ public final class Configuration implements Serializable {
 
   public @Nonnull Stream<Interface> activeInterfaces() {
     return _interfaces.values().stream().filter(Interface::getActive);
-  }
-
-  /** Dictionary of all community-lists for this node. */
-  @JsonProperty(PROP_COMMUNITY_LISTS)
-  public Map<String, CommunityList> getCommunityLists() {
-    return _communityLists;
   }
 
   @JsonIgnore
@@ -745,11 +735,6 @@ public final class Configuration implements Serializable {
   public void setAuthenticationKeyChains(
       Map<String, AuthenticationKeyChain> authenticationKeyChains) {
     _authenticationKeyChains = authenticationKeyChains;
-  }
-
-  @JsonProperty(PROP_COMMUNITY_LISTS)
-  public void setCommunityLists(Map<String, CommunityList> communityLists) {
-    _communityLists = communityLists;
   }
 
   @JsonProperty(PROP_COMMUNITY_MATCH_EXPRS)

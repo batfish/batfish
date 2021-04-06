@@ -42,7 +42,7 @@ public final class XrCommunitySetHighLowRangeExprs implements XrCommunitySetElem
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof XrCommunitySetHighLowRangeExprs)) {
       return false;
     }
     XrCommunitySetHighLowRangeExprs that = (XrCommunitySetHighLowRangeExprs) o;

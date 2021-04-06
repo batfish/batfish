@@ -138,31 +138,6 @@ bandwidth_irs_stanza
    BANDWIDTH null_rest_of_line
 ;
 
-community_set_stanza
-:
-   COMMUNITY_SET name = variable NEWLINE
-   community_set_elem_list END_SET NEWLINE
-;
-
-community_set_elem_list
-:
-// no elements
-
-   |
-   (
-      (
-         (
-            elems += community_set_elem COMMA
-         )
-         | hash_comment
-      ) NEWLINE
-   )*
-   (
-      elems += community_set_elem
-      | hash_comment
-   ) NEWLINE
-;
-
 etype
 :
    ANY

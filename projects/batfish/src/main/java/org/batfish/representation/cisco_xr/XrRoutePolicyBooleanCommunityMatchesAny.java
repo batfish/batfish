@@ -19,7 +19,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
  * by any element of a given {@link XrCommunitySetExpr}.
  */
 @ParametersAreNonnullByDefault
-public class XrRoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean {
+public final class XrRoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean {
 
   public XrRoutePolicyBooleanCommunityMatchesAny(XrCommunitySetExpr expr) {
     _expr = expr;
@@ -43,6 +43,13 @@ public class XrRoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean 
         new MatchesAnyCommunitySetExprToCommunitySetMatchExpr();
 
     @Override
+    public Optional<CommunitySetMatchExpr> visitCommunitySetParameterReference(
+        XrCommunitySetParameterReference xrCommunitySetParameterReference) {
+      // TODO: implement route-policy parameters
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<CommunitySetMatchExpr> visitCommunitySetReference(
         XrCommunitySetReference communitySetReference, Configuration arg) {
       // return reference to computed match-any CommunitySetMatchExpr if it exists, else empty
@@ -59,6 +66,23 @@ public class XrRoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean 
       return Optional.of(
           convertMatchesAnyToCommunitySetMatchExpr(inlineCommunitySet.getCommunitySet(), arg));
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof XrRoutePolicyBooleanCommunityMatchesAny)) {
+      return false;
+    }
+    XrRoutePolicyBooleanCommunityMatchesAny that = (XrRoutePolicyBooleanCommunityMatchesAny) o;
+    return _expr.equals(that._expr);
+  }
+
+  @Override
+  public int hashCode() {
+    return _expr.hashCode();
   }
 
   private final @Nonnull XrCommunitySetExpr _expr;

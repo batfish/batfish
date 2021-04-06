@@ -13,7 +13,7 @@ import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
-public class XrRoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolean {
+public final class XrRoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolean {
 
   public XrRoutePolicyBooleanCommunityMatchesEvery(XrCommunitySetExpr expr) {
     _expr = expr;
@@ -37,6 +37,13 @@ public class XrRoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolea
         new MatchesEveryCommunitySetExprToCommunitySetMatchExpr();
 
     @Override
+    public Optional<CommunitySetMatchExpr> visitCommunitySetParameterReference(
+        XrCommunitySetParameterReference xrCommunitySetParameterReference) {
+      // TODO: implement route-policy parameters
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<CommunitySetMatchExpr> visitCommunitySetReference(
         XrCommunitySetReference communitySetReference, Configuration arg) {
       // return reference to computed match-every CommunitySetMatchExpr if it exists, else empty
@@ -53,6 +60,23 @@ public class XrRoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolea
       return Optional.of(
           convertMatchesEveryToCommunitySetMatchExpr(inlineCommunitySet.getCommunitySet(), arg));
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof XrRoutePolicyBooleanCommunityMatchesEvery)) {
+      return false;
+    }
+    XrRoutePolicyBooleanCommunityMatchesEvery that = (XrRoutePolicyBooleanCommunityMatchesEvery) o;
+    return _expr.equals(that._expr);
+  }
+
+  @Override
+  public int hashCode() {
+    return _expr.hashCode();
   }
 
   private final @Nonnull XrCommunitySetExpr _expr;

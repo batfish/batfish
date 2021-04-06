@@ -23,7 +23,7 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
 
   public static final String AS_PATH_ACCESS_LIST = "AS_Path_Access_List";
   public static final String AUTHENTICATION_KEY_CHAIN = "Authentication_Key_Chain";
-  public static final String COMMUNITY_LIST = "Community_List";
+  public static final String COMMUNITY_SET_MATCH_EXPR = "Community_Set_Match_Expr";
   public static final String IKE_PHASE1_KEYS = "IKE_Phase1_Keys";
   public static final String IKE_PHASE1_POLICIES = "IKE_Phase1_Policies";
   public static final String IKE_PHASE1_PROPOSALS = "IKE_Phase1_Proposals";
@@ -52,9 +52,11 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
                   Schema.OBJECT,
                   "Authentication keychain"))
           .put(
-              COMMUNITY_LIST,
+              COMMUNITY_SET_MATCH_EXPR,
               new PropertyDescriptor<>(
-                  Configuration::getCommunityLists, Schema.OBJECT, "BGP community list"))
+                  Configuration::getCommunitySetMatchExprs,
+                  Schema.OBJECT,
+                  "BGP named community set match expression"))
           .put(
               IKE_PHASE1_KEYS,
               new PropertyDescriptor<>(

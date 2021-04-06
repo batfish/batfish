@@ -5,6 +5,7 @@ CiscoXr_common,
 CiscoXr_aaa,
 CiscoXr_acl,
 CiscoXr_bgp,
+CiscoXr_community_set,
 CiscoXr_crypto,
 CiscoXr_callhome,
 CiscoXr_eigrp,
@@ -2450,22 +2451,9 @@ s_hardware
    )*
 ;
 
-s_hostname
-:
-   (
-      HOSTNAME
-      | SWITCHNAME
-   )
-   (
-      quoted_name = double_quoted_string
-      |
-      (
-         (
-            name_parts += ~NEWLINE
-         )+
-      )
-   ) NEWLINE
-;
+s_hostname: HOSTNAME hostname = host_name NEWLINE;
+
+host_name: WORD;
 
 s_ids
 :

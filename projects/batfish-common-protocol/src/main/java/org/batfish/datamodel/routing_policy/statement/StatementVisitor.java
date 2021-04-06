@@ -6,15 +6,11 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 /** A visitor of {@link Statement} that takes 1 generic argument and returns a generic value. */
 public interface StatementVisitor<T, U> {
 
-  T visitAddCommunity(AddCommunity addCommunity, U arg);
-
   T visitBufferedStatement(BufferedStatement bufferedStatement, U arg);
 
   T visitCallStatement(CallStatement callStatement, U arg);
 
   T visitComment(Comment comment, U arg);
-
-  T visitDeleteCommunity(DeleteCommunity deleteCommunity, U arg);
 
   T visitIf(If if1, U arg);
 
@@ -23,8 +19,6 @@ public interface StatementVisitor<T, U> {
   T visitSetAdministrativeCost(SetAdministrativeCost setAdministrativeCost, U arg);
 
   T visitSetCommunities(SetCommunities setCommunities, U arg);
-
-  T visitSetCommunity(SetCommunity setCommunity, U arg);
 
   T visitSetDefaultPolicy(SetDefaultPolicy setDefaultPolicy, U arg);
 
