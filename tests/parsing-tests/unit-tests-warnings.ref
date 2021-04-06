@@ -380,16 +380,23 @@
       },
       {
         "Filename" : "configs/cisco_ospf",
+        "Line" : 25,
+        "Text" : "default-cost 5",
+        "Parser_Context" : "[roa_default_cost ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cisco_ospf",
         "Line" : 26,
-        "Text" : "area 0.0.0.0 filter-list prefix filterName in",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Text" : "filter-list prefix filterName in",
+        "Parser_Context" : "[roa_filterlist ro_area s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 27,
-        "Text" : "area 0.0.0.0 filter-list prefix filterName out",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Text" : "filter-list prefix filterName out",
+        "Parser_Context" : "[roa_filterlist ro_area s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -450,30 +457,37 @@
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 82,
-        "Text" : "area 0 filter-list prefix INFILTER in",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Line" : 77,
+        "Text" : "filter-list prefix INFILTER in",
+        "Parser_Context" : "[roa_filterlist ro_area s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 83,
-        "Text" : "area 0 filter-list prefix OUTFILTER out",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Line" : 78,
+        "Text" : "filter-list prefix OUTFILTER out",
+        "Parser_Context" : "[roa_filterlist ro_area s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cisco_ospf_multi_process",
+        "Line" : 21,
+        "Text" : "default-cost 5",
+        "Parser_Context" : "[roa_default_cost ro_area s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
         "Line" : 22,
-        "Text" : "area 0.0.0.0 filter-list prefix filterName in",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Text" : "filter-list prefix filterName in",
+        "Parser_Context" : "[roa_filterlist ro_area s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
         "Line" : 23,
-        "Text" : "area 0.0.0.0 filter-list prefix filterName out",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Text" : "filter-list prefix filterName out",
+        "Parser_Context" : "[roa_filterlist ro_area s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -1360,10 +1374,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 188 results",
+      "notes" : "Found 190 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 188
+      "numResults" : 190
     }
   }
 ]
