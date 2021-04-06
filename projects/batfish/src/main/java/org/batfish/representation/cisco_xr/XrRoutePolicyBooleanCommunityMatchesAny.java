@@ -19,7 +19,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
  * by any element of a given {@link XrCommunitySetExpr}.
  */
 @ParametersAreNonnullByDefault
-public class XrRoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean {
+public final class XrRoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean {
 
   public XrRoutePolicyBooleanCommunityMatchesAny(XrCommunitySetExpr expr) {
     _expr = expr;
@@ -73,7 +73,7 @@ public class XrRoutePolicyBooleanCommunityMatchesAny extends RoutePolicyBoolean 
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof XrRoutePolicyBooleanCommunityMatchesAny)) {
       return false;
     }
     XrRoutePolicyBooleanCommunityMatchesAny that = (XrRoutePolicyBooleanCommunityMatchesAny) o;

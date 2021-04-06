@@ -28,7 +28,7 @@ public final class XrCommunitySetIosRegex implements XrCommunitySetElem {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof XrCommunitySetIosRegex)) {
       return false;
     }
     XrCommunitySetIosRegex that = (XrCommunitySetIosRegex) o;

@@ -19,10 +19,10 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /**
  * A route-policy statement that deletes communities matched by the provided {@link
- * CommunitySetExpr} under the provided negation flag.
+ * XrCommunitySetExpr} under the provided negation flag.
  */
 @ParametersAreNonnullByDefault
-public class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStatement {
+public final class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStatement {
 
   public XrRoutePolicyDeleteCommunityStatement(boolean negated, XrCommunitySetExpr expr) {
     _negated = negated;
@@ -84,7 +84,7 @@ public class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStateme
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof XrRoutePolicyDeleteCommunityStatement)) {
       return false;
     }
     XrRoutePolicyDeleteCommunityStatement that = (XrRoutePolicyDeleteCommunityStatement) o;

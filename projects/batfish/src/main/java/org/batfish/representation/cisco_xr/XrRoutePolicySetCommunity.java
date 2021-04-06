@@ -85,7 +85,7 @@ public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof XrRoutePolicySetCommunity)) {
       return false;
     }
     XrRoutePolicySetCommunity that = (XrRoutePolicySetCommunity) o;

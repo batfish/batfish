@@ -949,7 +949,7 @@ COMMUNITY
   'community'
   {
     int ltt = lastTokenType();
-    if (lastTokenType() == SET) {
+    if (ltt == SET) {
       pushMode(M_CommunitySetExpr);
     } else if (ltt == DELETE) {
       pushMode(M_DeleteCommunity);

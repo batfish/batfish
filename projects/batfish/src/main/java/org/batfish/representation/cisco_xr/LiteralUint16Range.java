@@ -5,7 +5,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.SubRange;
 
 @ParametersAreNonnullByDefault
-public class LiteralUint16Range implements Uint16RangeExpr {
+public final class LiteralUint16Range implements Uint16RangeExpr {
 
   public LiteralUint16Range(SubRange range) {
     _range = range;
@@ -25,7 +25,7 @@ public class LiteralUint16Range implements Uint16RangeExpr {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof LiteralUint16Range)) {
       return false;
     }
     LiteralUint16Range that = (LiteralUint16Range) o;

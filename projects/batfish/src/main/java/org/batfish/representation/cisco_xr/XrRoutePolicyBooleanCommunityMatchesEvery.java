@@ -13,7 +13,7 @@ import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
-public class XrRoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolean {
+public final class XrRoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolean {
 
   public XrRoutePolicyBooleanCommunityMatchesEvery(XrCommunitySetExpr expr) {
     _expr = expr;
@@ -67,7 +67,7 @@ public class XrRoutePolicyBooleanCommunityMatchesEvery extends RoutePolicyBoolea
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof XrRoutePolicyBooleanCommunityMatchesEvery)) {
       return false;
     }
     XrRoutePolicyBooleanCommunityMatchesEvery that = (XrRoutePolicyBooleanCommunityMatchesEvery) o;

@@ -9,7 +9,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-public class RoutePolicyIfStatement extends RoutePolicyStatement {
+public final class RoutePolicyIfStatement extends RoutePolicyStatement {
 
   private RoutePolicyElseBlock _elseBlock;
 
@@ -87,7 +87,7 @@ public class RoutePolicyIfStatement extends RoutePolicyStatement {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof RoutePolicyIfStatement)) {
       return false;
     }
     RoutePolicyIfStatement that = (RoutePolicyIfStatement) o;

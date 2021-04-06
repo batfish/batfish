@@ -10,7 +10,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 
-public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
+public final class RoutePolicyDispositionStatement extends RoutePolicyStatement {
 
   private RoutePolicyDispositionType _dispositionType;
 
@@ -69,7 +69,7 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof RoutePolicyDispositionStatement)) {
       return false;
     }
     RoutePolicyDispositionStatement that = (RoutePolicyDispositionStatement) o;
@@ -78,7 +78,7 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
 
   @Override
   public int hashCode() {
-    return Integer.hashCode(_dispositionType.ordinal());
+    return _dispositionType.ordinal();
   }
 
   public RoutePolicyDispositionType getDispositionType() {
