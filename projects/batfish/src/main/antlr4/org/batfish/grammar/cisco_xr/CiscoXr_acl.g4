@@ -48,19 +48,7 @@ access_list_ip_range
    | prefix = IP_PREFIX
    |
    (
-      ADDRGROUP address_group = variable
-   )
-   |
-   (
       INTERFACE iface = variable
-   )
-   |
-   (
-      OBJECT obj = variable
-   )
-   |
-   (
-      OBJECT_GROUP og = variable
    )
 ;
 
@@ -79,19 +67,6 @@ access_list_ip6_range
    |
    (
       ADDRGROUP address_group = variable
-   )
-;
-
-access_list_mac_range
-:
-   ANY
-   |
-   (
-      address = MAC_ADDRESS_LITERAL wildcard = MAC_ADDRESS_LITERAL
-   )
-   |
-   (
-      HOST address = MAC_ADDRESS_LITERAL
    )
 ;
 
@@ -283,11 +258,8 @@ extended_access_list_tail
    (
       VLAN vlan = DEC vmask = HEX
    )?
-   (
-      prot = protocol
-      | OBJECT_GROUP ogs = variable
-      | OBJECT obj = variable
-   ) srcipr = access_list_ip_range
+   prot = protocol
+   srcipr = access_list_ip_range
    (
       alps_src = port_specifier
    )? dstipr = access_list_ip_range
@@ -337,10 +309,7 @@ interface_rs_stanza
 
 ip_prefix_list_stanza
 :
-   (
-      IP
-      | IPV4
-   )? PREFIX_LIST name = variable
+   IPV4 PREFIX_LIST name = variable
    (
       (
          NEWLINE
@@ -405,16 +374,6 @@ ip_prefix_list_tail
          EQ eqpl = DEC
       )
    )* NEWLINE
-;
-
-ipacleth_line
-:
-   action = access_list_action ipacleth_range NEWLINE
-;
-
-ipacleth_range
-:
-   ANY
 ;
 
 ipaclsession_ip_range
@@ -504,81 +463,6 @@ mac_access_list_additional_feature
    )
 ;
 
-netdestination_description
-:
-   desc = description_line
-;
-
-netdestination_host
-:
-   HOST ip = IP_ADDRESS NEWLINE
-;
-
-netdestination_invert
-:
-   INVERT NEWLINE
-;
-
-netdestination_name
-:
-   NAME name = variable_permissive NEWLINE
-;
-
-netdestination_network
-:
-   NETWORK net = IP_ADDRESS mask = IP_ADDRESS NEWLINE
-;
-
-netdestination6_description
-:
-   desc = description_line
-;
-
-netdestination6_host
-:
-   HOST ip6 = IPV6_ADDRESS NEWLINE
-;
-
-netdestination6_invert
-:
-   INVERT NEWLINE
-;
-
-netdestination6_name
-:
-   NAME name = variable_permissive NEWLINE
-;
-
-netdestination6_network
-:
-   NETWORK net6 = IPV6_PREFIX NEWLINE
-;
-
-netservice_icmpv6_specifier
-:
-   DEC
-   | RTR_ADV
-;
-
-netservice_port_specifier
-:
-   (
-      (
-         start_port = DEC
-         (
-            end_port = DEC
-         )?
-      )
-      |
-      (
-         LIST DOUBLE_QUOTE
-         (
-            elems += DEC
-         )+ DOUBLE_QUOTE
-      )
-   )
-;
-
 no_ip_prefix_list_stanza
 :
    NO IP PREFIX_LIST name = variable NEWLINE
@@ -649,32 +533,6 @@ rsvp_stanza
    RSVP NEWLINE rs_stanza*
 ;
 
-s_arp_access_list_extended
-:
-   ARP ACCESS_LIST name = variable_permissive NEWLINE
-   s_arp_access_list_extended_tail*
-;
-
-s_arp_access_list_extended_tail
-:
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = DEC
-   )? action = access_list_action
-   (
-      REQUEST
-      | RESPONSE
-   )? IP senderip = access_list_ip_range
-   (
-      targetip = access_list_ip_range
-   )? MAC sendermac = access_list_mac_range
-   (
-      targetmac = access_list_mac_range
-   )? LOG? NEWLINE
-;
-
 s_ethernet_services
 :
    ETHERNET_SERVICES ACCESS_LIST name = variable_permissive NEWLINE
@@ -685,46 +543,6 @@ s_ethernet_services_tail
 :
    num = DEC? action = access_list_action src_mac = xr_mac_specifier dst_mac =
    xr_mac_specifier NEWLINE
-;
-
-s_ip_access_list_eth
-:
-   IP ACCESS_LIST ETH name = variable NEWLINE
-   (
-      ipacleth_line
-   )*
-;
-
-s_netdestination
-:
-   NETDESTINATION name = variable NEWLINE
-   (
-      netdestination_description
-      | netdestination_host
-      | netdestination_invert
-      | netdestination_name
-      | netdestination_network
-   )*
-;
-
-s_netdestination6
-:
-   NETDESTINATION6 name = variable NEWLINE
-   (
-      netdestination6_description
-      | netdestination6_host
-      | netdestination6_invert
-      | netdestination6_name
-      | netdestination6_network
-   )*
-;
-
-s_netservice
-:
-   NETSERVICE name = variable prot = protocol ps = netservice_port_specifier?
-   (
-      ALG alg = netservice_alg
-   )? NEWLINE
 ;
 
 xr_mac_specifier

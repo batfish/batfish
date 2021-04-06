@@ -12,10 +12,6 @@ import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeBgpPeerImportPolicyName;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeIcmpObjectGroupAclName;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeProtocolObjectGroupAclName;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeServiceObjectAclName;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 
@@ -1185,58 +1181,6 @@ public class CiscoXrConversions {
         .setLines(lines)
         .setSourceName(name)
         .setSourceType(IPV4_ACCESS_LIST.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeIcmpObjectGroupAclName(icmpTypeObjectGroup.getName()))
-        .setSourceName(icmpTypeObjectGroup.getName())
-        .setSourceType(CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
-        .setSourceName(protocolObjectGroup.getName())
-        .setSourceType(CiscoXrStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ServiceObject serviceObject) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(serviceObject.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeServiceObjectAclName(serviceObject.getName()))
-        .setSourceName(serviceObject.getName())
-        .setSourceType(CiscoXrStructureType.SERVICE_OBJECT.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
-        .setSourceName(serviceObjectGroup.getName())
-        .setSourceType(CiscoXrStructureType.SERVICE_OBJECT_GROUP.getDescription())
         .build();
   }
 
