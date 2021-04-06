@@ -1926,7 +1926,13 @@ public final class FortiosGrammarTest {
                     hasComment("When 'any' is set together with other interfaces, it is removed"),
                     hasText("any port10")),
                 hasComment("Cannot move a non-existent policy 99999"),
-                hasComment("Cannot move around a non-existent policy 99999"))));
+                hasComment("Cannot move around a non-existent policy 99999"),
+                hasComment("Cannot clone a non-existent policy 99999"),
+                allOf(
+                    hasComment("Cannot create a cloned policy with an invalid name"),
+                    hasText("clone 3 to foobar")),
+                hasComment("Expected policy number in range 0-4294967294, but got 'foobar'"),
+                hasComment("Cannot clone, 1 already exists"))));
 
     Warnings conversionWarnings =
         batfish
@@ -2405,6 +2411,10 @@ public final class FortiosGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, FortiosStructureType.POLICY, "2", FortiosStructureUsage.POLICY_DELETE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.POLICY, "3", FortiosStructureUsage.POLICY_CLONE));
   }
 
   @Test
@@ -2510,6 +2520,26 @@ public final class FortiosGrammarTest {
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3DeniedIndirect, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
+  }
+
+  @Test
+  public void testPolicyClone() throws IOException {
+    String hostname = "policy_clone";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPolicies().keySet(), contains("1", "2", "3", "4"));
+
+    // Confirm the clone has the correct properties
+    Policy clone = vc.getPolicies().get("3");
+    assertThat(clone.getAction(), equalTo(Action.ACCEPT));
+    assertThat(clone.getDstIntf(), contains("any"));
+    assertThat(clone.getSrcIntf(), contains("any"));
+    assertThat(clone.getDstAddr(), contains("all"));
+    assertThat(clone.getSrcAddr(), contains("all"));
+    assertThat(clone.getService(), contains("ALL_TCP"));
   }
 
   @Test

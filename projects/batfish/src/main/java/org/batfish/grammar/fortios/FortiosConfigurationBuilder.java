@@ -75,6 +75,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcintfContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_cloneContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_deleteContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_moveContext;
@@ -1032,6 +1033,34 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, String.format("Policy edit block ignored: %s", invalidReason));
     }
     _currentPolicy = null;
+  }
+
+  @Override
+  public void exitCfp_clone(Cfp_cloneContext ctx) {
+    String name = toString(ctx.name.str());
+    Policy existing = _c.getPolicies().get(name);
+    if (existing == null) {
+      warn(ctx, String.format("Cannot clone a non-existent policy %s", name));
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_CLONE,
+          ctx.start.getLine());
+      return;
+    }
+
+    Optional<Long> to = toLong(ctx, ctx.to);
+    if (!to.isPresent()) {
+      warn(ctx, "Cannot create a cloned policy with an invalid name");
+      return;
+    }
+
+    String toName = to.get().toString();
+    if (_c.getPolicies().containsKey(toName)) {
+      warn(ctx, String.format("Cannot clone, %s already exists", toName));
+      return;
+    }
+    _c.getPolicies().put(toName, SerializationUtils.clone(existing));
   }
 
   @Override

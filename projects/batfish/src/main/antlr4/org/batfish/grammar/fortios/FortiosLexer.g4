@@ -42,6 +42,7 @@ BEFORE: 'before' -> pushMode(M_SingleStr);
 BGP: 'bgp';
 BUFFER: 'buffer' -> pushMode(M_Str);
 CLEAR: 'clear';
+CLONE: 'clone' -> pushMode(M_SingleStr);
 COLOR: 'color';
 COMMENT: 'comment' -> pushMode(M_Str);
 COMMENTS: 'comments' -> pushMode(M_Str);

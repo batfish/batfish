@@ -65,4 +65,5 @@ config firewall policy
         append service service2
     next
     delete 2
+    clone 3 to 4
 end
