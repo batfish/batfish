@@ -433,14 +433,14 @@ An MLAG ID specifier follows the [enum set grammar](#set-of-enums-or-names) over
 
 A specification for a set of structure types in Batfish's vendor independent model.
 
-A named structure specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_PATH_ACCESS_LIST`, `AUTHENTICATION_KEY_CHAIN`, `COMMUNITY_LIST`, `IKE_PHASE1_KEYS`, `IKE_PHASE1_POLICIES`, `IKE_PHASE1_PROPOSALS`, `IP_ACCESS_LIST`, `IP_6_ACCESS_LIST`, `IPSEC_PEER_CONFIGS`, `IPSEC_PHASE2_POLICIES`, `IPSEC_PHASE2_PROPOSALS`, `PBR_POLICY`, `ROUTE_FILTER_LIST`, `ROUTE_6_FILTER_LIST`, `ROUTING_POLICY`, `VRF`, `ZONE`.
+A named structure specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_PATH_ACCESS_LIST`, `AUTHENTICATION_KEY_CHAIN`, `COMMUNITY_MATCH_EXPRS`, `COMMUNITY_SET_EXPRS`, `COMMUNITY_SET_MATCH_EXPRS`, `COMMUNITY_SETS`, `IKE_PHASE1_KEYS`, `IKE_PHASE1_POLICIES`, `IKE_PHASE1_PROPOSALS`, `IP_ACCESS_LIST`, `IP_6_ACCESS_LIST`, `IPSEC_PEER_CONFIGS`, `IPSEC_PHASE2_POLICIES`, `IPSEC_PHASE2_PROPOSALS`, `PBR_POLICY`, `ROUTE_FILTER_LIST`, `ROUTE_6_FILTER_LIST`, `ROUTING_POLICY`, `VRF`, `ZONE`.
 
 
 ### Node Property Specifier
 
 A specification for a set of node-level properties (e.g., those returned by the `nodeProperties` question).
 
-A node property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_Path_Access_Lists`, `Authentication_Key_Chains`, `Canonical_IP`, `Community_Lists`, `Configuration_Format`, `Default_Cross_Zone_Action`, `Default_Inbound_Action`, `DNS_Servers`, `DNS_Source_Interface`, `Domain_Name`, `Hostname`, `IKE_Phase1_Keys`, `IKE_Phase1_Policies`, `IKE_Phase1_Proposals`, `Interfaces`, `IP_Access_Lists`, `IP_Spaces`, `IP6_Access_Lists`, `IPsec_Peer_Configs`, `IPsec_Phase2_Policies`, `IPsec_Phase2_Proposals`, `IPSec_Vpns`, `Logging_Servers`, `Logging_Source_Interface`, `NTP_Servers`, `NTP_Source_Interface`, `PBR_Policies`, `Route_Filter_Lists`, `Route6_Filter_Lists`, `Routing_Policies`, `SNMP_Source_Interface`, `SNMP_Trap_Servers`, `TACACS_Servers`, `TACACS_Source_Interface`, `VRFs`, `Zones`.
+A node property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `AS_Path_Access_Lists`, `Authentication_Key_Chains`, `Canonical_IP`, `Community_Match_Exprs`, `Community_Set_Exprs`, `Community_Set_Match_Exprs`, `Community_Sets`, `Configuration_Format`, `Default_Cross_Zone_Action`, `Default_Inbound_Action`, `DNS_Servers`, `DNS_Source_Interface`, `Domain_Name`, `Hostname`, `IKE_Phase1_Keys`, `IKE_Phase1_Policies`, `IKE_Phase1_Proposals`, `Interfaces`, `IP_Access_Lists`, `IP_Spaces`, `IP6_Access_Lists`, `IPsec_Peer_Configs`, `IPsec_Phase2_Policies`, `IPsec_Phase2_Proposals`, `IPSec_Vpns`, `Logging_Servers`, `Logging_Source_Interface`, `NTP_Servers`, `NTP_Source_Interface`, `PBR_Policies`, `Route_Filter_Lists`, `Route6_Filter_Lists`, `Routing_Policies`, `SNMP_Source_Interface`, `SNMP_Trap_Servers`, `TACACS_Servers`, `TACACS_Source_Interface`, `VRFs`, `Zones`.
 
 
 ### Node Specifier
