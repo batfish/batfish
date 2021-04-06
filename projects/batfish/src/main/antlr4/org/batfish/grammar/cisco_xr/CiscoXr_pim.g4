@@ -142,12 +142,3 @@ pim_ssm
       )
    ) NEWLINE
 ;
-
-s_ip_pim
-:
-   NO? IP PIM
-   (
-      VRF vrf = variable
-   )? ip_pim_tail
-;
-
