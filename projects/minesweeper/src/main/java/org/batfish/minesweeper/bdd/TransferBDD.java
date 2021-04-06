@@ -1,8 +1,5 @@
 package org.batfish.minesweeper.bdd;
 
-import static org.batfish.minesweeper.CommunityVarCollector.collectCommunityVars;
-import static org.batfish.minesweeper.bdd.CommunityVarConverter.toCommunityVar;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -19,8 +16,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -42,7 +37,6 @@ import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
@@ -54,13 +48,10 @@ import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
@@ -68,18 +59,14 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
-import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -379,13 +366,6 @@ public class TransferBDD {
       // TODO: postStatements() and preStatements()
       return compute(we.getExpr(), p.deepCopy());
 
-    } else if (expr instanceof MatchCommunitySet) {
-      p.debug("MatchCommunitySet");
-      MatchCommunitySet mcs = (MatchCommunitySet) expr;
-      BDD c = matchCommunitySet(p.indent(), _conf, mcs.getExpr(), p.getData());
-      TransferReturn ret = new TransferReturn(p.getData(), c);
-      return fromExpr(ret);
-
     } else if (expr instanceof MatchCommunities) {
       p.debug("MatchCommunities");
       MatchCommunities mc = (MatchCommunities) expr;
@@ -623,30 +603,6 @@ public class TransferBDD {
       newValue = ite(unreachable(result), curP.getData().getLocalPref(), newValue);
       curP.getData().setLocalPref(newValue);
 
-    } else if (stmt instanceof AddCommunity) {
-      curP.debug("AddCommunity");
-      AddCommunity ac = (AddCommunity) stmt;
-      Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
-      // set all atomic predicates associated with these communities to 1 if this statement
-      // is reached
-      addOrRemoveCommunities(comms, curP, result, true);
-
-    } else if (stmt instanceof SetCommunity) {
-      curP.debug("SetCommunity");
-      SetCommunity sc = (SetCommunity) stmt;
-      CommunitySetExpr setExpr = sc.getExpr();
-      /**
-       * TODO: simply collecting all community variables in setExpr is not correct in general, since
-       * for example some of them may be negated in the expression. for now we only support setting
-       * literal communities. we should create a special visitor to gather the community atomic
-       * predicates that are being set.
-       */
-      if (!(setExpr instanceof LiteralCommunity || setExpr instanceof LiteralCommunitySet)) {
-        throw new BatfishException("Unhandled community expression in 'set community': " + setExpr);
-      }
-      Set<CommunityVar> comms = collectCommunityVars(_conf, setExpr);
-      setCommunities(comms, curP, result);
-
     } else if (stmt instanceof SetCommunities) {
       curP.debug("SetCommunities");
       SetCommunities sc = (SetCommunities) stmt;
@@ -684,11 +640,6 @@ public class TransferBDD {
         Set<CommunityVar> comms = setExpr.accept(new SetCommunitiesVarCollector(), _conf);
         setCommunities(comms, curP, result);
       }
-    } else if (stmt instanceof DeleteCommunity) {
-      curP.debug("DeleteCommunity");
-      DeleteCommunity ac = (DeleteCommunity) stmt;
-      Set<CommunityVar> comms = collectCommunityVars(_conf, ac.getExpr());
-      addOrRemoveCommunities(comms, curP, result, false);
     } else if (stmt instanceof CallStatement) {
 
       /*
@@ -964,70 +915,6 @@ public class TransferBDD {
   }
 
   /*
-   * Converts a community list to a boolean expression.
-   */
-  private BDD matchCommunityList(TransferParam<BDDRoute> p, CommunityList cl, BDDRoute other) {
-    List<CommunityListLine> lines = new ArrayList<>(cl.getLines());
-    Collections.reverse(lines);
-    BDD acc = factory.zero();
-    for (CommunityListLine line : lines) {
-      boolean action = (line.getAction() == LineAction.PERMIT);
-      CommunityVar cvar = toRegexCommunityVar(toCommunityVar(line.getMatchCondition()));
-      p.debug("Match Line: " + cvar);
-      p.debug("Action: " + line.getAction());
-      // the community cvar is logically represented as the disjunction of its corresponding
-      // atomic predicates
-      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(cvar), _communityAtomicPredicates);
-      BDD c =
-          factory.orAll(
-              aps.stream()
-                  .map(ap -> other.getCommunityAtomicPredicates()[ap])
-                  .collect(Collectors.toList()));
-      acc = ite(c, mkBDD(action), acc);
-    }
-    return acc;
-  }
-
-  /*
-   * Converts a community set to a boolean expression
-   */
-  private BDD matchCommunitySet(
-      TransferParam<BDDRoute> p, Configuration conf, CommunitySetExpr e, BDDRoute other) {
-
-    if (e instanceof CommunityList) {
-      Set<CommunityVar> comms =
-          ((CommunityList) e)
-              .getLines().stream()
-                  .map(line -> toCommunityVar(line.getMatchCondition()))
-                  .collect(Collectors.toSet());
-      BDD acc = factory.one();
-      for (CommunityVar comm : comms) {
-        p.debug("Inline Community Set: " + comm);
-        // the community comm is logically represented as the disjunction of its corresponding
-        // atomic predicates
-        Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(comm), _communityAtomicPredicates);
-        BDD c =
-            factory.orAll(
-                aps.stream()
-                    .map(ap -> other.getCommunityAtomicPredicates()[ap])
-                    .collect(Collectors.toSet()));
-        acc = acc.and(c);
-      }
-      return acc;
-    }
-
-    if (e instanceof NamedCommunitySet) {
-      p.debug("Named");
-      NamedCommunitySet x = (NamedCommunitySet) e;
-      CommunityList cl = conf.getCommunityLists().get(x.getName());
-      p.debug("Named Community Set: " + cl.getName());
-      return matchCommunityList(p, cl, other);
-    }
-
-    throw new BatfishException("TODO: match community set");
-  }
-
-  /*
    * Converts a route filter list to a boolean expression.
    */
   private BDD matchFilterList(TransferParam<BDDRoute> p, RouteFilterList x, BDDRoute other) {
@@ -1112,9 +999,9 @@ public class TransferBDD {
   }
 
   /**
-   * A helper for route analysis of AddCommunity, DeleteCommunity, and uses of SetCommunities that
-   * add communities. Given a set of CommunityVars that are added by the statement, we set their
-   * BDDs to either 1 or 0, depending on the value of the boolean parameter.
+   * A helper for route analysis of uses of SetCommunities that add communities. Given a set of
+   * CommunityVars that are added by the statement, we set their BDDs to either 1 or 0, depending on
+   * the value of the boolean parameter.
    */
   private void addOrRemoveCommunities(
       Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
@@ -1149,11 +1036,10 @@ public class TransferBDD {
     }
   }
 
-  /*
-   * A helper for route analysis of SetCommunity and SetCommunities.  Given a set of
-   * CommunityVars that are set by the statement, we update all community atomic predicates
-   * appropriately:  the ones corresponding to the given CommunityVars are set to 1, and
-   * the others are set to 0.
+  /**
+   * A helper for route analysis of SetCommunities. Given a set of CommunityVars that are set by the
+   * statement, we update all community atomic predicates appropriately: the ones corresponding to
+   * the given CommunityVars are set to 1, and the others are set to 0.
    */
   private void setCommunities(
       Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result) {

@@ -21,7 +21,6 @@ import org.batfish.common.Warnings;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip6AccessList;
@@ -137,7 +136,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
     c.setAuthenticationKeyChains(toImmutableMap(c.getAuthenticationKeyChains()));
-    c.setCommunityLists(verifyAndToImmutableMap(c.getCommunityLists(), CommunityList::getName, w));
     c.setCommunityMatchExprs(toImmutableMap(c.getCommunityMatchExprs()));
     c.setCommunitySetExprs(toImmutableMap(c.getCommunitySetExprs()));
     c.setCommunitySetMatchExprs(toImmutableMap(c.getCommunitySetMatchExprs()));
