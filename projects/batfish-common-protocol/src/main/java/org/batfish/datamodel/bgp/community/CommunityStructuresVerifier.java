@@ -66,7 +66,6 @@ import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -87,15 +86,12 @@ import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
-import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetIsisLevel;
@@ -207,13 +203,6 @@ public final class CommunityStructuresVerifier {
         MatchCommunities matchCommunities, CommunityStructuresVerifierContext arg) {
       matchCommunities.getCommunitySetExpr().accept(COMMUNITY_SET_EXPR_VERIFIER, arg);
       matchCommunities.getCommunitySetMatchExpr().accept(COMMUNITY_SET_MATCH_EXPR_VERIFIER, arg);
-      return null;
-    }
-
-    @Override
-    public Void visitMatchCommunitySet(
-        MatchCommunitySet matchCommunitySet, CommunityStructuresVerifierContext arg) {
-      // old deprecated API not checked
       return null;
     }
 
@@ -655,13 +644,6 @@ public final class CommunityStructuresVerifier {
   private static final class CommunityStructuresStatementVerifier
       implements StatementVisitor<Void, CommunityStructuresVerifierContext> {
     @Override
-    public Void visitAddCommunity(
-        AddCommunity addCommunity, CommunityStructuresVerifierContext arg) {
-      // old deprecated API not checked
-      return null;
-    }
-
-    @Override
     public Void visitBufferedStatement(
         BufferedStatement bufferedStatement, CommunityStructuresVerifierContext arg) {
       return bufferedStatement.getStatement().accept(this, arg);
@@ -677,13 +659,6 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitComment(Comment comment, CommunityStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
-    public Void visitDeleteCommunity(
-        DeleteCommunity deleteCommunity, CommunityStructuresVerifierContext arg) {
-      // old deprecated API not checked
       return null;
     }
 
@@ -711,13 +686,6 @@ public final class CommunityStructuresVerifier {
     public Void visitSetCommunities(
         SetCommunities setCommunities, CommunityStructuresVerifierContext arg) {
       setCommunities.getCommunitySetExpr().accept(COMMUNITY_SET_EXPR_VERIFIER, arg);
-      return null;
-    }
-
-    @Override
-    public Void visitSetCommunity(
-        SetCommunity setCommunity, CommunityStructuresVerifierContext arg) {
-      // old deprecated API not checked
       return null;
     }
 

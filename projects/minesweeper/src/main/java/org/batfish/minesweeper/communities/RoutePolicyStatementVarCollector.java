@@ -6,15 +6,12 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
-import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetIsisLevel;
@@ -31,17 +28,11 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.CommunityVarCollector;
 
 /** Collect all community literals and regexes in a route-policy {@link Statement}. */
 @ParametersAreNonnullByDefault
 public class RoutePolicyStatementVarCollector
     implements StatementVisitor<Set<CommunityVar>, Configuration> {
-  @Override
-  public Set<CommunityVar> visitAddCommunity(AddCommunity addCommunity, Configuration arg) {
-    return CommunityVarCollector.collectCommunityVars(arg, addCommunity.getExpr());
-  }
-
   @Override
   public Set<CommunityVar> visitBufferedStatement(
       BufferedStatement bufferedStatement, Configuration arg) {
@@ -58,12 +49,6 @@ public class RoutePolicyStatementVarCollector
   @Override
   public Set<CommunityVar> visitComment(Comment comment, Configuration arg) {
     return ImmutableSet.of();
-  }
-
-  @Override
-  public Set<CommunityVar> visitDeleteCommunity(
-      DeleteCommunity deleteCommunity, Configuration arg) {
-    return CommunityVarCollector.collectCommunityVars(arg, deleteCommunity.getExpr());
   }
 
   @Override
@@ -90,11 +75,6 @@ public class RoutePolicyStatementVarCollector
   @Override
   public Set<CommunityVar> visitSetCommunities(SetCommunities setCommunities, Configuration arg) {
     return setCommunities.getCommunitySetExpr().accept(new CommunitySetExprVarCollector(), arg);
-  }
-
-  @Override
-  public Set<CommunityVar> visitSetCommunity(SetCommunity setCommunity, Configuration arg) {
-    return CommunityVarCollector.collectCommunityVars(arg, setCommunity.getExpr());
   }
 
   @Override

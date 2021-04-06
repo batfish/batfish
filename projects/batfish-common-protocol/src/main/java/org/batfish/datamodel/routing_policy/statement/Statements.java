@@ -11,7 +11,6 @@ import org.batfish.datamodel.routing_policy.Result;
 
 public enum Statements {
   DefaultAction,
-  DeleteAllCommunities,
   ExitAccept,
   ExitReject,
   FallThrough,
@@ -61,9 +60,6 @@ public enum Statements {
               .setExit(true)
               .setBooleanValue(environment.getDefaultAction())
               .build();
-
-        case DeleteAllCommunities:
-          break;
 
         case ExitAccept:
           return Result.builder().setExit(true).setBooleanValue(true).build();

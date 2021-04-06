@@ -17,7 +17,6 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip6AccessList;
@@ -41,7 +40,6 @@ public class Environment {
     ConfigurationFormat format = c.getConfigurationFormat();
     return new Builder()
         .setAsPathAccessLists(c.getAsPathAccessLists())
-        .setCommunityLists(c.getCommunityLists())
         .setCommunityMatchExprs(c.getCommunityMatchExprs())
         .setCommunitySetExprs(c.getCommunitySetExprs())
         .setCommunitySetMatchExprs(c.getCommunitySetMatchExprs())
@@ -67,7 +65,6 @@ public class Environment {
   private boolean _buffered;
   private boolean _callExprContext;
   private boolean _callStatementContext;
-  private final Map<String, CommunityList> _communityLists;
   private final Map<String, CommunityMatchExpr> _communityMatchExprs;
   private final Map<String, CommunitySetExpr> _communitySetExprs;
   private final Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
@@ -103,7 +100,6 @@ public class Environment {
       boolean buffered,
       boolean callExprContext,
       boolean callStatementContext,
-      Map<String, CommunityList> communityLists,
       Map<String, CommunityMatchExpr> communityMatchExprs,
       Map<String, CommunitySetExpr> communitySetExprs,
       Map<String, CommunitySetMatchExpr> communitySetMatchExprs,
@@ -132,7 +128,6 @@ public class Environment {
     _buffered = buffered;
     _callExprContext = callExprContext;
     _callStatementContext = callStatementContext;
-    _communityLists = communityLists;
     _communityMatchExprs = communityMatchExprs;
     _communitySetExprs = communitySetExprs;
     _communitySetMatchExprs = communitySetMatchExprs;
@@ -185,10 +180,6 @@ public class Environment {
 
   public boolean getCallStatementContext() {
     return _callStatementContext;
-  }
-
-  public Map<String, CommunityList> getCommunityLists() {
-    return _communityLists;
   }
 
   public Map<String, CommunityMatchExpr> getCommunityMatchExprs() {
@@ -341,7 +332,6 @@ public class Environment {
     private boolean _buffered;
     private boolean _callExprContext;
     private boolean _callStatementContext;
-    private Map<String, CommunityList> _communityLists;
     private Map<String, CommunityMatchExpr> _communityMatchExprs;
     private Map<String, CommunitySetExpr> _communitySetExprs;
     private Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
@@ -390,11 +380,6 @@ public class Environment {
 
     public Builder setCallStatementContext(boolean callStatementContext) {
       _callStatementContext = callStatementContext;
-      return this;
-    }
-
-    public Builder setCommunityLists(Map<String, CommunityList> communityLists) {
-      _communityLists = toImmutableMap(communityLists);
       return this;
     }
 
@@ -513,7 +498,6 @@ public class Environment {
           _buffered,
           _callExprContext,
           _callStatementContext,
-          firstNonNull(_communityLists, ImmutableMap.of()),
           firstNonNull(_communityMatchExprs, ImmutableMap.of()),
           firstNonNull(_communitySetExprs, ImmutableMap.of()),
           firstNonNull(_communitySetMatchExprs, ImmutableMap.of()),

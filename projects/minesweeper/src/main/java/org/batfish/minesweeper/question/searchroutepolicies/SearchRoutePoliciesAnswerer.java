@@ -45,7 +45,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.bgp.community.Community;
@@ -474,9 +473,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _batfish.getSnapshot(),
             null,
             ImmutableSet.of(node),
-            _communityRegexes.stream()
-                .map(RegexCommunitySet::new)
-                .collect(ImmutableSet.toImmutableSet()),
+            _communityRegexes,
             _asPathRegexes);
 
     return policies.stream()
