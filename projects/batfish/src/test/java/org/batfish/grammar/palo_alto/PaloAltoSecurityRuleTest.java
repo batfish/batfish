@@ -17,7 +17,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInServiceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedAddressTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedDestinationAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSecurityRuleTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceAnyTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
@@ -412,14 +412,7 @@ public class PaloAltoSecurityRuleTest {
                   matchSecurityRuleTraceElement("RULE4", "vsys1", filename),
                   isTraceTree(
                       matchSourceAddressTraceElement(), isTraceTree(matchAddressAnyTraceElement())),
-                  isTraceTree(
-                      matchDestinationAddressTraceElement(),
-                      isTraceTree(
-                          matchNegatedAddressTraceElement(),
-                          isTraceTree(matchAddressValueTraceElement("10.11.12.13"))),
-                      isTraceTree(
-                          matchNegatedAddressTraceElement(),
-                          isTraceTree(matchAddressValueTraceElement("10.11.11.0/24")))),
+                  isTraceTree(matchNegatedDestinationAddressTraceElement()),
                   isTraceTree(matchApplicationAnyTraceElement()),
                   isTraceTree(matchServiceAnyTraceElement()))));
     }
