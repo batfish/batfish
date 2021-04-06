@@ -106,31 +106,6 @@ hash_comment
    POUND RAW_TEXT
 ;
 
-icmp_object_type
-:
-   DEC
-   | ALTERNATE_ADDRESS
-   | CONVERSION_ERROR
-   | ECHO
-   | ECHO_REPLY
-   | INFORMATION_REPLY
-   | INFORMATION_REQUEST
-   | MASK_REPLY
-   | MASK_REQUEST
-   | MOBILE_REDIRECT
-   | PARAMETER_PROBLEM
-   | REDIRECT
-   | ROUTER_ADVERTISEMENT
-   | ROUTER_SOLICITATION
-   | SOURCE_QUENCH
-   | TIME_EXCEEDED
-   | TIMESTAMP_REPLY
-   | TIMESTAMP_REQUEST
-   | TRACEROUTE
-   | UNREACHABLE
-   | UNSET
-;
-
 int_expr
 :
    (
@@ -181,12 +156,6 @@ ios_delimited_banner
   BANNER_DELIMITER_IOS body = BANNER_BODY? BANNER_DELIMITER_IOS
 ;
 
-ip_hostname
-:
-   IP_ADDRESS
-   | IPV6_ADDRESS
-;
-
 isis_level
 :
    LEVEL_1
@@ -208,20 +177,6 @@ line_type
    )
    | TTY
    | VTY
-;
-
-netservice_alg
-:
-   DHCP
-   | DNS
-   | FTP
-   | NOE
-   | RTSP
-   | SCCP
-   | SIPS
-   | SVP
-   | TFTP
-   | VOCERA
 ;
 
 null_rest_of_line
@@ -572,38 +527,6 @@ rp_subrange
    )
 ;
 
-service_group_protocol
-:
-     TCP | TCP_UDP | UDP
-;
-
-service_specifier
-:
-   service_specifier_icmp
-   | service_specifier_tcp_udp
-   | service_specifier_protocol
-;
-
-service_specifier_icmp
-:
-   ICMP icmp_object_type?
-;
-
-service_specifier_protocol
-:
-   protocol
-;
-
-service_specifier_tcp_udp
-:
-   (
-      TCP
-      | TCP_UDP
-      | UDP
-   )
-   (SOURCE src_ps = port_specifier)? (DESTINATION? dst_ps = port_specifier)?
-;
-
 subrange
 :
    low = DEC
@@ -684,11 +607,6 @@ variable_secret
 variable_group_id
 :
     ~( NEWLINE | TCP | TCP_UDP | UDP )+
-;
-
-variable_vlan
-:
-   ~( NEWLINE | ACCESS_MAP | DEC )
 ;
 
 vlan_id
