@@ -44,11 +44,17 @@ crbcne
 :
     SET (
         crbcne_set_remote_as
+        | crbcne_set_route_map_in
+        | crbcne_set_route_map_out
         | crbcne_set_update_source
     )
 ;
 
 crbcne_set_remote_as: REMOTE_AS bgp_remote_as newline;
+
+crbcne_set_route_map_in: ROUTE_MAP_IN route_map_name newline;
+
+crbcne_set_route_map_out: ROUTE_MAP_OUT route_map_name newline;
 
 crbcne_set_update_source: UPDATE_SOURCE interface_name newline;
 
