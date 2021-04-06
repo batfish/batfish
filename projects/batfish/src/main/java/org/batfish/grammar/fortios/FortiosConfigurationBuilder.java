@@ -114,6 +114,8 @@ import org.batfish.grammar.fortios.FortiosParser.Crb_set_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crb_set_router_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_inContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_outContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrm_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrme_set_commentsContext;
@@ -850,6 +852,30 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCrbcne_set_remote_as(Crbcne_set_remote_asContext ctx) {
     toLong(ctx, ctx.bgp_remote_as()).ifPresent(_currentBgpNeighbor::setRemoteAs);
+  }
+
+  @Override
+  public void exitCrbcne_set_route_map_in(Crbcne_set_route_map_inContext ctx) {
+    toRouteMap(ctx.route_map_name(), FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_IN)
+        .ifPresent(_currentBgpNeighbor::setRouteMapIn);
+  }
+
+  @Override
+  public void exitCrbcne_set_route_map_out(Crbcne_set_route_map_outContext ctx) {
+    toRouteMap(ctx.route_map_name(), FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT)
+        .ifPresent(_currentBgpNeighbor::setRouteMapOut);
+  }
+
+  private Optional<String> toRouteMap(Route_map_nameContext ctx, FortiosStructureUsage usage) {
+    String name = toString(ctx.str());
+    int line = ctx.start.getLine();
+    if (_c.getRouteMaps().containsKey(name)) {
+      _c.referenceStructure(FortiosStructureType.ROUTE_MAP, name, usage, line);
+      return Optional.of(name);
+    }
+    warn(ctx, String.format("Route-map %s is undefined and cannot be referenced", name));
+    _c.undefined(FortiosStructureType.ROUTE_MAP, name, usage, line);
+    return Optional.empty();
   }
 
   @Override
