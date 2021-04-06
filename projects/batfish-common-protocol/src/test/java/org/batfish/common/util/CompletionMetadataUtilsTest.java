@@ -36,7 +36,6 @@ import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -60,6 +59,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
@@ -461,7 +461,7 @@ public final class CompletionMetadataUtilsTest {
 
     String asPathAccessListName = "asPathAccessList";
     String authenticationKeyChainName = "authenticationKeyChain";
-    String communityListName = "communityList";
+    String communitySetMatchExprName = "communityList";
     String ikePhase1KeyName = "ikePhase1Key";
     String ikePhase1PolicyName = "ikePhase1Policy";
     String ikePhase1ProposalName = "ikePhase1Proposal";
@@ -485,9 +485,9 @@ public final class CompletionMetadataUtilsTest {
     config.setAuthenticationKeyChains(
         ImmutableSortedMap.of(
             authenticationKeyChainName, new AuthenticationKeyChain(authenticationKeyChainName)));
-    config.setCommunityLists(
+    config.setCommunitySetMatchExprs(
         ImmutableSortedMap.of(
-            communityListName, new CommunityList(communityListName, ImmutableList.of(), true)));
+            communitySetMatchExprName, new CommunitySetMatchAny(ImmutableList.of())));
     config.setIkePhase1Keys(ImmutableSortedMap.of(ikePhase1KeyName, new IkePhase1Key()));
     config.setIkePhase1Policies(
         ImmutableSortedMap.of(ikePhase1PolicyName, new IkePhase1Policy(ikePhase1PolicyName)));
@@ -522,7 +522,7 @@ public final class CompletionMetadataUtilsTest {
             ImmutableSet.of(
                 asPathAccessListName,
                 authenticationKeyChainName,
-                communityListName,
+                communitySetMatchExprName,
                 ikePhase1KeyName,
                 ikePhase1PolicyName,
                 ikePhase1ProposalName,

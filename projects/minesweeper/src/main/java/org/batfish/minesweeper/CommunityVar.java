@@ -88,10 +88,10 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
   }
 
   /**
-   * Create a community var of type {@link Type#EXACT} based on a literal {@link Community} value
+   * Create a community var of type {@link Type#REGEX} based on a literal {@link Community} value
    */
   public static CommunityVar from(Community literalCommunity) {
-    return new CommunityVar(Type.EXACT, literalCommunity.matchString(), literalCommunity);
+    return from("^" + literalCommunity.matchString() + "$");
   }
 
   /** Create a community var of type {@link Type#OTHER} based on a REGEX community var. */

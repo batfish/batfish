@@ -17,14 +17,11 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = AddCommunity.class),
   @JsonSubTypes.Type(value = BufferedStatement.class),
   @JsonSubTypes.Type(value = CallStatement.class),
   @JsonSubTypes.Type(value = Comment.class),
-  @JsonSubTypes.Type(value = DeleteCommunity.class),
   @JsonSubTypes.Type(value = If.class),
   @JsonSubTypes.Type(value = PrependAsPath.class),
-  @JsonSubTypes.Type(value = SetCommunity.class),
   @JsonSubTypes.Type(value = SetIsisLevel.class),
   @JsonSubTypes.Type(value = SetIsisMetricType.class),
   @JsonSubTypes.Type(value = SetLocalPreference.class),

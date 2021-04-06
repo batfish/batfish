@@ -62,7 +62,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -77,7 +76,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
@@ -88,15 +86,12 @@ import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
-import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetIsisLevel;
@@ -130,8 +125,6 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new HasRoute6(new NamedPrefix6Set("a")).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(new MatchAsPath(new NamedAsPathSet("a")).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(new MatchColor(1).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(
-        new MatchCommunitySet(new NamedCommunitySet("a")).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(new MatchIp6AccessList("a").accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(MatchIpv4.instance().accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(MatchIpv6.instance().accept(BOOLEAN_EXPR_VERIFIER, ctx));
@@ -168,14 +161,11 @@ public final class CommunityStructuresVerifierTest {
     // no exception should be thrown while verifying non-community-related structures
     CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
 
-    assertNull(new AddCommunity(new NamedCommunitySet("a")).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new CallStatement("a").accept(STATEMENT_VERIFIER, ctx));
     assertNull(new Comment("a").accept(STATEMENT_VERIFIER, ctx));
-    assertNull(new DeleteCommunity(new NamedCommunitySet("a")).accept(STATEMENT_VERIFIER, ctx));
     assertNull(
         new PrependAsPath(new LiteralAsList(ImmutableList.of())).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetAdministrativeCost(new LiteralInt(1)).accept(STATEMENT_VERIFIER, ctx));
-    assertNull(new SetCommunity(new NamedCommunitySet("a")).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetDefaultPolicy("a").accept(STATEMENT_VERIFIER, ctx));
     assertNull(
         new SetEigrpMetric(

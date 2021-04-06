@@ -18,7 +18,6 @@ import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
@@ -40,7 +39,6 @@ import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.CommunityVarCollector;
 
 /** Collect all community literals and regexes in a {@link BooleanExpr}. */
 @ParametersAreNonnullByDefault
@@ -118,12 +116,6 @@ public class BooleanExprVarCollector
                 .getCommunitySetMatchExpr()
                 .accept(new CommunitySetMatchExprVarCollector(), arg))
         .build();
-  }
-
-  @Override
-  public Set<CommunityVar> visitMatchCommunitySet(
-      MatchCommunitySet matchCommunitySet, Configuration arg) {
-    return CommunityVarCollector.collectCommunityVars(arg, matchCommunitySet.getExpr());
   }
 
   @Override

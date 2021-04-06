@@ -108,17 +108,21 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -574,7 +578,8 @@ public final class CumulusConversionsTest {
         .setOwner(viConfig)
         .setStatements(
             ImmutableList.of(
-                new SetCommunity(new LiteralCommunity(community)), ExitAccept.toStaticStatement()))
+                new SetCommunities(new LiteralCommunitySet(CommunitySet.of(community))),
+                ExitAccept.toStaticStatement()))
         .build();
     // setup VS model
     CumulusConcatenatedConfiguration vsConfig = new CumulusConcatenatedConfiguration();
@@ -1091,7 +1096,9 @@ public final class CumulusConversionsTest {
             .addStatement(
                 new If(
                     "match community 10000:1 routes",
-                    new MatchCommunitySet(new LiteralCommunity(StandardCommunity.parse("10000:1"))),
+                    new MatchCommunities(
+                        InputCommunities.instance(),
+                        new HasCommunity(new CommunityIs(StandardCommunity.parse("10000:1")))),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))
             .build();
