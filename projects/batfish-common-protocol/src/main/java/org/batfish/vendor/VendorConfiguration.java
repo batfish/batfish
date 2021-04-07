@@ -286,7 +286,8 @@ public abstract class VendorConfiguration implements Serializable {
    * successful, otherwise returns {@code false}.
    */
   private boolean deleteStructureDefinition(String name, StructureType type) {
-
+    // TODO we're only deleting structures with self-refs currently and need to determine how to
+    // handle other references (e.g. are they undefined references now? do they disappear?)
     SortedMap<String, DefinedStructureInfo> defsByName =
         _structureDefinitions.get(type.getDescription());
     if (defsByName == null || !defsByName.containsKey(name)) {
