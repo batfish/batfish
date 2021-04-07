@@ -38,8 +38,8 @@ config firewall service custom
         set protocol IP
         set protocol-number 254
         set protocol ICMP
-        set icmpcode 254
         set icmptype 254
+        set icmpcode 254
         set protocol TCP/UDP/SCTP
         set tcp-portrange 254
         set udp-portrange 254

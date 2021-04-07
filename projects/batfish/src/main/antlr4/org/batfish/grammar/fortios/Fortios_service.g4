@@ -15,7 +15,11 @@ cfsc_rename: RENAME current_name = service_name TO new_name = service_name newli
 
 cfsc_edit: EDIT service_name newline cfsce* NEXT newline;
 
-cfsce: SET cfsc_set_singletons;
+cfsce
+:
+    SET cfsc_set_singletons
+    | (UNSET | SELECT | UNSELECT | APPEND | CLEAR) unimplemented
+;
 
 cfsc_set_singletons:
     cfsc_set_comment
