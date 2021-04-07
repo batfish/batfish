@@ -760,7 +760,9 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vlan_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_targetContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_target_valueContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_targetContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_target_valueContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_block_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrrp_interfaceContext;
@@ -6400,29 +6402,21 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitVrf_afi_route_target(Vrf_afi_route_targetContext ctx) {
     todo(ctx);
-    if (ctx.vrf_afi_route_target_single() != null) {
-      currentVrf()
-          .addRouteTargetImport(toRouteTarget(ctx.vrf_afi_route_target_single().route_target()));
-    } else {
-      assert ctx.vrf_afi_route_target_block() != null;
-      ctx.vrf_afi_route_target_block().vrf_afi_route_target_block_route_target().stream()
-          .map(targetCtx -> toRouteTarget(targetCtx.route_target()))
-          .forEach(currentVrf()::addRouteTargetImport);
-    }
+  }
+
+  @Override
+  public void exitVrf_afi_route_target_value(Vrf_afi_route_target_valueContext ctx) {
+    currentVrf().addRouteTargetImport(toRouteTarget(ctx.route_target()));
   }
 
   @Override
   public void exitVrf_afe_route_target(Vrf_afe_route_targetContext ctx) {
     todo(ctx);
-    if (ctx.vrf_afe_route_target_single() != null) {
-      currentVrf()
-          .addRouteTargetExport(toRouteTarget(ctx.vrf_afe_route_target_single().route_target()));
-    } else {
-      assert ctx.vrf_afe_route_target_block() != null;
-      ctx.vrf_afe_route_target_block().vrf_afe_route_target_block_route_target().stream()
-          .map(targetCtx -> toRouteTarget(targetCtx.route_target()))
-          .forEach(currentVrf()::addRouteTargetExport);
-    }
+  }
+
+  @Override
+  public void exitVrf_afe_route_target_value(Vrf_afe_route_target_valueContext ctx) {
+    currentVrf().addRouteTargetExport(toRouteTarget(ctx.route_target()));
   }
 
   @Nullable

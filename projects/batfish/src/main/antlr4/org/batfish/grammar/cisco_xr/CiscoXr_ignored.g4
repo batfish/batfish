@@ -471,7 +471,6 @@ null_inner
       | RETRIES
       | REVISION
       | RING
-      | ROUTE_TARGET
       | RP_ADDRESS
       | SA_FILTER
       | SATELLITE
@@ -864,7 +863,6 @@ null_single
       | RESOURCE
       | RESOURCE_POOL
       | NO ROUTE
-      | ROUTE_TARGET
       | RTR
       | SAT
       | SCHEDULE
