@@ -20,7 +20,9 @@ crrmec_rule: RULE newline crrmecr_edit* END newline;
 
 crrmecr_edit: EDIT route_map_rule_number newline crrmecre* NEXT newline;
 
-crrmecre: crrmecre_set;
+crrmecre: crrmecre_set | crrme_unset;
+
+crrme_unset: UNSET unimplemented;
 
 crrmecre_set: SET (crrmecre_set_action | crrmecre_set_match_ip_address);
 
