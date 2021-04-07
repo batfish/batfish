@@ -155,6 +155,8 @@ ALIAS: 'alias';
 
 ALL: 'all';
 
+ALLOCATE: 'allocate';
+
 ALLOW: 'allow';
 
 ALLOWAS_IN: 'allowas-in';
@@ -439,6 +441,8 @@ COST_COMMUNITY: 'cost-community';
 COUNTER: 'counter';
 
 COUNTERS: 'counters';
+
+CPU_SHARE: 'cpu-share';
 
 CRITICAL: 'critical';
 
@@ -1124,7 +1128,7 @@ LEVEL: 'level';
 
 LICENSE: 'license';
 
-LIMIT_RESOURCE: 'limit-resource';
+LIMIT_RESOURCE: 'limit-resource' -> pushMode ( M_Remark );
 
 LINE: 'line';
 
@@ -1235,10 +1239,6 @@ LSA_ARRIVAL: 'lsa-arrival';
 LSA_GROUP_PACING: 'lsa-group-pacing';
 
 LT: 'lt';
-
-M4ROUTE_MEM: 'm4route-mem';
-
-M6ROUTE_MEM: 'm6route-mem';
 
 MAC: 'mac';
 
@@ -2377,10 +2377,6 @@ TYPE_1: 'type-1';
 TYPE_2: 'type-2';
 
 TYPE7: 'type7';
-
-U4ROUTE_MEM: 'u4route-mem';
-
-U6ROUTE_MEM: 'u6route-mem';
 
 UDLD: 'udld';
 
