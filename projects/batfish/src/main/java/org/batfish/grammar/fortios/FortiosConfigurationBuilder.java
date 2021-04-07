@@ -1104,6 +1104,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           ctx.start.getLine());
       return;
     }
+    _c.deleteStructure(name, FortiosStructureType.POLICY);
     _c.getPolicies().remove(name);
   }
 
