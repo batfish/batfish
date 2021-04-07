@@ -97,26 +97,52 @@ public final class VendorConfigurationTest {
     String origName = "origName";
     int origLine = 1;
 
-    VendorConfiguration c = buildVendorConfiguration();
+    String otherName = "otherName";
+    int otherLine = 2;
 
-    // Same-named structure of a different type
-    c.defineSingleLineStructure(_testStructureType2, origName, origLine);
-    c.referenceStructure(_testStructureType2, origName, _testStructureUsage, 11);
+    // Same-named structure of a different type exists
+    {
+      VendorConfiguration c = buildVendorConfiguration();
+      c.defineSingleLineStructure(_testStructureType2, origName, origLine);
+      c.referenceStructure(_testStructureType2, origName, _testStructureUsage, 11);
 
-    // Try to delete a structure defined in the same namespace, but of a different type
-    assertFalse(c.deleteStructure(origName, _testStructureType1));
+      // Try to delete a structure defined in the same namespace, but of a different type
+      assertFalse(c.deleteStructure(origName, _testStructureType1));
 
-    // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
-    c.setAnswerElement(new ConvertConfigurationAnswerElement());
-    // Should produce an appropriate warning and indicate the rename did not succeed
-    assertThat(
-        c.getWarnings(),
-        hasRedFlag(hasText("Cannot delete structure origName (type1): origName is undefined.")));
+      // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
+      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+      // Should produce an appropriate warning and indicate the rename did not succeed
+      assertThat(
+          c.getWarnings(),
+          hasRedFlag(hasText("Cannot delete structure origName (type1): origName is undefined.")));
 
-    // Reference should be unaffected since the delete did not succeed
-    assertThat(
-        c.getAnswerElement(),
-        hasReferencedStructure(FILENAME, _testStructureType2, origName, _testStructureUsage));
+      // Reference should be unaffected since the delete did not succeed
+      assertThat(
+          c.getAnswerElement(),
+          hasReferencedStructure(FILENAME, _testStructureType2, origName, _testStructureUsage));
+    }
+
+    // Different structure of the same type exists
+    {
+      VendorConfiguration c = buildVendorConfiguration();
+      c.defineSingleLineStructure(_testStructureType1, otherName, otherLine);
+      c.referenceStructure(_testStructureType1, otherName, _testStructureUsage, 11);
+
+      // Try to delete a structure that doesn't exist
+      assertFalse(c.deleteStructure(origName, _testStructureType1));
+
+      // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
+      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+      // Should produce an appropriate warning and indicate the rename did not succeed
+      assertThat(
+          c.getWarnings(),
+          hasRedFlag(hasText("Cannot delete structure origName (type1): origName is undefined.")));
+
+      // Reference should be unaffected since the delete did not succeed
+      assertThat(
+          c.getAnswerElement(),
+          hasReferencedStructure(FILENAME, _testStructureType1, otherName, _testStructureUsage));
+    }
   }
 
   @Test

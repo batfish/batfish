@@ -289,7 +289,7 @@ public abstract class VendorConfiguration implements Serializable {
 
     SortedMap<String, DefinedStructureInfo> defsByName =
         _structureDefinitions.get(type.getDescription());
-    if (defsByName == null) {
+    if (defsByName == null || !defsByName.containsKey(name)) {
       _w.redFlag(
           String.format(
               "Cannot delete structure %s (%s): %s is undefined.",
@@ -311,7 +311,7 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   /**
-   * Delete the specified structure in its definition as well as references. Returns {@code false}
+   * Delete the definition of and any references to the specified structure. Returns {@code false}
    * and warns if the delete request is unsuccessful (e.g. no corresponding structure), otherwise
    * returns {@code true}.
    */
