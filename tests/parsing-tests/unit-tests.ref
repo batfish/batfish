@@ -8543,7 +8543,7 @@
             "      (if_inner",
             "        (if_null_block",
             "          CABLE:'cable'",
-            "          BUNDLE:'bundle'",
+            "          VARIABLE:'bundle'",
             "          UINT8:'1'",
             "          NEWLINE:'\\n'))",
             "      (if_inner",

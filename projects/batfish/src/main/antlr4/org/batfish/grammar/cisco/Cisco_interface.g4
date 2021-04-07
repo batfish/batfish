@@ -752,7 +752,6 @@ if_null_block
       | BEACON
       | BGP_POLICY
       | BRIDGE_GROUP
-      | BUNDLE
       | CABLE
       | CABLELENGTH
       | CARRIER_DELAY

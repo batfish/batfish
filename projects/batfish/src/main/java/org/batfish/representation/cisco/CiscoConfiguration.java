@@ -225,8 +225,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("ATM", "ATM")
           .put("BDI", "BDI")
           .put("BRI", "BRI")
-          .put("Bundle-Ether", "Bundle-Ethernet")
-          .put("Bundle-Ethernet", "Bundle-Ethernet")
           .put("BVI", "BVI")
           .put("Cable", "Cable")
           .put("cable-downstream", "cable-downstream")
