@@ -619,14 +619,6 @@ null_af_multicast_tail
    NSF NEWLINE
 ;
 
-vrfd_af_null
-:
-   NO?
-   (
-      MAXIMUM
-   ) null_rest_of_line
-;
-
 null_imgp_stanza
 :
    NO?
@@ -964,20 +956,12 @@ s_username_attributes
 ;
 
 
-// a way to define a VRF on IOS
-s_vrf_definition
+s_vrf: VRF name = variable NEWLINE vrf_inner*;
+
+vrf_inner
 :
-   // DEFINITION is for IOS
-   VRF DEFINITION? name = variable NEWLINE
-   (
-      vrfd_address_family
-      | vrfd_description
-      | vrfd_rd
-      | vrfd_null
-   )*
-   (
-      EXIT_VRF NEWLINE
-   )?
+  vrf_address_family
+  | vrf_description
 ;
 
 spanning_tree_mst
@@ -1179,7 +1163,7 @@ stanza
    | s_track
    | s_username
    | s_username_attributes
-   | s_vrf_definition
+   | s_vrf
    | srlg_stanza
 ;
 
@@ -1436,7 +1420,7 @@ viafv_priority
    PRIORITY priority = DEC NEWLINE
 ;
 
-vrfd_address_family
+vrf_address_family
 :
    ADDRESS_FAMILY
    (
@@ -1450,31 +1434,69 @@ vrfd_address_family
    (
       MAX_ROUTE DEC
    )? NEWLINE
-   (
-      vrfd_af_null
-   )*
-   (
-      EXIT_ADDRESS_FAMILY NEWLINE
-   )?
+   vrf_af_inner*
 ;
 
-vrfd_description
+vrf_af_inner
 :
-   description_line
+  vrf_af_export
+  | vrf_af_import
+  | vrf_af_null
 ;
 
-vrfd_rd
+vrf_af_export
 :
-   RD (AUTO | rd = route_distinguisher) NEWLINE
+  EXPORT vrf_af_export_inner
 ;
 
-vrfd_null
+vrf_af_export_inner
+:
+  vrf_afe_route_target
+;
+
+vrf_afe_route_target
+:
+  ROUTE_TARGET
+  (
+    vrf_afe_route_target_value
+    | NEWLINE vrf_afe_route_target_value*
+  )
+;
+
+vrf_afe_route_target_value: route_target NEWLINE;
+
+vrf_af_import
+:
+  IMPORT vrf_af_import_inner
+;
+
+vrf_af_import_inner
+:
+  vrf_afi_route_target
+;
+
+vrf_afi_route_target
+:
+  ROUTE_TARGET
+  (
+    vrf_afi_route_target_value
+    | NEWLINE vrf_afi_route_target_value*
+  )
+;
+
+vrf_afi_route_target_value: route_target NEWLINE;
+
+vrf_af_null
 :
    NO?
    (
-      AUTO_IMPORT
-      | ROUTE_TARGET
+      MAXIMUM
    ) null_rest_of_line
+;
+
+vrf_description
+:
+   description_line
 ;
 
 vrrp_interface

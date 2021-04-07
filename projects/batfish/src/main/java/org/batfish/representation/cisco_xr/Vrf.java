@@ -1,8 +1,10 @@
 package org.batfish.representation.cisco_xr;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -20,8 +22,8 @@ public final class Vrf implements Serializable {
   @Nonnull private Map<String, OspfProcess> _ospfProcesses;
   @Nullable private RipProcess _ripProcess;
   @Nullable private RouteDistinguisher _routeDistinguisher;
-  @Nullable private ExtendedCommunity _routeExportTarget;
-  @Nullable private ExtendedCommunity _routeImportTarget;
+  @Nonnull private List<ExtendedCommunity> _routeTargetExport;
+  @Nonnull private List<ExtendedCommunity> _routeTargetImport;
   private boolean _shutdown;
   @Nonnull private final Set<StaticRoute> _staticRoutes;
   @Nullable private Integer _vni;
@@ -32,6 +34,8 @@ public final class Vrf implements Serializable {
     // Ensure that processes are in insertion order.
     _ospfProcesses = new LinkedHashMap<>(0);
     _staticRoutes = new HashSet<>();
+    _routeTargetExport = ImmutableList.of();
+    _routeTargetImport = ImmutableList.of();
   }
 
   @Nullable
@@ -80,21 +84,21 @@ public final class Vrf implements Serializable {
   }
 
   /**
-   * The route target value to attach to VPN routes originating from this VRF. Will be {@code null}
-   * if it must be auto-derived.
+   * The route target values to attach to VPN routes originating from this VRF. Will be empty if it
+   * must be auto-derived.
    */
-  @Nullable
-  public ExtendedCommunity getRouteExportTarget() {
-    return _routeExportTarget;
+  @Nonnull
+  public List<ExtendedCommunity> getRouteTargetExport() {
+    return _routeTargetExport;
   }
 
   /**
-   * Routes that contain this route target community should be merged into this VRF. Will be {@code
-   * null} if it must be auto-derived.
+   * Routes that contain any of these route target community should be merged into this VRF. Will be
+   * empty if it must be auto-derived.
    */
-  @Nullable
-  public ExtendedCommunity getRouteImportTarget() {
-    return _routeImportTarget;
+  @Nonnull
+  public List<ExtendedCommunity> getRouteTargetImport() {
+    return _routeTargetImport;
   }
 
   /** Is this VRF shutdown (not used for routing/forwarding) */
@@ -133,12 +137,20 @@ public final class Vrf implements Serializable {
     _routeDistinguisher = routeDistinguisher;
   }
 
-  public void setRouteExportTarget(@Nullable ExtendedCommunity routeExportTarget) {
-    _routeExportTarget = routeExportTarget;
+  public void addRouteTargetExport(ExtendedCommunity routeTargetExport) {
+    _routeTargetExport =
+        ImmutableList.<ExtendedCommunity>builder()
+            .addAll(_routeTargetExport)
+            .add(routeTargetExport)
+            .build();
   }
 
-  public void setRouteImportTarget(@Nullable ExtendedCommunity routeImportTarget) {
-    _routeImportTarget = routeImportTarget;
+  public void addRouteTargetImport(ExtendedCommunity routeTargetImport) {
+    _routeTargetImport =
+        ImmutableList.<ExtendedCommunity>builder()
+            .addAll(_routeTargetImport)
+            .add(routeTargetImport)
+            .build();
   }
 
   public void setShutdown(boolean shutdown) {
