@@ -21,9 +21,16 @@ s_vdc
 :
   VDC name = vdc_name ID id = vdc_id NEWLINE
   (
-    vdc_allow
-    | vdc_limit_resource
+    vdc_allocate
+    | vdc_allow
+    | vdc_cpu_share
+    | vdc_limit_resource_ignored
   )*
+;
+
+vdc_allocate
+:
+  ALLOCATE INTERFACE interface_range NEWLINE
 ;
 
 vdc_allow
@@ -31,7 +38,12 @@ vdc_allow
   ALLOW FEATURE_SET FEX NEWLINE
 ;
 
-vdc_limit_resource
+vdc_cpu_share
 :
-  LIMIT_RESOURCE null_rest_of_line
+  CPU_SHARE cores = uint8 NEWLINE
+;
+
+vdc_limit_resource_ignored
+:
+  LIMIT_RESOURCE REMARK_TEXT NEWLINE
 ;
