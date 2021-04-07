@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Find the jar, and download it if needed.
-GJF_VERSION=1.9
+GJF_VERSION=1.10.0
 JAR_NAME="google-java-format-${GJF_VERSION}-all-deps.jar"
 JAR_SUFFIX=".m2/repository/com/google/googlejavaformat/google-java-format/${GJF_VERSION}/${JAR_NAME}"
 JAR="${HOME}/${JAR_SUFFIX}"
