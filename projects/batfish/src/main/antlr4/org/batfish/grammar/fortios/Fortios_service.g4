@@ -18,7 +18,7 @@ cfsc_edit: EDIT service_name newline cfsce* NEXT newline;
 cfsce
 :
     SET cfsc_set_singletons
-    | unimplemented_edit_stanza
+    | (UNSET | SELECT | UNSELECT | APPEND | CLEAR) unimplemented
 ;
 
 cfsc_set_singletons:
