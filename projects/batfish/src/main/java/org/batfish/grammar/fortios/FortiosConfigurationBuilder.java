@@ -12,6 +12,7 @@ import com.google.common.primitives.Longs;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -141,6 +142,7 @@ import org.batfish.grammar.fortios.FortiosParser.Csi_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vrfContext;
+import org.batfish.grammar.fortios.FortiosParser.Csiec_sipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_append_interfaceContext;
@@ -210,6 +212,7 @@ import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.RouteMapRule;
+import org.batfish.representation.fortios.SecondaryIp;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -679,6 +682,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _c.getAddrgrps().put(newName, current);
     // Add the rename as part of the def
     _c.defineStructure(FortiosStructureType.ADDRGRP, newName, ctx);
+  }
+
+  @Override
+  public void enterCsiec_sip(Csiec_sipContext ctx) {
+    Optional<Long> name = toLong(ctx, ctx.sip_number());
+    _currentSecondaryIp =
+        name.map(Objects::toString)
+            .map(_c.getSecondaryIps::get)
+            .orElseGet(() -> new SecondaryIp(toString(ctx.sip_number().str())));
   }
 
   @Override
@@ -2724,6 +2736,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private BgpNeighbor _currentBgpNeighbor;
   private Interface _currentInterface;
   private boolean _currentInterfaceNameValid;
+
+  private SecondaryIp _currentSecondaryIp;
+  private boolean _currentSecondaryIpNameValid;
+
   private Policy _currentPolicy;
   /**
    * Whether the current policy has invalid lines that would prevent committing the policy in CLI.

@@ -8,7 +8,19 @@ cs_interface: INTERFACE newline csi_edit*;
 
 csi_edit: EDIT interface_name newline csie* NEXT newline;
 
-csie: SET csi_set_singletons;
+csie: csie_config | csie_set;
+
+csie_config: CONFIG csiec_secondaryip;
+
+csiec_secondaryip: SECONDARYIP newline csiecsip_edit* END newline;
+
+csiecsip_edit: EDIT sip_number newline csiecsip_set* NEXT newline;
+
+csiecsipe_set: SET csiecsipe_set_ip;
+
+csiecsipe_set_ip: IP ip = ip_address_with_mask_or_prefix newline;
+
+csie_set: SET csi_set_singletons;
 
 csi_set_singletons:
     csi_set_alias
@@ -68,3 +80,6 @@ interface_type:
 
 // Up to 25 characters
 interface_alias: str;
+
+// 0-4294967295
+sip_number: str;
