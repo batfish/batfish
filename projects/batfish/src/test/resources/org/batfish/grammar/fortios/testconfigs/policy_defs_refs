@@ -70,4 +70,12 @@ config firewall policy
     clone 1 to 2
     # Cloning a non-existent policy
     clone 3 to 4
+    edit 5
+        set srcintf any
+        set dstintf any
+        set srcaddr addr2
+        set dstaddr addr2
+        set service service2
+    next
+    delete 5
 end
