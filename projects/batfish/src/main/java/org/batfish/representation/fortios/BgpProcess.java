@@ -13,6 +13,7 @@ import org.batfish.datamodel.Ip;
 public final class BgpProcess implements Serializable {
   public BgpProcess() {
     _neighbors = new HashMap<>();
+    _networks = new HashMap<>();
   }
 
   public @Nullable Long getAs() {
@@ -43,6 +44,10 @@ public final class BgpProcess implements Serializable {
     return _neighbors;
   }
 
+  public @Nonnull Map<String, BgpNetwork> getNetworks() {
+    return _networks;
+  }
+
   public @Nullable Ip getRouterId() {
     return _routerId;
   }
@@ -71,5 +76,6 @@ public final class BgpProcess implements Serializable {
   private @Nullable Boolean _ebgpMultipath;
   private @Nullable Boolean _ibgpMultipath;
   private @Nullable Ip _routerId;
-  private final Map<Ip, BgpNeighbor> _neighbors;
+  private @Nonnull final Map<Ip, BgpNeighbor> _neighbors;
+  private @Nonnull final Map<String, BgpNetwork> _networks;
 }
