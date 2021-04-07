@@ -17,6 +17,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
@@ -78,6 +79,15 @@ public class CommunityMatchExprToBDDTest {
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _communityMatchExprToBDD = new CommunityMatchExprToBDD();
+  }
+
+  @Test
+  public void testVisitAllStandardCommunities() {
+    BDD result =
+        _communityMatchExprToBDD.visitAllStandardCommunities(
+            AllStandardCommunities.instance(), _arg);
+
+    assertEquals(cvarToBDD(CommunityVar.from(".*")), result);
   }
 
   @Test

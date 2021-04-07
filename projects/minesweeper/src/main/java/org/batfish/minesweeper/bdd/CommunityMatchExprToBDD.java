@@ -54,7 +54,9 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
 
   @Override
   public BDD visitAllStandardCommunities(AllStandardCommunities allStandardCommunities, Arg arg) {
-    throw new UnsupportedOperationException("Match on all standard communities");
+    // TODO: Currently we are treating this as *all* communities, instead of only the
+    // standard ones.
+    return arg.getBDDRoute().anyCommunity();
   }
 
   @Override

@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -13,6 +14,24 @@ public class CommunityAPDispositions {
   public CommunityAPDispositions(Set<Integer> mustExist, Set<Integer> mustNotExist) {
     _mustExist = ImmutableSet.copyOf(mustExist);
     _mustNotExist = ImmutableSet.copyOf(mustNotExist);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof CommunityAPDispositions)) {
+      return false;
+    }
+    CommunityAPDispositions other = (CommunityAPDispositions) obj;
+    return getMustExist().equals(other.getMustExist())
+        && getMustNotExist().equals(other.getMustNotExist());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_mustExist, _mustNotExist);
   }
 
   public CommunityAPDispositions complement() {
@@ -35,16 +54,18 @@ public class CommunityAPDispositions {
         setIntersect(_mustNotExist, other.getMustNotExist()));
   }
 
-  public static CommunityAPDispositions empty(int numAtomicPredicates) {
+  public static CommunityAPDispositions empty(BDDRoute bddRoute) {
     return new CommunityAPDispositions(
         ImmutableSet.of(),
-        IntStream.range(0, numAtomicPredicates).boxed().collect(ImmutableSet.toImmutableSet()));
+        IntStream.range(0, bddRoute.getCommunityAtomicPredicates().length)
+            .boxed()
+            .collect(ImmutableSet.toImmutableSet()));
   }
 
-  public static CommunityAPDispositions exactly(Set<Integer> aps, int numAtomicPredicates) {
+  public static CommunityAPDispositions exactly(Set<Integer> aps, BDDRoute bddRoute) {
     return new CommunityAPDispositions(
         aps,
-        IntStream.range(0, numAtomicPredicates)
+        IntStream.range(0, bddRoute.getCommunityAtomicPredicates().length)
             .filter(i -> !aps.contains(i))
             .boxed()
             .collect(ImmutableSet.toImmutableSet()));

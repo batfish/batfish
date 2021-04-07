@@ -2,8 +2,8 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
-import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
@@ -15,7 +15,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.bdd.SetCommunitiesVisitor.Arg;
+import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.communities.CommunitySetExprVarCollector;
 
 /**
@@ -27,24 +27,12 @@ import org.batfish.minesweeper.communities.CommunitySetExprVarCollector;
 public class SetCommunitiesVisitor
     implements CommunitySetExprVisitor<CommunityAPDispositions, Arg> {
 
-  // TODO: Comment
-  static class Arg {
-    @Nonnull private final TransferBDD _transferBDD;
-    @Nonnull private final int _numAtomicPredicates;
-
-    Arg(TransferBDD transferBDD, int numAtomicPredicates) {
-      _transferBDD = transferBDD;
-      _numAtomicPredicates = numAtomicPredicates;
-    }
-    // todo: make accessors
-  }
-
   @Override
   public CommunityAPDispositions visitCommunityExprsSet(
       CommunityExprsSet communityExprsSet, Arg arg) {
     Set<CommunityVar> commVars =
         communityExprsSet.accept(
-            new CommunitySetExprVarCollector(), arg._transferBDD.getConfiguration());
+            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
     return communityAPDispositionsFor(commVars, arg);
   }
 
@@ -52,14 +40,28 @@ public class SetCommunitiesVisitor
   public CommunityAPDispositions visitCommunitySetDifference(
       CommunitySetDifference communitySetDifference, Arg arg) {
     CommunityAPDispositions initial = communitySetDifference.getInitial().accept(this, arg);
-    throw new UnsupportedOperationException("TODO: Handle me");
+    BDD toDelete =
+        communitySetDifference.getRemovalCriterion().accept(new CommunityMatchExprToBDD(), arg);
+    BDD[] commAPBDDs = arg.getBDDRoute().getCommunityAtomicPredicates();
+    ImmutableSet.Builder<Integer> shouldDelete = ImmutableSet.builder();
+    ImmutableSet.Builder<Integer> shouldNotDelete = ImmutableSet.builder();
+    for (int ap = 0; ap < commAPBDDs.length; ap++) {
+      BDD comm = commAPBDDs[ap];
+      if (!comm.diffSat(toDelete)) {
+        shouldDelete.add(ap);
+      } else {
+        shouldNotDelete.add(ap);
+      }
+    }
+    return initial.diff(new CommunityAPDispositions(shouldDelete.build(), shouldNotDelete.build()));
   }
 
   @Override
   public CommunityAPDispositions visitCommunitySetExprReference(
       CommunitySetExprReference communitySetExprReference, Arg arg) {
     String name = communitySetExprReference.getName();
-    CommunitySetExpr setExpr = arg._transferBDD.getConfiguration().getCommunitySetExprs().get(name);
+    CommunitySetExpr setExpr =
+        arg.getTransferBDD().getConfiguration().getCommunitySetExprs().get(name);
     if (setExpr == null) {
       throw new BatfishException("Cannot find community set expression: " + name);
     }
@@ -71,7 +73,7 @@ public class SetCommunitiesVisitor
       CommunitySetReference communitySetReference, Arg arg) {
     Set<CommunityVar> commVars =
         communitySetReference.accept(
-            new CommunitySetExprVarCollector(), arg._transferBDD.getConfiguration());
+            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
     return communityAPDispositionsFor(commVars, arg);
   }
 
@@ -80,9 +82,7 @@ public class SetCommunitiesVisitor
       CommunitySetUnion communitySetUnion, Arg arg) {
     return communitySetUnion.getExprs().stream()
         .map(e -> e.accept(this, arg))
-        .reduce(
-            CommunityAPDispositions.empty(arg._numAtomicPredicates),
-            CommunityAPDispositions::union);
+        .reduce(CommunityAPDispositions.empty(arg.getBDDRoute()), CommunityAPDispositions::union);
   }
 
   @Override
@@ -95,15 +95,15 @@ public class SetCommunitiesVisitor
       LiteralCommunitySet literalCommunitySet, Arg arg) {
     Set<CommunityVar> commVars =
         literalCommunitySet.accept(
-            new CommunitySetExprVarCollector(), arg._transferBDD.getConfiguration());
+            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
     return communityAPDispositionsFor(commVars, arg);
   }
 
   private static CommunityAPDispositions communityAPDispositionsFor(
       Set<CommunityVar> commVars, Arg arg) {
+    TransferBDD transferBDD = arg.getTransferBDD();
     Set<Integer> aps =
-        arg._transferBDD.atomicPredicatesFor(
-            commVars, arg._transferBDD.getCommunityAtomicPredicates());
-    return CommunityAPDispositions.exactly(aps, arg._numAtomicPredicates);
+        transferBDD.atomicPredicatesFor(commVars, transferBDD.getCommunityAtomicPredicates());
+    return CommunityAPDispositions.exactly(aps, arg.getBDDRoute());
   }
 }

@@ -32,8 +32,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
@@ -658,45 +656,9 @@ public class TransferBDD {
       SetCommunities sc = (SetCommunities) stmt;
       org.batfish.datamodel.routing_policy.communities.CommunitySetExpr setExpr =
           sc.getCommunitySetExpr();
-      if (setExpr instanceof CommunitySetDifference
-          && ((CommunitySetDifference) setExpr).getInitial().equals(InputCommunities.instance())) {
-        // this SetCommunities expression has the form (InputCommunities - Expr)
-        // so we directly treat it as a deletion of communities
-        BDD toDelete =
-            ((CommunitySetDifference) setExpr)
-                .getRemovalCriterion()
-                .accept(new CommunityMatchExprToBDD(), new Arg(this, curP.getData()));
-        deleteCommunities(toDelete, curP, result);
-      } else if (true) {
-        CommunityAPDispositions dispositions =
-            setExpr.accept(
-                new SetCommunitiesVisitor(),
-                new SetCommunitiesVisitor.Arg(
-                    this, curP.getData().getCommunityAtomicPredicates().length));
-        updateCommunities(dispositions, curP, result);
-      } else if (setExpr instanceof CommunitySetUnion
-          && ((CommunitySetUnion) setExpr).getExprs().contains(InputCommunities.instance())) {
-        // this SetCommunities expression has the form (InputCommunities U Expr U ... U Expr)
-        // so we directly treat it as an addition of communities
-        Set<org.batfish.datamodel.routing_policy.communities.CommunitySetExpr> exprs =
-            ((CommunitySetUnion) setExpr).getExprs();
-        Set<CommunityVar> comms =
-            exprs.stream()
-                .filter(e -> !e.equals(InputCommunities.instance()))
-                .flatMap(e -> e.accept(new SetCommunitiesVarCollector(), _conf).stream())
-                .collect(ImmutableSet.toImmutableSet());
-        addOrRemoveCommunities(comms, curP, result, true);
-      } else {
-        /**
-         * TODO: the SetCommunitiesVarCollector does not support some kinds of expressions, such as
-         * set differences, for the same reason as described above regarding limitations of
-         * SetCommunity. again the right solution is to create a visitor to gather community atomic
-         * predicates. (note that SetCommunity and SetCommunities use two different data models for
-         * expressions, both named CommunitySetExpr but in different packages.)
-         */
-        Set<CommunityVar> comms = setExpr.accept(new SetCommunitiesVarCollector(), _conf);
-        setCommunities(comms, curP, result);
-      }
+      CommunityAPDispositions dispositions =
+          setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _initialRoute));
+      updateCommunities(dispositions, curP, result);
     } else if (stmt instanceof DeleteCommunity) {
       curP.debug("DeleteCommunity");
       DeleteCommunity ac = (DeleteCommunity) stmt;
@@ -1146,25 +1108,6 @@ public class TransferBDD {
       Set<CommunityVar> comms, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
     Set<Integer> commAPs = atomicPredicatesFor(comms, _communityAtomicPredicates);
     addOrRemoveCommunityAPs(commAPs, curP, result, add);
-  }
-
-  /**
-   * A helper for analysis of uses of SetCommunities that delete communities. Given a BDD
-   * representing the set of communities to be deleted, we set to 0 all community atomic predicates
-   * that are in the to-be-deleted set.
-   */
-  private void deleteCommunities(
-      BDD toDelete, TransferParam<BDDRoute> curP, TransferResult result) {
-    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-    for (int ap = 0; ap < commAPBDDs.length; ap++) {
-      curP.indent().debug("Value: " + ap);
-      BDD comm = commAPBDDs[ap];
-      if (!comm.diffSat(toDelete)) {
-        BDD newValue = ite(unreachable(result), comm, factory.zero());
-        curP.indent().debug("New Value: " + newValue);
-        commAPBDDs[ap] = newValue;
-      }
-    }
   }
 
   private void updateCommunities(
