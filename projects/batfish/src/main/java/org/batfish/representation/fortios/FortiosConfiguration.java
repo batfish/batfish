@@ -283,11 +283,7 @@ public class FortiosConfiguration extends VendorConfiguration {
             .map(SecondaryIp::getIp)
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
-    if (secondaryAddresses.isEmpty()) {
-      viIface.setAddress(iface.getIp());
-    } else {
-      viIface.setAddresses(iface.getIp(), secondaryAddresses);
-    }
+    viIface.setAddresses(iface.getIp(), secondaryAddresses);
 
     if (iface.getTypeEffective() == Type.VLAN) {
       // Handled by extraction

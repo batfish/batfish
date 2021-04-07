@@ -2868,10 +2868,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private BgpNeighbor _currentBgpNeighbor;
   private Interface _currentInterface;
   private boolean _currentInterfaceNameValid;
-
   private SecondaryIp _currentSecondaryip;
   private boolean _currentSecondaryipNameValid;
-
   private Policy _currentPolicy;
   /**
    * Whether the current policy has invalid lines that would prevent committing the policy in CLI.
