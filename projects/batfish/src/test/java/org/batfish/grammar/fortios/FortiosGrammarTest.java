@@ -117,6 +117,7 @@ import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.RouteMapRule;
+import org.batfish.representation.fortios.SecondaryIp;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -879,6 +880,15 @@ public final class FortiosGrammarTest {
     assertThat(port1.getType(), equalTo(Type.PHYSICAL));
     assertThat(port1.getAlias(), equalTo("longest possibl alias str"));
     assertThat(port1.getDescription(), equalTo("quoted description w/ spaces and more"));
+    assertTrue(port1.getSecondaryIp());
+    assertTrue(port1.getSecondaryIpEffective());
+    assertThat(port1.getSecondaryip().keySet(), containsInAnyOrder("4294967295", "1", "2"));
+    SecondaryIp sipA = port1.getSecondaryip().get("4294967295");
+    SecondaryIp sipB = port1.getSecondaryip().get("1");
+    SecondaryIp sipC = port1.getSecondaryip().get("2");
+    assertThat(sipA.getIp(), equalTo(ConcreteInterfaceAddress.create(Ip.parse("10.0.1.1"), 24)));
+    assertThat(sipB.getIp(), equalTo(ConcreteInterfaceAddress.create(Ip.parse("10.1.1.1"), 24)));
+    assertNull(sipC.getIp());
     // Check defaults
     assertThat(port1.getStatus(), equalTo(Status.UNKNOWN));
     assertTrue(port1.getStatusEffective());
@@ -895,9 +905,11 @@ public final class FortiosGrammarTest {
     assertThat(port2.getMtuOverride(), equalTo(true));
     assertThat(port2.getMtu(), equalTo(1234));
     assertThat(port2.getMtuEffective(), equalTo(1234));
-    // Check default type
+    // Check defaults
     assertThat(port2.getType(), nullValue());
     assertThat(port2.getTypeEffective(), equalTo(Type.VLAN));
+    assertNull(port2.getSecondaryIp());
+    assertFalse(port2.getSecondaryIpEffective());
 
     assertThat(longName.getIp(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
     assertThat(longName.getAlias(), equalTo(""));
@@ -906,6 +918,8 @@ public final class FortiosGrammarTest {
     assertThat(longName.getStatus(), equalTo(Status.UP));
     assertThat(longName.getVrf(), equalTo(31));
     assertThat(longName.getVrfEffective(), equalTo(31));
+    assertFalse(longName.getSecondaryIp());
+    assertFalse(longName.getSecondaryIpEffective());
 
     assertThat(tunnel.getStatus(), equalTo(Status.DOWN));
     assertFalse(tunnel.getStatusEffective());
@@ -978,6 +992,12 @@ public final class FortiosGrammarTest {
 
     // Check addresses
     assertThat(port1.getAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
+    assertThat(
+        port1.getAllAddresses(),
+        containsInAnyOrder(
+            ConcreteInterfaceAddress.parse("192.168.122.2/24"),
+            ConcreteInterfaceAddress.parse("10.0.1.1/24"),
+            ConcreteInterfaceAddress.parse("10.1.1.1/24")));
     assertThat(longName.getAddress(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
     Stream.of(port2, tunnel, loopback, vlan).forEach(iface -> assertNull(iface.getAddress()));
 
@@ -1046,11 +1066,29 @@ public final class FortiosGrammarTest {
                     hasText(containsString("type loopback"))),
                 hasComment("Interface edit block ignored: name is invalid"),
                 hasComment("Interface edit block ignored: vlanid must be set"),
-                hasComment("Interface edit block ignored: interface must be set"))));
+                hasComment("Interface edit block ignored: interface must be set"),
+                hasComment(
+                    "Secondaryip edit block ignored: cannot configure a secondaryip when"
+                        + " secondary-IP is not enabled"),
+                hasComment(
+                    "Primary ip address must be configured before a secondaryip can be configured"),
+                hasComment("Secondaryip edit block ignored: name is invalid"),
+                hasComment(
+                    "Expected secondaryip number in range 0-4294967295, but got '4294967296'"),
+                allOf(
+                    hasComment(
+                        "This secondaryip will be ignored; must use a secondaryip other than the"
+                            + " primary ip address"),
+                    hasText("ip 10.0.0.1/30")),
+                allOf(
+                    hasComment(
+                        "This secondaryip will be ignored; must use a secondaryip other than"
+                            + " existing secondaryip addresses"),
+                    hasText("ip 10.0.0.3/30")))));
 
     // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
     // object is created when the name conflicts
-    assertThat(vc.getInterfaces(), hasKeys("port1", "vlan1"));
+    assertThat(vc.getInterfaces(), hasKeys("port1", "vlan1", "secondary"));
   }
 
   @Test

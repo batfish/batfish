@@ -8,6 +8,11 @@ config system interface
         set ip 192.168.122.2 255.255.255.0
         set type physical
         set alias "alias string is too long to associate with iface"
+        # Can't configure before enabling secondary-IP
+        config secondaryip
+            edit 1
+            next
+        end
     next
     edit "name is too long for iface"
         set vdom "root"
@@ -22,6 +27,13 @@ config system interface
         set vlanid 1
         set interface iface_undefined
         set vlanid 4095
+        set secondary-IP enable
+        # Can't configure secondaryip before primary ip
+        config secondaryip
+            edit 1
+                set ip 10.10.10.10/24
+            next
+        end
     next
     edit "vlan1"
         set type loopback
@@ -33,6 +45,25 @@ config system interface
     edit "missing_iface"
         set vdom root
         set vlanid 999
+    next
+    edit "secondary"
+        set type physical
+        set ip 10.0.0.1/24
+        set secondary-IP enable
+        config secondaryip
+            # Invalid name/number
+            edit 4294967296
+            next
+            # Valid
+            edit 4294967295
+                set ip 10.0.0.3/24
+            next
+            # Conflict with primary and secondary addresses
+            edit 1
+                set ip 10.0.0.1/30
+                set ip 10.0.0.3/30
+            next
+        end
     next
 end
 config system zone

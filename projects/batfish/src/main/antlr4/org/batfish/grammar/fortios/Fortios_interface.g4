@@ -14,7 +14,7 @@ csie_config: CONFIG csiec_secondaryip;
 
 csiec_secondaryip: SECONDARYIP newline csiecsip_edit* END newline;
 
-csiecsip_edit: EDIT sip_number newline csiecsip_set* NEXT newline;
+csiecsip_edit: EDIT sip_number newline csiecsipe_set* NEXT newline;
 
 csiecsipe_set: SET csiecsipe_set_ip;
 
@@ -29,6 +29,7 @@ csi_set_singletons:
     | csi_set_ip
     | csi_set_mtu
     | csi_set_mtu_override
+    | csi_set_secondary_ip
     | csi_set_status
     | csi_set_type
     | csi_set_vdom
@@ -48,6 +49,8 @@ csi_set_ip: IP ip = ip_address_with_mask_or_prefix newline;
 csi_set_mtu: MTU value = mtu newline;
 
 csi_set_mtu_override: MTU_OVERRIDE value = enable_or_disable newline;
+
+csi_set_secondary_ip: SECONDARY_IP value = enable_or_disable newline;
 
 csi_set_status: STATUS status = up_or_down newline;
 

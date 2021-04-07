@@ -140,12 +140,14 @@ import org.batfish.grammar.fortios.FortiosParser.Csi_set_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtuContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtu_overrideContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_secondary_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vrfContext;
-import org.batfish.grammar.fortios.FortiosParser.Csiec_sipContext;
+import org.batfish.grammar.fortios.FortiosParser.Csiecsip_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Csiecsipe_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_append_interfaceContext;
@@ -688,7 +690,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
-  public void enterCsiec_sip(Csiec_sipContext ctx) {
+  public void enterCsiecsip_edit(Csiecsip_editContext ctx) {
     Optional<Long> number = toLong(ctx, ctx.sip_number());
     _currentSecondaryip =
         number
@@ -696,21 +698,66 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             .map(i -> _currentInterface.getSecondaryip().get(i))
             .orElseGet(() -> new SecondaryIp(toString(ctx.sip_number().str())));
     _currentSecondaryipNameValid = number.isPresent();
+
+    // TODO 0 is allowed as a special case, representing some currently unused number
+    if (number.isPresent() && number.get() == 0L) {
+      warn(ctx, "Secondaryip number 0 is not yet supported");
+      _currentSecondaryipNameValid = false;
+    }
+  }
+
+  /** Returns message indicating why secondaryip can't be committed in the CLI, or null if it can */
+  private static @Nullable String secondaryipValid(Interface iface, boolean nameValid) {
+    if (!iface.getSecondaryIpEffective()) {
+      return "cannot configure a secondaryip when secondary-IP is not enabled";
+    }
+    if (!nameValid) {
+      return "name is invalid";
+    }
+    return null;
   }
 
   @Override
-  public void exitCsiec_sip(Csiec_sipContext ctx) {
+  public void exitCsiecsip_edit(Csiecsip_editContext ctx) {
     String number = _currentSecondaryip.getName();
-    if (_currentSecondaryipNameValid) {
+    String invalidReason = secondaryipValid(_currentInterface, _currentSecondaryipNameValid);
+    if (invalidReason == null) {
       _currentInterface.getSecondaryip().put(number, _currentSecondaryip);
     } else {
-      warn(ctx, "Secondaryip edit block ignored: name is invalid");
+      warn(ctx, String.format("Secondaryip edit block ignored: %s", invalidReason));
     }
     _currentSecondaryip = null;
   }
 
-  // TODO handle setting IP
-  // TODO handle enabling secondaryIp
+  @Override
+  public void exitCsiecsipe_set_ip(Csiecsipe_set_ipContext ctx) {
+    ConcreteInterfaceAddress pip = _currentInterface.getIp();
+    if (pip == null) {
+      warn(ctx, "Primary ip address must be configured before a secondaryip can be configured");
+      return;
+    }
+
+    ConcreteInterfaceAddress sip = toConcreteInterfaceAddress(ctx.ip);
+    if (_currentInterface.getIp().getIp().equals(sip.getIp())) {
+      warn(
+          ctx,
+          "This secondaryip will be ignored; must use a secondaryip other than the primary ip"
+              + " address");
+      return;
+    }
+    for (SecondaryIp otherSip : _currentInterface.getSecondaryip().values()) {
+      ConcreteInterfaceAddress otherIp = otherSip.getIp();
+      if (otherIp != null && otherIp.getIp().equals(sip.getIp())) {
+        warn(
+            ctx,
+            "This secondaryip will be ignored; must use a secondaryip other than existing"
+                + " secondaryip addresses");
+        return;
+      }
+    }
+
+    _currentSecondaryip.setIp(sip);
+  }
 
   @Override
   public void enterCsi_edit(Csi_editContext ctx) {
@@ -784,6 +831,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsi_set_alias(Csi_set_aliasContext ctx) {
     toString(ctx, ctx.alias).ifPresent(s -> _currentInterface.setAlias(s));
+  }
+
+  @Override
+  public void exitCsi_set_secondary_ip(Csi_set_secondary_ipContext ctx) {
+    _currentInterface.setSecondaryIp(toBoolean(ctx.value));
   }
 
   @Override
@@ -2432,7 +2484,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Sip_numberContext num) {
-    return toLongInSpace(ctx, num.str(), SECONDARY_IP_NUM_SPACE, "secondary-IP number");
+    return toLongInSpace(ctx, num.str(), SECONDARY_IP_NUM_SPACE, "secondaryip number");
   }
 
   private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Route_numContext routeNum) {
