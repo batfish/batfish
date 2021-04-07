@@ -96,6 +96,7 @@ import org.batfish.representation.cisco_xr.RoutePolicy;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
+import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
 import org.batfish.representation.cisco_xr.XrCommunitySet;
 import org.batfish.representation.cisco_xr.XrCommunitySetDfaRegex;
@@ -1066,5 +1067,42 @@ public final class XrGrammarTest {
     assertThat(pvcae, hasParseWarning(filename, containsString("Policy map of type traffic")));
     assertThat(
         pvcae, hasParseWarning(filename, containsString("Policy map of type performance-traffic")));
+  }
+
+  @Test
+  public void testVrfRouteTargetExtraction() {
+    String hostname = "xr-vrf-route-target";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getVrfs(),
+        hasKeys(
+            Configuration.DEFAULT_VRF_NAME, "none", "single-oneline", "single-block", "multiple"));
+    {
+      Vrf v = vc.getVrfs().get("none");
+      assertThat(v.getRouteTargetExport(), empty());
+      assertThat(v.getRouteTargetImport(), empty());
+    }
+    {
+      Vrf v = vc.getVrfs().get("single-oneline");
+      assertThat(v.getRouteTargetExport(), contains(ExtendedCommunity.target(1L, 1L)));
+      assertThat(v.getRouteTargetImport(), contains(ExtendedCommunity.target(2L, 2L)));
+    }
+    {
+      Vrf v = vc.getVrfs().get("single-block");
+      assertThat(v.getRouteTargetExport(), contains(ExtendedCommunity.target(3L, 3L)));
+      assertThat(v.getRouteTargetImport(), contains(ExtendedCommunity.target(4L, 4L)));
+    }
+    {
+      Vrf v = vc.getVrfs().get("multiple");
+      assertThat(
+          v.getRouteTargetExport(),
+          contains(ExtendedCommunity.target(5L, 5L), ExtendedCommunity.target(6L, 6L)));
+      assertThat(
+          v.getRouteTargetImport(),
+          contains(
+              ExtendedCommunity.target(7L, 7L),
+              ExtendedCommunity.target(8L, 9L),
+              ExtendedCommunity.target(((10L << 16) + 11L), 12L)));
+    }
   }
 }
