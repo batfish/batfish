@@ -18,10 +18,8 @@ cfsc_edit: EDIT service_name newline cfsce* NEXT newline;
 cfsce
 :
     SET cfsc_set_singletons
-    | cfsc_unset
+    | unimplemented_edit_stanza
 ;
-
-cfsc_unset: UNSET unimplemented;
 
 cfsc_set_singletons:
     cfsc_set_comment
