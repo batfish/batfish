@@ -696,6 +696,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         number
             .map(Objects::toString)
             .map(i -> _currentInterface.getSecondaryip().get(i))
+            .map(SerializationUtils::clone)
             .orElseGet(() -> new SecondaryIp(toString(ctx.sip_number().str())));
     _currentSecondaryipNameValid = number.isPresent();
 
