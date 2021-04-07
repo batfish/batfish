@@ -833,8 +833,6 @@ BUILDING_CONFIGURATION
    'Building configuration'
 ;
 
-BUNDLE: 'bundle';
-
 BUFFERS: 'buffers';
 
 BURST_SIZE: 'burst-size';
@@ -6226,8 +6224,6 @@ VIRTUAL_TEMPLATE: 'virtual-template';
 VFI: 'vfi';
 
 VLAN: 'vlan';
-
-VLAN_AWARE_BUNDLE: 'vlan-aware-bundle';
 
 VLAN_GROUP: 'vlan-group';
 
