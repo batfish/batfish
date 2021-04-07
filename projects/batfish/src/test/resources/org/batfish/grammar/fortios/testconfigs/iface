@@ -41,6 +41,12 @@ config system interface
         set vlanid 1235
         set interface port1
         set vrf 31
+        set secondary-IP enable
+        config secondaryip
+            edit 1
+                set ip 10.2.1.1/24
+            next
+        end
         set secondary-IP disable
     next
     edit "tunnel"

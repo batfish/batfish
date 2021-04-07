@@ -739,7 +739,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
 
     ConcreteInterfaceAddress sip = toConcreteInterfaceAddress(ctx.ip);
-    if (_currentInterface.getIp().getIp().equals(sip.getIp())) {
+    if (pip.getIp().equals(sip.getIp())) {
       warn(
           ctx,
           "This secondaryip will be ignored; must use a secondaryip other than the primary ip"

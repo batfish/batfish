@@ -279,10 +279,12 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setType(type);
 
     List<InterfaceAddress> secondaryAddresses =
-        iface.getSecondaryip().values().stream()
-            .map(SecondaryIp::getIp)
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList());
+        iface.getSecondaryIpEffective()
+            ? iface.getSecondaryip().values().stream()
+                .map(SecondaryIp::getIp)
+                .filter(Objects::nonNull)
+                .collect(ImmutableList.toImmutableList())
+            : ImmutableList.of();
     viIface.setAddresses(iface.getIp(), secondaryAddresses);
 
     if (iface.getTypeEffective() == Type.VLAN) {

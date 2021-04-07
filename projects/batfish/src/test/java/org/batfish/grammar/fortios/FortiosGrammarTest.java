@@ -920,6 +920,11 @@ public final class FortiosGrammarTest {
     assertThat(longName.getVrfEffective(), equalTo(31));
     assertFalse(longName.getSecondaryIp());
     assertFalse(longName.getSecondaryIpEffective());
+    // Despite being disabled, the secondaryip should persist
+    assertThat(longName.getSecondaryip().keySet(), containsInAnyOrder("1"));
+    assertThat(
+        longName.getSecondaryip().get("1").getIp(),
+        equalTo(ConcreteInterfaceAddress.create(Ip.parse("10.2.1.1"), 24)));
 
     assertThat(tunnel.getStatus(), equalTo(Status.DOWN));
     assertFalse(tunnel.getStatusEffective());
@@ -999,6 +1004,8 @@ public final class FortiosGrammarTest {
             ConcreteInterfaceAddress.parse("10.0.1.1/24"),
             ConcreteInterfaceAddress.parse("10.1.1.1/24")));
     assertThat(longName.getAddress(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
+    assertThat(
+        longName.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
     Stream.of(port2, tunnel, loopback, vlan).forEach(iface -> assertNull(iface.getAddress()));
 
     // Check interface types

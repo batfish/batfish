@@ -14,7 +14,13 @@ csie_config: CONFIG csiec_secondaryip;
 
 csiec_secondaryip: SECONDARYIP newline csiecsip_edit* END newline;
 
-csiecsip_edit: EDIT sip_number newline csiecsipe_set* NEXT newline;
+csiecsip_edit: EDIT sip_number newline csiecsipe* NEXT newline;
+
+csiecsipe
+:
+    csiecsipe_set
+    | (UNSET | SELECT | UNSELECT | APPEND | CLEAR) unimplemented
+;
 
 csiecsipe_set: SET csiecsipe_set_ip;
 
