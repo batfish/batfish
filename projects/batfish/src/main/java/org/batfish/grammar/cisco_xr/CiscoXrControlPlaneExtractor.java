@@ -695,7 +695,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_spanning_treeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_trackContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_usernameContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.S_vrf_definitionContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.S_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Send_community_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_rp_stanzaContext;
@@ -759,8 +759,10 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vlan_idContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_targetContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_block_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrfd_descriptionContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrrp_interfaceContext;
 import org.batfish.representation.cisco_xr.AccessListAddressSpecifier;
 import org.batfish.representation.cisco_xr.AccessListServiceSpecifier;
@@ -2584,7 +2586,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterS_vrf_definition(S_vrf_definitionContext ctx) {
+  public void enterS_vrf(S_vrfContext ctx) {
     _currentVrf = ctx.name.getText();
     initVrf(_currentVrf);
   }
@@ -6051,7 +6053,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitS_vrf_definition(S_vrf_definitionContext ctx) {
+  public void exitS_vrf(S_vrfContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
@@ -6386,13 +6388,41 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitVrfd_description(Vrfd_descriptionContext ctx) {
+  public void exitVrf_description(Vrf_descriptionContext ctx) {
     currentVrf().setDescription(getDescription(ctx.description_line()));
   }
 
   @Override
   public void exitVrrp_interface(Vrrp_interfaceContext ctx) {
     _currentVrrpInterface = null;
+  }
+
+  @Override
+  public void exitVrf_afi_route_target(Vrf_afi_route_targetContext ctx) {
+    todo(ctx);
+    if (ctx.vrf_afi_route_target_single() != null) {
+      currentVrf()
+          .addRouteTargetImport(toRouteTarget(ctx.vrf_afi_route_target_single().route_target()));
+    } else {
+      assert ctx.vrf_afi_route_target_block() != null;
+      ctx.vrf_afi_route_target_block().vrf_afi_route_target_block_route_target().stream()
+          .map(targetCtx -> toRouteTarget(targetCtx.route_target()))
+          .forEach(currentVrf()::addRouteTargetImport);
+    }
+  }
+
+  @Override
+  public void exitVrf_afe_route_target(Vrf_afe_route_targetContext ctx) {
+    todo(ctx);
+    if (ctx.vrf_afe_route_target_single() != null) {
+      currentVrf()
+          .addRouteTargetExport(toRouteTarget(ctx.vrf_afe_route_target_single().route_target()));
+    } else {
+      assert ctx.vrf_afe_route_target_block() != null;
+      ctx.vrf_afe_route_target_block().vrf_afe_route_target_block_route_target().stream()
+          .map(targetCtx -> toRouteTarget(targetCtx.route_target()))
+          .forEach(currentVrf()::addRouteTargetExport);
+    }
   }
 
   @Nullable
