@@ -597,8 +597,6 @@ BUFFERED: 'buffered';
 
 BUG_ALERT: 'bug-alert';
 
-BUNDLE: 'bundle';
-
 BURST: 'burst';
 BURST_SIZE: 'burst-size';
 

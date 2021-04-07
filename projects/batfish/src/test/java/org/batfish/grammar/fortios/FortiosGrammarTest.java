@@ -95,6 +95,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -651,6 +652,10 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getIp(), equalTo(ip2));
     assertThat(neighbor1.getRemoteAs(), equalTo(1L));
     assertThat(neighbor2.getRemoteAs(), equalTo(4294967295L));
+    assertThat(neighbor1.getRouteMapIn(), equalTo("rm1"));
+    assertThat(neighbor1.getRouteMapOut(), equalTo("rm2"));
+    assertNull(neighbor2.getRouteMapIn());
+    assertNull(neighbor2.getRouteMapOut());
     assertThat(neighbor1.getUpdateSource(), equalTo("port1"));
     assertNull(neighbor2.getUpdateSource());
   }
@@ -686,6 +691,9 @@ public final class FortiosGrammarTest {
     assertThat(neighbor1.getLocalIp(), equalTo(Ip.parse("10.10.10.1")));
     assertThat(neighbor1.getPeerAddress(), equalTo(ip1));
     assertThat(neighbor1.getRemoteAsns().enumerate(), contains(1L));
+    AddressFamily ipv4Af1 = neighbor1.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
+    assertThat(ipv4Af1.getImportPolicy(), equalTo("rm1"));
+    assertThat(ipv4Af1.getExportPolicy(), equalTo("rm2"));
 
     // VRF 5 BGP process: should only have neighbor 2
     org.batfish.datamodel.BgpProcess bgpProcessVrf5 =
@@ -700,6 +708,9 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getLocalIp(), equalTo(Ip.parse("11.11.11.1")));
     assertThat(neighbor2.getPeerAddress(), equalTo(ip2));
     assertThat(neighbor2.getRemoteAsns().enumerate(), contains(4294967295L));
+    AddressFamily ipv4Af2 = neighbor2.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
+    assertNull(ipv4Af2.getImportPolicy());
+    assertNull(ipv4Af2.getExportPolicy());
   }
 
   @Test
@@ -1926,7 +1937,13 @@ public final class FortiosGrammarTest {
                     hasComment("When 'any' is set together with other interfaces, it is removed"),
                     hasText("any port10")),
                 hasComment("Cannot move a non-existent policy 99999"),
-                hasComment("Cannot move around a non-existent policy 99999"))));
+                hasComment("Cannot move around a non-existent policy 99999"),
+                hasComment("Cannot clone a non-existent policy 99999"),
+                allOf(
+                    hasComment("Cannot create a cloned policy with an invalid name"),
+                    hasText("clone 3 to foobar")),
+                hasComment("Expected policy number in range 0-4294967294, but got 'foobar'"),
+                hasComment("Cannot clone, policy 1 already exists"))));
 
     Warnings conversionWarnings =
         batfish
@@ -2353,6 +2370,10 @@ public final class FortiosGrammarTest {
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr2"));
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr3"));
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.POLICY, "1"));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.POLICY, "2", contains(70)));
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr1", 2));
@@ -2405,6 +2426,10 @@ public final class FortiosGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, FortiosStructureType.POLICY, "2", FortiosStructureUsage.POLICY_DELETE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.POLICY, "3", FortiosStructureUsage.POLICY_CLONE));
   }
 
   @Test
@@ -2510,6 +2535,27 @@ public final class FortiosGrammarTest {
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3Denied, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p1ToP3DeniedIndirect, port1, c))));
     assertThat(c, hasInterface(port3, hasOutgoingFilter(rejects(p2ToP3Denied, port2, c))));
+  }
+
+  @Test
+  public void testPolicyClone() throws IOException {
+    String hostname = "policy_clone";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPolicies().keySet(), contains("1", "2", "3", "4"));
+
+    // Confirm the clone has the correct properties, i.e. everything identical to parent except num
+    Policy clone = vc.getPolicies().get("3");
+    assertThat(clone.getAction(), equalTo(Action.ACCEPT));
+    assertThat(clone.getDstIntf(), contains("any"));
+    assertThat(clone.getSrcIntf(), contains("any"));
+    assertThat(clone.getDstAddr(), contains("all"));
+    assertThat(clone.getSrcAddr(), contains("all"));
+    assertThat(clone.getService(), contains("ALL_TCP"));
+    assertThat(clone.getNumber(), equalTo("3"));
   }
 
   @Test

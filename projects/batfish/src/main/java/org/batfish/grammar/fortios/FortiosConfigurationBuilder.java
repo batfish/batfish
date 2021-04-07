@@ -76,6 +76,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcintfContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_cloneContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_deleteContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_moveContext;
@@ -115,6 +116,8 @@ import org.batfish.grammar.fortios.FortiosParser.Crb_set_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crb_set_router_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_inContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_outContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrm_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrme_set_commentsContext;
@@ -881,6 +884,30 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCrbcne_set_route_map_in(Crbcne_set_route_map_inContext ctx) {
+    toRouteMap(ctx.route_map_name(), FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_IN)
+        .ifPresent(_currentBgpNeighbor::setRouteMapIn);
+  }
+
+  @Override
+  public void exitCrbcne_set_route_map_out(Crbcne_set_route_map_outContext ctx) {
+    toRouteMap(ctx.route_map_name(), FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT)
+        .ifPresent(_currentBgpNeighbor::setRouteMapOut);
+  }
+
+  private Optional<String> toRouteMap(Route_map_nameContext ctx, FortiosStructureUsage usage) {
+    String name = toString(ctx.str());
+    int line = ctx.start.getLine();
+    if (_c.getRouteMaps().containsKey(name)) {
+      _c.referenceStructure(FortiosStructureType.ROUTE_MAP, name, usage, line);
+      return Optional.of(name);
+    }
+    warn(ctx, String.format("Route-map %s is undefined and cannot be referenced", name));
+    _c.undefined(FortiosStructureType.ROUTE_MAP, name, usage, line);
+    return Optional.empty();
+  }
+
+  @Override
   public void exitCrbcne_set_update_source(FortiosParser.Crbcne_set_update_sourceContext ctx) {
     toInterface(ctx, ctx.interface_name(), BGP_UPDATE_SOURCE_INTERFACE)
         .ifPresent(_currentBgpNeighbor::setUpdateSource);
@@ -1060,6 +1087,37 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, String.format("Policy edit block ignored: %s", invalidReason));
     }
     _currentPolicy = null;
+  }
+
+  @Override
+  public void exitCfp_clone(Cfp_cloneContext ctx) {
+    String name = toString(ctx.name.str());
+    Policy existing = _c.getPolicies().get(name);
+    if (existing == null) {
+      warn(ctx, String.format("Cannot clone a non-existent policy %s", name));
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_CLONE,
+          ctx.start.getLine());
+      return;
+    }
+
+    Optional<Long> to = toLong(ctx, ctx.to);
+    if (!to.isPresent()) {
+      warn(ctx, "Cannot create a cloned policy with an invalid name");
+      return;
+    }
+
+    String toNumber = to.get().toString();
+    if (_c.getPolicies().containsKey(toNumber)) {
+      warn(ctx, String.format("Cannot clone, policy %s already exists", toNumber));
+      return;
+    }
+    Policy clone = SerializationUtils.clone(existing);
+    clone.setNumber(toNumber);
+    _c.getPolicies().put(toNumber, clone);
+    _c.defineStructure(FortiosStructureType.POLICY, toNumber, ctx);
   }
 
   @Override

@@ -207,7 +207,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.NTP_SOURCE_IN
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_AREA_FILTER_LIST;
-import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
@@ -743,6 +742,7 @@ import org.batfish.grammar.cisco.CiscoParser.On_rangeContext;
 import org.batfish.grammar.cisco.CiscoParser.On_subnetContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_expr_literalContext;
 import org.batfish.grammar.cisco.CiscoParser.Os_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Ospf_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ospf_route_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_interface_default_is_stanzaContext;
@@ -815,10 +815,6 @@ import org.batfish.grammar.cisco.CiscoParser.Ren_metric_weightsContext;
 import org.batfish.grammar.cisco.CiscoParser.Reno_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro6_distribute_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
-import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
-import org.batfish.grammar.cisco.CiscoParser.Ro_area_nssaContext;
-import org.batfish.grammar.cisco.CiscoParser.Ro_area_rangeContext;
-import org.batfish.grammar.cisco.CiscoParser.Ro_area_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_metricContext;
@@ -839,8 +835,11 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_rfc1583_compatibilityContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_vrfContext;
-import org.batfish.grammar.cisco.CiscoParser.Roa_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Roa_default_costContext;
+import org.batfish.grammar.cisco.CiscoParser.Roa_filterlistContext;
+import org.batfish.grammar.cisco.CiscoParser.Roa_nssaContext;
 import org.batfish.grammar.cisco.CiscoParser.Roa_rangeContext;
+import org.batfish.grammar.cisco.CiscoParser.Roa_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Roi_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Roi_passiveContext;
 import org.batfish.grammar.cisco.CiscoParser.Route_distinguisherContext;
@@ -1071,7 +1070,6 @@ import org.batfish.representation.cisco.NetworkObjectGroup;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.NetworkObjectInfo;
 import org.batfish.representation.cisco.NssaSettings;
-import org.batfish.representation.cisco.OspfNetwork;
 import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
@@ -1254,6 +1252,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static Ip6 toIp6(Token t) {
     return Ip6.parse(t.getText());
+  }
+
+  private static long toLong(Ospf_areaContext ctx) {
+    if (ctx.num != null) {
+      return toLong(ctx.num);
+    }
+    assert ctx.addr != null;
+    return toIp(ctx.addr).asLong();
   }
 
   private static long toLong(DecContext ctx) {
@@ -2901,15 +2907,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRo_area(Ro_areaContext ctx) {
-    long area;
-    if (ctx.area_int != null) {
-      area = toLong(ctx.area_int);
-    } else if (ctx.area_ip != null) {
-      area = toIp(ctx.area_ip).asLong();
-    } else {
-      throw new BatfishException("Missing area");
-    }
-    _currentOspfArea = area;
+    _currentOspfArea = toLong(ctx.ospf_area());
   }
 
   @Override
@@ -2927,30 +2925,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                   p.setRouterId(routerId);
                   return p;
                 });
-  }
-
-  @Override
-  public void enterRoa_interface(Roa_interfaceContext ctx) {
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, OSPF_AREA_INTERFACE, ctx.iname.getStart().getLine());
-    Interface iface = _configuration.getInterfaces().get(ifaceName);
-    if (iface == null) {
-      warn(
-          ctx.iname,
-          String.format("OSPF interface %s not declared before OSPF process", ifaceName));
-      iface = addInterface(ifaceName, ctx.iname, false);
-    }
-    // might cause problems if interfaces are declared after ospf, but
-    // whatever
-    for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
-      Prefix prefix = address.getPrefix();
-      OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
-      _currentOspfProcess.getNetworks().add(network);
-    }
-    iface.setOspfArea(_currentOspfArea);
-    iface.setOspfProcess(_currentOspfProcess.getName());
-    _currentOspfInterface = iface.getName();
   }
 
   @Override
@@ -7529,7 +7503,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRo_area_filterlist(Ro_area_filterlistContext ctx) {
+  public void exitRoa_default_cost(Roa_default_costContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRoa_filterlist(Roa_filterlistContext ctx) {
     String prefixListName = ctx.list.getText();
     _configuration.referenceStructure(
         PREFIX_LIST, prefixListName, OSPF_AREA_FILTER_LIST, ctx.list.getStart().getLine());
@@ -7537,10 +7516,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
+  public void exitRoa_nssa(Roa_nssaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
-    NssaSettings settings = proc.getNssas().computeIfAbsent(area, a -> new NssaSettings());
+    NssaSettings settings =
+        proc.getNssas().computeIfAbsent(_currentOspfArea, a -> new NssaSettings());
     if (ctx.default_information_originate != null) {
       settings.setDefaultInformationOriginate(true);
     }
@@ -7553,8 +7532,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRo_area_range(Ro_area_rangeContext ctx) {
-    long areaNum = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+  public void exitRoa_range(Roa_rangeContext ctx) {
     Prefix prefix;
     if (ctx.area_prefix != null) {
       prefix = Prefix.parse(ctx.area_prefix.getText());
@@ -7565,7 +7543,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
 
     Map<Prefix, OspfAreaSummary> area =
-        _currentOspfProcess.getSummaries().computeIfAbsent(areaNum, k -> new TreeMap<>());
+        _currentOspfProcess.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
     area.put(
         prefix,
         new OspfAreaSummary(
@@ -7576,10 +7554,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitRo_area_stub(Ro_area_stubContext ctx) {
+  public void exitRoa_stub(Roa_stubContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
-    StubSettings settings = proc.getStubs().computeIfAbsent(area, a -> new StubSettings());
+    StubSettings settings =
+        proc.getStubs().computeIfAbsent(_currentOspfArea, a -> new StubSettings());
     if (ctx.no_summary != null) {
       settings.setNoSummary(true);
     }
@@ -8049,28 +8027,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
     }
-  }
-
-  @Override
-  public void exitRoa_interface(Roa_interfaceContext ctx) {
-    _currentOspfInterface = null;
-  }
-
-  @Override
-  public void exitRoa_range(Roa_rangeContext ctx) {
-    Prefix prefix = Prefix.parse(ctx.prefix.getText());
-    boolean advertise = ctx.NOT_ADVERTISE() == null;
-    Long cost = ctx.cost == null ? null : toLong(ctx.cost);
-
-    Map<Prefix, OspfAreaSummary> area =
-        _currentOspfProcess.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
-    area.put(
-        prefix,
-        new OspfAreaSummary(
-            advertise
-                ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
-                : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
-            cost));
   }
 
   @Override
@@ -9777,14 +9733,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private @Nullable Long toLong(Uint32Context ctx) {
-    try {
-      long val = Long.parseLong(ctx.getText(), 10);
-      checkArgument(0 <= val && val <= 0xFFFFFFFFL);
-      return val;
-    } catch (IllegalArgumentException e) {
-      return convProblem(Long.class, ctx, null);
-    }
+  private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {

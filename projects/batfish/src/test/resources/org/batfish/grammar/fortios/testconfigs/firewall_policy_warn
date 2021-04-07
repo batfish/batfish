@@ -84,4 +84,9 @@ config firewall policy
     # Non-existent names
     move 3 before 99999
     move 99999 before 3
+    clone 99999 to 99998
+    # Invalid name
+    clone 3 to foobar
+    # To-target already exists
+    clone 3 to 1
 end

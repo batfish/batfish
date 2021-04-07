@@ -13,49 +13,33 @@ ro_address_family
 
 ro_area
 :
-   AREA
-   (
-      area_int = dec
-      | area_ip = IP_ADDRESS
-   ) NEWLINE
-   (
-      ro_common
-      | roa_cost
-      | roa_interface
-      | roa_network_null
-      | roa_range
-   )*
+  AREA ospf_area
+  (
+    roa_default_cost
+    | roa_filterlist
+    | roa_nssa
+    | roa_range
+    | roa_stub
+  )
 ;
 
-ro_area_default_cost
+roa_default_cost
 :
-   AREA
-   (
-      area_int = dec
-      | area_ip = IP_ADDRESS
-   ) DEFAULT_COST cost = dec NEWLINE
+   DEFAULT_COST cost = dec NEWLINE
 ;
 
-ro_area_filterlist
+roa_filterlist
 :
-   AREA
-   (
-      area_int = dec
-      | area_ip = IP_ADDRESS
-   ) FILTER_LIST PREFIX list = variable
+   FILTER_LIST PREFIX list = variable
    (
       IN
       | OUT
    ) NEWLINE
 ;
 
-ro_area_nssa
+roa_nssa
 :
-   AREA
-   (
-      area_int = dec
-      | area_ip = IP_ADDRESS
-   ) NSSA
+   NSSA
    (
       (
          default_information_originate = DEFAULT_INFORMATION_ORIGINATE
@@ -74,13 +58,9 @@ ro_area_nssa
    )* NEWLINE
 ;
 
-ro_area_range
+roa_range
 :
-   AREA
-   (
-      area_int = dec
-      | area_ip = IP_ADDRESS
-   ) RANGE
+   RANGE
    (
       (
          area_ip = IP_ADDRESS area_subnet = IP_ADDRESS
@@ -96,13 +76,9 @@ ro_area_range
    )? NEWLINE
 ;
 
-ro_area_stub
+roa_stub
 :
-   AREA
-   (
-      area_int = dec
-      | area_ip = IP_ADDRESS
-   ) STUB
+   STUB
    (
       no_summary = NO_SUMMARY
    )* NEWLINE
@@ -530,40 +506,6 @@ ro6_redistribute
    REDISTRIBUTE null_rest_of_line
 ;
 
-roa_cost
-:
-   COST cost = dec NEWLINE
-;
-
-roa_interface
-:
-   INTERFACE iname = interface_name NEWLINE
-   (
-      ro_common
-      | roi_cost
-      | roi_network
-      | roi_priority
-      | roi_passive
-   )*
-;
-
-roa_range
-:
-   RANGE prefix = IP_PREFIX
-   (
-      ADVERTISE
-      | NOT_ADVERTISE
-   )?
-   (
-      COST cost = dec
-   )? NEWLINE
-;
-
-roa_network_null
-:
-   NETWORK POINT_TO_POINT NEWLINE
-;
-
 roi_cost
 :
    COST cost = dec NEWLINE
@@ -669,14 +611,13 @@ s_router_ospf
    (
       VRF vrf = variable
    )? NEWLINE
-   (
+   ro_inner*
+;
+
+ro_inner
+:
       ro_address_family
       | ro_area
-      | ro_area_default_cost
-      | ro_area_filterlist
-      | ro_area_nssa
-      | ro_area_range
-      | ro_area_stub
       | ro_auto_cost
       | ro_common
       | ro_default_information
@@ -699,7 +640,6 @@ s_router_ospf
       | ro_summary_address
       | ro_vrf
       | roi_priority
-   )*
 ;
 
 s_router_ospfv3

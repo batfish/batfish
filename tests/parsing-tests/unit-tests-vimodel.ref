@@ -29729,21 +29729,6 @@
               {
                 "action" : "DENY",
                 "ipWildcard" : "1.2.3.0/24",
-                "lengthRange" : "25-32"
-              },
-              {
-                "action" : "PERMIT",
-                "ipWildcard" : "0.0.0.0/0",
-                "lengthRange" : "0-32"
-              }
-            ],
-            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
-          },
-          "~OSPF_SUMMARY_FILTER:default:16909056~" : {
-            "lines" : [
-              {
-                "action" : "DENY",
-                "ipWildcard" : "1.2.3.0/24",
                 "lengthRange" : "24-32"
               },
               {
@@ -29752,7 +29737,7 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
           }
         },
         "routingPolicies" : {
@@ -29946,23 +29931,10 @@
                     "stubType" : "NSSA",
                     "summaries" : {
                       "1.2.3.0/24" : {
-                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD",
-                        "metric" : 17
-                      }
-                    },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
-                  },
-                  "16909056" : {
-                    "injectDefaultRoute" : true,
-                    "metricOfDefaultRoute" : 0,
-                    "name" : 16909056,
-                    "stubType" : "NONE",
-                    "summaries" : {
-                      "1.2.3.0/24" : {
                         "behavior" : "NOT_ADVERTISE_AND_NO_DISCARD"
                       }
                     },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -30155,21 +30127,6 @@
               {
                 "action" : "DENY",
                 "ipWildcard" : "1.2.3.0/24",
-                "lengthRange" : "25-32"
-              },
-              {
-                "action" : "PERMIT",
-                "ipWildcard" : "0.0.0.0/0",
-                "lengthRange" : "0-32"
-              }
-            ],
-            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
-          },
-          "~OSPF_SUMMARY_FILTER:default:16909056~" : {
-            "lines" : [
-              {
-                "action" : "DENY",
-                "ipWildcard" : "1.2.3.0/24",
                 "lengthRange" : "24-32"
               },
               {
@@ -30178,7 +30135,7 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
           },
           "~OSPF_SUMMARY_FILTER:default:1~" : {
             "lines" : [
@@ -30237,23 +30194,10 @@
                     "stubType" : "NSSA",
                     "summaries" : {
                       "1.2.3.0/24" : {
-                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD",
-                        "metric" : 17
-                      }
-                    },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
-                  },
-                  "16909056" : {
-                    "injectDefaultRoute" : true,
-                    "metricOfDefaultRoute" : 0,
-                    "name" : 16909056,
-                    "stubType" : "NONE",
-                    "summaries" : {
-                      "1.2.3.0/24" : {
                         "behavior" : "NOT_ADVERTISE_AND_NO_DISCARD"
                       }
                     },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
