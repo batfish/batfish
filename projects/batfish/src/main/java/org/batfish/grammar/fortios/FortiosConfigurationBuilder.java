@@ -686,12 +686,28 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void enterCsiec_sip(Csiec_sipContext ctx) {
-    Optional<Long> name = toLong(ctx, ctx.sip_number());
-    _currentSecondaryIp =
-        name.map(Objects::toString)
-            .map(_c.getSecondaryIps::get)
+    Optional<Long> number = toLong(ctx, ctx.sip_number());
+    _currentSecondaryip =
+        number
+            .map(Objects::toString)
+            .map(i -> _currentInterface.getSecondaryip().get(i))
             .orElseGet(() -> new SecondaryIp(toString(ctx.sip_number().str())));
+    _currentSecondaryipNameValid = number.isPresent();
   }
+
+  @Override
+  public void exitCsiec_sip(Csiec_sipContext ctx) {
+    String number = _currentSecondaryip.getName();
+    if (_currentSecondaryipNameValid) {
+      _currentInterface.getSecondaryip().put(number, _currentSecondaryip);
+    } else {
+      warn(ctx, "Secondaryip edit block ignored: name is invalid");
+    }
+    _currentSecondaryip = null;
+  }
+
+  // TODO handle setting IP
+  // TODO handle enabling secondaryIp
 
   @Override
   public void enterCsi_edit(Csi_editContext ctx) {
@@ -2357,6 +2373,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toLongInSpace(ctx, num.str(), ROUTE_MAP_RULE_NUM_SPACE, "route-map rule number");
   }
 
+  private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Sip_numberContext num) {
+    return toLongInSpace(ctx, num.str(), SECONDARY_IP_NUM_SPACE, "secondary-IP number");
+  }
+
   private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Route_numContext routeNum) {
     return toLongInSpace(
         ctx, routeNum.str(), STATIC_ROUTE_NUM_SPACE, "static route sequence number");
@@ -2713,6 +2733,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final LongSpace ROUTE_MAP_RULE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
+  private static final LongSpace SECONDARY_IP_NUM_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace STATIC_ROUTE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace VLANID_SPACE = IntegerSpace.of(Range.closed(1, 4094));
@@ -2737,8 +2759,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Interface _currentInterface;
   private boolean _currentInterfaceNameValid;
 
-  private SecondaryIp _currentSecondaryIp;
-  private boolean _currentSecondaryIpNameValid;
+  private SecondaryIp _currentSecondaryip;
+  private boolean _currentSecondaryipNameValid;
 
   private Policy _currentPolicy;
   /**
