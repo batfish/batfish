@@ -131,6 +131,8 @@ RULE: 'rule';
 SCTP_PORTRANGE: 'sctp-portrange';
 SDN: 'sdn';
 SDWAN: 'sdwan';
+SECONDARY_IP: 'secondary-IP';
+SECONDARYIP: 'secondaryip';
 SELECT: 'select';
 SERVICE:
   'service'
