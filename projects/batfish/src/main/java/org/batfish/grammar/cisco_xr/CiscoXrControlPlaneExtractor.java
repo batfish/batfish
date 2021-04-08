@@ -42,6 +42,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_T
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_PREFIX_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INHERITED_PEER_POLICY;
@@ -54,8 +55,11 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIG
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NETWORK_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_NEIGHBOR_GROUP;
@@ -109,10 +113,13 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF6_DI
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_AREA_FILTER_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_AREA_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DEFAULT_INFORMATION_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_ACCEPT_REGISTER_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_ACCEPT_RP_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_RP_ADDRESS_ACL;
@@ -124,9 +131,12 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_M
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_REDISTRIBUTE_STATIC_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_VRRP_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_APPLY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_APPLY_EXPR;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_APPLY_STATEMENT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_AS_PATH_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_ANY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY;
@@ -3164,6 +3174,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitDefault_originate_bgp_tail(Default_originate_bgp_tailContext ctx) {
     if (ctx.policy != null) {
       todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, BGP_DEFAULT_ORIGINATE_ROUTE_POLICY, ctx.start.getLine());
     }
     _currentPeerGroup.setDefaultOriginate(true);
   }
@@ -4667,6 +4680,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitNetwork_bgp_tail(Network_bgp_tailContext ctx) {
     if (ctx.policyname != null) {
       todo(ctx);
+      String name = toString(ctx.policyname);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, BGP_NETWORK_ROUTE_POLICY, ctx.start.getLine());
     }
     Prefix prefix;
     if (ctx.prefix != null) {
@@ -4686,8 +4702,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitNetwork6_bgp_tail(Network6_bgp_tailContext ctx) {
     if (ctx.policyname != null) {
-      // TODO: at least collect reference
       todo(ctx);
+      String name = toString(ctx.policyname);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, BGP_NETWORK_ROUTE_POLICY, ctx.start.getLine());
     }
     Prefix6 prefix6 = Prefix6.parse(ctx.prefix.getText());
     String map = null;
@@ -5319,6 +5337,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitRedistribute_connected_bgp_tail(Redistribute_connected_bgp_tailContext ctx) {
     if (ctx.policy != null) {
       todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
     }
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
@@ -5339,6 +5360,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitRedistribute_connected_is_stanza(Redistribute_connected_is_stanzaContext ctx) {
     if (ctx.policy != null) {
       todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, ROUTER_ISIS_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
     }
     IsisProcess proc = currentVrf().getIsisProcess();
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
@@ -5404,6 +5428,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitRedistribute_static_bgp_tail(Redistribute_static_bgp_tailContext ctx) {
     if (ctx.policy != null) {
       todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
     }
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
@@ -5424,6 +5451,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitRedistribute_static_is_stanza(Redistribute_static_is_stanzaContext ctx) {
     if (ctx.policy != null) {
       todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, ROUTER_ISIS_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
     }
     IsisProcess proc = currentVrf().getIsisProcess();
     RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
@@ -5532,6 +5562,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitRo_default_information(Ro_default_informationContext ctx) {
     if (ctx.policy != null) {
       todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, OSPF_DEFAULT_INFORMATION_ROUTE_POLICY, ctx.start.getLine());
     }
     OspfProcess proc = _currentOspfProcess;
     proc.setDefaultInformationOriginate(true);
@@ -5702,6 +5735,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitRo_redistribute_connected(Ro_redistribute_connectedContext ctx) {
     if (ctx.policy != null) {
       todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, OSPF_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
     }
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
@@ -5754,6 +5790,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitRo_redistribute_static(Ro_redistribute_staticContext ctx) {
     if (ctx.policy != null) {
       todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, OSPF_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
     }
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
@@ -7692,7 +7731,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_apply_rp_stanzaContext ctx) {
     String name = toString(ctx.name);
     _configuration.referenceStructure(
-        ROUTE_POLICY, name, ROUTE_POLICY_APPLY, ctx.name.getStart().getLine());
+        ROUTE_POLICY, name, ROUTE_POLICY_APPLY_EXPR, ctx.name.getStart().getLine());
     return new RoutePolicyBooleanApply(name);
   }
 
@@ -8014,7 +8053,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private RoutePolicyApplyStatement toRoutePolicyStatement(Apply_rp_stanzaContext ctx) {
-    return new RoutePolicyApplyStatement(toString(ctx.name));
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ROUTE_POLICY, name, ROUTE_POLICY_APPLY_STATEMENT, ctx.name.getStart().getLine());
+    return new RoutePolicyApplyStatement(name);
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Delete_community_rp_stanzaContext ctx) {

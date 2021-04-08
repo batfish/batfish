@@ -72750,7 +72750,7 @@
             },
             "drop_community_5555" : {
               "definitionLines" : "33-38",
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "fooey_blackhole" : {
               "definitionLines" : "5-12",
@@ -74337,7 +74337,7 @@
             },
             "global_cust_v4" : {
               "definitionLines" : "13-22",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -75546,6 +75546,11 @@
         },
         "configs/bgp_default_originate_policy" : {
           "route-policy" : {
+            "DEFAULT_ORIGINATE" : {
+              "bgp default-originate route-policy" : [
+                15
+              ]
+            },
             "EBGP_CUST_FULL_v4" : {
               "bgp neighbor route-policy out" : [
                 14
@@ -75575,6 +75580,21 @@
             "EBGP-PEER-AS11164-SVL-PNI-OUT" : {
               "bgp neighbor route-policy out" : [
                 26
+              ]
+            },
+            "originate-internal-ipv6" : {
+              "bgp network route-policy" : [
+                11
+              ]
+            },
+            "static-connected-to-bgp" : {
+              "bgp redistribute connected route-policy" : [
+                12
+              ]
+            },
+            "static-to-bgp" : {
+              "bgp redistribute static route-policy" : [
+                16
               ]
             }
           }
@@ -78307,6 +78327,11 @@
               "aggregate-address route-policy" : [
                 11
               ]
+            },
+            "REDISTRIBUTE_STATIC_POLICY" : {
+              "bgp redistribute static route-policy" : [
+                12
+              ]
             }
           }
         },
@@ -78453,6 +78478,13 @@
             "TenGigE0/0/0/5" : {
               "router ospf area interface" : [
                 39
+              ]
+            }
+          },
+          "route-policy" : {
+            "ospf_default_ipv4" : {
+              "router ospf default-information route-policy" : [
+                15
               ]
             }
           }
@@ -78622,9 +78654,44 @@
             }
           },
           "route-policy" : {
+            "EBGP_PEER_LAX-PNI_IN" : {
+              "route-policy apply (statement)" : [
+                58
+              ]
+            },
+            "EBGP_PEER_LAX-PNI_OUT" : {
+              "route-policy apply (statement)" : [
+                88
+              ]
+            },
             "bbbb" : {
-              "route-policy apply" : [
+              "route-policy apply (boolean expression)" : [
                 29
+              ]
+            },
+            "bgp_standard" : {
+              "route-policy apply (statement)" : [
+                160
+              ]
+            },
+            "cccc" : {
+              "route-policy apply (statement)" : [
+                30
+              ]
+            },
+            "default_route_filter" : {
+              "route-policy apply (statement)" : [
+                14
+              ]
+            },
+            "drop_community_5555" : {
+              "route-policy apply (statement)" : [
+                16
+              ]
+            },
+            "inbound_route_filter" : {
+              "route-policy apply (statement)" : [
+                15
               ]
             }
           }
@@ -80733,6 +80800,19 @@
                 6
               ]
             }
+          },
+          "route-policy" : {
+            "bgp_standard" : {
+              "route-policy apply (statement)" : [
+                15,
+                19
+              ]
+            },
+            "global_cust_v4" : {
+              "route-policy apply (statement)" : [
+                7
+              ]
+            }
           }
         },
         "configs/switchport_range" : {
@@ -81005,6 +81085,11 @@
         },
         "configs/bgp_default_originate_policy" : {
           "route-policy" : {
+            "DEFAULT_ORIGINATE" : {
+              "bgp default-originate route-policy" : [
+                15
+              ]
+            },
             "EBGP_CUST_FULL_v4" : {
               "bgp neighbor route-policy out" : [
                 14
@@ -81035,6 +81120,21 @@
             "EBGP-PEER-AS11164-SVL-PNI-OUT" : {
               "bgp neighbor route-policy out" : [
                 26
+              ]
+            },
+            "originate-internal-ipv6" : {
+              "bgp network route-policy" : [
+                11
+              ]
+            },
+            "static-connected-to-bgp" : {
+              "bgp redistribute connected route-policy" : [
+                12
+              ]
+            },
+            "static-to-bgp" : {
+              "bgp redistribute static route-policy" : [
+                16
               ]
             }
           }
@@ -82330,6 +82430,11 @@
               "aggregate-address route-policy" : [
                 11
               ]
+            },
+            "REDISTRIBUTE_STATIC_POLICY" : {
+              "bgp redistribute static route-policy" : [
+                12
+              ]
             }
           }
         },
@@ -82466,6 +82571,13 @@
             "TenGigE0/0/0/5" : {
               "router ospf area interface" : [
                 39
+              ]
+            }
+          },
+          "route-policy" : {
+            "ospf_default_ipv4" : {
+              "router ospf default-information route-policy" : [
+                15
               ]
             }
           }
@@ -82636,9 +82748,39 @@
             }
           },
           "route-policy" : {
+            "EBGP_PEER_LAX-PNI_IN" : {
+              "route-policy apply (statement)" : [
+                58
+              ]
+            },
+            "EBGP_PEER_LAX-PNI_OUT" : {
+              "route-policy apply (statement)" : [
+                88
+              ]
+            },
             "bbbb" : {
-              "route-policy apply" : [
+              "route-policy apply (boolean expression)" : [
                 29
+              ]
+            },
+            "bgp_standard" : {
+              "route-policy apply (statement)" : [
+                160
+              ]
+            },
+            "cccc" : {
+              "route-policy apply (statement)" : [
+                30
+              ]
+            },
+            "default_route_filter" : {
+              "route-policy apply (statement)" : [
+                14
+              ]
+            },
+            "inbound_route_filter" : {
+              "route-policy apply (statement)" : [
+                15
               ]
             }
           }
@@ -83134,6 +83276,14 @@
             "$cust_v4_pfx" : {
               "route-policy prefix-set" : [
                 6
+              ]
+            }
+          },
+          "route-policy" : {
+            "bgp_standard" : {
+              "route-policy apply (statement)" : [
+                15,
+                19
               ]
             }
           }
