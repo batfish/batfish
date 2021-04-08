@@ -291,9 +291,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
 
     for (Address address : _c.getAddresses().values()) {
-      BatfishUUID uuid = address.getAssociatedZoneUUID();
+      BatfishUUID uuid = address.getAssociatedInterfaceZoneUUID();
       if (uuid != null) {
-        address.setAssociatedZone(toName(uuid));
+        address.setAssociatedInterfaceZone(toName(uuid));
       }
     }
   }
@@ -422,7 +422,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     if (_c.getZones().containsKey(name)) {
       // TODO Add structure reference for zone
       todo(ctx);
-      _currentAddress.setAssociatedZoneUUID(_c.getZones().get(name).getBatfishUUID());
+      _currentAddress.setAssociatedInterfaceZoneUUID(_c.getZones().get(name).getBatfishUUID());
       return;
     }
 

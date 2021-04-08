@@ -323,7 +323,7 @@ public final class FortiosGrammarTest {
     assertThat(ipmask.getAssociatedInterface(), equalTo("port1"));
     assertThat(ipmask.getComment(), equalTo("Hello world"));
     assertThat(ipmask.getFabricObject(), equalTo(true));
-    assertThat(iprange.getAssociatedZone(), equalTo("zoneA"));
+    assertThat(iprange.getAssociatedInterfaceZone(), equalTo("zoneA"));
 
     // Test default values
     assertThat(longName.getTypeEffective(), equalTo(Address.Type.IPMASK));
