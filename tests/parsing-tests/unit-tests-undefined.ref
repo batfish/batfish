@@ -376,6 +376,18 @@
       {
         "File_Name" : "configs/bgp_default_originate_policy",
         "Struct_Type" : "route-policy",
+        "Ref_Name" : "DEFAULT_ORIGINATE",
+        "Context" : "bgp default-originate route-policy",
+        "Lines" : {
+          "filename" : "configs/bgp_default_originate_policy",
+          "lines" : [
+            15
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_default_originate_policy",
+        "Struct_Type" : "route-policy",
         "Ref_Name" : "EBGP_CUST_FULL_v4",
         "Context" : "bgp neighbor route-policy out",
         "Lines" : {
@@ -430,6 +442,42 @@
           "filename" : "configs/bgp_route_policy",
           "lines" : [
             26
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "originate-internal-ipv6",
+        "Context" : "bgp network route-policy",
+        "Lines" : {
+          "filename" : "configs/bgp_route_policy",
+          "lines" : [
+            11
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "static-connected-to-bgp",
+        "Context" : "bgp redistribute connected route-policy",
+        "Lines" : {
+          "filename" : "configs/bgp_route_policy",
+          "lines" : [
+            12
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/bgp_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "static-to-bgp",
+        "Context" : "bgp redistribute static route-policy",
+        "Lines" : {
+          "filename" : "configs/bgp_route_policy",
+          "lines" : [
+            16
           ]
         }
       },
@@ -2730,6 +2778,18 @@
         }
       },
       {
+        "File_Name" : "configs/ios_xr_bgp",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "REDISTRIBUTE_STATIC_POLICY",
+        "Context" : "bgp redistribute static route-policy",
+        "Lines" : {
+          "filename" : "configs/ios_xr_bgp",
+          "lines" : [
+            12
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/ios_xr_bgp_neighbor_group",
         "Struct_Type" : "bgp session-group",
         "Ref_Name" : "CIAO",
@@ -2975,6 +3035,18 @@
           "filename" : "configs/ios_xr_ospf",
           "lines" : [
             39
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_ospf",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "ospf_default_ipv4",
+        "Context" : "router ospf default-information route-policy",
+        "Lines" : {
+          "filename" : "configs/ios_xr_ospf",
+          "lines" : [
+            15
           ]
         }
       },
@@ -3357,12 +3429,84 @@
       {
         "File_Name" : "configs/ios_xr_route_policy",
         "Struct_Type" : "route-policy",
+        "Ref_Name" : "EBGP_PEER_LAX-PNI_IN",
+        "Context" : "route-policy apply (statement)",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            58
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "EBGP_PEER_LAX-PNI_OUT",
+        "Context" : "route-policy apply (statement)",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            88
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "route-policy",
         "Ref_Name" : "bbbb",
-        "Context" : "route-policy apply",
+        "Context" : "route-policy apply (boolean expression)",
         "Lines" : {
           "filename" : "configs/ios_xr_route_policy",
           "lines" : [
             29
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "bgp_standard",
+        "Context" : "route-policy apply (statement)",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            160
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "cccc",
+        "Context" : "route-policy apply (statement)",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            30
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "default_route_filter",
+        "Context" : "route-policy apply (statement)",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            14
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "inbound_route_filter",
+        "Context" : "route-policy apply (statement)",
+        "Lines" : {
+          "filename" : "configs/ios_xr_route_policy",
+          "lines" : [
+            15
           ]
         }
       },
@@ -4122,6 +4266,19 @@
         }
       },
       {
+        "File_Name" : "configs/route_policy_param",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "bgp_standard",
+        "Context" : "route-policy apply (statement)",
+        "Lines" : {
+          "filename" : "configs/route_policy_param",
+          "lines" : [
+            15,
+            19
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/underscore_variable",
         "Struct_Type" : "ipv4 prefix-list",
         "Ref_Name" : "ABC_DEF",
@@ -4183,10 +4340,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 339 results",
+      "notes" : "Found 352 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 339
+      "numResults" : 352
     }
   }
 ]
