@@ -130,3 +130,9 @@ permit_or_deny: PERMIT | DENY;
 vlanid: uint16;
 
 after_or_before: AFTER | BEFORE;
+
+// 1-63 characters
+internet_service_name: str;
+
+// 0-4294967295
+internet_service_id: str;

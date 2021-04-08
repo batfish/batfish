@@ -1,0 +1,12 @@
+config system global
+    set hostname "internet_service_name"
+end
+config firewall internet-service-name
+    edit "Google-DNS"
+        set internet-service-id 65539
+    next
+    edit "Google-Gmail"
+        set type default
+        set internet-service-id 65646
+    next
+end
