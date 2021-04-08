@@ -46,7 +46,13 @@ vrf_af_export
 
 vrf_af_export_inner
 :
-  vrf_afe_route_target
+  vrf_afe_route_policy
+  | vrf_afe_route_target
+;
+
+vrf_afe_route_policy
+:
+  (TO vrf = vrf_name)? ROUTE_POLICY policy = route_policy_name NEWLINE
 ;
 
 vrf_afe_route_target
@@ -67,7 +73,13 @@ vrf_af_import
 
 vrf_af_import_inner
 :
-  vrf_afi_route_target
+  vrf_afi_route_policy
+  | vrf_afi_route_target
+;
+
+vrf_afi_route_policy
+:
+  (FROM vrf = vrf_name)? ROUTE_POLICY policy = route_policy_name NEWLINE
 ;
 
 vrf_afi_route_target
