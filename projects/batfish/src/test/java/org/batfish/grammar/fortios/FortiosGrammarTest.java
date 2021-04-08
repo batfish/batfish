@@ -142,6 +142,12 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testCanonicalHostnameExtraction() {
+    String hostname = "fortios_UPPER_hostname";
+    assertThat(parseVendorConfig(hostname).getHostname(), equalTo(hostname.toLowerCase()));
+  }
+
+  @Test
   public void testHostnameConversion() throws IOException {
     String filename = "fortios_hostname";
     String hostname = "my_fortios-hostname1";
