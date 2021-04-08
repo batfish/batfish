@@ -17,9 +17,11 @@ cfsc_edit: EDIT service_name newline cfsce* NEXT newline;
 
 cfsce
 :
-    SET cfsc_set_singletons
+    cfsc_set
     | (UNSET | SELECT | UNSELECT | APPEND | CLEAR) unimplemented
 ;
+
+cfsc_set: SET cfsc_set_singletons;
 
 cfsc_set_singletons:
     cfsc_set_comment
@@ -57,19 +59,13 @@ cfsg_rename: RENAME current_name = service_name TO new_name = service_name newli
 
 cfsg_edit: EDIT service_name newline cfsge* NEXT newline;
 
-cfsge
-:
-    (
-        SET (cfsg_set_singletons | cfsg_set_member)
-        | APPEND cfsg_append_member
-        | SELECT cfsg_set_member
-    )
-;
+cfsge: cfsg_set | cfsg_append | cfsg_select;
 
-cfsg_set_singletons:
-    cfsg_set_comment
-    | cfsg_set_null
-;
+cfsg_set: SET (cfsg_set_singletons | cfsg_set_member);
+
+cfsg_select: SELECT cfsg_set_member;
+
+cfsg_set_singletons: cfsg_set_comment | cfsg_set_null;
 
 cfsg_set_comment: COMMENT comment = str newline;
 
@@ -77,7 +73,9 @@ cfsg_set_null: COLOR null_rest_of_line;
 
 cfsg_set_member: MEMBER service_names newline;
 
-cfsg_append_member: MEMBER service_names newline;
+cfsg_append: APPEND cfsga_member;
+
+cfsga_member: MEMBER service_names newline;
 
 service_protocol
 :
