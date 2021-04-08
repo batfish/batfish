@@ -43,7 +43,7 @@ ntp_access_group
       )
       |
       (
-         VRF vrf = variable
+         VRF vrf = vrf_name
       )
    )+ NEWLINE
 ;
@@ -128,7 +128,7 @@ ntp_server
 :
    SERVER
    (
-      VRF vrf = variable
+      VRF vrf = vrf_name
    )? hostname = variable
    (
       (
@@ -144,10 +144,6 @@ ntp_server
       )
       | prefer = PREFER
       | SOURCE src_interface = interface_name_unstructured
-      |
-      (
-         USE_VRF vrf = variable
-      )
       |
       (
          VERSION ver = DEC
