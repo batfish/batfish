@@ -50,6 +50,7 @@ statement
 :
   s_ipv4
   | s_ipv6
+  | s_null_xr
   | s_no
 ;
 
@@ -80,6 +81,13 @@ no_ipv4
 no_ipv6
 :
   IPV6 no_ipv6_access_list
+;
+
+s_null_xr
+:
+  (
+    ISOLATION
+  ) null_rest_of_line
 ;
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -128,23 +136,15 @@ bfd_null
 :
    NO?
    (
-      TRAP
-   ) null_rest_of_line
-;
-
-cp_ip_access_group
-:
-   (
-      IP
+      BUNDLE
+      | DAMPENING
+      | ECHO
+      | INTERFACE
       | IPV6
-   ) ACCESS_GROUP name = variable
-   (
-      VRF vrf = variable
-   )?
-   (
-      IN
-      | OUT
-   ) NEWLINE
+      | MULTIHOP
+      | MULTIPATH
+      | TRAP
+   ) null_rest_of_line
 ;
 
 cp_ip_flow
@@ -719,8 +719,7 @@ s_control_plane
 
 s_control_plane_tail
 :
-   cp_ip_access_group
-   | cp_ip_flow
+   cp_ip_flow
    | cp_management_plane
    | cp_null
    | cp_service_policy
@@ -870,8 +869,7 @@ s_ssh
 :
    SSH
    (
-      ssh_access_group
-      | ssh_client
+      ssh_client
       | ssh_null
       | ssh_server
       | ssh_timeout
@@ -1034,11 +1032,6 @@ srlg_interface_stanza
 srlg_stanza
 :
    SRLG NEWLINE srlg_interface_stanza*
-;
-
-ssh_access_group
-:
-   ACCESS_GROUP IPV6? name = variable NEWLINE
 ;
 
 ssh_client

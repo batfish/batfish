@@ -202,32 +202,6 @@ if_hsrp6_ip_address
    IP ip = IPV6_ADDRESS NEWLINE
 ;
 
-if_ip_access_group
-:
-   (
-      (
-         (
-            IP
-            | IPV4
-         ) PORT? ACCESS_GROUP
-      )
-      |
-      (
-         ACCESS_LIST NAME
-      )
-   ) name = variable
-   (
-      EGRESS
-      | IN
-      | INGRESS
-      | OUT
-   )
-   (
-      HARDWARE_COUNT
-      | OPTIMIZED
-   )* NEWLINE
-;
-
 if_ip_address
 :
    (IP | IPV4) ADDRESS
@@ -316,11 +290,6 @@ if_ip_helper_address
 if_ip_hold_time
 :
    IP HOLD_TIME EIGRP asn = DEC interval = DEC NEWLINE
-;
-
-if_ip_inband_access_group
-:
-   IP INBAND ACCESS_GROUP name = variable_permissive NEWLINE
 ;
 
 if_ip_igmp
@@ -498,6 +467,41 @@ if_ip_verify
    ) NEWLINE
 ;
 
+if_ipv4: IPV4 if_ipv4_inner;
+
+if_ipv4_inner
+:
+  if_ipv4_access_group
+  | if_ipv4_null
+;
+
+if_ipv4_access_group
+:
+  ACCESS_GROUP
+  (
+    COMMON common_acl = access_list_name
+    (
+      INGRESS HARDWARE_COUNT?
+      | interface_acl = access_list_name INGRESS
+        (HARDWARE_COUNT INTERFACE_STATISTICS? | INTERFACE_STATISTICS HARDWARE_COUNT?)?
+    )
+    | interface_acl = access_list_name (EGRESS | INGRESS)
+      (HARDWARE_COUNT INTERFACE_STATISTICS? | INTERFACE_STATISTICS HARDWARE_COUNT?)?
+  ) NEWLINE
+;
+
+if_ipv4_null
+:
+// TODO: some of these should be handled or at least warn
+  (
+    MTU
+    | POINT_TO_POINT
+    | UNNUMBERED
+    | UNREACHABLES
+    | VERIFY
+  ) null_rest_of_line
+;
+
 if_ipv6
 :
    IPV6 if_ipv6_inner
@@ -505,8 +509,22 @@ if_ipv6
 
 if_ipv6_inner
 :
-   if_ipv6_enable
+   if_ipv6_access_group
+   | if_ipv6_enable
    | if_ipv6_traffic_filter
+;
+
+if_ipv6_access_group
+:
+  ACCESS_GROUP
+  (
+    COMMON common_acl = access_list_name
+    (
+      INGRESS
+      | interface_acl = access_list_name INGRESS INTERFACE_STATISTICS?
+    )
+    | interface_acl = access_list_name (EGRESS | INGRESS) INTERFACE_STATISTICS?
+  ) NEWLINE
 ;
 
 if_ipv6_enable
@@ -757,18 +775,6 @@ if_null_block
             | VERIFY
             | VIRTUAL_REASSEMBLY
             | WCCP
-         )
-      )
-      |
-      (
-         IPV4
-         (
-            ICMP
-            | MTU
-            | POINT_TO_POINT
-            | UNNUMBERED
-            | UNREACHABLES
-            | VERIFY
          )
       )
       | IPV6
@@ -1628,7 +1634,6 @@ if_inner
    | if_hsrp6
    | if_ip_proxy_arp
    | if_ip_verify
-   | if_ip_access_group
    | if_ip_address
    | if_ip_address_dhcp
    | if_ip_address_secondary
@@ -1639,7 +1644,6 @@ if_inner
    | if_ip_hello_interval
    | if_ip_helper_address
    | if_ip_hold_time
-   | if_ip_inband_access_group
    | if_ip_igmp
    | if_ip_nat_inside
    | if_ip_nat_outside
@@ -1660,6 +1664,7 @@ if_inner
    | if_ip_sticky_arp
    | if_ip_summary_address
    | if_ip_tcp
+   | if_ipv4
    | if_ipv6
    | if_isis_circuit_type
    | if_isis_enable

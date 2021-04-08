@@ -50,6 +50,8 @@ ABSOLUTE_TIMEOUT: 'absolute-timeout';
 
 ACAP: 'acap';
 
+ACCEPT: 'accept';
+
 ACCEPT_DIALIN: 'accept-dialin';
 
 ACCEPT_LIFETIME: 'accept-lifetime';
@@ -64,7 +66,24 @@ ACCESS: 'access';
 
 ACCESS_CLASS: 'access-class';
 
-ACCESS_GROUP: 'access-group';
+ACCESS_GROUP
+:
+  'access-group'
+  {
+    switch(lastTokenType()) {
+      case IPV4:
+      case IPV6:
+        pushMode(M_InterfaceAccessGroup);
+        break;
+      case NTP:
+      case NEWLINE: // need to update if access-group may be first word in other blocks
+        pushMode(M_NtpAccessGroup);
+        break;
+      default:
+        break;
+    }
+  }
+;
 
 ACCESS_LIST: 'access-list';
 
@@ -169,6 +188,8 @@ ADMISSION: 'admission';
 ADP: 'adp';
 
 ADVERTISE: 'advertise';
+
+ADVERTISE_TO: 'advertise-to' -> pushMode(M_Word);
 
 ADVERTISEMENT_INTERVAL: 'advertisement-interval';
 
@@ -361,6 +382,8 @@ ARM_RF_DOMAIN_PROFILE: 'arm-rf-domain-profile';
 ARP: 'arp';
 
 ARNS: 'arns';
+
+AS: 'as';
 
 AS_OVERRIDE: 'as-override';
 
@@ -1995,8 +2018,13 @@ FROM
 :
   'from'
   {
-    if (lastTokenType() == IMPORT) {
-      pushMode(M_Word);
+    switch(lastTokenType()) {
+      case ACCEPT:
+      case IMPORT:
+        pushMode(M_Word);
+        break;
+      default:
+        break;
     }
   }
 ;
@@ -2162,6 +2190,8 @@ HEARTBEAT_INTERVAL: 'heartbeat-interval';
 HEARTBEAT_TIME: 'heartbeat-time';
 
 HELLO: 'hello';
+
+HELLO_ADJACENCY: 'hello-adjacency';
 
 HELLO_INTERVAL: 'hello-interval';
 
@@ -2414,6 +2444,8 @@ INTERFACE
 
 ;
 
+INTERFACE_STATISTICS: 'interface-statistics';
+
 INTERNAL: 'internal';
 
 INTERNET: 'internet';
@@ -2512,6 +2544,8 @@ ISL: 'isl';
 ISO_TSAP: 'iso-tsap';
 
 ISOLATE: 'isolate';
+
+ISOLATION: 'isolation';
 
 ISPF: 'ispf';
 
@@ -3114,6 +3148,8 @@ MGMT_USER: 'mgmt-user';
 
 MIB: 'mib';
 
+MIBS: 'mibs';
+
 MICRO_BFD: 'micro-bfd';
 
 MICROCODE: 'microcode';
@@ -3237,6 +3273,8 @@ MULTICAST_BOUNDARY: 'multicast-boundary';
 MULTICAST_ROUTING: 'multicast-routing';
 
 MULTICAST_STATIC_ONLY: 'multicast-static-only';
+
+MULTIHOP: 'multihop';
 
 MULTILINK: 'multilink';
 
@@ -5033,6 +5071,8 @@ TALK: 'talk';
 
 TAP: 'tap';
 
+TARGETED_HELLO: 'targeted-hello';
+
 TASK: 'task';
 
 TASK_SPACE_EXECUTE
@@ -5205,6 +5245,8 @@ TRANSMIT_DELAY: 'transmit-delay';
 TRANSPARENT_HW_FLOODING: 'transparent-hw-flooding';
 
 TRANSPORT: 'transport';
+
+TRANSPORT_ADDRESS: 'transport-address';
 
 TRANSPORT_METHOD: 'transport-method';
 
@@ -7417,3 +7459,38 @@ M_DeleteCommunity_IN: 'in' -> type(IN), mode(M_CommunitySetMatchExpr);
 
 M_DeleteCommunity_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_DeleteCommunity_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_InterfaceAccessGroup;
+
+M_InterfaceAccessGroup_COMMON: 'common' -> type(COMMON), mode(M_InterfaceAccessGroupCommon1);
+
+M_InterfaceAccessGroup_WORD: F_Word -> type(WORD), popMode; // interface acl name
+M_InterfaceAccessGroup_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_InterfaceAccessGroup_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_InterfaceAccessGroupCommon1;
+
+M_InterfaceAccessGroupCommon1_WORD: F_Word -> type(WORD), mode(M_InterfaceAccessGroupCommon2); // common acl name
+M_InterfaceAccessGroupCommon1_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_InterfaceAccessGroupCommon1_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_InterfaceAccessGroupCommon2;
+
+M_InterfaceAccessGroupCommon2_INGRESS: 'ingress' -> type(INGRESS), popMode;
+
+M_InterfaceAccessGroupCommon2_WORD: F_Word -> type(WORD), popMode; // interface acl name
+M_InterfaceAccessGroupCommon2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_InterfaceAccessGroupCommon2_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_NtpAccessGroup;
+
+M_NtpAccessGroup_IPV4: 'ipv4' -> type(IPV4);
+M_NtpAccessGroup_IPV6: 'ipv6' -> type(IPV6);
+M_NtpAccessGroup_PEER: 'peer' -> type(PEER), mode(M_Word);
+M_NtpAccessGroup_QUERY_ONLY: 'query-only' -> type(QUERY_ONLY), mode(M_Word);
+M_NtpAccessGroup_SERVE: 'serve' -> type(SERVE), mode(M_Word);
+M_NtpAccessGroup_SERVE_ONLY: 'serve-only' -> type(SERVE_ONLY), mode(M_Word);
+M_NtpAccessGroup_VRF: 'vrf' -> type(VRF), pushMode(M_Word);
+
+M_NtpAccessGroup_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_NtpAccessGroup_WS: F_Whitespace+ -> channel(HIDDEN);
