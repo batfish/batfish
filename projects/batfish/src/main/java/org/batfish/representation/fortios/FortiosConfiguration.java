@@ -51,6 +51,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _addresses = new HashMap<>();
     _addrgrps = new HashMap<>();
     _interfaces = new HashMap<>();
+    _internetServiceNames = new HashMap<>();
     _policies = new InsertOrderedMap<>();
     _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
@@ -97,6 +98,11 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
+  }
+
+  /** name -> internet-service-name */
+  public @Nonnull Map<String, InternetServiceName> getInternetServiceNames() {
+    return _internetServiceNames;
   }
 
   /** name -> policy */
@@ -151,6 +157,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Addrgrp> _addrgrps;
   private final @Nonnull Map<String, Interface> _interfaces;
+  private final @Nonnull Map<String, InternetServiceName> _internetServiceNames;
   // Note: using InsertOrderedMap to preserve insertion order and permit reordering policies
   private final @Nonnull InsertOrderedMap<String, Policy> _policies;
   private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;

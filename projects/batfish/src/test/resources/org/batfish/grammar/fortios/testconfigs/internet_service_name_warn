@@ -1,0 +1,8 @@
+config system global
+    set hostname "internet_service_name_warn"
+end
+config firewall internet-service-name
+    edit "longer than the longest internet-service-name name allowed by de"
+        set internet-service-id 4294967296
+    next
+end
