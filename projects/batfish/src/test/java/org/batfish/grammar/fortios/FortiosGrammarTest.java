@@ -114,6 +114,7 @@ import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.InternetServiceName;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.RouteMap;
@@ -194,6 +195,50 @@ public final class FortiosGrammarTest {
                 .getWarnings()
                 .values());
     assertThat(warnings, hasParseWarning(hasComment("Illegal value for replacemsg minor type")));
+  }
+
+  @Test
+  public void testInternetServiceNameExtraction() {
+    String hostname = "internet_service_name";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, InternetServiceName> isns = vc.getInternetServiceNames();
+    assertThat(isns, hasKeys("Google-DNS", "Google-Gmail", "custom_isn_for_testing"));
+
+    InternetServiceName dns = isns.get("Google-DNS");
+    InternetServiceName gmail = isns.get("Google-Gmail");
+    InternetServiceName custom = isns.get("custom_isn_for_testing");
+
+    assertThat(dns.getInternetServiceId(), equalTo(65539L));
+    assertNull(dns.getType());
+    assertThat(dns.getTypeEffective(), equalTo(InternetServiceName.DEFAULT_TYPE));
+    assertThat(gmail.getInternetServiceId(), equalTo(65646L));
+    assertThat(gmail.getType(), equalTo(InternetServiceName.Type.DEFAULT));
+    assertThat(gmail.getTypeEffective(), equalTo(InternetServiceName.Type.DEFAULT));
+    assertThat(custom.getType(), equalTo(InternetServiceName.Type.LOCATION));
+    assertThat(custom.getTypeEffective(), equalTo(InternetServiceName.Type.LOCATION));
+    assertThat(custom.getInternetServiceId(), equalTo(4294967295L));
+  }
+
+  @Test
+  public void testInternetServiceNameWarnings() throws IOException {
+    String hostname = "internet_service_name_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings w =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    assertThat(
+        w,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Expected internet-service-id in range 0-4294967295, but got '4294967296'"),
+                hasComment("Illegal value for internet-service-name name"),
+                hasComment("Internet-service-name edit block ignored: name is invalid"))));
   }
 
   @Test
