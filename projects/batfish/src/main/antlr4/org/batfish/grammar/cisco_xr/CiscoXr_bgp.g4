@@ -43,7 +43,7 @@ bgp_address_family
       | VPLS
    )?
    (
-      VRF vrf_name = VARIABLE
+      VRF vrf = vrf_name
    )?
 ;
 
@@ -88,7 +88,7 @@ aggregate_address_rb_stanza
   (
     as_set = AS_SET
     | summary_only = SUMMARY_ONLY
-    | ROUTE_POLICY rp = variable
+    | ROUTE_POLICY rp = route_policy_name
   )* NEWLINE
 ;
 
@@ -110,7 +110,7 @@ additional_paths_receive_xr_rb_stanza
 
 additional_paths_selection_xr_rb_stanza
 :
-  ADDITIONAL_PATHS SELECTION ROUTE_POLICY name = variable NEWLINE
+  ADDITIONAL_PATHS SELECTION ROUTE_POLICY name = route_policy_name NEWLINE
 ;
 
 additional_paths_send_xr_rb_stanza
@@ -266,7 +266,7 @@ default_metric_bgp_tail
 
 default_originate_bgp_tail
 :
-   DEFAULT_ORIGINATE (ROUTE_POLICY policy = VARIABLE)? NEWLINE
+   DEFAULT_ORIGINATE (ROUTE_POLICY policy = route_policy_name)? NEWLINE
 ;
 
 default_shutdown_bgp_tail
@@ -412,7 +412,7 @@ network_bgp_tail
       | prefix = IP_PREFIX
    )?
    (
-      ROUTE_POLICY policyname = VARIABLE
+      ROUTE_POLICY policyname = route_policy_name
    )? NEWLINE
 ;
 
@@ -420,7 +420,7 @@ network6_bgp_tail
 :
    NETWORK prefix = IPV6_PREFIX
    (
-      ROUTE_POLICY policyname = VARIABLE
+      ROUTE_POLICY policyname = route_policy_name
    )? NEWLINE
 ;
 
@@ -431,7 +431,7 @@ next_hop_self_bgp_tail
 
 vrf_block_rb_stanza
 :
-   VRF name = ~NEWLINE NEWLINE
+   VRF name = vrf_name NEWLINE
    (
       address_family_rb_stanza
       | aggregate_address_rb_stanza
@@ -673,7 +673,7 @@ remove_private_as_bgp_tail
 
 route_policy_bgp_tail
 :
-   ROUTE_POLICY name = variable
+   ROUTE_POLICY name = route_policy_name
    (
       PAREN_LEFT route_policy_params_list PAREN_RIGHT
    )?
@@ -701,7 +701,7 @@ redistribute_connected_bgp_tail
       | DIRECT
    )
    (
-      ROUTE_POLICY policy = variable
+      ROUTE_POLICY policy = route_policy_name
       |
       (
          METRIC metric = DEC
@@ -727,7 +727,7 @@ redistribute_ospf_bgp_tail
       )
       |
       (
-         VRF vrf = variable
+         VRF vrf = vrf_name
       )
    )* NEWLINE
 ;
@@ -745,7 +745,7 @@ redistribute_ospfv3_bgp_tail
       )
       |
       (
-         VRF vrf = variable
+         VRF vrf = vrf_name
       )
    )* NEWLINE
 ;
@@ -765,7 +765,7 @@ redistribute_static_bgp_tail
    REDISTRIBUTE STATIC
    (
       (
-         ROUTE_POLICY policy = VARIABLE
+         ROUTE_POLICY policy = route_policy_name
       )
       |
       (

@@ -249,7 +249,7 @@ redistribute_connected_is_stanza
       )
       |
       (
-         ROUTE_POLICY policy = VARIABLE
+         ROUTE_POLICY policy = route_policy_name
       )
    )* NEWLINE
 ;
@@ -269,7 +269,7 @@ redistribute_eigrp_is_stanza_null
       )
       |
       (
-         ROUTE_POLICY policy = VARIABLE
+         ROUTE_POLICY policy = route_policy_name
       )
    )* NEWLINE
 ;
@@ -289,7 +289,7 @@ redistribute_static_is_stanza
       )
       |
       (
-         ROUTE_POLICY policy = VARIABLE
+         ROUTE_POLICY policy = route_policy_name
       )
    )* NEWLINE
 ;

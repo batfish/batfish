@@ -498,31 +498,6 @@ if_ip_verify
    ) NEWLINE
 ;
 
-if_ip_virtual_router
-:
-   IP VIRTUAL_ROUTER ADDRESS address = IP_ADDRESS NEWLINE
-;
-
-if_ip_vrf_autoclassify
-:
-   IP VRF AUTOCLASSIFY SOURCE NEWLINE
-;
-
-if_ip_vrf_forwarding
-:
-   IP? VRF FORWARDING vrf = variable (DOWNSTREAM vrf_down = variable)? NEWLINE
-;
-
-if_ip_vrf_receive
-:
-   IP VRF RECEIVE vrf = variable NEWLINE
-;
-
-if_ip_vrf_select
-:
-   IP VRF SELECT SOURCE NEWLINE
-;
-
 if_ipv6
 :
    IPV6 if_ipv6_inner
@@ -1394,12 +1369,7 @@ if_vlan
 
 if_vrf
 :
-   VRF name = variable NEWLINE
-;
-
-if_vrf_member
-:
-   VRF MEMBER name = variable NEWLINE
+   VRF name = vrf_name NEWLINE
 ;
 
 if_vrrp
@@ -1690,11 +1660,6 @@ if_inner
    | if_ip_sticky_arp
    | if_ip_summary_address
    | if_ip_tcp
-   | if_ip_virtual_router
-   | if_ip_vrf_autoclassify
-   | if_ip_vrf_forwarding
-   | if_ip_vrf_receive
-   | if_ip_vrf_select
    | if_ipv6
    | if_isis_circuit_type
    | if_isis_enable
@@ -1731,7 +1696,6 @@ if_inner
    | if_tunnel
    | if_vlan
    | if_vrf
-   | if_vrf_member
    | if_vrrp
    | if_vrrpno
    // do not rearrange items below

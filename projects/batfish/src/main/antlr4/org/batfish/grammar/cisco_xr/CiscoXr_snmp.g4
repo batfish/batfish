@@ -21,15 +21,9 @@ s_snmp_server
    (
       NEWLINE
       | ss_community
-      | ss_enable_mib_null
-      | ss_enable_trap
-      | ss_enable_traps
-      | ss_file_transfer
       | ss_host
       | ss_mib
       | ss_null
-      | ss_source_interface
-      | ss_tftp_server_list
       | ss_trap_source
    )
 ;
@@ -52,57 +46,25 @@ ss_community
    )
 ;
 
-ss_enable_mib_null
-:
-   ENABLE MIB variable NEWLINE
-;
-
-ss_enable_trap
-:
-   ENABLE TRAP NEWLINE
-;
-
-ss_enable_traps
-:
-   ENABLE TRAPS
-   (
-      snmp_trap_type = variable
-      (
-         subfeature += variable
-      )*
-   )? NEWLINE
-;
-
-ss_file_transfer
-:
-   FILE_TRANSFER ACCESS_GROUP acl = variable
-   (
-      PROTOCOL snmp_file_transfer_protocol
-   )? NEWLINE
-;
-
 ss_host
 :
-   HOST
-   (
-      ip4 = IP_ADDRESS
-      | ip6 = IPV6_ADDRESS
-      | host = variable
-   )
-   (
-      ss_host_use_vrf
-      |
-      (
-         (
-            ss_host_informs
-            | ss_host_traps
-            | ss_host_version
-         )* comm_or_username = variable_snmp_host
-         (
-            traps += variable_snmp_host
-         )*
-      )
-   ) NEWLINE
+  HOST
+  (
+    ip4 = IP_ADDRESS
+    | ip6 = IPV6_ADDRESS
+    | host = variable
+  )
+  (
+     (
+        ss_host_informs
+        | ss_host_traps
+        | ss_host_version
+     )* comm_or_username = variable_snmp_host
+     (
+        traps += variable_snmp_host
+     )*
+  )
+  NEWLINE
 ;
 
 ss_host_informs
@@ -113,14 +75,6 @@ ss_host_informs
 ss_host_traps
 :
    TRAPS
-;
-
-ss_host_use_vrf
-:
-   (
-      USE_VRF
-      | VRF
-   ) vrf = variable
 ;
 
 ss_host_version
@@ -172,22 +126,6 @@ ss_null
       | VIEW
       | VRF
    ) null_rest_of_line
-;
-
-ss_source_interface
-:
-   SOURCE_INTERFACE
-   (
-      TRAP
-      | TRAPS
-      | INFORM
-      | INFORMS
-   )? iname = interface_name NEWLINE
-;
-
-ss_tftp_server_list
-:
-   TFTP_SERVER_LIST name = variable NEWLINE
 ;
 
 ss_trap_source

@@ -8,7 +8,7 @@ options {
 
 apply_rp_stanza
 :
-   APPLY name = variable
+   APPLY name = route_policy_name
    (
       PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
    )? NEWLINE
@@ -57,7 +57,7 @@ boolean_and_rp_stanza
 
 boolean_apply_rp_stanza
 :
-   APPLY name = variable
+   APPLY name = route_policy_name
    (
       PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
    )?
@@ -244,7 +244,7 @@ prepend_as_path_rp_stanza
 
 route_policy_stanza
 :
-   ROUTE_POLICY name = variable
+   ROUTE_POLICY name = route_policy_name
    (
       PAREN_LEFT varlist = route_policy_params_list PAREN_RIGHT
    )? NEWLINE
