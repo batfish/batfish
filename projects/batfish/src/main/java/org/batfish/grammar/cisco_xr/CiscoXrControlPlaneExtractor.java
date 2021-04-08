@@ -154,6 +154,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TACACS_S
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -6432,6 +6434,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitVrf_afe_route_policy(Vrf_afe_route_policyContext ctx) {
     todo(ctx);
     String policy = toString(ctx.policy);
+    _configuration.referenceStructure(
+        ROUTE_POLICY, policy, VRF_EXPORT_ROUTE_POLICY, ctx.start.getLine());
     if (ctx.vrf != null) {
       String vrf = toString(ctx.vrf);
       currentVrf().setExportPolicyForVrf(vrf, policy);
@@ -6444,6 +6448,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitVrf_afi_route_policy(Vrf_afi_route_policyContext ctx) {
     todo(ctx);
     String policy = toString(ctx.policy);
+    _configuration.referenceStructure(
+        ROUTE_POLICY, policy, VRF_IMPORT_ROUTE_POLICY, ctx.start.getLine());
     if (ctx.vrf != null) {
       String vrf = toString(ctx.vrf);
       currentVrf().setImportPolicyForVrf(vrf, policy);

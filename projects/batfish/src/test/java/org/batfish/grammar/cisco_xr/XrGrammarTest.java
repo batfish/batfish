@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -22,6 +23,9 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
@@ -1131,5 +1135,20 @@ public final class XrGrammarTest {
           v.getImportPolicyByVrf(),
           equalTo(ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, "p5", "v0", "p6")));
     }
+  }
+
+  @Test
+  public void testVrfRoutePolicyReferences() {
+    String hostname = "xr-vrf-route-policy";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p1", VRF_EXPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p2", VRF_EXPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p3", VRF_EXPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p4", VRF_IMPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p5", VRF_IMPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p6", VRF_IMPORT_ROUTE_POLICY));
   }
 }
