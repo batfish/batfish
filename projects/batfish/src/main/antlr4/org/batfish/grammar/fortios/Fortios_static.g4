@@ -8,7 +8,9 @@ cr_static: STATIC newline crs_edit*;
 
 crs_edit: EDIT route_num newline crse* NEXT newline;
 
-crse: SET crs_set_singletons;
+crse: crs_set;
+
+crs_set: SET crs_set_singletons;
 
 crs_set_singletons:
     crs_set_device

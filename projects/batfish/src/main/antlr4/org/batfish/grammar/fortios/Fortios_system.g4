@@ -13,11 +13,9 @@ c_system: SYSTEM (
 
 cs_global: GLOBAL newline csg*;
 
-csg:
-  SET (
-    csg_hostname
-  )
-;
+csg: csg_set;
+
+csg_set: SET csg_hostname;
 
 csg_hostname: HOSTNAME host=device_hostname newline;
 
@@ -48,15 +46,12 @@ replacemsg_minor_type:
          output they appear in quotes, but need not be entered that way. */
   word;
 
-csr:
-  SET (
-    csr_set_buffer
-  )
-  | UNSET (
-    csr_unset_buffer
-  )
-;
+csr: csr_set | csr_unset;
+
+csr_set: SET csr_set_buffer;
 
 csr_set_buffer: BUFFER buffer=str newline;
+
+csr_unset: UNSET csr_unset_buffer;
 
 csr_unset_buffer: BUFFER newline;
