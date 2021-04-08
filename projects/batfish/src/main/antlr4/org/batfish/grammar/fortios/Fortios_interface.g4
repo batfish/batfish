@@ -8,9 +8,25 @@ cs_interface: INTERFACE newline csi_edit*;
 
 csi_edit: EDIT interface_name newline csie* NEXT newline;
 
-csie: csi_set;
+csie: csie_config | csie_set;
 
-csi_set: SET csi_set_singletons;
+csie_config: CONFIG csiec_secondaryip;
+
+csiec_secondaryip: SECONDARYIP newline csiecsip_edit* END newline;
+
+csiecsip_edit: EDIT sip_number newline csiecsipe* NEXT newline;
+
+csiecsipe
+:
+    csiecsipe_set
+    | (UNSET | SELECT | UNSELECT | APPEND | CLEAR) unimplemented
+;
+
+csiecsipe_set: SET csiecsipe_set_ip;
+
+csiecsipe_set_ip: IP ip = ip_address_with_mask_or_prefix newline;
+
+csie_set: SET csi_set_singletons;
 
 csi_set_singletons:
     csi_set_alias
@@ -19,6 +35,7 @@ csi_set_singletons:
     | csi_set_ip
     | csi_set_mtu
     | csi_set_mtu_override
+    | csi_set_secondary_ip
     | csi_set_status
     | csi_set_type
     | csi_set_vdom
@@ -38,6 +55,8 @@ csi_set_ip: IP ip = ip_address_with_mask_or_prefix newline;
 csi_set_mtu: MTU value = mtu newline;
 
 csi_set_mtu_override: MTU_OVERRIDE value = enable_or_disable newline;
+
+csi_set_secondary_ip: SECONDARY_IP value = enable_or_disable newline;
 
 csi_set_status: STATUS status = up_or_down newline;
 
@@ -70,3 +89,6 @@ interface_type:
 
 // Up to 25 characters
 interface_alias: str;
+
+// 0-4294967295
+sip_number: str;

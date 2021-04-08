@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -32,6 +33,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -280,9 +282,17 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setVrf(vrf)
             .setDescription(iface.getDescription())
             .setActive(iface.getStatusEffective())
-            .setAddress(iface.getIp())
             .setMtu(iface.getMtuEffective())
             .setType(type);
+
+    List<InterfaceAddress> secondaryAddresses =
+        iface.getSecondaryIpEffective()
+            ? iface.getSecondaryip().values().stream()
+                .map(SecondaryIp::getIp)
+                .filter(Objects::nonNull)
+                .collect(ImmutableList.toImmutableList())
+            : ImmutableList.of();
+    viIface.setAddresses(iface.getIp(), secondaryAddresses);
 
     if (iface.getTypeEffective() == Type.VLAN) {
       // Handled by extraction

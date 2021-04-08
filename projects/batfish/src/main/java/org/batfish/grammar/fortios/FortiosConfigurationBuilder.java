@@ -12,6 +12,7 @@ import com.google.common.primitives.Longs;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -142,11 +143,14 @@ import org.batfish.grammar.fortios.FortiosParser.Csi_set_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtuContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtu_overrideContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_secondary_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vrfContext;
+import org.batfish.grammar.fortios.FortiosParser.Csiecsip_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Csiecsipe_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_append_interfaceContext;
@@ -220,6 +224,7 @@ import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.RouteMapRule;
+import org.batfish.representation.fortios.SecondaryIp;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -692,6 +697,77 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void enterCsiecsip_edit(Csiecsip_editContext ctx) {
+    Optional<Long> number = toLong(ctx, ctx.sip_number());
+    _currentSecondaryip =
+        number
+            .map(Objects::toString)
+            .map(i -> _currentInterface.getSecondaryip().get(i))
+            .map(SerializationUtils::clone)
+            .orElseGet(() -> new SecondaryIp(toString(ctx.sip_number().str())));
+    _currentSecondaryipNameValid = number.isPresent();
+
+    // TODO 0 is allowed as a special case, representing some currently unused number
+    if (number.isPresent() && number.get() == 0L) {
+      warn(ctx, "Secondaryip number 0 is not yet supported");
+      _currentSecondaryipNameValid = false;
+    }
+  }
+
+  /** Returns message indicating why secondaryip can't be committed in the CLI, or null if it can */
+  private static @Nullable String secondaryipValid(Interface iface, boolean nameValid) {
+    if (!iface.getSecondaryIpEffective()) {
+      return "cannot configure a secondaryip when secondary-IP is not enabled";
+    }
+    if (!nameValid) {
+      return "name is invalid";
+    }
+    return null;
+  }
+
+  @Override
+  public void exitCsiecsip_edit(Csiecsip_editContext ctx) {
+    String number = _currentSecondaryip.getName();
+    String invalidReason = secondaryipValid(_currentInterface, _currentSecondaryipNameValid);
+    if (invalidReason == null) {
+      _currentInterface.getSecondaryip().put(number, _currentSecondaryip);
+    } else {
+      warn(ctx, String.format("Secondaryip edit block ignored: %s", invalidReason));
+    }
+    _currentSecondaryip = null;
+  }
+
+  @Override
+  public void exitCsiecsipe_set_ip(Csiecsipe_set_ipContext ctx) {
+    ConcreteInterfaceAddress pip = _currentInterface.getIp();
+    if (pip == null) {
+      warn(ctx, "Primary ip address must be configured before a secondaryip can be configured");
+      return;
+    }
+
+    ConcreteInterfaceAddress sip = toConcreteInterfaceAddress(ctx.ip);
+    if (pip.getIp().equals(sip.getIp())) {
+      warn(
+          ctx,
+          "This secondaryip will be ignored; must use a secondaryip other than the primary ip"
+              + " address");
+      return;
+    }
+    for (SecondaryIp otherSip : _currentInterface.getSecondaryip().values()) {
+      ConcreteInterfaceAddress otherIp = otherSip.getIp();
+      if (otherIp != null && otherIp.getIp().equals(sip.getIp())) {
+        warn(
+            ctx,
+            "This secondaryip will be ignored; must use a secondaryip other than existing"
+                + " secondaryip addresses");
+        return;
+      }
+    }
+
+    _currentSecondaryip.setIp(sip);
+  }
+
+  @Override
   public void enterCsi_edit(Csi_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.interface_name());
     _currentInterface =
@@ -763,6 +839,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsi_set_alias(Csi_set_aliasContext ctx) {
     toString(ctx, ctx.alias).ifPresent(s -> _currentInterface.setAlias(s));
+  }
+
+  @Override
+  public void exitCsi_set_secondary_ip(Csi_set_secondary_ipContext ctx) {
+    _currentInterface.setSecondaryIp(toBoolean(ctx.value));
   }
 
   @Override
@@ -2463,6 +2544,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toLongInSpace(ctx, num.str(), ROUTE_MAP_RULE_NUM_SPACE, "route-map rule number");
   }
 
+  private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Sip_numberContext num) {
+    return toLongInSpace(ctx, num.str(), SECONDARY_IP_NUM_SPACE, "secondaryip number");
+  }
+
   private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Route_numContext routeNum) {
     return toLongInSpace(
         ctx, routeNum.str(), STATIC_ROUTE_NUM_SPACE, "static route sequence number");
@@ -2823,6 +2908,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final LongSpace ROUTE_MAP_RULE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
+  private static final LongSpace SECONDARY_IP_NUM_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace STATIC_ROUTE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace VLANID_SPACE = IntegerSpace.of(Range.closed(1, 4094));
@@ -2864,6 +2951,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private RouteMapRule _currentRouteMapRule;
   private boolean _currentRouteMapRuleNameValid;
 
+  private SecondaryIp _currentSecondaryip;
+  private boolean _currentSecondaryipNameValid;
   private Service _currentService;
   /**
    * Whether the current service has invalid lines that would prevent committing the service in CLI.

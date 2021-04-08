@@ -10,6 +10,17 @@ config system interface
         set alias "longest possibl alias str"
         set description "quoted description w/ spaces and more"
         set snmp-index 1
+        set secondary-IP enable
+        config secondaryip
+            edit 4294967295
+                set ip 10.0.1.1/24
+            next
+            edit 1
+                set ip 10.1.1.1  255.255.255.0
+            next
+            edit 2
+            next
+        end
     next
     edit port2
         set vdom root
@@ -30,6 +41,13 @@ config system interface
         set vlanid 1235
         set interface port1
         set vrf 31
+        set secondary-IP enable
+        config secondaryip
+            edit 1
+                set ip 10.2.1.1/24
+            next
+        end
+        set secondary-IP disable
     next
     edit "tunnel"
         set vdom "root"
