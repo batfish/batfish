@@ -1,0 +1,42 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-vrf-route-target
+!
+
+vrf none
+  address-family ipv4 unicast
+    import route-target
+  !
+!
+
+vrf single-oneline
+  address-family ipv4 unicast
+    export route-target 1:1
+    import route-target 2:2
+  !
+!
+
+vrf single-block
+  address-family ipv4 unicast
+    export route-target
+      3:3
+    !
+    import route-target
+      4:4
+    !
+  !
+!
+
+vrf multiple
+  address-family ipv4 unicast
+    export route-target
+      5:5
+      6:6
+    !
+    import route-target
+      7:7
+      0.0.0.8:9
+      10.11:12
+    !
+  !
+!

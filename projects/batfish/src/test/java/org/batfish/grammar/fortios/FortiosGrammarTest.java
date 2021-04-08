@@ -17,6 +17,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructu
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
@@ -2422,14 +2423,14 @@ public final class FortiosGrammarTest {
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr1", 2));
-    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr2", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr2", 4));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr3", 1));
     // Interface refs include self-refs
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port1", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port2", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port3", 2));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service1", 1));
-    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service2", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service2", 2));
 
     // Confirm undefined references are detected
     assertThat(
@@ -2475,6 +2476,17 @@ public final class FortiosGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, FortiosStructureType.POLICY, "3", FortiosStructureUsage.POLICY_CLONE));
+
+    // Deleted structure should not have a definition or self-ref
+    assertThat(ccae, not(hasDefinedStructure(filename, FortiosStructureType.POLICY, "5")));
+    assertThat(
+        ccae,
+        not(
+            hasReferencedStructure(
+                filename,
+                FortiosStructureType.POLICY,
+                "5",
+                FortiosStructureUsage.POLICY_SELF_REF)));
   }
 
   @Test

@@ -3,12 +3,21 @@
 hostname nxos_vdc
 !
 vdc nxos_vdc id 1
+  limit-resource module-type f2e f3
+  cpu-share 5
+  allocate interface Ethernet1/1-48
   allow feature-set fex
   limit-resource vlan minimum 16 maximum 4094
+  limit-resource monitor-session minimum 0 maximum 2
+  limit-resource monitor-session-erspan-dst minimum 0 maximum 23
   limit-resource vrf minimum 2 maximum 4096
   limit-resource port-channel minimum 0 maximum 104
   limit-resource u4route-mem minimum 128 maximum 128
   limit-resource u6route-mem minimum 96 maximum 96
   limit-resource m4route-mem minimum 58 maximum 58
   limit-resource m6route-mem minimum 8 maximum 8
+  limit-resource monitor-session-inband-src minimum 0 maximum 1
+  limit-resource anycast_bundleid minimum 0 maximum 16
+  limit-resource monitor-session-mx-exception-src minimum 0 maximum 1
+  limit-resource monitor-session-extended minimum 0 maximum 12
 !

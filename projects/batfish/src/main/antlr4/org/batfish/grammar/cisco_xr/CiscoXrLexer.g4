@@ -338,7 +338,7 @@ APPLETALK: 'appletalk';
 
 APPLICATION: 'application';
 
-APPLY: 'apply';
+APPLY: 'apply' -> pushMode(M_Word);
 
 AQM_REGISTER_FNF: 'aqm-register-fnf';
 
@@ -683,6 +683,8 @@ BIDIR_OFFER_LIMIT: 'bidir-offer-limit';
 BIDIR_RP_LIMIT: 'bidir-rp-limit';
 
 BIFF: 'biff';
+
+BIG: 'big';
 
 BIND: 'bind';
 
@@ -1989,7 +1991,15 @@ FREQUENCY: 'frequency';
 
 FRI: 'Fri';
 
-FROM: 'from';
+FROM
+:
+  'from'
+  {
+    if (lastTokenType() == IMPORT) {
+      pushMode(M_Word);
+    }
+  }
+;
 
 FT: 'ft';
 
@@ -4304,7 +4314,7 @@ ROUTE_CACHE: 'route-cache';
 
 ROUTE_ONLY: 'route-only';
 
-ROUTE_POLICY: 'route-policy';
+ROUTE_POLICY: 'route-policy' -> pushMode(M_Word);
 
 ROUTE_PREFERENCE: 'route-preference';
 
@@ -5132,6 +5142,16 @@ TLS_PROXY: 'tls-proxy';
 
 TM_VOQ_COLLECTION: 'tm-voq-collection';
 
+TO
+:
+  'to'
+  {
+    if (lastTokenType() == EXPORT) {
+      pushMode(M_Word);
+    }
+  }
+;
+
 TOKEN: 'token';
 
 TOOL: 'tool';
@@ -5520,7 +5540,7 @@ VPNV4: 'vpnv4';
 
 VPNV6: 'vpnv6';
 
-VRF: 'vrf';
+VRF: 'vrf' -> pushMode(M_Word);
 
 VRF_ALSO: 'vrf-also';
 
@@ -6222,9 +6242,15 @@ F_Whitespace
 ;
 
 fragment
-F_Word
+F_WordChar
 :
   ~( [ \t\u000C\u00A0\n\r(),!$'"*#] | '[' | ']' )
+;
+
+fragment
+F_Word
+:
+  F_WordChar+
 ;
 
 fragment
@@ -7261,6 +7287,14 @@ M_SshKey_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_Word;
+
+M_Word_WORD: F_Word -> type(WORD), popMode;
+
+M_Word_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+M_Word_WS: F_Whitespace+ -> channel(HIDDEN);
+
 mode M_Words;
 
 M_Words_WORD
@@ -7281,7 +7315,7 @@ M_Words_WS
 // community-set definition
 mode M_CommunitySet;
 
-M_CommunitySet_WORD: F_Word+ -> type(WORD);
+M_CommunitySet_WORD: F_Word -> type(WORD);
 M_CommunitySet_NEWLINE: F_Newline -> type(NEWLINE), mode(M_CommunitySetElem);
 M_CommunitySet_WS: F_Whitespace+ -> channel(HIDDEN);
 
@@ -7318,7 +7352,7 @@ mode M_CommunitySetExpr;
 
 M_CommunitySetExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
 M_CommunitySetExpr_PAREN_LEFT: '(' -> type(PAREN_LEFT), mode(M_CommunitySetExprElem);
-M_CommunitySetExpr_WORD: F_Word+ -> type(WORD), popMode;
+M_CommunitySetExpr_WORD: F_Word -> type(WORD), popMode;
 M_CommunitySetExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_CommunitySetExpr_WS: F_Whitespace+ -> channel(HIDDEN);
 
@@ -7345,7 +7379,7 @@ mode M_CommunitySetMatchExpr;
 
 M_CommunitySetMatchExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
 M_CommunitySetMatchExpr_PAREN_LEFT: '(' -> type(PAREN_LEFT), mode(M_CommunitySetMatchExprElem);
-M_CommunitySetMatchExpr_WORD: F_Word+ -> type(WORD), popMode;
+M_CommunitySetMatchExpr_WORD: F_Word -> type(WORD), popMode;
 M_CommunitySetMatchExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_CommunitySetMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);
 

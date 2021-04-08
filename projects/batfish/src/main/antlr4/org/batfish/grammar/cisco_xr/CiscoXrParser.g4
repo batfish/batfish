@@ -24,7 +24,8 @@ CiscoXr_qos,
 CiscoXr_rip,
 CiscoXr_rpl,
 CiscoXr_snmp,
-CiscoXr_static;
+CiscoXr_static,
+CiscoXr_vrf;
 
 
 options {
@@ -619,14 +620,6 @@ null_af_multicast_tail
    NSF NEWLINE
 ;
 
-vrfd_af_null
-:
-   NO?
-   (
-      MAXIMUM
-   ) null_rest_of_line
-;
-
 null_imgp_stanza
 :
    NO?
@@ -746,7 +739,7 @@ s_domain
 :
    DOMAIN
    (
-      VRF vrf = variable
+      VRF vrf = vrf_name
    )?
    (
       domain_lookup
@@ -963,23 +956,6 @@ s_username_attributes
    )*
 ;
 
-
-// a way to define a VRF on IOS
-s_vrf_definition
-:
-   // DEFINITION is for IOS
-   VRF DEFINITION? name = variable NEWLINE
-   (
-      vrfd_address_family
-      | vrfd_description
-      | vrfd_rd
-      | vrfd_null
-   )*
-   (
-      EXIT_VRF NEWLINE
-   )?
-;
-
 spanning_tree_mst
 :
    MST null_rest_of_line spanning_tree_mst_null*
@@ -1102,7 +1078,7 @@ ssh_server
       | V2
       |
       (
-         VRF vrf = variable
+         VRF vrf = vrf_name
       )
    )* NEWLINE
 ;
@@ -1179,7 +1155,7 @@ stanza
    | s_track
    | s_username
    | s_username_attributes
-   | s_vrf_definition
+   | s_vrf
    | srlg_stanza
 ;
 
@@ -1242,7 +1218,7 @@ t_source_interface
 :
    SOURCE_INTERFACE iname = interface_name
    (
-      VRF name = variable
+      VRF name = vrf_name
    )? NEWLINE
 ;
 
@@ -1434,47 +1410,6 @@ viafv_preempt
 viafv_priority
 :
    PRIORITY priority = DEC NEWLINE
-;
-
-vrfd_address_family
-:
-   ADDRESS_FAMILY
-   (
-      IPV4
-      | IPV6
-   )
-   (
-      MULTICAST
-      | UNICAST
-   )?
-   (
-      MAX_ROUTE DEC
-   )? NEWLINE
-   (
-      vrfd_af_null
-   )*
-   (
-      EXIT_ADDRESS_FAMILY NEWLINE
-   )?
-;
-
-vrfd_description
-:
-   description_line
-;
-
-vrfd_rd
-:
-   RD (AUTO | rd = route_distinguisher) NEWLINE
-;
-
-vrfd_null
-:
-   NO?
-   (
-      AUTO_IMPORT
-      | ROUTE_TARGET
-   ) null_rest_of_line
 ;
 
 vrrp_interface

@@ -99,11 +99,11 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_protocol_numberContext
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_sctp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_tcp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_udp_portrangeContext;
-import org.batfish.grammar.fortios.FortiosParser.Cfsg_append_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsga_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cr_bgpContext;
 import org.batfish.grammar.fortios.FortiosParser.Cral_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crale_set_commentsContext;
@@ -1185,6 +1185,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           ctx.start.getLine());
       return;
     }
+    _c.deleteStructure(name, FortiosStructureType.POLICY);
     _c.getPolicies().remove(name);
   }
 
@@ -1452,7 +1453,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
-  public void exitCfsg_append_member(Cfsg_append_memberContext ctx) {
+  public void exitCfsga_member(Cfsga_memberContext ctx) {
     toServiceGroupMemberUUIDs(
             ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
         .ifPresent(

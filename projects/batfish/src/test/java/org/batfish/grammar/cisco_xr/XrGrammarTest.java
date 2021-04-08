@@ -6,6 +6,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurat
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -22,7 +23,11 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -32,6 +37,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -96,6 +102,7 @@ import org.batfish.representation.cisco_xr.RoutePolicy;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
+import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
 import org.batfish.representation.cisco_xr.XrCommunitySet;
 import org.batfish.representation.cisco_xr.XrCommunitySetDfaRegex;
@@ -1066,5 +1073,82 @@ public final class XrGrammarTest {
     assertThat(pvcae, hasParseWarning(filename, containsString("Policy map of type traffic")));
     assertThat(
         pvcae, hasParseWarning(filename, containsString("Policy map of type performance-traffic")));
+  }
+
+  @Test
+  public void testVrfRouteTargetExtraction() {
+    String hostname = "xr-vrf-route-target";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getVrfs(),
+        hasKeys(
+            Configuration.DEFAULT_VRF_NAME, "none", "single-oneline", "single-block", "multiple"));
+    {
+      Vrf v = vc.getVrfs().get("none");
+      assertThat(v.getRouteTargetExport(), empty());
+      assertThat(v.getRouteTargetImport(), empty());
+    }
+    {
+      Vrf v = vc.getVrfs().get("single-oneline");
+      assertThat(v.getRouteTargetExport(), contains(ExtendedCommunity.target(1L, 1L)));
+      assertThat(v.getRouteTargetImport(), contains(ExtendedCommunity.target(2L, 2L)));
+    }
+    {
+      Vrf v = vc.getVrfs().get("single-block");
+      assertThat(v.getRouteTargetExport(), contains(ExtendedCommunity.target(3L, 3L)));
+      assertThat(v.getRouteTargetImport(), contains(ExtendedCommunity.target(4L, 4L)));
+    }
+    {
+      Vrf v = vc.getVrfs().get("multiple");
+      assertThat(
+          v.getRouteTargetExport(),
+          contains(ExtendedCommunity.target(5L, 5L), ExtendedCommunity.target(6L, 6L)));
+      assertThat(
+          v.getRouteTargetImport(),
+          contains(
+              ExtendedCommunity.target(7L, 7L),
+              ExtendedCommunity.target(8L, 9L),
+              ExtendedCommunity.target(((10L << 16) + 11L), 12L)));
+    }
+  }
+
+  @Test
+  public void testVrfRoutePolicyExtraction() {
+    String hostname = "xr-vrf-route-policy";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    assertThat(vc.getVrfs(), hasKeys(Configuration.DEFAULT_VRF_NAME, "v0", "v1"));
+    {
+      Vrf v = vc.getVrfs().get("v0");
+      assertThat(v.getExportPolicy(), nullValue());
+      assertThat(v.getExportPolicyByVrf(), anEmptyMap());
+      assertThat(v.getImportPolicy(), nullValue());
+      assertThat(v.getImportPolicyByVrf(), anEmptyMap());
+    }
+    {
+      Vrf v = vc.getVrfs().get("v1");
+      assertThat(v.getExportPolicy(), equalTo("p1"));
+      assertThat(
+          v.getExportPolicyByVrf(),
+          equalTo(ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, "p2", "v0", "p3")));
+      assertThat(v.getImportPolicy(), equalTo("p4"));
+      assertThat(
+          v.getImportPolicyByVrf(),
+          equalTo(ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, "p5", "v0", "p6")));
+    }
+  }
+
+  @Test
+  public void testVrfRoutePolicyReferences() {
+    String hostname = "xr-vrf-route-policy";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p1", VRF_EXPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p2", VRF_EXPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p3", VRF_EXPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p4", VRF_IMPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p5", VRF_IMPORT_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p6", VRF_IMPORT_ROUTE_POLICY));
   }
 }
