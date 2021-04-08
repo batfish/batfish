@@ -619,3 +619,7 @@ vlan_id
 community_set_name: WORD;
 
 parameter: PARAMETER;
+
+route_policy_name: WORD;
+
+vrf_name: WORD;

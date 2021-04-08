@@ -684,6 +684,8 @@ BIDIR_RP_LIMIT: 'bidir-rp-limit';
 
 BIFF: 'biff';
 
+BIG: 'big';
+
 BIND: 'bind';
 
 BKUP_LMS_IP: 'bkup-lms-ip';
@@ -1989,7 +1991,15 @@ FREQUENCY: 'frequency';
 
 FRI: 'Fri';
 
-FROM: 'from';
+FROM
+:
+  'from'
+  {
+    if (lastTokenType() == IMPORT) {
+      pushMode(M_Word);
+    }
+  }
+;
 
 FT: 'ft';
 
@@ -4304,7 +4314,7 @@ ROUTE_CACHE: 'route-cache';
 
 ROUTE_ONLY: 'route-only';
 
-ROUTE_POLICY: 'route-policy';
+ROUTE_POLICY: 'route-policy' -> pushMode(M_Word);
 
 ROUTE_PREFERENCE: 'route-preference';
 
@@ -5132,6 +5142,16 @@ TLS_PROXY: 'tls-proxy';
 
 TM_VOQ_COLLECTION: 'tm-voq-collection';
 
+TO
+:
+  'to'
+  {
+    if (lastTokenType() == EXPORT) {
+      pushMode(M_Word);
+    }
+  }
+;
+
 TOKEN: 'token';
 
 TOOL: 'tool';
@@ -5520,7 +5540,7 @@ VPNV4: 'vpnv4';
 
 VPNV6: 'vpnv6';
 
-VRF: 'vrf';
+VRF: 'vrf' -> pushMode(M_Word);
 
 VRF_ALSO: 'vrf-also';
 
@@ -7260,6 +7280,14 @@ M_SshKey_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
+
+mode M_Word;
+
+M_Word_WORD: F_NonWhitespace+ -> type(WORD), popMode;
+
+M_Word_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+M_Word_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_Words;
 

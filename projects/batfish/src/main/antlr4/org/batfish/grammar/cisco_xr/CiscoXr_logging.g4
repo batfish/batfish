@@ -26,7 +26,7 @@ logging_address
       )
       | SEVERITY severity = variable
       | TYPE ltype = variable
-      | VRF vrf = variable
+      | VRF vrf = vrf_name
    )* NEWLINE
 ;
 
@@ -265,16 +265,10 @@ logging_trap
    TRAP logging_severity? NEWLINE
 ;
 
-logging_vrf
-:
-   VRF vrf = variable logging_common
-;
-
 s_logging
 :
    NO? LOGGING
    (
       logging_common
-      | logging_vrf
    )
 ;

@@ -142,7 +142,7 @@ ro_default_information
          METRIC_TYPE metric_type = DEC
       )
       | ALWAYS
-      | ROUTE_POLICY policy = VARIABLE
+      | ROUTE_POLICY policy = route_policy_name
       | TAG DEC
    )* NEWLINE
 ;
@@ -348,7 +348,7 @@ ro_redistribute_connected
       (
          METRIC_TYPE type = DEC
       )
-      | ROUTE_POLICY policy = VARIABLE
+      | ROUTE_POLICY policy = route_policy_name
       |
       (
          TAG tag = DEC
@@ -386,7 +386,7 @@ ro_redistribute_static
       (
          METRIC_TYPE type = DEC
       )
-      | ROUTE_POLICY policy = VARIABLE
+      | ROUTE_POLICY policy = route_policy_name
       |
       (
          TAG tag = DEC

@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -27,6 +28,10 @@ public final class Vrf implements Serializable {
   private boolean _shutdown;
   @Nonnull private final Set<StaticRoute> _staticRoutes;
   @Nullable private Integer _vni;
+  @Nullable private String _exportPolicy;
+  @Nullable private String _importPolicy;
+  @Nonnull private Map<String, String> _exportPolicyByVrf;
+  @Nonnull private Map<String, String> _importPolicyByVrf;
 
   public Vrf(@Nonnull String name) {
     _eigrpProcesses = new TreeMap<>();
@@ -36,6 +41,8 @@ public final class Vrf implements Serializable {
     _staticRoutes = new HashSet<>();
     _routeTargetExport = ImmutableList.of();
     _routeTargetImport = ImmutableList.of();
+    _exportPolicyByVrf = ImmutableMap.of();
+    _importPolicyByVrf = ImmutableMap.of();
   }
 
   @Nullable
@@ -159,5 +166,43 @@ public final class Vrf implements Serializable {
 
   public void setVni(@Nullable Integer vni) {
     _vni = vni;
+  }
+
+  @Nullable
+  public String getExportPolicy() {
+    return _exportPolicy;
+  }
+
+  public void setExportPolicy(@Nullable String exportPolicy) {
+    _exportPolicy = exportPolicy;
+  }
+
+  @Nonnull
+  public Map<String, String> getExportPolicyByVrf() {
+    return _exportPolicyByVrf;
+  }
+
+  public void setExportPolicyForVrf(String vrf, String policy) {
+    _exportPolicyByVrf =
+        ImmutableMap.<String, String>builder().putAll(_exportPolicyByVrf).put(vrf, policy).build();
+  }
+
+  @Nullable
+  public String getImportPolicy() {
+    return _importPolicy;
+  }
+
+  public void setImportPolicy(@Nullable String importPolicy) {
+    _importPolicy = importPolicy;
+  }
+
+  @Nonnull
+  public Map<String, String> getImportPolicyByVrf() {
+    return _importPolicyByVrf;
+  }
+
+  public void setImportPolicyForVrf(String vrf, String policy) {
+    _importPolicyByVrf =
+        ImmutableMap.<String, String>builder().putAll(_importPolicyByVrf).put(vrf, policy).build();
   }
 }

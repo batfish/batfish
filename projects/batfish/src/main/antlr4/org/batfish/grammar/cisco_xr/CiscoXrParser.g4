@@ -24,7 +24,8 @@ CiscoXr_qos,
 CiscoXr_rip,
 CiscoXr_rpl,
 CiscoXr_snmp,
-CiscoXr_static;
+CiscoXr_static,
+CiscoXr_vrf;
 
 
 options {
@@ -738,7 +739,7 @@ s_domain
 :
    DOMAIN
    (
-      VRF vrf = variable
+      VRF vrf = vrf_name
    )?
    (
       domain_lookup
@@ -955,15 +956,6 @@ s_username_attributes
    )*
 ;
 
-
-s_vrf: VRF name = variable NEWLINE vrf_inner*;
-
-vrf_inner
-:
-  vrf_address_family
-  | vrf_description
-;
-
 spanning_tree_mst
 :
    MST null_rest_of_line spanning_tree_mst_null*
@@ -1086,7 +1078,7 @@ ssh_server
       | V2
       |
       (
-         VRF vrf = variable
+         VRF vrf = vrf_name
       )
    )* NEWLINE
 ;
@@ -1226,7 +1218,7 @@ t_source_interface
 :
    SOURCE_INTERFACE iname = interface_name
    (
-      VRF name = variable
+      VRF name = vrf_name
    )? NEWLINE
 ;
 
@@ -1418,85 +1410,6 @@ viafv_preempt
 viafv_priority
 :
    PRIORITY priority = DEC NEWLINE
-;
-
-vrf_address_family
-:
-   ADDRESS_FAMILY
-   (
-      IPV4
-      | IPV6
-   )
-   (
-      MULTICAST
-      | UNICAST
-   )?
-   (
-      MAX_ROUTE DEC
-   )? NEWLINE
-   vrf_af_inner*
-;
-
-vrf_af_inner
-:
-  vrf_af_export
-  | vrf_af_import
-  | vrf_af_null
-;
-
-vrf_af_export
-:
-  EXPORT vrf_af_export_inner
-;
-
-vrf_af_export_inner
-:
-  vrf_afe_route_target
-;
-
-vrf_afe_route_target
-:
-  ROUTE_TARGET
-  (
-    vrf_afe_route_target_value
-    | NEWLINE vrf_afe_route_target_value*
-  )
-;
-
-vrf_afe_route_target_value: route_target NEWLINE;
-
-vrf_af_import
-:
-  IMPORT vrf_af_import_inner
-;
-
-vrf_af_import_inner
-:
-  vrf_afi_route_target
-;
-
-vrf_afi_route_target
-:
-  ROUTE_TARGET
-  (
-    vrf_afi_route_target_value
-    | NEWLINE vrf_afi_route_target_value*
-  )
-;
-
-vrf_afi_route_target_value: route_target NEWLINE;
-
-vrf_af_null
-:
-   NO?
-   (
-      MAXIMUM
-   ) null_rest_of_line
-;
-
-vrf_description
-:
-   description_line
 ;
 
 vrrp_interface

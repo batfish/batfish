@@ -66,7 +66,7 @@ rs_route
 
 rs_vrf
 :
-   VRF name = variable NEWLINE
+   VRF name = vrf_name NEWLINE
    (
       rs_address_family
       | rs_route
