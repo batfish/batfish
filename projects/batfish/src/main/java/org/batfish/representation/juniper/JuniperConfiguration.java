@@ -3182,7 +3182,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                           _c.getIpSpaceMetadata()
                               .put(
                                   ipSpaceName,
-                                  new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription())));
+                                  new IpSpaceMetadata(
+                                      ipSpaceName, ADDRESS_BOOK.getDescription(), null)));
             });
 
     // Preprocess filters to do things like handle IPv6, combine filter input-/output-lists
@@ -3337,7 +3338,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     _c.getIpSpaceMetadata()
                         .put(
                             ipSpaceName,
-                            new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription())));
+                            new IpSpaceMetadata(ipSpaceName, ADDRESS_BOOK.getDescription(), null)));
       }
     }
 

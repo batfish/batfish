@@ -2141,7 +2141,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription())));
+                            name,
+                            CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription(),
+                            null)));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
@@ -2152,7 +2154,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, CiscoXrStructureType.NETWORK_OBJECT.getDescription())));
+                            name, CiscoXrStructureType.NETWORK_OBJECT.getDescription(), null)));
 
     // convert IPv6 access lists to ipv6 access lists route6 filter lists
     for (Ipv6AccessList eaList : _ipv6Acls.values()) {
