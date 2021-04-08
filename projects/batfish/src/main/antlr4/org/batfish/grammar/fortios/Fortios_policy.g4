@@ -4,7 +4,15 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-cf_policy: POLICY newline cfp_edit*;
+cf_policy: POLICY newline cfp*;
+
+cfp: cfp_clone | cfp_delete | cfp_edit | cfp_move;
+
+cfp_clone: CLONE name = policy_number TO to = policy_number newline;
+
+cfp_delete: DELETE name = policy_number newline;
+
+cfp_move: MOVE name = policy_number after_or_before pivot = policy_number newline;
 
 cfp_edit: EDIT policy_number newline cfpe* NEXT newline;
 

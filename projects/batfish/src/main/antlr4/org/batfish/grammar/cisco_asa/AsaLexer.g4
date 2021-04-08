@@ -17,9 +17,7 @@ tokens {
    ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
    BANNER_BODY,
-   COMMUNITY_LIST_NUM_EXPANDED,
-   COMMUNITY_LIST_NUM_STANDARD,
-   COMMUNITY_SET_REGEX,
+   COMMUNITY_REGEX,
    CONFIG_SAVE,
    DSA1024,
    HEX_FRAGMENT,
@@ -40,7 +38,8 @@ tokens {
    TEXT,
    VALUE,
    WIRED,
-   WISPR
+   WISPR,
+   WORD
 } 
 
 // Cisco Keywords
@@ -814,8 +813,6 @@ BUILDING_CONFIGURATION
    'Building configuration'
 ;
 
-BUNDLE: 'bundle';
-
 BUFFERS: 'buffers';
 
 BURST_SIZE: 'burst-size';
@@ -1027,16 +1024,7 @@ COMMUNITY
 
 ;
 
-COMMUNITY_LIST
-:
-   'community-list'
-   {
-      _enableIpv6Address = false;
-      _enableCommunityListNum = true;
-      _enableDec = false;
-   }
-
-;
+COMMUNITY_LIST: 'community-list' -> pushMode(M_CommunityList);
 
 COMMUNITY_MAP
 :
@@ -1909,6 +1897,8 @@ EVPN: 'evpn';
 
 EXACT: 'exact';
 
+EXACT_MATCH: 'exact-match';
+
 EXCEED_ACTION: 'exceed-action';
 
 EXCEPT: 'except';
@@ -1967,20 +1957,6 @@ EXPORTER: 'exporter';
 EXPORTER_MAP: 'exporter-map';
 
 EXPANDED: 'expanded';
-
-EXTCOMM_LIST: 'extcomm-list';
-
-EXTCOMMUNITY
-:
-   'extcommunity'
-   {
-     if (lastTokenType() == SET) {
-       pushMode(M_Extcommunity);
-     }
-   }
-;
-
-EXTCOMMUNITY_LIST: 'extcommunity-list';
 
 EXTEND: 'extend';
 
@@ -4952,8 +4928,6 @@ SEND_COMMUNITY: 'send-community';
 
 SEND_COMMUNITY_EBGP: 'send-community-ebgp';
 
-SEND_EXTENDED_COMMUNITY_EBGP: 'send-extended-community-ebgp';
-
 SEND_LABEL: 'send-label';
 
 SEND_LIFETIME: 'send-lifetime';
@@ -6213,8 +6187,6 @@ VFI: 'vfi';
 
 VLAN: 'vlan';
 
-VLAN_AWARE_BUNDLE: 'vlan-aware-bundle';
-
 VLAN_GROUP: 'vlan-group';
 
 VLAN_NAME: 'vlan-name';
@@ -6471,10 +6443,7 @@ POUND
    '#' -> pushMode ( M_Description )
 ;
 
-STANDARD_COMMUNITY
-:
-  F_StandardCommunity {!_enableIpv6Address}?
-;
+STANDARD_COMMUNITY: F_StandardCommunity;
 
 MAC_ADDRESS_LITERAL
 :
@@ -6527,10 +6496,6 @@ VARIABLE
    {
       if (_enableAclNum) {
          _enableAclNum = false;
-         _enableDec = true;
-      }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
          _enableDec = true;
       }
    }
@@ -6644,26 +6609,6 @@ COLON
 COMMA
 :
    ','
-;
-
-COMMUNITY_LIST_NUM
-:
-   F_Digit
-   {_enableCommunityListNum}?
-
-   F_Digit*
-   {
-		int val = Integer.parseInt(getText());
-		if (1 <= val && val <= 99) {
-			_type = COMMUNITY_LIST_NUM_STANDARD;
-		}
-		else if (100 <= val && val <= 500) {
-			_type = COMMUNITY_LIST_NUM_EXPANDED;
-		}
-		_enableCommunityListNum = false;
-		_enableDec = true;
-	}
-
 ;
 
 COMMENT_LINE
@@ -7703,44 +7648,6 @@ M_Execute_BRACE_RIGHT
    '}' -> type ( BRACE_RIGHT ) , popMode
 ;
 
-mode M_Extcommunity;
-
-M_Extcommunity_ADDITIVE: 'additive' -> type(ADDITIVE), popMode;
-
-M_Extcommunity_COLON
-:
-   ':' -> type ( COLON )
-;
-
-M_Extcommunity_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
-
-M_ExtCommunity_NEWLINE
-:
-   F_Newline -> type ( NEWLINE ) , popMode
-;
-
-M_Extcommunity_PERIOD: '.' -> type(PERIOD);
-
-M_Extcommunity_RT
-:
-   'rt' -> type ( RT )
-;
-
-M_Extcommunity_UINT8
-:
-   F_Uint8 -> type ( UINT8 )
-;
-
-M_Extcommunity_UINT16
-:
-   F_Uint16 -> type ( UINT16 )
-;
-
-M_Extcommunity_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
 mode M_FiberNode;
 
 M_FiberNode_DEC
@@ -7968,12 +7875,6 @@ M_Interface_WS
 
 mode M_IosRegex;
 
-M_IosRegex_COMMUNITY_SET_REGEX
-:
-   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\'' -> type ( COMMUNITY_SET_REGEX ) ,
-   popMode
-;
-
 M_IosRegex_AS_PATH_SET_REGEX
 :
    '\'' ~'\''* '\'' -> type ( AS_PATH_SET_REGEX ) , popMode
@@ -8166,10 +8067,6 @@ M_RouteMap_VARIABLE
          _enableAclNum = false;
          _enableDec = true;
       }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
    }
    -> type ( VARIABLE ) , popMode
 ;
@@ -8244,6 +8141,14 @@ M_SshKey_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_Word;
+
+M_Word_WS: F_Whitespace+ -> channel(HIDDEN);
+
+M_Word_WORD: F_NonWhitespace+ -> type(WORD), popMode;
+
+M_Word_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
 mode M_Words;
 
 M_Words_WORD
@@ -8261,3 +8166,38 @@ M_Words_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_CommunityList;
+
+M_CommunityList_STANDARD: 'standard' -> type(STANDARD), mode(M_Word);
+
+M_CommunityList_EXPANDED: 'expanded' -> type(EXPANDED), mode(M_CommunityListExpanded1);
+
+M_CommunityList_WS: F_Whitespace+ -> channel(HIDDEN);
+
+M_CommunityList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_CommunityListExpanded1;
+
+M_CommunityListExpanded1_WORD: F_NonWhitespace+ -> type(WORD), mode(M_CommunityListExpanded2);
+
+M_CommunityListExpanded1_WS: F_Whitespace+ -> channel(HIDDEN);
+
+M_CommunityListExpanded1_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_CommunityListExpanded2;
+
+M_CommunityListExpanded2_DENY: 'deny' -> type(DENY), mode(M_CommunityListExpanded3);
+
+M_CommunityListExpanded2_PERMIT: 'permit' -> type(PERMIT), mode(M_CommunityListExpanded3);
+
+M_CommunityListExpanded2_WS: F_Whitespace+ -> channel(HIDDEN);
+
+M_CommunityListExpanded2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_CommunityListExpanded3;
+
+M_CommunityListExpanded3_COMMUNITY_REGEX: F_NonNewline+ -> type(COMMUNITY_REGEX), popMode;
+
+M_CommunityListExpanded3_WS: F_Whitespace+ -> channel(HIDDEN);
+
+M_CommunityListExpanded3_NEWLINE: F_Newline -> type(NEWLINE), popMode;

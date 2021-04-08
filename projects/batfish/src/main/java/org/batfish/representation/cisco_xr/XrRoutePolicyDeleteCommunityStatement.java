@@ -2,6 +2,7 @@ package org.batfish.representation.cisco_xr;
 
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -18,10 +19,10 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 /**
  * A route-policy statement that deletes communities matched by the provided {@link
- * CommunitySetExpr} under the provided negation flag.
+ * XrCommunitySetExpr} under the provided negation flag.
  */
 @ParametersAreNonnullByDefault
-public class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStatement {
+public final class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStatement {
 
   public XrRoutePolicyDeleteCommunityStatement(boolean negated, XrCommunitySetExpr expr) {
     _negated = negated;
@@ -56,6 +57,13 @@ public class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStateme
         new CommunitySetExprToCommunityMatchExpr();
 
     @Override
+    public Optional<CommunityMatchExpr> visitCommunitySetParameterReference(
+        XrCommunitySetParameterReference xrCommunitySetParameterReference) {
+      // TODO: implement route-policy parameters
+      return Optional.empty();
+    }
+
+    @Override
     public Optional<CommunityMatchExpr> visitCommunitySetReference(
         XrCommunitySetReference communitySetReference, Configuration arg) {
       // return reference to computed CommunityMatchExpr if it exists, else empty Optional.
@@ -69,6 +77,23 @@ public class XrRoutePolicyDeleteCommunityStatement extends RoutePolicySetStateme
         XrInlineCommunitySet inlineCommunitySet, Configuration arg) {
       return Optional.of(toCommunityMatchExpr(inlineCommunitySet.getCommunitySet(), arg));
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof XrRoutePolicyDeleteCommunityStatement)) {
+      return false;
+    }
+    XrRoutePolicyDeleteCommunityStatement that = (XrRoutePolicyDeleteCommunityStatement) o;
+    return _negated == that._negated && _expr.equals(that._expr);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_expr, _negated);
   }
 
   private static final Statement INVALID = new Comment("(invalid community-set reference)");

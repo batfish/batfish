@@ -27,9 +27,6 @@ import static org.batfish.representation.cisco_asa.AsaStructureType.DEPI_CLASS;
 import static org.batfish.representation.cisco_asa.AsaStructureType.DEPI_TUNNEL;
 import static org.batfish.representation.cisco_asa.AsaStructureType.DOCSIS_POLICY;
 import static org.batfish.representation.cisco_asa.AsaStructureType.DOCSIS_POLICY_RULE;
-import static org.batfish.representation.cisco_asa.AsaStructureType.EXTCOMMUNITY_LIST;
-import static org.batfish.representation.cisco_asa.AsaStructureType.EXTCOMMUNITY_LIST_EXPANDED;
-import static org.batfish.representation.cisco_asa.AsaStructureType.EXTCOMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco_asa.AsaStructureType.ICMP_TYPE_OBJECT_GROUP;
 import static org.batfish.representation.cisco_asa.AsaStructureType.INSPECT_CLASS_MAP;
 import static org.batfish.representation.cisco_asa.AsaStructureType.INSPECT_POLICY_MAP;
@@ -237,17 +234,13 @@ import static org.batfish.representation.cisco_asa.AsaStructureUsage.RIP_DISTRIB
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_VRRP_INTERFACE;
-import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
-import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
-import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_EXTCOMMUNITY;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_INTERFACE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
-import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_SET_COMMUNITY;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.SERVICE_POLICY_GLOBAL;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.SERVICE_POLICY_INTERFACE;
@@ -295,7 +288,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -509,7 +501,10 @@ import org.batfish.grammar.cisco_asa.AsaParser.Cmm_activated_service_templateCon
 import org.batfish.grammar.cisco_asa.AsaParser.Cmm_service_templateContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Cntlrrfc_depi_tunnelContext;
-import org.batfish.grammar.cisco_asa.AsaParser.CommunityContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Community_list_expandedContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Community_list_nameContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Community_list_standardContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Community_regexContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Copsl_access_listContext;
@@ -546,16 +541,11 @@ import org.batfish.grammar.cisco_asa.AsaParser.Dt_depi_classContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Dt_l2tp_classContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Dt_protect_tunnelContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ebgp_multihop_bgp_tailContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ec_ga_la_literalContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ecgalal_asdot_colonContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ecgalal_colonContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ecgalal_ip_colonContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Eigrp_metricContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Enable_secretContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Extended_access_list_tailContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Extended_community_route_targetContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Extended_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Extended_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Failover_interfaceContext;
@@ -647,15 +637,9 @@ import org.batfish.grammar.cisco_asa.AsaParser.Interface_is_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Interface_nameContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_as_path_access_list_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_as_path_access_list_tailContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ip_community_list_expanded_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ip_community_list_expanded_tailContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ip_community_list_standard_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ip_community_list_standard_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_dhcp_relay_serverContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_domain_lookupContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_domain_nameContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ip_extcommunity_list_expandedContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ip_extcommunity_list_standardContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_hostnameContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_prefix_list_tailContext;
@@ -688,7 +672,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Management_ssh_ip_access_groupCon
 import org.batfish.grammar.cisco_asa.AsaParser.Management_telnet_ip_access_groupContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Match_as_path_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Match_community_list_rm_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Match_extcommunity_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Match_interface_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Match_ip_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Match_ip_prefix_list_rm_stanzaContext;
@@ -927,16 +910,9 @@ import org.batfish.grammar.cisco_asa.AsaParser.Service_specifier_protocolContext
 import org.batfish.grammar.cisco_asa.AsaParser.Service_specifier_tcp_udpContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Set_as_path_prepend_rm_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Set_comm_list_delete_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Set_community_additive_rm_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Set_community_list_additive_rm_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Set_community_list_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Set_community_none_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Set_community_rm_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Set_extcommunity_rm_stanza_costContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Set_extcommunity_rm_stanza_rtContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Set_extcommunity_rm_stanza_sooContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Set_extcommunity_rm_stanza_vpn_distinguisherContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Set_local_preference_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Set_metric_eigrp_rm_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Set_metric_rm_stanzaContext;
@@ -964,6 +940,7 @@ import org.batfish.grammar.cisco_asa.AsaParser.Ssh_serverContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Standard_access_list_additional_featureContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Standard_access_list_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Standard_access_list_tailContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Standard_communityContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Standard_ipv6_access_list_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Standard_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Standby_groupContext;
@@ -999,6 +976,7 @@ import org.batfish.grammar.cisco_asa.AsaParser.Use_neighbor_group_bgp_tailContex
 import org.batfish.grammar.cisco_asa.AsaParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.VariableContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Variable_access_listContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Variable_community_listContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Variable_group_idContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Variable_permissiveContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Viaf_vrrpContext;
@@ -1104,7 +1082,6 @@ import org.batfish.representation.cisco_asa.RouteMapClause;
 import org.batfish.representation.cisco_asa.RouteMapContinue;
 import org.batfish.representation.cisco_asa.RouteMapMatchAsPathAccessListLine;
 import org.batfish.representation.cisco_asa.RouteMapMatchCommunityListLine;
-import org.batfish.representation.cisco_asa.RouteMapMatchExtcommunityLine;
 import org.batfish.representation.cisco_asa.RouteMapMatchInterfaceLine;
 import org.batfish.representation.cisco_asa.RouteMapMatchIpAccessListLine;
 import org.batfish.representation.cisco_asa.RouteMapMatchIpPrefixListLine;
@@ -1113,14 +1090,9 @@ import org.batfish.representation.cisco_asa.RouteMapMatchIpv6PrefixListLine;
 import org.batfish.representation.cisco_asa.RouteMapMatchSourceProtocolLine;
 import org.batfish.representation.cisco_asa.RouteMapMatchTagLine;
 import org.batfish.representation.cisco_asa.RouteMapSetAdditiveCommunityLine;
-import org.batfish.representation.cisco_asa.RouteMapSetAdditiveCommunityListLine;
 import org.batfish.representation.cisco_asa.RouteMapSetAsPathPrependLine;
 import org.batfish.representation.cisco_asa.RouteMapSetCommunityLine;
-import org.batfish.representation.cisco_asa.RouteMapSetCommunityListLine;
 import org.batfish.representation.cisco_asa.RouteMapSetCommunityNoneLine;
-import org.batfish.representation.cisco_asa.RouteMapSetDeleteCommunityLine;
-import org.batfish.representation.cisco_asa.RouteMapSetExtcommunityRtAdditiveLine;
-import org.batfish.representation.cisco_asa.RouteMapSetExtcommunityRtLine;
 import org.batfish.representation.cisco_asa.RouteMapSetLine;
 import org.batfish.representation.cisco_asa.RouteMapSetLocalPreferenceLine;
 import org.batfish.representation.cisco_asa.RouteMapSetMetricEigrpLine;
@@ -1330,8 +1302,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Nullable private EigrpProcess _currentEigrpProcess;
 
-  private ExpandedCommunityList _currentExpandedCommunityList;
-
   private ExtendedAccessList _currentExtendedAcl;
 
   private ExtendedIpv6AccessList _currentExtendedIpv6Acl;
@@ -1390,8 +1360,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   private SnmpCommunity _currentSnmpCommunity;
 
   private StandardAccessList _currentStandardAcl;
-
-  private StandardCommunityList _currentStandardCommunityList;
 
   private StandardIpv6AccessList _currentStandardIpv6Acl;
 
@@ -2317,42 +2285,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     _currentAsPathAcl =
         _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
     _configuration.defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
-  }
-
-  @Override
-  public void enterIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Invalid community-list name");
-    }
-    _currentExpandedCommunityList =
-        _configuration
-            .getExpandedCommunityLists()
-            .computeIfAbsent(name, ExpandedCommunityList::new);
-    _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
-  }
-
-  @Override
-  public void enterIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
-    String name;
-    if (ctx.num != null) {
-      name = ctx.num.getText();
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else if (ctx.name_cl != null) {
-      name = ctx.name_cl.getText();
-    } else {
-      throw new BatfishException("Invalid standard community-list name");
-    }
-    _currentStandardCommunityList =
-        _configuration
-            .getStandardCommunityLists()
-            .computeIfAbsent(name, StandardCommunityList::new);
-    _configuration.defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
   @Override
@@ -5867,40 +5799,46 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
-    _currentExpandedCommunityList = null;
-  }
-
-  @Override
-  public void exitIp_community_list_expanded_tail(Ip_community_list_expanded_tailContext ctx) {
+  public void exitCommunity_list_expanded(Community_list_expandedContext ctx) {
+    String name = toString(ctx.name);
+    // TODO: common namespace for standard/expanded
+    ExpandedCommunityList list =
+        _configuration
+            .getExpandedCommunityLists()
+            .computeIfAbsent(name, ExpandedCommunityList::new);
+    _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
     LineAction action = toLineAction(ctx.ala);
-    StringBuilder regex = new StringBuilder();
-    for (Token remainder : ctx.remainder) {
-      regex.append(remainder.getText());
-    }
-    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, regex.toString());
-    _currentExpandedCommunityList.addLine(line);
+    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, toString(ctx.regex));
+    list.addLine(line);
+  }
+
+  @Nonnull
+  private static String toString(Community_regexContext ctx) {
+    return unquote(ctx.getText().trim());
   }
 
   @Override
-  public void exitIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
-    _currentStandardCommunityList = null;
-  }
-
-  @Override
-  public void exitIp_community_list_standard_tail(Ip_community_list_standard_tailContext ctx) {
+  public void exitCommunity_list_standard(Community_list_standardContext ctx) {
+    String name = toString(ctx.name);
+    // TODO: common namespace for standard/expanded
+    StandardCommunityList list =
+        _configuration
+            .getStandardCommunityLists()
+            .computeIfAbsent(name, StandardCommunityList::new);
+    _configuration.defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
     LineAction action = toLineAction(ctx.ala);
-    List<Long> communities = new ArrayList<>();
-    for (CommunityContext communityCtx : ctx.communities) {
-      Long community = toLong(communityCtx);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'", communityCtx.getText()));
-        return;
-      }
-      communities.add(community);
-    }
-    StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
-    _currentStandardCommunityList.getLines().add(line);
+    StandardCommunityListLine line =
+        new StandardCommunityListLine(
+            action,
+            ctx.communities.stream()
+                .map(AsaControlPlaneExtractor::toStandardCommunity)
+                .collect(ImmutableList.toImmutableList()));
+    list.getLines().add(line);
+  }
+
+  @Nonnull
+  private static String toString(Community_list_nameContext ctx) {
+    return ctx.getText();
   }
 
   @Override
@@ -5932,20 +5870,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     } else {
       _configuration.setDomainName(null);
     }
-  }
-
-  @Override
-  public void enterIp_extcommunity_list_expanded(Ip_extcommunity_list_expandedContext ctx) {
-    todo(ctx);
-    String name = ctx.name != null ? ctx.name.getText() : Integer.toString(toInteger(ctx.num));
-    _configuration.defineStructure(EXTCOMMUNITY_LIST_EXPANDED, name, ctx);
-  }
-
-  @Override
-  public void enterIp_extcommunity_list_standard(Ip_extcommunity_list_standardContext ctx) {
-    todo(ctx);
-    String name = ctx.name != null ? ctx.name.getText() : Integer.toString(toInteger(ctx.num));
-    _configuration.defineStructure(EXTCOMMUNITY_LIST_STANDARD, name, ctx);
   }
 
   @Override
@@ -6343,7 +6267,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   @Override
   public void exitMatch_community_list_rm_stanza(Match_community_list_rm_stanzaContext ctx) {
     Set<String> names = new TreeSet<>();
-    for (VariableContext name : ctx.name_list) {
+    for (Variable_community_listContext name : ctx.name_list) {
       names.add(name.getText());
       _configuration.referenceStructure(
           COMMUNITY_LIST,
@@ -6353,19 +6277,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
     RouteMapMatchCommunityListLine line = new RouteMapMatchCommunityListLine(names);
     _currentRouteMapClause.addMatchLine(line);
-  }
-
-  @Override
-  public void exitMatch_extcommunity_rm_stanza(Match_extcommunity_rm_stanzaContext ctx) {
-    ImmutableSet.Builder<String> lists = ImmutableSet.builder();
-    for (VariableContext v : ctx.name_list) {
-      String name = v.getText();
-      _configuration.referenceStructure(
-          EXTCOMMUNITY_LIST, name, ROUTE_MAP_MATCH_EXTCOMMUNITY, v.getStart().getLine());
-      lists.add(name);
-    }
-    _currentRouteMapClause.addMatchLine(new RouteMapMatchExtcommunityLine(lists.build()));
-    todo(ctx);
   }
 
   @Override
@@ -8642,28 +8553,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Override
   public void exitSend_community_bgp_tail(Send_community_bgp_tailContext ctx) {
-    boolean extended = false;
-    boolean standard = false;
-    if (ctx.SEND_COMMUNITY() != null) {
-      if (ctx.BOTH() != null) {
-        extended = true;
-        standard = true;
-      } else if (ctx.EXTENDED() != null) {
-        extended = true;
-      } else {
-        standard = true;
-      }
-    } else if (ctx.SEND_COMMUNITY_EBGP() != null) {
-      standard = true;
-    } else if (ctx.SEND_EXTENDED_COMMUNITY_EBGP() != null) {
-      extended = true;
-    }
-    if (standard) {
-      _currentPeerGroup.setSendCommunity(true);
-    }
-    if (extended) {
-      _currentPeerGroup.setSendExtendedCommunity(true);
-    }
+    _currentPeerGroup.setSendCommunity(true);
   }
 
   @Override
@@ -8687,60 +8577,12 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitSet_comm_list_delete_rm_stanza(Set_comm_list_delete_rm_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    RouteMapSetDeleteCommunityLine line = new RouteMapSetDeleteCommunityLine(name);
-    _currentRouteMapClause.addSetLine(line);
-    _configuration.referenceStructure(
-        COMMUNITY_LIST, name, ROUTE_MAP_DELETE_COMMUNITY, ctx.getStart().getLine());
-  }
-
-  @Override
   public void exitSet_community_additive_rm_stanza(Set_community_additive_rm_stanzaContext ctx) {
-    ImmutableList.Builder<StandardCommunity> builder = ImmutableList.builder();
-    for (CommunityContext c : ctx.communities) {
-      Long community = toLong(c);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
-        return;
-      }
-      builder.add(StandardCommunity.of(community));
-    }
-    RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(builder.build());
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_community_list_additive_rm_stanza(
-      Set_community_list_additive_rm_stanzaContext ctx) {
-    Set<String> communityLists = new LinkedHashSet<>();
-    for (VariableContext communityListCtx : ctx.comm_lists) {
-      String communityList = communityListCtx.getText();
-      communityLists.add(communityList);
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          communityList,
-          ROUTE_MAP_ADD_COMMUNITY,
-          communityListCtx.getStart().getLine());
-    }
-    RouteMapSetAdditiveCommunityListLine line =
-        new RouteMapSetAdditiveCommunityListLine(communityLists);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_community_list_rm_stanza(Set_community_list_rm_stanzaContext ctx) {
-    Set<String> communityLists = new LinkedHashSet<>();
-    for (VariableContext communityListCtx : ctx.comm_lists) {
-      String communityList = communityListCtx.getText();
-      communityLists.add(communityList);
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          communityList,
-          ROUTE_MAP_SET_COMMUNITY,
-          communityListCtx.getStart().getLine());
-    }
-    RouteMapSetCommunityListLine line = new RouteMapSetCommunityListLine(communityLists);
+    RouteMapSetAdditiveCommunityLine line =
+        new RouteMapSetAdditiveCommunityLine(
+            ctx.communities.stream()
+                .map(AsaControlPlaneExtractor::toStandardCommunity)
+                .collect(ImmutableList.toImmutableList()));
     _currentRouteMapClause.addSetLine(line);
   }
 
@@ -8752,91 +8594,12 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Override
   public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
-    List<Long> commList = new ArrayList<>();
-    for (CommunityContext c : ctx.communities) {
-      Long community = toLong(c);
-      if (community == null) {
-        warn(ctx, String.format("Invalid standard community: '%s'.", c.getText()));
-        return;
-      }
-      commList.add(community);
-    }
-    RouteMapSetCommunityLine line = new RouteMapSetCommunityLine(commList);
+    RouteMapSetCommunityLine line =
+        new RouteMapSetCommunityLine(
+            ctx.communities.stream()
+                .map(AsaControlPlaneExtractor::toStandardCommunity)
+                .collect(ImmutableList.toImmutableList()));
     _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_extcommunity_rm_stanza_cost(Set_extcommunity_rm_stanza_costContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitSet_extcommunity_rm_stanza_rt(Set_extcommunity_rm_stanza_rtContext ctx) {
-    List<ExtendedCommunity> communities = toExtendedCommunities(ctx.communities);
-    RouteMapSetLine line =
-        ctx.ADDITIVE() != null
-            ? new RouteMapSetExtcommunityRtAdditiveLine(communities)
-            : new RouteMapSetExtcommunityRtLine(communities);
-    _currentRouteMapClause.addSetLine(line);
-  }
-
-  @Override
-  public void exitSet_extcommunity_rm_stanza_soo(Set_extcommunity_rm_stanza_sooContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitSet_extcommunity_rm_stanza_vpn_distinguisher(
-      Set_extcommunity_rm_stanza_vpn_distinguisherContext ctx) {
-    todo(ctx);
-  }
-
-  private @Nonnull List<ExtendedCommunity> toExtendedCommunities(
-      List<Extended_community_route_targetContext> communities) {
-    ImmutableList.Builder<ExtendedCommunity> builder =
-        ImmutableList.builderWithExpectedSize(communities.size());
-    for (Extended_community_route_targetContext communityCtx : communities) {
-      builder.add(toExtendedCommunity(communityCtx));
-    }
-    return builder.build();
-  }
-
-  private @Nonnull ExtendedCommunity toExtendedCommunity(
-      Extended_community_route_targetContext ctx) {
-    assert ctx.ec_ga_la_literal() != null;
-    return toExtendedCommunity(ctx.ec_ga_la_literal());
-  }
-
-  private @Nonnull ExtendedCommunity toExtendedCommunity(Ec_ga_la_literalContext ctx) {
-    if (ctx.ecgalal_asdot_colon() != null) {
-      return toExtendedCommunity(ctx.ecgalal_asdot_colon());
-    } else if (ctx.ecgalal_colon() != null) {
-      return toExtendedCommunity(ctx.ecgalal_colon());
-    } else {
-      assert ctx.ecgalal_ip_colon() != null;
-      return toExtendedCommunity(ctx.ecgalal_ip_colon());
-    }
-  }
-
-  private @Nonnull ExtendedCommunity toExtendedCommunity(Ecgalal_asdot_colonContext ctx) {
-    // Upcast GA to long so we can shift and combine
-    long gaHi16 = toUint16(ctx.ga_high16);
-    long gaLo16 = toUint16(ctx.ga_low16);
-    long ga = (gaHi16 << 16) | gaLo16;
-    int la = toUint16(ctx.la);
-    return ExtendedCommunity.target(ga, la);
-  }
-
-  private @Nonnull ExtendedCommunity toExtendedCommunity(Ecgalal_colonContext ctx) {
-    long ga = toUint32(ctx.ga);
-    int la = toUint16(ctx.la);
-    return ExtendedCommunity.target(ga, la);
-  }
-
-  private @Nonnull ExtendedCommunity toExtendedCommunity(Ecgalal_ip_colonContext ctx) {
-    long ga = toIp(ctx.ga).asLong();
-    int la = toUint16(ctx.la);
-    return ExtendedCommunity.target(ga, la);
   }
 
   private int toUint16(Uint16Context ctx) {
@@ -9985,37 +9748,23 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
   }
 
-  private @Nullable Long toLong(CommunityContext ctx) {
-    if (ctx.ACCEPT_OWN() != null) {
-      return WellKnownCommunity.ACCEPT_OWN;
-    } else if (ctx.STANDARD_COMMUNITY() != null) {
-      return StandardCommunity.parse(ctx.getText()).asLong();
+  private static @Nonnull StandardCommunity toStandardCommunity(Standard_communityContext ctx) {
+    if (ctx.literal_standard_community() != null) {
+      return StandardCommunity.parse(ctx.getText());
     } else if (ctx.uint32() != null) {
-      return toLong(ctx.uint32());
+      return StandardCommunity.of(toLong(ctx.uint32()));
     } else if (ctx.INTERNET() != null) {
-      return WellKnownCommunity.INTERNET;
-    } else if (ctx.GSHUT() != null) {
-      return WellKnownCommunity.GRACEFUL_SHUTDOWN;
-    } else if (ctx.LOCAL_AS() != null) {
-      // Cisco LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet forums.
-      return WellKnownCommunity.NO_EXPORT_SUBCONFED;
+      return StandardCommunity.of(WellKnownCommunity.INTERNET);
     } else if (ctx.NO_ADVERTISE() != null) {
-      return WellKnownCommunity.NO_ADVERTISE;
-    } else if (ctx.NO_EXPORT() != null) {
-      return WellKnownCommunity.NO_EXPORT;
+      return StandardCommunity.of(WellKnownCommunity.NO_ADVERTISE);
     } else {
-      return convProblem(Long.class, ctx, null);
+      assert ctx.NO_EXPORT() != null;
+      return StandardCommunity.of(WellKnownCommunity.NO_EXPORT);
     }
   }
 
-  private @Nullable Long toLong(Uint32Context ctx) {
-    try {
-      long val = Long.parseLong(ctx.getText(), 10);
-      checkArgument(0 <= val && val <= 0xFFFFFFFFL);
-      return val;
-    } catch (IllegalArgumentException e) {
-      return convProblem(Long.class, ctx, null);
-    }
+  private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText(), 10);
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {

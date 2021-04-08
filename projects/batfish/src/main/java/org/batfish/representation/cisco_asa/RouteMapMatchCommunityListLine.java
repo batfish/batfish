@@ -1,14 +1,14 @@
 package org.batfish.representation.cisco_asa;
 
-import java.util.List;
+import com.google.common.collect.ImmutableList;
 import java.util.Set;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
 
 /**
  * Handles the "route-map match community-list" command, which matches when at least one of the
@@ -28,15 +28,15 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
 
   @Override
   public BooleanExpr toBooleanExpr(Configuration c, AsaConfiguration cc, Warnings w) {
-    Disjunction d = new Disjunction();
-    List<BooleanExpr> disjuncts = d.getDisjuncts();
-    for (String listName : _listNames) {
-      CommunityList list = c.getCommunityLists().get(listName);
-      if (list != null) {
-        disjuncts.add(new MatchCommunitySet(new NamedCommunitySet(listName)));
-      }
-    }
-    return d.simplify();
+    // TODO: test behavior for undefined reference
+    return new Disjunction(
+        _listNames.stream()
+            .filter(c.getCommunitySetMatchExprs()::containsKey)
+            .map(
+                name ->
+                    new MatchCommunities(
+                        InputCommunities.instance(), new CommunitySetMatchExprReference(name)))
+            .collect(ImmutableList.toImmutableList()));
   }
 
   @Override

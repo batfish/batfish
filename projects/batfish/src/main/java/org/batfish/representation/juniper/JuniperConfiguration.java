@@ -3545,6 +3545,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.INTERFACE_SELF_REFERENCE,
         JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE,
         JuniperStructureUsage.ISIS_INTERFACE,
+        JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE,
+        JuniperStructureUsage.NAT_RULE_SET_TO_INTERFACE,
         JuniperStructureUsage.OSPF_AREA_INTERFACE,
         JuniperStructureUsage.POLICY_STATEMENT_FROM_INTERFACE,
         JuniperStructureUsage.ROUTING_INSTANCE_INTERFACE,
@@ -3591,11 +3593,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markConcreteStructure(
         JuniperStructureType.LOGICAL_SYSTEM, JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM);
 
-    markConcreteStructure(
-        JuniperStructureType.NAT_POOL,
-        JuniperStructureUsage.NAT_DESTINATINATION_RULE_SET_RULE_THEN,
-        JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN,
-        JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN);
+    markConcreteStructure(JuniperStructureType.NAT_POOL);
 
     markConcreteStructure(JuniperStructureType.ROUTING_INSTANCE);
 

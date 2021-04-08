@@ -23,7 +23,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
@@ -57,10 +56,9 @@ public class SetCommunitiesVisitorTest {
             _batfish.getSnapshot(),
             null,
             null,
-            ImmutableSet.of(
-                new LiteralCommunity(StandardCommunity.parse("20:30")),
-                new LiteralCommunity(StandardCommunity.parse("21:30"))),
+            ImmutableSet.of("^20:30$", "^21:30$"),
             null);
+
     BDDRoute bddRoute = new BDDRoute(_g);
     TransferBDD transferBDD = new TransferBDD(_g, _baseConfig, ImmutableList.of());
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
@@ -166,7 +164,12 @@ public class SetCommunitiesVisitorTest {
   public void testVisitInputCommunities() {
     CommunityAPDispositions result =
         _scVisitor.visitInputCommunities(InputCommunities.instance(), _arg);
-    assertEquals(new CommunityAPDispositions(ImmutableSet.of(), ImmutableSet.of()), result);
+    assertEquals(
+        new CommunityAPDispositions(
+            _arg.getBDDRoute().getCommunityAtomicPredicates().length,
+            ImmutableSet.of(),
+            ImmutableSet.of()),
+        result);
   }
 
   @Test

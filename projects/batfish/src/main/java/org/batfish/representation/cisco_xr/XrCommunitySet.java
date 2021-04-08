@@ -21,5 +21,22 @@ public final class XrCommunitySet implements Serializable {
     return _elements;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof XrCommunitySet)) {
+      return false;
+    }
+    XrCommunitySet that = (XrCommunitySet) o;
+    return _elements.equals(that._elements);
+  }
+
+  @Override
+  public int hashCode() {
+    return _elements.hashCode();
+  }
+
   private final @Nonnull List<XrCommunitySetElem> _elements;
 }

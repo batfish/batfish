@@ -36,6 +36,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
@@ -47,6 +48,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.WellKnownCommunity;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -63,6 +65,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -84,8 +87,27 @@ import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
 import org.batfish.representation.cisco_xr.Ipv4AccessList;
 import org.batfish.representation.cisco_xr.Ipv6AccessList;
 import org.batfish.representation.cisco_xr.LiteralUint16;
+import org.batfish.representation.cisco_xr.LiteralUint16Range;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.OspfProcess;
+import org.batfish.representation.cisco_xr.PeerAs;
+import org.batfish.representation.cisco_xr.PrivateAs;
+import org.batfish.representation.cisco_xr.RoutePolicy;
+import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
+import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
+import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
+import org.batfish.representation.cisco_xr.Vrf;
+import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
+import org.batfish.representation.cisco_xr.XrCommunitySet;
+import org.batfish.representation.cisco_xr.XrCommunitySetDfaRegex;
+import org.batfish.representation.cisco_xr.XrCommunitySetHighLowRangeExprs;
+import org.batfish.representation.cisco_xr.XrCommunitySetIosRegex;
+import org.batfish.representation.cisco_xr.XrInlineCommunitySet;
+import org.batfish.representation.cisco_xr.XrRoutePolicyBooleanCommunityMatchesAny;
+import org.batfish.representation.cisco_xr.XrRoutePolicyBooleanCommunityMatchesEvery;
+import org.batfish.representation.cisco_xr.XrRoutePolicyDeleteCommunityStatement;
+import org.batfish.representation.cisco_xr.XrRoutePolicySetCommunity;
+import org.batfish.representation.cisco_xr.XrWildcardCommunitySetElem;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -258,14 +280,241 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testCommunitySet() {
+  public void testRoutePolicyCommunityInlineExtraction() {
+    String hostname = "rp-community-inline";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getRoutePolicies(),
+        hasKeys(
+            "set-well-known",
+            "set-literal",
+            "set-peeras",
+            "matches-any",
+            "matches-every",
+            "delete-well-known",
+            "delete-literal",
+            "delete-halves",
+            "delete-all",
+            "delete-regex"));
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("set-well-known");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new XrRoutePolicySetCommunity(
+                  new XrInlineCommunitySet(
+                      new XrCommunitySet(
+                          ImmutableList.of(
+                              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.ACCEPT_OWN)))),
+                  false),
+              new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("set-literal");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new XrRoutePolicySetCommunity(
+                  new XrInlineCommunitySet(
+                      new XrCommunitySet(
+                          ImmutableList.of(
+                              new XrCommunitySetHighLowRangeExprs(
+                                  new LiteralUint16(1), new LiteralUint16(1))))),
+                  false),
+              new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("set-peeras");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new XrRoutePolicySetCommunity(
+                  new XrInlineCommunitySet(
+                      new XrCommunitySet(
+                          ImmutableList.of(
+                              new XrCommunitySetHighLowRangeExprs(
+                                  PeerAs.instance(), new LiteralUint16(1))))),
+                  false),
+              new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("matches-any");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new RoutePolicyIfStatement(
+                  new XrRoutePolicyBooleanCommunityMatchesAny(
+                      new XrInlineCommunitySet(
+                          new XrCommunitySet(
+                              ImmutableList.of(
+                                  new XrCommunitySetHighLowRangeExprs(
+                                      new LiteralUint16(1), new LiteralUint16(1)),
+                                  new XrCommunitySetHighLowRangeExprs(
+                                      new LiteralUint16(2), new LiteralUint16(2)))))),
+                  ImmutableList.of(
+                      new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)),
+                  ImmutableList.of(),
+                  null)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("matches-every");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new RoutePolicyIfStatement(
+                  new XrRoutePolicyBooleanCommunityMatchesEvery(
+                      new XrInlineCommunitySet(
+                          new XrCommunitySet(
+                              ImmutableList.of(
+                                  new XrCommunitySetHighLowRangeExprs(
+                                      new LiteralUint16(1), new LiteralUint16(1)),
+                                  new XrCommunitySetHighLowRangeExprs(
+                                      new LiteralUint16(2), new LiteralUint16(2)))))),
+                  ImmutableList.of(
+                      new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)),
+                  ImmutableList.of(),
+                  null)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("delete-well-known");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new XrRoutePolicyDeleteCommunityStatement(
+                  false,
+                  new XrInlineCommunitySet(
+                      new XrCommunitySet(
+                          ImmutableList.of(
+                              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.ACCEPT_OWN))))),
+              new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("delete-literal");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new XrRoutePolicyDeleteCommunityStatement(
+                  false,
+                  new XrInlineCommunitySet(
+                      new XrCommunitySet(
+                          ImmutableList.of(
+                              new XrCommunitySetHighLowRangeExprs(
+                                  new LiteralUint16(1), new LiteralUint16(1)))))),
+              new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("delete-halves");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new XrRoutePolicyDeleteCommunityStatement(
+                  false,
+                  new XrInlineCommunitySet(
+                      new XrCommunitySet(
+                          ImmutableList.of(
+                              new XrCommunitySetHighLowRangeExprs(
+                                  new LiteralUint16(1), new LiteralUint16Range(new SubRange(2, 3))),
+                              new XrCommunitySetHighLowRangeExprs(
+                                  new LiteralUint16Range(new SubRange(4, 5)), new LiteralUint16(6)),
+                              new XrCommunitySetHighLowRangeExprs(
+                                  WildcardUint16RangeExpr.instance(), new LiteralUint16(7)),
+                              new XrCommunitySetHighLowRangeExprs(
+                                  new LiteralUint16(8), WildcardUint16RangeExpr.instance()),
+                              new XrCommunitySetHighLowRangeExprs(
+                                  PeerAs.instance(), new LiteralUint16(9)),
+                              new XrCommunitySetHighLowRangeExprs(
+                                  PrivateAs.instance(), new LiteralUint16(10)))))),
+              new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("delete-all");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new XrRoutePolicyDeleteCommunityStatement(
+                  false,
+                  new XrInlineCommunitySet(
+                      new XrCommunitySet(ImmutableList.of(XrWildcardCommunitySetElem.instance())))),
+              new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
+    }
+    {
+      RoutePolicy rp = vc.getRoutePolicies().get("delete-regex");
+      assertThat(
+          rp.getStatements(),
+          contains(
+              new XrRoutePolicyDeleteCommunityStatement(
+                  false,
+                  new XrInlineCommunitySet(
+                      new XrCommunitySet(
+                          ImmutableList.of(
+                              new XrCommunitySetIosRegex("_1234:.*"),
+                              new XrCommunitySetDfaRegex("_5678:.*"))))),
+              new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
+    }
+  }
+
+  @Test
+  public void testCommunitySetExtraction() {
+    String hostname = "community-set";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getCommunitySets(), hasKeys("mixed", "universe", "universe2", "wellknown"));
+    {
+      XrCommunitySet set = vc.getCommunitySets().get("mixed");
+      assertThat(
+          set.getElements(),
+          contains(
+              new XrCommunitySetDfaRegex("_5678:.*"),
+              new XrCommunitySetIosRegex("_1234:.*"),
+              new XrCommunitySetHighLowRangeExprs(new LiteralUint16(1), new LiteralUint16(2)),
+              new XrCommunitySetHighLowRangeExprs(
+                  WildcardUint16RangeExpr.instance(), new LiteralUint16(3)),
+              new XrCommunitySetHighLowRangeExprs(
+                  new LiteralUint16(4), WildcardUint16RangeExpr.instance()),
+              new XrCommunitySetHighLowRangeExprs(
+                  new LiteralUint16(6), new LiteralUint16Range(new SubRange(100, 103)))));
+    }
+    {
+      XrCommunitySet set = vc.getCommunitySets().get("universe");
+      assertThat(
+          set.getElements(),
+          contains(
+              new XrCommunitySetHighLowRangeExprs(
+                  WildcardUint16RangeExpr.instance(), WildcardUint16RangeExpr.instance())));
+    }
+    {
+      XrCommunitySet set = vc.getCommunitySets().get("universe2");
+      assertThat(set.getElements(), contains(XrWildcardCommunitySetElem.instance()));
+    }
+    {
+      XrCommunitySet set = vc.getCommunitySets().get("wellknown");
+      assertThat(
+          set.getElements(),
+          contains(
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.ACCEPT_OWN),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.GRACEFUL_SHUTDOWN),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.INTERNET),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.NO_EXPORT_SUBCONFED),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.NO_ADVERTISE),
+              XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.NO_EXPORT)));
+    }
+  }
+
+  @Test
+  public void testCommunitySetConversion() {
     Configuration c = parseConfig("community-set");
     CommunityContext ctx = CommunityContext.builder().build();
 
+    // TODO: test wellknown
+
     // Test CommunityMatchExprs
-    assertThat(c.getCommunityMatchExprs(), hasKeys("universe", "mixed"));
+    assertThat(c.getCommunityMatchExprs(), hasKeys("universe", "universe2", "mixed", "wellknown"));
     {
       CommunityMatchExpr expr = c.getCommunityMatchExprs().get("universe");
+      assertTrue(expr.accept(ctx.getCommunityMatchExprEvaluator(), StandardCommunity.of(1L)));
+    }
+    {
+      CommunityMatchExpr expr = c.getCommunityMatchExprs().get("universe2");
       assertTrue(expr.accept(ctx.getCommunityMatchExprEvaluator(), StandardCommunity.of(1L)));
     }
     {
@@ -283,9 +532,14 @@ public final class XrGrammarTest {
     }
 
     // Test CommunitySetExprs
-    assertThat(c.getCommunitySetExprs(), hasKeys("universe", "mixed"));
+    assertThat(c.getCommunitySetExprs(), hasKeys("universe", "universe2", "mixed", "wellknown"));
     {
       CommunitySetExpr expr = c.getCommunitySetExprs().get("universe");
+      assertThat(
+          expr.accept(CommunitySetExprEvaluator.instance(), ctx), equalTo(CommunitySet.empty()));
+    }
+    {
+      CommunitySetExpr expr = c.getCommunitySetExprs().get("universe2");
       assertThat(
           expr.accept(CommunitySetExprEvaluator.instance(), ctx), equalTo(CommunitySet.empty()));
     }
@@ -302,8 +556,12 @@ public final class XrGrammarTest {
         hasKeys(
             computeCommunitySetMatchAnyName("universe"),
             computeCommunitySetMatchEveryName("universe"),
+            computeCommunitySetMatchAnyName("universe2"),
+            computeCommunitySetMatchEveryName("universe2"),
             computeCommunitySetMatchAnyName("mixed"),
-            computeCommunitySetMatchEveryName("mixed")));
+            computeCommunitySetMatchEveryName("mixed"),
+            computeCommunitySetMatchAnyName("wellknown"),
+            computeCommunitySetMatchEveryName("wellknown")));
     {
       CommunitySetMatchExpr expr =
           c.getCommunitySetMatchExprs().get(computeCommunitySetMatchAnyName("universe"));
@@ -315,6 +573,22 @@ public final class XrGrammarTest {
     {
       CommunitySetMatchExpr expr =
           c.getCommunitySetMatchExprs().get(computeCommunitySetMatchEveryName("universe"));
+      assertTrue(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(StandardCommunity.of(5, 5), StandardCommunity.of(7, 7))));
+    }
+    {
+      CommunitySetMatchExpr expr =
+          c.getCommunitySetMatchExprs().get(computeCommunitySetMatchAnyName("universe2"));
+      assertTrue(
+          expr.accept(
+              ctx.getCommunitySetMatchExprEvaluator(),
+              CommunitySet.of(StandardCommunity.of(5, 5), StandardCommunity.of(7, 7))));
+    }
+    {
+      CommunitySetMatchExpr expr =
+          c.getCommunitySetMatchExprs().get(computeCommunitySetMatchEveryName("universe2"));
       assertTrue(
           expr.accept(
               ctx.getCommunitySetMatchExprEvaluator(),
@@ -371,6 +645,7 @@ public final class XrGrammarTest {
           expr.accept(
               ctx.getCommunitySetMatchExprEvaluator(),
               CommunitySet.of(
+                  StandardCommunity.of(5678, 1),
                   StandardCommunity.of(1234, 1),
                   StandardCommunity.of(1, 2),
                   StandardCommunity.of(2, 3),
@@ -421,6 +696,7 @@ public final class XrGrammarTest {
           base.toBuilder()
               .setCommunities(
                   ImmutableSet.of(
+                      StandardCommunity.of(5678, 1),
                       StandardCommunity.of(1234, 1),
                       StandardCommunity.of(1, 2),
                       StandardCommunity.of(2, 3),
@@ -791,5 +1067,42 @@ public final class XrGrammarTest {
     assertThat(pvcae, hasParseWarning(filename, containsString("Policy map of type traffic")));
     assertThat(
         pvcae, hasParseWarning(filename, containsString("Policy map of type performance-traffic")));
+  }
+
+  @Test
+  public void testVrfRouteTargetExtraction() {
+    String hostname = "xr-vrf-route-target";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    assertThat(
+        vc.getVrfs(),
+        hasKeys(
+            Configuration.DEFAULT_VRF_NAME, "none", "single-oneline", "single-block", "multiple"));
+    {
+      Vrf v = vc.getVrfs().get("none");
+      assertThat(v.getRouteTargetExport(), empty());
+      assertThat(v.getRouteTargetImport(), empty());
+    }
+    {
+      Vrf v = vc.getVrfs().get("single-oneline");
+      assertThat(v.getRouteTargetExport(), contains(ExtendedCommunity.target(1L, 1L)));
+      assertThat(v.getRouteTargetImport(), contains(ExtendedCommunity.target(2L, 2L)));
+    }
+    {
+      Vrf v = vc.getVrfs().get("single-block");
+      assertThat(v.getRouteTargetExport(), contains(ExtendedCommunity.target(3L, 3L)));
+      assertThat(v.getRouteTargetImport(), contains(ExtendedCommunity.target(4L, 4L)));
+    }
+    {
+      Vrf v = vc.getVrfs().get("multiple");
+      assertThat(
+          v.getRouteTargetExport(),
+          contains(ExtendedCommunity.target(5L, 5L), ExtendedCommunity.target(6L, 6L)));
+      assertThat(
+          v.getRouteTargetImport(),
+          contains(
+              ExtendedCommunity.target(7L, 7L),
+              ExtendedCommunity.target(8L, 9L),
+              ExtendedCommunity.target(((10L << 16) + 11L), 12L)));
+    }
   }
 }

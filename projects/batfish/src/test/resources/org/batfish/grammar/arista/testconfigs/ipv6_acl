@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname ipv6_acl
+!
+ipv6 access-list ACL
+   10 remark This is a remark
+   20 permit tcp any any established
+   30 permit tcp 2001::/48 any eq ssh
+   40 permit udp 2001::/48 2002::/32
+   50 permit ipv6 host 2001:: host 2002::
+!

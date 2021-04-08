@@ -1,0 +1,60 @@
+! Command: show running-config
+! device: localhost (vEOS, EOS-4.21.1.1F)
+!
+hostname arista_route_map_community
+!
+
+!!! Referenced structures
+ip community-list expanded community_list_expanded permit _1:[0-2]_3:4
+ip community-list expanded community_list_expanded_single permit _1:[0-2]_
+ip community-list standard community_list_standard permit 1:1 2:2
+ip community-list standard community_list_standard_single permit 1:1
+
+route-map match_community_standard permit 10
+  match community community_list_standard
+
+route-map match_community_expanded permit 10
+  match community community_list_expanded
+
+route-map set_community permit 10
+  set community 1:1 1:2
+
+route-map set_community_additive permit 10
+  set community 1:1 1:2 additive
+
+route-map set_community_delete permit 10
+  set community 1:1 1:2 delete
+
+route-map set_community_none permit 10
+  set community none
+
+route-map set_community_list_expanded permit 10
+  set community community-list community_list_expanded
+
+route-map set_community_list_standard permit 10
+  set community community-list community_list_standard
+
+route-map set_community_list_standard_single permit 10
+  set community community-list community_list_standard_single
+
+route-map set_community_list_additive_expanded permit 10
+  set community community-list community_list_expanded additive
+
+route-map set_community_list_additive_standard permit 10
+  set community community-list community_list_standard additive
+
+route-map set_community_list_additive_standard_single permit 10
+  set community community-list community_list_standard_single additive
+
+route-map set_community_list_delete_expanded permit 10
+  set community community-list community_list_expanded delete
+
+route-map set_community_list_delete_expanded_single permit 10
+  set community community-list community_list_expanded_single delete
+
+route-map set_community_list_delete_standard permit 10
+  set community community-list community_list_standard delete
+
+route-map set_community_list_delete_standard_single permit 10
+  set community community-list community_list_standard_single delete
+

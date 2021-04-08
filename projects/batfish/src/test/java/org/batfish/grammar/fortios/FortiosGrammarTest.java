@@ -8,6 +8,8 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -15,6 +17,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructu
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
@@ -33,7 +36,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -69,11 +74,14 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -84,10 +92,14 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.AccessList;
@@ -104,6 +116,8 @@ import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
+import org.batfish.representation.fortios.RouteMap;
+import org.batfish.representation.fortios.RouteMapRule;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -605,7 +619,7 @@ public final class FortiosGrammarTest {
                 hasComment("Addrgrp valid cannot be added to valid as it would create a cycle"),
                 hasComment("Addrgrp type folder is not yet supported"),
                 allOf(
-                    hasComment("The type of address group can not be changed"),
+                    hasComment("The type of address group cannot be changed"),
                     hasText(containsString("type default"))))));
   }
 
@@ -624,6 +638,10 @@ public final class FortiosGrammarTest {
     assert bgpProcess != null;
     assertThat(bgpProcess.getAs(), equalTo(1L));
     assertThat(bgpProcess.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+    assertNull(bgpProcess.getEbgpMultipath());
+    assertNull(bgpProcess.getIbgpMultipath());
+    assertFalse(bgpProcess.getEbgpMultipathEffective());
+    assertFalse(bgpProcess.getIbgpMultipathEffective());
 
     Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
     Ip ip1 = Ip.parse("2.2.2.2");
@@ -635,6 +653,10 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getIp(), equalTo(ip2));
     assertThat(neighbor1.getRemoteAs(), equalTo(1L));
     assertThat(neighbor2.getRemoteAs(), equalTo(4294967295L));
+    assertThat(neighbor1.getRouteMapIn(), equalTo("rm1"));
+    assertThat(neighbor1.getRouteMapOut(), equalTo("rm2"));
+    assertNull(neighbor2.getRouteMapIn());
+    assertNull(neighbor2.getRouteMapOut());
     assertThat(neighbor1.getUpdateSource(), equalTo("port1"));
     assertNull(neighbor2.getUpdateSource());
   }
@@ -658,6 +680,8 @@ public final class FortiosGrammarTest {
     org.batfish.datamodel.BgpProcess bgpProcessDefaultVrf =
         c.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
     assertThat(bgpProcessDefaultVrf, hasRouterId(Ip.parse("1.1.1.1")));
+    assertThat(bgpProcessDefaultVrf, hasMultipathEbgp(false));
+    assertThat(bgpProcessDefaultVrf, hasMultipathIbgp(false));
 
     Map<Prefix, BgpActivePeerConfig> defaultVrfNeighbors =
         bgpProcessDefaultVrf.getActiveNeighbors();
@@ -668,6 +692,9 @@ public final class FortiosGrammarTest {
     assertThat(neighbor1.getLocalIp(), equalTo(Ip.parse("10.10.10.1")));
     assertThat(neighbor1.getPeerAddress(), equalTo(ip1));
     assertThat(neighbor1.getRemoteAsns().enumerate(), contains(1L));
+    AddressFamily ipv4Af1 = neighbor1.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
+    assertThat(ipv4Af1.getImportPolicy(), equalTo("rm1"));
+    assertThat(ipv4Af1.getExportPolicy(), equalTo("rm2"));
 
     // VRF 5 BGP process: should only have neighbor 2
     org.batfish.datamodel.BgpProcess bgpProcessVrf5 =
@@ -682,6 +709,9 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getLocalIp(), equalTo(Ip.parse("11.11.11.1")));
     assertThat(neighbor2.getPeerAddress(), equalTo(ip2));
     assertThat(neighbor2.getRemoteAsns().enumerate(), contains(4294967295L));
+    AddressFamily ipv4Af2 = neighbor2.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
+    assertNull(ipv4Af2.getImportPolicy());
+    assertNull(ipv4Af2.getExportPolicy());
   }
 
   @Test
@@ -739,14 +769,49 @@ public final class FortiosGrammarTest {
   public void testBgpConversionNoAs() throws IOException {
     String hostname = "bgp_no_as";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Warnings warnings =
-        batfish
-            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
-            .getWarnings()
-            .get(hostname);
+    // No warnings generated, indicating that BGP conversion was skipped (if it had attempted to
+    // convert the neighbor, it would have generated a warning)
     assertThat(
-        warnings.getRedFlagWarnings(),
-        contains(WarningMatchers.hasText("Ignoring BGP process: No AS configured")));
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()).getWarnings(),
+        not(hasKey(hostname)));
+  }
+
+  @Test
+  public void testBgpMultipath() throws IOException {
+    // Tests extraction and conversion for ebgp-multipath and ibgp-multipath properties when
+    // explicitly set. Defaults are tested in testBgpExtraction/testBgpConversion. Can't test more
+    // than one option per config because each config can only have one top-level BGP configuration.
+    String hostname1 = "bgp_multipath_1";
+    String hostname2 = "bgp_multipath_2";
+
+    // First config has multipath enabled for EBGP, disabled for IBGP; vice versa for second config
+    FortiosConfiguration vc1 = parseVendorConfig(hostname1);
+    BgpProcess vcProc1 = vc1.getBgpProcess();
+    assert vcProc1 != null;
+    assertThat(vcProc1.getEbgpMultipath(), equalTo(true));
+    assertThat(vcProc1.getIbgpMultipath(), equalTo(false));
+    assertThat(vcProc1.getEbgpMultipathEffective(), equalTo(true));
+    assertThat(vcProc1.getIbgpMultipathEffective(), equalTo(false));
+
+    FortiosConfiguration vc2 = parseVendorConfig(hostname2);
+    BgpProcess vcProc2 = vc2.getBgpProcess();
+    assert vcProc2 != null;
+    assertThat(vcProc2.getEbgpMultipath(), equalTo(false));
+    assertThat(vcProc2.getIbgpMultipath(), equalTo(true));
+    assertThat(vcProc2.getEbgpMultipathEffective(), equalTo(false));
+    assertThat(vcProc2.getIbgpMultipathEffective(), equalTo(true));
+
+    Configuration c1 = parseConfig(hostname1);
+    org.batfish.datamodel.BgpProcess proc1 =
+        c1.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
+    assertThat(proc1, hasMultipathEbgp(true));
+    assertThat(proc1, hasMultipathIbgp(false));
+
+    Configuration c2 = parseConfig(hostname2);
+    org.batfish.datamodel.BgpProcess proc2 =
+        c2.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
+    assertThat(proc2, hasMultipathEbgp(false));
+    assertThat(proc2, hasMultipathIbgp(true));
   }
 
   @Test
@@ -851,11 +916,14 @@ public final class FortiosGrammarTest {
     assertThat(tunnel.getMtu(), equalTo(65535));
     assertThat(tunnel.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
 
+    assertThat(vlan.getType(), equalTo(Type.VLAN));
+    assertThat(vlan.getInterface(), equalTo("port1"));
+    assertThat(vlan.getVlanid(), equalTo(4094));
+
     assertThat(loopback.getType(), equalTo(Type.LOOPBACK));
     assertThat(agg.getType(), equalTo(Type.AGGREGATE));
     assertThat(emac.getType(), equalTo(Type.EMAC_VLAN));
     assertThat(redundant.getType(), equalTo(Type.REDUNDANT));
-    assertThat(vlan.getType(), equalTo(Type.VLAN));
     assertThat(wl.getType(), equalTo(Type.WL_MESH));
   }
 
@@ -890,58 +958,64 @@ public final class FortiosGrammarTest {
     Map<String, org.batfish.datamodel.Interface> ifaces = c.getAllInterfaces();
     assertThat(
         ifaces.keySet(),
-        containsInAnyOrder(
-            "port1", "port2", "longest if name", "tunnel", "loopback123", "emac", "vlan"));
+        containsInAnyOrder("port1", "port2", "longest if name", "tunnel", "loopback123", "vlan"));
     org.batfish.datamodel.Interface port1 = ifaces.get("port1");
     org.batfish.datamodel.Interface port2 = ifaces.get("port2");
     org.batfish.datamodel.Interface longName = ifaces.get("longest if name");
     org.batfish.datamodel.Interface tunnel = ifaces.get("tunnel");
     org.batfish.datamodel.Interface loopback = ifaces.get("loopback123");
-    org.batfish.datamodel.Interface emac = ifaces.get("emac");
     org.batfish.datamodel.Interface vlan = ifaces.get("vlan");
 
     // Check active
     assertFalse(tunnel.getActive()); // explicitly set to down
-    Stream.of(port1, port2, longName, loopback, emac, vlan)
+    Stream.of(port1, port2, longName, loopback, vlan)
         .forEach(iface -> assertTrue(iface.getName() + " is up", iface.getActive()));
 
     // Check VRFs
     assertThat(longName.getVrf().getName(), equalTo(computeVrfName("root", 31)));
     String defaultVrf = computeVrfName("root", 0);
-    Stream.of(port1, port2, tunnel, loopback, emac, vlan)
+    Stream.of(port1, port2, tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getVrf().getName(), equalTo(defaultVrf)));
 
     // Check addresses
     assertThat(port1.getAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
     assertThat(longName.getAddress(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
-    Stream.of(port2, tunnel, loopback, emac, vlan).forEach(iface -> assertNull(iface.getAddress()));
+    Stream.of(port2, tunnel, loopback, vlan).forEach(iface -> assertNull(iface.getAddress()));
 
     // Check interface types
     assertThat(port1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
-    assertThat(port2.getInterfaceType(), equalTo(InterfaceType.VLAN));
-    assertThat(longName.getInterfaceType(), equalTo(InterfaceType.VLAN));
+    assertThat(port2.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+    assertThat(longName.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
     assertThat(tunnel.getInterfaceType(), equalTo(InterfaceType.TUNNEL));
     assertThat(loopback.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
-    assertThat(emac.getInterfaceType(), equalTo(InterfaceType.VLAN));
-    assertThat(vlan.getInterfaceType(), equalTo(InterfaceType.VLAN));
+    assertThat(vlan.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
 
     // Check MTUs
     assertThat(port2.getMtu(), equalTo(1234));
-    Stream.of(port1, longName, tunnel, loopback, emac, vlan)
+    Stream.of(port1, longName, tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getMtu(), equalTo(Interface.DEFAULT_INTERFACE_MTU)));
 
     // Check aliases
     assertThat(port1.getDeclaredNames(), contains("longest possibl alias str"));
     assertThat(port2.getDeclaredNames(), contains("no_spaces"));
     assertThat(longName.getDeclaredNames(), contains(""));
-    Stream.of(tunnel, loopback, emac, vlan)
+    Stream.of(tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getDeclaredNames(), empty()));
 
     // Check descriptions
     assertThat(port1.getDescription(), equalTo("quoted description w/ spaces and more"));
     assertThat(port2.getDescription(), equalTo("no_spaces_descr"));
-    Stream.of(longName, tunnel, loopback, emac, vlan)
+    Stream.of(longName, tunnel, loopback, vlan)
         .forEach(iface -> assertNull(iface.getDescription()));
+
+    // Check VLAN properties and dependencies
+    Dependency port1Dependency = new Dependency("port1", DependencyType.BIND);
+    assertThat(port2.getEncapsulationVlan(), equalTo(1236));
+    assertThat(port2.getDependencies(), contains(port1Dependency));
+    assertThat(longName.getEncapsulationVlan(), equalTo(1235));
+    assertThat(longName.getDependencies(), contains(port1Dependency));
+    assertThat(vlan.getEncapsulationVlan(), equalTo(4094));
+    assertThat(vlan.getDependencies(), contains(port1Dependency));
   }
 
   @Test
@@ -965,11 +1039,19 @@ public final class FortiosGrammarTest {
                 allOf(
                     hasComment("Illegal value for interface alias"),
                     hasText(containsString("alias string is too long to associate with iface"))),
-                hasComment("Interface edit block ignored: name conflicts with a zone name"))));
+                hasComment("Interface edit block ignored: name conflicts with a zone name"),
+                hasComment("Expected vlanid in range 1-4094, but got '4095'"),
+                hasComment("Interface iface_undefined is undefined"),
+                allOf(
+                    hasComment("The type of an interface cannot be changed"),
+                    hasText(containsString("type loopback"))),
+                hasComment("Interface edit block ignored: name is invalid"),
+                hasComment("Interface edit block ignored: vlanid must be set"),
+                hasComment("Interface edit block ignored: interface must be set"))));
 
     // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
     // object is created when the name conflicts
-    assertThat(vc.getInterfaces(), hasKeys("port1"));
+    assertThat(vc.getInterfaces(), hasKeys("port1", "vlan1"));
   }
 
   @Test
@@ -1854,7 +1936,15 @@ public final class FortiosGrammarTest {
                     hasText("addr20 all")),
                 allOf(
                     hasComment("When 'any' is set together with other interfaces, it is removed"),
-                    hasText("any port10")))));
+                    hasText("any port10")),
+                hasComment("Cannot move a non-existent policy 99999"),
+                hasComment("Cannot move around a non-existent policy 99999"),
+                hasComment("Cannot clone a non-existent policy 99999"),
+                allOf(
+                    hasComment("Cannot create a cloned policy with an invalid name"),
+                    hasText("clone 3 to foobar")),
+                hasComment("Expected policy number in range 0-4294967294, but got 'foobar'"),
+                hasComment("Cannot clone, policy 1 already exists"))));
 
     Warnings conversionWarnings =
         batfish
@@ -2038,6 +2128,110 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testRouteMapExtraction() {
+    String hostname = "route_map";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getRouteMaps(), hasKeys("longest_route_map_name_allowed_by_f", "route_map1"));
+    RouteMap longName = vc.getRouteMaps().get("longest_route_map_name_allowed_by_f");
+    RouteMap rm1 = vc.getRouteMaps().get("route_map1");
+    // Original rule ordering should be preserved
+    assertThat(rm1.getRules().keySet(), contains("9999", "1", "2"));
+    RouteMapRule rule9999 = rm1.getRules().get("9999");
+    RouteMapRule rule1 = rm1.getRules().get("1");
+    RouteMapRule rule2 = rm1.getRules().get("2");
+
+    // Defaults
+    assertNull(longName.getComments());
+    assertThat(longName.getRules(), anEmptyMap());
+    assertNull(rule2.getAction());
+    assertThat(rule2.getActionEffective(), equalTo(RouteMapRule.DEFAULT_ACTION));
+    assertNull(rule2.getMatchIpAddress());
+
+    // Explicitly configured properties
+    assertThat(rm1.getComments(), equalTo("comment for route_map1"));
+    assertThat(rule9999.getAction(), equalTo(RouteMapRule.Action.PERMIT));
+    assertThat(rule9999.getActionEffective(), equalTo(RouteMapRule.Action.PERMIT));
+    assertThat(rule9999.getMatchIpAddress(), equalTo("acl1"));
+    assertThat(rule1.getAction(), equalTo(RouteMapRule.Action.DENY));
+    assertThat(rule1.getActionEffective(), equalTo(RouteMapRule.Action.DENY));
+    assertThat(rule1.getMatchIpAddress(), equalTo("acl2"));
+  }
+
+  @Test
+  public void testRouteMapConversion() throws IOException {
+    String hostname = "route_map";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getRoutingPolicies(), hasKeys("longest_route_map_name_allowed_by_f", "route_map1"));
+    RoutingPolicy longName = c.getRoutingPolicies().get("longest_route_map_name_allowed_by_f");
+    RoutingPolicy rm1 = c.getRoutingPolicies().get("route_map1");
+
+    // This route-map has no rules
+    assertThat(longName.getStatements(), empty());
+
+    // rm1 permits 10.10.10.0/24 or longer, then denies 10.10.0.0/16 or longer, then permits all
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder();
+    Environment.Builder envBuilder = Environment.builder(c);
+
+    // Networks permitted by rule 9999
+    rb.setNetwork(Prefix.parse("10.10.10.0/24"));
+    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    rb.setNetwork(Prefix.parse("10.10.10.128/25"));
+    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+
+    // Networks denied by rule 1
+    rb.setNetwork(Prefix.parse("10.10.0.0/16"));
+    assertFalse(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    rb.setNetwork(Prefix.parse("10.10.128.0/17"));
+    assertFalse(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+
+    // Networks permitted by rule 2
+    rb.setNetwork(Prefix.parse("10.10.0.0/15"));
+    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    rb.setNetwork(Prefix.ZERO);
+    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+  }
+
+  @Test
+  public void testRouteMapWarnings() throws IOException {
+    String hostname = "route_map_warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Access-list or prefix-list acl_undefined is undefined and cannot be"
+                        + " referenced"),
+                hasComment(
+                    "Expected route-map rule number in range 0-4294967295, but got '4294967296'"),
+                hasComment("Route-map rule edit block ignored: name is invalid"),
+                allOf(
+                    hasComment("Illegal value for route-map name"),
+                    hasText(containsString("too_long_to_use_for_a_route_map_name"))),
+                hasComment("Route-map edit block ignored: name is invalid"))));
+
+    // Ensure existing route-map rule is not obliterated by an invalid edit
+    assertThat(vc.getRouteMaps(), hasKeys("route_map1"));
+    RouteMap rm1 = vc.getRouteMaps().get("route_map1");
+    assertThat(rm1.getRules(), hasKeys("1"));
+    RouteMapRule rule1 = rm1.getRules().get("1");
+    assertThat(rule1.getMatchIpAddress(), equalTo("acl_name1"));
+  }
+
+  @Test
   public void testRename() throws IOException {
     String hostname = "rename";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2117,15 +2311,15 @@ public final class FortiosGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 74)));
+            filename, FortiosStructureType.ADDRESS, "new_addr2", contains(18, 19, 20, 76)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 71)));
+            filename, FortiosStructureType.SERVICE_CUSTOM, "new_service2", contains(8, 9, 10, 73)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.ZONE, "new_zone2", contains(39, 40, 41, 77)));
+            filename, FortiosStructureType.ZONE, "new_zone2", contains(41, 42, 43, 79)));
 
     // Should have references for the renamed structures, even if the renaming happened after the
     // reference
@@ -2177,17 +2371,21 @@ public final class FortiosGrammarTest {
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr2"));
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "addr3"));
     assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.POLICY, "1"));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.POLICY, "2", contains(70)));
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr1", 2));
-    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr2", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr2", 4));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr3", 1));
     // Interface refs include self-refs
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port1", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port2", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port3", 2));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service1", 1));
-    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service2", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service2", 2));
 
     // Confirm undefined references are detected
     assertThat(
@@ -2225,6 +2423,25 @@ public final class FortiosGrammarTest {
             FortiosStructureType.SERVICE_CUSTOM_OR_SERVICE_GROUP,
             "UNDEFINED",
             FortiosStructureUsage.POLICY_SERVICE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.POLICY, "2", FortiosStructureUsage.POLICY_DELETE));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.POLICY, "3", FortiosStructureUsage.POLICY_CLONE));
+
+    // Deleted structure should not have a definition or self-ref
+    assertThat(ccae, not(hasDefinedStructure(filename, FortiosStructureType.POLICY, "5")));
+    assertThat(
+        ccae,
+        not(
+            hasReferencedStructure(
+                filename,
+                FortiosStructureType.POLICY,
+                "5",
+                FortiosStructureUsage.POLICY_SELF_REF)));
   }
 
   @Test
@@ -2283,11 +2500,7 @@ public final class FortiosGrammarTest {
         .build();
   }
 
-  /**
-   * Test that policies are converted correctly for use as interface outgoing filters. This test is
-   * currently ignored because of a bug in how we convert policies - deny rules that don't match
-   * still end up denying traffic.
-   */
+  /** Test that policies are converted correctly for use as interface outgoing filters. */
   @Test
   public void testInterfaceOutgoingFilterPolicyConversion() throws IOException {
     String hostname = "policy";
@@ -2337,7 +2550,52 @@ public final class FortiosGrammarTest {
   }
 
   @Test
-  public void testAccessList() throws IOException {
+  public void testPolicyClone() throws IOException {
+    String hostname = "policy_clone";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPolicies().keySet(), contains("1", "2", "3", "4"));
+
+    // Confirm the clone has the correct properties, i.e. everything identical to parent except num
+    Policy clone = vc.getPolicies().get("3");
+    assertThat(clone.getAction(), equalTo(Action.ACCEPT));
+    assertThat(clone.getDstIntf(), contains("any"));
+    assertThat(clone.getSrcIntf(), contains("any"));
+    assertThat(clone.getDstAddr(), contains("all"));
+    assertThat(clone.getSrcAddr(), contains("all"));
+    assertThat(clone.getService(), contains("ALL_TCP"));
+    assertThat(clone.getNumber(), equalTo("3"));
+  }
+
+  @Test
+  public void testPolicyDelete() throws IOException {
+    String hostname = "policy_delete";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // 3 doesn't show up since it is deleted
+    // 1 is last, since it was deleted then re-created
+    assertThat(vc.getPolicies().keySet(), contains("2", "1"));
+  }
+
+  @Test
+  public void testPolicyMove() throws IOException {
+    String hostname = "policy_move";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPolicies().keySet(), contains("5", "1", "2", "4", "3"));
+  }
+
+  @Test
+  public void testAccessListExtraction() throws IOException {
     String hostname = "access_list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     FortiosConfiguration vc =
@@ -2357,29 +2615,82 @@ public final class FortiosGrammarTest {
 
     // Defaults
     assertNull(longName.getComments());
-    assertNull(rule12.getAction());
-    assertThat(rule12.getActionEffective(), equalTo(AccessListRule.DEFAULT_ACTION));
-    assertNull(rule12.getExactMatch());
-    assertThat(rule12.getExactMatchEffective(), equalTo(AccessListRule.DEFAULT_EXACT_MATCH));
-    assertNull(rule12.getWildcard());
+    assertNull(rule2.getAction());
+    assertThat(rule2.getActionEffective(), equalTo(AccessListRule.DEFAULT_ACTION));
+    assertNull(rule2.getExactMatch());
+    assertThat(rule2.getExactMatchEffective(), equalTo(AccessListRule.DEFAULT_EXACT_MATCH));
+    assertNull(rule2.getWildcard());
 
     // Explicitly (re)configured values
     assertThat(acl1.getComments(), equalTo("comment for acl_name1"));
-    assertThat(rule12.getPrefix(), equalTo(Prefix.ZERO));
+    assertThat(rule12.getAction(), equalTo(AccessListRule.Action.PERMIT));
+    assertThat(rule12.getActionEffective(), equalTo(AccessListRule.Action.PERMIT));
+    assertTrue(rule12.getExactMatch());
+    assertTrue(rule12.getExactMatchEffective());
+    assertThat(rule12.getPrefix(), equalTo(Prefix.parse("1.2.3.0/24")));
+    assertNull(rule12.getWildcard());
     assertThat(rule1.getAction(), equalTo(AccessListRule.Action.DENY));
     assertThat(rule1.getActionEffective(), equalTo(AccessListRule.Action.DENY));
-    assertTrue(rule1.getExactMatch());
-    assertTrue(rule1.getExactMatchEffective());
-    assertThat(rule1.getPrefix(), equalTo(Prefix.parse("1.2.3.0/24")));
-    assertNull(rule1.getWildcard());
-    assertThat(rule2.getAction(), equalTo(AccessListRule.Action.PERMIT));
-    assertThat(rule2.getActionEffective(), equalTo(AccessListRule.Action.PERMIT));
-    assertFalse(rule2.getExactMatch());
-    assertFalse(rule2.getExactMatchEffective());
+    assertFalse(rule1.getExactMatch());
+    assertFalse(rule1.getExactMatchEffective());
     assertThat(
-        rule2.getWildcard(),
+        rule1.getWildcard(),
         equalTo(IpWildcard.ipWithWildcardMask(Ip.parse("1.0.0.0"), Ip.parse("0.255.255.255"))));
-    assertNull(rule2.getPrefix());
+    assertNull(rule1.getPrefix());
+    assertThat(rule2.getPrefix(), equalTo(Prefix.ZERO));
+  }
+
+  @Test
+  public void testAccessListConversion() throws IOException {
+    String hostname = "access_list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(
+        c.getRouteFilterLists(), hasKeys("the_longest_access_list_name_possib", "acl_name1"));
+    RouteFilterList longName = c.getRouteFilterLists().get("the_longest_access_list_name_possib");
+    RouteFilterList acl1 = c.getRouteFilterLists().get("acl_name1");
+
+    // Access-list with no lines doesn't permit anything
+    assertThat(longName.getLines(), empty());
+    assertFalse(longName.permits(Prefix.ZERO));
+
+    // acl1 permits 1.2.3.0/24, then denies everything in 1.0.0.0/8, then permits all
+    assertTrue(acl1.permits(Prefix.parse("1.2.3.0/24")));
+    assertFalse(acl1.permits(Prefix.parse("1.2.3.0/25"))); // permit 1.2.3.0/24 is exact-match
+    assertFalse(acl1.permits(Prefix.parse("1.2.3.0/23")));
+    assertFalse(acl1.permits(Prefix.parse("1.0.0.0/8")));
+    assertTrue(acl1.permits(Prefix.parse("0.0.0.0/0")));
+  }
+
+  @Test
+  public void testAccessListReference() throws IOException {
+    String hostname = "access_list_reference";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename,
+            FortiosStructureType.ACCESS_LIST,
+            "acl_name1",
+            contains(5, 6, 9, 10, 11, 12, 13, 14, 15, 16)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            filename, FortiosStructureType.ACCESS_LIST, "acl_name2", contains(7, 8)));
+
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ACCESS_LIST, "acl_name1", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ACCESS_LIST, "acl_name2", 0));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.ACCESS_LIST_OR_PREFIX_LIST, "acl_undefined"));
   }
 
   @Test

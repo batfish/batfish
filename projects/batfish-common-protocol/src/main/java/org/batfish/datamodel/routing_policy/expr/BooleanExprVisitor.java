@@ -30,8 +30,6 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitMatchCommunities(MatchCommunities matchCommunities, U arg);
 
-  T visitMatchCommunitySet(MatchCommunitySet matchCommunitySet, U arg);
-
   T visitMatchIp6AccessList(MatchIp6AccessList matchIp6AccessList, U arg);
 
   T visitMatchIpv4(MatchIpv4 matchIpv4, U arg);

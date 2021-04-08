@@ -1,6 +1,7 @@
 package org.batfish.representation.fortios;
 
 import static org.batfish.representation.fortios.FortiosBgpConversions.convertBgp;
+import static org.batfish.representation.fortios.FortiosBgpConversions.convertRouteMap;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.computeOutgoingFilterName;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.convertPolicies;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateCrossZoneFilters;
@@ -13,8 +14,8 @@ import static org.batfish.representation.fortios.FortiosRouteConversions.convert
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,10 +30,18 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.collections.InsertOrderedMap;
+import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.vendor.VendorConfiguration;
 
 public class FortiosConfiguration extends VendorConfiguration {
@@ -42,9 +51,10 @@ public class FortiosConfiguration extends VendorConfiguration {
     _addresses = new HashMap<>();
     _addrgrps = new HashMap<>();
     _interfaces = new HashMap<>();
-    _policies = new LinkedHashMap<>();
+    _policies = new InsertOrderedMap<>();
     _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
+    _routeMaps = new HashMap<>();
     _services = new HashMap<>();
     _serviceGroups = new HashMap<>();
     _staticRoutes = new HashMap<>();
@@ -90,7 +100,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   /** name -> policy */
-  public @Nonnull Map<String, Policy> getPolicies() {
+  public @Nonnull InsertOrderedMap<String, Policy> getPolicies() {
     return _policies;
   }
 
@@ -102,6 +112,11 @@ public class FortiosConfiguration extends VendorConfiguration {
   /** UUID -> renameable object */
   public @Nonnull Map<BatfishUUID, FortiosRenameableObject> getRenameableObjects() {
     return _renameableObjects;
+  }
+
+  /** name -> route-map */
+  public @Nonnull Map<String, RouteMap> getRouteMaps() {
+    return _routeMaps;
   }
 
   /** name -> service */
@@ -136,10 +151,11 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Addrgrp> _addrgrps;
   private final @Nonnull Map<String, Interface> _interfaces;
-  // Note: this is a LinkedHashMap to preserve insertion order
-  private final @Nonnull Map<String, Policy> _policies;
+  // Note: using InsertOrderedMap to preserve insertion order and permit reordering policies
+  private final @Nonnull InsertOrderedMap<String, Policy> _policies;
   private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
   private final @Nonnull Map<String, Map<String, Replacemsg>> _replacemsgs;
+  private final @Nonnull Map<String, RouteMap> _routeMaps;
   private final @Nonnull Map<String, Service> _services;
   private final @Nonnull Map<String, ServiceGroup> _serviceGroups;
   private final @Nonnull Map<String, StaticRoute> _staticRoutes;
@@ -183,6 +199,14 @@ public class FortiosConfiguration extends VendorConfiguration {
             .collect(
                 ImmutableMap.toImmutableMap(Zone::getName, FortiosConfiguration::convertZone)));
 
+    // Convert access-lists
+    _accessLists.forEach(
+        (name, accessList) -> c.getRouteFilterLists().put(name, convertAccessList(accessList)));
+
+    // Convert route-maps. Must happen after access-list conversion (and prefix-list conversion once
+    // they are supported)
+    _routeMaps.values().forEach(routeMap -> convertRouteMap(routeMap, c, _w));
+
     // Convert BGP. Must happen after interface conversion
     if (_bgpProcess != null) {
       convertBgp(_bgpProcess, c, _w);
@@ -202,6 +226,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
     markConcreteStructure(FortiosStructureType.SERVICE_GROUP);
     markConcreteStructure(FortiosStructureType.INTERFACE);
+    markConcreteStructure(FortiosStructureType.ACCESS_LIST);
     return c;
   }
 
@@ -251,6 +276,19 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setAddress(iface.getIp())
             .setMtu(iface.getMtuEffective())
             .setType(type);
+
+    if (iface.getTypeEffective() == Type.VLAN) {
+      // Handled by extraction
+      assert iface.getVlanid() != null && iface.getInterface() != null;
+
+      viIface.setEncapsulationVlan(iface.getVlanid());
+    }
+
+    if (iface.getInterface() != null) {
+      viIface.setDependencies(
+          ImmutableSet.of(new Dependency(iface.getInterface(), DependencyType.BIND)));
+    }
+
     // TODO Is this the right VI field for interface alias?
     Optional.ofNullable(iface.getAlias())
         .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
@@ -286,15 +324,43 @@ public class FortiosConfiguration extends VendorConfiguration {
         return InterfaceType.PHYSICAL;
       case TUNNEL:
         return InterfaceType.TUNNEL;
-      case EMAC_VLAN:
       case VLAN:
-        return InterfaceType.VLAN;
+        return InterfaceType.LOGICAL;
       case AGGREGATE: // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
       case REDUNDANT: // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
       case WL_MESH: // TODO Support this type
+      case EMAC_VLAN: // TODO Support this type
       default:
         return null;
     }
+  }
+
+  private static @Nonnull RouteFilterList convertAccessList(AccessList accessList) {
+    RouteFilterList rfl = new RouteFilterList(accessList.getName());
+    rfl.setLines(
+        accessList.getRules().values().stream()
+            .map(
+                rule -> {
+                  LineAction action =
+                      rule.getActionEffective() == AccessListRule.Action.PERMIT
+                          ? LineAction.PERMIT
+                          : LineAction.DENY;
+                  if (rule.getPrefix() != null) {
+                    int prefixLength = rule.getPrefix().getPrefixLength();
+                    SubRange lengthRange =
+                        rule.getExactMatchEffective()
+                            ? SubRange.singleton(prefixLength)
+                            : new SubRange(prefixLength, Prefix.MAX_PREFIX_LENGTH);
+                    return new RouteFilterLine(action, rule.getPrefix(), lengthRange);
+                  } else {
+                    assert rule.getWildcard() != null;
+                    // Can match network of any length as long as the IP matches the wildcard
+                    return new RouteFilterLine(
+                        action, rule.getWildcard(), new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
+                  }
+                })
+            .collect(ImmutableList.toImmutableList()));
+    return rfl;
   }
 
   private static @Nonnull org.batfish.datamodel.Zone convertZone(Zone zone) {

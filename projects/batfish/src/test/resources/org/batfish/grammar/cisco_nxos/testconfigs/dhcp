@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname dhcp
+!
+feature dhcp
+!
+ip dhcp relay
+ipv6 dhcp relay
+!

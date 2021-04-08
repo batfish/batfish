@@ -309,10 +309,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return String.format("RT-%s", name);
   }
 
-  public static String computeIcmpObjectGroupAclName(String name) {
-    return String.format("~ICMP_OBJECT_GROUP~%s~", name);
-  }
-
   /**
    * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
    * Filters out the interfaces having no primary {@link ConcreteInterfaceAddress}
@@ -328,16 +324,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
   }
 
-  public static String computeProtocolObjectGroupAclName(String name) {
-    return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
-  }
-
   public static String computeServiceObjectAclName(String name) {
     return String.format("~SERVICE_OBJECT~%s~", name);
-  }
-
-  public static String computeServiceObjectGroupAclName(String name) {
-    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
 
   @Override
@@ -435,8 +423,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, MacAccessList> _macAccessLists;
 
-  private final Map<String, IcmpTypeObjectGroup> _icmpTypeObjectGroups;
-
   private final Map<String, IntegerSpace> _namedVlans;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
@@ -453,11 +439,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, PrefixList> _prefixLists;
 
-  private final Map<String, ProtocolObjectGroup> _protocolObjectGroups;
-
   private final Map<String, RoutePolicy> _routePolicies;
-
-  private final Map<String, ServiceObject> _serviceObjects;
 
   private SnmpServer _snmpServer;
 
@@ -474,8 +456,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private final Map<String, Vrf> _vrfs;
 
   private final SortedMap<String, VrrpInterface> _vrrpGroups;
-
-  private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
 
   private final Map<String, TrackMethod> _trackingGroups;
 
@@ -504,7 +484,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _ipsecProfiles = new TreeMap<>();
     _keyrings = new TreeMap<>();
     _macAccessLists = new TreeMap<>();
-    _icmpTypeObjectGroups = new TreeMap<>();
     _namedVlans = new HashMap<>();
     _networkObjectGroups = new TreeMap<>();
     _networkObjectInfos = new TreeMap<>();
@@ -512,10 +491,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _objectGroups = new TreeMap<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
-    _protocolObjectGroups = new TreeMap<>();
     _routePolicies = new TreeMap<>();
-    _serviceObjectGroups = new TreeMap<>();
-    _serviceObjects = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
     _vrfs = new TreeMap<>();
@@ -836,15 +812,13 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
   }
 
-  private void markIpOrMacAcls(CiscoXrStructureUsage... usages) {
+  private void markIpAcls(CiscoXrStructureUsage... usages) {
     for (CiscoXrStructureUsage usage : usages) {
       markAbstractStructure(
           CiscoXrStructureType.ACCESS_LIST,
           usage,
           Arrays.asList(
-              CiscoXrStructureType.IPV4_ACCESS_LIST,
-              CiscoXrStructureType.IPV6_ACCESS_LIST,
-              CiscoXrStructureType.MAC_ACCESS_LIST));
+              CiscoXrStructureType.IPV4_ACCESS_LIST, CiscoXrStructureType.IPV6_ACCESS_LIST));
     }
   }
 
@@ -2180,28 +2154,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                         new IpSpaceMetadata(
                             name, CiscoXrStructureType.NETWORK_OBJECT.getDescription())));
 
-    // convert each IcmpTypeGroup to IpAccessList
-    _icmpTypeObjectGroups.forEach(
-        (name, icmpTypeObjectGroups) ->
-            c.getIpAccessLists()
-                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
-
-    // convert each ProtocolObjectGroup to IpAccessList
-    _protocolObjectGroups.forEach(
-        (name, protocolObjectGroup) ->
-            c.getIpAccessLists()
-                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
-
-    // convert each ServiceObject and ServiceObjectGroup to IpAccessList
-    _serviceObjectGroups.forEach(
-        (name, serviceObjectGroup) ->
-            c.getIpAccessLists()
-                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
-    _serviceObjects.forEach(
-        (name, serviceObject) ->
-            c.getIpAccessLists()
-                .put(computeServiceObjectAclName(name), toIpAccessList(serviceObject)));
-
     // convert IPv6 access lists to ipv6 access lists route6 filter lists
     for (Ipv6AccessList eaList : _ipv6Acls.values()) {
       Ip6AccessList ipaList = CiscoXrConversions.toIp6AccessList(eaList);
@@ -2496,7 +2448,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoXrStructureType.IPV6_ACCESS_LIST);
 
     // mark references to ACLs that may not appear in data model
-    markIpOrMacAcls(
+    markIpAcls(
         CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST);
     markAcls(
         CiscoXrStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
@@ -2547,21 +2499,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoXrStructureType.POLICY_MAP);
 
     // object-group
-    markConcreteStructure(CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP);
     markConcreteStructure(CiscoXrStructureType.NETWORK_OBJECT_GROUP);
-    markConcreteStructure(CiscoXrStructureType.PROTOCOL_OBJECT_GROUP);
-    markConcreteStructure(CiscoXrStructureType.SERVICE_OBJECT_GROUP);
-    markAbstractStructure(
-        CiscoXrStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-        CiscoXrStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-        ImmutableList.of(
-            CiscoXrStructureType.PROTOCOL_OBJECT_GROUP, CiscoXrStructureType.SERVICE_OBJECT_GROUP));
 
     // objects
-    markConcreteStructure(CiscoXrStructureType.ICMP_TYPE_OBJECT);
     markConcreteStructure(CiscoXrStructureType.NETWORK_OBJECT);
-    markConcreteStructure(CiscoXrStructureType.SERVICE_OBJECT);
-    markConcreteStructure(CiscoXrStructureType.PROTOCOL_OBJECT);
 
     // service template
     markConcreteStructure(CiscoXrStructureType.SERVICE_TEMPLATE);
@@ -2731,10 +2672,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
   }
 
-  public Map<String, IcmpTypeObjectGroup> getIcmpTypeObjectGroups() {
-    return _icmpTypeObjectGroups;
-  }
-
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
   }
@@ -2749,18 +2686,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, ObjectGroup> getObjectGroups() {
     return _objectGroups;
-  }
-
-  public Map<String, ProtocolObjectGroup> getProtocolObjectGroups() {
-    return _protocolObjectGroups;
-  }
-
-  public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
-    return _serviceObjectGroups;
-  }
-
-  public Map<String, ServiceObject> getServiceObjects() {
-    return _serviceObjects;
   }
 
   public Map<String, InspectClassMap> getInspectClassMaps() {

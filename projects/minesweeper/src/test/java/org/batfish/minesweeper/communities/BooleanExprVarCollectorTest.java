@@ -16,20 +16,19 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.minesweeper.CommunityVar;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,8 +62,10 @@ public class BooleanExprVarCollectorTest {
     Conjunction c =
         new Conjunction(
             ImmutableList.of(
-                new MatchCommunitySet(new LiteralCommunity(COMM1)),
-                new MatchCommunitySet(new LiteralCommunity(COMM2))));
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM1))),
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM2)))));
 
     Set<CommunityVar> result = _varCollector.visitConjunction(c, _baseConfig);
 
@@ -80,8 +81,10 @@ public class BooleanExprVarCollectorTest {
     ConjunctionChain cc =
         new ConjunctionChain(
             ImmutableList.of(
-                new MatchCommunitySet(new LiteralCommunity(COMM1)),
-                new MatchCommunitySet(new LiteralCommunity(COMM2))));
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM1))),
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM2)))));
 
     Set<CommunityVar> result = _varCollector.visitConjunctionChain(cc, _baseConfig);
 
@@ -97,8 +100,10 @@ public class BooleanExprVarCollectorTest {
     Disjunction d =
         new Disjunction(
             ImmutableList.of(
-                new MatchCommunitySet(new LiteralCommunity(COMM1)),
-                new MatchCommunitySet(new LiteralCommunity(COMM2))));
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM1))),
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM2)))));
 
     Set<CommunityVar> result = _varCollector.visitDisjunction(d, _baseConfig);
 
@@ -114,8 +119,10 @@ public class BooleanExprVarCollectorTest {
     FirstMatchChain fmc =
         new FirstMatchChain(
             ImmutableList.of(
-                new MatchCommunitySet(new LiteralCommunity(COMM1)),
-                new MatchCommunitySet(new LiteralCommunity(COMM2))));
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM1))),
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM2)))));
 
     Set<CommunityVar> result = _varCollector.visitFirstMatchChain(fmc, _baseConfig);
 
@@ -151,21 +158,12 @@ public class BooleanExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitMatchCommunitySet() {
-
-    MatchCommunitySet mcs = new MatchCommunitySet(new LiteralCommunity(COMM1));
-
-    Set<CommunityVar> result = _varCollector.visitMatchCommunitySet(mcs, _baseConfig);
-
-    Set<CommunityVar> expected = ImmutableSet.of(CommunityVar.from(COMM1));
-
-    assertEquals(expected, result);
-  }
-
-  @Test
   public void testVisitNot() {
 
-    Not n = new Not(new MatchCommunitySet(new LiteralCommunity(COMM1)));
+    Not n =
+        new Not(
+            new MatchCommunities(
+                InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM1))));
 
     Set<CommunityVar> result = _varCollector.visitNot(n, _baseConfig);
 
@@ -181,10 +179,15 @@ public class BooleanExprVarCollectorTest {
     Community comm4 = StandardCommunity.parse("23:30");
 
     WithEnvironmentExpr wee = new WithEnvironmentExpr();
-    wee.setExpr(new MatchCommunitySet(new LiteralCommunity(COMM1)));
-    wee.setPreStatements(ImmutableList.of(new SetCommunity(new LiteralCommunity(COMM2))));
-    wee.setPostStatements(ImmutableList.of(new SetCommunity(new LiteralCommunity(comm3))));
-    wee.setPostTrueStatements(ImmutableList.of(new SetCommunity(new LiteralCommunity(comm4))));
+    wee.setExpr(
+        new MatchCommunities(
+            InputCommunities.instance(), new HasCommunity(new CommunityIs(COMM1))));
+    wee.setPreStatements(
+        ImmutableList.of(new SetCommunities(new LiteralCommunitySet(CommunitySet.of(COMM2)))));
+    wee.setPostStatements(
+        ImmutableList.of(new SetCommunities(new LiteralCommunitySet(CommunitySet.of(comm3)))));
+    wee.setPostTrueStatements(
+        ImmutableList.of(new SetCommunities(new LiteralCommunitySet(CommunitySet.of(comm4)))));
 
     Set<CommunityVar> result = _varCollector.visitWithEnvironmentExpr(wee, _baseConfig);
 

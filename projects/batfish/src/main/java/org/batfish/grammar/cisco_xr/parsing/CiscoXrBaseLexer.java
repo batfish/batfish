@@ -1,6 +1,5 @@
 package org.batfish.grammar.cisco_xr.parsing;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.CharStream;
@@ -45,31 +44,7 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
     _bannerIosDelimiter = null;
   }
 
-  protected boolean _enableAclNum = false;
-  protected boolean _enableDec = true;
-  protected boolean _enableIpv6Address = true;
-  protected boolean _enableIpAddress = true;
-  protected boolean _enableCommunityListNum = false;
-  protected boolean _enableRegex = false;
-
-  protected boolean _inAccessList = false;
-  protected boolean _inCommunitySet = false;
-
   private @Nullable Integer _bannerIosDelimiter;
   private int _lastTokenType = -1;
   private int _secondToLastTokenType = -1;
-
-  @Override
-  public @Nonnull String printStateVariables() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("_enableAclNum: " + _enableAclNum + "\n");
-    sb.append("_enableCommunityListNum: " + _enableCommunityListNum + "\n");
-    sb.append("_enableDec: " + _enableDec + "\n");
-    sb.append("_enableIpAddress: " + _enableIpAddress + "\n");
-    sb.append("_enableIpv6Address: " + _enableIpv6Address + "\n");
-    sb.append("_enableRegex: " + _enableRegex + "\n");
-    sb.append("_inAccessList: " + _inAccessList + "\n");
-    sb.append("_inCommunitySet: " + _inCommunitySet + "\n");
-    return sb.toString();
-  }
 }

@@ -59,8 +59,6 @@ public class CommunityVarTest {
   public void testCompare() {
     List<CommunityVar> ordered =
         ImmutableList.of(
-            CommunityVar.from(StandardCommunity.of(1, 1)),
-            CommunityVar.from(StandardCommunity.of(1, 2)),
             CommunityVar.from("1:1"),
             CommunityVar.from("1:2"),
             CommunityVar.other("1:1"),

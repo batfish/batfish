@@ -38,6 +38,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.fortios.FortiosParser.Access_list_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Access_list_or_prefix_list_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Acl_rule_numberContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Address_namesContext;
@@ -74,7 +75,10 @@ import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_srcintfContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_cloneContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_deleteContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfp_moveContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_actionContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_commentsContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_set_dstaddrContext;
@@ -111,7 +115,14 @@ import org.batfish.grammar.fortios.FortiosParser.Crb_set_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crb_set_router_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_inContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_outContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrm_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrme_set_commentsContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrmecr_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrmecre_set_actionContext;
+import org.batfish.grammar.fortios.FortiosParser.Crrmecre_set_match_ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
@@ -124,12 +135,14 @@ import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_aliasContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_descriptionContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtuContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtu_overrideContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_vlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vrfContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
@@ -166,6 +179,8 @@ import org.batfish.grammar.fortios.FortiosParser.Port_rangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Route_distanceContext;
+import org.batfish.grammar.fortios.FortiosParser.Route_map_actionContext;
+import org.batfish.grammar.fortios.FortiosParser.Route_map_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Service_port_rangeContext;
@@ -177,6 +192,7 @@ import org.batfish.grammar.fortios.FortiosParser.Subnet_maskContext;
 import org.batfish.grammar.fortios.FortiosParser.Uint16Context;
 import org.batfish.grammar.fortios.FortiosParser.Uint8Context;
 import org.batfish.grammar.fortios.FortiosParser.Up_or_downContext;
+import org.batfish.grammar.fortios.FortiosParser.VlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.grammar.fortios.FortiosParser.Zone_nameContext;
@@ -195,6 +211,8 @@ import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
+import org.batfish.representation.fortios.RouteMap;
+import org.batfish.representation.fortios.RouteMapRule;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -453,7 +471,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         assert ctx.subnet.ip != null && ctx.subnet.mask != null;
         // Convert to wildcard to get canonicalized IP (CLI automatically zeroes out bits in the IP
         // that are zeros in the mask, even if the mask is invalid).
-        IpWildcard wildcard = toIpWildcard(ctx.subnet.ip, ctx.subnet.mask);
+        IpWildcard wildcard = toIpWildcard(ctx.subnet.ip, ctx.subnet.mask, true);
         _currentAddress.getTypeSpecificFields().setIp1(wildcard.getIp());
         _currentAddress.getTypeSpecificFields().setIp2(toIp(ctx.subnet.mask));
       }
@@ -481,7 +499,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfa_set_wildcard(Cfa_set_wildcardContext ctx) {
     if (_currentAddress.getType() == Address.Type.WILDCARD) {
       // Convert to wildcard; canonicalizes IP based on mask bits
-      IpWildcard wildcard = toIpWildcard(ctx.wildcard);
+      IpWildcard wildcard = toIpWildcard(ctx.wildcard, true);
       // Set IP and mask in _currentAddress. Invert mask bits because IpWildcard interprets set bits
       // as "don't matter" while FortiOS interprets unset bits as "don't matter".
       _currentAddress.getTypeSpecificFields().setIp1(wildcard.getIp());
@@ -540,7 +558,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfaddrgrp_set_type(Cfaddrgrp_set_typeContext ctx) {
     Addrgrp prevGrp = _c.getAddrgrps().get(_currentAddrgrp.getName());
     if (prevGrp != null) {
-      warn(ctx, "The type of address group can not be changed");
+      warn(ctx, "The type of address group cannot be changed");
       return;
     }
     _currentAddrgrp.setType(toAddrgrpType(ctx, ctx.type));
@@ -669,22 +687,39 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void enterCsi_edit(Csi_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.interface_name());
-    Interface existing = name.map(_c.getInterfaces()::get).orElse(null);
-    if (existing == null) {
-      // TODO edit block validation / committing
-      _currentInterface = new Interface(toString(ctx.interface_name().str()));
-      return;
+    _currentInterface =
+        name.map(_c.getInterfaces()::get)
+            .orElseGet(() -> new Interface(toString(ctx.interface_name().str())));
+    _currentInterfaceNameValid = name.isPresent();
+  }
+
+  /** Returns message indicating why interface can't be committed in the CLI, or null if it can */
+  public static @Nullable String interfaceValid(
+      Interface iface, Set<String> zoneNames, boolean nameValid) {
+    if (!nameValid) {
+      return "name is invalid";
     }
-    _currentInterface = existing;
+    if (zoneNames.contains(iface.getName())) {
+      return "name conflicts with a zone name";
+    }
+    if (iface.getTypeEffective() == Type.VLAN) {
+      if (iface.getInterface() == null) {
+        return "interface must be set";
+      }
+      if (iface.getVlanid() == null) {
+        return "vlanid must be set";
+      }
+    }
+    // TODO better validation for types other than VLAN
+    return null;
   }
 
   @Override
   public void exitCsi_edit(Csi_editContext ctx) {
-    // TODO better validation
     String name = _currentInterface.getName();
-    if (_c.getZones().containsKey(name)) {
-      warn(ctx, "Interface edit block ignored: name conflicts with a zone name");
-    } else if (INTERFACE_NAME_PATTERN.matcher(name).matches()) {
+    String invalidReason =
+        interfaceValid(_currentInterface, _c.getZones().keySet(), _currentInterfaceNameValid);
+    if (invalidReason == null) {
       _c.defineStructure(FortiosStructureType.INTERFACE, name, ctx);
       _c.referenceStructure(
           FortiosStructureType.INTERFACE,
@@ -692,6 +727,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           FortiosStructureUsage.INTERFACE_SELF_REF,
           ctx.start.getLine());
       _c.getInterfaces().put(name, _currentInterface);
+    } else {
+      warn(ctx, String.format("Interface edit block ignored: %s", invalidReason));
     }
     _currentInterface = null;
   }
@@ -708,6 +745,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCsi_set_type(Csi_set_typeContext ctx) {
+    Interface prev = _c.getInterfaces().get(_currentInterface.getName());
+    if (prev != null) {
+      warn(ctx, "The type of an interface cannot be changed");
+      return;
+    }
     _currentInterface.setType(toInterfaceType(ctx.type));
   }
 
@@ -732,6 +774,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCsi_set_interface(Csi_set_interfaceContext ctx) {
+    toInterface(ctx, ctx.interface_name(), FortiosStructureUsage.INTERFACE_INTERFACE)
+        .ifPresent(_currentInterface::setInterface);
+  }
+
+  @Override
   public void exitCsi_set_mtu(Csi_set_mtuContext ctx) {
     toInteger(ctx, ctx.value).ifPresent(m -> _currentInterface.setMtu(m));
   }
@@ -742,6 +790,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCsi_set_vlanid(Csi_set_vlanidContext ctx) {
+    toInteger(ctx, ctx.vlanid()).ifPresent(v -> _currentInterface.setVlanid(v));
+  }
+
+  @Override
   public void enterCr_bgp(Cr_bgpContext ctx) {
     _c.initBgpProcess();
   }
@@ -749,6 +802,16 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCrb_set_as(Crb_set_asContext ctx) {
     toLong(ctx, ctx.bgp_as()).ifPresent(_c.getBgpProcess()::setAs);
+  }
+
+  @Override
+  public void exitCrb_set_ebgp_multipath(FortiosParser.Crb_set_ebgp_multipathContext ctx) {
+    _c.getBgpProcess().setEbgpMultipath(toBoolean(ctx.enable_or_disable()));
+  }
+
+  @Override
+  public void exitCrb_set_ibgp_multipath(FortiosParser.Crb_set_ibgp_multipathContext ctx) {
+    _c.getBgpProcess().setIbgpMultipath(toBoolean(ctx.enable_or_disable()));
   }
 
   @Override
@@ -790,6 +853,30 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCrbcne_set_remote_as(Crbcne_set_remote_asContext ctx) {
     toLong(ctx, ctx.bgp_remote_as()).ifPresent(_currentBgpNeighbor::setRemoteAs);
+  }
+
+  @Override
+  public void exitCrbcne_set_route_map_in(Crbcne_set_route_map_inContext ctx) {
+    toRouteMap(ctx.route_map_name(), FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_IN)
+        .ifPresent(_currentBgpNeighbor::setRouteMapIn);
+  }
+
+  @Override
+  public void exitCrbcne_set_route_map_out(Crbcne_set_route_map_outContext ctx) {
+    toRouteMap(ctx.route_map_name(), FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT)
+        .ifPresent(_currentBgpNeighbor::setRouteMapOut);
+  }
+
+  private Optional<String> toRouteMap(Route_map_nameContext ctx, FortiosStructureUsage usage) {
+    String name = toString(ctx.str());
+    int line = ctx.start.getLine();
+    if (_c.getRouteMaps().containsKey(name)) {
+      _c.referenceStructure(FortiosStructureType.ROUTE_MAP, name, usage, line);
+      return Optional.of(name);
+    }
+    warn(ctx, String.format("Route-map %s is undefined and cannot be referenced", name));
+    _c.undefined(FortiosStructureType.ROUTE_MAP, name, usage, line);
+    return Optional.empty();
   }
 
   @Override
@@ -863,6 +950,86 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void enterCrrm_edit(Crrm_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.route_map_name());
+    _currentRouteMap =
+        name.map(_c.getRouteMaps()::get)
+            .orElseGet(() -> new RouteMap(toString(ctx.route_map_name().str())));
+    _currentRouteMapNameValid = name.isPresent();
+  }
+
+  @Override
+  public void exitCrrm_edit(Crrm_editContext ctx) {
+    // If edited item is valid, add/update the entry in VS map
+    if (_currentRouteMapNameValid) {
+      String name = _currentRouteMap.getName();
+      _c.defineStructure(FortiosStructureType.ROUTE_MAP, name, ctx);
+      _c.getRouteMaps().put(name, _currentRouteMap);
+    } else {
+      warn(ctx, "Route-map edit block ignored: name is invalid");
+    }
+    _currentRouteMap = null;
+  }
+
+  @Override
+  public void exitCrrme_set_comments(Crrme_set_commentsContext ctx) {
+    _currentRouteMap.setComments(toString(ctx.comment));
+  }
+
+  @Override
+  public void enterCrrmecr_edit(Crrmecr_editContext ctx) {
+    Optional<Long> name = toLong(ctx, ctx.route_map_rule_number());
+    RouteMapRule existing =
+        name.map(l -> _currentRouteMap.getRules().get(l.toString())).orElse(null);
+    _currentRouteMapRuleNameValid = name.isPresent();
+    if (existing != null) {
+      // Make a clone to edit
+      _currentRouteMapRule = SerializationUtils.clone(existing);
+    } else {
+      _currentRouteMapRule = new RouteMapRule(toString(ctx.route_map_rule_number().str()));
+    }
+  }
+
+  @Override
+  public void exitCrrmecr_edit(Crrmecr_editContext ctx) {
+    // If edited item is valid, add/update the entry in VS map
+    if (_currentRouteMapRuleNameValid) {
+      String name = _currentRouteMapRule.getNumber();
+      _currentRouteMap.getRules().put(name, _currentRouteMapRule);
+    } else {
+      warn(ctx, "Route-map rule edit block ignored: name is invalid");
+    }
+    _currentRouteMapRule = null;
+  }
+
+  @Override
+  public void exitCrrmecre_set_action(Crrmecre_set_actionContext ctx) {
+    _currentRouteMapRule.setAction(toAction(ctx.route_map_action()));
+  }
+
+  @Override
+  public void exitCrrmecre_set_match_ip_address(Crrmecre_set_match_ip_addressContext ctx) {
+    toAccessListOrPrefixList(ctx.access_list_or_prefix_list_name())
+        .ifPresent(_currentRouteMapRule::setMatchIpAddress);
+  }
+
+  private Optional<String> toAccessListOrPrefixList(Access_list_or_prefix_list_nameContext ctx) {
+    String name = toString(ctx.access_list_name().str());
+    int line = ctx.start.getLine();
+    FortiosStructureUsage usage = FortiosStructureUsage.ROUTE_MAP_MATCH_IP_ADDRESS;
+    if (_c.getAccessLists().containsKey(name)) {
+      _c.referenceStructure(FortiosStructureType.ACCESS_LIST, name, usage, line);
+      return Optional.of(name);
+    }
+    // TODO check if name exists in prefix-lists
+    warn(
+        ctx,
+        String.format("Access-list or prefix-list %s is undefined and cannot be referenced", name));
+    _c.undefined(FortiosStructureType.ACCESS_LIST_OR_PREFIX_LIST, name, usage, line);
+    return Optional.empty();
+  }
+
+  @Override
   public void enterCfp_edit(Cfp_editContext ctx) {
     Optional<Long> number = toLong(ctx, ctx.policy_number());
     Policy existing = number.map(Object::toString).map(_c.getPolicies()::get).orElse(null);
@@ -892,6 +1059,84 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, String.format("Policy edit block ignored: %s", invalidReason));
     }
     _currentPolicy = null;
+  }
+
+  @Override
+  public void exitCfp_clone(Cfp_cloneContext ctx) {
+    String name = toString(ctx.name.str());
+    Policy existing = _c.getPolicies().get(name);
+    if (existing == null) {
+      warn(ctx, String.format("Cannot clone a non-existent policy %s", name));
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_CLONE,
+          ctx.start.getLine());
+      return;
+    }
+
+    Optional<Long> to = toLong(ctx, ctx.to);
+    if (!to.isPresent()) {
+      warn(ctx, "Cannot create a cloned policy with an invalid name");
+      return;
+    }
+
+    String toNumber = to.get().toString();
+    if (_c.getPolicies().containsKey(toNumber)) {
+      warn(ctx, String.format("Cannot clone, policy %s already exists", toNumber));
+      return;
+    }
+    Policy clone = SerializationUtils.clone(existing);
+    clone.setNumber(toNumber);
+    _c.getPolicies().put(toNumber, clone);
+    _c.defineStructure(FortiosStructureType.POLICY, toNumber, ctx);
+  }
+
+  @Override
+  public void exitCfp_delete(Cfp_deleteContext ctx) {
+    String name = toString(ctx.name.str());
+    if (!_c.getPolicies().containsKey(name)) {
+      warn(ctx, String.format("Cannot delete a non-existent policy %s", name));
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_DELETE,
+          ctx.start.getLine());
+      return;
+    }
+    _c.deleteStructure(name, FortiosStructureType.POLICY);
+    _c.getPolicies().remove(name);
+  }
+
+  @Override
+  public void exitCfp_move(Cfp_moveContext ctx) {
+    String name = toString(ctx.name.str());
+    String pivot = toString(ctx.pivot.str());
+    if (!_c.getPolicies().containsKey(name)) {
+      warn(ctx, String.format("Cannot move a non-existent policy %s", name));
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_MOVE,
+          ctx.start.getLine());
+      return;
+    }
+    if (!_c.getPolicies().containsKey(pivot)) {
+      warn(ctx, String.format("Cannot move around a non-existent policy %s", pivot));
+      _c.undefined(
+          FortiosStructureType.POLICY,
+          name,
+          FortiosStructureUsage.POLICY_MOVE_PIVOT,
+          ctx.start.getLine());
+      return;
+    }
+
+    if (ctx.after_or_before().AFTER() != null) {
+      _c.getPolicies().moveAfter(name, pivot);
+    } else {
+      assert ctx.after_or_before().BEFORE() != null;
+      _c.getPolicies().moveBefore(name, pivot);
+    }
   }
 
   @Override
@@ -1503,7 +1748,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCralecre_set_wildcard(Cralecre_set_wildcardContext ctx) {
-    _currentAccessListRule.setWildcard(toIpWildcard(ctx.ip_wildcard()));
+    // In this context, FortiOS defies their usual wildcard convention and uses a "Cisco-style"
+    // wildcard, meaning that 0s in the mask indicate bits that matter. This matches the convention
+    // in the VI IpWildcard class, so do not invert the mask bits when converting this wildcard.
+    _currentAccessListRule.setWildcard(toIpWildcard(ctx.ip_wildcard(), false));
   }
 
   private IntrazoneAction toIntrazoneAction(Allow_or_denyContext ctx) {
@@ -1863,6 +2111,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return IntegerSpace.of(low);
   }
 
+  private @Nonnull RouteMapRule.Action toAction(Route_map_actionContext ctx) {
+    if (ctx.permit_or_deny().PERMIT() != null) {
+      return RouteMapRule.Action.PERMIT;
+    }
+    assert ctx.permit_or_deny().DENY() != null;
+    return RouteMapRule.Action.DENY;
+  }
+
   private @Nonnull AccessListRule.Action toAction(Permit_or_denyContext ctx) {
     if (ctx.PERMIT() != null) {
       return AccessListRule.Action.PERMIT;
@@ -2017,6 +2273,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Route_map_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "route-map name", ROUTE_MAP_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Service_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "service name", SERVICE_NAME_PATTERN);
   }
@@ -2138,6 +2399,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toLongInSpace(messageCtx, ctx.str(), POLICY_NUMBER_SPACE, "policy number");
   }
 
+  private Optional<Long> toLong(
+      ParserRuleContext ctx, FortiosParser.Route_map_rule_numberContext num) {
+    return toLongInSpace(ctx, num.str(), ROUTE_MAP_RULE_NUM_SPACE, "route-map rule number");
+  }
+
   private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Route_numContext routeNum) {
     return toLongInSpace(
         ctx, routeNum.str(), STATIC_ROUTE_NUM_SPACE, "static route sequence number");
@@ -2234,6 +2500,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         ctx, routeDistance.uint8(), ADMIN_DISTANCE_SPACE, "route administrative distance");
   }
 
+  private Optional<Integer> toInteger(ParserRuleContext ctx, VlanidContext vlanid) {
+    return toIntegerInSpace(ctx, vlanid.uint16(), VLANID_SPACE, "vlanid");
+  }
+
   private Optional<Integer> toInteger(ParserRuleContext ctx, VrfContext vrf) {
     return toIntegerInSpace(ctx, vrf.uint8(), VRF_SPACE, "vrf");
   }
@@ -2269,23 +2539,29 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   /**
-   * Creates an {@link IpWildcard} from the given wildcard context. Note that the context's mask is
-   * assumed to be in conventional FortiOS format, i.e. 1s indicate bits that matter. The convention
-   * in the {@link IpWildcard} class is the opposite, i.e. 0s in the mask indicate bits that matter.
+   * Creates an {@link IpWildcard} from the given wildcard context.
+   *
+   * @param invertMask Whether to invert the mask when converting. In {@link IpWildcard}, 0s
+   *     indicate bits that matter, so this param should be true if {@code ctx} is from a context
+   *     where the 1s in the mask indicate bits that matter.
    */
-  private static @Nonnull IpWildcard toIpWildcard(Ip_wildcardContext ctx) {
-    return toIpWildcard(ctx.ip, ctx.mask);
+  private static @Nonnull IpWildcard toIpWildcard(Ip_wildcardContext ctx, boolean invertMask) {
+    return toIpWildcard(ctx.ip, ctx.mask, invertMask);
   }
 
   /**
-   * Creates an {@link IpWildcard} from the given IP and mask. Note that the provided mask is
-   * assumed to be in conventional FortiOS format, i.e. 1s indicate bits that matter. The convention
-   * in the {@link IpWildcard} class is the opposite, i.e. 0s in the mask indicate bits that matter.
+   * Creates an {@link IpWildcard} from the given IP and mask.
+   *
+   * @param invertMask Whether to invert the mask when converting. In {@link IpWildcard}, 0s
+   *     indicate bits that matter, so this param should be true if {@code mask} is from a context
+   *     where the 1s in the mask indicate bits that matter.
    */
-  private static @Nonnull IpWildcard toIpWildcard(Ip_addressContext ip, Ip_addressContext mask) {
+  private static @Nonnull IpWildcard toIpWildcard(
+      Ip_addressContext ip, Ip_addressContext mask, boolean invertMask) {
     // Invert mask because in FortiOS, bits that are set matter, whereas the opposite is true for
     // the mask in IpWildcard
-    return IpWildcard.ipWithWildcardMask(toIp(ip), toIp(mask).inverted());
+    Ip maskIp = toIp(mask);
+    return IpWildcard.ipWithWildcardMask(toIp(ip), invertMask ? maskIp.inverted() : maskIp);
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
@@ -2467,6 +2743,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
   private static final Pattern POLICY_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
+  // TODO determine more precise limitations on allowed chars for route-map name
+  private static final Pattern ROUTE_MAP_NAME_PATTERN = Pattern.compile("^[^ \r\n()'\"#<>]{1,35}$");
   private static final Pattern SERVICE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,79}$");
   private static final Pattern WORD_PATTERN = Pattern.compile("^[^ \t\r\n]+$");
   private static final Pattern ZONE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
@@ -2479,9 +2757,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
   private static final LongSpace POLICY_NUMBER_SPACE = LongSpace.of(Range.closed(0L, 4294967294L));
+  private static final LongSpace ROUTE_MAP_RULE_NUM_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
   private static final LongSpace STATIC_ROUTE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final IntegerSpace VLANID_SPACE = IntegerSpace.of(Range.closed(1, 4094));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
 
   private AccessList _currentAccessList;
@@ -2501,6 +2782,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private boolean _currentAddrgrpNameValid;
   private BgpNeighbor _currentBgpNeighbor;
   private Interface _currentInterface;
+  private boolean _currentInterfaceNameValid;
   private Policy _currentPolicy;
   /**
    * Whether the current policy has invalid lines that would prevent committing the policy in CLI.
@@ -2510,6 +2792,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private boolean _currentPolicyValid;
 
   private Replacemsg _currentReplacemsg;
+
+  private RouteMap _currentRouteMap;
+  private boolean _currentRouteMapNameValid;
+
+  private RouteMapRule _currentRouteMapRule;
+  private boolean _currentRouteMapRuleNameValid;
+
   private Service _currentService;
   /**
    * Whether the current service has invalid lines that would prevent committing the service in CLI.

@@ -5,29 +5,20 @@ options {
 }
 
 tokens {
-   ACL_NUM_APPLETALK,
-   ACL_NUM_EXTENDED,
-   ACL_NUM_EXTENDED_IPX,
-   ACL_NUM_EXTENDED_MAC,
-   ACL_NUM_IPX,
-   ACL_NUM_IPX_SAP,
-   ACL_NUM_MAC,
-   ACL_NUM_OTHER,
-   ACL_NUM_PROTOCOL_TYPE_CODE,
-   ACL_NUM_STANDARD,
    AS_PATH_SET_REGEX,
    BANNER_DELIMITER_IOS,
    BANNER_BODY,
-   COMMUNITY_LIST_NUM_EXPANDED,
-   COMMUNITY_LIST_NUM_STANDARD,
    COMMUNITY_SET_REGEX,
    CONFIG_SAVE,
+   DOTDOT,
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
+   PARAMETER,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
    PASSWORD_SEED,
+   PEERAS,
    PIPE,
    PROMPT_TIMEOUT,
    QUOTED_TEXT,
@@ -38,9 +29,11 @@ tokens {
    STATEFUL_KERBEROS,
    STATEFUL_NTLM,
    TEXT,
+   UINT16,
    VALUE,
    WIRED,
-   WISPR
+   WISPR,
+   WORD
 } 
 
 // CiscoXr Keywords
@@ -73,12 +66,7 @@ ACCESS_CLASS: 'access-class';
 
 ACCESS_GROUP: 'access-group';
 
-ACCESS_LIST
-:
-   'access-list'
-   {_enableAclNum = true; _enableDec = false;_inAccessList = true;}
-
-;
+ACCESS_LIST: 'access-list';
 
 ACCESS_LOG: 'access-log';
 
@@ -370,12 +358,7 @@ ARM_PROFILE: 'arm-profile';
 
 ARM_RF_DOMAIN_PROFILE: 'arm-rf-domain-profile';
 
-ARP
-:
-   'arp'
-   { _enableIpv6Address = false; }
-
-;
+ARP: 'arp';
 
 ARNS: 'arns';
 
@@ -963,9 +946,15 @@ COMMON_NAME: 'common-name';
 
 COMMUNITY
 :
-   'community'
-   { _enableIpv6Address = false; }
-
+  'community'
+  {
+    int ltt = lastTokenType();
+    if (ltt == SET) {
+      pushMode(M_CommunitySetExpr);
+    } else if (ltt == DELETE) {
+      pushMode(M_DeleteCommunity);
+    }
+  }
 ;
 
 COMMUNITY_MAP
@@ -973,15 +962,7 @@ COMMUNITY_MAP
    'community-map' -> pushMode ( M_Name )
 ;
 
-COMMUNITY_SET
-:
-   'community-set'
-   {
-      _inCommunitySet = true;
-      _enableIpv6Address = false;
-   }
-
-;
+COMMUNITY_SET: 'community-set' -> pushMode(M_CommunitySet);
 
 COMPARE_ROUTERID: 'compare-routerid';
 
@@ -1677,12 +1658,7 @@ END_POLICY: 'end-policy';
 
 END_POLICY_MAP: 'end-policy-map';
 
-END_SET
-:
-   'end-set'
-   { _inCommunitySet = false; }
-
-;
+END_SET: 'end-set';
 
 ENET_LINK_PROFILE: 'enet-link-profile';
 
@@ -1863,12 +1839,7 @@ EXTCOMMUNITY_SET: 'extcommunity-set';
 
 EXTEND: 'extend';
 
-EXTENDED
-:
-   'extended'
-   { _enableDec = true; _enableAclNum = false; }
-
-;
+EXTENDED: 'extended';
 
 EXTENDED_COUNTERS: 'extended-counters';
 
@@ -1944,12 +1915,7 @@ FILTER: 'filter';
 
 FILTER_LIST: 'filter-list';
 
-FIREWALL
-:
-   'firewall'
-   { _enableIpv6Address = false; }
-
-;
+FIREWALL: 'firewall';
 
 FIREWALL_VISIBILITY: 'firewall-visibility';
 
@@ -2081,6 +2047,8 @@ GRACEFUL: 'graceful';
 
 GRACEFUL_RESTART: 'graceful-restart';
 
+GRACEFUL_SHUTDOWN: 'graceful-shutdown';
+
 GRACETIME: 'gracetime';
 
 GRANT: 'grant';
@@ -2128,11 +2096,6 @@ GROUP21: 'group21';
 GROUP24: 'group24';
 
 GROUP5: 'group5';
-
-GSHUT
-:
-   [Gg][Ss][Hh][Uu][Tt]
-;
 
 GT: 'gt';
 
@@ -2250,7 +2213,7 @@ HOST_UNKNOWN: 'host-unknown';
 
 HOST_UNREACHABLE: 'host-unreachable';
 
-HOSTNAME: 'hostname';
+HOSTNAME: 'hostname' -> pushMode(M_Hostname);
 
 HOSTNAMEPREFIX: 'hostnameprefix';
 
@@ -2437,7 +2400,7 @@ INTERAREA: 'interarea';
 INTERFACE
 :
    'int' 'erface'?
-   { _enableIpv6Address = false; if (lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
+   { if (lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
 
 ;
 
@@ -2749,10 +2712,7 @@ LOCALITY: 'locality';
 
 LOCAL_ADDRESS: 'local-address';
 
-LOCAL_AS
-:
-   [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
-;
+LOCAL_AS: F_LocalAs;
 
 LOCAL_CASE: 'local-case';
 
@@ -2988,9 +2948,25 @@ MATCH_ANY: 'match-any';
 
 MATCH_NONE: 'match-none';
 
-MATCHES_ANY: 'matches-any';
+MATCHES_ANY
+:
+  'matches-any'
+  {
+    if (lastTokenType() == COMMUNITY) {
+      pushMode(M_CommunitySetMatchExpr);
+    }
+  }
+;
 
-MATCHES_EVERY: 'matches-every';
+MATCHES_EVERY
+:
+  'matches-every'
+  {
+    if (lastTokenType() == COMMUNITY) {
+      pushMode(M_CommunitySetMatchExpr);
+    }
+  }
+;
 
 MATIP_TYPE_A: 'matip-type-a';
 
@@ -4409,11 +4385,6 @@ RTR_ADV: 'rtr-adv';
 
 RTSP: 'rtsp';
 
-RULE
-:
-   'rule' {_enableRegex = true;}
-;
-
 RULE_NAME: 'rule-name';
 
 RUN: 'run';
@@ -4853,13 +4824,6 @@ STACK_MIB: 'stack-mib';
 STACK_UNIT: 'stack-unit';
 
 STALE_ROUTE: 'stale-route';
-
-STANDARD
-:
-   'standard'
-   { _enableDec = true; _enableAclNum = false; }
-
-;
 
 STANDBY: 'standby';
 
@@ -5556,12 +5520,7 @@ VPNV4: 'vpnv4';
 
 VPNV6: 'vpnv6';
 
-VRF
-:
-   'vrf'
-   {_enableIpv6Address = false;}
-
-;
+VRF: 'vrf';
 
 VRF_ALSO: 'vrf-also';
 
@@ -5718,11 +5677,6 @@ POUND
    '#' -> pushMode ( M_Description )
 ;
 
-STANDARD_COMMUNITY
-:
-  F_StandardCommunity {!_enableIpv6Address}?
-;
-
 MAC_ADDRESS_LITERAL
 :
    F_HexDigit F_HexDigit F_HexDigit F_HexDigit '.' F_HexDigit F_HexDigit
@@ -5732,100 +5686,6 @@ MAC_ADDRESS_LITERAL
 HEX
 :
    '0x' F_HexDigit+
-;
-
-VARIABLE
-:
-   (
-      (
-         F_Variable_RequiredVarChar
-         (
-            (
-               {!_enableIpv6Address}?
-
-               F_Variable_VarChar*
-            )
-            |
-            (
-               {_enableIpv6Address}?
-
-               F_Variable_VarChar_Ipv6*
-            )
-         )
-      )
-      |
-      (
-         (
-            F_Variable_VarChar
-            {!_enableIpv6Address}?
-
-            F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
-         )
-         |
-         (
-            F_Variable_VarChar_Ipv6
-            {_enableIpv6Address}?
-
-            F_Variable_VarChar_Ipv6* F_Variable_RequiredVarChar
-            F_Variable_VarChar_Ipv6*
-         )
-      )
-   )
-   {
-      if (_enableAclNum) {
-         _enableAclNum = false;
-         _enableDec = true;
-      }
-      if (_enableCommunityListNum) {
-         _enableCommunityListNum = false;
-         _enableDec = true;
-      }
-   }
-
-;
-
-ACL_NUM
-:
-   F_Digit
-   {_enableAclNum}?
-
-   F_Digit*
-   {
-	int val = Integer.parseInt(getText());
-	if ((1 <= val && val <= 99) || (1300 <= val && val <= 1999)) {
-		_type = ACL_NUM_STANDARD;
-	}
-	else if ((100 <= val && val <= 199) || (2000 <= val && val <= 2699)) {
-		_type = ACL_NUM_EXTENDED;
-	}
-	else if (200 <= val && val <= 299) {
-		_type = ACL_NUM_PROTOCOL_TYPE_CODE;
-	}
-	else if (600 <= val && val <= 699) {
-		_type = ACL_NUM_APPLETALK;
-	}
-   else if (700 <= val && val <= 799) {
-      _type = ACL_NUM_MAC;
-   }
-	else if (800 <= val && val <= 899) {
-		_type = ACL_NUM_IPX;
-	}
-	else if (900 <= val && val <= 999) {
-		_type = ACL_NUM_EXTENDED_IPX;
-	}
-	else if (1000 <= val && val <= 1099) {
-		_type = ACL_NUM_IPX_SAP;
-	}
-	else if (1100 <= val && val <= 1199) {
-		_type = ACL_NUM_EXTENDED_MAC;
-	}
-	else {
-		_type = ACL_NUM_OTHER;
-	}
-	_enableDec = true;
-	_enableAclNum = false;
-}
-
 ;
 
 AMPERSAND
@@ -5922,13 +5782,7 @@ DOLLAR
    '$'
 ;
 
-DEC
-:
-   F_Digit
-   {_enableDec}?
-
-   F_Digit*
-;
+DEC: F_Digit+;
 
 DIGIT
 :
@@ -5959,38 +5813,25 @@ FORWARD_SLASH
 
 IP_ADDRESS
 :
-  F_IpAddress {_enableIpAddress}?
+  F_IpAddress
 ;
 
 IP_PREFIX
 :
-  F_IpPrefix {_enableIpAddress}?
+  F_IpPrefix
 ;
 
 IPV6_ADDRESS
 :
-  F_Ipv6Address {_enableIpv6Address}?
+  F_Ipv6Address
 ;
 
 IPV6_PREFIX
 :
-  F_Ipv6Prefix {_enableIpv6Address}?
+  F_Ipv6Prefix
 ;
 
-NEWLINE
-:
-  F_Newline
-  {
-    if (!_inCommunitySet) {
-   	  _enableIpv6Address = true;
-   	}
-   	_enableIpAddress = true;
-    _enableDec = true;
-    _enableRegex = false;
-    _enableAclNum = false;
-    _inAccessList = false;
-  }
-;
+NEWLINE: F_Newline;
 
 PAREN_LEFT
 :
@@ -6017,16 +5858,6 @@ PLUS
    '+'
 ;
 
-REGEX
-:
-   '/' {_enableRegex}?
-   (
-      ~('/' | '\\')
-      |
-      ( '\\' '/')
-   )* '/'
-;
-
 RP_VARIABLE
 :
    '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6*
@@ -6048,6 +5879,12 @@ WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ; // Fragments
+
+VARIABLE
+:
+  F_Variable_RequiredVarChar F_Variable_VarChar*
+  | F_Variable_VarChar+ F_Variable_RequiredVarChar F_Variable_VarChar*
+;
 
 fragment
 F_Base64Char
@@ -6382,6 +6219,36 @@ F_Whitespace
    | '\t'
    | '\u000C'
    | '\u00A0'
+;
+
+fragment
+F_Word
+:
+  ~( [ \t\u000C\u00A0\n\r(),!$'"*#] | '[' | ']' )
+;
+
+fragment
+F_Parameter
+:
+  '$' [A-Za-z0-9_]+
+;
+
+fragment
+F_LocalAs
+:
+  [Ll][Oo][Cc][Aa][Ll]'-'[Aa][Ss]
+;
+
+fragment
+F_CommunitySetRegexComponentChar
+:
+  ~[':&<> ]
+;
+
+fragment
+F_CommunitySetRegex
+:
+  ['] F_CommunitySetRegexComponentChar* ':' F_CommunitySetRegexComponentChar* [']
 ;
 
 mode M_Alias;
@@ -7159,23 +7026,30 @@ M_Interface_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+mode M_Hostname;
+
+M_Hostname_WORD: ([A-Za-z0-9_] | '-')+ -> type(WORD), popMode;
+
+M_Hostname_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+M_Hostname_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_DfaRegex;
+
+M_DfaRegex_COMMUNITY_SET_REGEX: F_CommunitySetRegex -> type(COMMUNITY_SET_REGEX), popMode;
+
+M_DfaRegex_WS: F_Whitespace+ -> channel(HIDDEN);
+
 mode M_IosRegex;
 
-M_IosRegex_COMMUNITY_SET_REGEX
-:
-   '\'' ~[':&<> ]* ':' ~[':&<> ]* '\'' -> type ( COMMUNITY_SET_REGEX ) ,
-   popMode
-;
+M_IosRegex_COMMUNITY_SET_REGEX: F_CommunitySetRegex -> type(COMMUNITY_SET_REGEX), popMode;
 
 M_IosRegex_AS_PATH_SET_REGEX
 :
    '\'' ~'\''* '\'' -> type ( AS_PATH_SET_REGEX ) , popMode
 ;
 
-M_IosRegex_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
+M_IosRegex_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_ISO_Address;
 
@@ -7404,3 +7278,108 @@ M_Words_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+// community-set definition
+mode M_CommunitySet;
+
+M_CommunitySet_WORD: F_Word+ -> type(WORD);
+M_CommunitySet_NEWLINE: F_Newline -> type(NEWLINE), mode(M_CommunitySetElem);
+M_CommunitySet_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_CommunitySetElem;
+M_CommunitySetElem_ACCEPT_OWN: 'accept-own' -> type(ACCEPT_OWN);
+M_CommunitySetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_DfaRegex);
+M_CommunitySetElem_GRACEFUL_SHUTDOWN: 'graceful-shutdown' -> type(GRACEFUL_SHUTDOWN);
+M_CommunitySetElem_INTERNET: 'internet' -> type(INTERNET);
+M_CommunitySetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_IosRegex);
+M_CommunitySetElem_LOCAL_AS: F_LocalAs -> type(LOCAL_AS);
+M_CommunitySetElem_NO_ADVERTISE: 'no-advertise' -> type(NO_ADVERTISE);
+M_CommunitySetElem_NO_EXPORT: 'no-export' -> type(NO_EXPORT);
+M_CommunitySetElem_PRIVATE_AS: 'private-as' -> type(PRIVATE_AS);
+
+M_CommunitySetElem_ASTERISK: '*' -> type(ASTERISK);
+M_CommunitySetElem_BRACKET_LEFT: '[' -> type(BRACKET_LEFT);
+M_CommunitySetElem_BRACKET_RIGHT: ']' -> type(BRACKET_RIGHT);
+M_CommunitySetElem_COMMA: ',' -> type(COMMA);
+M_CommunitySetElem_DOTDOT: '..' -> type(DOTDOT);
+M_CommunitySetElem_END_SET: 'end-set' -> type(END_SET), popMode;
+M_CommunitySetElem_UINT16: F_Uint16 -> type(UINT16);
+M_CommunitySetElem_COLON: ':' -> type(COLON);
+
+// NEWLINE can be interspersed between any other tokens in this mode
+M_CommunitySetElem_NEWLINE: F_Newline -> channel(HIDDEN);
+
+// TODO: save remarks
+M_CommunitySetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
+
+M_CommunitySetElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
+// route-policy set community expression
+mode M_CommunitySetExpr;
+
+M_CommunitySetExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
+M_CommunitySetExpr_PAREN_LEFT: '(' -> type(PAREN_LEFT), mode(M_CommunitySetExprElem);
+M_CommunitySetExpr_WORD: F_Word+ -> type(WORD), popMode;
+M_CommunitySetExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_CommunitySetExpr_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_CommunitySetExprElem;
+
+M_CommunitySetExprElem_ACCEPT_OWN: 'accept-own' -> type(ACCEPT_OWN);
+M_CommunitySetExprElem_GRACEFUL_SHUTDOWN: 'graceful-shutdown' -> type(GRACEFUL_SHUTDOWN);
+M_CommunitySetExprElem_INTERNET: 'internet' -> type(INTERNET);
+M_CommunitySetExprElem_LOCAL_AS: F_LocalAs -> type(LOCAL_AS);
+M_CommunitySetExprElem_NO_ADVERTISE: 'no-advertise' -> type(NO_ADVERTISE);
+M_CommunitySetExprElem_NO_EXPORT: 'no-export' -> type(NO_EXPORT);
+M_CommunitySetExprElem_PEERAS: 'peeras' -> type(PEERAS);
+
+M_CommunitySetExprElem_COMMA: ',' -> type(COMMA);
+M_CommunitySetExprElem_UINT16: F_Uint16 -> type(UINT16);
+M_CommunitySetExprElem_PARAMETER: F_Parameter -> type(PARAMETER);
+M_CommunitySetExprElem_PAREN_RIGHT: ')' -> type(PAREN_RIGHT), popMode;
+M_CommunitySetExprElem_COLON: ':' -> type(COLON);
+M_CommunitySetExprElem_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_CommunitySetExprElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
+// route-policy community matches-{any,all} / delete community in expression
+mode M_CommunitySetMatchExpr;
+
+M_CommunitySetMatchExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
+M_CommunitySetMatchExpr_PAREN_LEFT: '(' -> type(PAREN_LEFT), mode(M_CommunitySetMatchExprElem);
+M_CommunitySetMatchExpr_WORD: F_Word+ -> type(WORD), popMode;
+M_CommunitySetMatchExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_CommunitySetMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);
+
+// community matches-{any-all} / delete community single community match expression
+mode M_CommunitySetMatchExprElem;
+
+M_CommunitySetMatchExprElem_ACCEPT_OWN: 'accept-own' -> type(ACCEPT_OWN);
+M_CommunitySetMatchExprElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_DfaRegex);
+M_CommunitySetMatchExprElem_GRACEFUL_SHUTDOWN: 'graceful-shutdown' -> type(GRACEFUL_SHUTDOWN);
+M_CommunitySetMatchExprElem_INTERNET: 'internet' -> type(INTERNET);
+M_CommunitySetMatchExprElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_IosRegex);
+M_CommunitySetMatchExprElem_LOCAL_AS: F_LocalAs -> type(LOCAL_AS);
+M_CommunitySetMatchExprElem_NO_ADVERTISE: 'no-advertise' -> type(NO_ADVERTISE);
+M_CommunitySetMatchExprElem_NO_EXPORT: 'no-export' -> type(NO_EXPORT);
+M_CommunitySetMatchExprElem_PEERAS: 'peeras' -> type(PEERAS);
+M_CommunitySetMatchExprElem_PRIVATE_AS: 'private-as' -> type(PRIVATE_AS);
+
+M_CommunitySetMatchExprElem_ASTERISK: '*' -> type(ASTERISK);
+M_CommunitySetMatchExprElem_BRACKET_LEFT: '[' -> type(BRACKET_LEFT);
+M_CommunitySetMatchExprElem_BRACKET_RIGHT: ']' -> type(BRACKET_RIGHT);
+M_CommunitySetMatchExprElem_COMMA: ',' -> type(COMMA);
+M_CommunitySetMatchExprElem_DOTDOT: '..' -> type(DOTDOT);
+M_CommunitySetMatchExprElem_UINT16: F_Uint16 -> type(UINT16);
+M_CommunitySetMatchExprElem_PARAMETER: F_Parameter -> type(PARAMETER);
+M_CommunitySetMatchExprElem_PAREN_RIGHT: ')' -> type(PAREN_RIGHT), popMode;
+M_CommunitySetMatchExprElem_COLON: ':' -> type(COLON);
+M_CommunitySetMatchExprElem_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_CommunitySetMatchExprElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_DeleteCommunity;
+
+M_DeleteCommunity_ALL: 'all' -> type(ALL), popMode;
+M_DeleteCommunity_NOT: 'not' -> type(NOT);
+M_DeleteCommunity_IN: 'in' -> type(IN), mode(M_CommunitySetMatchExpr);
+
+M_DeleteCommunity_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_DeleteCommunity_WS: F_Whitespace+ -> channel(HIDDEN);

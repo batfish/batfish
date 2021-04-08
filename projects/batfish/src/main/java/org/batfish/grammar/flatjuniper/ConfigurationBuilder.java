@@ -73,6 +73,13 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_DESTINATINATION_RULE_SET_RULE_THEN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_TO_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_TO_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH;
@@ -128,6 +135,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.common.WillNotCommitException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -3242,6 +3250,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.RANGE_ADDRESS() != null) {
       Ip lower = Ip.parse(ctx.lower_limit.getText());
       Ip upper = Ip.parse(ctx.upper_limit.getText());
+      if (lower.compareTo(upper) > 0) {
+        // Lower is bigger, Juniper will reject this.
+        throw new WillNotCommitException("Range must be from low to high: " + getFullText(ctx));
+      }
       AddressBookEntry addressEntry = new AddressRangeAddressBookEntry(name, lower, upper);
       _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.DESCRIPTION() != null) {
@@ -5507,9 +5519,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       packetLocation = _currentNatRuleSet.getToLocation();
     }
     if (ctx.rs_interface() != null) {
-      packetLocation.setInterface(ctx.rs_interface().name.getText());
+      String iface = ctx.rs_interface().name.getText();
+      packetLocation.setInterface(iface);
+      JuniperStructureUsage usage =
+          ctx.FROM() != null ? NAT_RULE_SET_FROM_INTERFACE : NAT_RULE_SET_TO_INTERFACE;
+      _configuration.referenceStructure(
+          INTERFACE, iface, usage, getLine(ctx.rs_interface().name.start));
     } else if (ctx.rs_routing_instance() != null) {
-      packetLocation.setRoutingInstance(ctx.rs_routing_instance().name.getText());
+      String ri = ctx.rs_routing_instance().name.getText();
+      packetLocation.setRoutingInstance(ri);
+      JuniperStructureUsage usage =
+          ctx.FROM() != null
+              ? NAT_RULE_SET_FROM_ROUTING_INSTANCE
+              : NAT_RULE_SET_TO_ROUTING_INSTANCE;
+      _configuration.referenceStructure(
+          ROUTING_INSTANCE, ri, usage, getLine(ctx.rs_routing_instance().name.start));
     } else if (ctx.rs_zone() != null) {
       packetLocation.setZone(ctx.rs_zone().name.getText());
     }
@@ -5562,6 +5586,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRsrt_nat_pool(Rsrt_nat_poolContext ctx) {
     String name = ctx.name.getText();
     _currentNatRule.setThen(new NatRuleThenPool(name));
+    JuniperStructureUsage usage;
+    switch (_currentNat.getType()) {
+      case DESTINATION:
+        usage = NAT_DESTINATINATION_RULE_SET_RULE_THEN;
+        break;
+      case SOURCE:
+        usage = NAT_SOURCE_RULE_SET_RULE_THEN;
+        break;
+      case STATIC:
+      default:
+        usage = NAT_STATIC_RULE_SET_RULE_THEN;
+        break;
+    }
+    _configuration.referenceStructure(NAT_POOL, name, usage, getLine(ctx.name.start));
   }
 
   @Override

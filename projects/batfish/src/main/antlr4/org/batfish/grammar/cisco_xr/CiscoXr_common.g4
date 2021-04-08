@@ -31,16 +31,15 @@ bgp_asn
     | asn4b = asn_dotted
 ;
 
-community
+literal_community
 :
    ACCEPT_OWN
-   | GSHUT
+   | GRACEFUL_SHUTDOWN
    | INTERNET
    | LOCAL_AS
    | NO_ADVERTISE
    | NO_EXPORT
-   | STANDARD_COMMUNITY
-   | uint32
+   | hi = uint16 COLON lo = uint16
 ;
 
 description_line
@@ -107,31 +106,6 @@ hash_comment
    POUND RAW_TEXT
 ;
 
-icmp_object_type
-:
-   DEC
-   | ALTERNATE_ADDRESS
-   | CONVERSION_ERROR
-   | ECHO
-   | ECHO_REPLY
-   | INFORMATION_REPLY
-   | INFORMATION_REQUEST
-   | MASK_REPLY
-   | MASK_REQUEST
-   | MOBILE_REDIRECT
-   | PARAMETER_PROBLEM
-   | REDIRECT
-   | ROUTER_ADVERTISEMENT
-   | ROUTER_SOLICITATION
-   | SOURCE_QUENCH
-   | TIME_EXCEEDED
-   | TIMESTAMP_REPLY
-   | TIMESTAMP_REQUEST
-   | TRACEROUTE
-   | UNREACHABLE
-   | UNSET
-;
-
 int_expr
 :
    (
@@ -182,12 +156,6 @@ ios_delimited_banner
   BANNER_DELIMITER_IOS body = BANNER_BODY? BANNER_DELIMITER_IOS
 ;
 
-ip_hostname
-:
-   IP_ADDRESS
-   | IPV6_ADDRESS
-;
-
 isis_level
 :
    LEVEL_1
@@ -209,20 +177,6 @@ line_type
    )
    | TTY
    | VTY
-;
-
-netservice_alg
-:
-   DHCP
-   | DNS
-   | FTP
-   | NOE
-   | RTSP
-   | SCCP
-   | SIPS
-   | SVP
-   | TFTP
-   | VOCERA
 ;
 
 null_rest_of_line
@@ -564,29 +518,6 @@ route_policy_params_list
    )*
 ;
 
-community_set_elem
-:
-   community
-   |
-   (
-     prefix = community_set_elem_half COLON suffix = community_set_elem_half
-   )
-   | DFA_REGEX COMMUNITY_SET_REGEX
-   | IOS_REGEX COMMUNITY_SET_REGEX
-;
-
-community_set_elem_half
-:
-   value = DEC
-   | var = RP_VARIABLE
-   |
-   (
-      BRACKET_LEFT first = DEC PERIOD PERIOD last = DEC BRACKET_RIGHT
-   )
-   | ASTERISK
-   | PRIVATE_AS
-;
-
 rp_subrange
 :
    first = int_expr
@@ -594,38 +525,6 @@ rp_subrange
    (
       BRACKET_LEFT first = int_expr PERIOD PERIOD last = int_expr BRACKET_RIGHT
    )
-;
-
-service_group_protocol
-:
-     TCP | TCP_UDP | UDP
-;
-
-service_specifier
-:
-   service_specifier_icmp
-   | service_specifier_tcp_udp
-   | service_specifier_protocol
-;
-
-service_specifier_icmp
-:
-   ICMP icmp_object_type?
-;
-
-service_specifier_protocol
-:
-   protocol
-;
-
-service_specifier_tcp_udp
-:
-   (
-      TCP
-      | TCP_UDP
-      | UDP
-   )
-   (SOURCE src_ps = port_specifier)? (DESTINATION? dst_ps = port_specifier)?
 ;
 
 subrange
@@ -646,6 +545,7 @@ switchport_trunk_encapsulation
 uint16
 :
   d = DEC {isUint16($d)}?
+  | d = UINT16
 ;
 
 uint32
@@ -661,7 +561,7 @@ variable
 variable_aclname
 :
    (
-      ~( ETH | EXTENDED | IN | NEWLINE | OUT | REMARK | STANDARD | SESSION | WS )
+      ~( ETH | IN | NEWLINE | OUT | REMARK | SESSION | WS )
    )+
 ;
 
@@ -695,7 +595,7 @@ variable_max_metric
 variable_permissive
 :
    (
-      ~( EXTENDED | NEWLINE | STANDARD | WS )
+      ~( NEWLINE | WS )
    )+
 ;
 
@@ -709,14 +609,13 @@ variable_group_id
     ~( NEWLINE | TCP | TCP_UDP | UDP )+
 ;
 
-variable_vlan
-:
-   ~( NEWLINE | ACCESS_MAP | DEC )
-;
-
 vlan_id
 :
   v = DEC
   {isVlanId($v)}?
 
 ;
+
+community_set_name: WORD;
+
+parameter: PARAMETER;

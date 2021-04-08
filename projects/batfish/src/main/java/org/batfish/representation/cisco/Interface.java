@@ -60,9 +60,6 @@ public class Interface implements Serializable {
     Double defaultSpeed = getDefaultSpeed(name, format);
     if (defaultSpeed != null) {
       return defaultSpeed;
-    } else if (name.startsWith("Bundle-Ethernet")) {
-      // Derived from member interfaces
-      return null;
     } else if (name.startsWith("Loopback")) {
       return DEFAULT_LOOPBACK_BANDWIDTH;
     } else if (name.startsWith("Port-channel")) {
@@ -127,7 +124,6 @@ public class Interface implements Serializable {
     } else if (name.startsWith("Wlan-GigabitEthernet")) {
       return 1E9D;
     } else {
-      // Bundle-Ethernet
       // Loopback
       // Port-channel
       // Vlan

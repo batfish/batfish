@@ -36,8 +36,9 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
 import org.junit.Test;
@@ -336,7 +337,7 @@ public class BgpProtocolHelperTest {
                 .setOwner(c)
                 .setStatements(
                     ImmutableList.of(
-                        new SetCommunity(new LiteralCommunity(community)),
+                        new SetCommunities(new LiteralCommunitySet(CommunitySet.of(community))),
                         Statements.ReturnTrue.toStaticStatement()))
                 .build(),
             Ip.parse("1.1.1.1"),

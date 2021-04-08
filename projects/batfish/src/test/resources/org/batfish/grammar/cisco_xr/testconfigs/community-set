@@ -6,7 +6,21 @@ community-set universe
   *:*
 end-set
 
+community-set universe2
+  *
+end-set
+
+community-set wellknown
+  accept-own,
+  graceful-shutdown,
+  internet,
+  local-AS,
+  no-advertise,
+  no-export
+end-set
+
 community-set mixed
+  dfa-regex '_5678:.*',
   ios-regex '_1234:.*',
   1:2,
   *:3,

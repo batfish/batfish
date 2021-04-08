@@ -35,8 +35,12 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySet;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunityIn;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
@@ -98,11 +102,19 @@ public class AsaConversionsBgpPoliciesTest {
         .setName(ROUTE_MAP_NAME)
         .addStatement(
             new If(
-                new MatchCommunitySet(new LiteralCommunitySet(PERMITTED_COMMUNITY_SET)),
+                new MatchCommunities(
+                    InputCommunities.instance(),
+                    new HasCommunity(
+                        new CommunityIn(
+                            new LiteralCommunitySet(CommunitySet.of(PERMITTED_COMMUNITY_SET))))),
                 ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
         .addStatement(
             new If(
-                new MatchCommunitySet(new LiteralCommunitySet(DENIED_COMMUNITY_SET)),
+                new MatchCommunities(
+                    InputCommunities.instance(),
+                    new HasCommunity(
+                        new CommunityIn(
+                            new LiteralCommunitySet(CommunitySet.of(DENIED_COMMUNITY_SET))))),
                 ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
         .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();

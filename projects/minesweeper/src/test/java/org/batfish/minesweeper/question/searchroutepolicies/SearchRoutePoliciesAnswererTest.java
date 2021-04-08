@@ -35,8 +35,6 @@ import org.batfish.common.topology.TopologyProvider;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
-import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
@@ -47,7 +45,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.RegexCommunitySet;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
@@ -58,18 +55,23 @@ import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
+import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.LiteralCommunity;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.NamedCommunitySet;
-import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
@@ -86,9 +88,6 @@ import org.junit.Test;
 public class SearchRoutePoliciesAnswererTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
-  private static final String COMMUNITY_NAME = "community";
-  private static final String REGEX_COMMUNITY_NAME = "regexCommunity";
-  private static final String GENERAL_REGEX_COMMUNITY_NAME = "generalRegexCommunity";
   private static final String AS_PATH_1 = "asPath1";
   private static final String AS_PATH_2 = "asPath2";
 
@@ -136,25 +135,6 @@ public class SearchRoutePoliciesAnswererTest {
             .setHostname(HOSTNAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration baseConfig = cb.build();
-    baseConfig.setCommunityLists(
-        ImmutableMap.of(
-            COMMUNITY_NAME,
-            new CommunityList(
-                COMMUNITY_NAME,
-                ImmutableList.of(
-                    CommunityListLine.accepting(
-                        new LiteralCommunity(StandardCommunity.parse("20:30")))),
-                false),
-            REGEX_COMMUNITY_NAME,
-            new CommunityList(
-                REGEX_COMMUNITY_NAME,
-                ImmutableList.of(CommunityListLine.accepting(new RegexCommunitySet("^2[0-9]:30$"))),
-                false),
-            GENERAL_REGEX_COMMUNITY_NAME,
-            new CommunityList(
-                GENERAL_REGEX_COMMUNITY_NAME,
-                ImmutableList.of(CommunityListLine.accepting(new RegexCommunitySet("^.*$"))),
-                false)));
     baseConfig.setAsPathAccessLists(
         ImmutableMap.of(
             AS_PATH_1,
@@ -174,8 +154,10 @@ public class SearchRoutePoliciesAnswererTest {
         DestinationNetwork.instance(), new ExplicitPrefixSet(new PrefixSpace(prList)));
   }
 
-  private MatchCommunitySet matchNamedCommunity(String name) {
-    return new MatchCommunitySet(new NamedCommunitySet(name));
+  private MatchCommunities matchCommunityRegex(String regex) {
+    return new MatchCommunities(
+        InputCommunities.instance(),
+        new HasCommunity(new CommunityMatchRegex(ColonSeparatedRendering.instance(), regex)));
   }
 
   /** Test that we handle potential nulls in question parameters */
@@ -323,7 +305,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testMatchRegexCommunity() {
     _policyBuilder.addStatement(
         new If(
-            matchNamedCommunity(REGEX_COMMUNITY_NAME),
+            matchCommunityRegex("^2[0-9]:30$"),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -368,7 +350,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testMatchGeneralRegexCommunity() {
     _policyBuilder.addStatement(
         new If(
-            matchNamedCommunity(GENERAL_REGEX_COMMUNITY_NAME),
+            matchCommunityRegex("^.*$"),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -452,7 +434,10 @@ public class SearchRoutePoliciesAnswererTest {
   public void testUnsolvableCommunityConstraint() {
     _policyBuilder.setStatements(
         ImmutableList.of(
-            new DeleteCommunity(new NamedCommunitySet(COMMUNITY_NAME)),
+            new SetCommunities(
+                new CommunitySetDifference(
+                    InputCommunities.instance(),
+                    new CommunityIs(StandardCommunity.parse("20:30")))),
             new StaticStatement(Statements.ExitAccept)));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -477,8 +462,8 @@ public class SearchRoutePoliciesAnswererTest {
   public void testDeleteSetCommunityConstraint() {
     _policyBuilder.setStatements(
         ImmutableList.of(
-            new DeleteCommunity(new RegexCommunitySet("^[12]:40$")),
-            new SetCommunity(new LiteralCommunity(StandardCommunity.parse("2:40"))),
+            new SetCommunities(
+                new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("2:40")))),
             new StaticStatement(Statements.ExitAccept)));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -534,7 +519,8 @@ public class SearchRoutePoliciesAnswererTest {
   public void testNoOutputCommunities() {
     _policyBuilder.setStatements(
         ImmutableList.of(
-            new SetCommunity(new LiteralCommunity(StandardCommunity.parse("2:40"))),
+            new SetCommunities(
+                new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("2:40")))),
             new StaticStatement(Statements.ExitAccept)));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1040,7 +1026,8 @@ public class SearchRoutePoliciesAnswererTest {
             matchPrefixSet(
                 ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 32)))),
             ImmutableList.of(
-                new SetCommunity(new LiteralCommunity(StandardCommunity.parse("4:44"))),
+                new SetCommunities(
+                    new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("4:44")))),
                 new StaticStatement(Statements.ExitAccept)),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
@@ -1083,9 +1070,10 @@ public class SearchRoutePoliciesAnswererTest {
 
   @Test
   public void testTwoVersionsOfACommunity() {
+    String regex = "^2[0-9]:30$";
     _policyBuilder.addStatement(
         new If(
-            matchNamedCommunity(REGEX_COMMUNITY_NAME),
+            matchCommunityRegex(regex),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1094,8 +1082,7 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder()
                 .setCommunities(
-                    new RegexConstraints(
-                        ImmutableList.of(new RegexConstraint("^2[0-9]:30$", true))))
+                    new RegexConstraints(ImmutableList.of(new RegexConstraint(regex, true))))
                 .build(),
             HOSTNAME,
             policy.getName(),

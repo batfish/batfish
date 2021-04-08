@@ -139,15 +139,15 @@ import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_VRRP_INTERFACE;
-import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
-import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
-import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_ADDITIVE;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_DELETE;
 import static org.batfish.representation.arista.AristaStructureUsage.SERVICE_POLICY_GLOBAL;
 import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.arista.AristaStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
@@ -177,7 +177,6 @@ import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -199,7 +198,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
 import org.batfish.datamodel.AuthenticationMethod;
@@ -341,6 +339,7 @@ import org.batfish.grammar.arista.AristaParser.Cmm_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_activated_service_templateContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_service_templateContext;
+import org.batfish.grammar.arista.AristaParser.Community_list_nameContext;
 import org.batfish.grammar.arista.AristaParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Copsl_access_listContext;
 import org.batfish.grammar.arista.AristaParser.Cp_ip_access_groupContext;
@@ -717,6 +716,9 @@ import org.batfish.grammar.arista.AristaParser.RangeContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_connected_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Redistribute_static_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Rms_distanceContext;
+import org.batfish.grammar.arista.AristaParser.Rmsc_communitiesContext;
+import org.batfish.grammar.arista.AristaParser.Rmsc_community_listContext;
+import org.batfish.grammar.arista.AristaParser.Rmsc_noneContext;
 import org.batfish.grammar.arista.AristaParser.Ro6_distribute_listContext;
 import org.batfish.grammar.arista.AristaParser.Ro_area_filterlistContext;
 import org.batfish.grammar.arista.AristaParser.Ro_area_nssaContext;
@@ -791,12 +793,6 @@ import org.batfish.grammar.arista.AristaParser.S_vrf_definitionContext;
 import org.batfish.grammar.arista.AristaParser.Sd_switchport_blankContext;
 import org.batfish.grammar.arista.AristaParser.Sd_switchport_shutdownContext;
 import org.batfish.grammar.arista.AristaParser.Set_as_path_prepend_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Set_comm_list_delete_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Set_community_additive_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Set_community_list_additive_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Set_community_list_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Set_community_none_rm_stanzaContext;
-import org.batfish.grammar.arista.AristaParser.Set_community_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_local_preference_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_metric_rm_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Set_metric_type_rm_stanzaContext;
@@ -894,20 +890,19 @@ import org.batfish.representation.arista.RouteMap;
 import org.batfish.representation.arista.RouteMapClause;
 import org.batfish.representation.arista.RouteMapContinue;
 import org.batfish.representation.arista.RouteMapMatchAsPathAccessListLine;
-import org.batfish.representation.arista.RouteMapMatchCommunityListLine;
+import org.batfish.representation.arista.RouteMapMatchCommunity;
 import org.batfish.representation.arista.RouteMapMatchIpAccessListLine;
 import org.batfish.representation.arista.RouteMapMatchIpPrefixListLine;
 import org.batfish.representation.arista.RouteMapMatchIpv6AccessListLine;
 import org.batfish.representation.arista.RouteMapMatchIpv6PrefixListLine;
 import org.batfish.representation.arista.RouteMapMatchSourceProtocolLine;
 import org.batfish.representation.arista.RouteMapMatchTagLine;
-import org.batfish.representation.arista.RouteMapSetAdditiveCommunityLine;
-import org.batfish.representation.arista.RouteMapSetAdditiveCommunityListLine;
 import org.batfish.representation.arista.RouteMapSetAsPathPrependLine;
-import org.batfish.representation.arista.RouteMapSetCommunityLine;
-import org.batfish.representation.arista.RouteMapSetCommunityListLine;
-import org.batfish.representation.arista.RouteMapSetCommunityNoneLine;
-import org.batfish.representation.arista.RouteMapSetDeleteCommunityLine;
+import org.batfish.representation.arista.RouteMapSetCommunity;
+import org.batfish.representation.arista.RouteMapSetCommunityDelete;
+import org.batfish.representation.arista.RouteMapSetCommunityList;
+import org.batfish.representation.arista.RouteMapSetCommunityListDelete;
+import org.batfish.representation.arista.RouteMapSetCommunityNone;
 import org.batfish.representation.arista.RouteMapSetDistanceLine;
 import org.batfish.representation.arista.RouteMapSetLine;
 import org.batfish.representation.arista.RouteMapSetLocalPreferenceLine;
@@ -987,13 +982,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return ctx.text != null ? ctx.text.getText().trim() : "";
   }
 
-  private static Ip6 getIp(Access_list_ip6_rangeContext ctx) {
-    if (ctx.ip != null) {
-      return toIp6(ctx.ip);
-    } else if (ctx.prefix6 != null) {
-      return Prefix6.parse(ctx.prefix6.getText()).getAddress();
+  private static Ip6Wildcard getIpWildcard(Access_list_ip6_rangeContext ctx) {
+    if (ctx.prefix6 != null) {
+      return Ip6Wildcard.parse(ctx.prefix6.getText());
+    } else if (ctx.ANY() != null) {
+      return Ip6Wildcard.ANY;
     } else {
-      return Ip6.ZERO;
+      assert ctx.ipv6 != null;
+      return Ip6Wildcard.parse(ctx.ipv6.getText());
     }
   }
 
@@ -3500,12 +3496,12 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
             .computeIfAbsent(name, StandardCommunityList::new);
     _configuration.defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
 
-    LineAction action = toLineAction(ctx.action);
-    List<Long> communities = new ArrayList<>();
-    for (Literal_standard_communityContext communityCtx : ctx.communities) {
-      communities.add(toLong(communityCtx));
-    }
-    StandardCommunityListLine line = new StandardCommunityListLine(action, communities);
+    StandardCommunityListLine line =
+        new StandardCommunityListLine(
+            toLineAction(ctx.action),
+            ctx.communities.stream()
+                .map(AristaControlPlaneExtractor::toStandardCommunity)
+                .collect(ImmutableList.toImmutableList()));
     list.getLines().add(line);
   }
 
@@ -4523,13 +4519,10 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         // Just IP. Same as if 'host' was specified
         return new WildcardAddressSpecifier(IpWildcard.create(toIp(ctx.ip)));
       }
-    } else if (ctx.ANY() != null || ctx.ANY4() != null) {
+    } else if (ctx.ANY() != null) {
       return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else if (ctx.prefix != null) {
       return new WildcardAddressSpecifier(IpWildcard.create(Prefix.parse(ctx.prefix.getText())));
-    } else if (ctx.iface != null) {
-      todo(ctx);
-      return new WildcardAddressSpecifier(IpWildcard.ANY);
     } else {
       throw convError(AccessListAddressSpecifier.class, ctx);
     }
@@ -4544,12 +4537,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   public void exitExtended_ipv6_access_list_tail(Extended_ipv6_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
     IpProtocol protocol = toIpProtocol(ctx.prot);
-    Ip6 srcIp = getIp(ctx.srcipr);
-    Ip6 srcWildcard = getWildcard(ctx.srcipr);
-    Ip6 dstIp = getIp(ctx.dstipr);
-    Ip6 dstWildcard = getWildcard(ctx.dstipr);
-    String srcAddressGroup = getAddressGroup(ctx.srcipr);
-    String dstAddressGroup = getAddressGroup(ctx.dstipr);
+    Ip6Wildcard srcIps = getIpWildcard(ctx.srcipr);
+    Ip6Wildcard dstIps = getIpWildcard(ctx.dstipr);
     List<SubRange> srcPortRanges =
         ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.emptyList();
     List<SubRange> dstPortRanges =
@@ -4668,10 +4657,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
             name,
             action,
             protocol,
-            new Ip6Wildcard(srcIp, srcWildcard),
-            srcAddressGroup,
-            new Ip6Wildcard(dstIp, dstWildcard),
-            dstAddressGroup,
+            srcIps,
+            dstIps,
             srcPortRanges,
             dstPortRanges,
             dscps,
@@ -5645,8 +5632,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           ROUTE_MAP_MATCH_COMMUNITY_LIST,
           name.getStart().getLine());
     }
-    RouteMapMatchCommunityListLine line = new RouteMapMatchCommunityListLine(names);
-    _currentRouteMapClause.addMatchLine(line);
+    RouteMapMatchCommunity line = new RouteMapMatchCommunity(names);
+    _currentRouteMapClause.setMatchCommunity(line);
   }
 
   @Override
@@ -6648,72 +6635,145 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitSet_comm_list_delete_rm_stanza(Set_comm_list_delete_rm_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    RouteMapSetDeleteCommunityLine line = new RouteMapSetDeleteCommunityLine(name);
-    _currentRouteMapClause.addSetLine(line);
-    _configuration.referenceStructure(
-        COMMUNITY_LIST, name, ROUTE_MAP_DELETE_COMMUNITY, ctx.getStart().getLine());
-  }
-
-  @Override
-  public void exitSet_community_additive_rm_stanza(Set_community_additive_rm_stanzaContext ctx) {
-    ImmutableList.Builder<StandardCommunity> builder = ImmutableList.builder();
-    for (Literal_standard_communityContext c : ctx.communities) {
-      builder.add(StandardCommunity.of(toLong(c)));
+  public void exitRmsc_community_list(Rmsc_community_listContext ctx) {
+    List<String> names =
+        ctx.names.stream()
+            .map(AristaControlPlaneExtractor::toString)
+            .collect(ImmutableList.toImmutableList());
+    if (ctx.DELETE() != null) {
+      extractSetCommunityListDelete(ctx, names);
+    } else if (ctx.ADDITIVE() != null) {
+      extractSetCommunityListAdditive(ctx, names);
+    } else {
+      RouteMapSetCommunityListDelete del = _currentRouteMapClause.getSetCommunityListDelete();
+      boolean add = _currentRouteMapClause.getAdditive();
+      if (add && del != null) {
+        // list delete is set, and either list or non-list additive is set
+        warn(ctx, "set community community-list ambiguous; specify either additive or delete");
+        return;
+      }
+      if (add) {
+        // list or non-list additive is set
+        extractSetCommunityListAdditive(ctx, names);
+      } else if (del != null) {
+        // delete is set
+        extractSetCommunityListDelete(ctx, names);
+      } else {
+        extractSetCommunityList(ctx, names);
+      }
     }
-    RouteMapSetAdditiveCommunityLine line = new RouteMapSetAdditiveCommunityLine(builder.build());
-    _currentRouteMapClause.addSetLine(line);
+  }
+
+  private void extractSetCommunityListAdditive(Rmsc_community_listContext ctx, List<String> names) {
+    _currentRouteMapClause.clearNonAdditiveSetCommunity();
+    _currentRouteMapClause.setSetCommunityList(new RouteMapSetCommunityList(names, true));
+    names.forEach(
+        name ->
+            _configuration.referenceStructure(
+                COMMUNITY_LIST,
+                name,
+                ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_ADDITIVE,
+                ctx.getStart().getLine()));
+  }
+
+  private void extractSetCommunityListDelete(Rmsc_community_listContext ctx, List<String> names) {
+    _currentRouteMapClause.clearNonAdditiveSetCommunity();
+    _currentRouteMapClause.setSetCommunityDelete(null);
+    _currentRouteMapClause.setSetCommunityListDelete(new RouteMapSetCommunityListDelete(names));
+    names.forEach(
+        name ->
+            _configuration.referenceStructure(
+                COMMUNITY_LIST,
+                name,
+                ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_DELETE,
+                ctx.getStart().getLine()));
+  }
+
+  private void extractSetCommunityList(Rmsc_community_listContext ctx, List<String> names) {
+    _currentRouteMapClause.clearSetCommunity();
+    _currentRouteMapClause.setSetCommunityList(new RouteMapSetCommunityList(names, false));
+    names.forEach(
+        name ->
+            _configuration.referenceStructure(
+                COMMUNITY_LIST,
+                name,
+                ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST,
+                ctx.getStart().getLine()));
+  }
+
+  @Nonnull
+  private static String toString(Community_list_nameContext ctx) {
+    return ctx.getText();
   }
 
   @Override
-  public void exitSet_community_list_additive_rm_stanza(
-      Set_community_list_additive_rm_stanzaContext ctx) {
-    Set<String> communityLists = new LinkedHashSet<>();
-    for (VariableContext communityListCtx : ctx.comm_lists) {
-      String communityList = communityListCtx.getText();
-      communityLists.add(communityList);
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          communityList,
-          ROUTE_MAP_ADD_COMMUNITY,
-          communityListCtx.getStart().getLine());
+  public void exitRmsc_none(Rmsc_noneContext ctx) {
+    _currentRouteMapClause.clearSetCommunity();
+    _currentRouteMapClause.setSetCommunityNone(RouteMapSetCommunityNone.instance());
+  }
+
+  @Override
+  public void exitRmsc_communities(Rmsc_communitiesContext ctx) {
+    List<StandardCommunity> communities =
+        ctx.communities.stream()
+            .map(AristaControlPlaneExtractor::toStandardCommunity)
+            .collect(ImmutableList.toImmutableList());
+    if (ctx.DELETE() != null) {
+      extractSetCommunityDelete(communities);
+    } else if (ctx.ADDITIVE() != null) {
+      extractSetCommunityAdditive(communities);
+    } else {
+      RouteMapSetCommunityDelete del = _currentRouteMapClause.getSetCommunityDelete();
+      boolean add = _currentRouteMapClause.getAdditive();
+      if (add && del != null) {
+        // delete is set, and either list or non-list additive is set
+        warn(ctx, "set community ambiguous; specify either additive or delete");
+        return;
+      }
+      if (add) {
+        // list or non-list additive is set
+        extractSetCommunityAdditive(communities);
+      } else if (del != null) {
+        // delete is set
+        extractSetCommunityDelete(communities);
+      } else {
+        extractSetCommunity(communities);
+      }
     }
-    RouteMapSetAdditiveCommunityListLine line =
-        new RouteMapSetAdditiveCommunityListLine(communityLists);
-    _currentRouteMapClause.addSetLine(line);
   }
 
-  @Override
-  public void exitSet_community_list_rm_stanza(Set_community_list_rm_stanzaContext ctx) {
-    Set<String> communityLists = new LinkedHashSet<>();
-    for (VariableContext communityListCtx : ctx.comm_lists) {
-      String communityList = communityListCtx.getText();
-      communityLists.add(communityList);
-      _configuration.referenceStructure(
-          COMMUNITY_LIST,
-          communityList,
-          ROUTE_MAP_SET_COMMUNITY,
-          communityListCtx.getStart().getLine());
+  private void extractSetCommunityAdditive(List<StandardCommunity> communities) {
+    List<StandardCommunity> finalCommunities = communities;
+    RouteMapSetCommunity old = _currentRouteMapClause.getSetCommunity();
+    if (old != null) {
+      finalCommunities =
+          ImmutableList.<StandardCommunity>builder()
+              .addAll(finalCommunities)
+              .addAll(old.getCommunities())
+              .build();
     }
-    RouteMapSetCommunityListLine line = new RouteMapSetCommunityListLine(communityLists);
-    _currentRouteMapClause.addSetLine(line);
+    _currentRouteMapClause.clearNonDeleteSetCommunity();
+    _currentRouteMapClause.setSetCommunity(new RouteMapSetCommunity(finalCommunities, true));
   }
 
-  @Override
-  public void exitSet_community_none_rm_stanza(Set_community_none_rm_stanzaContext ctx) {
-    RouteMapSetCommunityNoneLine line = new RouteMapSetCommunityNoneLine();
-    _currentRouteMapClause.addSetLine(line);
+  private void extractSetCommunityDelete(List<StandardCommunity> communities) {
+    _currentRouteMapClause.clearNonAdditiveSetCommunity();
+    _currentRouteMapClause.setSetCommunityListDelete(null);
+    _currentRouteMapClause.setSetCommunityDelete(new RouteMapSetCommunityDelete(communities));
   }
 
-  @Override
-  public void exitSet_community_rm_stanza(Set_community_rm_stanzaContext ctx) {
-    List<Long> commList = new ArrayList<>();
-    for (Literal_standard_communityContext c : ctx.communities) {
-      commList.add(toLong(c));
+  private void extractSetCommunity(List<StandardCommunity> communities) {
+    List<StandardCommunity> finalCommunities = communities;
+    RouteMapSetCommunity old = _currentRouteMapClause.getSetCommunity();
+    if (old != null) {
+      finalCommunities =
+          ImmutableList.<StandardCommunity>builder()
+              .addAll(finalCommunities)
+              .addAll(old.getCommunities())
+              .build();
     }
-    RouteMapSetCommunityLine line = new RouteMapSetCommunityLine(commList);
-    _currentRouteMapClause.addSetLine(line);
+    _currentRouteMapClause.clearSetCommunity();
+    _currentRouteMapClause.setSetCommunity(new RouteMapSetCommunity(finalCommunities, false));
   }
 
   @Override
@@ -6879,8 +6939,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitStandard_ipv6_access_list_tail(Standard_ipv6_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
-    Ip6 srcIp = getIp(ctx.ipr);
-    Ip6 srcWildcard = getWildcard(ctx.ipr);
+    Ip6Wildcard srcIps = getIpWildcard(ctx.ipr);
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();
     for (Standard_access_list_additional_featureContext feature : ctx.features) {
@@ -6899,8 +6958,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       name = getFullText(ctx).trim();
     }
     StandardIpv6AccessListLine line =
-        new StandardIpv6AccessListLine(
-            name, action, new Ip6Wildcard(srcIp, srcWildcard), dscps, ecns);
+        new StandardIpv6AccessListLine(name, action, srcIps, dscps, ecns);
     _currentStandardIpv6Acl.addLine(line);
   }
 
@@ -7015,15 +7073,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  @Nullable
-  private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
-    if (ctx.address_group != null) {
-      return ctx.address_group.getText();
-    } else {
-      return null;
-    }
-  }
-
   private String getCanonicalInterfaceName(String ifaceName) {
     return _configuration.canonicalizeInterfaceName(ifaceName);
   }
@@ -7040,23 +7089,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
-  }
-
-  private Ip6 getWildcard(Access_list_ip6_rangeContext ctx) {
-    if (ctx.wildcard != null) {
-      return toIp6(ctx.wildcard);
-    } else if (ctx.ANY() != null || ctx.ANY6() != null || ctx.address_group != null) {
-      return Ip6.MAX;
-    } else if (ctx.HOST() != null) {
-      return Ip6.ZERO;
-    } else if (ctx.prefix6 != null) {
-      return Prefix6.parse(ctx.prefix6.getText()).getPrefixWildcard();
-    } else if (ctx.ip != null) {
-      // basically same as host
-      return Ip6.ZERO;
-    } else {
-      throw convError(Ip.class, ctx);
-    }
   }
 
   private void initInterface(Interface iface, Interface_nameContext ctx) {
@@ -7394,26 +7426,27 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  private long toLong(Literal_standard_communityContext ctx) {
+  @Nonnull
+  private static StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
     if (ctx.u32 != null) {
-      return toLong(ctx.u32);
+      return StandardCommunity.of(toLong(ctx.u32));
     } else if (ctx.lo != null) {
       assert ctx.hi != null;
       int lo = toInteger(ctx.lo);
       int hi = toInteger(ctx.hi);
-      return StandardCommunity.of(hi, lo).asLong();
+      return StandardCommunity.of(hi, lo);
     } else if (ctx.GSHUT() != null) {
-      return WellKnownCommunity.GRACEFUL_SHUTDOWN;
+      return StandardCommunity.GRACEFUL_SHUTDOWN;
     } else if (ctx.INTERNET() != null) {
-      return WellKnownCommunity.INTERNET;
+      return StandardCommunity.INTERNET;
     } else if (ctx.LOCAL_AS() != null) {
       // Cisco LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet forums.
-      return WellKnownCommunity.NO_EXPORT_SUBCONFED;
+      return StandardCommunity.NO_EXPORT_SUBCONFED;
     } else if (ctx.NO_ADVERTISE() != null) {
-      return WellKnownCommunity.NO_ADVERTISE;
+      return StandardCommunity.NO_ADVERTISE;
     } else {
       assert ctx.NO_EXPORT() != null;
-      return WellKnownCommunity.NO_EXPORT;
+      return StandardCommunity.NO_EXPORT;
     }
   }
 

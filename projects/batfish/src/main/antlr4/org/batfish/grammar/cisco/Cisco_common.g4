@@ -265,6 +265,12 @@ null_rest_of_line
     ~NEWLINE* NEWLINE
 ;
 
+ospf_area
+:
+  num = uint32
+  | addr = IP_ADDRESS
+;
+
 ospf_route_type
 :
    (

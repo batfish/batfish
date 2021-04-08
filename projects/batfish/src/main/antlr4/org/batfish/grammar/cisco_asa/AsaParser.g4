@@ -2,6 +2,7 @@ parser grammar AsaParser;
 
 import
 Asa_common,
+Asa_community_list,
 AsaLegacy_aaa,
 AsaLegacy_acl,
 AsaLegacy_bgp,
@@ -2591,8 +2592,7 @@ s_ip
 :
   IP
   (
-    ip_extcommunity_list
-    | ip_local
+    ip_local
   )
 ;
 
@@ -3552,13 +3552,13 @@ stanza
    appletalk_access_list_stanza
    | asa_comment_stanza
    | asa_access_group
+   | community_list_expanded
+   | community_list_standard
    | del_stanza
    | extended_access_list_stanza
    | extended_ipv6_access_list_stanza
    | ip_as_path_access_list_stanza
    | ip_as_path_regex_mode_stanza
-   | ip_community_list_expanded_stanza
-   | ip_community_list_standard_stanza
    | ip_prefix_list_stanza
    | ip_route_stanza
    | ipv6_prefix_list_stanza

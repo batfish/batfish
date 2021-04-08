@@ -321,11 +321,9 @@ public final class AclTracer extends AclLineEvaluator {
     setTraceElement(notMatchExpr.getTraceElement());
     _tracer.newSubTrace();
     boolean result = visit(notMatchExpr.getOperand());
-    if (result) {
-      _tracer.discardSubTrace();
-    } else {
-      _tracer.endSubTrace();
-    }
+    // TODO: how should we handle explaining "did not match"?
+    // Preserving the sub-trace for a BooleanExpr that returned false is misleading.
+    _tracer.discardSubTrace();
     return !result;
   }
 

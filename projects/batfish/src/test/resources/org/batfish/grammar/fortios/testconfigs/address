@@ -4,6 +4,7 @@ end
 config system interface
     edit "port1"
         set vdom "root"
+        set type physical
         set ip 1.1.1.1 255.255.255.0
     next
 end

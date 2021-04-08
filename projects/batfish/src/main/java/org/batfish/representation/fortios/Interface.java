@@ -103,6 +103,16 @@ public final class Interface implements InterfaceOrZone, Serializable {
     return _description;
   }
 
+  @Nullable
+  public String getInterface() {
+    return _interface;
+  }
+
+  @Nullable
+  public Integer getVlanid() {
+    return _vlanid;
+  }
+
   @VisibleForTesting
   @Nullable
   public Integer getVrf() {
@@ -148,6 +158,14 @@ public final class Interface implements InterfaceOrZone, Serializable {
     _description = description;
   }
 
+  public void setInterface(String iface) {
+    _interface = iface;
+  }
+
+  public void setVlanid(int vlanid) {
+    _vlanid = vlanid;
+  }
+
   public void setVrf(int vrf) {
     _vrf = vrf;
   }
@@ -166,5 +184,7 @@ public final class Interface implements InterfaceOrZone, Serializable {
   @Nullable private Boolean _mtuOverride;
   @Nullable private Integer _mtu;
   @Nullable private String _description;
+  @Nullable private String _interface;
+  @Nullable private Integer _vlanid;
   @Nullable private Integer _vrf;
 }

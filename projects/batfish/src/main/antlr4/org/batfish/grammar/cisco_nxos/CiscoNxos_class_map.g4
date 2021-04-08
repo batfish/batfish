@@ -65,6 +65,7 @@ cmcp_match
     cmcpm_access_group
     | cmcpm_exception
     | cmcpm_protocol
+    | cmcpm_redirect
   )
 ;
 
@@ -80,7 +81,23 @@ cmcpm_exception
 
 cmcpm_protocol
 :
-  PROTOCOL ARP NEWLINE
+  PROTOCOL
+  (
+    ARP
+    // only "exp 6" is valid
+  | MPLS (EXP uint8 | ROUTER_ALERT)?
+  )
+  NEWLINE
+;
+
+cmcpm_redirect
+:
+  REDIRECT
+  (
+    ARP_INSPECT
+  | DHCP_SNOOP
+  )
+  NEWLINE
 ;
 
 cm_network_qos

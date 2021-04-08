@@ -19260,21 +19260,43 @@
       "arista_community_list_named" : {
         "configurationFormat" : "ARISTA",
         "name" : "arista_community_list_named",
-        "communityLists" : {
+        "communityMatchExprs" : {
           "COMM_LIST_NAME" : {
-            "class" : "org.batfish.datamodel.CommunityList",
-            "invertMatch" : false,
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunityIn",
+            "communitySetExpr" : {
+              "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+              "communitySet" : [
+                "75:42"
+              ]
+            }
+          }
+        },
+        "communitySetMatchExprs" : {
+          "COMM_LIST_NAME" : {
+            "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetAcl",
             "lines" : [
               {
                 "action" : "PERMIT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralCommunity",
-                  "community" : "75:42"
+                "communitySetMatchExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll",
+                  "exprs" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.communities.HasCommunity",
+                      "expr" : {
+                        "class" : "org.batfish.datamodel.routing_policy.communities.CommunityIs",
+                        "community" : "75:42"
+                      }
+                    }
+                  ]
                 }
               }
-            ],
-            "name" : "COMM_LIST_NAME"
+            ]
           }
+        },
+        "communitySets" : {
+          "COMM_LIST_NAME" : [
+            "75:42"
+          ]
         },
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19368,10 +19390,23 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.AddCommunity",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedCommunitySet",
-                      "name" : "COMM_LIST_NAME"
+                    "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
+                    "communitySetExpr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
+                      "exprs" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
+                          "exprs" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetReference",
+                              "name" : "COMM_LIST_NAME"
+                            }
+                          ]
+                        }
+                      ]
                     }
                   },
                   {
@@ -29694,21 +29729,6 @@
               {
                 "action" : "DENY",
                 "ipWildcard" : "1.2.3.0/24",
-                "lengthRange" : "25-32"
-              },
-              {
-                "action" : "PERMIT",
-                "ipWildcard" : "0.0.0.0/0",
-                "lengthRange" : "0-32"
-              }
-            ],
-            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
-          },
-          "~OSPF_SUMMARY_FILTER:default:16909056~" : {
-            "lines" : [
-              {
-                "action" : "DENY",
-                "ipWildcard" : "1.2.3.0/24",
                 "lengthRange" : "24-32"
               },
               {
@@ -29717,7 +29737,7 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
           }
         },
         "routingPolicies" : {
@@ -29911,23 +29931,10 @@
                     "stubType" : "NSSA",
                     "summaries" : {
                       "1.2.3.0/24" : {
-                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD",
-                        "metric" : 17
-                      }
-                    },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
-                  },
-                  "16909056" : {
-                    "injectDefaultRoute" : true,
-                    "metricOfDefaultRoute" : 0,
-                    "name" : 16909056,
-                    "stubType" : "NONE",
-                    "summaries" : {
-                      "1.2.3.0/24" : {
                         "behavior" : "NOT_ADVERTISE_AND_NO_DISCARD"
                       }
                     },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -30120,21 +30127,6 @@
               {
                 "action" : "DENY",
                 "ipWildcard" : "1.2.3.0/24",
-                "lengthRange" : "25-32"
-              },
-              {
-                "action" : "PERMIT",
-                "ipWildcard" : "0.0.0.0/0",
-                "lengthRange" : "0-32"
-              }
-            ],
-            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
-          },
-          "~OSPF_SUMMARY_FILTER:default:16909056~" : {
-            "lines" : [
-              {
-                "action" : "DENY",
-                "ipWildcard" : "1.2.3.0/24",
                 "lengthRange" : "24-32"
               },
               {
@@ -30143,7 +30135,7 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+            "name" : "~OSPF_SUMMARY_FILTER:default:0~"
           },
           "~OSPF_SUMMARY_FILTER:default:1~" : {
             "lines" : [
@@ -30202,23 +30194,10 @@
                     "stubType" : "NSSA",
                     "summaries" : {
                       "1.2.3.0/24" : {
-                        "behavior" : "ADVERTISE_AND_INSTALL_DISCARD",
-                        "metric" : 17
-                      }
-                    },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
-                  },
-                  "16909056" : {
-                    "injectDefaultRoute" : true,
-                    "metricOfDefaultRoute" : 0,
-                    "name" : 16909056,
-                    "stubType" : "NONE",
-                    "summaries" : {
-                      "1.2.3.0/24" : {
                         "behavior" : "NOT_ADVERTISE_AND_NO_DISCARD"
                       }
                     },
-                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:16909056~"
+                    "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -31823,49 +31802,13 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch",
                     "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                      "exprs" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                          "comparator" : "GE",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                            "value" : 0
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                          "comparator" : "LE",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                            "value" : 65535
-                          }
-                        }
-                      ]
+                      "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                     }
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch",
                     "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                      "exprs" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                          "comparator" : "GE",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                            "value" : 0
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                          "comparator" : "LE",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                            "value" : 65535
-                          }
-                        }
-                      ]
+                      "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                     }
                   }
                 ]
@@ -32439,49 +32382,13 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch",
                       "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                        "exprs" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "GE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 0
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "LE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 65535
-                            }
-                          }
-                        ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                       }
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch",
                       "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                        "exprs" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "GE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 0
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "LE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 65535
-                            }
-                          }
-                        ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                       }
                     }
                   ]
@@ -32860,49 +32767,13 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch",
                       "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                        "exprs" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "GE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 0
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "LE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 65535
-                            }
-                          }
-                        ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                       }
                     },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch",
                       "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                        "exprs" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "GE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 0
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "LE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 65535
-                            }
-                          }
-                        ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                       }
                     }
                   ]
@@ -33544,25 +33415,7 @@
                   {
                     "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch",
                     "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                      "exprs" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                          "comparator" : "GE",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                            "value" : 0
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                          "comparator" : "LE",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                            "value" : 65535
-                          }
-                        }
-                      ]
+                      "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                     }
                   }
                 ]
@@ -33666,25 +33519,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch",
                       "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                        "exprs" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "GE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 0
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "LE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 65535
-                            }
-                          }
-                        ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                       }
                     }
                   ]
@@ -33773,25 +33608,7 @@
                     {
                       "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch",
                       "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                        "exprs" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "GE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 0
-                            }
-                          },
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                            "comparator" : "LE",
-                            "expr" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                              "value" : 65535
-                            }
-                          }
-                        ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                       }
                     }
                   ]
@@ -81601,25 +81418,7 @@
                                     {
                                       "class" : "org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch",
                                       "expr" : {
-                                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll",
-                                        "exprs" : [
-                                          {
-                                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                                            "comparator" : "GE",
-                                            "expr" : {
-                                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                              "value" : 0
-                                            }
-                                          },
-                                          {
-                                            "class" : "org.batfish.datamodel.routing_policy.expr.IntComparison",
-                                            "comparator" : "LE",
-                                            "expr" : {
-                                              "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                              "value" : 65535
-                                            }
-                                          }
-                                        ]
+                                        "class" : "org.batfish.datamodel.routing_policy.expr.IntMatchAll"
                                       }
                                     },
                                     {

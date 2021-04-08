@@ -238,8 +238,8 @@ interface Ethernet1/1
   ip ospf bfd
   ! 1-65535
   ip ospf cost 12
-  ! can use type 0,3,7 password
-  ip ospf message-digest-key 0 foobar
+  ! can use key 0-255 and type 0,3,7 password
+  ip ospf message-digest-key 1 md5 0 foobar
   ! 1-65535 (default is 40) (s)
   ip ospf dead-interval 10
   ! 1-65535 (default is 10) (s)

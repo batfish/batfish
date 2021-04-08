@@ -3,13 +3,14 @@ package org.batfish.representation.cisco_asa;
 import java.io.Serializable;
 import java.util.List;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 
 public class StandardCommunityListLine implements Serializable {
 
   private LineAction _action;
-  private List<Long> _communities;
+  private List<StandardCommunity> _communities;
 
-  public StandardCommunityListLine(LineAction action, List<Long> communities) {
+  public StandardCommunityListLine(LineAction action, List<StandardCommunity> communities) {
     _action = action;
     _communities = communities;
   }
@@ -18,7 +19,7 @@ public class StandardCommunityListLine implements Serializable {
     return _action;
   }
 
-  public List<Long> getCommunities() {
+  public List<StandardCommunity> getCommunities() {
     return _communities;
   }
 }

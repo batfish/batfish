@@ -36,11 +36,11 @@ public final class DistributeList implements Serializable {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof DistributeList)) {
       return false;
     }
     DistributeList that = (DistributeList) o;
-    return _filterType == that._filterType && Objects.equals(_filterName, that._filterName);
+    return _filterType == that._filterType && _filterName.equals(that._filterName);
   }
 
   @Override

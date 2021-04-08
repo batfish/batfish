@@ -8,6 +8,7 @@ import static org.batfish.datamodel.questions.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_METRIC;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +34,8 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
    * We require the field names to match the route field names.
    */
   private static final Set<String> ROUTE_DIFF_FIELD_NAMES =
-      ImmutableSet.of(PROP_AS_PATH, PROP_COMMUNITIES, PROP_LOCAL_PREFERENCE, PROP_METRIC);
+      ImmutableSet.of(
+          PROP_AS_PATH, PROP_COMMUNITIES, PROP_LOCAL_PREFERENCE, PROP_METRIC, PROP_ORIGIN_TYPE);
 
   private final String _fieldName;
   private final String _oldValue;
@@ -107,15 +109,20 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             .setCommunities(route2.getCommunities())
             .setLocalPreference(route2.getLocalPreference())
             .setMetric(route2.getMetric())
+            .setOriginType(route2.getOriginType())
             .build()
             .equals(route2),
-        "routeDiffs only supports differences of fields: " + ROUTE_DIFF_FIELD_NAMES);
+        "routeDiffs only supports differences of fields: %s, not %s vs %s",
+        ROUTE_DIFF_FIELD_NAMES,
+        route1,
+        route2);
 
     return Stream.of(
             routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
             routeDiff(route1, route2, PROP_COMMUNITIES, BgpRoute::getCommunities),
             routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
-            routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric))
+            routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
+            routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(ImmutableSortedSet.toImmutableSortedSet(natural()));

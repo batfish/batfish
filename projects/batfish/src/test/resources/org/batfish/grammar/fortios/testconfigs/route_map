@@ -1,0 +1,41 @@
+config system global
+    set hostname "route_map"
+end
+config router access-list
+    edit "acl1"
+        config rule
+            edit 1
+                set prefix 10.10.10.0/24
+            next
+        end
+    next
+    edit "acl2"
+        config rule
+            edit 1
+                set prefix 10.10.0.0/16
+            next
+        end
+    next
+end
+config router route-map
+    edit "longest_route_map_name_allowed_by_f"
+    next
+    edit "route_map1"
+        set comments "comment for route_map1"
+        config rule
+            edit 9999
+                set action permit
+                set match-ip-address "acl1"
+            next
+            edit 1
+                set action deny
+                set match-ip-address "acl2"
+            next
+            edit 2
+            next
+            edit 9999
+                set action permit
+            next
+        end
+    next
+end

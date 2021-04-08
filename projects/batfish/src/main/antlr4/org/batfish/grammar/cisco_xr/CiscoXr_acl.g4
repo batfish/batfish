@@ -48,19 +48,7 @@ access_list_ip_range
    | prefix = IP_PREFIX
    |
    (
-      ADDRGROUP address_group = variable
-   )
-   |
-   (
       INTERFACE iface = variable
-   )
-   |
-   (
-      OBJECT obj = variable
-   )
-   |
-   (
-      OBJECT_GROUP og = variable
    )
 ;
 
@@ -82,19 +70,6 @@ access_list_ip6_range
    )
 ;
 
-access_list_mac_range
-:
-   ANY
-   |
-   (
-      address = MAC_ADDRESS_LITERAL wildcard = MAC_ADDRESS_LITERAL
-   )
-   |
-   (
-      HOST address = MAC_ADDRESS_LITERAL
-   )
-;
-
 appletalk_access_list_null_tail
 :
    action = access_list_action
@@ -104,11 +79,6 @@ appletalk_access_list_null_tail
       )
       | OTHER_ACCESS
    )? NEWLINE
-;
-
-appletalk_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_APPLETALK appletalk_access_list_null_tail
 ;
 
 as_path_set_elem
@@ -141,31 +111,6 @@ as_path_set_stanza
 bandwidth_irs_stanza
 :
    BANDWIDTH null_rest_of_line
-;
-
-community_set_stanza
-:
-   COMMUNITY_SET name = variable NEWLINE
-   community_set_elem_list END_SET NEWLINE
-;
-
-community_set_elem_list
-:
-// no elements
-
-   |
-   (
-      (
-         (
-            elems += community_set_elem COMMA
-         )
-         | hash_comment
-      ) NEWLINE
-   )*
-   (
-      elems += community_set_elem
-      | hash_comment
-   ) NEWLINE
 ;
 
 etype
@@ -313,11 +258,8 @@ extended_access_list_tail
    (
       VLAN vlan = DEC vmask = HEX
    )?
-   (
-      prot = protocol
-      | OBJECT_GROUP ogs = variable
-      | OBJECT obj = variable
-   ) srcipr = access_list_ip_range
+   prot = protocol
+   srcipr = access_list_ip_range
    (
       alps_src = port_specifier
    )? dstipr = access_list_ip_range
@@ -367,10 +309,7 @@ interface_rs_stanza
 
 ip_prefix_list_stanza
 :
-   (
-      IP
-      | IPV4
-   )? PREFIX_LIST name = variable
+   IPV4 PREFIX_LIST name = variable
    (
       (
          NEWLINE
@@ -437,16 +376,6 @@ ip_prefix_list_tail
    )* NEWLINE
 ;
 
-ipacleth_line
-:
-   action = access_list_action ipacleth_range NEWLINE
-;
-
-ipacleth_range
-:
-   ANY
-;
-
 ipaclsession_ip_range
 :
    (
@@ -506,11 +435,6 @@ ipx_sap_access_list_null_tail
    action = access_list_action null_rest_of_line
 ;
 
-ipx_sap_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_IPX_SAP ipx_sap_access_list_null_tail
-;
-
 irs_stanza
 :
    bandwidth_irs_stanza
@@ -536,81 +460,6 @@ mac_access_list_additional_feature
    |
    (
       PRIORITY_MAPPING priority_mapping = DEC
-   )
-;
-
-netdestination_description
-:
-   desc = description_line
-;
-
-netdestination_host
-:
-   HOST ip = IP_ADDRESS NEWLINE
-;
-
-netdestination_invert
-:
-   INVERT NEWLINE
-;
-
-netdestination_name
-:
-   NAME name = variable_permissive NEWLINE
-;
-
-netdestination_network
-:
-   NETWORK net = IP_ADDRESS mask = IP_ADDRESS NEWLINE
-;
-
-netdestination6_description
-:
-   desc = description_line
-;
-
-netdestination6_host
-:
-   HOST ip6 = IPV6_ADDRESS NEWLINE
-;
-
-netdestination6_invert
-:
-   INVERT NEWLINE
-;
-
-netdestination6_name
-:
-   NAME name = variable_permissive NEWLINE
-;
-
-netdestination6_network
-:
-   NETWORK net6 = IPV6_PREFIX NEWLINE
-;
-
-netservice_icmpv6_specifier
-:
-   DEC
-   | RTR_ADV
-;
-
-netservice_port_specifier
-:
-   (
-      (
-         start_port = DEC
-         (
-            end_port = DEC
-         )?
-      )
-      |
-      (
-         LIST DOUBLE_QUOTE
-         (
-            elems += DEC
-         )+ DOUBLE_QUOTE
-      )
    )
 ;
 
@@ -673,12 +522,6 @@ protocol_type_code_access_list_null_tail
    action = access_list_action null_rest_of_line
 ;
 
-protocol_type_code_access_list_stanza
-:
-   ACCESS_LIST name = ACL_NUM_PROTOCOL_TYPE_CODE
-   protocol_type_code_access_list_null_tail
-;
-
 rs_stanza
 :
    interface_rs_stanza
@@ -688,32 +531,6 @@ rs_stanza
 rsvp_stanza
 :
    RSVP NEWLINE rs_stanza*
-;
-
-s_arp_access_list_extended
-:
-   ARP ACCESS_LIST name = variable_permissive NEWLINE
-   s_arp_access_list_extended_tail*
-;
-
-s_arp_access_list_extended_tail
-:
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = DEC
-   )? action = access_list_action
-   (
-      REQUEST
-      | RESPONSE
-   )? IP senderip = access_list_ip_range
-   (
-      targetip = access_list_ip_range
-   )? MAC sendermac = access_list_mac_range
-   (
-      targetmac = access_list_mac_range
-   )? LOG? NEWLINE
 ;
 
 s_ethernet_services
@@ -726,82 +543,6 @@ s_ethernet_services_tail
 :
    num = DEC? action = access_list_action src_mac = xr_mac_specifier dst_mac =
    xr_mac_specifier NEWLINE
-;
-
-s_ip_access_list_eth
-:
-   IP ACCESS_LIST ETH name = variable NEWLINE
-   (
-      ipacleth_line
-   )*
-;
-
-s_mac_access_list
-:
-   ACCESS_LIST num = ACL_NUM_MAC action = access_list_action address =
-   MAC_ADDRESS_LITERAL wildcard = MAC_ADDRESS_LITERAL NEWLINE
-;
-
-s_mac_access_list_extended
-:
-   (
-      ACCESS_LIST num = ACL_NUM_EXTENDED_MAC s_mac_access_list_extended_tail
-   )
-   |
-   (
-      MAC ACCESS_LIST EXTENDED? name = variable_permissive EXTENDED? NEWLINE
-      s_mac_access_list_extended_tail*
-   )
-;
-
-s_mac_access_list_extended_tail
-:
-   (
-      (SEQ | SEQUENCE)? num = DEC
-   )?
-   action = access_list_action src = access_list_mac_range dst = access_list_mac_range
-   (
-      vlan = DEC
-      | vlan_any = ANY
-   )? mac_access_list_additional_feature* NEWLINE
-;
-
-s_netdestination
-:
-   NETDESTINATION name = variable NEWLINE
-   (
-      netdestination_description
-      | netdestination_host
-      | netdestination_invert
-      | netdestination_name
-      | netdestination_network
-   )*
-;
-
-s_netdestination6
-:
-   NETDESTINATION6 name = variable NEWLINE
-   (
-      netdestination6_description
-      | netdestination6_host
-      | netdestination6_invert
-      | netdestination6_name
-      | netdestination6_network
-   )*
-;
-
-s_netservice
-:
-   NETSERVICE name = variable prot = protocol ps = netservice_port_specifier?
-   (
-      ALG alg = netservice_alg
-   )? NEWLINE
-;
-
-variable_community_list
-:
-   ~( NEWLINE | COMMUNITY_LIST_NUM_STANDARD | COMMUNITY_LIST_NUM_EXPANDED | DEC
-   )
 ;
 
 xr_mac_specifier

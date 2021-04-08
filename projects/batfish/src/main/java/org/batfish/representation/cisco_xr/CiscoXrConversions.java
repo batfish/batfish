@@ -12,10 +12,6 @@ import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeBgpPeerImportPolicyName;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeIcmpObjectGroupAclName;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeProtocolObjectGroupAclName;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeServiceObjectAclName;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 
@@ -321,6 +317,20 @@ public class CiscoXrConversions {
           ColonSeparatedRendering.instance(), toJavaRegex(communitySetIosRegex.getRegex()));
     }
 
+    @Override
+    public CommunityMatchExpr visitCommunitySetDfaRegex(
+        XrCommunitySetDfaRegex communitySetDfaRegex, Configuration arg) {
+      // TODO: differentiate from IOS regex
+      return new CommunityMatchRegex(
+          ColonSeparatedRendering.instance(), toJavaRegex(communitySetDfaRegex.getRegex()));
+    }
+
+    @Override
+    public CommunityMatchExpr visitWildcardCommunitySetElem(
+        XrWildcardCommunitySetElem xrWildcardCommunitySetElem) {
+      return new CommunityMatchAll(ImmutableList.of());
+    }
+
     private static final CommunitySetElemToCommunityMatchExpr INSTANCE =
         new CommunitySetElemToCommunityMatchExpr();
   }
@@ -403,6 +413,25 @@ public class CiscoXrConversions {
     public IntMatchExpr visitUint16Reference(Uint16Reference uint16Reference, Configuration arg) {
       return new IntComparison(IntComparator.EQ, new VarInt(uint16Reference.getVar()));
     }
+
+    @Override
+    public IntMatchExpr visitWildcardUint16RangeExpr(
+        WildcardUint16RangeExpr wildcardUint16RangeExpr) {
+      return IntMatchAll.of();
+    }
+
+    @Override
+    public IntMatchExpr visitPrivateAs(PrivateAs privateAs) {
+      return IntMatchAll.of(
+          new IntComparison(IntComparator.GE, new LiteralInt(64512)),
+          new IntComparison(IntComparator.LE, new LiteralInt(65534)));
+    }
+
+    @Override
+    public IntMatchExpr visitPeerAs(PeerAs peerAs) {
+      // TODO: implement. In the meanwhile, prevent matching by using impossible condition
+      return new IntComparison(IntComparator.LT, new LiteralInt(0));
+    }
   }
 
   private static final class XrUint32RangeExprToLongMatchExpr
@@ -450,8 +479,20 @@ public class CiscoXrConversions {
     }
 
     @Override
+    public CommunitySetExpr visitCommunitySetDfaRegex(
+        XrCommunitySetDfaRegex xrCommunitySetDfaRegex, Configuration arg) {
+      return CommunitySetExprs.empty();
+    }
+
+    @Override
     public CommunitySetExpr visitCommunitySetIosRegex(
         XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
+      return CommunitySetExprs.empty();
+    }
+
+    @Override
+    public CommunitySetExpr visitWildcardCommunitySetElem(
+        XrWildcardCommunitySetElem xrWildcardCommunitySetElem) {
       return CommunitySetExprs.empty();
     }
 
@@ -549,6 +590,23 @@ public class CiscoXrConversions {
     public Optional<IntExpr> visitUint16Reference(Uint16Reference uint16Reference, Void arg) {
       return Optional.of(new VarInt(uint16Reference.getVar()));
     }
+
+    @Override
+    public Optional<IntExpr> visitWildcardUint16RangeExpr(
+        WildcardUint16RangeExpr wildcardUint16RangeExpr) {
+      return Optional.empty();
+    }
+
+    @Override
+    public Optional<IntExpr> visitPrivateAs(PrivateAs privateAs) {
+      return Optional.empty();
+    }
+
+    @Override
+    public Optional<IntExpr> visitPeerAs(PeerAs peerAs) {
+      // TODO: implement
+      return Optional.empty();
+    }
   }
 
   private static class XrUint32RangeExprToLongExpr
@@ -599,11 +657,26 @@ public class CiscoXrConversions {
     }
 
     @Override
+    public CommunitySetMatchExpr visitCommunitySetDfaRegex(
+        XrCommunitySetDfaRegex communitySetDfaRegex, Configuration arg) {
+      // TODO: properly differentiate from ios-regex
+      return new CommunitySetMatchRegex(
+          new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+          toJavaRegex(communitySetDfaRegex.getRegex()));
+    }
+
+    @Override
     public CommunitySetMatchExpr visitCommunitySetIosRegex(
         XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
       return new CommunitySetMatchRegex(
           new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
           toJavaRegex(communitySetIosRegex.getRegex()));
+    }
+
+    @Override
+    public CommunitySetMatchExpr visitWildcardCommunitySetElem(
+        XrWildcardCommunitySetElem xrWildcardCommunitySetElem) {
+      return new HasCommunity(new CommunityMatchAll(ImmutableList.of()));
     }
   }
 
@@ -1108,58 +1181,6 @@ public class CiscoXrConversions {
         .setLines(lines)
         .setSourceName(name)
         .setSourceType(IPV4_ACCESS_LIST.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeIcmpObjectGroupAclName(icmpTypeObjectGroup.getName()))
-        .setSourceName(icmpTypeObjectGroup.getName())
-        .setSourceType(CiscoXrStructureType.ICMP_TYPE_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
-        .setSourceName(protocolObjectGroup.getName())
-        .setSourceType(CiscoXrStructureType.PROTOCOL_OBJECT_GROUP.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ServiceObject serviceObject) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(serviceObject.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeServiceObjectAclName(serviceObject.getName()))
-        .setSourceName(serviceObject.getName())
-        .setSourceType(CiscoXrStructureType.SERVICE_OBJECT.getDescription())
-        .build();
-  }
-
-  static IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.accepting()
-                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
-        .setSourceName(serviceObjectGroup.getName())
-        .setSourceType(CiscoXrStructureType.SERVICE_OBJECT_GROUP.getDescription())
         .build();
   }
 

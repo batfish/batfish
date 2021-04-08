@@ -38,7 +38,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
 
   public static final String AS_PATH_ACCESS_LISTS = "AS_Path_Access_Lists";
   public static final String AUTHENTICATION_KEY_CHAINS = "Authentication_Key_Chains";
-  public static final String COMMUNITY_LISTS = "Community_Lists";
   public static final String COMMUNITY_MATCH_EXPRS = "Community_Match_Exprs";
   public static final String COMMUNITY_SET_EXPRS = "Community_Set_Exprs";
   public static final String COMMUNITY_SET_MATCH_EXPRS = "Community_Set_Match_Exprs";
@@ -88,12 +87,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
                   Configuration::getAuthenticationKeyChains,
                   Schema.set(Schema.STRING),
                   "Names of authentication keychains"))
-          .put(
-              COMMUNITY_LISTS,
-              new PropertyDescriptor<>(
-                  Configuration::getCommunityLists,
-                  Schema.set(Schema.STRING),
-                  "Names of community lists"))
           .put(
               COMMUNITY_MATCH_EXPRS,
               new PropertyDescriptor<>(

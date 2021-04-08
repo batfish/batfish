@@ -1,0 +1,17 @@
+! Command: show running-config
+! device: localhost (vEOS, EOS-4.21.1.1F)
+!
+hostname arista_ip_community_list_standard
+!
+
+!!! list for testing values
+ip community-list standard cl_values permit 1:1
+ip community-list standard cl_values permit internet
+ip community-list standard cl_values permit local-AS
+ip community-list standard cl_values permit no-advertise
+ip community-list standard cl_values permit no-export
+
+!!! list for testing match semantics
+ip community-list standard cl_test deny 1:1 2:2
+ip community-list standard cl_test permit 1:1
+ip community-list standard cl_test permit 2:2

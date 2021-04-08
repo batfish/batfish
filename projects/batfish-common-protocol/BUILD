@@ -140,9 +140,7 @@ junit_tests(
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
-    resources = glob([
-        "src/test/resources/**",
-    ]),
+    resources = ["//projects/batfish-common-protocol/src/test/resources"],
     deps = [
         ":common",
         ":common_testlib",

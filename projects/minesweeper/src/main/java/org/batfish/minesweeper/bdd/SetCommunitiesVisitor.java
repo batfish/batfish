@@ -53,7 +53,9 @@ public class SetCommunitiesVisitor
         shouldNotDelete.add(ap);
       }
     }
-    return initial.diff(new CommunityAPDispositions(shouldDelete.build(), shouldNotDelete.build()));
+    return initial.diff(
+        new CommunityAPDispositions(
+            commAPBDDs.length, shouldDelete.build(), shouldNotDelete.build()));
   }
 
   @Override
@@ -87,7 +89,10 @@ public class SetCommunitiesVisitor
 
   @Override
   public CommunityAPDispositions visitInputCommunities(InputCommunities inputCommunities, Arg arg) {
-    return new CommunityAPDispositions(ImmutableSet.of(), ImmutableSet.of());
+    return new CommunityAPDispositions(
+        arg.getBDDRoute().getCommunityAtomicPredicates().length,
+        ImmutableSet.of(),
+        ImmutableSet.of());
   }
 
   @Override

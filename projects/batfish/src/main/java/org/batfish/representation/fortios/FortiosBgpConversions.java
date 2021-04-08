@@ -1,9 +1,12 @@
 package org.batfish.representation.fortios;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.Warnings;
@@ -13,6 +16,16 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /** Helper functions for generating VI BGP structures for {@link FortiosConfiguration}. */
 public final class FortiosBgpConversions {
@@ -66,7 +79,7 @@ public final class FortiosBgpConversions {
   public static void convertBgp(BgpProcess bgpProcess, Configuration c, Warnings w) {
     long as = bgpProcess.getAsEffective();
     if (as == 0L) {
-      w.redFlag("Ignoring BGP process: No AS configured");
+      // this is the standard way to disable BGP in FortiOS
       return;
     } else if (as == 65535L || as == 4294967295L) {
       w.redFlag(String.format("Ignoring BGP process: AS %s is proscribed by RFC 7300", as));
@@ -112,6 +125,8 @@ public final class FortiosBgpConversions {
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     org.batfish.datamodel.BgpProcess viProc =
         new org.batfish.datamodel.BgpProcess(routerId, ebgpAdmin, ibgpAdmin);
+    viProc.setMultipathEbgp(bgpProcess.getEbgpMultipathEffective());
+    viProc.setMultipathIbgp(bgpProcess.getIbgpMultipathEffective());
 
     // Convert neighbors
     long localAs = bgpProcess.getAsEffective();
@@ -135,11 +150,53 @@ public final class FortiosBgpConversions {
           .setPeerAddress(neighbor.getIp())
           .setRemoteAs(neighbor.getRemoteAs())
           .setBgpProcess(viProc)
+          .setIpv4UnicastAddressFamily(
+              Ipv4UnicastAddressFamily.builder()
+                  .setImportPolicy(neighbor.getRouteMapIn())
+                  .setExportPolicy(neighbor.getRouteMapOut())
+                  .build())
           .build();
     }
 
     // TODO: Redistribution policy, import/export policies
 
     c.getVrfs().get(vrf).setBgpProcess(viProc);
+  }
+
+  public static void convertRouteMap(RouteMap routeMap, Configuration c, Warnings w) {
+    String rmName = routeMap.getName();
+    List<Statement> statements =
+        routeMap.getRules().values().stream()
+            .map(
+                rule -> {
+                  String listName = rule.getMatchIpAddress();
+                  Statement action =
+                      rule.getActionEffective() == RouteMapRule.Action.PERMIT
+                          ? Statements.ReturnTrue.toStaticStatement()
+                          : Statements.ReturnFalse.toStaticStatement();
+                  Statement statement;
+                  if (listName != null) {
+                    if (!c.getRouteFilterLists().containsKey(listName)) {
+                      w.redFlag(
+                          String.format(
+                              "Ignoring rule %s in route-map %s: List %s does not exist or was not"
+                                  + " converted",
+                              rule.getNumber(), rmName, listName));
+                      return null;
+                    }
+                    BooleanExpr guard =
+                        new MatchPrefixSet(
+                            DestinationNetwork.instance(), new NamedPrefixSet(listName));
+                    statement = new If(guard, ImmutableList.of(action));
+                  } else {
+                    // Rule matches unconditionally. TODO Confirm behavior
+                    statement = new If(BooleanExprs.TRUE, ImmutableList.of(action));
+                  }
+                  statement.setComment(String.format("Match rule %s", rule.getNumber()));
+                  return statement;
+                })
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+    RoutingPolicy.builder().setOwner(c).setName(rmName).setStatements(statements).build();
   }
 }

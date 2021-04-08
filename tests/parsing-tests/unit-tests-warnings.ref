@@ -380,100 +380,114 @@
       },
       {
         "Filename" : "configs/cisco_ospf",
+        "Line" : 25,
+        "Text" : "default-cost 5",
+        "Parser_Context" : "[roa_default_cost ro_area ro_inner s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cisco_ospf",
         "Line" : 26,
-        "Text" : "area 0.0.0.0 filter-list prefix filterName in",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Text" : "filter-list prefix filterName in",
+        "Parser_Context" : "[roa_filterlist ro_area ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 27,
-        "Text" : "area 0.0.0.0 filter-list prefix filterName out",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Text" : "filter-list prefix filterName out",
+        "Parser_Context" : "[roa_filterlist ro_area ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 51,
         "Text" : "110",
-        "Parser_Context" : "[ro_distance_distance ro_distance s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_distance_distance ro_distance ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 52,
         "Text" : "ospf external 77 inter-area 78 intra-area 79",
-        "Parser_Context" : "[ro_distance_ospf ro_distance s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_distance_ospf ro_distance ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 53,
         "Text" : "distribute-list aclin in",
-        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_distribute_list ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 54,
         "Text" : "distribute-list aclin in ethernet0/0",
-        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_distribute_list ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 55,
         "Text" : "distribute-list aclout out",
-        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_distribute_list ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 58,
         "Text" : "distribute-list route-map rmin in",
-        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_distribute_list ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 59,
         "Text" : "distribute-list route-map rmout out",
-        "Parser_Context" : "[ro_distribute_list s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_distribute_list ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
         "Line" : 66,
         "Text" : "maximum-paths 32",
-        "Parser_Context" : "[ro_maximum_paths s_router_ospf stanza cisco_configuration]",
+        "Parser_Context" : "[ro_maximum_paths ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 82,
-        "Text" : "area 0 filter-list prefix INFILTER in",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Line" : 77,
+        "Text" : "filter-list prefix INFILTER in",
+        "Parser_Context" : "[roa_filterlist ro_area ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf",
-        "Line" : 83,
-        "Text" : "area 0 filter-list prefix OUTFILTER out",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Line" : 78,
+        "Text" : "filter-list prefix OUTFILTER out",
+        "Parser_Context" : "[roa_filterlist ro_area ro_inner s_router_ospf stanza cisco_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/cisco_ospf_multi_process",
+        "Line" : 21,
+        "Text" : "default-cost 5",
+        "Parser_Context" : "[roa_default_cost ro_area ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
         "Line" : 22,
-        "Text" : "area 0.0.0.0 filter-list prefix filterName in",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Text" : "filter-list prefix filterName in",
+        "Parser_Context" : "[roa_filterlist ro_area ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_ospf_multi_process",
         "Line" : 23,
-        "Text" : "area 0.0.0.0 filter-list prefix filterName out",
-        "Parser_Context" : "[ro_area_filterlist s_router_ospf stanza cisco_configuration]",
+        "Text" : "filter-list prefix filterName out",
+        "Parser_Context" : "[roa_filterlist ro_area ro_inner s_router_ospf stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -1157,6 +1171,13 @@
       },
       {
         "Filename" : "configs/ios_xr_route_policy",
+        "Line" : 161,
+        "Text" : "$hub_comm",
+        "Parser_Context" : "[community_set_expr_elem_half community_set_expr_elem community_set_expr set_community_rp_stanza set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/ios_xr_route_policy",
         "Line" : 164,
         "Text" : "set path-selection backup 1 install multipath-protect advertise",
         "Parser_Context" : "[set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
@@ -1303,6 +1324,20 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/route_policy_param",
+        "Line" : 16,
+        "Text" : "$hub_comm",
+        "Parser_Context" : "[community_set_expr_elem_half community_set_expr_elem community_set_expr set_community_rp_stanza set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/route_policy_param",
+        "Line" : 20,
+        "Text" : "$hub_comm",
+        "Parser_Context" : "[community_set_expr_elem_half community_set_expr_elem community_set_expr set_community_rp_stanza set_rp_stanza rp_stanza else_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "iptables/host1.iptables",
         "Line" : 16,
         "Text" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT",
@@ -1339,10 +1374,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 185 results",
+      "notes" : "Found 190 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 185
+      "numResults" : 190
     }
   }
 ]

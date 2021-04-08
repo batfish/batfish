@@ -6,6 +6,7 @@ import
   CiscoNxos_bgp,
   CiscoNxos_class_map,
   CiscoNxos_crypto,
+  CiscoNxos_dhcp,
   CiscoNxos_eigrp,
   CiscoNxos_evpn,
   CiscoNxos_fex,
@@ -27,6 +28,7 @@ import
   CiscoNxos_ospfv3,
   CiscoNxos_policy_map,
   CiscoNxos_rip,
+  CiscoNxos_rmon,
   CiscoNxos_route_map,
   CiscoNxos_snmp,
   CiscoNxos_static,
@@ -72,6 +74,7 @@ statement
   | s_nv
   | s_object_group
   | s_policy_map
+  | s_rmon
   | s_role
   | s_route_map
   | s_router
@@ -159,6 +162,7 @@ s_ip
     ip_access_list
     | ip_as_path_access_list
     | ip_community_list
+    | ip_dhcp
     | ip_domain_name
     | ip_name_server
     | ip_null
@@ -279,7 +283,9 @@ s_ipv6
   IPV6
   (
     ipv6_access_list
+    | ipv6_dhcp
     | ipv6_prefix_list
+    | ipv6_route
   )
 ;
 

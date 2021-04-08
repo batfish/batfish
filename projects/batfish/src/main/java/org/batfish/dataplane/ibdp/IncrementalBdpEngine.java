@@ -825,6 +825,8 @@ final class IncrementalBdpEngine {
                 vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getRoutes())));
   }
 
+  private static final int MAX_OSPF_INTERNAL_ITERATIONS = 100000;
+
   /**
    * Run the IGP OSPF computation until convergence.
    *
@@ -868,6 +870,10 @@ final class IncrementalBdpEngine {
                 .flatMap(n -> n.getVirtualRouters().stream())
                 .flatMap(vr -> vr.getOspfProcesses().values().stream())
                 .anyMatch(OspfRoutingProcess::isDirty);
+        if (ospfInternalIterations > MAX_OSPF_INTERNAL_ITERATIONS) {
+          throw new BdpOscillationException(
+              "OSPF did not converge after " + MAX_OSPF_INTERNAL_ITERATIONS + " iterations");
+        }
       } finally {
         span.finish();
       }

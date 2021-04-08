@@ -1,0 +1,10 @@
+#
+set system host-name name
+#
+# https://github.com/batfish/batfish/issues/6793 : slash is allowed in names
+set policy-options policy-statement XX term 10/8 from protocol bgp
+set policy-options policy-statement XX term 10/8 from route-filter 10.0.0.0/8 longer
+set policy-options policy-statement XX term 10/8 then metric 0
+set policy-options policy-statement XX term 10/8 then community add EU1_BE_LOCAL
+set policy-options policy-statement XX term 10/8 then accept
+#

@@ -173,6 +173,8 @@ AREA: 'area';
 
 ARP: 'arp';
 
+ARP_INSPECT: 'arp-inspect';
+
 AS_NUMBER: 'as-number';
 
 AS_OVERRIDE: 'as-override';
@@ -245,6 +247,8 @@ BASH_SHELL: 'bash-shell';
 BASIC: 'basic';
 
 BC: 'bc';
+
+BE: 'be';
 
 BEACON: 'beacon';
 
@@ -515,6 +519,8 @@ DETAIL: 'detail';
 
 DHCP: 'dhcp';
 
+DHCP_SNOOP: 'dhcp-snoop';
+
 DHCP_SNOOPING_VLAN: 'dhcp-snooping-vlan';
 
 DIR: 'dir';
@@ -691,6 +697,8 @@ EXEC_TIMEOUT: 'exec-timeout';
 EXEMPT: 'exempt';
 
 EXIST_MAP: 'exist-map';
+
+EXP: 'exp';
 
 EXPANDED
 :
@@ -1024,6 +1032,8 @@ JP_POLICY
 
 KBPS: 'kbps';
 
+KBYTES: 'kbytes';
+
 KERNEL
 :
   'kern' 'el'?
@@ -1285,15 +1295,19 @@ MBPS
   [Mm] [Bb] [Pp] [Ss]
 ;
 
+MBYTES: 'mbytes';
+
 MCAST_GROUP: 'mcast-group';
 
 MD5
 :
   'md5'
-  // password follows if preceded by 'auth' or 'authentication-key <number>'
+  // password follows if preceded by 'auth', 'authentication-key <number>', 'message-digest-key <number>'
   {
     if (lastTokenType() == AUTH || secondToLastTokenType() == AUTHENTICATION_KEY) {
       pushMode(M_Word);
+    } else if (secondToLastTokenType() == MESSAGE_DIGEST_KEY) {
+      pushMode(M_Password);
     }
   }
 ;
@@ -1324,10 +1338,7 @@ MERGE_FAILURE: 'merge-failure';
 
 MESSAGE_DIGEST: 'message-digest';
 
-MESSAGE_DIGEST_KEY
-:
-  'message-digest-key' -> pushMode ( M_Password )
-;
+MESSAGE_DIGEST_KEY: 'message-digest-key';
 
 METHOD: 'method';
 
@@ -1376,7 +1387,11 @@ MONITOR
   }
 ;
 
+MPLS: 'mpls';
+
 MROUTER: 'mrouter';
+
+MS: 'ms';
 
 MSEC: 'msec';
 
@@ -1672,6 +1687,8 @@ PING: 'ping';
 
 PINNING: 'pinning';
 
+PIR: 'pir';
+
 PLANNED_ONLY: 'planned-only';
 
 POAP: 'poap';
@@ -1898,6 +1915,8 @@ RIP
   }
 ;
 
+RMON: 'rmon' -> pushMode ( M_Remark );
+
 ROBUSTNESS_VARIABLE: 'robustness-variable';
 
 ROLE: 'role';
@@ -1928,6 +1947,8 @@ ROUTE_TYPE: 'route-type';
 ROUTER: 'router';
 
 ROUTER_ADVERTISEMENT: 'router-advertisement';
+
+ROUTER_ALERT: 'router-alert';
 
 ROUTER_ID: 'router-id';
 
@@ -2407,6 +2428,8 @@ UPPER: 'upper';
 
 URG: 'urg';
 
+US: 'us';
+
 USE_ACL
 :
   'use-acl' -> pushMode ( M_Word )
@@ -2629,6 +2652,11 @@ UINT32
   F_Uint32
 ;
 
+UINT64
+:
+  F_Uint64
+;
+
 WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
@@ -2640,6 +2668,12 @@ fragment
 F_Digit
 :
   [0-9]
+;
+
+fragment
+F_FiveDigits
+:
+  F_Digit F_Digit F_Digit F_Digit F_Digit
 ;
 
 fragment
@@ -2932,20 +2966,47 @@ fragment
 F_Uint32
 :
 // 0-4294967295
-  F_Digit
-  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
-  F_Digit? F_Digit?
-  | [1-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  F_Digit
-  | '4' [0-1] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '42' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '429' [0-3] F_Digit F_Digit F_Digit F_Digit F_Digit F_Digit
-  | '4294' [0-8] F_Digit F_Digit F_Digit F_Digit F_Digit
+  '0'
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_FiveDigits
+  | '4' [0-1] F_Digit F_Digit F_Digit F_FiveDigits
+  | '42' [0-8] F_Digit F_Digit F_FiveDigits
+  | '429' [0-3] F_Digit F_FiveDigits
+  | '4294' [0-8] F_FiveDigits
   | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
   | '429496' [0-6] F_Digit F_Digit F_Digit
   | '4294967' [0-1] F_Digit F_Digit
   | '42949672' [0-8] F_Digit
   | '429496729' [0-5]
+;
+
+fragment
+F_Uint64
+:
+// 0-18446744073709551615
+    '1844674407370955161' [0-5]
+  | '184467440737095516' '0' F_Digit
+  | '18446744073709551' [0-5] F_Digit F_Digit
+  | '1844674407370955' '0' F_Digit F_Digit F_Digit
+  | '184467440737095' [0-4] F_Digit F_Digit F_Digit F_Digit
+  | '18446744073709' [0-4] F_FiveDigits
+  | '1844674407370' [0-8] F_Digit F_FiveDigits
+     // nothing lower than 0 for thirteenth digit
+  | '18446744073' [0-6] F_Digit F_Digit F_Digit F_FiveDigits
+  | '1844674407' [0-2] F_Digit F_Digit F_Digit F_Digit F_FiveDigits
+  | '184467440' [0-6] F_FiveDigits F_FiveDigits
+     // nothing lower than 0 for ninth digit
+  | '1844674' [0-3] F_Digit F_Digit F_FiveDigits F_FiveDigits
+  | '184467' [0-3] F_Digit F_Digit F_Digit F_FiveDigits F_FiveDigits
+  | '18446' [0-6] F_Digit F_Digit F_Digit F_Digit F_FiveDigits F_FiveDigits
+  | '1844' [0-5] F_FiveDigits F_FiveDigits F_FiveDigits
+  | '184' [0-3] F_Digit F_FiveDigits F_FiveDigits F_FiveDigits
+  | '18' [0-3] F_Digit F_Digit F_FiveDigits F_FiveDigits F_FiveDigits
+  | '1' [0-7] F_Digit F_Digit F_Digit F_FiveDigits F_FiveDigits F_FiveDigits
+  // All the non-zero numbers from 1-19 digits
+  | F_PositiveDigit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  // Zero
+  | '0'
 ;
 
 fragment
