@@ -12,19 +12,20 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * org.batfish.datamodel.routing_policy.communities.SetCommunities} routing statement, as performed
  * by the {@link SetCommunitiesVisitor}.
  *
- * <p>In general, setting communities depends on the current communities in the route, which are
- * represented by the {@link org.batfish.datamodel.routing_policy.communities.InputCommunities}
+ * <p>This class can be viewed as representing a non-standard form of "three-valued" set of
+ * communities, where some communities are "maybe" in the set. This generalization of community sets
+ * is necessary because setting communities depends on the current communities in the route, which
+ * are represented by the {@link org.batfish.datamodel.routing_policy.communities.InputCommunities}
  * expression. Hence, symbolic analysis has the effect of partitioning the atomic predicates into
  * three sets: those that are definitely set by the statement; those that are definitely removed by
- * the statement; and those that are on the route announcement after the statement if and only if
+ * the statement; and those that are in the route announcement after the statement if and only if
  * they were beforehand. We maintain the first two sets explicitly, while the third set is implicit
  * (everything not in the other two sets).
  *
  * <p>For example, consider representing the effects of setting (InputCommunities U 20:30), which is
  * how community addition is modeled. In this case, we know that after the statement 20:30 is
- * definitely set, nothing is definitely removed; and everything else is on the route if and only if
- * it was originally. Hence, this class can be viewed as representing a non-standard form of
- * "three-valued" set, where some elements are "maybe" in the set.
+ * definitely set; nothing is definitely removed; and everything else is in the route announcement
+ * if and only if it was originally.
  */
 @ParametersAreNonnullByDefault
 public class CommunityAPDispositions {
