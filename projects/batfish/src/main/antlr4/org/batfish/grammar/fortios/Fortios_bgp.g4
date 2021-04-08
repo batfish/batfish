@@ -8,9 +8,11 @@ cr_bgp: BGP newline crb*;
 
 crb
 :
-    SET crb_set_singletons
+    crb_set
     | crb_config
 ;
+
+crb_set: SET crb_set_singletons;
 
 crb_set_singletons
 :
