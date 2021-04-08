@@ -11,11 +11,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
-import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchDestinationAddressTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchPolicyTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceGroupTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceTraceElement;
-import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.zoneToZoneDefaultTraceElement;
 import static org.batfish.representation.fortios.InterfaceOrZoneUtils.getDefaultIntrazoneAction;
 import static org.batfish.representation.fortios.InterfaceOrZoneUtils.getIncludedInterfaces;
@@ -23,6 +21,7 @@ import static org.batfish.representation.fortios.InterfaceOrZoneUtils.policyMatc
 import static org.batfish.representation.fortios.InterfaceOrZoneUtils.policyMatchesTo;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -51,6 +50,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Names;
@@ -59,6 +59,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.vendor.VendorStructureId;
 
 /** Helper functions for generating VI ACLs for {@link FortiosConfiguration}. */
 public final class FortiosPolicyConversions {
@@ -307,8 +308,7 @@ public final class FortiosPolicyConversions {
                 addr -> {
                   HeaderSpace hs =
                       HeaderSpace.builder().setSrcIps(new IpSpaceReference(addr)).build();
-                  return new MatchHeaderSpace(
-                      hs, matchSourceAddressTraceElement(addrgrpMembers.get(addr), filename));
+                  return new MatchHeaderSpace(hs, "Matched source address");
                 })
             .collect(ImmutableList.toImmutableList());
 
@@ -318,8 +318,7 @@ public final class FortiosPolicyConversions {
                 addr -> {
                   HeaderSpace hs =
                       HeaderSpace.builder().setDstIps(new IpSpaceReference(addr)).build();
-                  return new MatchHeaderSpace(
-                      hs, matchDestinationAddressTraceElement(addrgrpMembers.get(addr), filename));
+                  return new MatchHeaderSpace(hs, "Matched destination address");
                 })
             .collect(ImmutableList.toImmutableList());
 
@@ -517,6 +516,30 @@ public final class FortiosPolicyConversions {
       default:
         throw new IllegalStateException("Unrecognized address type " + a.getTypeEffective());
     }
+  }
+
+  public static IpSpaceMetadata toIpSpaceMetadata(Address a, String filename) {
+    String displayName =
+        !Strings.isNullOrEmpty(a.getComment())
+            ? String.format("%s (%s)", a.getName(), a.getComment())
+            : a.getName();
+    return new IpSpaceMetadata(
+        displayName,
+        "address",
+        new VendorStructureId(
+            filename, FortiosStructureType.ADDRESS.getDescription(), a.getName()));
+  }
+
+  public static IpSpaceMetadata toIpSpaceMetadata(Addrgrp g, String filename) {
+    String displayName =
+        !Strings.isNullOrEmpty(g.getComment())
+            ? String.format("%s (%s)", g.getName(), g.getComment())
+            : g.getName();
+    return new IpSpaceMetadata(
+        displayName,
+        "addrgrp",
+        new VendorStructureId(
+            filename, FortiosStructureType.ADDRGRP.getDescription(), g.getName()));
   }
 
   /** Get human-readable name for the specified policy. */
