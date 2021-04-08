@@ -1006,6 +1006,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     Prefix network = toPrefix(ctx.network);
     if (network.equals(Prefix.ZERO)) {
       warn(ctx, "Prefix 0.0.0.0/0 is not allowed for a BGP network prefix");
+    } else if (_c.getBgpProcess().getNetworks().values().stream()
+        .anyMatch(bgpNetwork -> network.equals(bgpNetwork.getPrefix()))) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set BGP network prefix %s: Another BGP network already has this prefix",
+              network));
     } else {
       _currentBgpNetwork.setPrefix(network);
     }

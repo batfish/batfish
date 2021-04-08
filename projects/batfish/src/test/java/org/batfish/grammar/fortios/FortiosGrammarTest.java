@@ -794,6 +794,9 @@ public final class FortiosGrammarTest {
             hasComment("Expected BGP network ID in range 0-4294967295, but got '4294967296'"),
             hasComment("BGP network edit block ignored: name is invalid"),
             hasComment("Prefix 0.0.0.0/0 is not allowed for a BGP network prefix"),
+            hasComment(
+                "Cannot set BGP network prefix 1.1.1.0/24: Another BGP network already has this"
+                    + " prefix"),
             hasComment("BGP network edit block ignored: prefix must be set"),
             hasComment("Redistribution into BGP is not yet supported")));
   }
