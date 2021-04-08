@@ -154,6 +154,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TACACS_S
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -761,8 +763,10 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vlan_idContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_target_valueContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_target_valueContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_block_rb_stanzaContext;
@@ -6424,6 +6428,34 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitVrf_afe_route_target_value(Vrf_afe_route_target_valueContext ctx) {
     currentVrf().addRouteTargetExport(toRouteTarget(ctx.route_target()));
+  }
+
+  @Override
+  public void exitVrf_afe_route_policy(Vrf_afe_route_policyContext ctx) {
+    todo(ctx);
+    String policy = toString(ctx.policy);
+    _configuration.referenceStructure(
+        ROUTE_POLICY, policy, VRF_EXPORT_ROUTE_POLICY, ctx.start.getLine());
+    if (ctx.vrf != null) {
+      String vrf = toString(ctx.vrf);
+      currentVrf().setExportPolicyForVrf(vrf, policy);
+    } else {
+      currentVrf().setExportPolicy(policy);
+    }
+  }
+
+  @Override
+  public void exitVrf_afi_route_policy(Vrf_afi_route_policyContext ctx) {
+    todo(ctx);
+    String policy = toString(ctx.policy);
+    _configuration.referenceStructure(
+        ROUTE_POLICY, policy, VRF_IMPORT_ROUTE_POLICY, ctx.start.getLine());
+    if (ctx.vrf != null) {
+      String vrf = toString(ctx.vrf);
+      currentVrf().setImportPolicyForVrf(vrf, policy);
+    } else {
+      currentVrf().setImportPolicy(policy);
+    }
   }
 
   @Nullable
