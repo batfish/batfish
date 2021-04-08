@@ -8,6 +8,7 @@ import
   Fortios_common,
   Fortios_firewall,
   Fortios_interface,
+  Fortios_internet_service_name,
   Fortios_policy,
   Fortios_route_map,
   Fortios_router,

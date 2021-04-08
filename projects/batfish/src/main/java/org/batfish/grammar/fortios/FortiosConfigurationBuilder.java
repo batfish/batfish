@@ -70,6 +70,9 @@ import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_exclude_memberCon
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_fabric_objectContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfisn_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfisne_set_internet_service_idContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfisne_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
@@ -162,6 +165,9 @@ import org.batfish.grammar.fortios.FortiosParser.Interface_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Internet_service_idContext;
+import org.batfish.grammar.fortios.FortiosParser.Internet_service_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Internet_service_name_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefixContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefix_or_anyContext;
@@ -207,6 +213,7 @@ import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.InternetServiceName;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
@@ -1027,6 +1034,46 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         String.format("Access-list or prefix-list %s is undefined and cannot be referenced", name));
     _c.undefined(FortiosStructureType.ACCESS_LIST_OR_PREFIX_LIST, name, usage, line);
     return Optional.empty();
+  }
+
+  @Override
+  public void enterCfisn_edit(Cfisn_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.internet_service_name());
+    _currentInternetServiceName =
+        name.map(_c.getInternetServiceNames()::get)
+            .orElseGet(() -> new InternetServiceName(toString(ctx.internet_service_name().str())));
+    _currentInternetServiceNameNameValid = name.isPresent();
+  }
+
+  @Override
+  public void exitCfisn_edit(Cfisn_editContext ctx) {
+    String name = _currentInternetServiceName.getName();
+    // TODO better validation
+    if (_currentInternetServiceNameNameValid) {
+      _c.getInternetServiceNames().put(name, _currentInternetServiceName);
+    } else {
+      warn(ctx, "Internet-service-name edit block ignored: name is invalid");
+    }
+    _currentInternetServiceName = null;
+  }
+
+  @Override
+  public void exitCfisne_set_internet_service_id(Cfisne_set_internet_service_idContext ctx) {
+    toLong(ctx, ctx.internet_service_id())
+        .ifPresent(_currentInternetServiceName::setInternetServiceId);
+  }
+
+  @Override
+  public void exitCfisne_set_type(Cfisne_set_typeContext ctx) {
+    _currentInternetServiceName.setType(toType(ctx.internet_service_name_type()));
+  }
+
+  private InternetServiceName.Type toType(Internet_service_name_typeContext ctx) {
+    if (ctx.DEFAULT() != null) {
+      return InternetServiceName.Type.DEFAULT;
+    }
+    assert ctx.LOCATION() != null;
+    return InternetServiceName.Type.LOCATION;
   }
 
   @Override
@@ -2288,6 +2335,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Internet_service_nameContext ctx) {
+    return toString(
+        messageCtx, ctx.str(), "internet-service-name name", INTERNET_SERVICE_NAME_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_or_zone_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "zone or interface name", ZONE_NAME_PATTERN);
   }
@@ -2393,6 +2446,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Acl_rule_numberContext ctx) {
     return toLongInSpace(
         messageCtx, ctx.str(), ACCESS_LIST_RULE_NUMBER_SPACE, "access-list rule number");
+  }
+
+  private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, Internet_service_idContext ctx) {
+    return toLongInSpace(
+        messageCtx, ctx.str(), INTERNET_SERVICE_ID_NUMBER_SPACE, "internet-service-id");
   }
 
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Policy_numberContext ctx) {
@@ -2741,6 +2800,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       Pattern.compile("\\\\(['\"\\\\])");
   private static final Pattern ESCAPED_UNQUOTED_CHAR_PATTERN = Pattern.compile("\\\\([^\\r\\n])");
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
+  private static final Pattern INTERNET_SERVICE_NAME_NAME_PATTERN =
+      Pattern.compile("^[^\n" + "]{1,63}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
   private static final Pattern POLICY_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
   // TODO determine more precise limitations on allowed chars for route-map name
@@ -2756,6 +2817,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final IntegerSpace IP_PROTOCOL_NUMBER_SPACE =
       IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
+  private static final LongSpace INTERNET_SERVICE_ID_NUMBER_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace POLICY_NUMBER_SPACE = LongSpace.of(Range.closed(0L, 4294967294L));
   private static final LongSpace ROUTE_MAP_RULE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
@@ -2783,6 +2846,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private BgpNeighbor _currentBgpNeighbor;
   private Interface _currentInterface;
   private boolean _currentInterfaceNameValid;
+  private InternetServiceName _currentInternetServiceName;
+  private boolean _currentInternetServiceNameNameValid;
   private Policy _currentPolicy;
   /**
    * Whether the current policy has invalid lines that would prevent committing the policy in CLI.
