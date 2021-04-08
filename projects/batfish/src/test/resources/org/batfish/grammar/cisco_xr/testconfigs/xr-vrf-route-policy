@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-vrf-route-policy
+!
+
+vrf v0
+!
+
+vrf v1
+  address-family ipv4 unicast
+    export route-policy p1
+    export to default-vrf route-policy p2
+    export to v0 route-policy p3
+    import route-policy p4
+    import from default-vrf route-policy p5
+    import from v0 route-policy p6
+  !
+!

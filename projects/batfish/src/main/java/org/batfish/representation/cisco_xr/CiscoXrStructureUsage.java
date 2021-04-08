@@ -140,6 +140,8 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   TRACK_INTERFACE("track interface"),
   TUNNEL_PROTECTION_IPSEC_PROFILE("interface TunnelX tunnel protection ipsec profile"),
   TUNNEL_SOURCE("tunnel source"),
+  VRF_EXPORT_ROUTE_POLICY("vrf export route-policy"),
+  VRF_IMPORT_ROUTE_POLICY("vrf import route-policy"),
   WCCP_GROUP_LIST("ip wccp group-list"),
   WCCP_REDIRECT_LIST("ip wccp redirect-list"),
   WCCP_SERVICE_LIST("ip wccp service-list");
