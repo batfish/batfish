@@ -2926,7 +2926,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, AsaStructureType.NETWORK_OBJECT_GROUP.getDescription())));
+                            name, AsaStructureType.NETWORK_OBJECT_GROUP.getDescription(), null)));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
@@ -2937,7 +2937,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, AsaStructureType.NETWORK_OBJECT.getDescription())));
+                            name, AsaStructureType.NETWORK_OBJECT.getDescription(), null)));
 
     // convert each IcmpTypeGroup to IpAccessList
     _icmpTypeObjectGroups.forEach(
