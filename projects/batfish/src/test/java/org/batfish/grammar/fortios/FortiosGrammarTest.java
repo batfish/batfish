@@ -202,10 +202,11 @@ public final class FortiosGrammarTest {
     FortiosConfiguration vc = parseVendorConfig(hostname);
 
     Map<String, InternetServiceName> isns = vc.getInternetServiceNames();
-    assertThat(isns, hasKeys("Google-DNS", "Google-Gmail"));
+    assertThat(isns, hasKeys("Google-DNS", "Google-Gmail", "custom_isn_for_testing"));
 
     InternetServiceName dns = isns.get("Google-DNS");
     InternetServiceName gmail = isns.get("Google-Gmail");
+    InternetServiceName custom = isns.get("custom_isn_for_testing");
 
     assertThat(dns.getInternetServiceId(), equalTo(65539L));
     assertNull(dns.getType());
@@ -213,6 +214,9 @@ public final class FortiosGrammarTest {
     assertThat(gmail.getInternetServiceId(), equalTo(65646L));
     assertThat(gmail.getType(), equalTo(InternetServiceName.Type.DEFAULT));
     assertThat(gmail.getTypeEffective(), equalTo(InternetServiceName.Type.DEFAULT));
+    assertThat(custom.getType(), equalTo(InternetServiceName.Type.LOCATION));
+    assertThat(custom.getTypeEffective(), equalTo(InternetServiceName.Type.LOCATION));
+    assertThat(custom.getInternetServiceId(), equalTo(4294967295L));
   }
 
   @Test

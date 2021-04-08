@@ -1049,7 +1049,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCfisn_edit(Cfisn_editContext ctx) {
     String name = _currentInternetServiceName.getName();
     // TODO better validation
-    if (_currentInternetServiceNameNameValid) { // policy is valid
+    if (_currentInternetServiceNameNameValid) {
       _c.getInternetServiceNames().put(name, _currentInternetServiceName);
     } else {
       warn(ctx, "Internet-service-name edit block ignored: name is invalid");
