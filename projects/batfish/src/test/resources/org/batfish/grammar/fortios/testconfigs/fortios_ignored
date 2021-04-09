@@ -317,6 +317,11 @@ config system storage
         set usage log
     next
 end
+config firewall address
+    edit "Extracted Address"
+        set subnet 1.1.1.0/24
+    next
+end
 config firewall address6
     edit "all"
         set uuid aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa

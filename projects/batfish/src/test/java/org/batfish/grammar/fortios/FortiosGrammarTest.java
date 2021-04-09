@@ -137,7 +137,11 @@ public final class FortiosGrammarTest {
 
   @Test
   public void testIgnoredConfigBlocks() {
-    parseVendorConfig("fortios_ignored");
+    FortiosConfiguration c = parseVendorConfig("fortios_ignored");
+    // Valid syntax before ignored block is parsed
+    assertThat(c.getHostname(), equalTo("ignored"));
+    // Valid syntax after an ignored block is parsed (and before another one)
+    assertThat(c.getAddresses(), hasKeys("Extracted Address"));
   }
 
   @Test
