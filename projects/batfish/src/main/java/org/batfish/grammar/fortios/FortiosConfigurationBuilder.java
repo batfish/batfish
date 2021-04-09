@@ -1329,6 +1329,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     clone.setNumber(toNumber);
     _c.getPolicies().put(toNumber, clone);
     _c.defineStructure(FortiosStructureType.POLICY, toNumber, ctx);
+    _c.referenceStructure(
+        FortiosStructureType.POLICY,
+        toNumber,
+        FortiosStructureUsage.POLICY_SELF_REF,
+        ctx.start.getLine());
   }
 
   @Override

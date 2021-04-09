@@ -8,7 +8,7 @@ options {
 
 re_classic
 :
-   ROUTER EIGRP asnum = DEC NEWLINE
+   ROUTER EIGRP asnum = uint_legacy NEWLINE
    re_classic_tail*
 ;
 
@@ -111,7 +111,7 @@ re_redistribute_connected
 
 re_redistribute_eigrp
 :
-   REDISTRIBUTE EIGRP asn = DEC (METRIC metric = eigrp_metric)? NEWLINE
+   REDISTRIBUTE EIGRP asn = uint_legacy (METRIC metric = eigrp_metric)? NEWLINE
 ;
 
 re_redistribute_isis
@@ -127,7 +127,7 @@ re_redistribute_isis
 
 re_redistribute_ospf
 :
-   REDISTRIBUTE OSPF proc = DEC
+   REDISTRIBUTE OSPF proc = uint_legacy
    (
       MATCH ospf_route_type+
       | METRIC metric = eigrp_metric
@@ -151,7 +151,7 @@ re_topology_base
 
 re_topology_name
 :
-   TOPOLOGY topo_name = variable TID topo_num = DEC NEWLINE
+   TOPOLOGY topo_name = variable TID topo_num = uint_legacy NEWLINE
 ;
 
 reaf_interface
@@ -246,14 +246,14 @@ rec_address_family
 :
    ADDRESS_FAMILY IPV4 UNICAST? VRF vrf = variable
    (
-      AUTONOMOUS_SYSTEM asnum = DEC
+      AUTONOMOUS_SYSTEM asnum = uint_legacy
    )? NEWLINE
    rec_address_family_tail* address_family_footer
 ;
 
 re_autonomous_system
 :
-   NO? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   NO? AUTONOMOUS_SYSTEM asnum = uint_legacy NEWLINE
 ;
 
 rec_address_family_null
@@ -290,7 +290,7 @@ rec_address_family_tail
 
 rec_metric_weights
 :
-   METRIC WEIGHTS tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC NEWLINE
+   METRIC WEIGHTS tos = uint_legacy k1 = uint_legacy k2 = uint_legacy k3 = uint_legacy k4 = uint_legacy k5 = uint_legacy NEWLINE
 ;
 
 rec_null
@@ -330,7 +330,7 @@ ren_address_family
    )?
    (
       VRF vrf = variable
-   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   )? AUTONOMOUS_SYSTEM asnum = uint_legacy NEWLINE
    ren_address_family_tail* address_family_footer
 ;
 
@@ -367,7 +367,7 @@ ren_metric_weights
    METRIC WEIGHTS
    // Looks so far like weights are non-optional
    // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_eigrp/configuration/xe-3s/ire-xe-3s-book/ire-wid-met.pdf
-   tos = DEC k1 = DEC k2 = DEC k3 = DEC k4 = DEC k5 = DEC k6 = DEC NEWLINE
+   tos = uint_legacy k1 = uint_legacy k2 = uint_legacy k3 = uint_legacy k4 = uint_legacy k5 = uint_legacy k6 = uint_legacy NEWLINE
 ;
 
 ren_null
@@ -384,7 +384,7 @@ ren_service_family
    )
    (
       VRF vrf = variable
-   )? AUTONOMOUS_SYSTEM asnum = DEC NEWLINE
+   )? AUTONOMOUS_SYSTEM asnum = uint_legacy NEWLINE
    ren_service_family_tail*
    resf_footer
 ;

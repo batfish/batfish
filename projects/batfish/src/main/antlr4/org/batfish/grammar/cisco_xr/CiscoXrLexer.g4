@@ -29,7 +29,6 @@ tokens {
    STATEFUL_KERBEROS,
    STATEFUL_NTLM,
    TEXT,
-   UINT16,
    VALUE,
    WIRED,
    WISPR,
@@ -893,6 +892,8 @@ CIPC: 'cipc';
 CIR: 'cir';
 
 CIRCUIT_TYPE: 'circuit-type';
+
+CISCO: 'cisco';
 
 CISCO_TDP: 'cisco_TDP';
 
@@ -2331,6 +2332,8 @@ IEC: 'iec';
 
 IEEE_MMS_SSL: 'ieee-mms-ssl';
 
+IETF: 'ietf';
+
 IETF_FORMAT: 'ietf-format';
 
 IF: 'if';
@@ -3327,6 +3330,8 @@ NAT_TRAVERSAL: 'nat-traversal';
 NATIVE: 'native';
 
 NBAR: 'nbar';
+
+NBR_UNCONFIG: 'nbr-unconfig';
 
 NCP: 'ncp';
 
@@ -4875,6 +4880,8 @@ STALE_ROUTE: 'stale-route';
 
 STANDBY: 'standby';
 
+START: 'start';
+
 START_STOP: 'start-stop';
 
 START_TIME: 'start-time';
@@ -5844,12 +5851,11 @@ DOLLAR
    '$'
 ;
 
-DEC: F_Digit+;
-
-DIGIT
-:
-   F_Digit
-;
+UINT8: F_Uint8;
+UINT16: F_Uint16;
+UINT32: F_Uint32;
+UINT64: F_Uint64;
+UINT_BIG: F_UintBig;
 
 DOUBLE_QUOTE
 :
@@ -6233,6 +6239,16 @@ F_StandardCommunity
 ;
 
 fragment
+F_Uint8
+:
+  F_Digit
+  | F_PositiveDigit F_Digit
+  | '1' F_Digit F_Digit
+  | '2' [0-4] F_Digit
+  | '25' [0-5]
+;
+
+fragment
 F_Uint16
 :
   F_Digit
@@ -6242,6 +6258,66 @@ F_Uint16
   | '65' [0-4] F_Digit F_Digit
   | '655' [0-2] F_Digit
   | '6553' [0-5]
+;
+
+fragment
+F_Uint32
+:
+// 0-4294967295
+  '0'
+  | F_PositiveDigit F_Digit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  | [1-3] F_Digit F_Digit F_Digit F_Digit F_FiveDigits
+  | '4' [0-1] F_Digit F_Digit F_Digit F_FiveDigits
+  | '42' [0-8] F_Digit F_Digit F_FiveDigits
+  | '429' [0-3] F_Digit F_FiveDigits
+  | '4294' [0-8] F_FiveDigits
+  | '42949' [0-5] F_Digit F_Digit F_Digit F_Digit
+  | '429496' [0-6] F_Digit F_Digit F_Digit
+  | '4294967' [0-1] F_Digit F_Digit
+  | '42949672' [0-8] F_Digit
+  | '429496729' [0-5]
+;
+
+fragment
+F_FiveDigits
+:
+  F_Digit F_Digit F_Digit F_Digit F_Digit
+;
+
+fragment
+F_Uint64
+:
+// 0-18446744073709551615
+    '1844674407370955161' [0-5]
+  | '184467440737095516' '0' F_Digit
+  | '18446744073709551' [0-5] F_Digit F_Digit
+  | '1844674407370955' '0' F_Digit F_Digit F_Digit
+  | '184467440737095' [0-4] F_Digit F_Digit F_Digit F_Digit
+  | '18446744073709' [0-4] F_FiveDigits
+  | '1844674407370' [0-8] F_Digit F_FiveDigits
+     // nothing lower than 0 for thirteenth digit
+  | '18446744073' [0-6] F_Digit F_Digit F_Digit F_FiveDigits
+  | '1844674407' [0-2] F_Digit F_Digit F_Digit F_Digit F_FiveDigits
+  | '184467440' [0-6] F_FiveDigits F_FiveDigits
+     // nothing lower than 0 for ninth digit
+  | '1844674' [0-3] F_Digit F_Digit F_FiveDigits F_FiveDigits
+  | '184467' [0-3] F_Digit F_Digit F_Digit F_FiveDigits F_FiveDigits
+  | '18446' [0-6] F_Digit F_Digit F_Digit F_Digit F_FiveDigits F_FiveDigits
+  | '1844' [0-5] F_FiveDigits F_FiveDigits F_FiveDigits
+  | '184' [0-3] F_Digit F_FiveDigits F_FiveDigits F_FiveDigits
+  | '18' [0-3] F_Digit F_Digit F_FiveDigits F_FiveDigits F_FiveDigits
+  | '1' [0-7] F_Digit F_Digit F_Digit F_FiveDigits F_FiveDigits F_FiveDigits
+  // All the non-zero numbers from 1-19 digits
+  | F_PositiveDigit F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit? F_Digit?
+  // Zero
+  | '0'
+;
+
+fragment
+F_UintBig
+:
+  F_PositiveDigit F_Digit*
+  | '0'
 ;
 
 fragment
@@ -6333,20 +6409,12 @@ M_Alias_WS
 
 mode M_AsPath;
 
-M_AsPath_ACCESS_LIST
-:
-   'access-list' -> type ( ACCESS_LIST ) , mode ( M_AsPathAccessList )
-;
-
 M_AsPath_CONFED
 :
    'confed' -> type ( CONFED ) , popMode
 ;
 
-M_AsPath_DEC
-:
-   F_Digit+ -> type ( DEC ) , popMode
-;
+M_AsPath_UINT32: F_Uint32 -> type(UINT32), popMode;
 
 M_AsPath_RP_VARIABLE
 :
@@ -6410,43 +6478,6 @@ M_AsPath_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
-mode M_AsPathAccessList;
-
-M_AsPathAccessList_DEC
-:
-   F_Digit+ -> type ( DEC )
-;
-
-M_AsPathAccessList_DENY
-:
-   'deny' -> type ( DENY ) , mode ( M_Description )
-;
-
-M_AsPathAccessList_NEWLINE
-:
-   F_Newline -> type ( NEWLINE ) , mode ( DEFAULT_MODE )
-;
-
-M_AsPathAccessList_PERMIT
-:
-   'permit' -> type ( PERMIT ) , mode ( M_Description )
-;
-
-M_AsPathAccessList_SEQ
-:
-   'seq' -> type ( SEQ )
-;
-
-M_AsPathAccessList_VARIABLE
-:
-   F_Variable_RequiredVarChar F_Variable_VarChar* -> type ( VARIABLE )
-;
-
-M_AsPathAccessList_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
 mode M_Authentication;
 
 M_Authentication_DOUBLE_QUOTE
@@ -6484,9 +6515,9 @@ M_Authentication_CONTROL_DIRECTION
    'control-direction' -> type ( CONTROL_DIRECTION ) , popMode
 ;
 
-M_Authentication_DEC
+M_Authentication_UINT_BIG
 :
-  F_Digit+ -> type ( DEC ) , popMode
+  F_UintBig -> type (UINT_BIG) , popMode
 ;
 
 M_Authentication_DOT1X
@@ -7044,10 +7075,7 @@ M_Interface_NEWLINE
    F_Newline -> type ( NEWLINE ) , popMode
 ;
 
-M_Interface_NUMBER
-:
-   DEC -> type ( DEC )
-;
+M_Interface_NUMBER: F_UintBig -> type (UINT_BIG);
 
 M_Interface_PERIOD
 :

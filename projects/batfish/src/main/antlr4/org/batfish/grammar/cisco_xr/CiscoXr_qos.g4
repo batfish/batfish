@@ -13,7 +13,7 @@ cm_end_class_map
 
 cm_match
 :
-   num = DEC? MATCH NOT?
+   num = uint_legacy? MATCH NOT?
    (
       cmm_access_group
       | cmm_access_list
@@ -50,7 +50,7 @@ cmm_access_group
       | IPV4
    )?
    (
-      num = DEC
+      num = uint_legacy
       |
       (
          NAME name = variable
@@ -95,7 +95,7 @@ cmm_cos
 :
    COS
    (
-      DEC+
+      uint_legacy+
       | range
    ) NEWLINE
 ;
@@ -157,7 +157,7 @@ cmm_precedence
 :
    IP? PRECEDENCE IPV4?
    (
-      DEC+
+      uint_legacy+
       | name = variable
    ) NEWLINE
 ;
@@ -169,7 +169,7 @@ cmm_protocol
 
 cmm_qos_group
 :
-   QOS_GROUP DEC NEWLINE
+   QOS_GROUP uint_legacy NEWLINE
 ;
 
 cmm_redirect
@@ -367,7 +367,7 @@ pmtcsec_do
 
 pmtcsec_tail
 :
-  DEC
+  uint_legacy
   (
      pmtcsec_activate
      | pmtcsec_null

@@ -139,7 +139,7 @@ extended_access_list_additional_feature
    )
    |
    (
-      icmp_message_type = DEC icmp_message_code = DEC?
+      icmp_message_type = uint_legacy icmp_message_code = uint_legacy?
    )
    | ECE
    | ECHO
@@ -147,7 +147,7 @@ extended_access_list_additional_feature
    | ECHO_REQUEST
    |
    (
-      ECN ecn = DEC
+      ECN ecn = uint_legacy
    )
    | ESTABLISHED
    | FIN
@@ -171,7 +171,7 @@ extended_access_list_additional_feature
       (
          DEFAULT
          | DISABLE
-         | (level = DEC (INTERVAL secs = DEC)?)
+         | (level = uint_legacy (INTERVAL secs = uint_legacy)?)
       )?
    )
    | LOG_INPUT
@@ -215,7 +215,7 @@ extended_access_list_additional_feature
    | TRACEROUTE
    | TRACKED
    | TTL_EXCEEDED
-   | TTL EQ DEC
+   | TTL EQ uint_legacy
    | eacl_feature_udf
    | UNREACHABLE
    | URG
@@ -232,7 +232,7 @@ extended_access_list_null_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = uint_legacy
    )?
    (
       (
@@ -253,10 +253,10 @@ extended_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = uint_legacy
    )? ala = access_list_action
    (
-      VLAN vlan = DEC vmask = HEX
+      VLAN vlan = uint_legacy vmask = HEX
    )?
    prot = protocol
    srcipr = access_list_ip_range
@@ -273,7 +273,7 @@ extended_access_list_tail
       )?
    )?
    (
-      SEQUENCE num = DEC
+      SEQUENCE num = uint_legacy
    )? NEWLINE
 ;
 
@@ -283,7 +283,7 @@ extended_ipv6_access_list_tail
       (
          SEQ
          | SEQUENCE
-      )? num = DEC
+      )? num = uint_legacy
    )? ala = access_list_action prot = protocol srcipr = access_list_ip6_range
    (
       alps_src = port_specifier
@@ -298,7 +298,7 @@ extended_ipv6_access_list_tail
       )?
    )?
    (
-      SEQUENCE num = DEC
+      SEQUENCE num = uint_legacy
    )? NEWLINE
 ;
 
@@ -352,26 +352,26 @@ ip_prefix_list_null_tail
    )
    |
    (
-      NO SEQ DEC NEWLINE
+      NO SEQ uint_legacy NEWLINE
    )
 ;
 
 ip_prefix_list_tail
 :
    (
-      SEQ? seqnum = DEC
+      SEQ? seqnum = uint_legacy
    )? action = access_list_action prefix = IP_PREFIX
    (
       (
-         GE minpl = DEC
+         GE minpl = uint_legacy
       )
       |
       (
-         LE maxpl = DEC
+         LE maxpl = uint_legacy
       )
       |
       (
-         EQ eqpl = DEC
+         EQ eqpl = uint_legacy
       )
    )* NEWLINE
 ;
@@ -413,19 +413,19 @@ ipaclsession_ip6_range
 ipv6_prefix_list_tail
 :
    (
-      SEQ? seqnum = DEC
+      SEQ? seqnum = uint_legacy
    )? action = access_list_action prefix6 = IPV6_PREFIX
    (
       (
-         GE minpl = DEC
+         GE minpl = uint_legacy
       )
       |
       (
-         LE maxpl = DEC
+         LE maxpl = uint_legacy
       )
       |
       (
-         EQ eqpl = DEC
+         EQ eqpl = uint_legacy
       )
    )* NEWLINE
 ;
@@ -451,15 +451,15 @@ mac_access_list_additional_feature
    | LOG_ENABLE
    |
    (
-      PRIORITY priority = DEC
+      PRIORITY priority = uint_legacy
    )
    |
    (
-      PRIORITY_FORCE priority_force = DEC
+      PRIORITY_FORCE priority_force = uint_legacy
    )
    |
    (
-      PRIORITY_MAPPING priority_mapping = DEC
+      PRIORITY_MAPPING priority_mapping = uint_legacy
    )
 ;
 
@@ -541,7 +541,7 @@ s_ethernet_services
 
 s_ethernet_services_tail
 :
-   num = DEC? action = access_list_action src_mac = xr_mac_specifier dst_mac =
+   num = uint_legacy? action = access_list_action src_mac = xr_mac_specifier dst_mac =
    xr_mac_specifier NEWLINE
 ;
 

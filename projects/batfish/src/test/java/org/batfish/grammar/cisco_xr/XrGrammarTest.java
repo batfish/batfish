@@ -55,6 +55,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -1259,5 +1260,12 @@ public final class XrGrammarTest {
             IPV6_ACCESS_LIST,
             "ipv6acl9",
             MPLS_LDP_AF_IPV6_REDISTRIBUTE_BGP_ADVERTISE_TO));
+  }
+
+  @Test
+  public void testBfdParsing() {
+    String hostname = "xr-bfd";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
   }
 }

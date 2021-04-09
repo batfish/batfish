@@ -154,7 +154,7 @@ ssc_access_control
          |
          (
             IPV6 acl6 = variable_snmp
-         ) DEC?
+         ) uint_legacy?
       )
       | acl4 = variable_snmp
    )* NEWLINE

@@ -235,6 +235,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     markConcreteStructure(FortiosStructureType.INTERFACE);
     markConcreteStructure(FortiosStructureType.ZONE);
     markConcreteStructure(FortiosStructureType.ACCESS_LIST);
+    markConcreteStructure(FortiosStructureType.POLICY);
     return c;
   }
 

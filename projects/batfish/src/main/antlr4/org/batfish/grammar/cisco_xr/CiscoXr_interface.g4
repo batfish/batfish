@@ -13,62 +13,109 @@ if_autostate
 
 if_bandwidth
 :
-   NO? BANDWIDTH DEC KBPS? NEWLINE
+   NO? BANDWIDTH uint_legacy KBPS? NEWLINE
 ;
 
 if_bfd
 :
-  BFD (IPV4 | IPV6)? (
-     if_bfd_authentication
-     | if_bfd_echo
-     | if_bfd_echo_rx_interval
-     | if_bfd_interval
-     | if_bfd_neighbor
-     | if_bfd_optimize
-     | if_bfd_template
+  // Only valid on Bundle-Ether
+  BFD
+  (
+    if_bfd_address_family
+    | if_bfd_mode
   )
 ;
 
-if_bfd_authentication
+if_bfd_address_family
 :
-  AUTHENTICATION KEYED_SHA1 KEYID id = DEC (
-     HEX_KEY hex_key = variable
-     | KEY ascii_key = variable
-  )NEWLINE
+  ADDRESS_FAMILY
+  (
+    if_bfdaf_ipv4
+    | if_bfdaf_ipv6
+  )
 ;
 
-if_bfd_echo
+if_bfdaf_ipv4
 :
-  ECHO NEWLINE
+  IPV4
+  (
+    if_bfdaf4_destination
+    | if_bfdaf4_echo
+    | if_bfdaf_fast_detect
+    | if_bfdaf_minimum_interval
+    | if_bfdaf_multiplier
+    | if_bfdaf_timers
+  )
 ;
 
-if_bfd_echo_rx_interval
+if_bfdaf4_destination: DESTINATION IP_ADDRESS NEWLINE;
+
+if_bfdaf4_echo: ECHO MINIMUM_INTERVAL bfd_echo_minimum_interval_ms NEWLINE;
+
+bfd_echo_minimum_interval_ms
 :
-  ECHO_RX_INTERVAL ms = DEC NEWLINE
+  // 15-2000ms
+  uint16
 ;
 
-if_bfd_interval
+if_bfdaf_fast_detect: FAST_DETECT NEWLINE;
+
+if_bfdaf_minimum_interval: MINIMUM_INTERVAL bfd_minimum_interval_ms NEWLINE;
+
+bfd_minimum_interval_ms
 :
-  INTERVAL tx_ms = DEC (MIN_RX | MIN_RX_VAR) tx_ms = DEC MULTIPLIER mult = DEC NEWLINE
+  // 3-30000ms
+  uint16
 ;
 
-if_bfd_neighbor
+if_bfdaf_multiplier: MULTIPLIER bfd_multiplier NEWLINE;
+
+bfd_multiplier
 :
-  NEIGHBOR SRC_IP (
-     src_ip = IP_ADDRESS DEST_IP dst_ip = IP_ADDRESS
-     | src_ip = IPV6_ADDRESS DEST_IP dst_ip = IPV6_ADDRESS
-  ) NEWLINE
+  // 2-50
+  uint8
 ;
 
-if_bfd_optimize
+if_bfdaf_timers
 :
-  OPTIMIZE SUBINTERFACE NEWLINE
+  TIMERS
+  (
+    if_bfdaf_timers_nbr_unconfig
+    | if_bfdaf_timers_start
+  )
 ;
 
-if_bfd_template
+if_bfdaf_timers_nbr_unconfig: NBR_UNCONFIG bfd_nbr_unconfig_time_s NEWLINE;
+
+bfd_nbr_unconfig_time_s
 :
-  TEMPLATE name = variable_permissive NEWLINE
+  // 60-3600
+  uint16
 ;
+
+if_bfdaf_timers_start: START bfd_start_time_s NEWLINE;
+
+bfd_start_time_s
+:
+  // 60-3600
+  uint16
+;
+
+if_bfdaf_ipv6
+:
+  IPV6
+  (
+    if_bfdaf6_destination
+    | if_bfdaf_fast_detect
+    | if_bfdaf_minimum_interval
+    | if_bfdaf_multiplier
+    | if_bfdaf_timers
+  )
+;
+
+if_bfdaf6_destination: DESTINATION IPV6_ADDRESS NEWLINE;
+
+if_bfd_mode: MODE (CISCO | IETF) NEWLINE;
 
 if_bundle
 :
@@ -81,7 +128,7 @@ if_bundle
 
 if_bundle_id
 :
-  ID id = DEC MODE (ACTIVE | ON | PASSIVE) NEWLINE
+  ID id = uint_legacy MODE (ACTIVE | ON | PASSIVE) NEWLINE
 ;
 
 if_bundle_null
@@ -95,7 +142,7 @@ if_bundle_null
 
 if_channel_group
 :
-   CHANNEL_GROUP num = DEC
+   CHANNEL_GROUP num = uint_legacy
    (
       MODE
       (
@@ -124,7 +171,7 @@ if_default_gw
 
 if_delay
 :
-   NO? DELAY DEC NEWLINE
+   NO? DELAY uint_legacy NEWLINE
 ;
 
 if_description
@@ -144,7 +191,7 @@ if_flow_sampler
 
 if_hsrp
 :
-   HSRP group = DEC NEWLINE
+   HSRP group = uint_legacy NEWLINE
    (
       if_hsrp_ip_address
       | if_hsrp_null
@@ -177,7 +224,7 @@ if_hsrp_preempt
 
 if_hsrp_priority
 :
-   NO? PRIORITY value = DEC null_rest_of_line
+   NO? PRIORITY value = uint_legacy null_rest_of_line
 ;
 
 if_hsrp_track
@@ -187,7 +234,7 @@ if_hsrp_track
 
 if_hsrp6
 :
-   HSRP group = DEC IPV6 NEWLINE
+   HSRP group = uint_legacy IPV6 NEWLINE
    (
       if_hsrp6_ip_address
       | if_hsrp_null
@@ -211,8 +258,8 @@ if_ip_address
       | prefix = IP_PREFIX
    )
    (STANDBY standby_address = IP_ADDRESS)?
-   (ROUTE_PREFERENCE pref=DEC)?
-   (TAG tag=DEC)?
+   (ROUTE_PREFERENCE pref=uint_legacy)?
+   (TAG tag=uint_legacy)?
    NEWLINE
 ;
 
@@ -246,12 +293,12 @@ if_ip_authentication
 
 if_ip_auth_key_chain
 :
-   KEY_CHAIN EIGRP asn = DEC name = variable_permissive NEWLINE
+   KEY_CHAIN EIGRP asn = uint_legacy name = variable_permissive NEWLINE
 ;
 
 if_ip_auth_mode
 :
-   MODE EIGRP asn = DEC MD5 NEWLINE
+   MODE EIGRP asn = uint_legacy MD5 NEWLINE
 ;
 
 if_ip_dhcp
@@ -279,7 +326,7 @@ if_ip_forward
 
 if_ip_hello_interval
 :
-   IP HELLO_INTERVAL EIGRP asn = DEC interval = DEC NEWLINE
+   IP HELLO_INTERVAL EIGRP asn = uint_legacy interval = uint_legacy NEWLINE
 ;
 
 if_ip_helper_address
@@ -289,7 +336,7 @@ if_ip_helper_address
 
 if_ip_hold_time
 :
-   IP HOLD_TIME EIGRP asn = DEC interval = DEC NEWLINE
+   IP HOLD_TIME EIGRP asn = uint_legacy interval = uint_legacy NEWLINE
 ;
 
 if_ip_igmp
@@ -321,27 +368,27 @@ if_ip_nbar
 
 if_ip_ospf_area
 :
-   IP OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
+   IP OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = uint_legacy) NEWLINE
 ;
 
 if_ip_ospf_cost
 :
-   IP? OSPF COST cost = DEC NEWLINE
+   IP? OSPF COST cost = uint_legacy NEWLINE
 ;
 
 if_ip_ospf_dead_interval
 :
-   IP OSPF DEAD_INTERVAL seconds = DEC NEWLINE
+   IP OSPF DEAD_INTERVAL seconds = uint_legacy NEWLINE
 ;
 
 if_ip_ospf_dead_interval_minimal
 :
-   IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = DEC NEWLINE
+   IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = uint_legacy NEWLINE
 ;
 
 if_ip_ospf_hello_interval
 :
-   IP OSPF HELLO_INTERVAL seconds = DEC NEWLINE
+   IP OSPF HELLO_INTERVAL seconds = uint_legacy NEWLINE
 ;
 
 if_ip_ospf_network
@@ -370,7 +417,7 @@ if_ip_ospf_shutdown
 
 if_ip_passive_interface_eigrp
 :
-   NO? IP PASSIVE_INTERFACE EIGRP tag = DEC NEWLINE
+   NO? IP PASSIVE_INTERFACE EIGRP tag = uint_legacy NEWLINE
 ;
 
 if_ip_pim_neighbor_filter
@@ -390,7 +437,7 @@ if_ip_router_isis
 
 if_ip_router_ospf_area
 :
-   IP ROUTER OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = DEC) NEWLINE
+   IP ROUTER OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = uint_legacy) NEWLINE
 ;
 
 if_ip_rtp
@@ -407,7 +454,7 @@ if_ip_sticky_arp
 
 if_ip_summary_address
 :
-   IP SUMMARY_ADDRESS EIGRP asn = DEC
+   IP SUMMARY_ADDRESS EIGRP asn = uint_legacy
    (
       addr = IP_ADDRESS netmask = IP_ADDRESS
       | prefix = IP_PREFIX
@@ -427,12 +474,12 @@ if_ip_tcp
 
 if_ip_tcp_adjust_mss
 :
-   ADJUST_MSS value = DEC NEWLINE
+   ADJUST_MSS value = uint_legacy NEWLINE
 ;
 
 if_ip_tcp_compression_connections
 :
-   COMPRESSION_CONNECTIONS value = DEC NEWLINE
+   COMPRESSION_CONNECTIONS value = uint_legacy NEWLINE
 ;
 
 if_ip_tcp_header_compression
@@ -445,11 +492,11 @@ if_ip_verify
    IP VERIFY UNICAST
    (
       (
-         NOTIFICATION THRESHOLD DEC
+         NOTIFICATION THRESHOLD uint_legacy
       )
       |
       (
-         REVERSE_PATH ALLOW_SELF_PING? acl = DEC?
+         REVERSE_PATH ALLOW_SELF_PING? acl = uint_legacy?
       )
       |
       (
@@ -462,7 +509,7 @@ if_ip_verify
             ALLOW_DEFAULT
             | ALLOW_SELF_PING
             | L2_SRC
-         )* acl = DEC?
+         )* acl = uint_legacy?
       )
    ) NEWLINE
 ;
@@ -549,12 +596,12 @@ if_isis_circuit_type
 
 if_isis_enable
 :
-   ISIS ENABLE num = DEC NEWLINE
+   ISIS ENABLE num = uint_legacy NEWLINE
 ;
 
 if_isis_hello_interval
 :
-   ISIS HELLO_INTERVAL DEC
+   ISIS HELLO_INTERVAL uint_legacy
    (
       LEVEL_1
       | LEVEL_2
@@ -563,7 +610,7 @@ if_isis_hello_interval
 
 if_isis_metric
 :
-   ISIS IPV6? METRIC metric = DEC
+   ISIS IPV6? METRIC metric = uint_legacy
    (
       LEVEL_1
       | LEVEL_2
@@ -582,17 +629,17 @@ if_isis_passive
 
 if_isis_tag
 :
-   ISIS TAG tag = DEC NEWLINE
+   ISIS TAG tag = uint_legacy NEWLINE
 ;
 
 if_load_interval
 :
-   LOAD_INTERVAL li = DEC NEWLINE
+   LOAD_INTERVAL li = uint_legacy NEWLINE
 ;
 
 if_mtu
 :
-   MTU mtu_size = DEC NEWLINE
+   MTU mtu_size = uint_legacy NEWLINE
 ;
 
 if_no_bfd
@@ -1013,7 +1060,7 @@ if_routing_dynamic
 
 if_service_instance
 :
-   SERVICE INSTANCE id = DEC ETHERNET NEWLINE
+   SERVICE INSTANCE id = uint_legacy ETHERNET NEWLINE
    if_si_inner*
 ;
 
@@ -1029,7 +1076,7 @@ if_si_inner
 
 if_si_bridge_domain
 :
-    BRIDGE_DOMAIN id = DEC SPLIT_HORIZON? NEWLINE
+    BRIDGE_DOMAIN id = uint_legacy SPLIT_HORIZON? NEWLINE
 ;
 
 if_si_encapsulation
@@ -1044,7 +1091,7 @@ if_si_l2protocol
 
 if_si_no_bridge_domain
 :
-    NO BRIDGE_DOMAIN id = DEC NEWLINE
+    NO BRIDGE_DOMAIN id = uint_legacy NEWLINE
 ;
 
 if_si_rewrite
@@ -1074,7 +1121,7 @@ if_speed_auto
 
 if_speed_ios
 :
-   SPEED mbits = DEC NEWLINE
+   SPEED mbits = uint_legacy NEWLINE
 ;
 
 if_speed_ios_dot11radio
@@ -1198,7 +1245,7 @@ if_standby
 
 standby_group
 :
-  group = DEC
+  group = uint_legacy
   (
     standby_group_authentication
     | standby_group_ip
@@ -1228,33 +1275,33 @@ standby_group_preempt_delay
 :
   DELAY
   (
-     MINIMUM min_secs = DEC
-     | RELOAD reload_secs = DEC
-     | SYNC sync_secs = DEC
+     MINIMUM min_secs = uint_legacy
+     | RELOAD reload_secs = uint_legacy
+     | SYNC sync_secs = uint_legacy
   )+
 ;
 
 standby_group_priority
 :
-  PRIORITY priority = DEC
+  PRIORITY priority = uint_legacy
 ;
 
 standby_group_timers
 :
   TIMERS
   (
-     MSEC hello_ms = DEC
-     | hello_sec = DEC
+     MSEC hello_ms = uint_legacy
+     | hello_sec = uint_legacy
   )
   (
-     MSEC hold_ms = DEC
-     | hold_sec = DEC
+     MSEC hold_ms = uint_legacy
+     | hold_sec = uint_legacy
   )
 ;
 
 standby_group_track
 :
-  TRACK group = DEC track_action
+  TRACK group = uint_legacy track_action
 ;
 
 track_action
@@ -1264,7 +1311,7 @@ track_action
 
 track_action_decrement
 :
-  DECREMENT subtrahend = DEC
+  DECREMENT subtrahend = uint_legacy
 ;
 
 standby_version
@@ -1281,7 +1328,7 @@ if_switchport_access
 :
    SWITCHPORT ACCESS VLAN
    (
-      vlan = DEC
+      vlan = uint_legacy
       | DYNAMIC
    ) NEWLINE
 ;
@@ -1310,24 +1357,24 @@ if_switchport_mode
 
 if_switchport_mode_monitor
 :
-   MONITOR BUFFER_LIMIT limit=DEC (BYTES | KBYTES | MBYTES | PACKETS)
+   MONITOR BUFFER_LIMIT limit=uint_legacy (BYTES | KBYTES | MBYTES | PACKETS)
 ;
 
 if_switchport_private_vlan_association
 :
-   SWITCHPORT PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = DEC
-   secondary_vlan_id = DEC NEWLINE
+   SWITCHPORT PRIVATE_VLAN ASSOCIATION TRUNK primary_vlan_id = uint_legacy
+   secondary_vlan_id = uint_legacy NEWLINE
 ;
 
 if_switchport_private_vlan_host_association
 :
-   SWITCHPORT PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = DEC
-   secondary_vlan_id = DEC NEWLINE
+   SWITCHPORT PRIVATE_VLAN HOST_ASSOCIATION primary_vlan_id = uint_legacy
+   secondary_vlan_id = uint_legacy NEWLINE
 ;
 
 if_switchport_private_vlan_mapping
 :
-   SWITCHPORT PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = DEC
+   SWITCHPORT PRIVATE_VLAN MAPPING TRUNK? primary_vlan_id = uint_legacy
    secondary_vlan_list = range NEWLINE
 ;
 
@@ -1350,7 +1397,7 @@ if_switchport_trunk_encapsulation
 
 if_switchport_trunk_native
 :
-   SWITCHPORT TRUNK NATIVE VLAN vlan = DEC NEWLINE
+   SWITCHPORT TRUNK NATIVE VLAN vlan = uint_legacy NEWLINE
 ;
 
 if_tunnel
@@ -1379,7 +1426,7 @@ if_vrf
 
 if_vrrp
 :
-   VRRP groupnum = DEC
+   VRRP groupnum = uint_legacy
    (
       ifvrrp_authentication
       | ifvrrp_description
@@ -1393,7 +1440,7 @@ if_vrrp
 
 if_vrrpno
 :
-   NO VRRP groupnum = DEC
+   NO VRRP groupnum = uint_legacy
    (
       ifvrrpno_preempt
    )
@@ -1519,7 +1566,7 @@ iftunnel_bandwidth
    (
       RECEIVE
       | TRANSMIT
-   ) DEC NEWLINE
+   ) uint_legacy NEWLINE
 ;
 
 
@@ -1530,7 +1577,7 @@ iftunnel_destination
 
 iftunnel_key
 :
-   KEY keynum = DEC NEWLINE
+   KEY keynum = uint_legacy NEWLINE
 ;
 
 iftunnel_mode
@@ -1596,12 +1643,12 @@ ifvrrp_preempt
    (
       MINIMUM
       | RELOAD
-   ) DEC NEWLINE
+   ) uint_legacy NEWLINE
 ;
 
 ifvrrp_priority
 :
-   PRIORITY priority = DEC NEWLINE
+   PRIORITY priority = uint_legacy NEWLINE
 ;
 
 s_interface

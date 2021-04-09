@@ -2524,12 +2524,15 @@ public final class FortiosGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr1", 2));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr2", 4));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr3", 1));
-    // Zone and interface refs include self-refs
+    // Interface, zone, and policy refs include self-refs
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ZONE, "zoneA", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port2", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port3", 2));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service1", 1));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service2", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.POLICY, "1", 1));
+    // Cloned policy should also show up with a self-ref
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.POLICY, "2", 1));
 
     // Confirm undefined references are detected
     assertThat(
