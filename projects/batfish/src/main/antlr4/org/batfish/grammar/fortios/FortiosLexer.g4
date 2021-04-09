@@ -132,7 +132,6 @@ DSTINTF: 'dstintf' -> pushMode(M_Str);
 DYNAMIC: 'dynamic';
 EBGP_MULTIPATH: 'ebgp-multipath';
 EDIT: 'edit' -> pushMode(M_Str);
-ENABLE: 'enable';
 EMAC_VLAN: 'emac-vlan';
 EMAIL_SERVER: 'email-server' {
   // ignore config system email-server
@@ -141,6 +140,7 @@ EMAIL_SERVER: 'email-server' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+ENABLE: 'enable';
 END: 'end';
 END_IP: 'end-ip';
 EXACT_MATCH: 'exact-match';
