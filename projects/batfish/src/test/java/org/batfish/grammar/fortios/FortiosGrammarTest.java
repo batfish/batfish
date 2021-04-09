@@ -323,6 +323,7 @@ public final class FortiosGrammarTest {
     assertThat(ipmask.getAssociatedInterface(), equalTo("port1"));
     assertThat(ipmask.getComment(), equalTo("Hello world"));
     assertThat(ipmask.getFabricObject(), equalTo(true));
+    assertThat(iprange.getAssociatedInterfaceZone(), equalTo("zoneA"));
 
     // Test default values
     assertThat(longName.getTypeEffective(), equalTo(Address.Type.IPMASK));
@@ -419,6 +420,7 @@ public final class FortiosGrammarTest {
 
     // Expect warnings for each undefined reference in the config (in an otherwise legal context)
     warningMatchers.add(hasComment("No interface or zone named undefined_iface"));
+    warningMatchers.add(hasComment("Cannot reference zoned interface zoned_iface"));
     warningMatchers.add(hasComment("No interface named undefined_iface"));
 
     warningMatchers.add(

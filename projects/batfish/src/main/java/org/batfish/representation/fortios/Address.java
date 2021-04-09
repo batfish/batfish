@@ -87,6 +87,8 @@ public class Address extends AddrgrpMember implements Serializable {
 
   @Nullable private Boolean _allowRouting;
   @Nullable private String _associatedInterface;
+  @Nullable private String _associatedInterfaceZone;
+  @Nullable private BatfishUUID _associatedInterfaceZoneUuid;
   @Nonnull private String _name;
   @Nonnull private final BatfishUUID _uuid;
   @Nullable private Type _type;
@@ -112,6 +114,19 @@ public class Address extends AddrgrpMember implements Serializable {
   /** Interface or zone associated with this address */
   public @Nullable String getAssociatedInterface() {
     return _associatedInterface;
+  }
+
+  /**
+   * Name of zone referenced in associated-interface field in this address. Should be derived from
+   * {@link this#getAssociatedInterfaceZoneUUID} when finishing building the VS model.
+   */
+  public @Nullable String getAssociatedInterfaceZone() {
+    return _associatedInterfaceZone;
+  }
+
+  /** Batfish-internal UUID ccorresponding to the zone in associated-interface */
+  public @Nullable BatfishUUID getAssociatedInterfaceZoneUUID() {
+    return _associatedInterfaceZoneUuid;
   }
 
   @Override
@@ -150,6 +165,14 @@ public class Address extends AddrgrpMember implements Serializable {
 
   public void setAssociatedInterface(String associatedInterface) {
     _associatedInterface = associatedInterface;
+  }
+
+  public void setAssociatedInterfaceZone(String associatedZone) {
+    _associatedInterfaceZone = associatedZone;
+  }
+
+  public void setAssociatedInterfaceZoneUUID(BatfishUUID uuid) {
+    _associatedInterfaceZoneUuid = uuid;
   }
 
   public void setType(Type type) {
