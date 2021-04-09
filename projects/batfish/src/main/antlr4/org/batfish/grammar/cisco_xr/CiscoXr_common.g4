@@ -643,12 +643,7 @@ variable_group_id
     ~( NEWLINE | TCP | TCP_UDP | UDP )+
 ;
 
-vlan_id
-:
-  v = DEC
-  {isVlanId($v)}?
-
-;
+vlan_id: v = uint16;
 
 community_set_name: WORD;
 
