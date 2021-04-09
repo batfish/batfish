@@ -741,6 +741,12 @@ public final class FortiosGrammarTest {
     Ip ip1 = Ip.parse("2.2.2.2");
     Ip ip2 = Ip.parse("11.11.11.2");
 
+    // Setup for testing routing policies
+    Bgpv4Route.Builder bgpRouteBuilder = Bgpv4Route.testBuilder();
+    org.batfish.datamodel.StaticRoute.Builder staticRouteBuilder =
+        org.batfish.datamodel.StaticRoute.testBuilder();
+    Environment.Builder envBuilder = Environment.builder(c);
+
     // Default VRF BGP process: should only have neighbor 1
     String defaultVrfName = computeVrfName("root", 0);
     org.batfish.datamodel.BgpProcess bgpProcessDefaultVrf =
@@ -760,9 +766,42 @@ public final class FortiosGrammarTest {
     assertThat(neighbor1.getRemoteAsns().enumerate(), contains(1L));
     AddressFamily ipv4Af1 = neighbor1.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
     assertThat(ipv4Af1.getImportPolicy(), equalTo("rm1"));
-    assertThat(
-        ipv4Af1.getExportPolicy(),
-        equalTo(generatedBgpPeerExportPolicyName(defaultVrfName, ip1.toString())));
+    String neighbor1ExportPolicyName =
+        generatedBgpPeerExportPolicyName(defaultVrfName, ip1.toString());
+    assertThat(ipv4Af1.getExportPolicy(), equalTo(neighbor1ExportPolicyName));
+
+    // Test export policy. The BGP process has network statements for 3.3.3.0/24 and 4.4.4.0/24.
+    // The neighbor's route-map-out permits 3.3.3.0/24 and 9.9.9.0/24.
+    RoutingPolicy neighbor1ExportPolicy = c.getRoutingPolicies().get(neighbor1ExportPolicyName);
+    org.batfish.datamodel.StaticRoute static3330 =
+        staticRouteBuilder.setNetwork(Prefix.parse("3.3.3.0/24")).build();
+    org.batfish.datamodel.StaticRoute static4440 =
+        staticRouteBuilder.setNetwork(Prefix.parse("4.4.4.0/24")).build();
+    org.batfish.datamodel.StaticRoute static9990 =
+        staticRouteBuilder.setNetwork(Prefix.parse("9.9.9.0/24")).build();
+    Bgpv4Route bgp8880 = bgpRouteBuilder.setNetwork(Prefix.parse("8.8.8.0/24")).build();
+    Bgpv4Route bgp9990 = bgpRouteBuilder.setNetwork(Prefix.parse("9.9.9.0/24")).build();
+    // Matches network statement; permitted by route-map
+    assertTrue(
+        neighbor1ExportPolicy
+            .call(envBuilder.setOriginalRoute(static3330).build())
+            .getBooleanValue());
+    // Matches network statement, but denied by route-map
+    assertFalse(
+        neighbor1ExportPolicy
+            .call(envBuilder.setOriginalRoute(static4440).build())
+            .getBooleanValue());
+    // Permitted by route-map, but doesn't match network statement
+    assertFalse(
+        neighbor1ExportPolicy
+            .call(envBuilder.setOriginalRoute(static9990).build())
+            .getBooleanValue());
+    // BGP is allowed out by default, but this route is blocked by route-map
+    assertFalse(
+        neighbor1ExportPolicy.call(envBuilder.setOriginalRoute(bgp8880).build()).getBooleanValue());
+    // BGP is allowed out by default and this route is permitted by route-map
+    assertTrue(
+        neighbor1ExportPolicy.call(envBuilder.setOriginalRoute(bgp9990).build()).getBooleanValue());
 
     // VRF 5 BGP process: should only have neighbor 2
     String vrf5Name = computeVrfName("root", 5);
@@ -779,9 +818,29 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getRemoteAsns().enumerate(), contains(4294967295L));
     AddressFamily ipv4Af2 = neighbor2.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
     assertNull(ipv4Af2.getImportPolicy());
-    assertThat(
-        ipv4Af2.getExportPolicy(),
-        equalTo(generatedBgpPeerExportPolicyName(vrf5Name, ip2.toString())));
+    String neighbor2ExportPolicyName = generatedBgpPeerExportPolicyName(vrf5Name, ip2.toString());
+    assertThat(ipv4Af2.getExportPolicy(), equalTo(neighbor2ExportPolicyName));
+
+    // Test export policy. The BGP process has network statements for 3.3.3.0/24 and 4.4.4.0/24.
+    // There is no route-map-out on the neighbor.
+    RoutingPolicy neighbor2ExportPolicy = c.getRoutingPolicies().get(neighbor2ExportPolicyName);
+    // Match network statements
+    assertTrue(
+        neighbor2ExportPolicy
+            .call(envBuilder.setOriginalRoute(static3330).build())
+            .getBooleanValue());
+    assertTrue(
+        neighbor2ExportPolicy
+            .call(envBuilder.setOriginalRoute(static4440).build())
+            .getBooleanValue());
+    // Doesn't match network statement
+    assertFalse(
+        neighbor2ExportPolicy
+            .call(envBuilder.setOriginalRoute(static9990).build())
+            .getBooleanValue());
+    // BGP is allowed out by default
+    assertTrue(
+        neighbor2ExportPolicy.call(envBuilder.setOriginalRoute(bgp9990).build()).getBooleanValue());
   }
 
   @Test
