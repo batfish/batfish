@@ -44,7 +44,7 @@ public final class BgpProcess implements Serializable {
     return _neighbors;
   }
 
-  public @Nonnull Map<String, BgpNetwork> getNetworks() {
+  public @Nonnull Map<Long, BgpNetwork> getNetworks() {
     return _networks;
   }
 
@@ -77,5 +77,5 @@ public final class BgpProcess implements Serializable {
   private @Nullable Boolean _ibgpMultipath;
   private @Nullable Ip _routerId;
   private @Nonnull final Map<Ip, BgpNeighbor> _neighbors;
-  private @Nonnull final Map<String, BgpNetwork> _networks;
+  private @Nonnull final Map<Long, BgpNetwork> _networks;
 }

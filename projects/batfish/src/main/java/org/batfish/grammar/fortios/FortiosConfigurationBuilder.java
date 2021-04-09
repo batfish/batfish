@@ -945,20 +945,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     Optional<Long> networkId = toLong(ctx, ctx.bgp_network_id());
     if (networkId.isPresent() && networkId.get() == 0) {
       // "edit 0" picks a new non-zero ID based on the existing network IDs
-      networkId =
-          getNextVal(
-              _c.getBgpProcess().getNetworks().keySet().stream()
-                  .map(Long::parseLong)
-                  .collect(ImmutableSet.toImmutableSet()),
-              BGP_NETWORK_ID_SPACE);
+      networkId = getNextVal(_c.getBgpProcess().getNetworks().keySet(), BGP_NETWORK_ID_SPACE);
     }
-    _currentBgpNetworkNameValid = networkId.isPresent();
-    String networkName =
-        networkId.map(Object::toString).orElseGet(() -> toString(ctx.bgp_network_id().str()));
+    // Using 0 as a dummy ID for edit blocks with invalid network IDs
+    long id = networkId.orElse(0L);
     _currentBgpNetwork =
-        Optional.ofNullable(_c.getBgpProcess().getNetworks().get(networkName))
+        Optional.ofNullable(_c.getBgpProcess().getNetworks().get(id))
             .map(SerializationUtils::clone)
-            .orElseGet(() -> new BgpNetwork(networkName));
+            .orElseGet(() -> new BgpNetwork(id));
   }
 
   /**
@@ -983,7 +977,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCrbcnet_edit(FortiosParser.Crbcnet_editContext ctx) {
-    String invalidReason = bgpNetworkValid(_currentBgpNetwork, _currentBgpNetworkNameValid);
+    String invalidReason = bgpNetworkValid(_currentBgpNetwork);
     if (invalidReason == null) {
       _c.getBgpProcess().getNetworks().put(_currentBgpNetwork.getId(), _currentBgpNetwork);
     } else {
@@ -992,8 +986,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentBgpNetwork = null;
   }
 
-  private static String bgpNetworkValid(BgpNetwork bgpNetwork, boolean nameValid) {
-    if (!nameValid) {
+  private static String bgpNetworkValid(BgpNetwork bgpNetwork) {
+    if (bgpNetwork.getId() == 0L) {
+      // Indicates invalid name
       return "name is invalid";
     } else if (bgpNetwork.getPrefix() == null) {
       return "prefix must be set";
@@ -3017,7 +3012,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private boolean _currentAddrgrpNameValid;
   private BgpNeighbor _currentBgpNeighbor;
   private BgpNetwork _currentBgpNetwork;
-  private boolean _currentBgpNetworkNameValid;
   private Interface _currentInterface;
   private boolean _currentInterfaceNameValid;
   private InternetServiceName _currentInternetServiceName;

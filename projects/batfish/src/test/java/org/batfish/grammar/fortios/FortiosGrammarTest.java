@@ -707,12 +707,12 @@ public final class FortiosGrammarTest {
     assertThat(neighbor1.getUpdateSource(), equalTo("port1"));
     assertNull(neighbor2.getUpdateSource());
 
-    Map<String, BgpNetwork> networks = bgpProcess.getNetworks();
-    assertThat(networks.keySet(), containsInAnyOrder("1", "4294967295"));
-    BgpNetwork network1 = networks.get("1");
-    BgpNetwork network2 = networks.get("4294967295");
-    assertThat(network1.getId(), equalTo("1"));
-    assertThat(network2.getId(), equalTo("4294967295"));
+    Map<Long, BgpNetwork> networks = bgpProcess.getNetworks();
+    assertThat(networks.keySet(), containsInAnyOrder(1L, 4294967295L));
+    BgpNetwork network1 = networks.get(1L);
+    BgpNetwork network2 = networks.get(4294967295L);
+    assertThat(network1.getId(), equalTo(1L));
+    assertThat(network2.getId(), equalTo(4294967295L));
     assertThat(network1.getPrefix(), equalTo(Prefix.parse("3.3.3.0/24")));
     assertThat(network2.getPrefix(), equalTo(Prefix.parse("4.4.4.0/24")));
   }

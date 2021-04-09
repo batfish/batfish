@@ -1,13 +1,13 @@
 package org.batfish.representation.fortios;
 
 import java.io.Serializable;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix;
 
 /** FortiOS datamodel component containing BGP network */
 public class BgpNetwork implements Serializable {
-  public @Nonnull String getId() {
+  /** ID of this BGP network as defined in its edit block, or 0 if that ID is invalid. */
+  public long getId() {
     return _id;
   }
 
@@ -19,10 +19,10 @@ public class BgpNetwork implements Serializable {
     _prefix = prefix;
   }
 
-  public BgpNetwork(String id) {
+  public BgpNetwork(long id) {
     _id = id;
   }
 
-  private @Nonnull final String _id;
+  private final long _id;
   private @Nullable Prefix _prefix;
 }
