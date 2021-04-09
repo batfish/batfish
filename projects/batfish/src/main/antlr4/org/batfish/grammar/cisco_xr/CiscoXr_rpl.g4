@@ -16,7 +16,7 @@ apply_rp_stanza
 
 as_expr
 :
-   DEC
+   uint_legacy
    | AUTO
    | RP_VARIABLE
 ;

@@ -226,7 +226,7 @@ aaa_accounting_system_stanza
 
 aaa_accounting_update
 :
-   UPDATE NEWINFO? (PERIODIC? DEC)? NEWLINE
+   UPDATE NEWINFO? (PERIODIC? uint_legacy)? NEWLINE
 ;
 
 aaa_authentication
@@ -332,7 +332,7 @@ aaa_authentication_include
 :
    INCLUDE name = variable
    (
-      FORWARD_SLASH DEC
+      FORWARD_SLASH uint_legacy
    )? iface = variable srcip = IP_ADDRESS srcmask = IP_ADDRESS
    (
       dstip = IP_ADDRESS dstmask = IP_ADDRESS
@@ -641,7 +641,7 @@ aaa_authorization_auth_proxy
 
 aaa_authorization_commands
 :
-   COMMANDS level = DEC?
+   COMMANDS level = uint_legacy?
    (
       CONSOLE
       | DEFAULT
@@ -681,7 +681,7 @@ aaa_authorization_include
 :
    INCLUDE name = variable
    (
-      FORWARD_SLASH DEC
+      FORWARD_SLASH uint_legacy
    )? iface = variable srcip = IP_ADDRESS srcmask = IP_ADDRESS
    (
       dstip = IP_ADDRESS dstmask = IP_ADDRESS
@@ -776,7 +776,7 @@ aaa_group
 
 aaa_group_deadtime
 :
-   DEADTIME minutes = DEC NEWLINE
+   DEADTIME minutes = uint_legacy NEWLINE
 ;
 
 aaa_group_no_source_interface
@@ -794,15 +794,15 @@ aaa_group_server
    )
    (
       (
-         ACCT_PORT acct_port = DEC
+         ACCT_PORT acct_port = uint_legacy
       )
       |
       (
-         AUTH_PORT auth_port = DEC
+         AUTH_PORT auth_port = uint_legacy
       )
       |
       (
-         PORT prt = DEC
+         PORT prt = uint_legacy
       )
    )* NEWLINE
 ;
@@ -817,30 +817,30 @@ aaa_group_server_private
    )
    (
       (
-         ACCT_PORT acct_port = DEC
+         ACCT_PORT acct_port = uint_legacy
       )
       |
       (
-         AUTH_PORT auth_port = DEC
+         AUTH_PORT auth_port = uint_legacy
       )
       |
       (
-         KEY DEC variable_secret
+         KEY uint_legacy variable_secret
       )
       |
       (
-        PORT prt= DEC
+        PORT prt= uint_legacy
       )
       |
       (
-         TIMEOUT DEC
+         TIMEOUT uint_legacy
       )
    )* NEWLINE
 ;
 
 aaa_group_source_interface
 :
-   SOURCE_INTERFACE interface_name DEC? NEWLINE
+   SOURCE_INTERFACE interface_name uint_legacy? NEWLINE
 ;
 
 aaa_group_vrf: VRF name = vrf_name NEWLINE;
@@ -916,7 +916,7 @@ aaa_server_client
       | name = variable
    )
    SERVER_KEY
-   DEC?
+   uint_legacy?
    variable
    NEWLINE
 ;
@@ -932,7 +932,7 @@ aaa_server_ignore
 
 aaa_server_port
 :
-   PORT port_num = DEC NEWLINE
+   PORT port_num = uint_legacy NEWLINE
 ;
 
 aaa_server_group

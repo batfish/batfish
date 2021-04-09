@@ -22,12 +22,12 @@ address_family_footer
 
 asn_dotted
 :
-  DEC PERIOD DEC
+  uint_legacy PERIOD uint_legacy
 ;
 
 bgp_asn
 :
-    asn = DEC
+    asn = uint_legacy
     | asn4b = asn_dotted
 ;
 
@@ -57,7 +57,7 @@ double_quoted_string
 
 dscp_type
 :
-   DEC
+   uint_legacy
    | AF11
    | AF12
    | AF13
@@ -83,12 +83,12 @@ dscp_type
 
 ec_literal
 :
-   DEC COLON DEC
+   uint_legacy COLON uint_legacy
 ;
 
 eigrp_metric
 :
-   bw_kbps = DEC delay_10us = DEC reliability = DEC eff_bw = DEC mtu = DEC
+   bw_kbps = uint_legacy delay_10us = uint_legacy reliability = uint_legacy eff_bw = uint_legacy mtu = uint_legacy
 ;
 
 exit_line
@@ -112,7 +112,7 @@ int_expr
       (
          PLUS
          | DASH
-      )? DEC
+      )? uint_legacy
    )
    | IGP_COST
    | RP_VARIABLE
@@ -125,7 +125,7 @@ interface_name
     (
       (
         name_middle_parts += M_Interface_PREFIX
-      )? name_middle_parts += DEC
+      )? name_middle_parts += UINT_BIG
       (
         name_middle_parts += FORWARD_SLASH
         | name_middle_parts += PERIOD
@@ -140,14 +140,14 @@ interface_name_unstructured
 :
   (
     VARIABLE
-    | variable_interface_name DEC?
+    | variable_interface_name uint_legacy?
   )
   (
     (
       COLON
       | FORWARD_SLASH
       | PERIOD
-    ) DEC
+    ) uint_legacy
   )*
 ;
 
@@ -187,12 +187,12 @@ null_rest_of_line
 ospf_route_type
 :
    (
-      EXTERNAL DEC?
+      EXTERNAL uint_legacy?
    )
    | INTERNAL
    |
    (
-      NSSA_EXTERNAL DEC?
+      NSSA_EXTERNAL uint_legacy?
    )
 ;
 
@@ -227,7 +227,7 @@ port_specifier
 
 port
 :
-   DEC
+   uint_legacy
    | ACAP
    | ACR_NEMA
    | AFPOVERTCP
@@ -445,15 +445,15 @@ prefix_set_elem
    )
    (
       (
-         GE minpl = DEC
+         GE minpl = uint_legacy
       )
       |
       (
-         LE maxpl = DEC
+         LE maxpl = uint_legacy
       )
       |
       (
-         EQ eqpl = DEC
+         EQ eqpl = uint_legacy
       )
    )*
 ;
@@ -462,7 +462,7 @@ protocol
 :
    AH
    | AHP
-   | DEC
+   | uint_legacy
    | EIGRP
    | ESP
    | GRE
@@ -502,12 +502,12 @@ range
 
 route_distinguisher
 :
-   (IP_ADDRESS | bgp_asn) COLON DEC
+   (IP_ADDRESS | bgp_asn) COLON uint_legacy
 ;
 
 route_target
 :
-   (IP_ADDRESS | bgp_asn) COLON DEC
+   (IP_ADDRESS | bgp_asn) COLON uint_legacy
 ;
 
 route_policy_params_list
@@ -529,9 +529,9 @@ rp_subrange
 
 subrange
 :
-   low = DEC
+   low = uint_legacy
    (
-      DASH high = DEC
+      DASH high = uint_legacy
    )?
 ;
 
@@ -542,15 +542,49 @@ switchport_trunk_encapsulation
    | NEGOTIATE
 ;
 
+uint8
+:
+  UINT8
+;
+
 uint16
 :
-  d = DEC {isUint16($d)}?
-  | d = UINT16
+  UINT8
+  | UINT16
 ;
 
 uint32
 :
-  DEC
+  UINT8
+  | UINT16
+  | UINT32
+;
+
+uint64
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+;
+
+uint_big
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+  | UINT_BIG
+;
+
+// TODO: replace all references with one of above rules and remove this rule
+uint_legacy
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+  | UINT_BIG
 ;
 
 variable
@@ -583,7 +617,7 @@ variable_hostname
 
 variable_interface_name
 :
-   ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
+   ~( UINT8 | UINT16 | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
    NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
@@ -609,12 +643,7 @@ variable_group_id
     ~( NEWLINE | TCP | TCP_UDP | UDP )+
 ;
 
-vlan_id
-:
-  v = DEC
-  {isVlanId($v)}?
-
-;
+vlan_id: v = uint16;
 
 community_set_name: WORD;
 

@@ -15,7 +15,7 @@ ro_area
 :
    AREA
    (
-      area_int = DEC
+      area_int = uint_legacy
       | area_ip = IP_ADDRESS
    ) NEWLINE
    (
@@ -31,16 +31,16 @@ ro_area_default_cost
 :
    AREA
    (
-      area_int = DEC
+      area_int = uint_legacy
       | area_ip = IP_ADDRESS
-   ) DEFAULT_COST cost = DEC NEWLINE
+   ) DEFAULT_COST cost = uint_legacy NEWLINE
 ;
 
 ro_area_filterlist
 :
    AREA
    (
-      area_int = DEC
+      area_int = uint_legacy
       | area_ip = IP_ADDRESS
    ) FILTER_LIST PREFIX list = variable
    (
@@ -53,7 +53,7 @@ ro_area_nssa
 :
    AREA
    (
-      area_int = DEC
+      area_int = uint_legacy
       | area_ip = IP_ADDRESS
    ) NSSA
    (
@@ -61,11 +61,11 @@ ro_area_nssa
          default_information_originate = DEFAULT_INFORMATION_ORIGINATE
          (
             (
-               METRIC metric = DEC
+               METRIC metric = uint_legacy
             )
             |
             (
-               METRIC_TYPE metric_type = DEC
+               METRIC_TYPE metric_type = uint_legacy
             )
          )*
       )
@@ -78,7 +78,7 @@ ro_area_range
 :
    AREA
    (
-      area_int = DEC
+      area_int = uint_legacy
       | area_ip = IP_ADDRESS
    ) RANGE
    (
@@ -92,7 +92,7 @@ ro_area_range
       | NOT_ADVERTISE
    )?
    (
-      COST cost = DEC
+      COST cost = uint_legacy
    )? NEWLINE
 ;
 
@@ -100,7 +100,7 @@ ro_area_stub
 :
    AREA
    (
-      area_int = DEC
+      area_int = uint_legacy
       | area_ip = IP_ADDRESS
    ) STUB
    (
@@ -115,7 +115,7 @@ ro_authentication
 
 ro_auto_cost
 :
-   AUTO_COST REFERENCE_BANDWIDTH DEC
+   AUTO_COST REFERENCE_BANDWIDTH uint_legacy
    (
       GBPS
       | MBPS
@@ -135,26 +135,26 @@ ro_default_information
    DEFAULT_INFORMATION ORIGINATE
    (
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
-         METRIC_TYPE metric_type = DEC
+         METRIC_TYPE metric_type = uint_legacy
       )
       | ALWAYS
       | ROUTE_POLICY policy = route_policy_name
-      | TAG DEC
+      | TAG uint_legacy
    )* NEWLINE
 ;
 
 ro_default_metric
 :
-   NO? DEFAULT_METRIC metric = DEC NEWLINE
+   NO? DEFAULT_METRIC metric = uint_legacy NEWLINE
 ;
 
 ro_distance
 :
-   DISTANCE value = DEC NEWLINE
+   DISTANCE value = uint_legacy NEWLINE
 ;
 
 ro_distribute_list
@@ -178,16 +178,16 @@ ro_max_metric
    MAX_METRIC ROUTER_LSA
    (
       (
-         external_lsa = EXTERNAL_LSA external = DEC?
+         external_lsa = EXTERNAL_LSA external = uint_legacy?
       )
       | stub = INCLUDE_STUB
       |
       (
-         on_startup = ON_STARTUP DEC?
+         on_startup = ON_STARTUP uint_legacy?
       )
       |
       (
-         summary_lsa = SUMMARY_LSA summary = DEC?
+         summary_lsa = SUMMARY_LSA summary = uint_legacy?
       )
       |
       (
@@ -204,7 +204,7 @@ ro_maximum_paths
       (
          MAXIMUM PATHS
       )
-   ) DEC NEWLINE
+   ) uint_legacy NEWLINE
 ;
 
 ro_network
@@ -217,7 +217,7 @@ ro_network
       | prefix = IP_PREFIX
    ) AREA
    (
-      area_int = DEC
+      area_int = uint_legacy
       | area_ip = IP_ADDRESS
    ) NEWLINE
 ;
@@ -230,11 +230,11 @@ ro_nssa
          DEFAULT_INFORMATION_ORIGINATE
          (
             (
-               METRIC DEC
+               METRIC uint_legacy
             )
             |
             (
-               METRIC_TYPE DIGIT
+               METRIC_TYPE UINT8
             )
          )*
       )
@@ -320,15 +320,15 @@ ro_redistribute_bgp_cisco_xr
    REDISTRIBUTE BGP bgp_asn
    (
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
-         METRIC_TYPE type = DEC
+         METRIC_TYPE type = uint_legacy
       )
       |
       (
-         TAG tag = DEC
+         TAG tag = uint_legacy
       )
    )* NEWLINE
 ;
@@ -342,26 +342,26 @@ ro_redistribute_connected
    )
    (
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
-         METRIC_TYPE type = DEC
+         METRIC_TYPE type = uint_legacy
       )
       | ROUTE_POLICY policy = route_policy_name
       |
       (
-         TAG tag = DEC
+         TAG tag = uint_legacy
       )
    )* NEWLINE
 ;
 
 ro_redistribute_eigrp
 :
-   REDISTRIBUTE EIGRP tag = DEC
+   REDISTRIBUTE EIGRP tag = uint_legacy
    (
-      METRIC metric = DEC
-      | METRIC_TYPE type = DEC
+      METRIC metric = uint_legacy
+      | METRIC_TYPE type = uint_legacy
    )* NEWLINE
 ;
 
@@ -380,16 +380,16 @@ ro_redistribute_static
    REDISTRIBUTE STATIC
    (
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
-         METRIC_TYPE type = DEC
+         METRIC_TYPE type = uint_legacy
       )
       | ROUTE_POLICY policy = route_policy_name
       |
       (
-         TAG tag = DEC
+         TAG tag = uint_legacy
       )
    )* NEWLINE
 ;
@@ -422,7 +422,7 @@ ro6_area
 
 ro6_auto_cost
 :
-   AUTO_COST REFERENCE_BANDWIDTH DEC NEWLINE
+   AUTO_COST REFERENCE_BANDWIDTH uint_legacy NEWLINE
 ;
 
 ro6_default_information
@@ -432,7 +432,7 @@ ro6_default_information
 
 ro6_distance
 :
-   DISTANCE value = DEC NEWLINE
+   DISTANCE value = uint_legacy NEWLINE
 ;
 
 ro6_distribute_list
@@ -461,7 +461,7 @@ ro6_maximum_paths
       (
          MAXIMUM PATHS
       )
-   ) DEC NEWLINE
+   ) uint_legacy NEWLINE
 ;
 
 ro6_null
@@ -489,7 +489,7 @@ ro6_redistribute
 
 roa_cost
 :
-   COST cost = DEC NEWLINE
+   COST cost = uint_legacy NEWLINE
 ;
 
 roa_interface
@@ -512,7 +512,7 @@ roa_range
       | NOT_ADVERTISE
    )?
    (
-      COST cost = DEC
+      COST cost = uint_legacy
    )? NEWLINE
 ;
 
@@ -523,7 +523,7 @@ roa_network_null
 
 roi_cost
 :
-   COST cost = DEC NEWLINE
+   COST cost = uint_legacy NEWLINE
 ;
 
 roi_network
@@ -551,7 +551,7 @@ roi_passive
 
 roi_priority
 :
-   PRIORITY DEC NEWLINE
+   PRIORITY uint_legacy NEWLINE
 ;
 
 rov3_address_family

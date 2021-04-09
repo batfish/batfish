@@ -67,7 +67,7 @@ ntp_logging
 
 ntp_max_associations
 :
-   MAX_ASSOCIATIONS DEC NEWLINE
+   MAX_ASSOCIATIONS uint_legacy NEWLINE
 ;
 
 ntp_master
@@ -99,21 +99,21 @@ ntp_server
    )? hostname = variable
    (
       (
-         KEY key = DEC
+         KEY key = uint_legacy
       )
       |
       (
-         MAXPOLL DEC
+         MAXPOLL uint_legacy
       )
       |
       (
-         MINPOLL DEC
+         MINPOLL uint_legacy
       )
       | prefer = PREFER
       | SOURCE src_interface = interface_name_unstructured
       |
       (
-         VERSION ver = DEC
+         VERSION ver = uint_legacy
       )
    )* NEWLINE
 ;
@@ -130,7 +130,7 @@ ntp_source_interface
 
 ntp_trusted_key
 :
-   TRUSTED_KEY DEC NEWLINE
+   TRUSTED_KEY uint_legacy NEWLINE
 ;
 
 ntp_update_calendar
