@@ -7,7 +7,6 @@ import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_AF_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_PEER_GROUP;
@@ -81,7 +80,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DOMAIN_L
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_AF_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_PASSIVE_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
@@ -461,7 +459,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Hash_commentContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Host_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_autostateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bandwidthContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bfd_templateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_bundle_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_delayContext;
@@ -3761,12 +3758,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       newBandwidthBps = toLong(ctx.uint_legacy()) * 1000.0D;
     }
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
-  }
-
-  @Override
-  public void exitIf_bfd_template(If_bfd_templateContext ctx) {
-    _configuration.referenceStructure(
-        BFD_TEMPLATE, ctx.name.getText(), INTERFACE_BFD_TEMPLATE, ctx.name.getStart().getLine());
   }
 
   @Override

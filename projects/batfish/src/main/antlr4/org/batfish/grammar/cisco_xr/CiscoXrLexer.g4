@@ -893,6 +893,8 @@ CIR: 'cir';
 
 CIRCUIT_TYPE: 'circuit-type';
 
+CISCO: 'cisco';
+
 CISCO_TDP: 'cisco_TDP';
 
 CISP: 'cisp';
@@ -2330,6 +2332,8 @@ IEC: 'iec';
 
 IEEE_MMS_SSL: 'ieee-mms-ssl';
 
+IETF: 'ietf';
+
 IETF_FORMAT: 'ietf-format';
 
 IF: 'if';
@@ -3326,6 +3330,8 @@ NAT_TRAVERSAL: 'nat-traversal';
 NATIVE: 'native';
 
 NBAR: 'nbar';
+
+NBR_UNCONFIG: 'nbr-unconfig';
 
 NCP: 'ncp';
 
@@ -4873,6 +4879,8 @@ STACK_UNIT: 'stack-unit';
 STALE_ROUTE: 'stale-route';
 
 STANDBY: 'standby';
+
+START: 'start';
 
 START_STOP: 'start-stop';
 

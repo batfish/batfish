@@ -4,6 +4,7 @@ import
 CiscoXr_common,
 CiscoXr_aaa,
 CiscoXr_acl,
+CiscoXr_bfd,
 CiscoXr_bgp,
 CiscoXr_community_set,
 CiscoXr_crypto,
@@ -130,21 +131,6 @@ aiimgp_stanza
 allow_iimgp_stanza
 :
    ALLOW null_rest_of_line aiimgp_stanza*
-;
-
-bfd_null
-:
-   NO?
-   (
-      BUNDLE
-      | DAMPENING
-      | ECHO
-      | INTERFACE
-      | IPV6
-      | MULTIHOP
-      | MULTIPATH
-      | TRAP
-   ) null_rest_of_line
 ;
 
 cp_ip_flow
@@ -699,14 +685,6 @@ ios_banner_header
   | BANNER_MOTD_IOS
   | BANNER_PROMPT_TIMEOUT_IOS
   | BANNER_SLIP_PPP_IOS
-;
-
-s_bfd
-:
-   BFD null_rest_of_line
-   (
-      bfd_null
-   )*
 ;
 
 s_control_plane

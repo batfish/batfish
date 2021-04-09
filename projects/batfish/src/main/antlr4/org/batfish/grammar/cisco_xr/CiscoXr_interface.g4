@@ -18,57 +18,104 @@ if_bandwidth
 
 if_bfd
 :
-  BFD (IPV4 | IPV6)? (
-     if_bfd_authentication
-     | if_bfd_echo
-     | if_bfd_echo_rx_interval
-     | if_bfd_interval
-     | if_bfd_neighbor
-     | if_bfd_optimize
-     | if_bfd_template
+  // Only valid on Bundle-Ether
+  BFD
+  (
+    if_bfd_address_family
+    | if_bfd_mode
   )
 ;
 
-if_bfd_authentication
+if_bfd_address_family
 :
-  AUTHENTICATION KEYED_SHA1 KEYID id = uint_legacy (
-     HEX_KEY hex_key = variable
-     | KEY ascii_key = variable
-  )NEWLINE
+  ADDRESS_FAMILY
+  (
+    if_bfdaf_ipv4
+    | if_bfdaf_ipv6
+  )
 ;
 
-if_bfd_echo
+if_bfdaf_ipv4
 :
-  ECHO NEWLINE
+  IPV4
+  (
+    if_bfdaf4_destination
+    | if_bfdaf4_echo
+    | if_bfdaf_fast_detect
+    | if_bfdaf_minimum_interval
+    | if_bfdaf_multiplier
+    | if_bfdaf_timers
+  )
 ;
 
-if_bfd_echo_rx_interval
+if_bfdaf4_destination: DESTINATION IP_ADDRESS NEWLINE;
+
+if_bfdaf4_echo: ECHO MINIMUM_INTERVAL bfd_echo_minimum_interval_ms NEWLINE;
+
+bfd_echo_minimum_interval_ms
 :
-  ECHO_RX_INTERVAL ms = uint_legacy NEWLINE
+  // 15-2000ms
+  uint16
 ;
 
-if_bfd_interval
+if_bfdaf_fast_detect: FAST_DETECT NEWLINE;
+
+if_bfdaf_minimum_interval: MINIMUM_INTERVAL bfd_minimum_interval_ms NEWLINE;
+
+bfd_minimum_interval_ms
 :
-  INTERVAL tx_ms = uint_legacy (MIN_RX | MIN_RX_VAR) tx_ms = uint_legacy MULTIPLIER mult = uint_legacy NEWLINE
+  // 3-30000ms
+  uint16
 ;
 
-if_bfd_neighbor
+if_bfdaf_multiplier: MULTIPLIER bfd_multiplier NEWLINE;
+
+bfd_multiplier
 :
-  NEIGHBOR SRC_IP (
-     src_ip = IP_ADDRESS DEST_IP dst_ip = IP_ADDRESS
-     | src_ip = IPV6_ADDRESS DEST_IP dst_ip = IPV6_ADDRESS
-  ) NEWLINE
+  // 2-50
+  uint8
 ;
 
-if_bfd_optimize
+if_bfdaf_timers
 :
-  OPTIMIZE SUBINTERFACE NEWLINE
+  TIMERS
+  (
+    if_bfdaf_timers_nbr_unconfig
+    | if_bfdaf_timers_start
+  )
 ;
 
-if_bfd_template
+if_bfdaf_timers_nbr_unconfig: NBR_UNCONFIG bfd_nbr_unconfig_time_s NEWLINE;
+
+bfd_nbr_unconfig_time_s
 :
-  TEMPLATE name = variable_permissive NEWLINE
+  // 60-3600
+  uint16
 ;
+
+if_bfdaf_timers_start: START bfd_start_time_s NEWLINE;
+
+bfd_start_time_s
+:
+  // 60-3600
+  uint16
+;
+
+if_bfdaf_ipv6
+:
+  IPV6
+  (
+    if_bfdaf6_destination
+    | if_bfdaf_fast_detect
+    | if_bfdaf_minimum_interval
+    | if_bfdaf_multiplier
+    | if_bfdaf_timers
+  )
+;
+
+if_bfdaf6_destination: DESTINATION IPV6_ADDRESS NEWLINE;
+
+if_bfd_mode: MODE (CISCO | IETF) NEWLINE;
 
 if_bundle
 :
