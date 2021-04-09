@@ -54,13 +54,13 @@ l_accounting
 
 l_exec_timeout
 :
-   EXEC_TIMEOUT minutes = DEC seconds = DEC? NEWLINE
+   EXEC_TIMEOUT minutes = uint_legacy seconds = uint_legacy? NEWLINE
 ;
 
 l_length
 :
    (
-      LENGTH DEC NEWLINE
+      LENGTH uint_legacy NEWLINE
    )
    |
    (
@@ -157,18 +157,18 @@ s_line
    LINE line_type
    (
       (
-         slot1 = DEC FORWARD_SLASH
+         slot1 = uint_legacy FORWARD_SLASH
          (
-            port1 = DEC FORWARD_SLASH
+            port1 = uint_legacy FORWARD_SLASH
          )?
-      )? first = DEC
+      )? first = uint_legacy
       (
          (
-            slot2 = DEC FORWARD_SLASH
+            slot2 = uint_legacy FORWARD_SLASH
             (
-               port2 = DEC FORWARD_SLASH
+               port2 = uint_legacy FORWARD_SLASH
             )?
-         )? last = DEC
+         )? last = uint_legacy
       )?
    )? NEWLINE
    (

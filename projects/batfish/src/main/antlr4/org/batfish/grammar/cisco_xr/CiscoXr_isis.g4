@@ -128,19 +128,19 @@ metric_iis_stanza
 :
    METRIC
    (
-      DEC
+      uint_legacy
       | MAXIMUM
    )
    (
-      LEVEL DEC
+      LEVEL uint_legacy
    )? NEWLINE
 ;
 
 metric_is_stanza
 :
-   METRIC DEC
+   METRIC uint_legacy
    (
-      LEVEL DEC
+      LEVEL uint_legacy
    )? NEWLINE
 ;
 
@@ -245,7 +245,7 @@ redistribute_connected_is_stanza
       | LEVEL_2
       |
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
@@ -258,14 +258,14 @@ redistribute_eigrp_is_stanza_null
 :
    REDISTRIBUTE EIGRP
    (
-      DEC
+      uint_legacy
       | IP
       | LEVEL_1
       | LEVEL_1_2
       | LEVEL_2
       |
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
@@ -285,7 +285,7 @@ redistribute_static_is_stanza
       | LEVEL_2
       |
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
@@ -316,11 +316,11 @@ summary_address_is_stanza
       | LEVEL_2
       |
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
-         TAG tag = DEC
+         TAG tag = uint_legacy
       )
    )* NEWLINE
 ;

@@ -27,7 +27,7 @@ vrf_address_family
       | UNICAST
    )?
    (
-      MAX_ROUTE DEC
+      MAX_ROUTE uint_legacy
    )? NEWLINE
    vrf_af_inner*
 ;
