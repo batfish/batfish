@@ -542,15 +542,49 @@ switchport_trunk_encapsulation
    | NEGOTIATE
 ;
 
+uint8
+:
+  UINT8
+;
+
 uint16
 :
-  d = DEC {isUint16($d)}?
-  | d = UINT16
+  UINT8
+  | UINT16
 ;
 
 uint32
 :
-  DEC
+  UINT8
+  | UINT16
+  | UINT32
+;
+
+uint64
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+;
+
+uint_big
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+  | UINT_BIG
+;
+
+// TODO: replace all references with one of above rules and remove this rule
+uint_legacy
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+  | UINT_BIG
 ;
 
 variable
