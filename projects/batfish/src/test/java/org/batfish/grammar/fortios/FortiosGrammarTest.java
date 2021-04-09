@@ -8,6 +8,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
@@ -741,8 +742,9 @@ public final class FortiosGrammarTest {
     Ip ip2 = Ip.parse("11.11.11.2");
 
     // Default VRF BGP process: should only have neighbor 1
+    String defaultVrfName = computeVrfName("root", 0);
     org.batfish.datamodel.BgpProcess bgpProcessDefaultVrf =
-        c.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
+        c.getVrfs().get(defaultVrfName).getBgpProcess();
     assertThat(bgpProcessDefaultVrf, hasRouterId(Ip.parse("1.1.1.1")));
     assertThat(bgpProcessDefaultVrf, hasMultipathEbgp(false));
     assertThat(bgpProcessDefaultVrf, hasMultipathIbgp(false));
@@ -758,11 +760,13 @@ public final class FortiosGrammarTest {
     assertThat(neighbor1.getRemoteAsns().enumerate(), contains(1L));
     AddressFamily ipv4Af1 = neighbor1.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
     assertThat(ipv4Af1.getImportPolicy(), equalTo("rm1"));
-    assertThat(ipv4Af1.getExportPolicy(), equalTo("rm2"));
+    assertThat(
+        ipv4Af1.getExportPolicy(),
+        equalTo(generatedBgpPeerExportPolicyName(defaultVrfName, ip1.toString())));
 
     // VRF 5 BGP process: should only have neighbor 2
-    org.batfish.datamodel.BgpProcess bgpProcessVrf5 =
-        c.getVrfs().get(computeVrfName("root", 5)).getBgpProcess();
+    String vrf5Name = computeVrfName("root", 5);
+    org.batfish.datamodel.BgpProcess bgpProcessVrf5 = c.getVrfs().get(vrf5Name).getBgpProcess();
     assertThat(bgpProcessVrf5, hasRouterId(Ip.parse("1.1.1.1")));
 
     Map<Prefix, BgpActivePeerConfig> vrf5Neighbors = bgpProcessVrf5.getActiveNeighbors();
@@ -775,7 +779,9 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getRemoteAsns().enumerate(), contains(4294967295L));
     AddressFamily ipv4Af2 = neighbor2.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
     assertNull(ipv4Af2.getImportPolicy());
-    assertNull(ipv4Af2.getExportPolicy());
+    assertThat(
+        ipv4Af2.getExportPolicy(),
+        equalTo(generatedBgpPeerExportPolicyName(vrf5Name, ip2.toString())));
   }
 
   @Test
