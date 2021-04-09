@@ -17,6 +17,21 @@ config router bgp
             set remote-as hello
         next
     end
+    config network
+        edit 4294967296
+        next
+        edit 1
+            # ok
+            set prefix 1.1.1.0 255.255.255.0
+        next
+        edit 2
+            # can't use 0.0.0.0/0
+            set prefix 0.0.0.0 0.0.0.0
+            # can't reuse another network's prefix
+            set prefix 1.1.1.0 255.255.255.0
+            # can't have edit block with no prefix
+        next
+    end
     config redistribute "connected"
         set status enable
     end

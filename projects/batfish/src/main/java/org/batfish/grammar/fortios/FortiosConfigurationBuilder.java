@@ -48,6 +48,7 @@ import org.batfish.grammar.fortios.FortiosParser.Addrgrp_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Allow_or_denyContext;
 import org.batfish.grammar.fortios.FortiosParser.Bgp_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Bgp_neighbor_idContext;
+import org.batfish.grammar.fortios.FortiosParser.Bgp_network_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Bgp_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_renameContext;
@@ -212,6 +213,7 @@ import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.BgpNeighbor;
+import org.batfish.representation.fortios.BgpNetwork;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
@@ -961,6 +963,79 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, String.format("BGP neighbor edit block ignored: %s", invalidReason));
     }
     _currentBgpNeighbor = null;
+  }
+
+  @Override
+  public void enterCrbcnet_edit(FortiosParser.Crbcnet_editContext ctx) {
+    Optional<Long> networkId = toLong(ctx, ctx.bgp_network_id());
+    if (networkId.isPresent() && networkId.get() == 0) {
+      // "edit 0" picks a new non-zero ID based on the existing network IDs
+      networkId = getNextVal(_c.getBgpProcess().getNetworks().keySet(), BGP_NETWORK_ID_SPACE);
+    }
+    // Using 0 as a dummy ID for edit blocks with invalid network IDs
+    long id = networkId.orElse(0L);
+    _currentBgpNetwork =
+        Optional.ofNullable(_c.getBgpProcess().getNetworks().get(id))
+            .map(SerializationUtils::clone)
+            .orElseGet(() -> new BgpNetwork(id));
+  }
+
+  /**
+   * Gets the default next value that the CLI will select in certain contexts when the user enters
+   * "edit 0". The CLI is interprets this as shorthand for "make a new edit block with any ID".
+   *
+   * <p>The CLI will select the number of currently-configured values plus one, unless that value is
+   * already in use, in which case it will select the next higher value that is not in use.
+   *
+   * @param existing Values that are already taken
+   * @param permitted Space of permitted values
+   * @return the value selected by the CLI, or empty optional if the selected value would be outside
+   *     of the permitted values. (Not expected to ever happen in practice.)
+   */
+  private static Optional<Long> getNextVal(Set<Long> existing, LongSpace permitted) {
+    long candidate = existing.size() + 1;
+    while (existing.contains(candidate)) {
+      candidate++;
+    }
+    return permitted.contains(candidate) ? Optional.of(candidate) : Optional.empty();
+  }
+
+  @Override
+  public void exitCrbcnet_edit(FortiosParser.Crbcnet_editContext ctx) {
+    String invalidReason = bgpNetworkValid(_currentBgpNetwork);
+    if (invalidReason == null) {
+      _c.getBgpProcess().getNetworks().put(_currentBgpNetwork.getId(), _currentBgpNetwork);
+    } else {
+      warn(ctx, String.format("BGP network edit block ignored: %s", invalidReason));
+    }
+    _currentBgpNetwork = null;
+  }
+
+  private static String bgpNetworkValid(BgpNetwork bgpNetwork) {
+    if (bgpNetwork.getId() == 0L) {
+      // Indicates invalid name
+      return "name is invalid";
+    } else if (bgpNetwork.getPrefix() == null) {
+      return "prefix must be set";
+    }
+    return null;
+  }
+
+  @Override
+  public void exitCrbcnete_set_prefix(FortiosParser.Crbcnete_set_prefixContext ctx) {
+    Prefix network = toPrefix(ctx.network);
+    if (network.equals(Prefix.ZERO)) {
+      warn(ctx, "Prefix 0.0.0.0/0 is not allowed for a BGP network prefix");
+    } else if (_c.getBgpProcess().getNetworks().values().stream()
+        .anyMatch(bgpNetwork -> network.equals(bgpNetwork.getPrefix()))) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set BGP network prefix %s: Another BGP network already has this prefix",
+              network));
+    } else {
+      _currentBgpNetwork.setPrefix(network);
+    }
   }
 
   @Override
@@ -2545,6 +2620,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toLongInSpace(messageCtx, ctx.str(), BGP_AS_SPACE, "BGP AS");
   }
 
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Bgp_network_idContext ctx) {
+    return toLongInSpace(messageCtx, ctx.str(), BGP_NETWORK_ID_SPACE, "BGP network ID");
+  }
+
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Bgp_remote_asContext ctx) {
     return toLongInSpace(messageCtx, ctx.str(), BGP_REMOTE_AS_SPACE, "BGP remote AS");
   }
@@ -2923,6 +3002,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final LongSpace ACCESS_LIST_RULE_NUMBER_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace BGP_AS_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final LongSpace BGP_NETWORK_ID_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace BGP_REMOTE_AS_SPACE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace IP_PROTOCOL_NUMBER_SPACE =
       IntegerSpace.of(Range.closed(0, 254));
@@ -2956,6 +3036,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Addrgrp _currentAddrgrp;
   private boolean _currentAddrgrpNameValid;
   private BgpNeighbor _currentBgpNeighbor;
+  private BgpNetwork _currentBgpNetwork;
   private Interface _currentInterface;
   private boolean _currentInterfaceNameValid;
   private InternetServiceName _currentInternetServiceName;

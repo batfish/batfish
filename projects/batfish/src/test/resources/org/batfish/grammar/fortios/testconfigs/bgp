@@ -36,4 +36,13 @@ config router bgp
             set remote-as 4294967295
         next
     end
+    config network
+        # `edit 0` should make CLI default to 1
+        edit 0
+            set prefix 3.3.3.3/24
+        next
+        edit 4294967295
+            set prefix 4.4.4.4 255.255.255.0
+        next
+    end
 end

@@ -30,6 +30,7 @@ crb_config
 :
     CONFIG (
         crbc_neighbor
+        | crbc_network
         | crbc_redistribute
     ) END NEWLINE
 ;
@@ -56,6 +57,19 @@ crbcne_set_route_map_out: ROUTE_MAP_OUT route_map_name newline;
 
 crbcne_set_update_source: UPDATE_SOURCE interface_name newline;
 
+crbc_network: NETWORK newline crbcnet_edit*;
+
+crbcnet_edit: EDIT bgp_network_id newline crbcnete* NEXT newline;
+
+crbcnete
+:
+    crbcnete_set_prefix
+    | UNSET unimplemented
+;
+
+crbcnete_set_prefix: SET PREFIX network = ip_address_with_mask_or_prefix newline;
+
+
 crbc_redistribute: REDISTRIBUTE bgp_redist_protocol newline crbcr*;
 
 crbcr
@@ -73,5 +87,8 @@ bgp_remote_as: str;
 
 // An IP (but not using ip_address rule because EDIT pushes str mode)
 bgp_neighbor_id: str;
+
+// 1-4294967295
+bgp_network_id: str;
 
 bgp_redist_protocol: str;

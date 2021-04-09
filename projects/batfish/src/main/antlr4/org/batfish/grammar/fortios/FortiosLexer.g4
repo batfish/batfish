@@ -110,6 +110,7 @@ MTU_OVERRIDE: 'mtu-override';
 NAC_QUAR: 'nac-quar';
 NAME: 'name' -> pushMode(M_Str);
 NEIGHBOR: 'neighbor';
+NETWORK: 'network';
 NEXT: 'next';
 PERMIT: 'permit';
 PHYSICAL: 'physical';
