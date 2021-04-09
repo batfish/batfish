@@ -289,6 +289,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       group.setExcludeMember(toNames(group.getExcludeMemberUUIDs()));
       group.setMember(toNames(group.getMemberUUIDs()));
     }
+
+    for (Address address : _c.getAddresses().values()) {
+      BatfishUUID uuid = address.getAssociatedInterfaceZoneUUID();
+      if (uuid != null) {
+        address.setAssociatedInterfaceZone(toName(uuid));
+      }
+    }
   }
 
   /**
@@ -296,9 +303,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * org.batfish.representation.fortios.FortiosRenameableObject} names
    */
   private Set<String> toNames(Set<BatfishUUID> uuids) {
-    return uuids.stream()
-        .map(u -> _c.getRenameableObjects().get(u).getName())
-        .collect(ImmutableSet.toImmutableSet());
+    return uuids.stream().map(this::toName).collect(ImmutableSet.toImmutableSet());
+  }
+
+  private String toName(BatfishUUID uuid) {
+    return _c.getRenameableObjects().get(uuid).getName();
   }
 
   @Override
@@ -410,17 +419,33 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     // the name is a valid zone name, but it may or may not be a valid interface name.
     String name = optName.get();
 
-    // TODO after zone support: If zone exists, set _currentAddress's associatedZone and return.
-
-    if (!_c.getInterfaces().containsKey(name)) {
-      warn(ctx, "No interface or zone named " + name);
-      // TODO File undefined reference to zone, or INTERFACE_OR_ZONE if it's a valid interface name
+    if (_c.getZones().containsKey(name)) {
+      // TODO Add structure reference for zone
+      todo(ctx);
+      _currentAddress.setAssociatedInterfaceZoneUUID(_c.getZones().get(name).getBatfishUUID());
       return;
     }
 
-    // TODO Add structure reference for interface
-    todo(ctx);
-    _currentAddress.setAssociatedInterface(name);
+    if (_c.getInterfaces().containsKey(name)) {
+      // Zoned interfaces can't be referenced in this context
+      ImmutableSet<String> zonedIfaceNames =
+          _c.getZones().values().stream()
+              .map(Zone::getInterface)
+              .flatMap(Collection::stream)
+              .collect(ImmutableSet.toImmutableSet());
+      if (zonedIfaceNames.contains(name)) {
+        warn(ctx, "Cannot reference zoned interface " + name);
+        return;
+      }
+
+      // TODO Add structure reference for interface
+      todo(ctx);
+      _currentAddress.setAssociatedInterface(name);
+      return;
+    }
+
+    warn(ctx, "No interface or zone named " + name);
+    // TODO File undefined reference to zone, or INTERFACE_OR_ZONE if it's a valid interface name
   }
 
   @Override

@@ -7,6 +7,16 @@ config system interface
         set type physical
         set ip 1.1.1.1 255.255.255.0
     next
+    edit "port2"
+        set vdom "root"
+        set type physical
+        set ip 2.1.1.1 255.255.255.0
+    next
+end
+config system zone
+    edit "zoneA"
+        set interface port2
+    next
 end
 config firewall address
     edit "ipmask"
@@ -32,6 +42,7 @@ config firewall address
         set type iprange
         set start-ip 1.1.1.0
         set end-ip 1.1.1.255
+        set associated-interface zoneA
     next
     edit "dynamic"
         set type dynamic
