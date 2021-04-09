@@ -125,7 +125,7 @@ interface_name
     (
       (
         name_middle_parts += M_Interface_PREFIX
-      )? name_middle_parts += DEC
+      )? name_middle_parts += UINT_BIG
       (
         name_middle_parts += FORWARD_SLASH
         | name_middle_parts += PERIOD
@@ -617,7 +617,7 @@ variable_hostname
 
 variable_interface_name
 :
-   ~( DEC | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
+   ~( UINT8 | UINT16 | IP_ADDRESS | IP_PREFIX | ADMIN_DIST | ADMIN_DISTANCE | METRIC |
    NAME | NEWLINE | TAG | TRACK | VARIABLE )
 ;
 
