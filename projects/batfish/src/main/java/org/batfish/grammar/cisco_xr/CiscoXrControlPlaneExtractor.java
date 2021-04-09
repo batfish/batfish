@@ -764,6 +764,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.U_passwordContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.U_roleContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Uint16Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Uint32Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Uint_legacyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Update_source_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Use_af_group_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Use_neighbor_group_bgp_tailContext;
@@ -934,6 +935,8 @@ import org.batfish.vendor.VendorConfiguration;
 public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     implements ControlPlaneExtractor {
 
+  public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
+
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   @Override
@@ -971,16 +974,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private static int toInteger(TerminalNode t) {
-    return Integer.parseInt(t.getText());
+  private static int toInteger(Uint_legacyContext ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
-  private static int toInteger(Token t) {
-    return Integer.parseInt(t.getText());
-  }
-
-  private static int toInteger(Vlan_idContext ctx) {
-    return Integer.parseInt(ctx.getText(), 10);
+  @Nonnull
+  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Vlan_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "VLAN ID");
   }
 
   private static String toInterfaceName(Interface_nameContext ctx) {
@@ -1022,12 +1022,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return Ip6.parse(t.getText());
   }
 
-  private static long toLong(TerminalNode t) {
-    return Long.parseLong(t.getText());
-  }
-
-  private static long toLong(Token t) {
-    return Long.parseLong(t.getText());
+  private static long toLong(Uint_legacyContext ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   private static List<SubRange> toRange(RangeContext ctx) {
@@ -8528,5 +8524,20 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
   }
 }
