@@ -32,5 +32,6 @@ s_config
         c_system
         | c_firewall
         | c_router
+        | IGNORED_CONFIG_BLOCK
     ) END NEWLINE
 ;

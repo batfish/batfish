@@ -4,7 +4,7 @@ options {
   tokenVocab = FortiosLexer;
 }
 
-cf_service: SERVICE (cfs_custom | cfs_group);
+cf_service: SERVICE (cfs_custom | cfs_group | IGNORED_CONFIG_BLOCK);
 
 // Service custom
 cfs_custom: CUSTOM newline cfsc*;

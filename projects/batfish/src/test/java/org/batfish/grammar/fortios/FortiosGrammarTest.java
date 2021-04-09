@@ -136,6 +136,15 @@ import org.junit.rules.TemporaryFolder;
 public final class FortiosGrammarTest {
 
   @Test
+  public void testIgnoredConfigBlocks() {
+    FortiosConfiguration c = parseVendorConfig("fortios_ignored");
+    // Valid syntax before ignored block is parsed
+    assertThat(c.getHostname(), equalTo("ignored"));
+    // Valid syntax after an ignored block is parsed (and before another one)
+    assertThat(c.getAddresses(), hasKeys("Extracted Address"));
+  }
+
+  @Test
   public void testHostnameExtraction() {
     String filename = "fortios_hostname";
     String hostname = "my_fortios-hostname1";
