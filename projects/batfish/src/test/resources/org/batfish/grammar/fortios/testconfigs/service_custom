@@ -3,14 +3,17 @@ config system global
 end
 config firewall service custom
     edit "longest possible firewall service custom service name that is accepted by devic"
+        set category "General"
         set comment "service custom comment"
         set protocol IP
     next
     edit "custom_tcp"
+        set category "Web Access"
         # Variety of destination and source port ranges (at least one required)
         set tcp-portrange 1
     next
     edit "explicit_tcp"
+        set category "Network Services"
         set visibility disable
         set protocol TCP/UDP/SCTP
         set tcp-portrange 1-2:3-4 10-11 13:6-7

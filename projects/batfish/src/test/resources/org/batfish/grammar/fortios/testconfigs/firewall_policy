@@ -41,15 +41,12 @@ config system zone
 end
 config firewall service custom
     edit "custom_tcp_11"
-        set category "Network Services"
         set tcp-portrange 11
     next
     edit "custom_tcp_12_from_11"
-        set category "Web Access"
         set tcp-portrange 12:11
     next
     edit ALL
-        set category "General"
         set protocol IP
     next
 end
