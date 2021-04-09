@@ -1934,7 +1934,8 @@ public final class FortiosGrammarTest {
     assertThat(aclToBdd.toBdd(zone1ToPort1), equalTo(_zero));
 
     // No policies apply to traffic leaving port1
-    assertThat(aclToBdd.toBdd(port1Outgoing), equalTo(_zero));
+    BDD originatedTraffic = srcMgr.getOriginatingFromDeviceBDD();
+    assertThat(aclToBdd.toBdd(port1Outgoing), equalTo(originatedTraffic));
 
     // Should reflect that policy 1 blocks traffic from port1 to addr1, and that traffic from zone1
     // to addr2 is permitted
@@ -1942,7 +1943,9 @@ public final class FortiosGrammarTest {
     BDD fromZone1 = srcMgr.getSourceInterfaceBDD("port2").or(srcMgr.getSourceInterfaceBDD("port3"));
     BDD permittedFromPort1 = fromPort1.and(addr2AsDst.diff(addr1AsDst));
     BDD permittedFromZone1 = fromZone1.and(addr2AsDst);
-    assertThat(aclToBdd.toBdd(zone1Outgoing), equalTo(permittedFromPort1.or(permittedFromZone1)));
+    assertThat(
+        aclToBdd.toBdd(zone1Outgoing),
+        equalTo(permittedFromPort1.or(permittedFromZone1).or(originatedTraffic)));
   }
 
   /**
