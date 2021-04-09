@@ -713,7 +713,7 @@ s_control_plane
 :
    CONTROL_PLANE
    (
-      SLOT DEC
+      SLOT uint_legacy
    )? NEWLINE s_control_plane_tail*
 ;
 
@@ -1021,7 +1021,7 @@ spti_null
 
 srlg_interface_numeric_stanza
 :
-   DEC null_rest_of_line
+   uint_legacy null_rest_of_line
 ;
 
 srlg_interface_stanza
@@ -1066,7 +1066,7 @@ ssh_server
       | LOGGING
       |
       (
-         SESSION_LIMIT limit = DEC
+         SESSION_LIMIT limit = uint_legacy
       )
       | V2
       |
@@ -1078,7 +1078,7 @@ ssh_server
 
 ssh_timeout
 :
-   TIMEOUT DEC NEWLINE
+   TIMEOUT uint_legacy NEWLINE
 ;
 
 // old top-level rules (from hybrid cisco parser)
@@ -1204,7 +1204,7 @@ t_server_null
 
 t_key
 :
-   KEY DEC? variable_permissive NEWLINE
+   KEY uint_legacy? variable_permissive NEWLINE
 ;
 
 t_source_interface
@@ -1318,9 +1318,9 @@ u_passphrase
 :
    PASSPHRASE
    (
-      GRACETIME gracetime = DEC
-      | LIFETIME lifetime = DEC
-      | WARNTIME warntime = DEC
+      GRACETIME gracetime = uint_legacy
+      | LIFETIME lifetime = uint_legacy
+      | WARNTIME warntime = uint_legacy
    )*
 ;
 
@@ -1353,7 +1353,7 @@ ua_null
 
 up_cisco_xr
 :
-   DEC? up_cisco_xr_tail
+   uint_legacy? up_cisco_xr_tail
 ;
 
 up_cisco_xr_tail
@@ -1369,7 +1369,7 @@ up_cisco_xr_tail
 
 viaf_vrrp
 :
-   NO? VRRP groupnum = DEC NEWLINE
+   NO? VRRP groupnum = uint_legacy NEWLINE
    (
       viafv_address
       | viafv_null
@@ -1396,13 +1396,13 @@ viafv_preempt
 :
    PREEMPT
    (
-      DELAY delay = DEC
+      DELAY delay = uint_legacy
    ) NEWLINE
 ;
 
 viafv_priority
 :
-   PRIORITY priority = DEC NEWLINE
+   PRIORITY priority = uint_legacy NEWLINE
 ;
 
 vrrp_interface

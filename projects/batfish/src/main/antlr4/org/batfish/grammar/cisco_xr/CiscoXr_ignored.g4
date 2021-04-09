@@ -545,7 +545,7 @@ null_single
          (
             (
                (
-                  DEC
+                  uint_legacy
                   | variable_aclname
                )
                (
