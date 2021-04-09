@@ -473,6 +473,12 @@ public final class FortiosPolicyConversions {
 
   public static IpSpace toIpSpace(Address a, Warnings w) {
     // TODO Investigate & support _allowRouting, _associatedInterface, _fabricObject
+    if (a.getAssociatedInterface() != null || a.getAssociatedInterfaceZone() != null) {
+      w.redFlag(
+          String.format(
+              "Address associated-interface is not yet supported and will be ignored for %s",
+              a.getName()));
+    }
     switch (a.getTypeEffective()) {
       case IPMASK:
         Ip subnetIp = a.getTypeSpecificFields().getIp1Effective();
