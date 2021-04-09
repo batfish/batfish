@@ -9,43 +9,10 @@ options {
 ntp_access_group
 :
    ACCESS_GROUP
-   (
-      IPV4
-      | IPV6
-      | KOD
-      |
-      (
-         PEER
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         QUERY_ONLY
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         SERVE
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         SERVE_ONLY
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         VRF vrf = vrf_name
-      )
-   )+ NEWLINE
+   (VRF vrf = vrf_name)?
+   (IPV4 | IPV6)?
+   (PEER | QUERY_ONLY | SERVE | SERVE_ONLY)
+   name = access_list_name NEWLINE
 ;
 
 ntp_authenticate

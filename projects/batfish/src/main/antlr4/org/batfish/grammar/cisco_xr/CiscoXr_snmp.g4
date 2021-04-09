@@ -111,6 +111,7 @@ ss_null
       | LOGGING
       | MANAGER
       | MAX_IFINDEX_PER_MODULE
+      | MIBS
       | NOTIFY_FILTER
       | OVERLOAD_CONTROL
       | PACKETSIZE
