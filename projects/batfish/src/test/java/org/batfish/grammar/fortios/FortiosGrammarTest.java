@@ -688,6 +688,37 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testBgpRouteMapDefinitionsAndReferences() throws IOException {
+    String hostname = "bgp_routemap_defs_refs";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ROUTE_MAP, "rm1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ROUTE_MAP, "rm2"));
+
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ROUTE_MAP, "rm1", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ROUTE_MAP, "rm2", 1));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.ROUTE_MAP,
+            "UNDEFINED_IN",
+            FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_IN));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.ROUTE_MAP,
+            "UNDEFINED_OUT",
+            FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT));
+  }
+
+  @Test
   public void testBgpExtraction() throws IOException {
     String hostname = "bgp";
     FortiosConfiguration vc = parseVendorConfig(hostname);

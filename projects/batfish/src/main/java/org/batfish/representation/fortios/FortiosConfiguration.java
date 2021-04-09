@@ -228,6 +228,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     c.getVrfs().values().forEach(vrf -> vrf.setStaticRoutes(viStaticRoutes));
 
     // Count structure references
+    markConcreteStructure(FortiosStructureType.ROUTE_MAP);
     markConcreteStructure(FortiosStructureType.ADDRESS);
     markConcreteStructure(FortiosStructureType.ADDRGRP);
     markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
