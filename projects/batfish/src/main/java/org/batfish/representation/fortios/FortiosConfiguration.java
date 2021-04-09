@@ -45,6 +45,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.collections.InsertOrderedMap;
+import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -282,6 +283,7 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setDescription(iface.getDescription())
             .setActive(iface.getStatusEffective())
             .setMtu(iface.getMtuEffective())
+            .setSpeed(toSpeed(iface.getSpeedEffective()))
             .setType(type);
 
     List<InterfaceAddress> secondaryAddresses =
@@ -317,6 +319,32 @@ public class FortiosConfiguration extends VendorConfiguration {
     String outgoingFilterName = computeOutgoingFilterName(parentIfaceOrZone);
     viIface.setOutgoingFilter(c.getIpAccessLists().get(outgoingFilterName));
     viIface.build();
+  }
+
+  /** Convert interface speed setting into bits per second. */
+  private static double toSpeed(Interface.Speed speed) {
+    switch (speed) {
+      case TEN_FULL:
+      case TEN_HALF:
+        return 10e9;
+      case HUNDRED_FULL:
+      case HUNDRED_HALF:
+        return 100e9;
+      case THOUSAND_FULL:
+      case THOUSAND_HALF:
+        return 1000e9;
+      case TEN_THOUSAND_FULL:
+      case TEN_THOUSAND_HALF:
+        return 10000e9;
+      case HUNDRED_GFULL:
+      case HUNDRED_GHALF:
+        return 100e12;
+      case AUTO:
+      default:
+        assert speed == Speed.AUTO;
+        // Assume 10Gbps default
+        return 10000e9;
+    }
   }
 
   /**

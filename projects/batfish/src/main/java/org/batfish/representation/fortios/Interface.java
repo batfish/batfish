@@ -23,6 +23,20 @@ public final class Interface implements InterfaceOrZone, Serializable {
     WL_MESH;
   }
 
+  public enum Speed {
+    AUTO,
+    TEN_FULL,
+    TEN_HALF,
+    HUNDRED_FULL,
+    HUNDRED_HALF,
+    THOUSAND_FULL,
+    THOUSAND_HALF,
+    TEN_THOUSAND_FULL,
+    TEN_THOUSAND_HALF,
+    HUNDRED_GFULL,
+    HUNDRED_GHALF,
+  }
+
   public enum Status {
     UP,
     DOWN,
@@ -31,6 +45,7 @@ public final class Interface implements InterfaceOrZone, Serializable {
 
   public static final int DEFAULT_INTERFACE_MTU = 1500;
   public static final boolean DEFAULT_SECONDARY_IP_ENABLED = false;
+  public static final Speed DEFAULT_SPEED = Speed.AUTO;
   public static final int DEFAULT_VRF = 0;
   public static final Type DEFAULT_TYPE = Type.VLAN;
   public static final boolean DEFAULT_STATUS = true;
@@ -130,6 +145,16 @@ public final class Interface implements InterfaceOrZone, Serializable {
   }
 
   @Nullable
+  public Speed getSpeed() {
+    return _speed;
+  }
+
+  @Nonnull
+  public Speed getSpeedEffective() {
+    return firstNonNull(_speed, DEFAULT_SPEED);
+  }
+
+  @Nullable
   public Integer getVlanid() {
     return _vlanid;
   }
@@ -187,6 +212,10 @@ public final class Interface implements InterfaceOrZone, Serializable {
     _secondaryIp = secondaryIp;
   }
 
+  public void setSpeed(Speed speed) {
+    _speed = speed;
+  }
+
   public void setVlanid(int vlanid) {
     _vlanid = vlanid;
   }
@@ -217,6 +246,7 @@ public final class Interface implements InterfaceOrZone, Serializable {
   /** Map of name/number to {@code SecondaryIp} */
   @Nonnull private Map<String, SecondaryIp> _secondaryip;
 
+  @Nullable private Speed _speed;
   @Nullable private Integer _vlanid;
   @Nullable private Integer _vrf;
 }

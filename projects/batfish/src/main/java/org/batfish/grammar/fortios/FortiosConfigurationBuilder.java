@@ -145,6 +145,7 @@ import org.batfish.grammar.fortios.FortiosParser.Csi_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtuContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtu_overrideContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_secondary_ipContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_speedContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
@@ -169,6 +170,7 @@ import org.batfish.grammar.fortios.FortiosParser.Interface_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_namesContext;
+import org.batfish.grammar.fortios.FortiosParser.Interface_speedContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Internet_service_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Internet_service_nameContext;
@@ -218,6 +220,7 @@ import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
+import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.InternetServiceName;
 import org.batfish.representation.fortios.Policy;
@@ -874,6 +877,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCsi_set_speed(Csi_set_speedContext ctx) {
+    _currentInterface.setSpeed(toSpeed(ctx.interface_speed()));
+  }
+
+  @Override
   public void exitCsi_set_status(Csi_set_statusContext ctx) {
     _currentInterface.setStatus(toStatus(ctx.status));
   }
@@ -1053,6 +1061,32 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCrbcne_set_route_map_out(Crbcne_set_route_map_outContext ctx) {
     toRouteMap(ctx.route_map_name(), FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT)
         .ifPresent(_currentBgpNeighbor::setRouteMapOut);
+  }
+
+  private Interface.Speed toSpeed(Interface_speedContext ctx) {
+    if (ctx.AUTO() != null) {
+      return Speed.AUTO;
+    } else if (ctx.TEN_FULL() != null) {
+      return Speed.TEN_FULL;
+    } else if (ctx.TEN_HALF() != null) {
+      return Speed.TEN_HALF;
+    } else if (ctx.HUNDRED_FULL() != null) {
+      return Speed.HUNDRED_FULL;
+    } else if (ctx.HUNDRED_HALF() != null) {
+      return Speed.HUNDRED_HALF;
+    } else if (ctx.THOUSAND_FULL() != null) {
+      return Speed.THOUSAND_FULL;
+    } else if (ctx.THOUSAND_HALF() != null) {
+      return Speed.THOUSAND_HALF;
+    } else if (ctx.TEN_THOUSAND_FULL() != null) {
+      return Speed.TEN_THOUSAND_FULL;
+    } else if (ctx.TEN_THOUSAND_HALF() != null) {
+      return Speed.TEN_THOUSAND_HALF;
+    } else if (ctx.HUNDRED_GFULL() != null) {
+      return Speed.HUNDRED_GFULL;
+    }
+    assert ctx.HUNDRED_GHALF() != null;
+    return Speed.HUNDRED_GHALF;
   }
 
   private Optional<String> toRouteMap(Route_map_nameContext ctx, FortiosStructureUsage usage) {
