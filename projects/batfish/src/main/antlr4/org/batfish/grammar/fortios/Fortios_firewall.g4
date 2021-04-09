@@ -10,4 +10,5 @@ c_firewall: FIREWALL (
   | cf_internet_service_name
   | cf_policy
   | cf_service
+  | IGNORED_CONFIG_BLOCK
 );

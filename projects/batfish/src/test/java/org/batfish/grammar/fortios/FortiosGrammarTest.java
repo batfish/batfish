@@ -136,6 +136,11 @@ import org.junit.rules.TemporaryFolder;
 public final class FortiosGrammarTest {
 
   @Test
+  public void testIgnoredConfigBlocks() {
+    parseVendorConfig("fortios_ignored");
+  }
+
+  @Test
   public void testHostnameExtraction() {
     String filename = "fortios_hostname";
     String hostname = "my_fortios-hostname1";
