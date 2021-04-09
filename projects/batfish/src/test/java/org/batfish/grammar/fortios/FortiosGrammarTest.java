@@ -107,6 +107,7 @@ import org.batfish.representation.fortios.AccessListRule;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BgpNeighbor;
+import org.batfish.representation.fortios.BgpNetwork;
 import org.batfish.representation.fortios.BgpProcess;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
@@ -713,6 +714,15 @@ public final class FortiosGrammarTest {
     assertNull(neighbor2.getRouteMapOut());
     assertThat(neighbor1.getUpdateSource(), equalTo("port1"));
     assertNull(neighbor2.getUpdateSource());
+
+    Map<Long, BgpNetwork> networks = bgpProcess.getNetworks();
+    assertThat(networks.keySet(), containsInAnyOrder(1L, 4294967295L));
+    BgpNetwork network1 = networks.get(1L);
+    BgpNetwork network2 = networks.get(4294967295L);
+    assertThat(network1.getId(), equalTo(1L));
+    assertThat(network2.getId(), equalTo(4294967295L));
+    assertThat(network1.getPrefix(), equalTo(Prefix.parse("3.3.3.0/24")));
+    assertThat(network2.getPrefix(), equalTo(Prefix.parse("4.4.4.0/24")));
   }
 
   @Test
@@ -789,6 +799,13 @@ public final class FortiosGrammarTest {
             hasComment("Expected BGP remote AS in range 1-4294967295, but got '4294967296'"),
             hasComment("Expected BGP remote AS in range 1-4294967295, but got 'hello'"),
             hasComment("BGP neighbor edit block ignored: remote-as must be set"),
+            hasComment("Expected BGP network ID in range 0-4294967295, but got '4294967296'"),
+            hasComment("BGP network edit block ignored: name is invalid"),
+            hasComment("Prefix 0.0.0.0/0 is not allowed for a BGP network prefix"),
+            hasComment(
+                "Cannot set BGP network prefix 1.1.1.0/24: Another BGP network already has this"
+                    + " prefix"),
+            hasComment("BGP network edit block ignored: prefix must be set"),
             hasComment("Redistribution into BGP is not yet supported")));
   }
 
