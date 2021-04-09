@@ -1,0 +1,23 @@
+config system global
+    set hostname "bgp_routemap_defs_refs"
+end
+config router route-map
+    edit rm1
+    next
+    edit rm2
+    next
+end
+config router bgp
+    config neighbor
+        edit "2.2.2.2"
+            set remote-as 1
+            set route-map-in rm1
+            set route-map-out rm2
+        next
+        edit "11.11.11.2"
+            set remote-as 4294967295
+            set route-map-in UNDEFINED_IN
+            set route-map-out UNDEFINED_OUT
+        next
+    end
+end
