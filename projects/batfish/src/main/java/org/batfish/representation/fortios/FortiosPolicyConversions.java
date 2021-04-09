@@ -84,9 +84,9 @@ public final class FortiosPolicyConversions {
       InterfaceOrZone to, List<InterfaceOrZone> zonesAndUnzonedInterfaces) {
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
 
-    // TODO Should originated traffic always be rejected? Is it subject to intrazone policies or
+    // TODO Should originated traffic always be allowed out? Is it subject to intrazone policies or
     //  default intrazone action?
-    lines.add(ExprAclLine.rejecting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
+    lines.add(ExprAclLine.accepting().setMatchCondition(ORIGINATING_FROM_DEVICE).build());
 
     // Add lines for each possible source:
     // 1. If from that source and matching the associated cross-zone policy, permit
