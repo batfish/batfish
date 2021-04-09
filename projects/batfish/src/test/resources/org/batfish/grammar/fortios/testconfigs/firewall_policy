@@ -63,6 +63,7 @@ end
 config firewall policy
     # Disabled rule should be ignored
     edit 0
+        set uuid aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
         set action deny
         set srcintf port1
         set dstintf port2
@@ -73,6 +74,7 @@ config firewall policy
     next
     edit 4294967294
         set name "longest allowed firewall policy nam"
+        set uuid aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
         set srcintf port1
         set dstintf port1 port2
         set srcaddr addr1
