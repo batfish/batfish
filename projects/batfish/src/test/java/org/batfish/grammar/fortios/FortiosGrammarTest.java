@@ -2477,6 +2477,32 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testAddressDefinitionsAndReferences() throws IOException {
+    String hostname = "address_defs_refs";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "iface_ref"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "zone_ref"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "undef_ref"));
+
+    // Interface and zone refs include self-refs
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port1", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ZONE, "zoneA", 2));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.INTERFACE_OR_ZONE,
+            "UNDEFINED",
+            FortiosStructureUsage.ADDRESS_ASSOCIATED_INTERFACE));
+  }
+
+  @Test
   public void testPolicyDefinitionsAndReferences() throws IOException {
     String hostname = "policy_defs_refs";
     String filename = "configs/" + hostname;
@@ -2501,14 +2527,14 @@ public final class FortiosGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.POLICY, "2", contains(70)));
+            filename, FortiosStructureType.POLICY, "2", contains(75)));
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr1", 2));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr2", 4));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr3", 1));
-    // Interface and policy refs include self-refs
-    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port1", 3));
+    // Interface, zone, and policy refs include self-refs
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ZONE, "zoneA", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port2", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port3", 2));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service1", 1));
