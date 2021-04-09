@@ -420,11 +420,15 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     // Permitted zone names are a superset of permitted interface names, so at this point we know
     // the name is a valid zone name, but it may or may not be a valid interface name.
     String name = optName.get();
+    int line = ctx.start.getLine();
 
     if (_c.getZones().containsKey(name)) {
-      // TODO Add structure reference for zone
-      todo(ctx);
       _currentAddress.setAssociatedInterfaceZoneUUID(_c.getZones().get(name).getBatfishUUID());
+      _c.referenceStructure(
+          FortiosStructureType.ZONE,
+          name,
+          FortiosStructureUsage.ADDRESS_ASSOCIATED_INTERFACE,
+          line);
       return;
     }
 
@@ -440,14 +444,21 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         return;
       }
 
-      // TODO Add structure reference for interface
-      todo(ctx);
       _currentAddress.setAssociatedInterface(name);
+      _c.referenceStructure(
+          FortiosStructureType.INTERFACE,
+          name,
+          FortiosStructureUsage.ADDRESS_ASSOCIATED_INTERFACE,
+          line);
       return;
     }
 
     warn(ctx, "No interface or zone named " + name);
-    // TODO File undefined reference to zone, or INTERFACE_OR_ZONE if it's a valid interface name
+    _c.undefined(
+        FortiosStructureType.INTERFACE_OR_ZONE,
+        name,
+        FortiosStructureUsage.ADDRESS_ASSOCIATED_INTERFACE,
+        line);
   }
 
   @Override
