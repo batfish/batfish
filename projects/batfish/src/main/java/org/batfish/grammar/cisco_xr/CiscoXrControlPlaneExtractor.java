@@ -68,7 +68,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MA
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_SERVICE_TEMPLATE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CONTROL_PLANE_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CONTROL_PLANE_SERVICE_POLICY_INPUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CRYPTO_DYNAMIC_MAP_ACL;
@@ -86,12 +85,15 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_INCOMING_FILTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_COMMON;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_COMMON;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_INGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SERVICE_POLICY;
@@ -103,11 +105,18 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ISAKMP_P
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ISAKMP_PROFILE_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.LINE_ACCESS_CLASS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.LINE_ACCESS_CLASS_LIST6;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV4_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV4_REDISTRIBUTE_BGP_ADVERTISE_TO;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV6_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV6_REDISTRIBUTE_BGP_ADVERTISE_TO;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MSDP_PEER_SA_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_PEER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
@@ -319,6 +328,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_new_modelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_actionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_ip_rangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Activate_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Additional_paths_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Additional_paths_selection_xr_rb_stanzaContext;
@@ -406,7 +416,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_match_expr_elemC
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_match_expr_elem_halfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Compare_routerid_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Cp_ip_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cp_service_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_keyringContext;
@@ -457,13 +466,11 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_delayContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_encapsulationContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_address_secondaryContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_igmpContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_dead_intervalContext;
@@ -478,6 +485,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_isisContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_verifyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_access_groupContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_isis_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_mtuContext;
@@ -549,6 +558,9 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_trapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_semanticsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_peers_bgp_tailContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Mldp_address_familyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Mldpafd_targeted_helloContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Mldpafrb_advertise_toContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_block_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_group_rb_stanzaContext;
@@ -727,7 +739,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ss_hostContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ss_trap_sourceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssc_access_controlContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssc_use_ipv4_aclContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssh_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ssh_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Standby_group_authenticationContext;
@@ -1154,6 +1165,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private boolean _inBlockNeighbor;
 
   private boolean _inIpv6BgpPeer;
+
+  private Boolean _inMplsLdpAddressFamilyIpv4;
 
   private boolean _no;
 
@@ -2049,6 +2062,46 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     _currentPeerGroup.setActive(true);
     _currentPeerGroup.setShutdown(false);
+  }
+
+  @Override
+  public void enterMldp_address_family(Mldp_address_familyContext ctx) {
+    _inMplsLdpAddressFamilyIpv4 = ctx.IPV4() != null;
+  }
+
+  @Override
+  public void exitMldp_address_family(Mldp_address_familyContext ctx) {
+    _inMplsLdpAddressFamilyIpv4 = null;
+  }
+
+  @Override
+  public void exitMldpafd_targeted_hello(Mldpafd_targeted_helloContext ctx) {
+    assert _inMplsLdpAddressFamilyIpv4 != null;
+    CiscoXrStructureType type;
+    CiscoXrStructureUsage usage;
+    if (_inMplsLdpAddressFamilyIpv4) {
+      type = IPV4_ACCESS_LIST;
+      usage = MPLS_LDP_AF_IPV4_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+    } else {
+      type = IPV6_ACCESS_LIST;
+      usage = MPLS_LDP_AF_IPV6_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+    }
+    _configuration.referenceStructure(type, toString(ctx.name), usage, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitMldpafrb_advertise_to(Mldpafrb_advertise_toContext ctx) {
+    assert _inMplsLdpAddressFamilyIpv4 != null;
+    CiscoXrStructureType type;
+    CiscoXrStructureUsage usage;
+    if (_inMplsLdpAddressFamilyIpv4) {
+      type = IPV4_ACCESS_LIST;
+      usage = MPLS_LDP_AF_IPV4_REDISTRIBUTE_BGP_ADVERTISE_TO;
+    } else {
+      type = IPV6_ACCESS_LIST;
+      usage = MPLS_LDP_AF_IPV6_REDISTRIBUTE_BGP_ADVERTISE_TO;
+    }
+    _configuration.referenceStructure(type, toString(ctx.name), usage, ctx.start.getLine());
   }
 
   @Override
@@ -3093,13 +3146,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitCp_ip_access_group(Cp_ip_access_groupContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, CONTROL_PLANE_ACCESS_GROUP, line);
-  }
-
-  @Override
   public void exitCp_service_policy(Cp_service_policyContext ctx) {
     CiscoXrStructureUsage usage =
         ctx.INPUT() != null
@@ -3749,23 +3795,57 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
-    String name = ctx.name.getText();
-    CiscoXrStructureUsage usage = null;
-    if (ctx.IN() != null || ctx.INGRESS() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setIncomingFilter(name);
-        usage = INTERFACE_INCOMING_FILTER;
-      }
-    } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setOutgoingFilter(name);
-        usage = INTERFACE_OUTGOING_FILTER;
-      }
-    } else {
-      throw new BatfishException("bad direction");
+  public void exitIf_ipv4_access_group(If_ipv4_access_groupContext ctx) {
+    int line = ctx.start.getLine();
+    if (ctx.common_acl != null) {
+      String name = toString(ctx.common_acl);
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST, name, INTERFACE_IPV4_ACCESS_GROUP_COMMON, line);
     }
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, ctx.name.getStart().getLine());
+    if (ctx.interface_acl != null) {
+      String name = toString(ctx.interface_acl);
+      CiscoXrStructureUsage usage = null;
+      if (ctx.INGRESS() != null) {
+        for (Interface currentInterface : _currentInterfaces) {
+          currentInterface.setIncomingFilter(name);
+          usage = INTERFACE_IPV4_ACCESS_GROUP_INGRESS;
+        }
+      } else {
+        assert ctx.EGRESS() != null;
+        for (Interface currentInterface : _currentInterfaces) {
+          currentInterface.setOutgoingFilter(name);
+          usage = INTERFACE_IPV4_ACCESS_GROUP_EGRESS;
+        }
+      }
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, line);
+    }
+  }
+
+  @Override
+  public void exitIf_ipv6_access_group(If_ipv6_access_groupContext ctx) {
+    int line = ctx.start.getLine();
+    if (ctx.common_acl != null) {
+      String name = toString(ctx.common_acl);
+      _configuration.referenceStructure(
+          IPV6_ACCESS_LIST, name, INTERFACE_IPV6_ACCESS_GROUP_COMMON, line);
+    }
+    if (ctx.interface_acl != null) {
+      String name = toString(ctx.interface_acl);
+      CiscoXrStructureUsage usage = null;
+      if (ctx.INGRESS() != null) {
+        for (Interface currentInterface : _currentInterfaces) {
+          currentInterface.setIncomingFilter(name);
+          usage = INTERFACE_IPV6_ACCESS_GROUP_INGRESS;
+        }
+      } else {
+        assert ctx.EGRESS() != null;
+        for (Interface currentInterface : _currentInterfaces) {
+          currentInterface.setOutgoingFilter(name);
+          usage = INTERFACE_IPV6_ACCESS_GROUP_EGRESS;
+        }
+      }
+      _configuration.referenceStructure(IPV6_ACCESS_LIST, name, usage, line);
+    }
   }
 
   @Override
@@ -3825,13 +3905,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIf_ip_igmp(If_ip_igmpContext ctx) {
     _no = false;
-  }
-
-  @Override
-  public void exitIf_ip_inband_access_group(If_ip_inband_access_groupContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(IP_ACCESS_LIST, name, INTERFACE_IP_INBAND_ACCESS_GROUP, line);
   }
 
   @Override
@@ -5055,13 +5128,24 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitNtp_access_group(Ntp_access_groupContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     int line = ctx.name.getStart().getLine();
-    if (!ctx.IPV6().isEmpty()) {
-      _configuration.referenceStructure(IPV6_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
+    CiscoXrStructureUsage usage;
+    if (ctx.PEER() != null) {
+      usage = NTP_ACCESS_GROUP_PEER;
+    } else if (ctx.QUERY_ONLY() != null) {
+      usage = NTP_ACCESS_GROUP_QUERY_ONLY;
+    } else if (ctx.SERVE() != null) {
+      usage = NTP_ACCESS_GROUP_SERVE;
+    } else {
+      assert ctx.SERVE_ONLY() != null;
+      usage = NTP_ACCESS_GROUP_SERVE_ONLY;
+    }
+    if (ctx.IPV6() != null) {
+      _configuration.referenceStructure(IPV6_ACCESS_LIST, name, usage, line);
     } else {
       // IPv4 unless IPv6 explicit.
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, line);
     }
   }
 
@@ -6205,17 +6289,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     int line = ctx.name.getStart().getLine();
     _currentSnmpCommunity.setAccessList(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, SNMP_SERVER_COMMUNITY_ACL4, line);
-  }
-
-  @Override
-  public void exitSsh_access_group(Ssh_access_groupContext ctx) {
-    String acl = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    if (ctx.IPV6() != null) {
-      _configuration.referenceStructure(IPV6_ACCESS_LIST, acl, SSH_IPV6_ACL, line);
-    } else {
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, SSH_IPV4_ACL, line);
-    }
   }
 
   @Override
@@ -8425,6 +8498,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nonnull
   private static String toString(Route_policy_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  @Nonnull
+  private static String toString(Access_list_nameContext ctx) {
     return ctx.getText();
   }
 

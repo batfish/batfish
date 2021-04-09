@@ -390,8 +390,7 @@ null_inner
             | IPV6
          )
          (
-            ACCESS_GROUP
-            | ADDRESS
+            ADDRESS
             | ARP
             | FLOW
          )
