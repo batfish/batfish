@@ -30,6 +30,7 @@ cfa_set_singletons:
     | cfa_set_start_ip
     | cfa_set_subnet
     | cfa_set_type
+    | cfa_set_uuid
     | cfa_set_wildcard
     | cfa_set_null
 ;
@@ -52,6 +53,8 @@ cfa_set_start_ip: START_IP ip = ip_address newline;
 cfa_set_subnet: SUBNET subnet = ip_address_with_maybe_invalid_mask_or_prefix newline;
 
 cfa_set_type: TYPE type = address_type newline;
+
+cfa_set_uuid: UUID id = str newline;
 
 cfa_set_wildcard: WILDCARD wildcard = ip_wildcard newline;
 

@@ -20,6 +20,7 @@ config system zone
 end
 config firewall address
     edit "ipmask"
+        set uuid aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
         set type ipmask
         # mask format
         set subnet 1.1.1.0 255.255.255.0
