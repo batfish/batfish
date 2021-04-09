@@ -427,6 +427,17 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
 
     if (_c.getInterfaces().containsKey(name)) {
+      // Zoned interfaces can't be referenced in this context
+      ImmutableSet<String> zonedIfaceNames =
+          _c.getZones().values().stream()
+              .map(Zone::getInterface)
+              .flatMap(Collection::stream)
+              .collect(ImmutableSet.toImmutableSet());
+      if (zonedIfaceNames.contains(name)) {
+        warn(ctx, "Cannot reference zoned interface " + name);
+        return;
+      }
+
       // TODO Add structure reference for interface
       todo(ctx);
       _currentAddress.setAssociatedInterface(name);
