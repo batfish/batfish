@@ -9,6 +9,7 @@ c_system: SYSTEM (
   | cs_interface
   | cs_replacemsg
   | cs_zone
+  | IGNORED_CONFIG_BLOCK
 );
 
 cs_global: GLOBAL newline csg*;
