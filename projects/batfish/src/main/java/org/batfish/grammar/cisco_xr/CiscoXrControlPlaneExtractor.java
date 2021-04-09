@@ -169,6 +169,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPO
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1543,7 +1544,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterCis_key(Cis_keyContext ctx) {
-    int encType = ctx.DEC() != null ? toInteger(ctx.DEC()) : 0;
+    int encType = ctx.uint_legacy() != null ? toInteger(ctx.uint_legacy()) : 0;
     IkeKeyType ikeKeyType;
     if (encType == 0) {
       ikeKeyType = IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED;
@@ -1585,7 +1586,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
     here */
     _configuration.referenceStructure(
-        ISAKMP_POLICY, priority.toString(), ISAKMP_POLICY_SELF_REF, ctx.priority.getLine());
+        ISAKMP_POLICY, priority.toString(), ISAKMP_POLICY_SELF_REF, ctx.priority.start.getLine());
   }
 
   @Override
@@ -1630,7 +1631,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitCispol_group(Cispol_groupContext ctx) {
-    int group = Integer.parseInt(ctx.DEC().getText());
+    int group = Integer.parseInt(ctx.uint_legacy().getText());
     _currentIsakmpPolicy.setDiffieHellmanGroup(DiffieHellmanGroup.fromGroupNumber(group));
   }
 
@@ -1649,7 +1650,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitCispol_lifetime(Cispol_lifetimeContext ctx) {
-    _currentIsakmpPolicy.setLifetimeSeconds(Integer.parseInt(ctx.DEC().getText()));
+    _currentIsakmpPolicy.setLifetimeSeconds(Integer.parseInt(ctx.uint_legacy().getText()));
   }
 
   @Override
@@ -1821,8 +1822,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitIf_encapsulation(If_encapsulationContext ctx) {
-    int vlan = toInteger(ctx.vlan);
-    _currentInterfaces.forEach(i -> i.setEncapsulationVlan(vlan));
+    toInteger(ctx, ctx.vlan)
+        .ifPresent(vlan -> _currentInterfaces.forEach(i -> i.setEncapsulationVlan(vlan)));
   }
 
   @Override
@@ -1925,7 +1926,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitStandby_group_track(Standby_group_trackContext ctx) {
     String trackingGroup = ctx.group.getText();
     _configuration.referenceStructure(
-        TRACK, trackingGroup, INTERFACE_STANDBY_TRACK, ctx.group.getLine());
+        TRACK, trackingGroup, INTERFACE_STANDBY_TRACK, ctx.group.start.getLine());
     TrackAction trackAction = toTrackAction(ctx.track_action());
     if (trackAction == null) {
       return;
@@ -2555,7 +2556,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_auto_cost(Ro_auto_costContext ctx) {
-    long referenceBandwidthDec = Long.parseLong(ctx.DEC().getText());
+    long referenceBandwidthDec = Long.parseLong(ctx.uint_legacy().getText());
     long referenceBandwidth;
     if (ctx.MBPS() != null) {
       referenceBandwidth = referenceBandwidthDec * 1_000_000;
@@ -3017,8 +3018,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitCluster_id_bgp_tail(Cluster_id_bgp_tailContext ctx) {
     Ip clusterId = null;
-    if (ctx.DEC() != null) {
-      long ipAsLong = toLong(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      long ipAsLong = toLong(ctx.uint_legacy());
       clusterId = Ip.create(ipAsLong);
     } else if (ctx.IP_ADDRESS() != null) {
       clusterId = toIp(ctx.IP_ADDRESS());
@@ -3109,7 +3110,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       line = ctx.name.getStart().getLine();
     } else {
       name = ctx.num.getText();
-      line = ctx.num.getLine();
+      line = ctx.num.start.getLine();
     }
     _configuration.referenceStructure(ACCESS_LIST, name, CLASS_MAP_ACCESS_GROUP, line);
   }
@@ -3757,7 +3758,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.NO() != null) {
       newBandwidthBps = null;
     } else {
-      newBandwidthBps = toLong(ctx.DEC()) * 1000.0D;
+      newBandwidthBps = toLong(ctx.uint_legacy()) * 1000.0D;
     }
     _currentInterfaces.forEach(i -> i.setBandwidth(newBandwidthBps));
   }
@@ -3785,7 +3786,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.NO() != null) {
       newDelayPs = null;
     } else {
-      newDelayPs = toLong(ctx.DEC()) * 10_000_000;
+      newDelayPs = toLong(ctx.uint_legacy()) * 10_000_000;
     }
     _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
   }
@@ -4015,7 +4016,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitIf_ip_verify(If_ip_verifyContext ctx) {
     if (ctx.acl != null) {
       String acl = ctx.acl.getText();
-      int line = ctx.acl.getLine();
+      int line = ctx.acl.start.getLine();
       _configuration.referenceStructure(
           IPV4_ACCESS_LIST, acl, INTERFACE_IP_VERIFY_ACCESS_LIST, line);
     }
@@ -4039,7 +4040,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitIf_mtu(If_mtuContext ctx) {
-    int mtu = toInteger(ctx.DEC());
+    int mtu = toInteger(ctx.uint_legacy());
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setMtu(mtu);
     }
@@ -4194,8 +4195,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitIf_vlan(If_vlanContext ctx) {
-    int vlan = toInteger(ctx.vlan);
-    _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan));
+    toInteger(ctx, ctx.vlan)
+        .ifPresent(vlan -> _currentInterfaces.forEach(iface -> iface.setEncapsulationVlan(vlan)));
   }
 
   @Override
@@ -6551,8 +6552,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private int getPortNumber(PortContext ctx) {
-    if (ctx.DEC() != null) {
-      return toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      return toInteger(ctx.uint_legacy());
     } else {
       NamedPort namedPort = toNamedPort(ctx);
       return namedPort.number();
@@ -6624,8 +6625,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private AsExpr toAsExpr(As_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      int as = toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      int as = toInteger(ctx.uint_legacy());
       return new ExplicitAs(as);
     } else if (ctx.AUTO() != null) {
       return AutoAs.instance();
@@ -6702,8 +6703,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private IntExpr toCommonIntExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
-      int val = toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null && ctx.PLUS() == null && ctx.DASH() == null) {
+      int val = toInteger(ctx.uint_legacy());
       return new LiteralInt(val);
     } else if (ctx.RP_VARIABLE() != null) {
       return new VarInt(ctx.RP_VARIABLE().getText());
@@ -6717,8 +6718,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private LongExpr toCommonLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.uint_legacy() != null && ctx.PLUS() == null && ctx.DASH() == null) {
+      long val = toLong(ctx.uint_legacy());
       return new LiteralLong(val);
     } else if (ctx.RP_VARIABLE() != null) {
       return new VarLong(ctx.RP_VARIABLE().getText());
@@ -6925,8 +6926,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private int toDscpType(Dscp_typeContext ctx) {
     int val;
-    if (ctx.DEC() != null) {
-      val = toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      val = toInteger(ctx.uint_legacy());
     } else if (ctx.AF11() != null) {
       val = DscpType.AF11.number();
     } else if (ctx.AF12() != null) {
@@ -7072,8 +7073,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private IntExpr toIntExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null && ctx.PLUS() == null && ctx.DASH() == null) {
-      int val = toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null && ctx.PLUS() == null && ctx.DASH() == null) {
+      int val = toInteger(ctx.uint_legacy());
       return new LiteralInt(val);
     } else if (ctx.RP_VARIABLE() != null) {
       return new VarInt(ctx.RP_VARIABLE().getText());
@@ -7084,8 +7085,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   /** Returns the given IPv4 protocol, or {@code null} if none is specified. */
   private @Nullable IpProtocol toIpProtocol(ProtocolContext ctx) {
-    if (ctx.DEC() != null) {
-      int num = toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      int num = toInteger(ctx.uint_legacy());
       if (num < 0 || num > 255) {
         return convProblem(IpProtocol.class, ctx, null);
       }
@@ -7186,8 +7187,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private LongExpr toLocalPreferenceLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      int val = toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      int val = toInteger(ctx.uint_legacy());
       if (ctx.PLUS() != null) {
         return new IncrementLocalPreference(val);
       } else if (ctx.DASH() != null) {
@@ -7235,8 +7236,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private String toLoggingSeverity(Logging_severityContext ctx) {
-    if (ctx.DEC() != null) {
-      int severityNum = toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      int severityNum = toInteger(ctx.uint_legacy());
       return toLoggingSeverity(severityNum);
     } else {
       return ctx.getText();
@@ -7244,8 +7245,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private Integer toLoggingSeverityNum(Logging_severityContext ctx) {
-    if (ctx.DEC() != null) {
-      return toInteger(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      return toInteger(ctx.uint_legacy());
     } else if (ctx.EMERGENCIES() != null) {
       return 0;
     } else if (ctx.ALERTS() != null) {
@@ -7300,8 +7301,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.uint_legacy() != null) {
+      long val = toLong(ctx.uint_legacy());
       if (ctx.PLUS() != null) {
         return new IncrementMetric(val);
       } else if (ctx.DASH() != null) {
@@ -8412,7 +8413,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nonnull
   private RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
-    long dec = toLong(ctx.DEC());
+    long dec = toLong(ctx.uint_legacy());
     if (ctx.IP_ADDRESS() != null) {
       checkArgument(dec <= 0xFFFFL, "Invalid route distinguisher %s", ctx.getText());
       return RouteDistinguisher.from(toIp(ctx.IP_ADDRESS()), (int) dec);
@@ -8422,7 +8423,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nonnull
   private ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
-    long la = toLong(ctx.DEC());
+    long la = toLong(ctx.uint_legacy());
     if (ctx.IP_ADDRESS() != null) {
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
     }
@@ -8475,8 +8476,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private LongExpr toTagLongExpr(Int_exprContext ctx) {
-    if (ctx.DEC() != null && ctx.DASH() == null && ctx.PLUS() == null) {
-      long val = toLong(ctx.DEC());
+    if (ctx.uint_legacy() != null && ctx.DASH() == null && ctx.PLUS() == null) {
+      long val = toLong(ctx.uint_legacy());
       return new LiteralLong(val);
     } else if (ctx.RP_VARIABLE() != null) {
       String var = ctx.RP_VARIABLE().getText();
