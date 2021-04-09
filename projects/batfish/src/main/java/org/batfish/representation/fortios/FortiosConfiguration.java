@@ -8,6 +8,7 @@ import static org.batfish.representation.fortios.FortiosPolicyConversions.genera
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateOutgoingFilters;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getZonesAndUnzonedInterfaces;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toIpSpace;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.toIpSpaceMetadata;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toMatchExpr;
 import static org.batfish.representation.fortios.FortiosRouteConversions.convertStaticRoutes;
 
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -181,12 +183,8 @@ public class FortiosConfiguration extends VendorConfiguration {
     c.setDefaultInboundAction(LineAction.DENY);
 
     // Convert addresses
-    _addresses
-        .values()
-        .forEach(address -> c.getIpSpaces().put(address.getName(), toIpSpace(address, _w)));
-    _addrgrps
-        .values()
-        .forEach(addrgrp -> c.getIpSpaces().put(addrgrp.getName(), toIpSpace(addrgrp, _w)));
+    _addresses.values().forEach(address -> addIpSpaceForAddress(c, address, _w, _filename));
+    _addrgrps.values().forEach(addrgrp -> addIpSpaceForAddrgrp(c, addrgrp, _w, _filename));
 
     // Convert policies. Must happen after c._ipSpaces is populated (addresses are converted)
     // Convert each policy to an AclLine
@@ -390,5 +388,17 @@ public class FortiosConfiguration extends VendorConfiguration {
   @VisibleForTesting
   public static @Nonnull String computeVrfName(String vdom, int vrf) {
     return String.format("%s:%s", vdom, vrf);
+  }
+
+  private static void addIpSpaceForAddress(
+      Configuration c, Address address, Warnings w, String filename) {
+    c.getIpSpaces().put(address.getName(), toIpSpace(address, w));
+    c.getIpSpaceMetadata().put(address.getName(), toIpSpaceMetadata(address, filename));
+  }
+
+  private static void addIpSpaceForAddrgrp(
+      Configuration c, Addrgrp addrgrp, Warnings w, String filename) {
+    c.getIpSpaces().put(addrgrp.getName(), toIpSpace(addrgrp, w));
+    c.getIpSpaceMetadata().put(addrgrp.getName(), toIpSpaceMetadata(addrgrp, filename));
   }
 }
