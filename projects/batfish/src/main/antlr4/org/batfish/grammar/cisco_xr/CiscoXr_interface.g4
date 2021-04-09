@@ -777,7 +777,6 @@ if_null_block
             | WCCP
          )
       )
-      | IPV6
       | ISDN
       |
       (
