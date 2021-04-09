@@ -8,10 +8,6 @@ config router route-map
     next
 end
 config router bgp
-    # `set as 0` effectively clears the process AS
-    set as 0
-    set as 1
-    set router-id 1.1.1.1
     config neighbor
         edit "2.2.2.2"
             set remote-as 1
