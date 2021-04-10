@@ -2,11 +2,13 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Ints;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.IntegerSpace;
 
 /**
  * This class represents the results of symbolic analysis of a {@link
@@ -33,18 +35,18 @@ public class CommunityAPDispositions {
 
   private final int _numAPs;
   // the atomic predicates that are definitely on the route announcement
-  @Nonnull private final Set<Integer> _mustExist;
+  @Nonnull private final IntegerSpace _mustExist;
   // the atomic predicates that are definitely not on the route announcement
-  @Nonnull private final Set<Integer> _mustNotExist;
+  @Nonnull private final IntegerSpace _mustNotExist;
 
-  public CommunityAPDispositions(int numAPs, Set<Integer> mustExist, Set<Integer> mustNotExist) {
+  public CommunityAPDispositions(int numAPs, IntegerSpace mustExist, IntegerSpace mustNotExist) {
     assert mustExist.stream().allMatch(i -> i >= 0 && i < numAPs)
         : "community atomic predicates must be in the range [0, numAPs)";
     assert mustNotExist.stream().allMatch(i -> i >= 0 && i < numAPs)
         : "community atomic predicates must be in the range [0, numAPs)";
     _numAPs = numAPs;
-    _mustExist = ImmutableSet.copyOf(mustExist);
-    _mustNotExist = ImmutableSet.copyOf(mustNotExist);
+    _mustExist = mustExist;
+    _mustNotExist = mustNotExist;
   }
 
   @Override
@@ -77,8 +79,8 @@ public class CommunityAPDispositions {
     assert other.isExact() : "the right-hand CommunityAPDisposition in a diff must be exact";
     return new CommunityAPDispositions(
         _numAPs,
-        setIntersect(_mustExist, other.getMustNotExist()),
-        setUnion(_mustNotExist, other.getMustExist()));
+        _mustExist.intersection(other.getMustNotExist()),
+        _mustNotExist.union(other.getMustExist()));
   }
 
   /** Produces the set union of two CommunityAPDispositions */
@@ -87,8 +89,8 @@ public class CommunityAPDispositions {
         : "unioned CommunityAPDispositions must have the same number of atomic predicates";
     return new CommunityAPDispositions(
         _numAPs,
-        setUnion(_mustExist, other.getMustExist()),
-        setIntersect(_mustNotExist, other.getMustNotExist()));
+        _mustExist.union(other.getMustExist()),
+        _mustNotExist.intersection(other.getMustNotExist()));
   }
 
   /**
@@ -105,13 +107,12 @@ public class CommunityAPDispositions {
    */
   public static CommunityAPDispositions exactly(Set<Integer> aps, BDDRoute bddRoute) {
     int numAPs = bddRoute.getCommunityAtomicPredicates().length;
-    return new CommunityAPDispositions(
-        numAPs,
-        aps,
-        IntStream.range(0, numAPs)
-            .filter(i -> !aps.contains(i))
-            .boxed()
-            .collect(ImmutableSet.toImmutableSet()));
+    IntegerSpace mustExist = IntegerSpace.builder().including(Ints.toArray(aps)).build();
+    IntegerSpace mustNotExist =
+        IntegerSpace.builder()
+            .including(IntStream.range(0, numAPs).filter(i -> !aps.contains(i)).toArray())
+            .build();
+    return new CommunityAPDispositions(numAPs, mustExist, mustNotExist);
   }
 
   // an exact CommunityAPDispositions object has no atomic predicates that have unknown
@@ -126,19 +127,11 @@ public class CommunityAPDispositions {
     return _numAPs;
   }
 
-  public Set<Integer> getMustExist() {
+  public IntegerSpace getMustExist() {
     return _mustExist;
   }
 
-  public Set<Integer> getMustNotExist() {
+  public IntegerSpace getMustNotExist() {
     return _mustNotExist;
-  }
-
-  private static ImmutableSet<Integer> setUnion(Set<Integer> s1, Set<Integer> s2) {
-    return ImmutableSet.<Integer>builder().addAll(s1).addAll(s2).build();
-  }
-
-  private static ImmutableSet<Integer> setIntersect(Set<Integer> s1, Set<Integer> s2) {
-    return s1.stream().filter(s2::contains).collect(ImmutableSet.toImmutableSet());
   }
 }

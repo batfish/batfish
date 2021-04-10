@@ -2,10 +2,10 @@ package org.batfish.minesweeper.bdd;
 
 import static org.parboiled.common.Preconditions.checkArgument;
 
-import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
@@ -44,14 +44,14 @@ public class SetCommunitiesVisitor
     BDD toDelete =
         communitySetDifference.getRemovalCriterion().accept(new CommunityMatchExprToBDD(), arg);
     BDD[] commAPBDDs = arg.getBDDRoute().getCommunityAtomicPredicates();
-    ImmutableSet.Builder<Integer> shouldDelete = ImmutableSet.builder();
-    ImmutableSet.Builder<Integer> shouldNotDelete = ImmutableSet.builder();
+    IntegerSpace.Builder shouldDelete = IntegerSpace.builder();
+    IntegerSpace.Builder shouldNotDelete = IntegerSpace.builder();
     for (int ap = 0; ap < commAPBDDs.length; ap++) {
       BDD comm = commAPBDDs[ap];
       if (!comm.diffSat(toDelete)) {
-        shouldDelete.add(ap);
+        shouldDelete.including(ap);
       } else {
-        shouldNotDelete.add(ap);
+        shouldNotDelete.including(ap);
       }
     }
     return initial.diff(
@@ -91,8 +91,8 @@ public class SetCommunitiesVisitor
   public CommunityAPDispositions visitInputCommunities(InputCommunities inputCommunities, Arg arg) {
     return new CommunityAPDispositions(
         arg.getBDDRoute().getCommunityAtomicPredicates().length,
-        ImmutableSet.of(),
-        ImmutableSet.of());
+        IntegerSpace.EMPTY,
+        IntegerSpace.EMPTY);
   }
 
   @Override

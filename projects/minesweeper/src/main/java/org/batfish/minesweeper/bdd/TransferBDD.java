@@ -17,6 +17,7 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -976,10 +977,10 @@ public class TransferBDD {
   // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
   // depending on the value of the boolean parameter.
   private void addOrRemoveCommunityAPs(
-      Set<Integer> commAPs, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
+      IntegerSpace commAPs, TransferParam<BDDRoute> curP, TransferResult result, boolean add) {
     BDD newCommVal = mkBDD(add);
     BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-    for (int ap : commAPs) {
+    for (int ap : commAPs.enumerate()) {
       curP.indent().debug("Value: " + ap);
       BDD comm = commAPBDDs[ap];
       BDD newValue = ite(unreachable(result), comm, newCommVal);

@@ -11,6 +11,7 @@ import java.util.Set;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
@@ -167,8 +168,8 @@ public class SetCommunitiesVisitorTest {
     assertEquals(
         new CommunityAPDispositions(
             _arg.getBDDRoute().getCommunityAtomicPredicates().length,
-            ImmutableSet.of(),
-            ImmutableSet.of()),
+            IntegerSpace.EMPTY,
+            IntegerSpace.EMPTY),
         result);
   }
 
