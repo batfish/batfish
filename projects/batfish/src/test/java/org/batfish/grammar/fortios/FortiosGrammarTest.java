@@ -71,6 +71,7 @@ import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
@@ -101,6 +102,7 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.AccessList;
@@ -745,7 +747,6 @@ public final class FortiosGrammarTest {
     Bgpv4Route.Builder bgpRouteBuilder = Bgpv4Route.testBuilder();
     org.batfish.datamodel.StaticRoute.Builder staticRouteBuilder =
         org.batfish.datamodel.StaticRoute.testBuilder();
-    Environment.Builder envBuilder = Environment.builder(c);
 
     // Default VRF BGP process: should only have neighbor 1
     String defaultVrfName = computeVrfName("root", 0);
@@ -782,26 +783,15 @@ public final class FortiosGrammarTest {
     Bgpv4Route bgp8880 = bgpRouteBuilder.setNetwork(Prefix.parse("8.8.8.0/24")).build();
     Bgpv4Route bgp9990 = bgpRouteBuilder.setNetwork(Prefix.parse("9.9.9.0/24")).build();
     // Matches network statement; permitted by route-map
-    assertTrue(
-        neighbor1ExportPolicy
-            .call(envBuilder.setOriginalRoute(static3330).build())
-            .getBooleanValue());
+    assertPolicyTakesAction(neighbor1ExportPolicy, true, static3330, c);
     // Matches network statement, but denied by route-map
-    assertFalse(
-        neighbor1ExportPolicy
-            .call(envBuilder.setOriginalRoute(static4440).build())
-            .getBooleanValue());
+    assertPolicyTakesAction(neighbor1ExportPolicy, false, static4440, c);
     // Permitted by route-map, but doesn't match network statement
-    assertFalse(
-        neighbor1ExportPolicy
-            .call(envBuilder.setOriginalRoute(static9990).build())
-            .getBooleanValue());
+    assertPolicyTakesAction(neighbor1ExportPolicy, false, static9990, c);
     // BGP is allowed out by default, but this route is blocked by route-map
-    assertFalse(
-        neighbor1ExportPolicy.call(envBuilder.setOriginalRoute(bgp8880).build()).getBooleanValue());
+    assertPolicyTakesAction(neighbor1ExportPolicy, false, bgp8880, c);
     // BGP is allowed out by default and this route is permitted by route-map
-    assertTrue(
-        neighbor1ExportPolicy.call(envBuilder.setOriginalRoute(bgp9990).build()).getBooleanValue());
+    assertPolicyTakesAction(neighbor1ExportPolicy, true, bgp9990, c);
 
     // VRF 5 BGP process: should only have neighbor 2
     String vrf5Name = computeVrfName("root", 5);
@@ -825,22 +815,12 @@ public final class FortiosGrammarTest {
     // There is no route-map-out on the neighbor.
     RoutingPolicy neighbor2ExportPolicy = c.getRoutingPolicies().get(neighbor2ExportPolicyName);
     // Match network statements
-    assertTrue(
-        neighbor2ExportPolicy
-            .call(envBuilder.setOriginalRoute(static3330).build())
-            .getBooleanValue());
-    assertTrue(
-        neighbor2ExportPolicy
-            .call(envBuilder.setOriginalRoute(static4440).build())
-            .getBooleanValue());
+    assertPolicyTakesAction(neighbor2ExportPolicy, true, static3330, c);
+    assertPolicyTakesAction(neighbor2ExportPolicy, true, static4440, c);
     // Doesn't match network statement
-    assertFalse(
-        neighbor2ExportPolicy
-            .call(envBuilder.setOriginalRoute(static9990).build())
-            .getBooleanValue());
+    assertPolicyTakesAction(neighbor2ExportPolicy, false, static9990, c);
     // BGP is allowed out by default
-    assertTrue(
-        neighbor2ExportPolicy.call(envBuilder.setOriginalRoute(bgp9990).build()).getBooleanValue());
+    assertPolicyTakesAction(neighbor2ExportPolicy, true, bgp9990, c);
   }
 
   @Test
@@ -2350,31 +2330,46 @@ public final class FortiosGrammarTest {
         c.getRoutingPolicies(), hasKeys("longest_route_map_name_allowed_by_f", "route_map1"));
     RoutingPolicy longName = c.getRoutingPolicies().get("longest_route_map_name_allowed_by_f");
     RoutingPolicy rm1 = c.getRoutingPolicies().get("route_map1");
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder();
 
-    // This route-map has no rules
-    assertThat(longName.getStatements(), empty());
+    // This route-map only has a default-deny rule
+    assertThat(longName.getStatements(), contains(Statements.ReturnFalse.toStaticStatement()));
+    rb.setNetwork(Prefix.parse("10.10.10.0/24"));
+    assertPolicyTakesAction(longName, false, rb.build(), c);
 
     // rm1 permits 10.10.10.0/24 or longer, then denies 10.10.0.0/16 or longer, then permits all
-    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder();
-    Environment.Builder envBuilder = Environment.builder(c);
 
     // Networks permitted by rule 9999
     rb.setNetwork(Prefix.parse("10.10.10.0/24"));
-    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, true, rb.build(), c);
     rb.setNetwork(Prefix.parse("10.10.10.128/25"));
-    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, true, rb.build(), c);
 
     // Networks denied by rule 1
     rb.setNetwork(Prefix.parse("10.10.0.0/16"));
-    assertFalse(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, false, rb.build(), c);
     rb.setNetwork(Prefix.parse("10.10.128.0/17"));
-    assertFalse(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, false, rb.build(), c);
 
     // Networks permitted by rule 2
     rb.setNetwork(Prefix.parse("10.10.0.0/15"));
-    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, true, rb.build(), c);
     rb.setNetwork(Prefix.ZERO);
-    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, true, rb.build(), c);
+  }
+
+  /**
+   * Asserts that the given {@link RoutingPolicy} explicitly takes the specified {@code action}
+   * (permit if true, deny if false) on the given route. Will fail if the policy falls through.
+   */
+  private void assertPolicyTakesAction(
+      RoutingPolicy policy, boolean action, AbstractRouteDecorator route, Configuration c) {
+    assertThat(
+        policy
+            // Set environment's default action to !action to ensure failure if policy falls through
+            .call(Environment.builder(c).setDefaultAction(!action).setOriginalRoute(route).build())
+            .getBooleanValue(),
+        equalTo(action));
   }
 
   @Test

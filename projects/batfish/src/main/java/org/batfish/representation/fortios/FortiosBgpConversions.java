@@ -322,6 +322,12 @@ public final class FortiosBgpConversions {
                 })
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
-    RoutingPolicy.builder().setOwner(c).setName(rmName).setStatements(statements).build();
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(rmName)
+        .setStatements(statements)
+        // Default deny
+        .addStatement(Statements.ReturnFalse.toStaticStatement())
+        .build();
   }
 }
