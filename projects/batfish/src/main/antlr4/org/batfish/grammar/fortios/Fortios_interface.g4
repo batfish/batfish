@@ -36,6 +36,7 @@ csi_set_singletons:
     | csi_set_mtu
     | csi_set_mtu_override
     | csi_set_secondary_ip
+    | csi_set_speed
     | csi_set_status
     | csi_set_type
     | csi_set_vdom
@@ -57,6 +58,8 @@ csi_set_mtu: MTU value = mtu newline;
 csi_set_mtu_override: MTU_OVERRIDE value = enable_or_disable newline;
 
 csi_set_secondary_ip: SECONDARY_IP value = enable_or_disable newline;
+
+csi_set_speed: SPEED interface_speed newline;
 
 csi_set_status: STATUS status = up_or_down newline;
 
@@ -92,3 +95,18 @@ interface_alias: str;
 
 // 0-4294967295
 sip_number: str;
+
+interface_speed
+:
+    AUTO
+    | TEN_FULL
+    | TEN_HALF
+    | HUNDRED_FULL
+    | HUNDRED_HALF
+    | THOUSAND_FULL
+    | THOUSAND_HALF
+    | TEN_THOUSAND_FULL
+    | TEN_THOUSAND_HALF
+    | HUNDRED_GFULL
+    | HUNDRED_GHALF
+;

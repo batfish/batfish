@@ -71,6 +71,7 @@ AUTH: 'auth' {
     pushMode(M_Str);
   }
 };
+AUTO: 'auto';
 AUTOMATION_ACTION: 'automation-action' {
   // ignore config system automation-action
   if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
@@ -281,6 +282,7 @@ SPAM: 'spam' {
     pushMode(M_Str);
   }
 };
+SPEED: 'speed';
 SRCADDR: 'srcaddr' -> pushMode(M_Str);
 SRCINTF: 'srcintf' -> pushMode(M_Str);
 SSLVPN: 'sslvpn' {
@@ -364,6 +366,18 @@ WILDCARD_FQDN: 'wildcard-fqdn' {
 };
 WL_MESH: 'wl-mesh';
 ZONE: 'zone';
+
+// Numeric tokens
+TEN_FULL: '10full';
+TEN_HALF: '10half';
+HUNDRED_FULL: '100full';
+HUNDRED_HALF: '100half';
+THOUSAND_FULL: '1000full';
+THOUSAND_HALF: '1000half';
+TEN_THOUSAND_FULL: '10000full';
+TEN_THOUSAND_HALF: '10000half';
+HUNDRED_GFULL: '100Gfull';
+HUNDRED_GHALF: '100Ghalf';
 
 // Other Tokens
 

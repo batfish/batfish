@@ -30,6 +30,7 @@ config system interface
         set mtu 1234
         set vlanid 1236
         set interface port1
+        set speed auto
     next
     edit "longest if name"
         set vdom "root"
@@ -48,6 +49,7 @@ config system interface
             next
         end
         set secondary-IP disable
+        set speed 100Gfull
     next
     edit "tunnel"
         set vdom "root"
