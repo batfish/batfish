@@ -113,6 +113,7 @@ import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
+import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.InternetServiceName;
@@ -1005,6 +1006,8 @@ public final class FortiosGrammarTest {
     assertTrue(port1.getStatusEffective());
     assertThat(port1.getMtu(), nullValue());
     assertThat(port1.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
+    assertNull(port1.getSpeed());
+    assertThat(port1.getSpeedEffective(), equalTo(Interface.DEFAULT_SPEED));
     assertThat(port1.getMtuOverride(), nullValue());
     assertThat(port1.getVrf(), nullValue());
     assertThat(port1.getVrfEffective(), equalTo(0));
@@ -1016,6 +1019,8 @@ public final class FortiosGrammarTest {
     assertThat(port2.getMtuOverride(), equalTo(true));
     assertThat(port2.getMtu(), equalTo(1234));
     assertThat(port2.getMtuEffective(), equalTo(1234));
+    assertThat(port2.getSpeed(), equalTo(Speed.AUTO));
+    assertThat(port2.getSpeedEffective(), equalTo(Speed.AUTO));
     // Check defaults
     assertThat(port2.getType(), nullValue());
     assertThat(port2.getTypeEffective(), equalTo(Type.VLAN));
@@ -1031,6 +1036,8 @@ public final class FortiosGrammarTest {
     assertThat(longName.getVrfEffective(), equalTo(31));
     assertFalse(longName.getSecondaryIp());
     assertFalse(longName.getSecondaryIpEffective());
+    assertThat(longName.getSpeed(), equalTo(Speed.HUNDRED_GFULL));
+    assertThat(longName.getSpeedEffective(), equalTo(Speed.HUNDRED_GFULL));
     // Despite being disabled, the secondaryip should persist
     assertThat(longName.getSecondaryip().keySet(), containsInAnyOrder("1"));
     assertThat(
@@ -1131,6 +1138,11 @@ public final class FortiosGrammarTest {
     assertThat(port2.getMtu(), equalTo(1234));
     Stream.of(port1, longName, tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getMtu(), equalTo(Interface.DEFAULT_INTERFACE_MTU)));
+
+    // Check speeds
+    assertThat(port1.getSpeed(), equalTo(10000e6));
+    assertThat(port2.getSpeed(), equalTo(10000e6));
+    assertThat(longName.getSpeed(), equalTo(100e9));
 
     // Check aliases
     assertThat(port1.getDeclaredNames(), contains("longest possibl alias str"));
