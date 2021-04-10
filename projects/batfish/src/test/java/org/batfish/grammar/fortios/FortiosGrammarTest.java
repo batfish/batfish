@@ -1326,7 +1326,10 @@ public final class FortiosGrammarTest {
             "custom_icmp",
             "custom_icmp6",
             "custom_ip",
-            "change_protocol"));
+            "change_protocol",
+            "unset_icmp_1",
+            "unset_icmp_2",
+            "unset_icmp_3"));
 
     Service serviceLongName =
         services.get(
@@ -1338,6 +1341,9 @@ public final class FortiosGrammarTest {
     Service serviceIcmp6 = services.get("custom_icmp6");
     Service serviceIp = services.get("custom_ip");
     Service serviceChangeProtocol = services.get("change_protocol");
+    Service serviceUnsetIcmp1 = services.get("unset_icmp_1");
+    Service serviceUnsetIcmp2 = services.get("unset_icmp_2");
+    Service serviceUnsetIcmp3 = services.get("unset_icmp_3");
 
     assertThat(serviceLongName.getComment(), equalTo("service custom comment"));
 
@@ -1421,6 +1427,16 @@ public final class FortiosGrammarTest {
     assertThat(serviceChangeProtocol.getTcpPortRangeSrc(), nullValue());
     assertThat(serviceChangeProtocol.getUdpPortRangeDst(), nullValue());
     assertThat(serviceChangeProtocol.getUdpPortRangeSrc(), nullValue());
+
+    // Unsetting icmpcode works
+    assertThat(serviceUnsetIcmp1.getIcmpType(), equalTo(5));
+    assertThat(serviceUnsetIcmp1.getIcmpCode(), nullValue());
+    // Unsetting icmptype clears code too, even if type is reset
+    assertThat(serviceUnsetIcmp2.getIcmpType(), equalTo(3));
+    assertThat(serviceUnsetIcmp2.getIcmpCode(), nullValue());
+    // Unsetting icmptype clears code too
+    assertThat(serviceUnsetIcmp3.getIcmpType(), nullValue());
+    assertThat(serviceUnsetIcmp3.getIcmpCode(), nullValue());
   }
 
   @Test

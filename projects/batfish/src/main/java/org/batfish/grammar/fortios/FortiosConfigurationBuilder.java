@@ -103,6 +103,8 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_protocol_numberContext
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_sctp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_tcp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_udp_portrangeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_unset_icmpcodeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_unset_icmptypeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
@@ -1797,6 +1799,43 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
     _currentService.setUdpPortRangeDst(toDstIntegerSpace(ctx.service_port_ranges()));
     _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
+  }
+
+  @Override
+  public void enterCfsc_unset_icmpcode(Cfsc_unset_icmpcodeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.ICMP
+        && _currentService.getProtocolEffective() != Protocol.ICMP6) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot unset ICMP code for service %s when protocol is not set to ICMP or ICMP6.",
+              _currentService.getName()));
+      return;
+    } else if (_currentService.getIcmpType() == null) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot unset ICMP code for service %s when icmptype is unset.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setIcmpCode(null);
+  }
+
+  @Override
+  public void enterCfsc_unset_icmptype(Cfsc_unset_icmptypeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.ICMP
+        && _currentService.getProtocolEffective() != Protocol.ICMP6) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot unset ICMP type for service %s when protocol is not set to ICMP or ICMP6.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setIcmpType(null);
+    // device also clears code
+    _currentService.setIcmpCode(null);
   }
 
   @Override

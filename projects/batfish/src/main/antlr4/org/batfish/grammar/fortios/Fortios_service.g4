@@ -18,7 +18,8 @@ cfsc_edit: EDIT service_name newline cfsce* NEXT newline;
 cfsce
 :
     cfsc_set
-    | (UNSET | SELECT | UNSELECT | APPEND | CLEAR) unimplemented
+    | cfsc_unset
+    | (SELECT | UNSELECT | APPEND | CLEAR) unimplemented
 ;
 
 cfsc_set: SET cfsc_set_singletons;
@@ -55,6 +56,18 @@ cfsc_set_tcp_portrange: TCP_PORTRANGE value = service_port_ranges newline;
 cfsc_set_udp_portrange: UDP_PORTRANGE value = service_port_ranges newline;
 
 cfsc_set_visibility: VISIBILITY enable_or_disable newline;
+
+cfsc_unset: UNSET cfsc_unset_singletons;
+
+cfsc_unset_singletons:
+    // todo: flesh out more. presumably should match cfsc_set_singletons
+    cfsc_unset_icmpcode
+    | cfsc_unset_icmptype
+;
+
+cfsc_unset_icmpcode: ICMPCODE newline;
+
+cfsc_unset_icmptype: ICMPTYPE newline;
 
 // Service group
 cfs_group: GROUP newline cfsg*;
