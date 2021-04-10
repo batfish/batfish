@@ -1,10 +1,11 @@
 package org.batfish.minesweeper.bdd;
 
+import static org.parboiled.common.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
@@ -64,9 +65,8 @@ public class SetCommunitiesVisitor
     String name = communitySetExprReference.getName();
     CommunitySetExpr setExpr =
         arg.getTransferBDD().getConfiguration().getCommunitySetExprs().get(name);
-    if (setExpr == null) {
-      throw new BatfishException("Cannot find community set expression: " + name);
-    }
+    checkArgument(
+        setExpr != null, "Undefined reference in community set exprs should not be possible");
     return setExpr.accept(this, arg);
   }
 

@@ -375,7 +375,7 @@ public class TransferBDD {
         throw new BatfishException(
             "Matching for communities other than the input communities is not supported: " + mc);
       }
-      // Once we model static statements like SetReadIntermediateBgpAttributes, that will
+      // TODO: Once we model static statements like SetReadIntermediateBgpAttributes, that will
       // determine which BDDRoute to use in this visitor.  For now we only handle the case when
       // we are looking at the original input route attributes.
       BDD mcPredicate =

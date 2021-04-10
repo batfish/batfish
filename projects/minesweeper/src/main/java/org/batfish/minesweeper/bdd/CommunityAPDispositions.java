@@ -1,12 +1,12 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.jheaps.annotations.VisibleForTesting;
 
 /**
  * This class represents the results of symbolic analysis of a {@link
