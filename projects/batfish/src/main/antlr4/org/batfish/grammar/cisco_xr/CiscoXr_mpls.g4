@@ -14,8 +14,10 @@ mldp_address_family
       | IPV6
    ) NEWLINE
    (
-      mldpaf_label
+      mldpaf_discovery
+      | mldpaf_label
       | mldpaf_null
+      | mldpaf_redistribute
    )*
 ;
 
@@ -42,22 +44,36 @@ mldp_neighbor
 
 mldp_null
 :
-   NO?
-   (
-      NSR
-      | IGP
-   ) null_rest_of_line
+  NO?
+  (
+    | GRACEFUL_RESTART
+    | IGP
+    | NSR
+  ) null_rest_of_line
 ;
 
 mldp_session_protection
 :
-   SESSION PROTECTION (FOR peer = variable)? (DURATION DEC)? NEWLINE
+   SESSION PROTECTION (FOR peer = variable)? (DURATION uint_legacy)? NEWLINE
 ;
 
 mldp_router_id
 :
    ROUTER_ID IP_ADDRESS NEWLINE
 ;
+
+mldpaf_discovery
+:
+  DISCOVERY
+  (
+    mldpafd_targeted_hello
+    | mldpafd_transport_address
+  )
+;
+
+mldpafd_targeted_hello: TARGETED_HELLO ACCEPT FROM name = access_list_name NEWLINE;
+
+mldpafd_transport_address: TRANSPORT_ADDRESS IP_ADDRESS NEWLINE;
 
 mldpaf_label
 :
@@ -71,9 +87,37 @@ mldpaf_null
 :
    NO?
    (
-      DISCOVERY
+      NEIGHBOR
    ) null_rest_of_line
 ;
+
+mldpaf_redistribute
+:
+  REDISTRIBUTE
+  (
+    mldpafr_bgp
+    | NEWLINE mldpafr_bgp*
+  )
+;
+
+mldpafr_bgp
+:
+  BGP
+  (
+    mldpafrb_inner
+    | NEWLINE mldpafrb_inner*
+  )
+;
+
+mldpafrb_inner
+:
+  mldpafrb_advertise_to
+  | mldpafrb_null
+;
+
+mldpafrb_advertise_to: ADVERTISE_TO name = access_list_name NEWLINE;
+
+mldpafrb_null: AS null_rest_of_line;
 
 mldpafl_local
 :
@@ -112,13 +156,14 @@ mldpaflla_null
 
 mlpdl_null
 :
-   NO?
-   (
-      ADJACENCY
-      | NEIGHBOR
-      | NSR
-      | SESSION_PROTECTION
-   ) null_rest_of_line
+  NO?
+  (
+    GRACEFUL_RESTART
+    | HELLO_ADJACENCY
+    | NEIGHBOR
+    | NSR
+    | SESSION_PROTECTION
+  ) null_rest_of_line
 ;
 
 mldpn_null
@@ -148,7 +193,7 @@ s_mpls_ldp
 
 s_mpls_label_range
 :
-   MPLS LABEL RANGE DEC+ NEWLINE
+   MPLS LABEL RANGE uint_legacy+ NEWLINE
 ;
 
 s_mpls_traffic_eng

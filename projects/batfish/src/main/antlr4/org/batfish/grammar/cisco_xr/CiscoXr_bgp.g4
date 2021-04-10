@@ -128,7 +128,7 @@ allowas_in_bgp_tail
 :
    ALLOWAS_IN
    (
-      num = DEC
+      num = uint_legacy
    )? NEWLINE
 ;
 
@@ -179,7 +179,7 @@ bgp_listen_range_rb_stanza
 
 bgp_maxas_limit_rb_stanza
 :
-   BGP MAXAS_LIMIT limit = DEC NEWLINE
+   BGP MAXAS_LIMIT limit = uint_legacy NEWLINE
 ;
 
 bgp_redistribute_internal_rb_stanza
@@ -189,7 +189,7 @@ bgp_redistribute_internal_rb_stanza
 
 bgp_scan_time_bgp_tail
 :
-   BGP SCAN_TIME secs = DEC NEWLINE
+   BGP SCAN_TIME secs = uint_legacy NEWLINE
 ;
 
 bgp_tail
@@ -237,7 +237,7 @@ cluster_id_bgp_tail
 :
    CLUSTER_ID
    (
-      DEC
+      uint_legacy
       | IP_ADDRESS
    ) NEWLINE
 ;
@@ -261,7 +261,7 @@ default_information_originate_rb_stanza
 
 default_metric_bgp_tail
 :
-   DEFAULT_METRIC metric = DEC NEWLINE
+   DEFAULT_METRIC metric = uint_legacy NEWLINE
 ;
 
 default_originate_bgp_tail
@@ -292,7 +292,7 @@ ebgp_multihop_bgp_tail
 :
    EBGP_MULTIHOP
    (
-      hop = DEC
+      hop = uint_legacy
    )? NEWLINE
 ;
 
@@ -303,7 +303,7 @@ empty_neighbor_block_address_family
 
 inherit_peer_policy_bgp_tail
 :
-   INHERIT PEER_POLICY name = variable_permissive num = DEC? NEWLINE
+   INHERIT PEER_POLICY name = variable_permissive num = uint_legacy? NEWLINE
 ;
 
 inherit_peer_session_bgp_tail
@@ -322,7 +322,7 @@ local_as_bgp_tail
 
 maximum_peers_bgp_tail
 :
-   MAXIMUM_PEERS DEC NEWLINE
+   MAXIMUM_PEERS uint_legacy NEWLINE
 ;
 
 maximum_paths_bgp_tail
@@ -332,15 +332,15 @@ maximum_paths_bgp_tail
       EBGP
       | IBGP
       | EIBGP
-   )? paths = DEC
+   )? paths = uint_legacy
    (
-      ECMP ecmp_paths = DEC
+      ECMP ecmp_paths = uint_legacy
    )? SELECTIVE? NEWLINE
 ;
 
 maximum_prefix_bgp_tail
 :
-   MAXIMUM_PREFIX DEC NEWLINE
+   MAXIMUM_PREFIX uint_legacy NEWLINE
 ;
 
 neighbor_block_address_family
@@ -704,14 +704,14 @@ redistribute_connected_bgp_tail
       ROUTE_POLICY policy = route_policy_name
       |
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
    )* NEWLINE
 ;
 
 redistribute_eigrp_bgp_tail
 :
-   REDISTRIBUTE EIGRP id = DEC null_rest_of_line
+   REDISTRIBUTE EIGRP id = uint_legacy null_rest_of_line
 ;
 
 redistribute_ospf_bgp_tail
@@ -719,7 +719,7 @@ redistribute_ospf_bgp_tail
    REDISTRIBUTE OSPF (procname = variable)?
    (
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
@@ -737,7 +737,7 @@ redistribute_ospfv3_bgp_tail
    REDISTRIBUTE (OSPFV3 | OSPF3) (procname = variable)?
    (
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
       |
       (
@@ -755,7 +755,7 @@ redistribute_rip_bgp_tail
    REDISTRIBUTE RIP
    (
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
    )* NEWLINE
 ;
@@ -769,7 +769,7 @@ redistribute_static_bgp_tail
       )
       |
       (
-         METRIC metric = DEC
+         METRIC metric = uint_legacy
       )
    )* NEWLINE
 ;
@@ -916,5 +916,5 @@ use_session_group_bgp_tail
 
 weight_bgp_tail
 :
-   WEIGHT weight = DEC NEWLINE
+   WEIGHT weight = uint_legacy NEWLINE
 ;

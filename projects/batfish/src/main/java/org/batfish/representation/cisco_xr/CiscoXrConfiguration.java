@@ -2141,7 +2141,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription())));
+                            name,
+                            CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription(),
+                            null)));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
@@ -2152,7 +2154,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, CiscoXrStructureType.NETWORK_OBJECT.getDescription())));
+                            name, CiscoXrStructureType.NETWORK_OBJECT.getDescription(), null)));
 
     // convert IPv6 access lists to ipv6 access lists route6 filter lists
     for (Ipv6AccessList eaList : _ipv6Acls.values()) {
@@ -2457,9 +2459,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         CiscoXrStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
-        CiscoXrStructureUsage.INTERFACE_INCOMING_FILTER,
+        CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_INGRESS,
         CiscoXrStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
-        CiscoXrStructureUsage.INTERFACE_OUTGOING_FILTER,
+        CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_EGRESS,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoXrStructureUsage.RIP_DISTRIBUTE_LIST,

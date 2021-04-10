@@ -390,8 +390,7 @@ null_inner
             | IPV6
          )
          (
-            ACCESS_GROUP
-            | ADDRESS
+            ADDRESS
             | ARP
             | FLOW
          )
@@ -546,7 +545,7 @@ null_single
          (
             (
                (
-                  DEC
+                  uint_legacy
                   | variable_aclname
                )
                (

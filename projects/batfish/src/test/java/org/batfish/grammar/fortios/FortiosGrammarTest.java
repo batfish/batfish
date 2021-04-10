@@ -8,6 +8,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
@@ -70,6 +71,7 @@ import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BddTestbed;
@@ -100,6 +102,7 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.AccessList;
@@ -107,17 +110,21 @@ import org.batfish.representation.fortios.AccessListRule;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BgpNeighbor;
+import org.batfish.representation.fortios.BgpNetwork;
 import org.batfish.representation.fortios.BgpProcess;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
+import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.InternetServiceName;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.RouteMapRule;
+import org.batfish.representation.fortios.SecondaryIp;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -133,10 +140,25 @@ import org.junit.rules.TemporaryFolder;
 public final class FortiosGrammarTest {
 
   @Test
+  public void testIgnoredConfigBlocks() {
+    FortiosConfiguration c = parseVendorConfig("fortios_ignored");
+    // Valid syntax before ignored block is parsed
+    assertThat(c.getHostname(), equalTo("ignored"));
+    // Valid syntax after an ignored block is parsed (and before another one)
+    assertThat(c.getAddresses(), hasKeys("Extracted Address"));
+  }
+
+  @Test
   public void testHostnameExtraction() {
     String filename = "fortios_hostname";
     String hostname = "my_fortios-hostname1";
     assertThat(parseVendorConfig(filename).getHostname(), equalTo(hostname));
+  }
+
+  @Test
+  public void testCanonicalHostnameExtraction() {
+    String hostname = "fortios_UPPER_hostname";
+    assertThat(parseVendorConfig(hostname).getHostname(), equalTo(hostname.toLowerCase()));
   }
 
   @Test
@@ -193,6 +215,50 @@ public final class FortiosGrammarTest {
                 .getWarnings()
                 .values());
     assertThat(warnings, hasParseWarning(hasComment("Illegal value for replacemsg minor type")));
+  }
+
+  @Test
+  public void testInternetServiceNameExtraction() {
+    String hostname = "internet_service_name";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, InternetServiceName> isns = vc.getInternetServiceNames();
+    assertThat(isns, hasKeys("Google-DNS", "Google-Gmail", "custom_isn_for_testing"));
+
+    InternetServiceName dns = isns.get("Google-DNS");
+    InternetServiceName gmail = isns.get("Google-Gmail");
+    InternetServiceName custom = isns.get("custom_isn_for_testing");
+
+    assertThat(dns.getInternetServiceId(), equalTo(65539L));
+    assertNull(dns.getType());
+    assertThat(dns.getTypeEffective(), equalTo(InternetServiceName.DEFAULT_TYPE));
+    assertThat(gmail.getInternetServiceId(), equalTo(65646L));
+    assertThat(gmail.getType(), equalTo(InternetServiceName.Type.DEFAULT));
+    assertThat(gmail.getTypeEffective(), equalTo(InternetServiceName.Type.DEFAULT));
+    assertThat(custom.getType(), equalTo(InternetServiceName.Type.LOCATION));
+    assertThat(custom.getTypeEffective(), equalTo(InternetServiceName.Type.LOCATION));
+    assertThat(custom.getInternetServiceId(), equalTo(4294967295L));
+  }
+
+  @Test
+  public void testInternetServiceNameWarnings() throws IOException {
+    String hostname = "internet_service_name_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings w =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    assertThat(
+        w,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment(
+                    "Expected internet-service-id in range 0-4294967295, but got '4294967296'"),
+                hasComment("Illegal value for internet-service-name name"),
+                hasComment("Internet-service-name edit block ignored: name is invalid"))));
   }
 
   @Test
@@ -271,6 +337,7 @@ public final class FortiosGrammarTest {
     assertThat(ipmask.getAssociatedInterface(), equalTo("port1"));
     assertThat(ipmask.getComment(), equalTo("Hello world"));
     assertThat(ipmask.getFabricObject(), equalTo(true));
+    assertThat(iprange.getAssociatedInterfaceZone(), equalTo("zoneA"));
 
     // Test default values
     assertThat(longName.getTypeEffective(), equalTo(Address.Type.IPMASK));
@@ -367,6 +434,7 @@ public final class FortiosGrammarTest {
 
     // Expect warnings for each undefined reference in the config (in an otherwise legal context)
     warningMatchers.add(hasComment("No interface or zone named undefined_iface"));
+    warningMatchers.add(hasComment("Cannot reference zoned interface zoned_iface"));
     warningMatchers.add(hasComment("No interface named undefined_iface"));
 
     warningMatchers.add(
@@ -624,6 +692,37 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testBgpRouteMapDefinitionsAndReferences() throws IOException {
+    String hostname = "bgp_routemap_defs_refs";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ROUTE_MAP, "rm1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ROUTE_MAP, "rm2"));
+
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ROUTE_MAP, "rm1", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ROUTE_MAP, "rm2", 1));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.ROUTE_MAP,
+            "UNDEFINED_IN",
+            FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_IN));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.ROUTE_MAP,
+            "UNDEFINED_OUT",
+            FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT));
+  }
+
+  @Test
   public void testBgpExtraction() throws IOException {
     String hostname = "bgp";
     FortiosConfiguration vc = parseVendorConfig(hostname);
@@ -659,6 +758,15 @@ public final class FortiosGrammarTest {
     assertNull(neighbor2.getRouteMapOut());
     assertThat(neighbor1.getUpdateSource(), equalTo("port1"));
     assertNull(neighbor2.getUpdateSource());
+
+    Map<Long, BgpNetwork> networks = bgpProcess.getNetworks();
+    assertThat(networks.keySet(), containsInAnyOrder(1L, 4294967295L));
+    BgpNetwork network1 = networks.get(1L);
+    BgpNetwork network2 = networks.get(4294967295L);
+    assertThat(network1.getId(), equalTo(1L));
+    assertThat(network2.getId(), equalTo(4294967295L));
+    assertThat(network1.getPrefix(), equalTo(Prefix.parse("3.3.3.0/24")));
+    assertThat(network2.getPrefix(), equalTo(Prefix.parse("4.4.4.0/24")));
   }
 
   @Test
@@ -676,9 +784,15 @@ public final class FortiosGrammarTest {
     Ip ip1 = Ip.parse("2.2.2.2");
     Ip ip2 = Ip.parse("11.11.11.2");
 
+    // Setup for testing routing policies
+    Bgpv4Route.Builder bgpRouteBuilder = Bgpv4Route.testBuilder();
+    org.batfish.datamodel.StaticRoute.Builder staticRouteBuilder =
+        org.batfish.datamodel.StaticRoute.testBuilder();
+
     // Default VRF BGP process: should only have neighbor 1
+    String defaultVrfName = computeVrfName("root", 0);
     org.batfish.datamodel.BgpProcess bgpProcessDefaultVrf =
-        c.getVrfs().get(computeVrfName("root", 0)).getBgpProcess();
+        c.getVrfs().get(defaultVrfName).getBgpProcess();
     assertThat(bgpProcessDefaultVrf, hasRouterId(Ip.parse("1.1.1.1")));
     assertThat(bgpProcessDefaultVrf, hasMultipathEbgp(false));
     assertThat(bgpProcessDefaultVrf, hasMultipathIbgp(false));
@@ -694,11 +808,35 @@ public final class FortiosGrammarTest {
     assertThat(neighbor1.getRemoteAsns().enumerate(), contains(1L));
     AddressFamily ipv4Af1 = neighbor1.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
     assertThat(ipv4Af1.getImportPolicy(), equalTo("rm1"));
-    assertThat(ipv4Af1.getExportPolicy(), equalTo("rm2"));
+    String neighbor1ExportPolicyName =
+        generatedBgpPeerExportPolicyName(defaultVrfName, ip1.toString());
+    assertThat(ipv4Af1.getExportPolicy(), equalTo(neighbor1ExportPolicyName));
+
+    // Test export policy. The BGP process has network statements for 3.3.3.0/24 and 4.4.4.0/24.
+    // The neighbor's route-map-out permits 3.3.3.0/24 and 9.9.9.0/24.
+    RoutingPolicy neighbor1ExportPolicy = c.getRoutingPolicies().get(neighbor1ExportPolicyName);
+    org.batfish.datamodel.StaticRoute static3330 =
+        staticRouteBuilder.setNetwork(Prefix.parse("3.3.3.0/24")).build();
+    org.batfish.datamodel.StaticRoute static4440 =
+        staticRouteBuilder.setNetwork(Prefix.parse("4.4.4.0/24")).build();
+    org.batfish.datamodel.StaticRoute static9990 =
+        staticRouteBuilder.setNetwork(Prefix.parse("9.9.9.0/24")).build();
+    Bgpv4Route bgp8880 = bgpRouteBuilder.setNetwork(Prefix.parse("8.8.8.0/24")).build();
+    Bgpv4Route bgp9990 = bgpRouteBuilder.setNetwork(Prefix.parse("9.9.9.0/24")).build();
+    // Matches network statement; permitted by route-map
+    assertPolicyTakesAction(neighbor1ExportPolicy, true, static3330, c);
+    // Matches network statement, but denied by route-map
+    assertPolicyTakesAction(neighbor1ExportPolicy, false, static4440, c);
+    // Permitted by route-map, but doesn't match network statement
+    assertPolicyTakesAction(neighbor1ExportPolicy, false, static9990, c);
+    // BGP is allowed out by default, but this route is blocked by route-map
+    assertPolicyTakesAction(neighbor1ExportPolicy, false, bgp8880, c);
+    // BGP is allowed out by default and this route is permitted by route-map
+    assertPolicyTakesAction(neighbor1ExportPolicy, true, bgp9990, c);
 
     // VRF 5 BGP process: should only have neighbor 2
-    org.batfish.datamodel.BgpProcess bgpProcessVrf5 =
-        c.getVrfs().get(computeVrfName("root", 5)).getBgpProcess();
+    String vrf5Name = computeVrfName("root", 5);
+    org.batfish.datamodel.BgpProcess bgpProcessVrf5 = c.getVrfs().get(vrf5Name).getBgpProcess();
     assertThat(bgpProcessVrf5, hasRouterId(Ip.parse("1.1.1.1")));
 
     Map<Prefix, BgpActivePeerConfig> vrf5Neighbors = bgpProcessVrf5.getActiveNeighbors();
@@ -711,7 +849,19 @@ public final class FortiosGrammarTest {
     assertThat(neighbor2.getRemoteAsns().enumerate(), contains(4294967295L));
     AddressFamily ipv4Af2 = neighbor2.getAddressFamily(AddressFamily.Type.IPV4_UNICAST);
     assertNull(ipv4Af2.getImportPolicy());
-    assertNull(ipv4Af2.getExportPolicy());
+    String neighbor2ExportPolicyName = generatedBgpPeerExportPolicyName(vrf5Name, ip2.toString());
+    assertThat(ipv4Af2.getExportPolicy(), equalTo(neighbor2ExportPolicyName));
+
+    // Test export policy. The BGP process has network statements for 3.3.3.0/24 and 4.4.4.0/24.
+    // There is no route-map-out on the neighbor.
+    RoutingPolicy neighbor2ExportPolicy = c.getRoutingPolicies().get(neighbor2ExportPolicyName);
+    // Match network statements
+    assertPolicyTakesAction(neighbor2ExportPolicy, true, static3330, c);
+    assertPolicyTakesAction(neighbor2ExportPolicy, true, static4440, c);
+    // Doesn't match network statement
+    assertPolicyTakesAction(neighbor2ExportPolicy, false, static9990, c);
+    // BGP is allowed out by default
+    assertPolicyTakesAction(neighbor2ExportPolicy, true, bgp9990, c);
   }
 
   @Test
@@ -735,6 +885,13 @@ public final class FortiosGrammarTest {
             hasComment("Expected BGP remote AS in range 1-4294967295, but got '4294967296'"),
             hasComment("Expected BGP remote AS in range 1-4294967295, but got 'hello'"),
             hasComment("BGP neighbor edit block ignored: remote-as must be set"),
+            hasComment("Expected BGP network ID in range 0-4294967295, but got '4294967296'"),
+            hasComment("BGP network edit block ignored: name is invalid"),
+            hasComment("Prefix 0.0.0.0/0 is not allowed for a BGP network prefix"),
+            hasComment(
+                "Cannot set BGP network prefix 1.1.1.0/24: Another BGP network already has this"
+                    + " prefix"),
+            hasComment("BGP network edit block ignored: prefix must be set"),
             hasComment("Redistribution into BGP is not yet supported")));
   }
 
@@ -880,11 +1037,22 @@ public final class FortiosGrammarTest {
     assertThat(port1.getType(), equalTo(Type.PHYSICAL));
     assertThat(port1.getAlias(), equalTo("longest possibl alias str"));
     assertThat(port1.getDescription(), equalTo("quoted description w/ spaces and more"));
+    assertTrue(port1.getSecondaryIp());
+    assertTrue(port1.getSecondaryIpEffective());
+    assertThat(port1.getSecondaryip().keySet(), containsInAnyOrder("4294967295", "1", "2"));
+    SecondaryIp sipA = port1.getSecondaryip().get("4294967295");
+    SecondaryIp sipB = port1.getSecondaryip().get("1");
+    SecondaryIp sipC = port1.getSecondaryip().get("2");
+    assertThat(sipA.getIp(), equalTo(ConcreteInterfaceAddress.create(Ip.parse("10.0.1.1"), 24)));
+    assertThat(sipB.getIp(), equalTo(ConcreteInterfaceAddress.create(Ip.parse("10.1.1.1"), 24)));
+    assertNull(sipC.getIp());
     // Check defaults
     assertThat(port1.getStatus(), equalTo(Status.UNKNOWN));
     assertTrue(port1.getStatusEffective());
     assertThat(port1.getMtu(), nullValue());
     assertThat(port1.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
+    assertNull(port1.getSpeed());
+    assertThat(port1.getSpeedEffective(), equalTo(Interface.DEFAULT_SPEED));
     assertThat(port1.getMtuOverride(), nullValue());
     assertThat(port1.getVrf(), nullValue());
     assertThat(port1.getVrfEffective(), equalTo(0));
@@ -896,9 +1064,13 @@ public final class FortiosGrammarTest {
     assertThat(port2.getMtuOverride(), equalTo(true));
     assertThat(port2.getMtu(), equalTo(1234));
     assertThat(port2.getMtuEffective(), equalTo(1234));
-    // Check default type
+    assertThat(port2.getSpeed(), equalTo(Speed.AUTO));
+    assertThat(port2.getSpeedEffective(), equalTo(Speed.AUTO));
+    // Check defaults
     assertThat(port2.getType(), nullValue());
     assertThat(port2.getTypeEffective(), equalTo(Type.VLAN));
+    assertNull(port2.getSecondaryIp());
+    assertFalse(port2.getSecondaryIpEffective());
 
     assertThat(longName.getIp(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
     assertThat(longName.getAlias(), equalTo(""));
@@ -907,6 +1079,15 @@ public final class FortiosGrammarTest {
     assertThat(longName.getStatus(), equalTo(Status.UP));
     assertThat(longName.getVrf(), equalTo(31));
     assertThat(longName.getVrfEffective(), equalTo(31));
+    assertFalse(longName.getSecondaryIp());
+    assertFalse(longName.getSecondaryIpEffective());
+    assertThat(longName.getSpeed(), equalTo(Speed.HUNDRED_GFULL));
+    assertThat(longName.getSpeedEffective(), equalTo(Speed.HUNDRED_GFULL));
+    // Despite being disabled, the secondaryip should persist
+    assertThat(longName.getSecondaryip().keySet(), containsInAnyOrder("1"));
+    assertThat(
+        longName.getSecondaryip().get("1").getIp(),
+        equalTo(ConcreteInterfaceAddress.create(Ip.parse("10.2.1.1"), 24)));
 
     assertThat(tunnel.getStatus(), equalTo(Status.DOWN));
     assertFalse(tunnel.getStatusEffective());
@@ -979,7 +1160,15 @@ public final class FortiosGrammarTest {
 
     // Check addresses
     assertThat(port1.getAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.122.2/24")));
+    assertThat(
+        port1.getAllAddresses(),
+        containsInAnyOrder(
+            ConcreteInterfaceAddress.parse("192.168.122.2/24"),
+            ConcreteInterfaceAddress.parse("10.0.1.1/24"),
+            ConcreteInterfaceAddress.parse("10.1.1.1/24")));
     assertThat(longName.getAddress(), equalTo(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
+    assertThat(
+        longName.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("169.254.1.1/24")));
     Stream.of(port2, tunnel, loopback, vlan).forEach(iface -> assertNull(iface.getAddress()));
 
     // Check interface types
@@ -994,6 +1183,11 @@ public final class FortiosGrammarTest {
     assertThat(port2.getMtu(), equalTo(1234));
     Stream.of(port1, longName, tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getMtu(), equalTo(Interface.DEFAULT_INTERFACE_MTU)));
+
+    // Check speeds
+    assertThat(port1.getSpeed(), equalTo(10000e6));
+    assertThat(port2.getSpeed(), equalTo(10000e6));
+    assertThat(longName.getSpeed(), equalTo(100e9));
 
     // Check aliases
     assertThat(port1.getDeclaredNames(), contains("longest possibl alias str"));
@@ -1047,11 +1241,29 @@ public final class FortiosGrammarTest {
                     hasText(containsString("type loopback"))),
                 hasComment("Interface edit block ignored: name is invalid"),
                 hasComment("Interface edit block ignored: vlanid must be set"),
-                hasComment("Interface edit block ignored: interface must be set"))));
+                hasComment("Interface edit block ignored: interface must be set"),
+                hasComment(
+                    "Secondaryip edit block ignored: cannot configure a secondaryip when"
+                        + " secondary-IP is not enabled"),
+                hasComment(
+                    "Primary ip address must be configured before a secondaryip can be configured"),
+                hasComment("Secondaryip edit block ignored: name is invalid"),
+                hasComment(
+                    "Expected secondaryip number in range 0-4294967295, but got '4294967296'"),
+                allOf(
+                    hasComment(
+                        "This secondaryip will be ignored; must use a secondaryip other than the"
+                            + " primary ip address"),
+                    hasText("ip 10.0.0.1/30")),
+                allOf(
+                    hasComment(
+                        "This secondaryip will be ignored; must use a secondaryip other than"
+                            + " existing secondaryip addresses"),
+                    hasText("ip 10.0.0.3/30")))));
 
     // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
     // object is created when the name conflicts
-    assertThat(vc.getInterfaces(), hasKeys("port1", "vlan1"));
+    assertThat(vc.getInterfaces(), hasKeys("port1", "vlan1", "secondary"));
   }
 
   @Test
@@ -1171,7 +1383,10 @@ public final class FortiosGrammarTest {
             "custom_icmp",
             "custom_icmp6",
             "custom_ip",
-            "change_protocol"));
+            "change_protocol",
+            "unset_icmp_1",
+            "unset_icmp_2",
+            "unset_icmp_3"));
 
     Service serviceLongName =
         services.get(
@@ -1183,6 +1398,9 @@ public final class FortiosGrammarTest {
     Service serviceIcmp6 = services.get("custom_icmp6");
     Service serviceIp = services.get("custom_ip");
     Service serviceChangeProtocol = services.get("change_protocol");
+    Service serviceUnsetIcmp1 = services.get("unset_icmp_1");
+    Service serviceUnsetIcmp2 = services.get("unset_icmp_2");
+    Service serviceUnsetIcmp3 = services.get("unset_icmp_3");
 
     assertThat(serviceLongName.getComment(), equalTo("service custom comment"));
 
@@ -1266,6 +1484,16 @@ public final class FortiosGrammarTest {
     assertThat(serviceChangeProtocol.getTcpPortRangeSrc(), nullValue());
     assertThat(serviceChangeProtocol.getUdpPortRangeDst(), nullValue());
     assertThat(serviceChangeProtocol.getUdpPortRangeSrc(), nullValue());
+
+    // Unsetting icmpcode works
+    assertThat(serviceUnsetIcmp1.getIcmpType(), equalTo(5));
+    assertThat(serviceUnsetIcmp1.getIcmpCode(), nullValue());
+    // Unsetting icmptype clears code too, even if type is reset
+    assertThat(serviceUnsetIcmp2.getIcmpType(), equalTo(3));
+    assertThat(serviceUnsetIcmp2.getIcmpCode(), nullValue());
+    // Unsetting icmptype clears code too
+    assertThat(serviceUnsetIcmp3.getIcmpType(), nullValue());
+    assertThat(serviceUnsetIcmp3.getIcmpCode(), nullValue());
   }
 
   @Test
@@ -1836,7 +2064,8 @@ public final class FortiosGrammarTest {
     assertThat(aclToBdd.toBdd(zone1ToPort1), equalTo(_zero));
 
     // No policies apply to traffic leaving port1
-    assertThat(aclToBdd.toBdd(port1Outgoing), equalTo(_zero));
+    BDD originatedTraffic = srcMgr.getOriginatingFromDeviceBDD();
+    assertThat(aclToBdd.toBdd(port1Outgoing), equalTo(originatedTraffic));
 
     // Should reflect that policy 1 blocks traffic from port1 to addr1, and that traffic from zone1
     // to addr2 is permitted
@@ -1844,7 +2073,9 @@ public final class FortiosGrammarTest {
     BDD fromZone1 = srcMgr.getSourceInterfaceBDD("port2").or(srcMgr.getSourceInterfaceBDD("port3"));
     BDD permittedFromPort1 = fromPort1.and(addr2AsDst.diff(addr1AsDst));
     BDD permittedFromZone1 = fromZone1.and(addr2AsDst);
-    assertThat(aclToBdd.toBdd(zone1Outgoing), equalTo(permittedFromPort1.or(permittedFromZone1)));
+    assertThat(
+        aclToBdd.toBdd(zone1Outgoing),
+        equalTo(permittedFromPort1.or(permittedFromZone1).or(originatedTraffic)));
   }
 
   /**
@@ -2167,31 +2398,46 @@ public final class FortiosGrammarTest {
         c.getRoutingPolicies(), hasKeys("longest_route_map_name_allowed_by_f", "route_map1"));
     RoutingPolicy longName = c.getRoutingPolicies().get("longest_route_map_name_allowed_by_f");
     RoutingPolicy rm1 = c.getRoutingPolicies().get("route_map1");
+    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder();
 
-    // This route-map has no rules
-    assertThat(longName.getStatements(), empty());
+    // This route-map only has a default-deny rule
+    assertThat(longName.getStatements(), contains(Statements.ReturnFalse.toStaticStatement()));
+    rb.setNetwork(Prefix.parse("10.10.10.0/24"));
+    assertPolicyTakesAction(longName, false, rb.build(), c);
 
     // rm1 permits 10.10.10.0/24 or longer, then denies 10.10.0.0/16 or longer, then permits all
-    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder();
-    Environment.Builder envBuilder = Environment.builder(c);
 
     // Networks permitted by rule 9999
     rb.setNetwork(Prefix.parse("10.10.10.0/24"));
-    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, true, rb.build(), c);
     rb.setNetwork(Prefix.parse("10.10.10.128/25"));
-    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, true, rb.build(), c);
 
     // Networks denied by rule 1
     rb.setNetwork(Prefix.parse("10.10.0.0/16"));
-    assertFalse(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, false, rb.build(), c);
     rb.setNetwork(Prefix.parse("10.10.128.0/17"));
-    assertFalse(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, false, rb.build(), c);
 
     // Networks permitted by rule 2
     rb.setNetwork(Prefix.parse("10.10.0.0/15"));
-    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, true, rb.build(), c);
     rb.setNetwork(Prefix.ZERO);
-    assertTrue(rm1.call(envBuilder.setOriginalRoute(rb.build()).build()).getBooleanValue());
+    assertPolicyTakesAction(rm1, true, rb.build(), c);
+  }
+
+  /**
+   * Asserts that the given {@link RoutingPolicy} explicitly takes the specified {@code action}
+   * (permit if true, deny if false) on the given route. Will fail if the policy falls through.
+   */
+  private void assertPolicyTakesAction(
+      RoutingPolicy policy, boolean action, AbstractRouteDecorator route, Configuration c) {
+    assertThat(
+        policy
+            // Set environment's default action to !action to ensure failure if policy falls through
+            .call(Environment.builder(c).setDefaultAction(!action).setOriginalRoute(route).build())
+            .getBooleanValue(),
+        equalTo(action));
   }
 
   @Test
@@ -2350,6 +2596,32 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testAddressDefinitionsAndReferences() throws IOException {
+    String hostname = "address_defs_refs";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "iface_ref"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "zone_ref"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.ADDRESS, "undef_ref"));
+
+    // Interface and zone refs include self-refs
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port1", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ZONE, "zoneA", 2));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename,
+            FortiosStructureType.INTERFACE_OR_ZONE,
+            "UNDEFINED",
+            FortiosStructureUsage.ADDRESS_ASSOCIATED_INTERFACE));
+  }
+
+  @Test
   public void testPolicyDefinitionsAndReferences() throws IOException {
     String hostname = "policy_defs_refs";
     String filename = "configs/" + hostname;
@@ -2374,18 +2646,21 @@ public final class FortiosGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, FortiosStructureType.POLICY, "2", contains(70)));
+            filename, FortiosStructureType.POLICY, "2", contains(75)));
 
     // Confirm reference count is correct for used structure
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr1", 2));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr2", 4));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ADDRESS, "addr3", 1));
-    // Interface refs include self-refs
-    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port1", 3));
+    // Interface, zone, and policy refs include self-refs
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.ZONE, "zoneA", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port2", 3));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.INTERFACE, "port3", 2));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service1", 1));
     assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.SERVICE_CUSTOM, "service2", 2));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.POLICY, "1", 1));
+    // Cloned policy should also show up with a self-ref
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.POLICY, "2", 1));
 
     // Confirm undefined references are detected
     assertThat(

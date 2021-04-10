@@ -8,6 +8,7 @@ import static org.batfish.representation.fortios.FortiosPolicyConversions.genera
 import static org.batfish.representation.fortios.FortiosPolicyConversions.generateOutgoingFilters;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.getZonesAndUnzonedInterfaces;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toIpSpace;
+import static org.batfish.representation.fortios.FortiosPolicyConversions.toIpSpaceMetadata;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toMatchExpr;
 import static org.batfish.representation.fortios.FortiosRouteConversions.convertStaticRoutes;
 
@@ -18,6 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -26,12 +28,14 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -41,6 +45,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.collections.InsertOrderedMap;
+import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -51,6 +56,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _addresses = new HashMap<>();
     _addrgrps = new HashMap<>();
     _interfaces = new HashMap<>();
+    _internetServiceNames = new HashMap<>();
     _policies = new InsertOrderedMap<>();
     _renameableObjects = new HashMap<>();
     _replacemsgs = new HashMap<>();
@@ -68,7 +74,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    _hostname = hostname.toLowerCase();
   }
 
   @Override
@@ -97,6 +103,11 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Interface> getInterfaces() {
     return _interfaces;
+  }
+
+  /** name -> internet-service-name */
+  public @Nonnull Map<String, InternetServiceName> getInternetServiceNames() {
+    return _internetServiceNames;
   }
 
   /** name -> policy */
@@ -151,6 +162,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Addrgrp> _addrgrps;
   private final @Nonnull Map<String, Interface> _interfaces;
+  private final @Nonnull Map<String, InternetServiceName> _internetServiceNames;
   // Note: using InsertOrderedMap to preserve insertion order and permit reordering policies
   private final @Nonnull InsertOrderedMap<String, Policy> _policies;
   private final @Nonnull Map<BatfishUUID, FortiosRenameableObject> _renameableObjects;
@@ -172,12 +184,8 @@ public class FortiosConfiguration extends VendorConfiguration {
     c.setDefaultInboundAction(LineAction.DENY);
 
     // Convert addresses
-    _addresses
-        .values()
-        .forEach(address -> c.getIpSpaces().put(address.getName(), toIpSpace(address, _w)));
-    _addrgrps
-        .values()
-        .forEach(addrgrp -> c.getIpSpaces().put(addrgrp.getName(), toIpSpace(addrgrp, _w)));
+    _addresses.values().forEach(address -> addIpSpaceForAddress(c, address, _w, _filename));
+    _addrgrps.values().forEach(addrgrp -> addIpSpaceForAddrgrp(c, addrgrp, _w, _filename));
 
     // Convert policies. Must happen after c._ipSpaces is populated (addresses are converted)
     // Convert each policy to an AclLine
@@ -221,12 +229,15 @@ public class FortiosConfiguration extends VendorConfiguration {
     c.getVrfs().values().forEach(vrf -> vrf.setStaticRoutes(viStaticRoutes));
 
     // Count structure references
+    markConcreteStructure(FortiosStructureType.ROUTE_MAP);
     markConcreteStructure(FortiosStructureType.ADDRESS);
     markConcreteStructure(FortiosStructureType.ADDRGRP);
     markConcreteStructure(FortiosStructureType.SERVICE_CUSTOM);
     markConcreteStructure(FortiosStructureType.SERVICE_GROUP);
     markConcreteStructure(FortiosStructureType.INTERFACE);
+    markConcreteStructure(FortiosStructureType.ZONE);
     markConcreteStructure(FortiosStructureType.ACCESS_LIST);
+    markConcreteStructure(FortiosStructureType.POLICY);
     return c;
   }
 
@@ -273,9 +284,18 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setVrf(vrf)
             .setDescription(iface.getDescription())
             .setActive(iface.getStatusEffective())
-            .setAddress(iface.getIp())
             .setMtu(iface.getMtuEffective())
+            .setSpeed(toSpeed(iface.getSpeedEffective()))
             .setType(type);
+
+    List<InterfaceAddress> secondaryAddresses =
+        iface.getSecondaryIpEffective()
+            ? iface.getSecondaryip().values().stream()
+                .map(SecondaryIp::getIp)
+                .filter(Objects::nonNull)
+                .collect(ImmutableList.toImmutableList())
+            : ImmutableList.of();
+    viIface.setAddresses(iface.getIp(), secondaryAddresses);
 
     if (iface.getTypeEffective() == Type.VLAN) {
       // Handled by extraction
@@ -301,6 +321,32 @@ public class FortiosConfiguration extends VendorConfiguration {
     String outgoingFilterName = computeOutgoingFilterName(parentIfaceOrZone);
     viIface.setOutgoingFilter(c.getIpAccessLists().get(outgoingFilterName));
     viIface.build();
+  }
+
+  /** Convert interface speed setting into bits per second. */
+  private static double toSpeed(Interface.Speed speed) {
+    switch (speed) {
+      case TEN_FULL:
+      case TEN_HALF:
+        return 10e6;
+      case HUNDRED_FULL:
+      case HUNDRED_HALF:
+        return 100e6;
+      case THOUSAND_FULL:
+      case THOUSAND_HALF:
+        return 1000e6;
+      case TEN_THOUSAND_FULL:
+      case TEN_THOUSAND_HALF:
+        return 10000e6;
+      case HUNDRED_GFULL:
+      case HUNDRED_GHALF:
+        return 100e9;
+      case AUTO:
+      default:
+        assert speed == Speed.AUTO;
+        // Assume 10Gbps default
+        return 10000e6;
+    }
   }
 
   /**
@@ -373,5 +419,17 @@ public class FortiosConfiguration extends VendorConfiguration {
   @VisibleForTesting
   public static @Nonnull String computeVrfName(String vdom, int vrf) {
     return String.format("%s:%s", vdom, vrf);
+  }
+
+  private static void addIpSpaceForAddress(
+      Configuration c, Address address, Warnings w, String filename) {
+    c.getIpSpaces().put(address.getName(), toIpSpace(address, w));
+    c.getIpSpaceMetadata().put(address.getName(), toIpSpaceMetadata(address, filename));
+  }
+
+  private static void addIpSpaceForAddrgrp(
+      Configuration c, Addrgrp addrgrp, Warnings w, String filename) {
+    c.getIpSpaces().put(addrgrp.getName(), toIpSpace(addrgrp, w));
+    c.getIpSpaceMetadata().put(addrgrp.getName(), toIpSpaceMetadata(addrgrp, filename));
   }
 }

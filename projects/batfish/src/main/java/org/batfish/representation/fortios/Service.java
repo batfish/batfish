@@ -146,15 +146,12 @@ public final class Service extends ServiceGroupMember implements Serializable {
     _protocolNumber = protocolNumber;
   }
 
-  public void setIcmpCode(int icmpCode) {
+  public void setIcmpCode(@Nullable Integer icmpCode) {
     _icmpCode = icmpCode;
   }
 
   public void setIcmpType(@Nullable Integer icmpType) {
     _icmpType = icmpType;
-    if (_icmpType == null) { // When ICMP type is cleared, it also clears ICMP code
-      _icmpCode = null;
-    }
   }
 
   public void setIpRange(IpRange ipRange) {

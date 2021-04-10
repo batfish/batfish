@@ -2595,7 +2595,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription())));
+                            name, CiscoStructureType.NETWORK_OBJECT_GROUP.getDescription(), null)));
     _networkObjects.forEach(
         (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
     _networkObjects
@@ -2606,7 +2606,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     .put(
                         name,
                         new IpSpaceMetadata(
-                            name, CiscoStructureType.NETWORK_OBJECT.getDescription())));
+                            name, CiscoStructureType.NETWORK_OBJECT.getDescription(), null)));
 
     // convert each IcmpTypeGroup to IpAccessList
     _icmpTypeObjectGroups.forEach(

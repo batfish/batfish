@@ -1,0 +1,17 @@
+config system global
+    set hostname "internet_service_name"
+end
+config firewall internet-service-name
+    edit "Google-DNS"
+        set internet-service-id 65539
+    next
+    edit "Google-Gmail"
+        set type default
+        set internet-service-id 65646
+    next
+    # This wouldn't be accepted by the device but using it to exercise parsing/extraction
+    edit "custom_isn_for_testing"
+        set type location
+        set internet-service-id 4294967295
+    next
+end

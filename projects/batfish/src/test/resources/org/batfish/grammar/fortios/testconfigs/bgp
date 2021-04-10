@@ -14,10 +14,28 @@ config system interface
         set vrf 5
     next
 end
+config router access-list
+   edit "acl1"
+       config rule
+           edit 1
+               set prefix 3.3.3.0/24
+           next
+           edit 2
+               set prefix 9.9.9.0/24
+           next
+       end
+   next
+end
 config router route-map
     edit rm1
     next
     edit rm2
+        config rule
+            edit 1
+                set action permit
+                set match-ip-address "acl1"
+            next
+        end
     next
 end
 config router bgp
@@ -34,6 +52,15 @@ config router bgp
         next
         edit "11.11.11.2"
             set remote-as 4294967295
+        next
+    end
+    config network
+        # `edit 0` should make CLI default to 1
+        edit 0
+            set prefix 3.3.3.3/24
+        next
+        edit 4294967295
+            set prefix 4.4.4.4 255.255.255.0
         next
     end
 end

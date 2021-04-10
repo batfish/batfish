@@ -6,9 +6,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.vendor.VendorStructureId;
 
 /** Utility methods for creating {@link TraceElement TraceElements}. */
 @ParametersAreNonnullByDefault
@@ -35,16 +35,20 @@ public final class TraceElements {
       String ipDescription,
       @Nullable IpSpaceMetadata ipSpaceMetadata,
       @Nonnull String name) {
-    String type;
-    String displayName;
-    if (ipSpaceMetadata != null) {
-      type = ipSpaceMetadata.getSourceType();
-      displayName = ipSpaceMetadata.getSourceName();
-    } else {
-      type = IpSpace.class.getSimpleName();
-      displayName = name;
+    if (ipSpaceMetadata == null) {
+      return TraceElement.of(String.format("%s %s permitted by '%s'", ipDescription, ip, name));
     }
-    return TraceElement.of(
-        String.format("%s %s permitted by '%s' named '%s'", ipDescription, ip, type, displayName));
+    String type = ipSpaceMetadata.getSourceType();
+    String displayName = ipSpaceMetadata.getSourceName();
+    VendorStructureId vendorStructureId = ipSpaceMetadata.getVendorStructureId();
+    if (vendorStructureId == null) {
+      return TraceElement.of(
+          String.format("%s %s permitted by %s named '%s'", ipDescription, ip, type, displayName));
+    } else {
+      return TraceElement.builder()
+          .add(String.format("%s %s permitted by %s ", ipDescription, ip, type))
+          .add(displayName, vendorStructureId)
+          .build();
+    }
   }
 }

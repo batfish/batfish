@@ -9,43 +9,10 @@ options {
 ntp_access_group
 :
    ACCESS_GROUP
-   (
-      IPV4
-      | IPV6
-      | KOD
-      |
-      (
-         PEER
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         QUERY_ONLY
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         SERVE
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         SERVE_ONLY
-         (
-            name = variable
-         )
-      )
-      |
-      (
-         VRF vrf = vrf_name
-      )
-   )+ NEWLINE
+   (VRF vrf = vrf_name)?
+   (IPV4 | IPV6)?
+   (PEER | QUERY_ONLY | SERVE | SERVE_ONLY)
+   name = access_list_name NEWLINE
 ;
 
 ntp_authenticate
@@ -100,7 +67,7 @@ ntp_logging
 
 ntp_max_associations
 :
-   MAX_ASSOCIATIONS DEC NEWLINE
+   MAX_ASSOCIATIONS uint_legacy NEWLINE
 ;
 
 ntp_master
@@ -132,21 +99,21 @@ ntp_server
    )? hostname = variable
    (
       (
-         KEY key = DEC
+         KEY key = uint_legacy
       )
       |
       (
-         MAXPOLL DEC
+         MAXPOLL uint_legacy
       )
       |
       (
-         MINPOLL DEC
+         MINPOLL uint_legacy
       )
       | prefer = PREFER
       | SOURCE src_interface = interface_name_unstructured
       |
       (
-         VERSION ver = DEC
+         VERSION ver = uint_legacy
       )
    )* NEWLINE
 ;
@@ -163,7 +130,7 @@ ntp_source_interface
 
 ntp_trusted_key
 :
-   TRUSTED_KEY DEC NEWLINE
+   TRUSTED_KEY uint_legacy NEWLINE
 ;
 
 ntp_update_calendar

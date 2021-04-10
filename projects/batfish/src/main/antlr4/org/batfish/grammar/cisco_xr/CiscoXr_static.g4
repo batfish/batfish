@@ -39,15 +39,15 @@ rs_route
          BFD FAST_DETECT
          (
             (
-               MINIMUM_INTERVAL minimum_interval = DEC
+               MINIMUM_INTERVAL minimum_interval = uint_legacy
             )
             |
             (
-               MULTIPLIER multiplier = DEC
+               MULTIPLIER multiplier = uint_legacy
             )
          )*
       )
-      | distance = DEC
+      | distance = uint_legacy
       |
       (
          DESCRIPTION description = RAW_TEXT
@@ -55,7 +55,7 @@ rs_route
       | PERMANENT
       |
       (
-         TAG tag = DEC
+         TAG tag = uint_legacy
       )
       |
       (

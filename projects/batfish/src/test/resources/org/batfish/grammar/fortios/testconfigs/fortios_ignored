@@ -1,0 +1,388 @@
+config system global
+  set hostname ignored
+end
+config system accprofile
+    edit "prof_admin"
+        set secfabgrp read-write
+        set ftviewgrp read-write
+        set authgrp read-write
+        set sysgrp read-write
+        set netgrp read-write
+        set loggrp read-write
+        set fwgrp read-write
+        set vpngrp read-write
+        set utmgrp read-write
+        set wanoptgrp read-write
+        set wifi read-write
+    next
+    edit "monitoring"
+        set secfabgrp read
+        set ftviewgrp read
+        set authgrp read
+        set sysgrp read
+        set netgrp custom
+        set loggrp read
+        set fwgrp custom
+        set vpngrp read
+        set utmgrp read
+        set wanoptgrp read
+        set wifi read
+        set system-diagnostics disable
+        config netgrp-permission
+            set cfg read
+        end
+    next
+end
+config system admin
+    edit "admin"
+        set accprofile "super_admin"
+        set vdom "root"
+        config gui-dashboard
+            edit 12
+                set name "Status"
+                set vdom "root"
+                set permanent enable
+                config widget
+                    edit 1
+                        set width 1
+                        set height 1
+                    next
+                end
+            next
+        end
+    next
+end
+config system np6
+    edit "np6_0"
+    next
+end
+config system replacemsg-image
+    edit "logo_fnet"
+        set image-type gif
+    next
+    edit "logo_fguard_wf"
+        set image-type gif
+    next
+    edit "logo_v3_fguard_app"
+    next
+    edit "logo_fw_auth"
+        set image-base64 "<removed>"
+    next
+    edit "logo_v2_fnet"
+        set image-base64 "<removed>"
+    next
+    edit "logo_v2_fguard_wf"
+        set image-base64 "<removed>"
+    next
+    edit "logo_v2_fguard_app"
+        set image-base64 "<removed>"
+    next
+end
+config system replacemsg mail "partial"
+end
+config system replacemsg http "url-block"
+end
+config system replacemsg http "urlfilter-err"
+end
+config system replacemsg http "infcache-block"
+end
+config system replacemsg http "http-contenttypeblock"
+end
+config system replacemsg http "https-invalid-cert-block"
+end
+config system replacemsg http "https-untrusted-cert-block"
+end
+config system replacemsg http "https-blacklisted-cert-block"
+end
+config system replacemsg http "switching-protocols-block"
+end
+config system replacemsg http "http-antiphish-block"
+end
+config system replacemsg webproxy "deny"
+end
+config system replacemsg webproxy "user-limit"
+end
+config system replacemsg webproxy "auth-challenge"
+end
+config system replacemsg webproxy "auth-login-fail"
+end
+config system replacemsg webproxy "auth-group-info-fail"
+end
+config system replacemsg webproxy "http-err"
+end
+config system replacemsg webproxy "auth-ip-blackout"
+end
+config system replacemsg ftp "ftp-explicit-banner"
+end
+config system replacemsg fortiguard-wf "ftgd-block"
+end
+config system replacemsg fortiguard-wf "ftgd-ovrd"
+end
+config system replacemsg fortiguard-wf "ftgd-quota"
+end
+config system replacemsg fortiguard-wf "ftgd-warning"
+end
+config system replacemsg spam "ipblocklist"
+end
+config system replacemsg spam "smtp-spam-dnsbl"
+end
+config system replacemsg spam "smtp-spam-feip"
+end
+config system replacemsg spam "smtp-spam-helo"
+end
+config system replacemsg spam "smtp-spam-emailblack"
+end
+config system replacemsg spam "smtp-spam-mimeheader"
+end
+config system replacemsg spam "reversedns"
+end
+config system replacemsg spam "smtp-spam-ase"
+end
+config system replacemsg spam "submit"
+end
+config system replacemsg alertmail "alertmail-virus"
+end
+config system replacemsg alertmail "alertmail-block"
+end
+config system replacemsg alertmail "alertmail-nids-event"
+end
+config system replacemsg alertmail "alertmail-crit-event"
+end
+config system replacemsg alertmail "alertmail-disk-full"
+end
+config system replacemsg admin "pre_admin-disclaimer-text"
+end
+config system replacemsg admin "post_admin-disclaimer-text"
+end
+config system replacemsg auth "auth-disclaimer-page-1"
+end
+config system replacemsg auth "auth-disclaimer-page-2"
+end
+config system replacemsg auth "auth-disclaimer-page-3"
+end
+config system replacemsg auth "auth-reject-page"
+end
+config system replacemsg auth "auth-login-page"
+end
+config system replacemsg auth "auth-login-failed-page"
+end
+config system replacemsg auth "auth-token-login-page"
+end
+config system replacemsg auth "auth-token-login-failed-page"
+end
+config system replacemsg auth "auth-success-msg"
+end
+config system replacemsg auth "auth-challenge-page"
+end
+config system replacemsg auth "auth-keepalive-page"
+end
+config system replacemsg auth "auth-portal-page"
+end
+config system replacemsg auth "auth-password-page"
+end
+config system replacemsg auth "auth-fortitoken-page"
+end
+config system replacemsg auth "auth-next-fortitoken-page"
+end
+config system replacemsg auth "auth-email-token-page"
+end
+config system replacemsg auth "auth-sms-token-page"
+end
+config system replacemsg auth "auth-email-harvesting-page"
+end
+config system replacemsg auth "auth-email-failed-page"
+end
+config system replacemsg auth "auth-cert-passwd-page"
+end
+config system replacemsg auth "auth-guest-print-page"
+end
+config system replacemsg auth "auth-guest-email-page"
+end
+config system replacemsg auth "auth-success-page"
+end
+config system replacemsg auth "auth-block-notification-page"
+end
+config system replacemsg auth "auth-quarantine-page"
+end
+config system replacemsg auth "auth-qtn-reject-page"
+end
+config system replacemsg auth "auth-saml-page"
+end
+config system replacemsg sslvpn "sslvpn-login"
+end
+config system replacemsg sslvpn "sslvpn-header"
+end
+config system replacemsg sslvpn "sslvpn-limit"
+end
+config system replacemsg sslvpn "hostcheck-error"
+end
+config system replacemsg sslvpn "sslvpn-provision-user"
+end
+config system replacemsg sslvpn "sslvpn-provision-user-sms"
+end
+config system replacemsg nac-quar "nac-quar-virus"
+end
+config system replacemsg nac-quar "nac-quar-dos"
+end
+config system replacemsg nac-quar "nac-quar-ips"
+end
+config system replacemsg nac-quar "nac-quar-dlp"
+end
+config system replacemsg nac-quar "nac-quar-admin"
+end
+config system replacemsg nac-quar "nac-quar-app"
+end
+config system replacemsg traffic-quota "per-ip-shaper-block"
+end
+config system replacemsg utm "virus-html"
+end
+config system replacemsg utm "client-virus-html"
+end
+config system replacemsg utm "virus-text"
+end
+config system replacemsg utm "dlp-html"
+end
+config system replacemsg utm "dlp-text"
+end
+config system replacemsg utm "appblk-html"
+end
+config system replacemsg utm "ipsblk-html"
+end
+config system replacemsg utm "ipsfail-html"
+end
+config system replacemsg utm "exe-text"
+end
+config system replacemsg utm "waf-html"
+end
+config system replacemsg utm "outbreak-prevention-html"
+end
+config system replacemsg utm "outbreak-prevention-text"
+end
+config system replacemsg utm "file-filter-html"
+end
+config system replacemsg utm "file-filter-text"
+end
+config system replacemsg utm "file-size-text"
+end
+config system replacemsg utm "transfer-size-text"
+end
+config system replacemsg utm "internal-error-text"
+end
+config system replacemsg utm "archive-block-html"
+end
+config system replacemsg utm "archive-block-text"
+end
+config system replacemsg utm "file-av-fail-text"
+end
+config system replacemsg utm "transfer-av-fail-text"
+end
+config system replacemsg utm "banned-word-html"
+end
+config system replacemsg utm "banned-word-text"
+end
+config system replacemsg utm "block-html"
+end
+config system replacemsg utm "block-text"
+end
+config system replacemsg utm "decompress-limit-text"
+end
+config system replacemsg utm "dlp-subject-text"
+end
+config system replacemsg utm "file-size-html"
+end
+config system replacemsg utm "client-file-size-html"
+end
+config system replacemsg icap "icap-req-resp"
+end
+config system api-user
+    edit "monitoring"
+        set api-key ENC <removed>
+        set accprofile "monitoring"
+        set vdom "root"
+        config trusthost
+            edit 1
+                set ipv4-trusthost 1.2.3.4 255.255.255.255
+            next
+        end
+    next
+end
+config system storage
+    edit "SSD1"
+        set status enable
+        set media-status enable
+        set order 1
+        set partition "AAAAAAAA12345678"
+        set device "/dev/sdb1"
+        set size 1802680
+        set usage log
+    next
+end
+config firewall address
+    edit "Extracted Address"
+        set subnet 1.1.1.0/24
+    next
+end
+config firewall address6
+    edit "all"
+        set uuid aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+    next
+    edit "none"
+        set uuid aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+        set ip6 ::/128
+    next
+end
+config firewall multicast-address6
+    edit "all"
+        set ip6 ff00::/8
+    next
+end
+config firewall wildcard-fqdn custom
+    edit "adobe"
+        set uuid aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+        set wildcard-fqdn "*.adobe.com"
+    next
+end
+config firewall service category
+    edit "General"
+        set comment "General services."
+    next
+    edit "Web Access"
+        set comment "Web access."
+    next
+    edit "File Access"
+        set comment "File access."
+    next
+    edit "Email"
+        set comment "Email services."
+    next
+    edit "Network Services"
+        set comment "Network services."
+    next
+    edit "Authentication"
+        set comment "Authentication service."
+    next
+    edit "Remote Access"
+        set comment "Remote access."
+    next
+    edit "Tunneling"
+        set comment "Tunneling service."
+    next
+    edit "VoIP, Messaging & Other Applications"
+        set comment "VoIP, messaging, and other applications."
+    next
+    edit "Web Proxy"
+        set comment "Explicit web proxy."
+    next
+end
+config system session-helper
+    edit 1
+        set name pptp
+        set protocol 6
+        set port 1723
+    next
+end
+config system email-server
+    set server "notification.fortinet.net"
+    set port 465
+    set security smtps
+end

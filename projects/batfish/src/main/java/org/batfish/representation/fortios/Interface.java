@@ -4,6 +4,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -21,6 +23,20 @@ public final class Interface implements InterfaceOrZone, Serializable {
     WL_MESH;
   }
 
+  public enum Speed {
+    AUTO,
+    TEN_FULL,
+    TEN_HALF,
+    HUNDRED_FULL,
+    HUNDRED_HALF,
+    THOUSAND_FULL,
+    THOUSAND_HALF,
+    TEN_THOUSAND_FULL,
+    TEN_THOUSAND_HALF,
+    HUNDRED_GFULL,
+    HUNDRED_GHALF,
+  }
+
   public enum Status {
     UP,
     DOWN,
@@ -28,6 +44,8 @@ public final class Interface implements InterfaceOrZone, Serializable {
   }
 
   public static final int DEFAULT_INTERFACE_MTU = 1500;
+  public static final boolean DEFAULT_SECONDARY_IP_ENABLED = false;
+  public static final Speed DEFAULT_SPEED = Speed.AUTO;
   public static final int DEFAULT_VRF = 0;
   public static final Type DEFAULT_TYPE = Type.VLAN;
   public static final boolean DEFAULT_STATUS = true;
@@ -109,6 +127,34 @@ public final class Interface implements InterfaceOrZone, Serializable {
   }
 
   @Nullable
+  public Boolean getSecondaryIp() {
+    return _secondaryIp;
+  }
+
+  /**
+   * Get the effective secondaryip enabled-status of the interface, inferring the value even if not
+   * explicitly configured.
+   */
+  public boolean getSecondaryIpEffective() {
+    return firstNonNull(_secondaryIp, DEFAULT_SECONDARY_IP_ENABLED);
+  }
+
+  @Nonnull
+  public Map<String, SecondaryIp> getSecondaryip() {
+    return _secondaryip;
+  }
+
+  @Nullable
+  public Speed getSpeed() {
+    return _speed;
+  }
+
+  @Nonnull
+  public Speed getSpeedEffective() {
+    return firstNonNull(_speed, DEFAULT_SPEED);
+  }
+
+  @Nullable
   public Integer getVlanid() {
     return _vlanid;
   }
@@ -162,6 +208,14 @@ public final class Interface implements InterfaceOrZone, Serializable {
     _interface = iface;
   }
 
+  public void setSecondaryIp(Boolean secondaryIp) {
+    _secondaryIp = secondaryIp;
+  }
+
+  public void setSpeed(Speed speed) {
+    _speed = speed;
+  }
+
   public void setVlanid(int vlanid) {
     _vlanid = vlanid;
   }
@@ -173,6 +227,8 @@ public final class Interface implements InterfaceOrZone, Serializable {
   public Interface(String name) {
     _name = name;
     _status = Status.UNKNOWN;
+
+    _secondaryip = new HashMap<>();
   }
 
   @Nonnull private final String _name;
@@ -185,6 +241,12 @@ public final class Interface implements InterfaceOrZone, Serializable {
   @Nullable private Integer _mtu;
   @Nullable private String _description;
   @Nullable private String _interface;
+  /** Boolean indicating if secondary-IP is enabled, i.e. if secondaryip can be populated */
+  @Nullable private Boolean _secondaryIp;
+  /** Map of name/number to {@code SecondaryIp} */
+  @Nonnull private Map<String, SecondaryIp> _secondaryip;
+
+  @Nullable private Speed _speed;
   @Nullable private Integer _vlanid;
   @Nullable private Integer _vrf;
 }

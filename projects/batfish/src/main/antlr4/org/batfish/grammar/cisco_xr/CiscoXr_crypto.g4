@@ -362,7 +362,7 @@ cipt_mode
 
 cis_key
 :
-   KEY DEC? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
+   KEY uint_legacy? key = VARIABLE ADDRESS ip_address = IP_ADDRESS (wildcard_mask = IP_ADDRESS)? NEWLINE
 ;
 
 cis_null
@@ -380,7 +380,7 @@ cis_null
 
 cis_policy
 :
-   POLICY priority = DEC NEWLINE
+   POLICY priority = uint_legacy NEWLINE
    (
       cispol_authentication
       | cispol_encryption
@@ -423,7 +423,7 @@ cispol_encryption
 
 cispol_group
 :
-   GROUP DEC NEWLINE
+   GROUP uint_legacy NEWLINE
 ;
 
 cispol_hash
@@ -438,7 +438,7 @@ cispol_hash
 
 cispol_lifetime
 :
-    LIFETIME DEC NEWLINE
+    LIFETIME uint_legacy NEWLINE
 ;
 
 cispol_null
@@ -625,7 +625,7 @@ crypto_csr_params
 
 crypto_dynamic_map
 :
-   DYNAMIC_MAP name = variable seq_num = DEC crypto_dynamic_map_null?
+   DYNAMIC_MAP name = variable seq_num = uint_legacy crypto_dynamic_map_null?
    (
      NEWLINE
        (
@@ -723,7 +723,7 @@ crypto_map
    MAP name = variable
    (
       crypto_map_null
-      | seq_num = DEC crypto_map_tail
+      | seq_num = uint_legacy crypto_map_tail
    )
 ;
 
@@ -887,7 +887,7 @@ kk_null
 ike_encryption
 :
    (
-      AES strength = DEC?
+      AES strength = uint_legacy?
    )
    | DES
    | THREE_DES
@@ -906,17 +906,17 @@ ipsec_authentication
 ipsec_encryption
 :
    (
-      ESP_AES strength = DEC?
+      ESP_AES strength = uint_legacy?
    )
    | ESP_DES
    | ESP_3DES
    |
    (
-      ESP_GCM strength = DEC?
+      ESP_GCM strength = uint_legacy?
    )
    |
    (
-      ESP_GMAC strength = DEC?
+      ESP_GMAC strength = uint_legacy?
    )
    | ESP_NULL
    | ESP_SEAL

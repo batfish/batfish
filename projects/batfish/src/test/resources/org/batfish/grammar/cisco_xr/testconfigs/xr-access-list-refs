@@ -1,0 +1,44 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-access-list-refs
+!
+
+interface GigabitEthernet0/0/0/0
+ ipv4 access-group common ipv4acl1 ipv4acl2 ingress
+ ipv4 access-group ipv4acl3 egress
+ ipv6 access-group common ipv6acl1 ipv6acl2 ingress
+ ipv6 access-group ipv6acl3 egress
+!
+
+ntp
+ access-group ipv4 peer ipv4acl4
+ access-group ipv4 query-only ipv4acl5
+ access-group ipv4 serve ipv4acl6
+ access-group ipv4 serve-only ipv4acl7
+ access-group ipv6 peer ipv6acl4
+ access-group ipv6 query-only ipv6acl5
+ access-group ipv6 serve ipv6acl6
+ access-group ipv6 serve-only ipv6acl7
+!
+
+mpls ldp
+ address-family ipv4
+  discovery targeted-hello accept from ipv4acl8
+   redistribute
+    bgp
+     advertise-to ipv4acl9
+    !
+   !
+  !
+ !
+ address-family ipv6
+  discovery targeted-hello accept from ipv6acl8
+   redistribute
+    bgp
+     advertise-to ipv6acl9
+    !
+   !
+  !
+ !
+!
+

@@ -921,7 +921,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                       (name, addressObject) -> {
                         _c.getIpSpaces().put(name, addressObject.getIpSpace());
                         _c.getIpSpaceMetadata()
-                            .put(name, new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription()));
+                            .put(
+                                name,
+                                new IpSpaceMetadata(name, ADDRESS_OBJECT.getDescription(), null));
                       });
 
               namespace
@@ -934,7 +936,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                                 addressGroup.getIpSpace(
                                     namespace.getAddressObjects(), namespace.getAddressGroups()));
                         _c.getIpSpaceMetadata()
-                            .put(name, new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription()));
+                            .put(
+                                name,
+                                new IpSpaceMetadata(name, ADDRESS_GROUP.getDescription(), null));
                       });
 
               // Convert PAN zones

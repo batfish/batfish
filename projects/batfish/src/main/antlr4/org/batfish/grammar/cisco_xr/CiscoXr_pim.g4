@@ -96,25 +96,25 @@ pim_rp_candidate
       )
       |
       (
-         INTERVAL DEC
+         INTERVAL uint_legacy
       )
       |
       (
-         PRIORITY DEC
+         PRIORITY uint_legacy
       )
    )+ NEWLINE
 ;
 
 pim_send_rp_announce
 :
-   SEND_RP_ANNOUNCE interface_name SCOPE ttl = DEC
+   SEND_RP_ANNOUNCE interface_name SCOPE ttl = uint_legacy
    (
       (
          GROUP_LIST name = variable
       )
       |
       (
-         INTERVAL DEC
+         INTERVAL uint_legacy
       )
    )+ NEWLINE
 ;
@@ -123,7 +123,7 @@ pim_spt_threshold
 :
    SPT_THRESHOLD
    (
-      DEC
+      uint_legacy
       | INFINITY
    )
    (

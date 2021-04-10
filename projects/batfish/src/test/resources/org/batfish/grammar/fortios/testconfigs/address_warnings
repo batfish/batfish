@@ -1,6 +1,19 @@
 config system global
     set hostname "address_warnings"
 end
+
+config system interface
+    edit "zoned_iface"
+        set vdom "root"
+        set ip 192.168.10.1 255.255.255.0
+        set type physical
+    next
+end
+config system zone
+    edit "zone1"
+        set interface zoned_iface
+    next
+end
 config firewall address
     # Name is too long
     edit "abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz abcdefghijklmnopqrstuvwxyz"
@@ -11,6 +24,7 @@ config firewall address
         set interface "abcdefghijklmnop"
         # Undefined references
         set associated-interface "undefined_iface"
+        set associated-interface "zoned_iface"
         set interface "undefined_iface"
         # Invalid for this type
         set start-ip 1.1.1.0

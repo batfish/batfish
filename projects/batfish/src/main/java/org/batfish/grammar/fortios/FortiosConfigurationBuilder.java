@@ -12,6 +12,7 @@ import com.google.common.primitives.Longs;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -47,6 +48,7 @@ import org.batfish.grammar.fortios.FortiosParser.Addrgrp_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Allow_or_denyContext;
 import org.batfish.grammar.fortios.FortiosParser.Bgp_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Bgp_neighbor_idContext;
+import org.batfish.grammar.fortios.FortiosParser.Bgp_network_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Bgp_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfa_renameContext;
@@ -70,6 +72,9 @@ import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_exclude_memberCon
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_fabric_objectContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfaddrgrp_set_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfisn_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfisne_set_internet_service_idContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfisne_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstaddrContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_dstintfContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfp_append_serviceContext;
@@ -98,11 +103,13 @@ import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_protocol_numberContext
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_sctp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_tcp_portrangeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsc_set_udp_portrangeContext;
-import org.batfish.grammar.fortios.FortiosParser.Cfsg_append_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_unset_icmpcodeContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsc_unset_icmptypeContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_renameContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_commentContext;
 import org.batfish.grammar.fortios.FortiosParser.Cfsg_set_memberContext;
+import org.batfish.grammar.fortios.FortiosParser.Cfsga_memberContext;
 import org.batfish.grammar.fortios.FortiosParser.Cr_bgpContext;
 import org.batfish.grammar.fortios.FortiosParser.Cral_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crale_set_commentsContext;
@@ -139,11 +146,15 @@ import org.batfish.grammar.fortios.FortiosParser.Csi_set_interfaceContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtuContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_mtu_overrideContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_secondary_ipContext;
+import org.batfish.grammar.fortios.FortiosParser.Csi_set_speedContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vdomContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_vrfContext;
+import org.batfish.grammar.fortios.FortiosParser.Csiecsip_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Csiecsipe_set_ipContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_set_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csr_unset_bufferContext;
 import org.batfish.grammar.fortios.FortiosParser.Csz_append_interfaceContext;
@@ -161,7 +172,11 @@ import org.batfish.grammar.fortios.FortiosParser.Interface_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_namesContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_or_zone_namesContext;
+import org.batfish.grammar.fortios.FortiosParser.Interface_speedContext;
 import org.batfish.grammar.fortios.FortiosParser.Interface_typeContext;
+import org.batfish.grammar.fortios.FortiosParser.Internet_service_idContext;
+import org.batfish.grammar.fortios.FortiosParser.Internet_service_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Internet_service_name_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefixContext;
 import org.batfish.grammar.fortios.FortiosParser.Ip_address_with_mask_or_prefix_or_anyContext;
@@ -202,17 +217,21 @@ import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
 import org.batfish.representation.fortios.BatfishUUID;
 import org.batfish.representation.fortios.BgpNeighbor;
+import org.batfish.representation.fortios.BgpNetwork;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.representation.fortios.FortiosStructureType;
 import org.batfish.representation.fortios.FortiosStructureUsage;
 import org.batfish.representation.fortios.Interface;
+import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Type;
+import org.batfish.representation.fortios.InternetServiceName;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.RouteMapRule;
+import org.batfish.representation.fortios.SecondaryIp;
 import org.batfish.representation.fortios.Service;
 import org.batfish.representation.fortios.Service.Protocol;
 import org.batfish.representation.fortios.ServiceGroup;
@@ -277,6 +296,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       group.setExcludeMember(toNames(group.getExcludeMemberUUIDs()));
       group.setMember(toNames(group.getMemberUUIDs()));
     }
+
+    for (Address address : _c.getAddresses().values()) {
+      BatfishUUID uuid = address.getAssociatedInterfaceZoneUUID();
+      if (uuid != null) {
+        address.setAssociatedInterfaceZone(toName(uuid));
+      }
+    }
   }
 
   /**
@@ -284,9 +310,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * org.batfish.representation.fortios.FortiosRenameableObject} names
    */
   private Set<String> toNames(Set<BatfishUUID> uuids) {
-    return uuids.stream()
-        .map(u -> _c.getRenameableObjects().get(u).getName())
-        .collect(ImmutableSet.toImmutableSet());
+    return uuids.stream().map(this::toName).collect(ImmutableSet.toImmutableSet());
+  }
+
+  private String toName(BatfishUUID uuid) {
+    return _c.getRenameableObjects().get(uuid).getName();
   }
 
   @Override
@@ -397,18 +425,45 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     // Permitted zone names are a superset of permitted interface names, so at this point we know
     // the name is a valid zone name, but it may or may not be a valid interface name.
     String name = optName.get();
+    int line = ctx.start.getLine();
 
-    // TODO after zone support: If zone exists, set _currentAddress's associatedZone and return.
-
-    if (!_c.getInterfaces().containsKey(name)) {
-      warn(ctx, "No interface or zone named " + name);
-      // TODO File undefined reference to zone, or INTERFACE_OR_ZONE if it's a valid interface name
+    if (_c.getZones().containsKey(name)) {
+      _currentAddress.setAssociatedInterfaceZoneUUID(_c.getZones().get(name).getBatfishUUID());
+      _c.referenceStructure(
+          FortiosStructureType.ZONE,
+          name,
+          FortiosStructureUsage.ADDRESS_ASSOCIATED_INTERFACE,
+          line);
       return;
     }
 
-    // TODO Add structure reference for interface
-    todo(ctx);
-    _currentAddress.setAssociatedInterface(name);
+    if (_c.getInterfaces().containsKey(name)) {
+      // Zoned interfaces can't be referenced in this context
+      ImmutableSet<String> zonedIfaceNames =
+          _c.getZones().values().stream()
+              .map(Zone::getInterface)
+              .flatMap(Collection::stream)
+              .collect(ImmutableSet.toImmutableSet());
+      if (zonedIfaceNames.contains(name)) {
+        warn(ctx, "Cannot reference zoned interface " + name);
+        return;
+      }
+
+      _currentAddress.setAssociatedInterface(name);
+      _c.referenceStructure(
+          FortiosStructureType.INTERFACE,
+          name,
+          FortiosStructureUsage.ADDRESS_ASSOCIATED_INTERFACE,
+          line);
+      return;
+    }
+
+    warn(ctx, "No interface or zone named " + name);
+    _c.undefined(
+        FortiosStructureType.INTERFACE_OR_ZONE,
+        name,
+        FortiosStructureUsage.ADDRESS_ASSOCIATED_INTERFACE,
+        line);
   }
 
   @Override
@@ -685,6 +740,77 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void enterCsiecsip_edit(Csiecsip_editContext ctx) {
+    Optional<Long> number = toLong(ctx, ctx.sip_number());
+    _currentSecondaryip =
+        number
+            .map(Objects::toString)
+            .map(i -> _currentInterface.getSecondaryip().get(i))
+            .map(SerializationUtils::clone)
+            .orElseGet(() -> new SecondaryIp(toString(ctx.sip_number().str())));
+    _currentSecondaryipNameValid = number.isPresent();
+
+    // TODO 0 is allowed as a special case, representing some currently unused number
+    if (number.isPresent() && number.get() == 0L) {
+      warn(ctx, "Secondaryip number 0 is not yet supported");
+      _currentSecondaryipNameValid = false;
+    }
+  }
+
+  /** Returns message indicating why secondaryip can't be committed in the CLI, or null if it can */
+  private static @Nullable String secondaryipValid(Interface iface, boolean nameValid) {
+    if (!iface.getSecondaryIpEffective()) {
+      return "cannot configure a secondaryip when secondary-IP is not enabled";
+    }
+    if (!nameValid) {
+      return "name is invalid";
+    }
+    return null;
+  }
+
+  @Override
+  public void exitCsiecsip_edit(Csiecsip_editContext ctx) {
+    String number = _currentSecondaryip.getName();
+    String invalidReason = secondaryipValid(_currentInterface, _currentSecondaryipNameValid);
+    if (invalidReason == null) {
+      _currentInterface.getSecondaryip().put(number, _currentSecondaryip);
+    } else {
+      warn(ctx, String.format("Secondaryip edit block ignored: %s", invalidReason));
+    }
+    _currentSecondaryip = null;
+  }
+
+  @Override
+  public void exitCsiecsipe_set_ip(Csiecsipe_set_ipContext ctx) {
+    ConcreteInterfaceAddress pip = _currentInterface.getIp();
+    if (pip == null) {
+      warn(ctx, "Primary ip address must be configured before a secondaryip can be configured");
+      return;
+    }
+
+    ConcreteInterfaceAddress sip = toConcreteInterfaceAddress(ctx.ip);
+    if (pip.getIp().equals(sip.getIp())) {
+      warn(
+          ctx,
+          "This secondaryip will be ignored; must use a secondaryip other than the primary ip"
+              + " address");
+      return;
+    }
+    for (SecondaryIp otherSip : _currentInterface.getSecondaryip().values()) {
+      ConcreteInterfaceAddress otherIp = otherSip.getIp();
+      if (otherIp != null && otherIp.getIp().equals(sip.getIp())) {
+        warn(
+            ctx,
+            "This secondaryip will be ignored; must use a secondaryip other than existing"
+                + " secondaryip addresses");
+        return;
+      }
+    }
+
+    _currentSecondaryip.setIp(sip);
+  }
+
+  @Override
   public void enterCsi_edit(Csi_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.interface_name());
     _currentInterface =
@@ -756,6 +882,16 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsi_set_alias(Csi_set_aliasContext ctx) {
     toString(ctx, ctx.alias).ifPresent(s -> _currentInterface.setAlias(s));
+  }
+
+  @Override
+  public void exitCsi_set_secondary_ip(Csi_set_secondary_ipContext ctx) {
+    _currentInterface.setSecondaryIp(toBoolean(ctx.value));
+  }
+
+  @Override
+  public void exitCsi_set_speed(Csi_set_speedContext ctx) {
+    _currentInterface.setSpeed(toSpeed(ctx.interface_speed()));
   }
 
   @Override
@@ -851,6 +987,79 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void enterCrbcnet_edit(FortiosParser.Crbcnet_editContext ctx) {
+    Optional<Long> networkId = toLong(ctx, ctx.bgp_network_id());
+    if (networkId.isPresent() && networkId.get() == 0) {
+      // "edit 0" picks a new non-zero ID based on the existing network IDs
+      networkId = getNextVal(_c.getBgpProcess().getNetworks().keySet(), BGP_NETWORK_ID_SPACE);
+    }
+    // Using 0 as a dummy ID for edit blocks with invalid network IDs
+    long id = networkId.orElse(0L);
+    _currentBgpNetwork =
+        Optional.ofNullable(_c.getBgpProcess().getNetworks().get(id))
+            .map(SerializationUtils::clone)
+            .orElseGet(() -> new BgpNetwork(id));
+  }
+
+  /**
+   * Gets the default next value that the CLI will select in certain contexts when the user enters
+   * "edit 0". The CLI is interprets this as shorthand for "make a new edit block with any ID".
+   *
+   * <p>The CLI will select the number of currently-configured values plus one, unless that value is
+   * already in use, in which case it will select the next higher value that is not in use.
+   *
+   * @param existing Values that are already taken
+   * @param permitted Space of permitted values
+   * @return the value selected by the CLI, or empty optional if the selected value would be outside
+   *     of the permitted values. (Not expected to ever happen in practice.)
+   */
+  private static Optional<Long> getNextVal(Set<Long> existing, LongSpace permitted) {
+    long candidate = existing.size() + 1;
+    while (existing.contains(candidate)) {
+      candidate++;
+    }
+    return permitted.contains(candidate) ? Optional.of(candidate) : Optional.empty();
+  }
+
+  @Override
+  public void exitCrbcnet_edit(FortiosParser.Crbcnet_editContext ctx) {
+    String invalidReason = bgpNetworkValid(_currentBgpNetwork);
+    if (invalidReason == null) {
+      _c.getBgpProcess().getNetworks().put(_currentBgpNetwork.getId(), _currentBgpNetwork);
+    } else {
+      warn(ctx, String.format("BGP network edit block ignored: %s", invalidReason));
+    }
+    _currentBgpNetwork = null;
+  }
+
+  private static String bgpNetworkValid(BgpNetwork bgpNetwork) {
+    if (bgpNetwork.getId() == 0L) {
+      // Indicates invalid name
+      return "name is invalid";
+    } else if (bgpNetwork.getPrefix() == null) {
+      return "prefix must be set";
+    }
+    return null;
+  }
+
+  @Override
+  public void exitCrbcnete_set_prefix(FortiosParser.Crbcnete_set_prefixContext ctx) {
+    Prefix network = toPrefix(ctx.network);
+    if (network.equals(Prefix.ZERO)) {
+      warn(ctx, "Prefix 0.0.0.0/0 is not allowed for a BGP network prefix");
+    } else if (_c.getBgpProcess().getNetworks().values().stream()
+        .anyMatch(bgpNetwork -> network.equals(bgpNetwork.getPrefix()))) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot set BGP network prefix %s: Another BGP network already has this prefix",
+              network));
+    } else {
+      _currentBgpNetwork.setPrefix(network);
+    }
+  }
+
+  @Override
   public void exitCrbcne_set_remote_as(Crbcne_set_remote_asContext ctx) {
     toLong(ctx, ctx.bgp_remote_as()).ifPresent(_currentBgpNeighbor::setRemoteAs);
   }
@@ -865,6 +1074,32 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCrbcne_set_route_map_out(Crbcne_set_route_map_outContext ctx) {
     toRouteMap(ctx.route_map_name(), FortiosStructureUsage.BGP_NEIGHBOR_ROUTE_MAP_OUT)
         .ifPresent(_currentBgpNeighbor::setRouteMapOut);
+  }
+
+  private Interface.Speed toSpeed(Interface_speedContext ctx) {
+    if (ctx.AUTO() != null) {
+      return Speed.AUTO;
+    } else if (ctx.TEN_FULL() != null) {
+      return Speed.TEN_FULL;
+    } else if (ctx.TEN_HALF() != null) {
+      return Speed.TEN_HALF;
+    } else if (ctx.HUNDRED_FULL() != null) {
+      return Speed.HUNDRED_FULL;
+    } else if (ctx.HUNDRED_HALF() != null) {
+      return Speed.HUNDRED_HALF;
+    } else if (ctx.THOUSAND_FULL() != null) {
+      return Speed.THOUSAND_FULL;
+    } else if (ctx.THOUSAND_HALF() != null) {
+      return Speed.THOUSAND_HALF;
+    } else if (ctx.TEN_THOUSAND_FULL() != null) {
+      return Speed.TEN_THOUSAND_FULL;
+    } else if (ctx.TEN_THOUSAND_HALF() != null) {
+      return Speed.TEN_THOUSAND_HALF;
+    } else if (ctx.HUNDRED_GFULL() != null) {
+      return Speed.HUNDRED_GFULL;
+    }
+    assert ctx.HUNDRED_GHALF() != null;
+    return Speed.HUNDRED_GHALF;
   }
 
   private Optional<String> toRouteMap(Route_map_nameContext ctx, FortiosStructureUsage usage) {
@@ -1030,6 +1265,46 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void enterCfisn_edit(Cfisn_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.internet_service_name());
+    _currentInternetServiceName =
+        name.map(_c.getInternetServiceNames()::get)
+            .orElseGet(() -> new InternetServiceName(toString(ctx.internet_service_name().str())));
+    _currentInternetServiceNameNameValid = name.isPresent();
+  }
+
+  @Override
+  public void exitCfisn_edit(Cfisn_editContext ctx) {
+    String name = _currentInternetServiceName.getName();
+    // TODO better validation
+    if (_currentInternetServiceNameNameValid) {
+      _c.getInternetServiceNames().put(name, _currentInternetServiceName);
+    } else {
+      warn(ctx, "Internet-service-name edit block ignored: name is invalid");
+    }
+    _currentInternetServiceName = null;
+  }
+
+  @Override
+  public void exitCfisne_set_internet_service_id(Cfisne_set_internet_service_idContext ctx) {
+    toLong(ctx, ctx.internet_service_id())
+        .ifPresent(_currentInternetServiceName::setInternetServiceId);
+  }
+
+  @Override
+  public void exitCfisne_set_type(Cfisne_set_typeContext ctx) {
+    _currentInternetServiceName.setType(toType(ctx.internet_service_name_type()));
+  }
+
+  private InternetServiceName.Type toType(Internet_service_name_typeContext ctx) {
+    if (ctx.DEFAULT() != null) {
+      return InternetServiceName.Type.DEFAULT;
+    }
+    assert ctx.LOCATION() != null;
+    return InternetServiceName.Type.LOCATION;
+  }
+
+  @Override
   public void enterCfp_edit(Cfp_editContext ctx) {
     Optional<Long> number = toLong(ctx, ctx.policy_number());
     Policy existing = number.map(Object::toString).map(_c.getPolicies()::get).orElse(null);
@@ -1090,6 +1365,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     clone.setNumber(toNumber);
     _c.getPolicies().put(toNumber, clone);
     _c.defineStructure(FortiosStructureType.POLICY, toNumber, ctx);
+    _c.referenceStructure(
+        FortiosStructureType.POLICY,
+        toNumber,
+        FortiosStructureUsage.POLICY_SELF_REF,
+        ctx.start.getLine());
   }
 
   @Override
@@ -1372,7 +1652,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
-  public void exitCfsg_append_member(Cfsg_append_memberContext ctx) {
+  public void exitCfsga_member(Cfsga_memberContext ctx) {
     toServiceGroupMemberUUIDs(
             ctx.service_names(), FortiosStructureUsage.SERVICE_GROUP_MEMBER, false)
         .ifPresent(
@@ -1553,6 +1833,43 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     }
     _currentService.setUdpPortRangeDst(toDstIntegerSpace(ctx.service_port_ranges()));
     _currentService.setUdpPortRangeSrc(toSrcIntegerSpace(ctx.service_port_ranges()).orElse(null));
+  }
+
+  @Override
+  public void enterCfsc_unset_icmpcode(Cfsc_unset_icmpcodeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.ICMP
+        && _currentService.getProtocolEffective() != Protocol.ICMP6) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot unset ICMP code for service %s when protocol is not set to ICMP or ICMP6.",
+              _currentService.getName()));
+      return;
+    } else if (_currentService.getIcmpType() == null) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot unset ICMP code for service %s when icmptype is unset.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setIcmpCode(null);
+  }
+
+  @Override
+  public void enterCfsc_unset_icmptype(Cfsc_unset_icmptypeContext ctx) {
+    if (_currentService.getProtocolEffective() != Protocol.ICMP
+        && _currentService.getProtocolEffective() != Protocol.ICMP6) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot unset ICMP type for service %s when protocol is not set to ICMP or ICMP6.",
+              _currentService.getName()));
+      return;
+    }
+    _currentService.setIcmpType(null);
+    // device also clears code
+    _currentService.setIcmpCode(null);
   }
 
   @Override
@@ -2288,6 +2605,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Internet_service_nameContext ctx) {
+    return toString(
+        messageCtx, ctx.str(), "internet-service-name name", INTERNET_SERVICE_NAME_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_or_zone_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "zone or interface name", ZONE_NAME_PATTERN);
   }
@@ -2386,6 +2709,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toLongInSpace(messageCtx, ctx.str(), BGP_AS_SPACE, "BGP AS");
   }
 
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Bgp_network_idContext ctx) {
+    return toLongInSpace(messageCtx, ctx.str(), BGP_NETWORK_ID_SPACE, "BGP network ID");
+  }
+
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Bgp_remote_asContext ctx) {
     return toLongInSpace(messageCtx, ctx.str(), BGP_REMOTE_AS_SPACE, "BGP remote AS");
   }
@@ -2395,6 +2722,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         messageCtx, ctx.str(), ACCESS_LIST_RULE_NUMBER_SPACE, "access-list rule number");
   }
 
+  private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, Internet_service_idContext ctx) {
+    return toLongInSpace(
+        messageCtx, ctx.str(), INTERNET_SERVICE_ID_NUMBER_SPACE, "internet-service-id");
+  }
+
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Policy_numberContext ctx) {
     return toLongInSpace(messageCtx, ctx.str(), POLICY_NUMBER_SPACE, "policy number");
   }
@@ -2402,6 +2735,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Optional<Long> toLong(
       ParserRuleContext ctx, FortiosParser.Route_map_rule_numberContext num) {
     return toLongInSpace(ctx, num.str(), ROUTE_MAP_RULE_NUM_SPACE, "route-map rule number");
+  }
+
+  private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Sip_numberContext num) {
+    return toLongInSpace(ctx, num.str(), SECONDARY_IP_NUM_SPACE, "secondaryip number");
   }
 
   private Optional<Long> toLong(ParserRuleContext ctx, FortiosParser.Route_numContext routeNum) {
@@ -2741,6 +3078,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       Pattern.compile("\\\\(['\"\\\\])");
   private static final Pattern ESCAPED_UNQUOTED_CHAR_PATTERN = Pattern.compile("\\\\([^\\r\\n])");
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,15}$");
+  private static final Pattern INTERNET_SERVICE_NAME_NAME_PATTERN =
+      Pattern.compile("^[^\n" + "]{1,63}$");
   private static final Pattern INTERFACE_ALIAS_PATTERN = Pattern.compile("^[^\r\n]{0,25}$");
   private static final Pattern POLICY_NAME_PATTERN = Pattern.compile("^[^\r\n]{1,35}$");
   // TODO determine more precise limitations on allowed chars for route-map name
@@ -2752,14 +3091,19 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private static final LongSpace ACCESS_LIST_RULE_NUMBER_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace BGP_AS_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final LongSpace BGP_NETWORK_ID_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace BGP_REMOTE_AS_SPACE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace IP_PROTOCOL_NUMBER_SPACE =
       IntegerSpace.of(Range.closed(0, 254));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 65535));
+  private static final LongSpace INTERNET_SERVICE_ID_NUMBER_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace POLICY_NUMBER_SPACE = LongSpace.of(Range.closed(0L, 4294967294L));
   private static final LongSpace ROUTE_MAP_RULE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(1, 255));
+  private static final LongSpace SECONDARY_IP_NUM_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace STATIC_ROUTE_NUM_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace VLANID_SPACE = IntegerSpace.of(Range.closed(1, 4094));
@@ -2781,8 +3125,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private Addrgrp _currentAddrgrp;
   private boolean _currentAddrgrpNameValid;
   private BgpNeighbor _currentBgpNeighbor;
+  private BgpNetwork _currentBgpNetwork;
   private Interface _currentInterface;
   private boolean _currentInterfaceNameValid;
+  private InternetServiceName _currentInternetServiceName;
+  private boolean _currentInternetServiceNameNameValid;
   private Policy _currentPolicy;
   /**
    * Whether the current policy has invalid lines that would prevent committing the policy in CLI.
@@ -2799,6 +3146,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private RouteMapRule _currentRouteMapRule;
   private boolean _currentRouteMapRuleNameValid;
 
+  private SecondaryIp _currentSecondaryip;
+  private boolean _currentSecondaryipNameValid;
   private Service _currentService;
   /**
    * Whether the current service has invalid lines that would prevent committing the service in CLI.

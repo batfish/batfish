@@ -1,0 +1,49 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-bfd
+!
+
+bfd
+ bundle coexistence bob-blb inherit
+ bundle coexistence bob-blb logical
+ dampening bundle-member initial-wait 1
+ dampening bundle-member l3-only-mode
+ dampening bundle-member maximum-wait 1
+ dampening bundle-member secondary-wait 1
+ dampening disable
+ dampening extensions down-monitoring
+ dampening initial-wait 1
+ dampening maximum-wait 1
+ dampening secondary-wait 1
+ dampening threshold 60000
+ interface GigabitEthernet0/0/0/0
+  echo
+  echo disable
+  echo source 1.1.1.1
+  ipv6 checksum
+  ipv6 checksum disable
+ !
+ ipv6 checksum disable
+ multihop ttl-drop-threshold 0
+ multipath include location 0/5/CPU0
+ trap singlehop pre-mapped
+!
+
+interface Bundle-Ether1
+ bfd address-family ipv4 destination 1.1.1.1
+ bfd address-family ipv4 echo minimum-interval 15
+ bfd address-family ipv4 fast-detect
+ bfd address-family ipv4 minimum-interval 15
+ bfd address-family ipv4 multiplier 2
+ bfd address-family ipv4 timers nbr-unconfig 60
+ bfd address-family ipv4 timers start 60
+ bfd address-family ipv6 destination 1::1
+ bfd address-family ipv6 fast-detect
+ bfd address-family ipv6 minimum-interval 15
+ bfd address-family ipv6 multiplier 2
+ bfd address-family ipv6 timers nbr-unconfig 60
+ bfd address-family ipv6 timers start 60
+ bfd mode cisco
+ bfd mode ietf
+!
+

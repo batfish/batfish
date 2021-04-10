@@ -18,6 +18,11 @@ config system interface
         set ip 10.0.3.1/24
     next
 end
+config system zone
+    edit zoneA
+        set interface port1
+    next
+end
 config firewall service custom
     edit "service1"
         set tcp-portrange 1
@@ -52,8 +57,8 @@ config firewall policy
         set dstaddr UNDEFINED
         set service UNDEFINED
 
-        set srcintf port1 port3
-        set dstintf port1
+        set srcintf zoneA port3
+        set dstintf zoneA
         set srcaddr addr1
         set dstaddr addr1 addr3
         set service service1

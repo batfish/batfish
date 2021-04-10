@@ -3,20 +3,25 @@ config system global
 end
 config firewall service custom
     edit "longest possible firewall service custom service name that is accepted by devic"
+        set category "General"
         set comment "service custom comment"
         set protocol IP
     next
     edit "custom_tcp"
+        set category "Web Access"
         # Variety of destination and source port ranges (at least one required)
         set tcp-portrange 1
     next
     edit "explicit_tcp"
+        set category "Network Services"
+        set visibility disable
         set protocol TCP/UDP/SCTP
         set tcp-portrange 1-2:3-4 10-11 13:6-7
         set udp-portrange 100
         set sctp-portrange 200 201:300
     next
     edit "src_port_defaults"
+        set visibility enable
         set protocol TCP/UDP/SCTP
         set tcp-portrange 1
         set udp-portrange 1
@@ -46,5 +51,27 @@ config firewall service custom
         set sctp-portrange 254
         # Previously set protocol-values should be unset when protocol is changed
         set protocol IP
+    next
+    edit "unset_icmp_1"
+        set protocol ICMP
+        set icmptype 5
+        set icmpcode 1
+        unset icmpcode
+        # net result: match type 5, any code
+    next
+    edit "unset_icmp_2"
+        set protocol ICMP
+        set icmptype 5
+        set icmpcode 1
+        unset icmptype
+        set icmptype 3
+        # net result: match type 3, any code
+    next
+    edit "unset_icmp_3"
+        set protocol ICMP
+        set icmptype 5
+        set icmpcode 1
+        unset icmptype
+        # net result: match any icmp
     next
 end

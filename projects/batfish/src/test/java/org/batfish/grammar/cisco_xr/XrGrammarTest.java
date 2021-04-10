@@ -21,9 +21,25 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCo
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_COMMON;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_COMMON;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV4_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV4_REDISTRIBUTE_BGP_ADVERTISE_TO;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV6_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV6_REDISTRIBUTE_BGP_ADVERTISE_TO;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_PEER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.hamcrest.Matchers.allOf;
@@ -39,6 +55,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -1150,5 +1167,105 @@ public final class XrGrammarTest {
     assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p4", VRF_IMPORT_ROUTE_POLICY));
     assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p5", VRF_IMPORT_ROUTE_POLICY));
     assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p6", VRF_IMPORT_ROUTE_POLICY));
+  }
+
+  @Test
+  public void testAccessListReferences() {
+    String hostname = "xr-access-list-refs";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // ipv4
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl1", INTERFACE_IPV4_ACCESS_GROUP_COMMON));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl2", INTERFACE_IPV4_ACCESS_GROUP_INGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl3", INTERFACE_IPV4_ACCESS_GROUP_EGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl4", NTP_ACCESS_GROUP_PEER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl5", NTP_ACCESS_GROUP_QUERY_ONLY));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl6", NTP_ACCESS_GROUP_SERVE));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl7", NTP_ACCESS_GROUP_SERVE_ONLY));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            IPV4_ACCESS_LIST,
+            "ipv4acl8",
+            MPLS_LDP_AF_IPV4_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            IPV4_ACCESS_LIST,
+            "ipv4acl9",
+            MPLS_LDP_AF_IPV4_REDISTRIBUTE_BGP_ADVERTISE_TO));
+
+    // ipv6
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl1", INTERFACE_IPV6_ACCESS_GROUP_COMMON));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl2", INTERFACE_IPV6_ACCESS_GROUP_INGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl3", INTERFACE_IPV6_ACCESS_GROUP_EGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl4", NTP_ACCESS_GROUP_PEER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl5", NTP_ACCESS_GROUP_QUERY_ONLY));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl6", NTP_ACCESS_GROUP_SERVE));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl7", NTP_ACCESS_GROUP_SERVE_ONLY));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            IPV6_ACCESS_LIST,
+            "ipv6acl8",
+            MPLS_LDP_AF_IPV6_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            IPV6_ACCESS_LIST,
+            "ipv6acl9",
+            MPLS_LDP_AF_IPV6_REDISTRIBUTE_BGP_ADVERTISE_TO));
+  }
+
+  @Test
+  public void testBfdParsing() {
+    String hostname = "xr-bfd";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
   }
 }

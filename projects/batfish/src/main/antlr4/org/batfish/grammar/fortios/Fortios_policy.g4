@@ -16,14 +16,11 @@ cfp_move: MOVE name = policy_number after_or_before pivot = policy_number newlin
 
 cfp_edit: EDIT policy_number newline cfpe* NEXT newline;
 
-cfpe
-:
-    (
-        SET (cfp_set_singletons | cfp_set_lists)
-        | APPEND cfp_append
-        | SELECT cfp_set_lists
-    )
-;
+cfpe: cfp_set | cfp_append | cfp_select;
+
+cfp_set: SET (cfp_set_singletons | cfp_set_lists);
+
+cfp_select: SELECT cfp_set_lists;
 
 cfp_set_singletons
 :
@@ -31,6 +28,7 @@ cfp_set_singletons
     | cfp_set_comments
     | cfp_set_name
     | cfp_set_status
+    | cfp_set_uuid
 ;
 
 cfp_set_action: ACTION action = policy_action newline;
@@ -40,6 +38,8 @@ cfp_set_comments: COMMENTS comments = str newline;
 cfp_set_name: NAME name = policy_name newline;
 
 cfp_set_status: STATUS status = policy_status newline;
+
+cfp_set_uuid: UUID id = str newline;
 
 cfp_set_lists
 :
@@ -62,11 +62,13 @@ cfp_set_srcintf: SRCINTF interfaces = interface_or_zone_names newline;
 
 cfp_append
 :
-    cfp_append_dstaddr
-    | cfp_append_dstintf
-    | cfp_append_service
-    | cfp_append_srcaddr
-    | cfp_append_srcintf
+    APPEND (
+        cfp_append_dstaddr
+        | cfp_append_dstintf
+        | cfp_append_service
+        | cfp_append_srcaddr
+        | cfp_append_srcintf
+    )
 ;
 
 cfp_append_dstaddr: DSTADDR addresses = address_names newline;
