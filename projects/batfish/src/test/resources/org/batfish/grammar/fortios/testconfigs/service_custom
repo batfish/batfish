@@ -52,4 +52,26 @@ config firewall service custom
         # Previously set protocol-values should be unset when protocol is changed
         set protocol IP
     next
+    edit "unset_icmp_1"
+        set protocol ICMP
+        set icmptype 5
+        set icmpcode 1
+        unset icmpcode
+        # net result: match type 5, any code
+    next
+    edit "unset_icmp_2"
+        set protocol ICMP
+        set icmptype 5
+        set icmpcode 1
+        unset icmptype
+        set icmptype 3
+        # net result: match type 3, any code
+    next
+    edit "unset_icmp_3"
+        set protocol ICMP
+        set icmptype 5
+        set icmpcode 1
+        unset icmptype
+        # net result: match any icmp
+    next
 end
