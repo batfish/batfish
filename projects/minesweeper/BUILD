@@ -23,6 +23,7 @@ java_library(
         "@maven//:dk_brics_automaton",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:org_parboiled_parboiled_core",
+        "@maven//:org_parboiled_parboiled_java",
     ],
 )
 
