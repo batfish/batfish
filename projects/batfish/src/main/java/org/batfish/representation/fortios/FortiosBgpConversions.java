@@ -44,6 +44,13 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 /** Helper functions for generating VI BGP structures for {@link FortiosConfiguration}. */
 public final class FortiosBgpConversions {
   private static final String BGP_COMMON_EXPORT_POLICY_NAME = "~BGP_COMMON_EXPORT_POLICY~";
+  private static final BooleanExpr MATCH_BGP =
+      new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP);
+  private static final BooleanExpr MATCH_NOT_BGP_OR_AGGREGATE =
+      new Not(
+          new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE));
+  private static final BooleanExpr REDIST_WITH_ENVIRONMENT_ORIGIN_TYPE_IGP =
+      bgpRedistributeWithEnvironmentExpr(BooleanExprs.TRUE, OriginType.IGP);
 
   /**
    * Infer the interface that the given {@link BgpNeighbor} will use as its update source. If none
@@ -146,6 +153,9 @@ public final class FortiosBgpConversions {
     // TODO: Export disjuncts should include aggregate routes and routes to redistribute if present
     ImmutableList.Builder<BooleanExpr> exportDisjuncts = ImmutableList.builder();
 
+    // Always export BGP or IBGP routes
+    exportDisjuncts.add(MATCH_BGP);
+
     // Export routes matching network statements
     bgpProcess
         .getNetworks()
@@ -159,18 +169,11 @@ public final class FortiosBgpConversions {
                   ImmutableList.of(
                       new MatchPrefixSet(
                           DestinationNetwork.instance(), new ExplicitPrefixSet(exportSpace)),
-                      new Not(
-                          new MatchProtocol(
-                              RoutingProtocol.BGP,
-                              RoutingProtocol.IBGP,
-                              RoutingProtocol.AGGREGATE)),
-                      bgpRedistributeWithEnvironmentExpr(BooleanExprs.TRUE, OriginType.IGP));
+                      MATCH_NOT_BGP_OR_AGGREGATE,
+                      REDIST_WITH_ENVIRONMENT_ORIGIN_TYPE_IGP);
               originatedPrefixSpaces.add(exportSpace);
               exportDisjuncts.add(new Conjunction(exportNetworkConditions));
             });
-
-    // Always export BGP or IBGP routes
-    exportDisjuncts.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
     // Build common export policy (it will be added to the configuration on build())
     RoutingPolicy.builder()
@@ -181,8 +184,9 @@ public final class FortiosBgpConversions {
         .addStatement(
             new If(
                 new Disjunction(exportDisjuncts.build()),
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                ImmutableList.of()))
+                ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
+        // Default deny
+        .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();
     return originatedPrefixSpaces.build();
   }
