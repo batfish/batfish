@@ -39,6 +39,8 @@ public final class DetectLoopsAnswerer extends Answerer {
             .map(Optional::get) // safe: the min here cannot be empty by construction.
             .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
 
+    System.err.printf("Found %d flows that end in loops%n", flows.size());
+
     SortedMap<Flow, List<Trace>> flowTraces = _batfish.buildFlows(snapshot, flows, false);
     TableAnswerElement tableAnswer = new TableAnswerElement(TracerouteAnswerer.metadata(false));
     TracerouteAnswerer.flowTracesToRows(flowTraces, question.getMaxTraces())

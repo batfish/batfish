@@ -79,28 +79,28 @@ public class DagTraceRecorder implements TraceRecorder {
    * sub-traces from this node until the prefix changes, then we build the node. In order for the
    * node to be reusable for other prefixes (i.e. a different path from the start location), we
    * compute constraints on the prefix. The constraints ensure that the full trace is valid wrt loop
-   * detection. See {@link Node#matches(List)}.
+   * detection. See {@link Node#matches(Set)}.
    */
   @VisibleForTesting
   final class NodeBuilder {
     private final @Nonnull NodeKey _key;
-    final List<Breadcrumb> _nextHopBreadcrumbs;
+    final Set<Breadcrumb> _nextHopBreadcrumbs;
     final HopInfo _hopInfo;
     final boolean _isFinalHop;
     @Nullable NodeBuilder _currentNextHopBuilder;
     final @Nullable List<Node> _nextHops;
 
-    NodeBuilder(List<Breadcrumb> breadcrumbs, HopInfo hopInfo, NodeKey key) {
+    NodeBuilder(Set<Breadcrumb> breadcrumbs, HopInfo hopInfo, NodeKey key) {
       _hopInfo = hopInfo;
       _key = key;
 
       @Nullable Breadcrumb visitedBreadcrumb = _hopInfo.getVisitedBreadcrumb();
       _nextHopBreadcrumbs =
           visitedBreadcrumb == null
-              ? ImmutableList.copyOf(breadcrumbs)
-              : ImmutableList.<Breadcrumb>builder()
+              ? ImmutableSet.copyOf(breadcrumbs)
+              : ImmutableSet.<Breadcrumb>builderWithExpectedSize(breadcrumbs.size() + 1)
+                  .add(visitedBreadcrumb)
                   .addAll(breadcrumbs)
-                  .add(_hopInfo.getVisitedBreadcrumb())
                   .build();
       _isFinalHop = _hopInfo.getDisposition() != null;
       _nextHops = _isFinalHop ? null : new ArrayList<>();
@@ -209,9 +209,18 @@ public class DagTraceRecorder implements TraceRecorder {
      * org.batfish.datamodel.FlowDisposition#LOOP the loop disposition}, reuse may require or forbid
      * certain breadcrumbs.
      */
-    boolean matches(List<Breadcrumb> breadcrumbs) {
-      return breadcrumbs.containsAll(_requiredBreadcrumbs)
-          && _forbiddenBreadcrumbs.stream().noneMatch(breadcrumbs::contains);
+    boolean matches(Set<Breadcrumb> breadcrumbs) {
+      if (_requiredBreadcrumbs.size() > breadcrumbs.size()) {
+        return false;
+      }
+      if (!_forbiddenBreadcrumbs.isEmpty()) {
+        for (Breadcrumb _forbiddenBreadcrumb : _forbiddenBreadcrumbs) {
+          if (breadcrumbs.contains(_forbiddenBreadcrumb)) {
+            return false;
+          }
+        }
+      }
+      return breadcrumbs.containsAll(_requiredBreadcrumbs);
     }
 
     /** Convert a {@link Node} to a {@link TraceDagImpl.Node}. */
@@ -245,7 +254,7 @@ public class DagTraceRecorder implements TraceRecorder {
   private NodeBuilder _rootBuilder = null;
   private @Nullable TraceDag _builtTraceDag = null;
 
-  private @Nullable Node findMatchingNode(NodeKey key, List<Breadcrumb> breadcrumbs) {
+  private @Nullable Node findMatchingNode(NodeKey key, Set<Breadcrumb> breadcrumbs) {
     Collection<Node> nodes = _nodeMap.get(key);
     if (nodes.isEmpty()) {
       return null;
@@ -265,7 +274,7 @@ public class DagTraceRecorder implements TraceRecorder {
     }
     if (_rootBuilder == null) {
       _rootBuilder =
-          new NodeBuilder(ImmutableList.of(), rootHop, new NodeKey(_flow, rootHop.getHop()));
+          new NodeBuilder(ImmutableSet.of(), rootHop, new NodeKey(_flow, rootHop.getHop()));
     }
     return _rootBuilder.tryRecordPartialTrace(hops.subList(1, hops.size()));
   }

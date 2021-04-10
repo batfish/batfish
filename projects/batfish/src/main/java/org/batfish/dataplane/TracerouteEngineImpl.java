@@ -37,10 +37,17 @@ public final class TracerouteEngineImpl implements TracerouteEngine {
       Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
     return computeTraceDags(flows, sessions, ignoreFilters).entrySet().parallelStream()
         .map(
-            entry ->
-                new SimpleEntry<>(
-                    entry.getKey(),
-                    entry.getValue().getTraces().collect(ImmutableList.toImmutableList())))
+            entry -> {
+              TraceDag dag = entry.getValue();
+              System.err.println("Dag has size " + dag.size());
+              ImmutableList<TraceAndReverseFlow> traces =
+                  entry
+                      .getValue()
+                      .getTraces()
+                      .limit(16384)
+                      .collect(ImmutableList.toImmutableList());
+              return new SimpleEntry<>(entry.getKey(), traces);
+            })
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Ordering.natural(), Entry::getKey, Entry::getValue));
