@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.jheaps.annotations.VisibleForTesting;
 
 /**
  * This class represents the results of symbolic analysis of a {@link
@@ -65,10 +66,11 @@ public class CommunityAPDispositions {
     return Objects.hash(_numAPs, _mustExist, _mustNotExist);
   }
 
-  // produce the set difference of two CommunityAPDispositions; the result is only
-  // representable as a CommunityAPDispositions object if the right-hand object is exact
-  // (see the isExact method below), so we require that to be the case.
-  // (if needed we can extend this object to be able to represent the more general case.)
+  /**
+   * Produces the set difference of two CommunityAPDispositions; the result is only representable as
+   * a CommunityAPDispositions object if the right-hand object is exact (see the isExact method
+   * below), so we require that to be the case.
+   */
   public CommunityAPDispositions diff(CommunityAPDispositions other) {
     assert _numAPs == other._numAPs
         : "diffed CommunityAPDispositions must have the same number of atomic predicates";
@@ -79,7 +81,7 @@ public class CommunityAPDispositions {
         setUnion(_mustNotExist, other.getMustExist()));
   }
 
-  // produce the set union of two CommunityAPDispositions
+  /** Produces the set union of two CommunityAPDispositions */
   public CommunityAPDispositions union(CommunityAPDispositions other) {
     assert _numAPs == other._numAPs
         : "unioned CommunityAPDispositions must have the same number of atomic predicates";
@@ -89,18 +91,18 @@ public class CommunityAPDispositions {
         setIntersect(_mustNotExist, other.getMustNotExist()));
   }
 
-  // the empty CommunityAPDispositions object has all atomic predicates in the
-  // mustNotExist set
+  /**
+   * Produces a CommunityAPDisposition object representing the empty set --- all atomic predicates
+   * are known to not be in the set.
+   */
   public static CommunityAPDispositions empty(BDDRoute bddRoute) {
-    int numAPs = bddRoute.getCommunityAtomicPredicates().length;
-    return new CommunityAPDispositions(
-        numAPs,
-        ImmutableSet.of(),
-        IntStream.range(0, numAPs).boxed().collect(ImmutableSet.toImmutableSet()));
+    return exactly(ImmutableSet.of(), bddRoute);
   }
 
-  // create a CommunityAPDispositions object representing exactly the given set aps;
-  // all other atomic predicates are put in the mustNotExist set
+  /**
+   * Produces a CommunityAPDispositions object representing exactly the given set of atomic
+   * predicates; all other atomic predicates are put in the mustNotExist set.
+   */
   public static CommunityAPDispositions exactly(Set<Integer> aps, BDDRoute bddRoute) {
     int numAPs = bddRoute.getCommunityAtomicPredicates().length;
     return new CommunityAPDispositions(
@@ -114,7 +116,8 @@ public class CommunityAPDispositions {
 
   // an exact CommunityAPDispositions object has no atomic predicates that have unknown
   // status
-  public boolean isExact() {
+  @VisibleForTesting
+  boolean isExact() {
     return IntStream.range(0, _numAPs)
         .allMatch(i -> _mustExist.contains(i) || _mustNotExist.contains(i));
   }
