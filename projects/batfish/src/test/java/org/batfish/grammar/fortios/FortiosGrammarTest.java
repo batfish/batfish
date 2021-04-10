@@ -1109,9 +1109,9 @@ public final class FortiosGrammarTest {
         .forEach(iface -> assertThat(iface.getMtu(), equalTo(Interface.DEFAULT_INTERFACE_MTU)));
 
     // Check speeds
-    assertThat(port1.getSpeed(), equalTo(10000e9));
-    assertThat(port2.getSpeed(), equalTo(10000e9));
-    assertThat(longName.getSpeed(), equalTo(100e12));
+    assertThat(port1.getSpeed(), equalTo(10000e6));
+    assertThat(port2.getSpeed(), equalTo(10000e6));
+    assertThat(longName.getSpeed(), equalTo(100e9));
 
     // Check aliases
     assertThat(port1.getDeclaredNames(), contains("longest possibl alias str"));

@@ -326,24 +326,24 @@ public class FortiosConfiguration extends VendorConfiguration {
     switch (speed) {
       case TEN_FULL:
       case TEN_HALF:
-        return 10e9;
+        return 10e6;
       case HUNDRED_FULL:
       case HUNDRED_HALF:
-        return 100e9;
+        return 100e6;
       case THOUSAND_FULL:
       case THOUSAND_HALF:
-        return 1000e9;
+        return 1000e6;
       case TEN_THOUSAND_FULL:
       case TEN_THOUSAND_HALF:
-        return 10000e9;
+        return 10000e6;
       case HUNDRED_GFULL:
       case HUNDRED_GHALF:
-        return 100e12;
+        return 100e9;
       case AUTO:
       default:
         assert speed == Speed.AUTO;
         // Assume 10Gbps default
-        return 10000e9;
+        return 10000e6;
     }
   }
 
