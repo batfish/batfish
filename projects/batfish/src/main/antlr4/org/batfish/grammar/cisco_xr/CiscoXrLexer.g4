@@ -1778,6 +1778,8 @@ ETHERNET_SERVICES: 'ethernet-services';
 
 ETYPE: 'etype';
 
+EUI_64: 'eui-64';
+
 EVALUATE: 'evaluate';
 
 EVENT: 'event';
@@ -2722,6 +2724,8 @@ LINK: 'link';
 LINK_FAIL: 'link-fail';
 
 LINK_FAULT_SIGNALING: 'link-fault-signaling';
+
+LINK_LOCAL: 'link-local';
 
 LINK_TYPE: 'link-type';
 
@@ -4362,6 +4366,8 @@ ROUTE_POLICY: 'route-policy' -> pushMode(M_Word);
 ROUTE_PREFERENCE: 'route-preference';
 
 ROUTE_REFLECTOR_CLIENT: 'route-reflector-client';
+
+ROUTE_TAG: 'route-tag';
 
 ROUTE_TARGET: 'route-target';
 

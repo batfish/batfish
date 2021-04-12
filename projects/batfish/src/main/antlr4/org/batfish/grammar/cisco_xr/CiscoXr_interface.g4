@@ -249,39 +249,6 @@ if_hsrp6_ip_address
    IP ip = IPV6_ADDRESS NEWLINE
 ;
 
-if_ip_address
-:
-   (IP | IPV4) ADDRESS
-   VIRTUAL?
-   (
-      ip = IP_ADDRESS subnet = IP_ADDRESS
-      | prefix = IP_PREFIX
-   )
-   (STANDBY standby_address = IP_ADDRESS)?
-   (ROUTE_PREFERENCE pref=uint_legacy)?
-   (TAG tag=uint_legacy)?
-   NEWLINE
-;
-
-if_ip_address_dhcp
-:
-   IP ADDRESS DHCP NEWLINE
-;
-
-if_ip_address_secondary
-:
-   (
-      IP
-      | IPV4
-   ) ADDRESS
-   (
-      (
-         ip = IP_ADDRESS subnet = IP_ADDRESS
-      )
-      | prefix = IP_PREFIX
-   ) SECONDARY DHCP_GIADDR? NEWLINE
-;
-
 if_ip_authentication
 :
    IP AUTHENTICATION
@@ -519,6 +486,7 @@ if_ipv4: IPV4 if_ipv4_inner;
 if_ipv4_inner
 :
   if_ipv4_access_group
+  | if_ipv4_address
   | if_ipv4_null
 ;
 
@@ -535,6 +503,14 @@ if_ipv4_access_group
     | interface_acl = access_list_name (EGRESS | INGRESS)
       (HARDWARE_COUNT INTERFACE_STATISTICS? | INTERFACE_STATISTICS HARDWARE_COUNT?)?
   ) NEWLINE
+;
+
+if_ipv4_address: ADDRESS interface_ipv4_address SECONDARY? (ROUTE_TAG tag=route_tag)? NEWLINE;
+
+interface_ipv4_address
+:
+  address = IP_ADDRESS mask = IP_ADDRESS
+  | prefix = IP_PREFIX
 ;
 
 if_ipv4_null
@@ -557,6 +533,7 @@ if_ipv6
 if_ipv6_inner
 :
    if_ipv6_access_group
+   | if_ipv6_address
    | if_ipv6_enable
    | if_ipv6_traffic_filter
 ;
@@ -572,6 +549,21 @@ if_ipv6_access_group
     )
     | interface_acl = access_list_name (EGRESS | INGRESS) INTERFACE_STATISTICS?
   ) NEWLINE
+;
+
+if_ipv6_address
+:
+  ADDRESS
+  (
+    address = IPV6_ADDRESS (LINK_LOCAL | len = ipv6_interface_address_length)
+    | prefix = IPV6_PREFIX EUI_64?
+  ) (ROUTE_TAG tag = route_tag)? NEWLINE
+;
+
+ipv6_interface_address_length
+:
+  // 1-128
+  uint8
 ;
 
 if_ipv6_enable
@@ -1680,9 +1672,6 @@ if_inner
    | if_hsrp6
    | if_ip_proxy_arp
    | if_ip_verify
-   | if_ip_address
-   | if_ip_address_dhcp
-   | if_ip_address_secondary
    | if_ip_authentication
    | if_ip_dhcp
    | if_ip_flow_monitor
