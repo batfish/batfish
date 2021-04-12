@@ -1640,6 +1640,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _reservedVlanRange;
   }
 
+  public void setReservedVlanRange(IntegerSpace reservedVlanRange) {
+    _reservedVlanRange = reservedVlanRange;
+  }
+
   public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
   }
