@@ -7618,7 +7618,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       return;
     }
     int firstVlan = maybeFirstVlan.get();
-    _c.setReservedVlanRange(IntegerSpace.of(Range.closed(firstVlan, firstVlan + 128)));
+    IntegerSpace newReservedRange = IntegerSpace.of(Range.closed(firstVlan, firstVlan + 128));
+    // TODO: warn about/delete any existing VLAN assignments in the new reserved range.
+    _c.setReservedVlanRange(newReservedRange);
     _currentValidVlanRange = VLAN_RANGE.difference(_c.getReservedVlanRange());
   }
 }
