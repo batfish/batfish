@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-ipv6-access-list
+!
+
+ipv6 access-list acl_ipv6
+ 10 permit ipv6 any host ::1
+ 20 deny ipv6 any dead:beef::/32
+ 30 permit ipv6 any any
+
+ipv6 access-list acl_icmpv6
+ 10 permit icmpv6 ::1/32 dead::/3 echo
+ 20 permit icmpv6 ::1/32 dead::/3 address-unreachable
+ 30 permit icmpv6 ::1/32 dead::/3 port-unreachable
+ 40 permit icmpv6 ::1/32 dead::/3 packet-too-big
+ 50 permit icmpv6 ::1/32 dead::/3 time-exceeded
+ 60 permit icmpv6 ::1/32 dead::/3 parameter-problem
+ 70 deny icmpv6 ::1/32 dead::/3
+ 80 permit icmpv6 any any
+
+ipv6 access-list acl_remark
+ 10 remark hello
