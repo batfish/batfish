@@ -687,6 +687,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysds_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysqosspt_network_qosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysqosspt_qosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysqosspt_queueingContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Sysvlan_reserveContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
@@ -876,6 +877,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace EIGRP_ASN_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace EIGRP_PROCESS_TAG_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
+  private static final IntegerSpace FIRST_RESERVED_VLAN_RANGE =
+      IntegerSpace.of(Range.closed(2, 3968));
   private static final IntegerSpace FLOW_EXPORTER_NAME_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 63));
   private static final IntegerSpace FLOW_MONITOR_NAME_LENGTH_RANGE =
@@ -7605,5 +7608,17 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  @Override
+  public void exitSysvlan_reserve(Sysvlan_reserveContext ctx) {
+    Optional<Integer> maybeFirstVlan =
+        toIntegerInSpace(ctx, ctx.first, FIRST_RESERVED_VLAN_RANGE, "first reserved VLAN ID");
+    if (!maybeFirstVlan.isPresent()) {
+      return;
+    }
+    int firstVlan = maybeFirstVlan.get();
+    _c.setReservedVlanRange(IntegerSpace.of(Range.closed(firstVlan, firstVlan + 128)));
+    _currentValidVlanRange = VLAN_RANGE.difference(_c.getReservedVlanRange());
   }
 }

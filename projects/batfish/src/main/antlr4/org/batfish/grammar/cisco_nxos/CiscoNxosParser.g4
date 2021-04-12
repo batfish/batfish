@@ -432,6 +432,7 @@ s_system
   (
     sys_default
     | sys_qos
+    | sys_vlan
   )
 ;
 
@@ -498,6 +499,17 @@ sysqosspt_qos
 sysqosspt_queueing
 :
   QUEUING (INPUT | OUTPUT) name = policy_map_queuing_name NEWLINE
+;
+
+sys_vlan
+:
+  VLAN sysvlan_reserve
+;
+
+sysvlan_reserve
+:
+  // 2-3968
+  first = vlan_id RESERVE NEWLINE
 ;
 
 s_track

@@ -1884,6 +1884,8 @@ REPORT_SUPPRESSION: 'report-suppression';
 
 REQUEST: 'request';
 
+RESERVE: 'reserve';
+
 RESET: 'reset';
 
 RESPONDER

@@ -83,3 +83,13 @@ interface Vlan1000
   ip proxy-arp
   ip sticky-arp ignore
   ip dhcp relay address 1.2.3.5
+
+! set reserved vlan range to 2000-2127
+system vlan 2000 reserve
+
+! Vlan 4000 is part of deafult reserved range.
+! After re-assigning, should be able to use default reserved VLANs
+vlan 4000
+interface Vlan4000
+  no shutdown
+!
