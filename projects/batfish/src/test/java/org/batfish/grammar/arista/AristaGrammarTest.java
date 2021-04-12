@@ -1372,13 +1372,11 @@ public class AristaGrammarTest {
     assertThat(c.getDefaultVrf(), notNullValue());
     BgpProcess proc = c.getDefaultVrf().getBgpProcess();
     assertThat(proc, notNullValue());
-    {
-      Prefix neighborPrefix = Prefix.parse("10.0.0.11/32");
-      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
-      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
-      assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
-      assertThat(neighbor.getIpv4UnicastAddressFamily(), nullValue());
-    }
+    Prefix neighborPrefix = Prefix.parse("10.0.0.11/32");
+    assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+    BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+    assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
+    assertThat(neighbor.getIpv4UnicastAddressFamily(), nullValue());
   }
 
   @Test
