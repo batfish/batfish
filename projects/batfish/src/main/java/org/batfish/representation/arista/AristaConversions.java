@@ -524,7 +524,7 @@ final class AristaConversions {
         firstNonNull(
             neighbor.getNextHopUnchanged(),
             firstNonNull(
-                af4.getNextHopUnchanged(),
+                af4 == null ? null : af4.getNextHopUnchanged(),
                 firstNonNull(vrfConfig.getNextHopUnchanged(), Boolean.FALSE))))) {
       exportStatements.add(new SetNextHop(UnchangedNextHop.getInstance()));
     }
