@@ -2,7 +2,6 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Ints;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -107,7 +106,7 @@ public class CommunityAPDispositions {
    */
   public static CommunityAPDispositions exactly(Set<Integer> aps, BDDRoute bddRoute) {
     int numAPs = bddRoute.getCommunityAtomicPredicates().length;
-    IntegerSpace mustExist = IntegerSpace.builder().including(Ints.toArray(aps)).build();
+    IntegerSpace mustExist = IntegerSpace.builder().includingAll(aps).build();
     IntegerSpace mustNotExist =
         IntegerSpace.builder()
             .including(IntStream.range(0, numAPs).filter(i -> !aps.contains(i)).toArray())

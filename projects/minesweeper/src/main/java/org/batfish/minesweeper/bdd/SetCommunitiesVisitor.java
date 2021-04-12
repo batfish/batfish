@@ -1,6 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
-import static org.parboiled.common.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;

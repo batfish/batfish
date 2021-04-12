@@ -109,11 +109,6 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
 
-    <dependency>
-        <groupId>org.parboiled</groupId>
-        <artifactId>parboiled-core</artifactId>
-    </dependency>
-
     <!-- Test dependencies. -->
     <dependency>
       <groupId>org.batfish</groupId>
