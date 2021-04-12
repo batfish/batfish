@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_neighbors_no_v4
+!
+interface Loopback0
+   ip address 10.0.0.21/32
+!
+router bgp 64520
+   router-id 10.0.0.21
+   no bgp default ipv4-unicast
+   neighbor RR peer group
+   neighbor RR remote-as 64520
+   neighbor 10.0.0.11 peer group RR
+   !
+   address-family evpn
+      neighbor 10.0.0.11 activate
+!
+end

@@ -1365,6 +1365,22 @@ public class AristaGrammarTest {
     }
   }
 
+  /** Test that we convert properly when v4 family is completely absent */
+  @Test
+  public void testNeighborConversion_no_v4() {
+    Configuration c = parseConfig("arista_bgp_neighbors_no_v4");
+    assertThat(c.getDefaultVrf(), notNullValue());
+    BgpProcess proc = c.getDefaultVrf().getBgpProcess();
+    assertThat(proc, notNullValue());
+    {
+      Prefix neighborPrefix = Prefix.parse("10.0.0.11/32");
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(neighbor.getEvpnAddressFamily(), notNullValue());
+      assertThat(neighbor.getIpv4UnicastAddressFamily(), nullValue());
+    }
+  }
+
   @Test
   public void testVrfExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_vrf");
