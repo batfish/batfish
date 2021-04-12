@@ -466,8 +466,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_delayContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_encapsulationContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_addressContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_address_secondaryContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_igmpContext;
@@ -486,6 +484,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_access_groupContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_isis_metricContext;
@@ -525,6 +524,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Inherit_peer_session_bgp_tailC
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inspect_protocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Int_compContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Int_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_ipv4_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ios_banner_headerContext;
@@ -3843,48 +3843,22 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_address(If_ip_addressContext ctx) {
-    ConcreteInterfaceAddress address;
-    if (ctx.prefix != null) {
-      address = ConcreteInterfaceAddress.parse(ctx.prefix.getText());
-    } else {
-      Ip ip = toIp(ctx.ip);
-      Ip mask = toIp(ctx.subnet);
-      address = ConcreteInterfaceAddress.create(ip, mask);
+  public void exitIf_ipv4_address(If_ipv4_addressContext ctx) {
+    Optional<ConcreteInterfaceAddress> maybeAddress =
+        toConcreteInterfaceAddress(ctx, ctx.interface_ipv4_address());
+    if (!maybeAddress.isPresent()) {
+      return;
     }
+    ConcreteInterfaceAddress address = maybeAddress.get();
     for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setAddress(address);
-    }
-    if (ctx.STANDBY() != null) {
-      Ip standbyIp = toIp(ctx.standby_address);
-      ConcreteInterfaceAddress standbyAddress =
-          ConcreteInterfaceAddress.create(standbyIp, address.getNetworkBits());
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setStandbyAddress(standbyAddress);
+      if (ctx.SECONDARY() != null) {
+        currentInterface.getSecondaryAddresses().add(address);
+      } else {
+        currentInterface.setAddress(address);
       }
     }
-    if (ctx.ROUTE_PREFERENCE() != null) {
-      warn(ctx, "Unsupported: route-preference declared in interface IP address");
-    }
-    if (ctx.TAG() != null) {
-      warn(ctx, "Unsupported: tag declared in interface IP address");
-    }
-  }
-
-  @Override
-  public void exitIf_ip_address_secondary(If_ip_address_secondaryContext ctx) {
-    Ip ip;
-    Ip mask;
-    ConcreteInterfaceAddress address;
-    if (ctx.prefix != null) {
-      address = ConcreteInterfaceAddress.parse(ctx.prefix.getText());
-    } else {
-      ip = toIp(ctx.ip);
-      mask = toIp(ctx.subnet);
-      address = ConcreteInterfaceAddress.create(ip, mask.numSubnetBits());
-    }
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.getSecondaryAddresses().add(address);
+    if (ctx.tag != null) {
+      warn(ctx, "Unsupported: tag declared in interface ipv4 address");
     }
   }
 
@@ -8537,5 +8511,19 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return Optional.empty();
     }
     return Optional.of(num);
+  }
+
+  private @Nonnull Optional<ConcreteInterfaceAddress> toConcreteInterfaceAddress(
+      ParserRuleContext messageCtx, Interface_ipv4_addressContext ctx) {
+    try {
+      if (ctx.prefix != null) {
+        return Optional.of(ConcreteInterfaceAddress.parse(ctx.prefix.getText()));
+      } else if (ctx.address != null) {
+        return Optional.of(ConcreteInterfaceAddress.create(toIp(ctx.address), toIp(ctx.mask)));
+      }
+    } catch (IllegalArgumentException e) {
+      warn(messageCtx, "Invalid interface ipv4 address");
+    }
+    return Optional.empty();
   }
 }

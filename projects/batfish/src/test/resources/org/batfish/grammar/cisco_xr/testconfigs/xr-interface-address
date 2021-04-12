@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-interface-address
+!
+
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.1/31
+ ipv4 address 10.0.0.3 255.255.255.254 secondary
+ ipv4 address 10.0.0.5 255.255.255.254 secondary route-tag 5
+
+ ipv6 address dead:beef::1/126
+ ipv6 address deee:beef::1 127
+ ipv6 address beee:beef::1/64 route-tag 5
+ ipv6 address 2::3 link-local
+!

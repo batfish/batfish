@@ -77,6 +77,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -1274,5 +1275,26 @@ public final class XrGrammarTest {
     String hostname = "xr-ipv6-access-list";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testInterfaceAddressExtraction() {
+    String hostname = "xr-interface-address";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    String i1Name = "GigabitEthernet0/0/0/0";
+
+    assertThat(vc.getInterfaces(), hasKeys(i1Name));
+
+    {
+      org.batfish.representation.cisco_xr.Interface iface = vc.getInterfaces().get(i1Name);
+      ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("10.0.0.1/31");
+      ConcreteInterfaceAddress secondary1 = ConcreteInterfaceAddress.parse("10.0.0.3/31");
+      ConcreteInterfaceAddress secondary2 = ConcreteInterfaceAddress.parse("10.0.0.5/31");
+
+      assertThat(iface.getAllAddresses(), containsInAnyOrder(primary, secondary1, secondary2));
+      assertThat(iface.getAddress(), equalTo(primary));
+      assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary1, secondary2));
+    }
   }
 }
