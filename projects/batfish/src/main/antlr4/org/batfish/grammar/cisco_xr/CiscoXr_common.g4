@@ -505,6 +505,12 @@ route_distinguisher
    (IP_ADDRESS | bgp_asn) COLON uint_legacy
 ;
 
+route_tag
+:
+  // 1-4294967295
+  uint32
+;
+
 route_target
 :
    (IP_ADDRESS | bgp_asn) COLON uint_legacy
