@@ -194,7 +194,7 @@ public final class ExtendedCommunity extends Community {
   @Override
   public boolean isTransitive() {
     // Second most significant bit is set
-    return (_type & (byte) 0x40) != 0;
+    return (_type & (byte) 0x40) == 0;
   }
 
   /** Check whether this community is of type route-origin / site-of-origin */
