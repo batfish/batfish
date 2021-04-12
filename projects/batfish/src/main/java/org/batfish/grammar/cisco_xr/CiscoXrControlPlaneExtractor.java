@@ -206,6 +206,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.Icmp6Code;
+import org.batfish.datamodel.Icmp6Type;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -3365,6 +3367,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
       Extended_access_list_tailContext ctx) {
+    // TODO: rewrite, cleanly separate v4/v6/protocol-specific features
     if (ctx.prot != null) {
       @Nullable IpProtocol protocol = toIpProtocol(ctx.prot);
       List<SubRange> srcPortRanges =
@@ -3383,6 +3386,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setAck(true).build())
                   .setUseAck(true)
                   .build());
+        } else if (feature.ADDRESS_UNREACHABLE() != null) {
+          icmpType = Icmp6Type.DESTINATION_UNREACHABLE;
+          icmpCode = Icmp6Code.ADDRESS_UNREACHABLE;
         } else if (feature.ADMINISTRATIVELY_PROHIBITED() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;

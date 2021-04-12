@@ -156,6 +156,8 @@ ADDRESS_RANGE: 'address-range';
 
 ADDRESS_TABLE: 'address-table';
 
+ADDRESS_UNREACHABLE: 'address-unreachable';
+
 ADDRGROUP: 'addrgroup';
 
 ADJACENCY: 'adjacency';

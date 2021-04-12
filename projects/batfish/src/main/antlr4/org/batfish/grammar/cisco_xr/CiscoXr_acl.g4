@@ -123,6 +123,7 @@ etype
 extended_access_list_additional_feature
 :
    ACK
+   | ADDRESS_UNREACHABLE
    | ADMINISTRATIVELY_PROHIBITED
    | ALTERNATE_ADDRESS
    | BEYOND_SCOPE
