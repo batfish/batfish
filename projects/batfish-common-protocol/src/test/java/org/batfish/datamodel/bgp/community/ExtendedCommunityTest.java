@@ -131,8 +131,8 @@ public final class ExtendedCommunityTest {
 
   @Test
   public void testIsTransitive() {
-    assertFalse(ExtendedCommunity.parse("1:1:1").isTransitive());
-    assertTrue(ExtendedCommunity.parse("16384:1:1").isTransitive());
+    assertTrue(ExtendedCommunity.parse("1:1:1").isTransitive());
+    assertFalse(ExtendedCommunity.parse("16384:1:1").isTransitive());
   }
 
   @Test
