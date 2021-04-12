@@ -1268,4 +1268,11 @@ public final class XrGrammarTest {
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
+
+  @Test
+  public void testIpv6AccessListParsing() {
+    String hostname = "xr-ipv6-access-list";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
 }
