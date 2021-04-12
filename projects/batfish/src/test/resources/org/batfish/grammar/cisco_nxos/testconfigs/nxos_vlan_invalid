@@ -20,3 +20,8 @@ interface Vlan4100
 ! Invalid: Vlans may not have subinterfaces 
 interface Vlan1.1
 !
+
+system vlan 2000 reserve
+! now vlans 2000-2127 are reserved
+vlan 2050
+interface Vlan2050
