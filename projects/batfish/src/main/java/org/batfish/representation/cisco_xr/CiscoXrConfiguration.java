@@ -461,6 +461,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private Map<String, XrCommunitySet> _communitySets;
 
+  @Nonnull private final Map<String, RdSet> _rdSets;
+
   public CiscoXrConfiguration() {
     _asPathSets = new TreeMap<>();
     _cf = new CiscoXrFamily();
@@ -491,6 +493,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _objectGroups = new TreeMap<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
+    _rdSets = new HashMap<>();
     _routePolicies = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _trackingGroups = new TreeMap<>();
@@ -2700,5 +2703,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, XrCommunitySet> getCommunitySets() {
     return _communitySets;
+  }
+
+  @Nonnull
+  public Map<String, RdSet> getRdSets() {
+    return _rdSets;
   }
 }

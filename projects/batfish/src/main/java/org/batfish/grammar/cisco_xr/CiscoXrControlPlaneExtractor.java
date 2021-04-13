@@ -36,6 +36,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MA
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX6_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
@@ -167,6 +168,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPO
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -174,6 +176,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -367,6 +370,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_local_preference_rp_st
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_med_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_next_hop_in_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_not_rp_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rd_in_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rib_has_route_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_route_type_is_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rp_stanzaContext;
@@ -600,6 +604,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_spt_thresholdContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pint16Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_accountingContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_control_subscriberContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_pbrContext;
@@ -617,6 +622,12 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_set_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prepend_as_path_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.ProtocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.RangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_match_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_elemContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_elem_32Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_elem_asdotContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_elem_lo16Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_classicContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_default_metricContext;
@@ -706,6 +717,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_l2tp_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_loggingContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ntpContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.S_rd_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ospfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ripContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_serviceContext;
@@ -851,6 +863,18 @@ import org.batfish.representation.cisco_xr.Prefix6ListLine;
 import org.batfish.representation.cisco_xr.PrefixList;
 import org.batfish.representation.cisco_xr.PrefixListLine;
 import org.batfish.representation.cisco_xr.PrivateAs;
+import org.batfish.representation.cisco_xr.RdMatchExpr;
+import org.batfish.representation.cisco_xr.RdSet;
+import org.batfish.representation.cisco_xr.RdSetAsDot;
+import org.batfish.representation.cisco_xr.RdSetAsPlain16;
+import org.batfish.representation.cisco_xr.RdSetAsPlain32;
+import org.batfish.representation.cisco_xr.RdSetDfaRegex;
+import org.batfish.representation.cisco_xr.RdSetElem;
+import org.batfish.representation.cisco_xr.RdSetIosRegex;
+import org.batfish.representation.cisco_xr.RdSetIpAddress;
+import org.batfish.representation.cisco_xr.RdSetIpPrefix;
+import org.batfish.representation.cisco_xr.RdSetParameterReference;
+import org.batfish.representation.cisco_xr.RdSetReference;
 import org.batfish.representation.cisco_xr.RipProcess;
 import org.batfish.representation.cisco_xr.RoutePolicy;
 import org.batfish.representation.cisco_xr.RoutePolicyApplyStatement;
@@ -868,6 +892,7 @@ import org.batfish.representation.cisco_xr.RoutePolicyBooleanMed;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanNextHopIn;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanNot;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanOr;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanRdIn;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanRibHasRoute;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanRouteTypeIs;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanTagIs;
@@ -915,6 +940,7 @@ import org.batfish.representation.cisco_xr.VrrpGroup;
 import org.batfish.representation.cisco_xr.VrrpInterface;
 import org.batfish.representation.cisco_xr.WildcardAddressSpecifier;
 import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
+import org.batfish.representation.cisco_xr.WildcardUint32RangeExpr;
 import org.batfish.representation.cisco_xr.XrCommunitySet;
 import org.batfish.representation.cisco_xr.XrCommunitySetDfaRegex;
 import org.batfish.representation.cisco_xr.XrCommunitySetElem;
@@ -936,6 +962,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     implements ControlPlaneExtractor {
 
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
+
+  private static final IntegerSpace PINT16_RANGE = IntegerSpace.of(Range.closed(1, 65535));
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
@@ -1712,6 +1740,110 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                     ctx.community_set_elem_list().elems.stream()
                         .map(this::toXrCommunitySetElem)
                         .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Override
+  public void enterS_rd_set(S_rd_setContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.name);
+    _configuration.defineStructure(RD_SET, name, ctx);
+    _configuration
+        .getRdSets()
+        .computeIfAbsent(
+            name,
+            n ->
+                new RdSet(
+                    ctx.rd_set_elem_list().elems.stream()
+                        .map(this::toRdSetElem)
+                        .filter(Objects::nonNull)
+                        .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Nullable
+  private RdSetElem toRdSetElem(Rd_set_elemContext ctx) {
+    if (ctx.rd_set_elem_asdot() != null) {
+      @Nullable
+      Entry<Uint16RangeExpr, Uint16RangeExpr> as = toUint32HighLowExpr(ctx.rd_set_elem_asdot());
+      if (as == null) {
+        return null;
+      }
+      return new RdSetAsDot(as.getKey(), as.getValue(), toUint16RangeExpr(ctx.rd_set_elem_lo16()));
+    } else if (ctx.asplain_hi16 != null) {
+      assert ctx.rd_set_elem_32() != null;
+      return new RdSetAsPlain16(
+          new LiteralUint16(toInteger(ctx.asplain_hi16)), toUint32RangeExpr(ctx.rd_set_elem_32()));
+    } else if (ctx.asplain_hi32 != null) {
+      assert ctx.rd_set_elem_lo16() != null;
+      return new RdSetAsPlain32(
+          toUint32RangeExpr(ctx.asplain_hi32), toUint16RangeExpr(ctx.rd_set_elem_lo16()));
+    } else if (ctx.IP_PREFIX() != null) {
+      assert ctx.rd_set_elem_lo16() != null;
+      return new RdSetIpPrefix(
+          Prefix.parse(ctx.IP_PREFIX().getText()), toUint16RangeExpr(ctx.rd_set_elem_lo16()));
+    } else if (ctx.IP_ADDRESS() != null) {
+      assert ctx.rd_set_elem_lo16() != null;
+      return new RdSetIpAddress(toIp(ctx.IP_ADDRESS()), toUint16RangeExpr(ctx.rd_set_elem_lo16()));
+    } else if (ctx.DFA_REGEX() != null) {
+      return new RdSetDfaRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+    } else {
+      assert ctx.IOS_REGEX() != null;
+      return new RdSetIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+    }
+  }
+
+  @Nonnull
+  private Uint32RangeExpr toUint32RangeExpr(Rd_set_elem_32Context ctx) {
+    if (ctx.ASTERISK() != null) {
+      return WildcardUint32RangeExpr.instance();
+    } else {
+      assert ctx.uint32() != null;
+      return new LiteralUint32(toLong(ctx.uint32()));
+    }
+  }
+
+  @Nonnull
+  private Uint16RangeExpr toUint16RangeExpr(Rd_set_elem_lo16Context ctx) {
+    if (ctx.ASTERISK() != null) {
+      return WildcardUint16RangeExpr.instance();
+    } else {
+      assert ctx.uint16() != null;
+      return new LiteralUint16(toInteger(ctx.uint16()));
+    }
+  }
+
+  @Nullable
+  private Entry<Uint16RangeExpr, Uint16RangeExpr> toUint32HighLowExpr(
+      Rd_set_elem_asdotContext ctx) {
+    Optional<Integer> maybeHi;
+    Uint16RangeExpr hi;
+    Uint16RangeExpr lo;
+    if (ctx.hi_wild != null) {
+      assert ctx.lo_num != null;
+      hi = WildcardUint16RangeExpr.instance();
+      lo = new LiteralUint16(toInteger(ctx.lo_num));
+    } else if (ctx.lo_wild != null) {
+      assert ctx.hi_num != null;
+      maybeHi = toInteger(ctx, ctx.hi_num);
+      if (!maybeHi.isPresent()) {
+        return null;
+      }
+      hi = new LiteralUint16(maybeHi.get());
+      lo = WildcardUint16RangeExpr.instance();
+    } else {
+      assert ctx.hi_num != null && ctx.lo_num != null;
+      maybeHi = toInteger(ctx, ctx.hi_num);
+      if (!maybeHi.isPresent()) {
+        return null;
+      }
+      hi = new LiteralUint16(maybeHi.get());
+      lo = new LiteralUint16(toInteger(ctx.lo_num));
+    }
+    return Maps.immutableEntry(hi, lo);
+  }
+
+  @Nonnull
+  Optional<Integer> toInteger(ParserRuleContext messageCtx, Pint16Context ctx) {
+    return toIntegerInSpace(messageCtx, ctx, PINT16_RANGE, "positive 16-bit integer");
   }
 
   @Override
@@ -7893,9 +8025,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_simple_rp_stanzaContext ctx) {
-    Boolean_rp_stanzaContext bctx = ctx.boolean_rp_stanza();
-    if (bctx != null) {
-      return toRoutePolicyBoolean(bctx);
+    {
+      Boolean_rp_stanzaContext bctx = ctx.boolean_rp_stanza();
+      if (bctx != null) {
+        return toRoutePolicyBoolean(bctx);
+      }
     }
 
     Boolean_apply_rp_stanzaContext actx = ctx.boolean_apply_rp_stanza();
@@ -7978,7 +8112,37 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return toRoutePolicyBoolean(tctx);
     }
 
+    {
+      Boolean_rd_in_rp_stanzaContext bctx = ctx.boolean_rd_in_rp_stanza();
+      if (bctx != null) {
+        return toRoutePolicyBoolean(bctx);
+      }
+    }
+
     throw convError(RoutePolicyBoolean.class, ctx);
+  }
+
+  @Nonnull
+  private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_rd_in_rp_stanzaContext ctx) {
+    todo(ctx);
+    return new RoutePolicyBooleanRdIn(toRdMatchExpr(ctx.rd_match_expr()));
+  }
+
+  @Nonnull
+  private RdMatchExpr toRdMatchExpr(Rd_match_exprContext ctx) {
+    // TODO: add case for inline rd match expression
+    if (ctx.name != null) {
+      return new RdSetReference(toString(ctx.name));
+    } else {
+      assert ctx.param != null;
+      todo(ctx);
+      return new RdSetParameterReference(toString(ctx.param));
+    }
+  }
+
+  @Nonnull
+  private static String toString(Rd_set_nameContext name) {
+    return name.getText();
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_tag_is_rp_stanzaContext ctx) {
