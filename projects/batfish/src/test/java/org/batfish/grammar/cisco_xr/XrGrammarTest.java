@@ -116,12 +116,21 @@ import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.PeerAs;
 import org.batfish.representation.cisco_xr.PrivateAs;
+import org.batfish.representation.cisco_xr.RdSet;
+import org.batfish.representation.cisco_xr.RdSetAsDot;
+import org.batfish.representation.cisco_xr.RdSetAsPlain16;
+import org.batfish.representation.cisco_xr.RdSetAsPlain32;
+import org.batfish.representation.cisco_xr.RdSetDfaRegex;
+import org.batfish.representation.cisco_xr.RdSetIosRegex;
+import org.batfish.representation.cisco_xr.RdSetIpAddress;
+import org.batfish.representation.cisco_xr.RdSetIpPrefix;
 import org.batfish.representation.cisco_xr.RoutePolicy;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
 import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
+import org.batfish.representation.cisco_xr.WildcardUint32RangeExpr;
 import org.batfish.representation.cisco_xr.XrCommunitySet;
 import org.batfish.representation.cisco_xr.XrCommunitySetDfaRegex;
 import org.batfish.representation.cisco_xr.XrCommunitySetHighLowRangeExprs;
@@ -1295,6 +1304,43 @@ public final class XrGrammarTest {
       assertThat(iface.getAllAddresses(), containsInAnyOrder(primary, secondary1, secondary2));
       assertThat(iface.getAddress(), equalTo(primary));
       assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary1, secondary2));
+    }
+  }
+
+  @Test
+  public void testRdSetExtraction() {
+    String hostname = "rd-set";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getRdSets(), hasKeys("mixed", "universe"));
+    {
+      RdSet set = vc.getRdSets().get("mixed");
+      assertThat(
+          set.getElements(),
+          contains(
+              new RdSetDfaRegex("_5678:.*"),
+              new RdSetIosRegex("_1234:.*"),
+              new RdSetAsDot(new LiteralUint16(1), new LiteralUint16(2), new LiteralUint16(3)),
+              new RdSetAsPlain16(new LiteralUint16(4), new LiteralUint32(5)),
+              new RdSetAsPlain32(new LiteralUint32(600000L), new LiteralUint16(6)),
+              new RdSetAsPlain32(WildcardUint32RangeExpr.instance(), new LiteralUint16(7)),
+              new RdSetAsPlain32(new LiteralUint32(800000L), WildcardUint16RangeExpr.instance()),
+              new RdSetAsDot(
+                  new LiteralUint16(9), WildcardUint16RangeExpr.instance(), new LiteralUint16(10)),
+              /* TODO: should this be something like WildcardPint16RangeExpr, since you cannot enter 0
+              as first component when using asdot? */
+              new RdSetAsDot(
+                  WildcardUint16RangeExpr.instance(), new LiteralUint16(0), new LiteralUint16(11)),
+              new RdSetIpPrefix(Prefix.strict("1.1.1.0/24"), new LiteralUint16(3)),
+              new RdSetIpAddress(Ip.parse("4.4.4.4"), new LiteralUint16(5))));
+    }
+    {
+      RdSet set = vc.getRdSets().get("universe");
+      assertThat(
+          set.getElements(),
+          contains(
+              new RdSetAsPlain32(
+                  WildcardUint32RangeExpr.instance(), WildcardUint16RangeExpr.instance())));
     }
   }
 }
