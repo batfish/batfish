@@ -14,6 +14,7 @@ import org.batfish.datamodel.flow.EnterInputIfaceStep.EnterInputIfaceStepDetail;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep;
 import org.batfish.datamodel.flow.ExitOutputIfaceStep.ExitOutputIfaceStepDetail;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
@@ -43,7 +44,7 @@ public class TracePrunerTest {
                           .setInputInterface(NodeInterfacePair.of("B", "in"))
                           .build())
                   .build()));
-  private static final Hop HOP_C = new Hop(new Node("C"), ImmutableList.of());
+  private static final Hop HOP_C = new Hop(new Node("C"), ImmutableList.of(LoopStep.INSTANCE));
 
   private static final Trace TRACE_A_ACCEPTED = new Trace(ACCEPTED, ImmutableList.of(HOP_A));
   private static final Trace TRACE_A_B_ACCEPTED =
