@@ -660,3 +660,5 @@ route_policy_name: WORD;
 vrf_name: WORD;
 
 access_list_name: WORD;
+
+rd_set_name: WORD;
