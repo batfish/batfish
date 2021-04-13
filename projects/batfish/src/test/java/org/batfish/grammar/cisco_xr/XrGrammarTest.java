@@ -1343,4 +1343,11 @@ public final class XrGrammarTest {
                   WildcardUint32RangeExpr.instance(), WildcardUint16RangeExpr.instance())));
     }
   }
+
+  @Test
+  public void testBgpParsing() {
+    String hostname = "xr-bgp";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
 }

@@ -3823,6 +3823,12 @@ PERMIT: 'permit';
 
 PERMIT_HOSTDOWN: 'permit-hostdown';
 
+PER_CE: 'per-ce';
+
+PER_PREFIX: 'per-prefix';
+
+PER_VRF: 'per-vrf';
+
 PERSISTENT: 'persistent';
 
 PFC: 'pfc';
@@ -4150,7 +4156,7 @@ RCP: 'rcp';
 
 RCV_QUEUE: 'rcv-queue';
 
-RD: 'rd';
+RD: 'rd' -> pushMode(M_Rd);
 
 RD_SET: 'rd-set' -> pushMode(M_RdSet);
 
@@ -7577,3 +7583,17 @@ M_RdSetMatchExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
 M_RdSetMatchExpr_WORD: F_Word -> type(WORD), popMode;
 M_RdSetMatchExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_RdSetMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_Rd;
+
+M_Rd_IN: 'in' -> type(IN), popMode;
+M_Rd_NOT: 'not' -> type(NOT), popMode;
+
+M_Rd_COLON: ':' -> type(COLON);
+M_Rd_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
+M_Rd_PERIOD: '.' -> type(PERIOD);
+M_Rd_UINT16: F_Uint16 -> type(UINT16);
+M_Rd_UINT32: F_Uint16 -> type(UINT16);
+M_Rd_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Rd_WS: F_Whitespace+ -> channel(HIDDEN);
+

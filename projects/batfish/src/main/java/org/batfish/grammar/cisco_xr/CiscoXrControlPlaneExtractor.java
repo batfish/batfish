@@ -334,7 +334,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Activate_bgp_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Additional_paths_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Additional_paths_selection_xr_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Address_family_headerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Address_family_rb_stanzaContext;
@@ -356,6 +355,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_asnContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_confederation_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_redistribute_internal_rb_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_vrf_address_familyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_vrf_rdContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_and_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_apply_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_in_rp_stanzaContext;
@@ -2925,20 +2926,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitAdditional_paths_rb_stanza(Additional_paths_rb_stanzaContext ctx) {
-    if (ctx.SELECT() != null && ctx.ALL() != null) {
-      _currentPeerGroup.setAdditionalPathsSelectAll(true);
-    } else {
-      if (ctx.RECEIVE() != null) {
-        _currentPeerGroup.setAdditionalPathsReceive(true);
-      }
-      if (ctx.SEND() != null) {
-        _currentPeerGroup.setAdditionalPathsSend(true);
-      }
-    }
-  }
-
-  @Override
   public void exitAdditional_paths_selection_xr_rb_stanza(
       Additional_paths_selection_xr_rb_stanzaContext ctx) {
     if (ctx.name != null) {
@@ -2954,6 +2941,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
     popPeer();
+  }
+
+  @Override
+  public void exitBgp_vrf_address_family(Bgp_vrf_address_familyContext ctx) {
+    popPeer();
+  }
+
+  @Override
+  public void exitBgp_vrf_rd(Bgp_vrf_rdContext ctx) {
+    todo(ctx);
   }
 
   @Override
