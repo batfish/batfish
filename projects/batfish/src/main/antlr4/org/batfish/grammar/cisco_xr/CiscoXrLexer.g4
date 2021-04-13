@@ -2388,7 +2388,15 @@ IMPLICIT_USER: 'implicit-user';
 
 IMPORT: 'import';
 
-IN: 'in';
+IN
+:
+  'in'
+  {
+    if (lastTokenType() == RD) {
+      pushMode(M_RdSetMatchExpr);
+    }
+  }
+;
 
 INACTIVITY_TIMER: 'inactivity-timer';
 
@@ -4143,6 +4151,8 @@ RCP: 'rcp';
 RCV_QUEUE: 'rcv-queue';
 
 RD: 'rd';
+
+RD_SET: 'rd-set' -> pushMode(M_RdSet);
 
 RE_MAIL_CK: 're-mail-ck';
 
@@ -7530,3 +7540,40 @@ M_NtpAccessGroup_VRF: 'vrf' -> type(VRF), pushMode(M_Word);
 
 M_NtpAccessGroup_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_NtpAccessGroup_WS: F_Whitespace+ -> channel(HIDDEN);
+
+// community-set definition
+mode M_RdSet;
+
+M_RdSet_WORD: F_Word -> type(WORD);
+M_RdSet_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RdSetElem);
+M_RdSet_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_RdSetElem;
+M_RdSetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_DfaRegex);
+M_RdSetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_IosRegex);
+
+M_RdSetElem_ASTERISK: '*' -> type(ASTERISK);
+M_RdSetElem_COMMA: ',' -> type(COMMA);
+M_RdSetElem_END_SET: 'end-set' -> type(END_SET), popMode;
+M_RdSetElem_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
+M_RdSetElem_IP_PREFIX: F_IpPrefix -> type(IP_PREFIX);
+M_RdSetElem_PERIOD: '.' -> type(PERIOD);
+M_RdSetElem_UINT16: F_Uint16 -> type(UINT16);
+M_RdSetElem_UINT32: F_Uint32 -> type(UINT32);
+M_RdSetElem_COLON: ':' -> type(COLON);
+
+// NEWLINE can be interspersed between any other tokens in this mode
+M_RdSetElem_NEWLINE: F_Newline -> channel(HIDDEN);
+
+// TODO: save remarks
+M_RdSetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
+
+M_RdSetElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
+// route-policy rd in expression
+mode M_RdSetMatchExpr;
+
+M_RdSetMatchExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
+M_RdSetMatchExpr_WORD: F_Word -> type(WORD), popMode;
+M_RdSetMatchExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_RdSetMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);

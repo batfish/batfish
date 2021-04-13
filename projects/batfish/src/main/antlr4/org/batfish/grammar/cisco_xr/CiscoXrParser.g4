@@ -22,6 +22,7 @@ CiscoXr_ntp,
 CiscoXr_ospf,
 CiscoXr_pim,
 CiscoXr_qos,
+CiscoXr_rd_set,
 CiscoXr_rip,
 CiscoXr_rpl,
 CiscoXr_snmp,
@@ -53,6 +54,7 @@ statement
   | s_ipv6
   | s_null_xr
   | s_no
+  | s_rd_set
 ;
 
 s_ipv4

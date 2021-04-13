@@ -9,4 +9,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public interface Uint32RangeExprVisitor<T, U> {
 
   T visitLiteralUint32(LiteralUint32 literalUint32, U arg);
+
+  T visitWildcardUint32RangeExpr(WildcardUint32RangeExpr wildcardUint32RangeExpr);
 }
