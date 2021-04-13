@@ -1390,8 +1390,7 @@ class FlowTracer {
     return filterStep.getAction();
   }
 
-  @VisibleForTesting
-  void buildDeniedTrace(FlowDisposition disposition) {
+  private void buildDeniedTrace(FlowDisposition disposition) {
     _hops.add(
         failureHop(
             new Hop(_currentNode, _steps),

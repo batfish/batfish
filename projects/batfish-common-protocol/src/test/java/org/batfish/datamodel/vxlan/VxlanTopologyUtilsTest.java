@@ -49,6 +49,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.pojo.Node;
@@ -69,7 +70,8 @@ public final class VxlanTopologyUtilsTest {
           new Trace(
               result._accept ? FlowDisposition.ACCEPTED : FlowDisposition.DENIED_OUT,
               result._addHop
-                  ? ImmutableList.of(new Hop(new Node(result._receivingNode), ImmutableList.of()))
+                  ? ImmutableList.of(
+                      new Hop(new Node(result._receivingNode), ImmutableList.of(LoopStep.INSTANCE)))
                   : ImmutableList.of());
       return new TraceAndReverseFlow(
           forwardTrace,

@@ -96,6 +96,7 @@ import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
@@ -2584,7 +2585,7 @@ public final class WorkMgrTest {
             col,
             new Trace(
                 FlowDisposition.ACCEPTED,
-                ImmutableList.of(new Hop(new Node("a"), ImmutableList.of()))));
+                ImmutableList.of(new Hop(new Node("a"), ImmutableList.of(LoopStep.INSTANCE)))));
     Row r3 = Row.of(col, new Trace(FlowDisposition.DELIVERED_TO_SUBNET, ImmutableList.of()));
 
     assertThat(comparator.compare(r1, r2), lessThan(0));

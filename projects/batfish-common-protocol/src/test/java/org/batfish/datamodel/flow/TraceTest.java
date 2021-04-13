@@ -54,21 +54,26 @@ public class TraceTest {
               InboundStep.builder().setDetail(new InboundStepDetail("Loopback0")).build()));
 
   @Test
+  public void validateHopRejectsEmptyHops() {
+    _thrown.expectMessage("Invalid hop with no steps:");
+    Trace.validateHops(ImmutableList.of(_emptyHop));
+  }
+
+  @Test
   public void validateHopBeginsWithEnterInputInterface() {
     _thrown.expectMessage("Hop 2/2 of trace does not begin with an EnterInputIfaceStep:");
-    Trace.validateHops(ImmutableList.of(_hopWithOnlyExit, _emptyHop));
+    Trace.validateHops(ImmutableList.of(_hopWithOnlyExit, _hopWithOnlyExit));
   }
 
   @Test
   public void validateHopEndsWithExitOutputInterface() {
     _thrown.expectMessage("Hop 1/2 of trace does not end with an ExitOutputIfaceStep:");
-    Trace.validateHops(ImmutableList.of(_emptyHop, _hopWithOnlyEnter));
+    Trace.validateHops(ImmutableList.of(_hopWithOnlyEnter, _hopWithOnlyEnter));
   }
 
   @Test
   public void validateValidHops() {
     Trace.validateHops(ImmutableList.of());
-    Trace.validateHops(ImmutableList.of(_emptyHop));
     Trace.validateHops(ImmutableList.of(_hopWithOnlyEnter));
     Trace.validateHops(ImmutableList.of(_hopWithOnlyExit));
     Trace.validateHops(ImmutableList.of(_hopWithOnlyExit, _hopWithOnlyEnter));
