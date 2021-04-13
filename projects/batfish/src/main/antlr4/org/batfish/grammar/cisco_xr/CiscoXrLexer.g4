@@ -7586,8 +7586,7 @@ M_RdSetMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_Rd;
 
-M_Rd_IN: 'in' -> type(IN), popMode;
-M_Rd_NOT: 'not' -> type(NOT), popMode;
+M_Rd_IN: 'in' -> type(IN), mode(M_RdMatchExpr);
 
 M_Rd_COLON: ':' -> type(COLON);
 M_Rd_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS);
@@ -7597,3 +7596,12 @@ M_Rd_UINT32: F_Uint16 -> type(UINT16);
 M_Rd_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_Rd_WS: F_Whitespace+ -> channel(HIDDEN);
 
+mode M_RdMatchExpr;
+
+// TODO: support inline `rd in (...)` expression
+M_RdMatchExpr_PAREN_LEFT: '(' -> type(PAREN_LEFT), popMode;
+
+M_RdMatchExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
+M_RdMatchExpr_WORD: F_Word -> type(WORD), popMode;
+M_RdMatchExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_RdMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);
