@@ -150,6 +150,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_PO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_DELETE_COMMUNITY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_PREFIX_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_RD_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_SET_COMMUNITY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_SET_EXTCOMMUNITY_RT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SERVICE_POLICY_GLOBAL;
@@ -8129,7 +8130,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private RdMatchExpr toRdMatchExpr(Rd_match_exprContext ctx) {
     // TODO: add case for inline rd match expression
     if (ctx.name != null) {
-      return new RdSetReference(toString(ctx.name));
+      String name = toString(ctx.name);
+      _configuration.referenceStructure(RD_SET, name, ROUTE_POLICY_RD_IN, ctx.start.getLine());
+      return new RdSetReference(name);
     } else {
       assert ctx.param != null;
       todo(ctx);
