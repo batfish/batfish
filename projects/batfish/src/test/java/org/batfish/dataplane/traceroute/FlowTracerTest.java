@@ -3,7 +3,6 @@ package org.batfish.dataplane.traceroute;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
-import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
@@ -12,7 +11,6 @@ import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
-import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
@@ -139,96 +137,6 @@ import org.junit.rules.TemporaryFolder;
 /** Tests for {@link FlowTracer}. */
 public final class FlowTracerTest {
   @Rule public TemporaryFolder _temporaryFolder = new TemporaryFolder();
-
-  @Test
-  public void testBuildDeniedTraceNoNewSessions() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-
-    Flow flow =
-        Flow.builder()
-            .setDstIp(Ip.parse("1.1.1.1"))
-            .setIngressNode(c.getHostname())
-            .setIngressVrf(vrf.getName())
-            .build();
-
-    List<TraceAndReverseFlow> traces = new ArrayList<>();
-
-    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
-    TracerouteEngineImplContext ctxt =
-        new TracerouteEngineImplContext(
-            MockDataPlane.builder().build(),
-            Topology.EMPTY,
-            ImmutableSet.of(),
-            ImmutableSet.of(),
-            ImmutableMap.of(),
-            false,
-            configs);
-    FlowTracer flowTracer = initialFlowTracer(ctxt, c.getHostname(), null, flow, traces::add);
-    flowTracer.buildDeniedTrace(DENIED_IN);
-    assertThat(
-        traces,
-        contains(allOf(hasTrace(hasDisposition(DENIED_IN)), hasNewFirewallSessions(empty()))));
-  }
-
-  @Test
-  public void testBuildDeniedTraceNewSessions() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-
-    Flow flow =
-        Flow.builder()
-            .setDstIp(Ip.parse("1.1.1.1"))
-            .setIngressNode(c.getHostname())
-            .setIngressVrf(vrf.getName())
-            .build();
-    List<TraceAndReverseFlow> traces = new ArrayList<>();
-
-    SessionMatchExpr dummySessionFlow =
-        new SessionMatchExpr(IpProtocol.TCP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
-    FirewallSessionTraceInfo sessionInfo =
-        new FirewallSessionTraceInfo(
-            "hostname", Accept.INSTANCE, ImmutableSet.of(), dummySessionFlow, null);
-    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
-    TracerouteEngineImplContext ctxt =
-        new TracerouteEngineImplContext(
-            MockDataPlane.builder().build(),
-            Topology.EMPTY,
-            ImmutableSet.of(),
-            ImmutableSet.of(),
-            ImmutableMap.of(),
-            false,
-            configs);
-    FlowTracer flowTracer =
-        new FlowTracer(
-            ctxt,
-            c,
-            null,
-            new Node(c.getHostname()),
-            new LegacyTraceRecorder(traces::add),
-            NodeInterfacePair.of("node", "iface"),
-            ImmutableList.of(sessionInfo),
-            flow,
-            vrf.getName(),
-            new ArrayList<>(),
-            ImmutableList.of(),
-            new Stack<>(),
-            flow,
-            0,
-            0);
-
-    flowTracer.buildDeniedTrace(DENIED_IN);
-    assertThat(
-        traces,
-        contains(
-            allOf(
-                hasTrace(hasDisposition(DENIED_IN)),
-                hasNewFirewallSessions(contains(sessionInfo)))));
-  }
 
   private TraceAndReverseFlow getAcceptTraceWithOriginatingSession(
       boolean fibLookup,
