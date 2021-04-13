@@ -36,6 +36,7 @@ public enum CiscoXrStructureType implements StructureType {
   PREFIX_LIST("ipv4 prefix-list"),
   PREFIX_SET("prefix-set"),
   PREFIX6_LIST("ipv6 prefix-list"),
+  RD_SET("rd-set"),
   ROUTE_POLICY("route-policy"),
   SERVICE_TEMPLATE("service-template"),
   TRACK("track");

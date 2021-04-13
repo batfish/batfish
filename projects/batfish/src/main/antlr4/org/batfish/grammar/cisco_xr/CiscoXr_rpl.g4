@@ -98,6 +98,8 @@ boolean_community_matches_every_rp_stanza
    COMMUNITY MATCHES_EVERY community_set_match_expr
 ;
 
+boolean_rd_in_rp_stanza: RD IN rd_match_expr;
+
 boolean_destination_rp_stanza
 :
    DESTINATION IN rp_prefix_set
@@ -155,6 +157,7 @@ boolean_simple_rp_stanza
    | boolean_local_preference_rp_stanza
    | boolean_med_rp_stanza
    | boolean_next_hop_in_rp_stanza
+   | boolean_rd_in_rp_stanza
    | boolean_rib_has_route_rp_stanza
    | boolean_route_type_is_rp_stanza
    | boolean_tag_is_rp_stanza
@@ -306,6 +309,13 @@ community_set_match_expr_elem_half
   | BRACKET_LEFT first = uint16 DOTDOT last = uint16 BRACKET_RIGHT
   | PEERAS // stateful
   | PRIVATE_AS
+;
+
+rd_match_expr
+:
+   name = rd_set_name
+   // TODO: inline rd-set
+   | param = parameter
 ;
 
 rp_extcommunity_set_rt
