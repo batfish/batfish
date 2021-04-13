@@ -1,6 +1,7 @@
 package org.batfish.minesweeper;
 
 import static org.batfish.minesweeper.CommunityVar.Type.EXACT;
+import static org.batfish.minesweeper.CommunityVar.Type.REGEX;
 
 import com.google.common.base.MoreObjects;
 import dk.brics.automaton.Automaton;
@@ -40,8 +41,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
 
   public enum Type {
     EXACT,
-    REGEX,
-    OTHER
+    REGEX
   }
 
   @Nonnull private final Type _type;
@@ -84,19 +84,14 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
 
   /** Create a community var of type {@link Type#REGEX} */
   public static CommunityVar from(String regex) {
-    return new CommunityVar(Type.REGEX, regex, null);
+    return new CommunityVar(REGEX, regex, null);
   }
 
   /**
-   * Create a community var of type {@link Type#REGEX} based on a literal {@link Community} value
+   * Create a community var of type {@link Type#EXACT} based on a literal {@link Community} value
    */
   public static CommunityVar from(Community literalCommunity) {
-    return from("^" + literalCommunity.matchString() + "$");
-  }
-
-  /** Create a community var of type {@link Type#OTHER} based on a REGEX community var. */
-  public static CommunityVar other(String regex) {
-    return new CommunityVar(Type.OTHER, regex, null);
+    return new CommunityVar(EXACT, "^" + literalCommunity.matchString() + "$", literalCommunity);
   }
 
   @Nonnull
@@ -117,10 +112,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
   @Override
   public Automaton toAutomaton() {
     String regex = _regex;
-    if (_type == EXACT) {
-      // to turn a literal into a regex, add the start-of-string and end-of-string characters
-      regex = "^" + "(" + regex + ")" + "$";
-    } else {
+    if (_type == REGEX) {
       /**
        * A regex need only match a portion of a given community string. For example, the regex
        * "^40:" matches the community 40:11. But to properly relate community regexes to one
