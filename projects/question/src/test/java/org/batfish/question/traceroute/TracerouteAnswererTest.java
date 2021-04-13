@@ -30,6 +30,7 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.flow.Hop;
+import org.batfish.datamodel.flow.LoopStep;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.matchers.TraceMatchers;
 import org.batfish.datamodel.pojo.Node;
@@ -108,10 +109,12 @@ public class TracerouteAnswererTest {
             ImmutableList.of(
                 new Trace(
                     FlowDisposition.DENIED_OUT,
-                    ImmutableList.of(new Hop(new Node("node1"), ImmutableList.of()))),
+                    ImmutableList.of(
+                        new Hop(new Node("node1"), ImmutableList.of(LoopStep.INSTANCE)))),
                 new Trace(
                     FlowDisposition.DENIED_IN,
-                    ImmutableList.of(new Hop(new Node("node2"), ImmutableList.of())))));
+                    ImmutableList.of(
+                        new Hop(new Node("node2"), ImmutableList.of(LoopStep.INSTANCE))))));
 
     SortedMap<Flow, List<Trace>> deltaFlowTraces =
         ImmutableSortedMap.of(

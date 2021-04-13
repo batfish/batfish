@@ -29,9 +29,9 @@ public class BidirectionalTracePrunerTest {
     FLOW3 = fb.setIngressNode("flow3").build();
   }
 
-  private static final Hop HOP1 = new Hop(new Node("hop1"), ImmutableList.of());
-  private static final Hop HOP2 = new Hop(new Node("hop2"), ImmutableList.of());
-  private static final Hop HOP3 = new Hop(new Node("hop3"), ImmutableList.of());
+  private static final Hop HOP1 = new Hop(new Node("hop1"), ImmutableList.of(LoopStep.INSTANCE));
+  private static final Hop HOP2 = new Hop(new Node("hop2"), ImmutableList.of(LoopStep.INSTANCE));
+  private static final Hop HOP3 = new Hop(new Node("hop3"), ImmutableList.of(LoopStep.INSTANCE));
 
   /** Test that forward flow values are covered before reverse flow, dispositions, or hops. */
   @Test
