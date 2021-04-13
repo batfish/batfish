@@ -25,6 +25,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_COMMON;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_EGRESS;
@@ -40,6 +41,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_RD_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.hamcrest.Matchers.allOf;
@@ -1349,5 +1351,17 @@ public final class XrGrammarTest {
     String hostname = "xr-bgp";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testRdSetReferences() {
+    String hostname = "xr-rd-set-refs";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // ipv4
+    assertThat(ccae, hasReferencedStructure(filename, RD_SET, "rdset1", ROUTE_POLICY_RD_IN));
   }
 }

@@ -2528,6 +2528,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoXrStructureType.BGP_TEMPLATE_PEER_POLICY);
     markConcreteStructure(CiscoXrStructureType.BGP_TEMPLATE_PEER_SESSION);
 
+    markConcreteStructure(CiscoXrStructureType.RD_SET);
+
     return ImmutableList.of(c);
   }
 
