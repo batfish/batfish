@@ -80,6 +80,7 @@ public final class Trace {
     for (int i = 0; i < hops.size(); ++i) {
       Hop h = hops.get(i);
       List<Step<?>> steps = h.getSteps();
+      checkArgument(!steps.isEmpty(), "Invalid hop with no steps: %s", h);
       if (i > 0) {
         checkArgument(
             steps.get(0) instanceof EnterInputIfaceStep,
