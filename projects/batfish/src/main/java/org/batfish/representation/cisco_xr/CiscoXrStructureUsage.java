@@ -130,6 +130,7 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   ROUTE_POLICY_EXTCOMMUNITY_RT_MATCHES_ANY("route-policy extcommunity rt matches-any"),
   ROUTE_POLICY_EXTCOMMUNITY_RT_MATCHES_EVERY("route-policy extcommunity rt matches-every"),
   ROUTE_POLICY_PREFIX_SET("route-policy prefix-set"),
+  ROUTE_POLICY_RD_IN("route-policy rd in"),
   ROUTE_POLICY_SET_COMMUNITY("route-policy set community"),
   ROUTE_POLICY_SET_EXTCOMMUNITY_RT("route-policy set extcommunity rt"),
   ROUTER_ISIS_DISTRIBUTE_LIST_ACL("router isis distribute-list acl"),
