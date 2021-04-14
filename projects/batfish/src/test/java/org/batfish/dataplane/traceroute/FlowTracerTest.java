@@ -43,6 +43,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -199,7 +200,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
     flowTracer.buildAcceptTrace();
     return Iterables.getOnlyElement(traces);
   }
@@ -345,7 +347,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
 
     flowTracer.buildAcceptTrace();
     TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
@@ -436,7 +439,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               returnFlow,
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should match session and get forwarded out original ingress interface
@@ -467,7 +471,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               nonMatchingReturnFlow,
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should not match session, so should be dropped (FIB has no routes)
@@ -582,7 +587,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               returnFlow,
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should match session and get accepted.
@@ -630,7 +636,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               nonMatchingReturnFlow,
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should not match session, so should be dropped (FIB has no routes)
@@ -779,7 +786,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             returnFlow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
     flowTracer.processHop();
 
     TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
@@ -932,7 +940,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
     flowTracer.processHop();
     return !Iterables.getOnlyElement(traces).getNewFirewallSessions().isEmpty();
   }
@@ -1708,7 +1717,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
 
     {
       FlowDisposition disposition = FlowDisposition.INSUFFICIENT_INFO;
@@ -1925,7 +1935,8 @@ public final class FlowTracerTest {
             breadcrumbs,
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
 
     Ip dstIp2 = Ip.parse("2.2.2.2");
     flowTracer.applyTransformation(
@@ -2065,7 +2076,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               flowWithPermittedSrc, // current flow
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
@@ -2093,7 +2105,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               flowWithBlockedSrc, // current flow
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));

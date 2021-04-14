@@ -35,6 +35,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import java.util.ArrayList;
@@ -219,6 +221,17 @@ class FlowTracer {
   private final int _origNewSessionsSize; // size of _newSessions at construction
   private final Flow _originalFlow;
   private final @Nonnull String _vrfName;
+  /** Only create one in-memory instance of the same breadcrumb. */
+  private final @Nonnull Interner<Breadcrumb> _breadcrumbInterner;
+
+  private @Nonnull Breadcrumb newBreadcrumb(
+      @Nonnull String currentNodeName,
+      @Nonnull String vrfName,
+      @Nullable String ingressInterface,
+      @Nonnull Flow currentFlow) {
+    return _breadcrumbInterner.intern(
+        new Breadcrumb(currentNodeName, vrfName, ingressInterface, currentFlow));
+  }
 
   // Mutable list of hops in the current trace
   private final List<HopInfo> _hops;
@@ -268,7 +281,8 @@ class FlowTracer {
         new Stack<>(),
         originalFlow,
         0,
-        0);
+        0,
+        Interners.newStrongInterner());
   }
 
   /**
@@ -300,7 +314,8 @@ class FlowTracer {
         _breadcrumbs,
         _currentFlow,
         _newSessions.size(),
-        _breadcrumbs.size());
+        _breadcrumbs.size(),
+        _breadcrumbInterner);
   }
 
   private static @Nonnull String initVrfName(
@@ -335,7 +350,8 @@ class FlowTracer {
       Stack<Breadcrumb> breadcrumbs,
       Flow currentFlow,
       int origNewSessionsSize,
-      int origBreadcrumbsSize) {
+      int origBreadcrumbsSize,
+      @Nonnull Interner<Breadcrumb> breadcrumbInterner) {
     assert originalFlow.equals(currentFlow)
             || steps.stream()
                 .anyMatch(step -> step instanceof TransformationStep || step instanceof PolicyStep)
@@ -356,6 +372,7 @@ class FlowTracer {
     _currentFlow = currentFlow;
     _origNewSessionsSize = origNewSessionsSize;
     _origBreadcrumbsSize = origBreadcrumbsSize;
+    _breadcrumbInterner = breadcrumbInterner;
   }
 
   @Nullable
@@ -408,7 +425,8 @@ class FlowTracer {
         _breadcrumbs,
         _currentFlow,
         _newSessions.size(),
-        _breadcrumbs.size());
+        _breadcrumbs.size(),
+        _breadcrumbInterner);
   }
 
   /** Return forked {@link FlowTracer} on same node and VRF. Used for taking ECMP actions. */
@@ -441,7 +459,8 @@ class FlowTracer {
         _breadcrumbs,
         _currentFlow,
         _origNewSessionsSize,
-        _origBreadcrumbsSize);
+        _origBreadcrumbsSize,
+        _breadcrumbInterner);
   }
 
   private void processOutgoingInterfaceEdges(
@@ -773,7 +792,7 @@ class FlowTracer {
       Stack<Breadcrumb> intraHopBreadcrumbs) {
     // Loop detection
     Breadcrumb breadcrumb =
-        new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, _currentFlow);
+        newBreadcrumb(currentNodeName, _vrfName, _ingressInterface, _currentFlow);
     if (_breadcrumbs.contains(breadcrumb)) {
       buildLoopTrace(breadcrumb);
       return;
@@ -1009,7 +1028,7 @@ class FlowTracer {
                 }
                 // cycle detection
                 Breadcrumb breadcrumb =
-                    new Breadcrumb(currentNodeName, _vrfName, _ingressInterface, originalFlow);
+                    newBreadcrumb(currentNodeName, _vrfName, _ingressInterface, originalFlow);
                 if (_breadcrumbs.contains(breadcrumb)) {
                   buildLoopTrace(breadcrumb);
                   return null;
