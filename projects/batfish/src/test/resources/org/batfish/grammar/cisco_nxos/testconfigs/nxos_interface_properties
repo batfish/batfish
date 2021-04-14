@@ -35,6 +35,7 @@ interface Ethernet1/1
   no ip dhcp relay subnet-broadcast
   ip flow monitor FOO input sampler BAR
   ip ospf authentication-key 3 8e008e8d49648110
+  no ip port-unreachable
   ip proxy-arp
   ip router eigrp 100
   ip unreachables
