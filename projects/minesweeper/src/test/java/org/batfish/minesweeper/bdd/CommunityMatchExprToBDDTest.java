@@ -15,7 +15,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
+import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
@@ -70,13 +74,32 @@ public class CommunityMatchExprToBDDTest {
                 CommunityVar.from("^20:"),
                 CommunityVar.from(":30$"),
                 CommunityVar.from(StandardCommunity.parse("20:30")),
-                CommunityVar.from(StandardCommunity.parse("21:30"))),
+                CommunityVar.from(StandardCommunity.parse("21:30")),
+                CommunityVar.from(ExtendedCommunity.of(10, 10, 10)),
+                CommunityVar.from(LargeCommunity.of(20, 20, 20))),
             null);
     BDDRoute bddRoute = new BDDRoute(_g);
     TransferBDD transferBDD = new TransferBDD(_g, _baseConfig, ImmutableList.of());
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
 
     _communityMatchExprToBDD = new CommunityMatchExprToBDD();
+  }
+
+  @Test
+  public void testVisitAllExtendedCommunities() {
+    BDD result =
+        _communityMatchExprToBDD.visitAllExtendedCommunities(
+            AllExtendedCommunities.instance(), _arg);
+
+    assertEquals(cvarToBDD(CommunityVar.from(ExtendedCommunity.of(10, 10, 10))), result);
+  }
+
+  @Test
+  public void testVisitAllLargeCommunities() {
+    BDD result =
+        _communityMatchExprToBDD.visitAllLargeCommunities(AllLargeCommunities.instance(), _arg);
+
+    assertEquals(cvarToBDD(CommunityVar.from(LargeCommunity.of(20, 20, 20))), result);
   }
 
   @Test
@@ -197,10 +220,9 @@ public class CommunityMatchExprToBDDTest {
 
     BDD result = _communityMatchExprToBDD.visitCommunityNot(cn, _arg);
 
-    CommunityVar cvar1 = CommunityVar.from(".*");
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("20:30"));
 
-    assertEquals(cvarToBDD(cvar1).diff(cvarToBDD(cvar2)), result);
+    assertEquals(_arg.getBDDRoute().anyCommunity().diff(cvarToBDD(cvar2)), result);
   }
 
   @Test

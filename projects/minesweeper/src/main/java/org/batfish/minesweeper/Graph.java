@@ -197,7 +197,8 @@ public class Graph {
     initAllCommunities(communities);
     // compute atomic predicates for the BDD-based analysis
     Set<CommunityVar> comms = _allCommunities.stream().collect(ImmutableSet.toImmutableSet());
-    _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.ALL_COMMUNITIES);
+    _communityAtomicPredicates =
+        new RegexAtomicPredicates<>(comms, CommunityVar.ALL_STANDARD_COMMUNITIES);
     _asPathRegexAtomicPredicates =
         new RegexAtomicPredicates<>(
             findAllAsPathRegexes(asPathRegexes), SymbolicAsPathRegex.ALL_AS_PATHS);
