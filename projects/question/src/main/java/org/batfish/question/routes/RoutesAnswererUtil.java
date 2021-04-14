@@ -477,30 +477,28 @@ public class RoutesAnswererUtil {
 
   private static void populateBgpRouteAttributes(
       RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
+    String colPrefix = base ? COL_BASE_PREFIX : COL_DELTA_PREFIX;
+    Object path, metric, localPref, communities, originProtocol, originType, tag;
+    path = metric = localPref = communities = originProtocol = originType = tag = null;
+    if (routeRowAttribute != null) {
+      metric = routeRowAttribute.getMetric();
+      localPref = routeRowAttribute.getLocalPreference();
+      communities = routeRowAttribute.getCommunities();
+      originProtocol = routeRowAttribute.getOriginProtocol();
+      originType = routeRowAttribute.getOriginType();
+      tag = routeRowAttribute.getTag();
+      if (routeRowAttribute.getAsPath() != null) {
+        path = routeRowAttribute.getAsPath().getAsPathString();
+      }
+    }
     rowBuilder
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_AS_PATH,
-            routeRowAttribute != null && routeRowAttribute.getAsPath() != null
-                ? routeRowAttribute.getAsPath().getAsPathString()
-                : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_METRIC,
-            routeRowAttribute != null ? routeRowAttribute.getMetric() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_LOCAL_PREF,
-            routeRowAttribute != null ? routeRowAttribute.getLocalPreference() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_COMMUNITIES,
-            routeRowAttribute != null ? routeRowAttribute.getCommunities() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_ORIGIN_PROTOCOL,
-            routeRowAttribute != null ? routeRowAttribute.getOriginProtocol() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_ORIGIN_TYPE,
-            routeRowAttribute != null ? routeRowAttribute.getOriginType() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_TAG,
-            routeRowAttribute != null ? routeRowAttribute.getTag() : null);
+        .put((colPrefix) + COL_AS_PATH, path)
+        .put((colPrefix) + COL_METRIC, metric)
+        .put((colPrefix) + COL_LOCAL_PREF, localPref)
+        .put((colPrefix) + COL_COMMUNITIES, communities)
+        .put((colPrefix) + COL_ORIGIN_PROTOCOL, originProtocol)
+        .put((colPrefix) + COL_ORIGIN_TYPE, originType)
+        .put((colPrefix) + COL_TAG, tag);
   }
 
   /**
@@ -551,22 +549,22 @@ public class RoutesAnswererUtil {
 
   static void populateRouteAttributes(
       RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
+    String colPrefix = base ? COL_BASE_PREFIX : COL_DELTA_PREFIX;
+    Object nextHop, nextHopInterface, metric, adminDistance, tag;
+    metric = nextHop = nextHopInterface = adminDistance = tag = null;
+    if (routeRowAttribute != null) {
+      nextHop = routeRowAttribute.getNextHop();
+      nextHopInterface = routeRowAttribute.getNextHopInterface();
+      metric = routeRowAttribute.getMetric();
+      adminDistance = routeRowAttribute.getAdminDistance();
+      tag = routeRowAttribute.getTag();
+    }
     rowBuilder
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP,
-            routeRowAttribute != null ? routeRowAttribute.getNextHop() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_NEXT_HOP_INTERFACE,
-            routeRowAttribute != null ? routeRowAttribute.getNextHopInterface() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_METRIC,
-            routeRowAttribute != null ? routeRowAttribute.getMetric() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_ADMIN_DISTANCE,
-            routeRowAttribute != null ? routeRowAttribute.getAdminDistance() : null)
-        .put(
-            (base ? COL_BASE_PREFIX : COL_DELTA_PREFIX) + COL_TAG,
-            routeRowAttribute != null ? routeRowAttribute.getTag() : null);
+        .put((colPrefix) + COL_NEXT_HOP, nextHop)
+        .put((colPrefix) + COL_NEXT_HOP_INTERFACE, nextHopInterface)
+        .put((colPrefix) + COL_METRIC, metric)
+        .put((colPrefix) + COL_ADMIN_DISTANCE, adminDistance)
+        .put((colPrefix) + COL_TAG, tag);
   }
 
   /**
