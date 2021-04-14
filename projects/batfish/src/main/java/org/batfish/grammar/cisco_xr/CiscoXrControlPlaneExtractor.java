@@ -36,6 +36,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MA
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX6_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
@@ -149,6 +150,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_PO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_COMMUNITY_MATCHES_EVERY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_DELETE_COMMUNITY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_PREFIX_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_RD_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_SET_COMMUNITY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_SET_EXTCOMMUNITY_RT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SERVICE_POLICY_GLOBAL;
@@ -167,6 +169,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPO
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -174,6 +177,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -206,6 +210,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.Icmp6Code;
+import org.batfish.datamodel.Icmp6Type;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
@@ -329,7 +335,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_ip6_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_ip_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Access_list_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Activate_bgp_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Additional_paths_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Additional_paths_selection_xr_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Address_family_headerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Address_family_rb_stanzaContext;
@@ -351,6 +356,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_asnContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_confederation_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_listen_range_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_redistribute_internal_rb_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_vrf_address_familyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_vrf_rdContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_and_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_apply_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_in_rp_stanzaContext;
@@ -365,6 +372,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_local_preference_rp_st
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_med_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_next_hop_in_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_not_rp_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rd_in_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rib_has_route_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_route_type_is_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rp_stanzaContext;
@@ -464,8 +472,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_delayContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_encapsulationContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_addressContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_address_secondaryContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_igmpContext;
@@ -484,6 +490,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_access_groupContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_isis_metricContext;
@@ -523,6 +530,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Inherit_peer_session_bgp_tailC
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inspect_protocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Int_compContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Int_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_ipv4_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ios_banner_headerContext;
@@ -598,6 +606,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_spt_thresholdContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Pint16Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_accountingContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_control_subscriberContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_pbrContext;
@@ -615,6 +624,12 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_set_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prepend_as_path_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.ProtocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.RangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_match_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_elemContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_elem_32Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_elem_asdotContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_elem_lo16Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_classicContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_default_metricContext;
@@ -704,6 +719,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_l2tp_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_loggingContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ntpContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.S_rd_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ospfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ripContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_serviceContext;
@@ -849,6 +865,18 @@ import org.batfish.representation.cisco_xr.Prefix6ListLine;
 import org.batfish.representation.cisco_xr.PrefixList;
 import org.batfish.representation.cisco_xr.PrefixListLine;
 import org.batfish.representation.cisco_xr.PrivateAs;
+import org.batfish.representation.cisco_xr.RdMatchExpr;
+import org.batfish.representation.cisco_xr.RdSet;
+import org.batfish.representation.cisco_xr.RdSetAsDot;
+import org.batfish.representation.cisco_xr.RdSetAsPlain16;
+import org.batfish.representation.cisco_xr.RdSetAsPlain32;
+import org.batfish.representation.cisco_xr.RdSetDfaRegex;
+import org.batfish.representation.cisco_xr.RdSetElem;
+import org.batfish.representation.cisco_xr.RdSetIosRegex;
+import org.batfish.representation.cisco_xr.RdSetIpAddress;
+import org.batfish.representation.cisco_xr.RdSetIpPrefix;
+import org.batfish.representation.cisco_xr.RdSetParameterReference;
+import org.batfish.representation.cisco_xr.RdSetReference;
 import org.batfish.representation.cisco_xr.RipProcess;
 import org.batfish.representation.cisco_xr.RoutePolicy;
 import org.batfish.representation.cisco_xr.RoutePolicyApplyStatement;
@@ -866,6 +894,7 @@ import org.batfish.representation.cisco_xr.RoutePolicyBooleanMed;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanNextHopIn;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanNot;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanOr;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanRdIn;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanRibHasRoute;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanRouteTypeIs;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanTagIs;
@@ -913,6 +942,7 @@ import org.batfish.representation.cisco_xr.VrrpGroup;
 import org.batfish.representation.cisco_xr.VrrpInterface;
 import org.batfish.representation.cisco_xr.WildcardAddressSpecifier;
 import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
+import org.batfish.representation.cisco_xr.WildcardUint32RangeExpr;
 import org.batfish.representation.cisco_xr.XrCommunitySet;
 import org.batfish.representation.cisco_xr.XrCommunitySetDfaRegex;
 import org.batfish.representation.cisco_xr.XrCommunitySetElem;
@@ -934,6 +964,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     implements ControlPlaneExtractor {
 
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
+
+  private static final IntegerSpace PINT16_RANGE = IntegerSpace.of(Range.closed(1, 65535));
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
@@ -1710,6 +1742,110 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                     ctx.community_set_elem_list().elems.stream()
                         .map(this::toXrCommunitySetElem)
                         .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Override
+  public void enterS_rd_set(S_rd_setContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.name);
+    _configuration.defineStructure(RD_SET, name, ctx);
+    _configuration
+        .getRdSets()
+        .computeIfAbsent(
+            name,
+            n ->
+                new RdSet(
+                    ctx.rd_set_elem_list().elems.stream()
+                        .map(this::toRdSetElem)
+                        .filter(Objects::nonNull)
+                        .collect(ImmutableList.toImmutableList())));
+  }
+
+  @Nullable
+  private RdSetElem toRdSetElem(Rd_set_elemContext ctx) {
+    if (ctx.rd_set_elem_asdot() != null) {
+      @Nullable
+      Entry<Uint16RangeExpr, Uint16RangeExpr> as = toUint32HighLowExpr(ctx.rd_set_elem_asdot());
+      if (as == null) {
+        return null;
+      }
+      return new RdSetAsDot(as.getKey(), as.getValue(), toUint16RangeExpr(ctx.rd_set_elem_lo16()));
+    } else if (ctx.asplain_hi16 != null) {
+      assert ctx.rd_set_elem_32() != null;
+      return new RdSetAsPlain16(
+          new LiteralUint16(toInteger(ctx.asplain_hi16)), toUint32RangeExpr(ctx.rd_set_elem_32()));
+    } else if (ctx.asplain_hi32 != null) {
+      assert ctx.rd_set_elem_lo16() != null;
+      return new RdSetAsPlain32(
+          toUint32RangeExpr(ctx.asplain_hi32), toUint16RangeExpr(ctx.rd_set_elem_lo16()));
+    } else if (ctx.IP_PREFIX() != null) {
+      assert ctx.rd_set_elem_lo16() != null;
+      return new RdSetIpPrefix(
+          Prefix.parse(ctx.IP_PREFIX().getText()), toUint16RangeExpr(ctx.rd_set_elem_lo16()));
+    } else if (ctx.IP_ADDRESS() != null) {
+      assert ctx.rd_set_elem_lo16() != null;
+      return new RdSetIpAddress(toIp(ctx.IP_ADDRESS()), toUint16RangeExpr(ctx.rd_set_elem_lo16()));
+    } else if (ctx.DFA_REGEX() != null) {
+      return new RdSetDfaRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+    } else {
+      assert ctx.IOS_REGEX() != null;
+      return new RdSetIosRegex(unquote(ctx.COMMUNITY_SET_REGEX().getText()));
+    }
+  }
+
+  @Nonnull
+  private Uint32RangeExpr toUint32RangeExpr(Rd_set_elem_32Context ctx) {
+    if (ctx.ASTERISK() != null) {
+      return WildcardUint32RangeExpr.instance();
+    } else {
+      assert ctx.uint32() != null;
+      return new LiteralUint32(toLong(ctx.uint32()));
+    }
+  }
+
+  @Nonnull
+  private Uint16RangeExpr toUint16RangeExpr(Rd_set_elem_lo16Context ctx) {
+    if (ctx.ASTERISK() != null) {
+      return WildcardUint16RangeExpr.instance();
+    } else {
+      assert ctx.uint16() != null;
+      return new LiteralUint16(toInteger(ctx.uint16()));
+    }
+  }
+
+  @Nullable
+  private Entry<Uint16RangeExpr, Uint16RangeExpr> toUint32HighLowExpr(
+      Rd_set_elem_asdotContext ctx) {
+    Optional<Integer> maybeHi;
+    Uint16RangeExpr hi;
+    Uint16RangeExpr lo;
+    if (ctx.hi_wild != null) {
+      assert ctx.lo_num != null;
+      hi = WildcardUint16RangeExpr.instance();
+      lo = new LiteralUint16(toInteger(ctx.lo_num));
+    } else if (ctx.lo_wild != null) {
+      assert ctx.hi_num != null;
+      maybeHi = toInteger(ctx, ctx.hi_num);
+      if (!maybeHi.isPresent()) {
+        return null;
+      }
+      hi = new LiteralUint16(maybeHi.get());
+      lo = WildcardUint16RangeExpr.instance();
+    } else {
+      assert ctx.hi_num != null && ctx.lo_num != null;
+      maybeHi = toInteger(ctx, ctx.hi_num);
+      if (!maybeHi.isPresent()) {
+        return null;
+      }
+      hi = new LiteralUint16(maybeHi.get());
+      lo = new LiteralUint16(toInteger(ctx.lo_num));
+    }
+    return Maps.immutableEntry(hi, lo);
+  }
+
+  @Nonnull
+  Optional<Integer> toInteger(ParserRuleContext messageCtx, Pint16Context ctx) {
+    return toIntegerInSpace(messageCtx, ctx, PINT16_RANGE, "positive 16-bit integer");
   }
 
   @Override
@@ -2791,20 +2927,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitAdditional_paths_rb_stanza(Additional_paths_rb_stanzaContext ctx) {
-    if (ctx.SELECT() != null && ctx.ALL() != null) {
-      _currentPeerGroup.setAdditionalPathsSelectAll(true);
-    } else {
-      if (ctx.RECEIVE() != null) {
-        _currentPeerGroup.setAdditionalPathsReceive(true);
-      }
-      if (ctx.SEND() != null) {
-        _currentPeerGroup.setAdditionalPathsSend(true);
-      }
-    }
-  }
-
-  @Override
   public void exitAdditional_paths_selection_xr_rb_stanza(
       Additional_paths_selection_xr_rb_stanzaContext ctx) {
     if (ctx.name != null) {
@@ -2820,6 +2942,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
     popPeer();
+  }
+
+  @Override
+  public void exitBgp_vrf_address_family(Bgp_vrf_address_familyContext ctx) {
+    popPeer();
+  }
+
+  @Override
+  public void exitBgp_vrf_rd(Bgp_vrf_rdContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -3365,6 +3497,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
       Extended_access_list_tailContext ctx) {
+    // TODO: rewrite, cleanly separate v4/v6/protocol-specific features
     if (ctx.prot != null) {
       @Nullable IpProtocol protocol = toIpProtocol(ctx.prot);
       List<SubRange> srcPortRanges =
@@ -3383,6 +3516,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                   .setTcpFlags(TcpFlags.builder().setAck(true).build())
                   .setUseAck(true)
                   .build());
+        } else if (feature.ADDRESS_UNREACHABLE() != null) {
+          icmpType = Icmp6Type.DESTINATION_UNREACHABLE;
+          icmpCode = Icmp6Code.ADDRESS_UNREACHABLE;
         } else if (feature.ADMINISTRATIVELY_PROHIBITED() != null) {
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
@@ -3837,48 +3973,22 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_address(If_ip_addressContext ctx) {
-    ConcreteInterfaceAddress address;
-    if (ctx.prefix != null) {
-      address = ConcreteInterfaceAddress.parse(ctx.prefix.getText());
-    } else {
-      Ip ip = toIp(ctx.ip);
-      Ip mask = toIp(ctx.subnet);
-      address = ConcreteInterfaceAddress.create(ip, mask);
+  public void exitIf_ipv4_address(If_ipv4_addressContext ctx) {
+    Optional<ConcreteInterfaceAddress> maybeAddress =
+        toConcreteInterfaceAddress(ctx, ctx.interface_ipv4_address());
+    if (!maybeAddress.isPresent()) {
+      return;
     }
+    ConcreteInterfaceAddress address = maybeAddress.get();
     for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setAddress(address);
-    }
-    if (ctx.STANDBY() != null) {
-      Ip standbyIp = toIp(ctx.standby_address);
-      ConcreteInterfaceAddress standbyAddress =
-          ConcreteInterfaceAddress.create(standbyIp, address.getNetworkBits());
-      for (Interface currentInterface : _currentInterfaces) {
-        currentInterface.setStandbyAddress(standbyAddress);
+      if (ctx.SECONDARY() != null) {
+        currentInterface.getSecondaryAddresses().add(address);
+      } else {
+        currentInterface.setAddress(address);
       }
     }
-    if (ctx.ROUTE_PREFERENCE() != null) {
-      warn(ctx, "Unsupported: route-preference declared in interface IP address");
-    }
-    if (ctx.TAG() != null) {
-      warn(ctx, "Unsupported: tag declared in interface IP address");
-    }
-  }
-
-  @Override
-  public void exitIf_ip_address_secondary(If_ip_address_secondaryContext ctx) {
-    Ip ip;
-    Ip mask;
-    ConcreteInterfaceAddress address;
-    if (ctx.prefix != null) {
-      address = ConcreteInterfaceAddress.parse(ctx.prefix.getText());
-    } else {
-      ip = toIp(ctx.ip);
-      mask = toIp(ctx.subnet);
-      address = ConcreteInterfaceAddress.create(ip, mask.numSubnetBits());
-    }
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.getSecondaryAddresses().add(address);
+    if (ctx.tag != null) {
+      warn(ctx, "Unsupported: tag declared in interface ipv4 address");
     }
   }
 
@@ -7913,9 +8023,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_simple_rp_stanzaContext ctx) {
-    Boolean_rp_stanzaContext bctx = ctx.boolean_rp_stanza();
-    if (bctx != null) {
-      return toRoutePolicyBoolean(bctx);
+    {
+      Boolean_rp_stanzaContext bctx = ctx.boolean_rp_stanza();
+      if (bctx != null) {
+        return toRoutePolicyBoolean(bctx);
+      }
     }
 
     Boolean_apply_rp_stanzaContext actx = ctx.boolean_apply_rp_stanza();
@@ -7998,7 +8110,39 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return toRoutePolicyBoolean(tctx);
     }
 
+    {
+      Boolean_rd_in_rp_stanzaContext bctx = ctx.boolean_rd_in_rp_stanza();
+      if (bctx != null) {
+        return toRoutePolicyBoolean(bctx);
+      }
+    }
+
     throw convError(RoutePolicyBoolean.class, ctx);
+  }
+
+  @Nonnull
+  private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_rd_in_rp_stanzaContext ctx) {
+    todo(ctx);
+    return new RoutePolicyBooleanRdIn(toRdMatchExpr(ctx.rd_match_expr()));
+  }
+
+  @Nonnull
+  private RdMatchExpr toRdMatchExpr(Rd_match_exprContext ctx) {
+    // TODO: add case for inline rd match expression
+    if (ctx.name != null) {
+      String name = toString(ctx.name);
+      _configuration.referenceStructure(RD_SET, name, ROUTE_POLICY_RD_IN, ctx.start.getLine());
+      return new RdSetReference(name);
+    } else {
+      assert ctx.param != null;
+      todo(ctx);
+      return new RdSetParameterReference(toString(ctx.param));
+    }
+  }
+
+  @Nonnull
+  private static String toString(Rd_set_nameContext name) {
+    return name.getText();
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_tag_is_rp_stanzaContext ctx) {
@@ -8531,5 +8675,19 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return Optional.empty();
     }
     return Optional.of(num);
+  }
+
+  private @Nonnull Optional<ConcreteInterfaceAddress> toConcreteInterfaceAddress(
+      ParserRuleContext messageCtx, Interface_ipv4_addressContext ctx) {
+    try {
+      if (ctx.prefix != null) {
+        return Optional.of(ConcreteInterfaceAddress.parse(ctx.prefix.getText()));
+      } else if (ctx.address != null) {
+        return Optional.of(ConcreteInterfaceAddress.create(toIp(ctx.address), toIp(ctx.mask)));
+      }
+    } catch (IllegalArgumentException e) {
+      warn(messageCtx, "Invalid interface ipv4 address");
+    }
+    return Optional.empty();
   }
 }

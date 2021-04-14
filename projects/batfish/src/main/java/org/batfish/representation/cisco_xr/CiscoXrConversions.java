@@ -126,6 +126,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.LongMatchAll;
 import org.batfish.datamodel.routing_policy.expr.LongMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
@@ -441,6 +442,12 @@ public class CiscoXrConversions {
       return new LongComparison(IntComparator.EQ, new LiteralLong(literalUint32.getValue()));
     }
 
+    @Override
+    public LongMatchExpr visitWildcardUint32RangeExpr(
+        WildcardUint32RangeExpr wildcardUint32RangeExpr) {
+      return LongMatchAll.of();
+    }
+
     private static final XrUint32RangeExprToLongMatchExpr INSTANCE =
         new XrUint32RangeExprToLongMatchExpr();
   }
@@ -615,6 +622,12 @@ public class CiscoXrConversions {
     @Override
     public Optional<LongExpr> visitLiteralUint32(LiteralUint32 literalUint32, Void arg) {
       return Optional.of(new LiteralLong(literalUint32.getValue()));
+    }
+
+    @Override
+    public Optional<LongExpr> visitWildcardUint32RangeExpr(
+        WildcardUint32RangeExpr wildcardUint32RangeExpr) {
+      return Optional.empty();
     }
 
     private static final XrUint32RangeExprToLongExpr INSTANCE = new XrUint32RangeExprToLongExpr();

@@ -3,7 +3,6 @@ package org.batfish.dataplane.traceroute;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
-import static org.batfish.datamodel.FlowDisposition.DENIED_IN;
 import static org.batfish.datamodel.FlowDisposition.DENIED_OUT;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.FlowDisposition.LOOP;
@@ -12,7 +11,6 @@ import static org.batfish.datamodel.FlowDisposition.NULL_ROUTED;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
-import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasNewFirewallSessions;
 import static org.batfish.datamodel.matchers.TraceAndReverseFlowMatchers.hasTrace;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
@@ -45,6 +43,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -140,96 +139,6 @@ import org.junit.rules.TemporaryFolder;
 public final class FlowTracerTest {
   @Rule public TemporaryFolder _temporaryFolder = new TemporaryFolder();
 
-  @Test
-  public void testBuildDeniedTraceNoNewSessions() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-
-    Flow flow =
-        Flow.builder()
-            .setDstIp(Ip.parse("1.1.1.1"))
-            .setIngressNode(c.getHostname())
-            .setIngressVrf(vrf.getName())
-            .build();
-
-    List<TraceAndReverseFlow> traces = new ArrayList<>();
-
-    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
-    TracerouteEngineImplContext ctxt =
-        new TracerouteEngineImplContext(
-            MockDataPlane.builder().build(),
-            Topology.EMPTY,
-            ImmutableSet.of(),
-            ImmutableSet.of(),
-            ImmutableMap.of(),
-            false,
-            configs);
-    FlowTracer flowTracer = initialFlowTracer(ctxt, c.getHostname(), null, flow, traces::add);
-    flowTracer.buildDeniedTrace(DENIED_IN);
-    assertThat(
-        traces,
-        contains(allOf(hasTrace(hasDisposition(DENIED_IN)), hasNewFirewallSessions(empty()))));
-  }
-
-  @Test
-  public void testBuildDeniedTraceNewSessions() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-
-    Flow flow =
-        Flow.builder()
-            .setDstIp(Ip.parse("1.1.1.1"))
-            .setIngressNode(c.getHostname())
-            .setIngressVrf(vrf.getName())
-            .build();
-    List<TraceAndReverseFlow> traces = new ArrayList<>();
-
-    SessionMatchExpr dummySessionFlow =
-        new SessionMatchExpr(IpProtocol.TCP, Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"), null, null);
-    FirewallSessionTraceInfo sessionInfo =
-        new FirewallSessionTraceInfo(
-            "hostname", Accept.INSTANCE, ImmutableSet.of(), dummySessionFlow, null);
-    ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
-    TracerouteEngineImplContext ctxt =
-        new TracerouteEngineImplContext(
-            MockDataPlane.builder().build(),
-            Topology.EMPTY,
-            ImmutableSet.of(),
-            ImmutableSet.of(),
-            ImmutableMap.of(),
-            false,
-            configs);
-    FlowTracer flowTracer =
-        new FlowTracer(
-            ctxt,
-            c,
-            null,
-            new Node(c.getHostname()),
-            new LegacyTraceRecorder(traces::add),
-            NodeInterfacePair.of("node", "iface"),
-            ImmutableList.of(sessionInfo),
-            flow,
-            vrf.getName(),
-            new ArrayList<>(),
-            ImmutableList.of(),
-            new Stack<>(),
-            flow,
-            0,
-            0);
-
-    flowTracer.buildDeniedTrace(DENIED_IN);
-    assertThat(
-        traces,
-        contains(
-            allOf(
-                hasTrace(hasDisposition(DENIED_IN)),
-                hasNewFirewallSessions(contains(sessionInfo)))));
-  }
-
   private TraceAndReverseFlow getAcceptTraceWithOriginatingSession(
       boolean fibLookup,
       String hostname,
@@ -291,7 +200,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
     flowTracer.buildAcceptTrace();
     return Iterables.getOnlyElement(traces);
   }
@@ -437,7 +347,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
 
     flowTracer.buildAcceptTrace();
     TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
@@ -528,7 +439,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               returnFlow,
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should match session and get forwarded out original ingress interface
@@ -559,7 +471,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               nonMatchingReturnFlow,
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should not match session, so should be dropped (FIB has no routes)
@@ -674,7 +587,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               returnFlow,
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should match session and get accepted.
@@ -722,7 +636,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               nonMatchingReturnFlow,
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
       flowTracer.processHop();
 
       // Reverse trace should not match session, so should be dropped (FIB has no routes)
@@ -871,7 +786,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             returnFlow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
     flowTracer.processHop();
 
     TraceAndReverseFlow traceAndReverseFlow = Iterables.getOnlyElement(traces);
@@ -1024,7 +940,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
     flowTracer.processHop();
     return !Iterables.getOnlyElement(traces).getNewFirewallSessions().isEmpty();
   }
@@ -1800,7 +1717,8 @@ public final class FlowTracerTest {
             new Stack<>(),
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
 
     {
       FlowDisposition disposition = FlowDisposition.INSUFFICIENT_INFO;
@@ -2017,7 +1935,8 @@ public final class FlowTracerTest {
             breadcrumbs,
             flow,
             0,
-            0);
+            0,
+            Interners.newStrongInterner());
 
     Ip dstIp2 = Ip.parse("2.2.2.2");
     flowTracer.applyTransformation(
@@ -2157,7 +2076,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               flowWithPermittedSrc, // current flow
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));
@@ -2185,7 +2105,8 @@ public final class FlowTracerTest {
               new Stack<>(),
               flowWithBlockedSrc, // current flow
               0,
-              0);
+              0,
+              Interners.newStrongInterner());
 
       flowTracer.forwardOutInterface(iface, dstIp, null);
       assertThat(traces, hasSize(1));

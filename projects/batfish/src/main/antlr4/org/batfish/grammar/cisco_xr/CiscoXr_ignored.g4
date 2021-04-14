@@ -455,7 +455,6 @@ null_inner
       | PROVISION
       | RANDOM
       | RANDOM_DETECT
-      | RD
       | REACT
       | REAL
       | RECEIVE
@@ -858,7 +857,6 @@ null_single
       | QUIT
       | RADIUS_COMMON_PW
       | RADIUS_SERVER
-      | RD
       | RESOURCE
       | RESOURCE_POOL
       | NO ROUTE

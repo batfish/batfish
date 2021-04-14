@@ -7851,7 +7851,16 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         c.getAllInterfaces(),
-        hasKeys("Ethernet1/1", "Vlan1", "Vlan2", "Vlan3", "Vlan4", "Vlan6", "Vlan7", "Vlan1000"));
+        hasKeys(
+            "Ethernet1/1",
+            "Vlan1",
+            "Vlan2",
+            "Vlan3",
+            "Vlan4",
+            "Vlan6",
+            "Vlan7",
+            "Vlan1000",
+            "Vlan4000"));
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Vlan1");
       assertThat(iface, isActive(false));
@@ -7909,7 +7918,16 @@ public final class CiscoNxosGrammarTest {
 
     assertThat(
         vc.getInterfaces(),
-        hasKeys("Ethernet1/1", "Vlan1", "Vlan2", "Vlan3", "Vlan4", "Vlan6", "Vlan7", "Vlan1000"));
+        hasKeys(
+            "Ethernet1/1",
+            "Vlan1",
+            "Vlan2",
+            "Vlan3",
+            "Vlan4",
+            "Vlan6",
+            "Vlan7",
+            "Vlan1000",
+            "Vlan4000"));
     {
       Interface iface = vc.getInterfaces().get("Vlan1");
       assertThat(iface.getShutdown(), nullValue());
@@ -7959,7 +7977,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getType(), equalTo(CiscoNxosInterfaceType.VLAN));
     }
 
-    assertThat(vc.getVlans(), hasKeys(2, 4, 6, 7, 8));
+    assertThat(vc.getVlans(), hasKeys(2, 4, 6, 7, 8, 4000));
     {
       Vlan vlan = vc.getVlans().get(2);
       assertThat(vlan.getVni(), equalTo(12345));

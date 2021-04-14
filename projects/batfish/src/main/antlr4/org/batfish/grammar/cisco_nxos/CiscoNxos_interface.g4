@@ -1024,6 +1024,7 @@ inoip_null
   (
     ARP
     | DHCP
+    | PORT_UNREACHABLE
     | REDIRECTS
     | VERIFY
   ) null_rest_of_line

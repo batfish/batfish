@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-red-set-refs
+!
+rd-set rdset1
+end-set
+!
+route-policy p1
+ if rd in rdset1 then
+  pass
+ endif
+end-policy

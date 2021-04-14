@@ -6,6 +6,42 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
+// new grammar
+bgp_vrf_rd: RD route_distinguisher NEWLINE;
+
+bgp_vrf_address_family
+:
+   address_family_header
+   (
+      // new grammar
+      bgp_vrf_af_label_mode
+
+      // legacy grammar
+      | additional_paths_receive_xr_rb_stanza
+      | additional_paths_selection_xr_rb_stanza
+      | additional_paths_send_xr_rb_stanza
+      | aggregate_address_rb_stanza
+      | bgp_tail
+      | no_neighbor_activate_rb_stanza
+      | no_neighbor_shutdown_rb_stanza
+      | null_no_neighbor_rb_stanza
+      | peer_group_assignment_rb_stanza
+      | peer_group_creation_rb_stanza
+   )* address_family_footer
+;
+
+bgp_vrf_af_label_mode
+:
+  LABEL MODE
+  (
+    PER_CE
+    | PER_PREFIX
+    | PER_VRF
+    | ROUTE_POLICY name = route_policy_name
+  ) NEWLINE
+;
+
+// legacy grammar
 activate_bgp_tail
 :
    ACTIVATE NEWLINE
@@ -51,8 +87,7 @@ address_family_rb_stanza
 :
    address_family_header
    (
-      additional_paths_rb_stanza
-      | additional_paths_receive_xr_rb_stanza
+      additional_paths_receive_xr_rb_stanza
       | additional_paths_selection_xr_rb_stanza
       | additional_paths_send_xr_rb_stanza
       | aggregate_address_rb_stanza
@@ -90,17 +125,6 @@ aggregate_address_rb_stanza
     | summary_only = SUMMARY_ONLY
     | ROUTE_POLICY rp = route_policy_name
   )* NEWLINE
-;
-
-additional_paths_rb_stanza
-:
-   BGP ADDITIONAL_PATHS
-   (
-      INSTALL
-      | SELECT ALL
-      | SEND RECEIVE?
-      | RECEIVE SEND?
-   ) NEWLINE
 ;
 
 additional_paths_receive_xr_rb_stanza
@@ -433,7 +457,11 @@ vrf_block_rb_stanza
 :
    VRF name = vrf_name NEWLINE
    (
-      address_family_rb_stanza
+      // new grammar
+      bgp_vrf_rd
+      | bgp_vrf_address_family
+
+      // legacy grammar
       | aggregate_address_rb_stanza
       | always_compare_med_rb_stanza
       | as_path_multipath_relax_rb_stanza
@@ -785,8 +813,7 @@ router_bgp_stanza
 
 router_bgp_stanza_tail
 :
-   additional_paths_rb_stanza
-   | address_family_rb_stanza
+   address_family_rb_stanza
    | address_family_enable_rb_stanza
    | af_group_rb_stanza
    | aggregate_address_rb_stanza

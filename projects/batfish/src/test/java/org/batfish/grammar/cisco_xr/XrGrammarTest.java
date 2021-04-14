@@ -25,6 +25,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_COMMON;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_EGRESS;
@@ -40,6 +41,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_RD_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.hamcrest.Matchers.allOf;
@@ -77,6 +79,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -115,12 +118,21 @@ import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.PeerAs;
 import org.batfish.representation.cisco_xr.PrivateAs;
+import org.batfish.representation.cisco_xr.RdSet;
+import org.batfish.representation.cisco_xr.RdSetAsDot;
+import org.batfish.representation.cisco_xr.RdSetAsPlain16;
+import org.batfish.representation.cisco_xr.RdSetAsPlain32;
+import org.batfish.representation.cisco_xr.RdSetDfaRegex;
+import org.batfish.representation.cisco_xr.RdSetIosRegex;
+import org.batfish.representation.cisco_xr.RdSetIpAddress;
+import org.batfish.representation.cisco_xr.RdSetIpPrefix;
 import org.batfish.representation.cisco_xr.RoutePolicy;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
 import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
+import org.batfish.representation.cisco_xr.WildcardUint32RangeExpr;
 import org.batfish.representation.cisco_xr.XrCommunitySet;
 import org.batfish.representation.cisco_xr.XrCommunitySetDfaRegex;
 import org.batfish.representation.cisco_xr.XrCommunitySetHighLowRangeExprs;
@@ -1267,5 +1279,89 @@ public final class XrGrammarTest {
     String hostname = "xr-bfd";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testIpv6AccessListParsing() {
+    String hostname = "xr-ipv6-access-list";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testInterfaceAddressExtraction() {
+    String hostname = "xr-interface-address";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    String i1Name = "GigabitEthernet0/0/0/0";
+
+    assertThat(vc.getInterfaces(), hasKeys(i1Name));
+
+    {
+      org.batfish.representation.cisco_xr.Interface iface = vc.getInterfaces().get(i1Name);
+      ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("10.0.0.1/31");
+      ConcreteInterfaceAddress secondary1 = ConcreteInterfaceAddress.parse("10.0.0.3/31");
+      ConcreteInterfaceAddress secondary2 = ConcreteInterfaceAddress.parse("10.0.0.5/31");
+
+      assertThat(iface.getAllAddresses(), containsInAnyOrder(primary, secondary1, secondary2));
+      assertThat(iface.getAddress(), equalTo(primary));
+      assertThat(iface.getSecondaryAddresses(), containsInAnyOrder(secondary1, secondary2));
+    }
+  }
+
+  @Test
+  public void testRdSetExtraction() {
+    String hostname = "rd-set";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getRdSets(), hasKeys("mixed", "universe"));
+    {
+      RdSet set = vc.getRdSets().get("mixed");
+      assertThat(
+          set.getElements(),
+          contains(
+              new RdSetDfaRegex("_5678:.*"),
+              new RdSetIosRegex("_1234:.*"),
+              new RdSetAsDot(new LiteralUint16(1), new LiteralUint16(2), new LiteralUint16(3)),
+              new RdSetAsPlain16(new LiteralUint16(4), new LiteralUint32(5)),
+              new RdSetAsPlain32(new LiteralUint32(600000L), new LiteralUint16(6)),
+              new RdSetAsPlain32(WildcardUint32RangeExpr.instance(), new LiteralUint16(7)),
+              new RdSetAsPlain32(new LiteralUint32(800000L), WildcardUint16RangeExpr.instance()),
+              new RdSetAsDot(
+                  new LiteralUint16(9), WildcardUint16RangeExpr.instance(), new LiteralUint16(10)),
+              /* TODO: should this be something like WildcardPint16RangeExpr, since you cannot enter 0
+              as first component when using asdot? */
+              new RdSetAsDot(
+                  WildcardUint16RangeExpr.instance(), new LiteralUint16(0), new LiteralUint16(11)),
+              new RdSetIpPrefix(Prefix.strict("1.1.1.0/24"), new LiteralUint16(3)),
+              new RdSetIpAddress(Ip.parse("4.4.4.4"), new LiteralUint16(5))));
+    }
+    {
+      RdSet set = vc.getRdSets().get("universe");
+      assertThat(
+          set.getElements(),
+          contains(
+              new RdSetAsPlain32(
+                  WildcardUint32RangeExpr.instance(), WildcardUint16RangeExpr.instance())));
+    }
+  }
+
+  @Test
+  public void testBgpParsing() {
+    String hostname = "xr-bgp";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testRdSetReferences() {
+    String hostname = "xr-rd-set-refs";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // ipv4
+    assertThat(ccae, hasReferencedStructure(filename, RD_SET, "rdset1", ROUTE_POLICY_RD_IN));
   }
 }

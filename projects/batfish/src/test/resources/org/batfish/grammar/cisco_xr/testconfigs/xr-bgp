@@ -1,0 +1,143 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-bgp
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.1.0.0/31
+ ipv6 address dead:beef::/127
+!
+interface Loopback0
+ ipv4 address 10.0.0.1/32
+!
+route-policy rp1
+ set path-selection backup 1 install
+end-policy
+
+route-policy rp2
+ pass
+end-policy
+route-policy rp3
+ pass
+end-policy
+route-policy rp4
+ pass
+end-policy
+route-policy rp5
+ pass
+end-policy
+route-policy rp6
+ pass
+end-policy
+route-policy rp7
+ pass
+end-policy
+route-policy rp8
+ pass
+end-policy
+route-policy rp9
+ pass
+end-policy
+!
+router bgp 65500
+ nsr
+ bgp router-id 10.0.0.1
+ ! 1-4095
+ bgp graceful-restart restart-time 1
+ ! 1-4095
+ bgp graceful-restart stalepath-time 1
+ bgp graceful-restart
+ bgp log neighbor changes detail
+ address-family ipv4 unicast
+  additional-paths receive
+  additional-paths send
+  additional-paths selection route-policy rp1
+  aggregate-address 172.16.0.0/16
+  aggregate-address 192.168.0.0/16 summary-only
+ !
+ address-family vpnv4 unicast
+ !
+ address-family ipv6 unicast
+  redistribute connected
+ !
+ address-family vpnv6 unicast
+ !
+ neighbor-group ng1
+  remote-as 65500
+  description description1
+  update-source Loopback0
+  password encrypted xxxxxxxx
+  address-family ipv4 unicast
+   route-policy rp2 in
+   ! pint32, 1-100
+   maximum-prefix 1 1 warning-only
+   route-policy rp3 out
+   next-hop-self
+   soft-reconfiguration inbound always
+  !
+  address-family vpnv4 unicast
+   maximum-prefix 1 1 warning-only
+   route-policy rp4 out
+  !
+  address-family vpnv6 unicast
+   maximum-prefix 1 1 warning-only
+   route-policy rp5 out
+  !
+ !
+ neighbor 10.0.0.2
+  use neighbor-group ng1
+  description description2
+ !
+ neighbor 10.0.0.3
+  use neighbor-group ng1
+  shutdown
+ !
+ vrf v1
+  rd 10.0.0.1:1
+  address-family ipv4 unicast
+   label mode per-vrf
+   network 10.0.0.0/8
+   redistribute connected
+   redistribute static
+  !
+  address-family ipv6 unicast
+   redistribute connected
+  !
+  neighbor 10.1.0.1
+   remote-as 65501
+   bfd fast-detect
+   bfd fast-detect disable
+   ! 2-16
+   bfd multiplier 2
+   ! 3-30000
+   bfd minimum-interval 3
+   local-as 1 no-prepend replace-as
+   description description3
+   password encrypted xxxxxxxx
+   address-family ipv4 unicast
+    send-community-ebgp
+    route-policy rp6 in
+    ! pint32, 1-100, pint16
+    maximum-prefix 1 1 restart 1
+    route-policy rp7 out
+    remove-private-AS
+   !
+  !
+  neighbor 10.1.0.3
+   remote-as 65503
+   shutdown
+  !
+  neighbor dead:beef::1
+   remote-as 65504
+   local-as 1 no-prepend replace-as
+   password encrypted xxxxxxxx
+   description description4
+   address-family ipv6 unicast
+    send-community-ebgp
+    route-policy rp8 in
+    maximum-prefix 1 1
+    route-policy rp9 out
+    remove-private-AS
+   !
+  !
+ !
+!
