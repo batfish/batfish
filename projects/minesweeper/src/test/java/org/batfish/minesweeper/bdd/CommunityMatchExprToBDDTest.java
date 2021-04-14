@@ -39,6 +39,7 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.Graph;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,7 +109,17 @@ public class CommunityMatchExprToBDDTest {
         _communityMatchExprToBDD.visitAllStandardCommunities(
             AllStandardCommunities.instance(), _arg);
 
-    assertEquals(cvarToBDD(CommunityVar.from(".*")), result);
+    BDD expected =
+        BDDRoute.factory.orAll(
+            _arg.getTransferBDD().getCommunityAtomicPredicates().keySet().stream()
+                .filter(
+                    c ->
+                        c.getType() == Type.REGEX
+                            || c.getLiteralValue() instanceof StandardCommunity)
+                .map(this::cvarToBDD)
+                .collect(ImmutableSet.toImmutableSet()));
+
+    assertEquals(expected, result);
   }
 
   @Test

@@ -15,9 +15,9 @@ import org.batfish.datamodel.bgp.community.Community;
 
 /**
  * Representation of a community literal/regex for the symbolic analysis. Configuration languages
- * allow users match community values using either <b>exact matches</b> or <b>regular expression</b>
- * matches. For example, a regular expression match such as .*:65001 will match any community string
- * that ends with 65001.
+ * allow users to match community values using either <b>exact matches</b> or <b>regular
+ * expression</b> matches. For example, a regular expression match such as .*:65001 will match any
+ * community string that ends with 65001.
  *
  * <p>Currently we support standard, extended, and large community literals, but regexes are assumed
  * by the analysis to only match against standard communities.
@@ -57,7 +57,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
 
   /**
    * When converting a community regex to an automaton (see toAutomaton()), we intersect with this
-   * automaton, which represents the language of community literals supported by Batfish. Doing so
+   * automaton, which represents the syntax of standard communities supported by Batfish. Doing so
    * serves two purposes. First, it is necessary for correctness of the symbolic analysis. For
    * example, a regex like ".*" does not actually match any possible string since communities cannot
    * be arbitrary strings. Second, it ensures that when we solve for community literals that match
@@ -110,7 +110,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
        * another, for example to find their intersection, we need regexes that match completely.
        *
        * <p>The simple approach below converts a possibly-partial regex into a complete one. It
-       * works because below we intersect the resulting automaton with COMMUNITY_FSM, which notably
+       * works because we then intersect the resulting automaton with COMMUNITY_FSM, which notably
        * includes the start-of-string and end-of-string characters. Note that the automaton library
        * treats these as ordinary characters.
        *

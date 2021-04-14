@@ -54,6 +54,7 @@ import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, Arg> {
   @Override
   public BDD visitAllExtendedCommunities(AllExtendedCommunities allExtendedCommunities, Arg arg) {
+    // we currently only support extended community literals (as opposed to also regexes)
     Set<CommunityVar> allExtended =
         filterCommunityVars(
             c -> c.getType() == Type.EXACT && c.getLiteralValue() instanceof ExtendedCommunity,
@@ -63,6 +64,7 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
 
   @Override
   public BDD visitAllLargeCommunities(AllLargeCommunities allLargeCommunities, Arg arg) {
+    // we currently only support large community literals (as opposed to also regexes)
     Set<CommunityVar> allLarge =
         filterCommunityVars(
             c -> c.getType() == Type.EXACT && c.getLiteralValue() instanceof LargeCommunity, arg);
@@ -219,6 +221,7 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
         "Currently not supporting matches on extended communities");
   }
 
+  // produce the set of community variables that satisfy the given predicate
   private static Set<CommunityVar> filterCommunityVars(Predicate<CommunityVar> predicate, Arg arg) {
     return arg.getTransferBDD().getCommunityAtomicPredicates().keySet().stream()
         .filter(predicate)
