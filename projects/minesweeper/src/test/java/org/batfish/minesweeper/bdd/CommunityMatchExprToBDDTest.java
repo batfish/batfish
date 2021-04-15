@@ -33,8 +33,11 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
+import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
+import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -76,7 +79,12 @@ public class CommunityMatchExprToBDDTest {
                 CommunityVar.from(":30$"),
                 CommunityVar.from(StandardCommunity.parse("20:30")),
                 CommunityVar.from(StandardCommunity.parse("21:30")),
-                CommunityVar.from(ExtendedCommunity.of(10, 10, 10)),
+                // a route-target extended community
+                CommunityVar.from(ExtendedCommunity.target(1, 65555)),
+                // a site-of-origin extended community
+                CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1)),
+                // a vpn distinguisher extended community
+                CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)),
                 CommunityVar.from(LargeCommunity.of(20, 20, 20))),
             null);
     BDDRoute bddRoute = new BDDRoute(_g);
@@ -92,7 +100,17 @@ public class CommunityMatchExprToBDDTest {
         _communityMatchExprToBDD.visitAllExtendedCommunities(
             AllExtendedCommunities.instance(), _arg);
 
-    assertEquals(cvarToBDD(CommunityVar.from(ExtendedCommunity.of(10, 10, 10))), result);
+    BDD expected =
+        BDDRoute.factory.orAll(
+            ImmutableSet.of(
+                    CommunityVar.from(ExtendedCommunity.target(1, 65555)),
+                    CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1)),
+                    CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1)))
+                .stream()
+                .map(this::cvarToBDD)
+                .collect(ImmutableSet.toImmutableSet()));
+
+    assertEquals(expected, result);
   }
 
   @Test
@@ -237,6 +255,24 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
+  public void testVisitRouteTargetExtendedCommunities() {
+    BDD result =
+        _communityMatchExprToBDD.visitRouteTargetExtendedCommunities(
+            RouteTargetExtendedCommunities.instance(), _arg);
+
+    assertEquals(cvarToBDD(CommunityVar.from(ExtendedCommunity.target(1, 65555))), result);
+  }
+
+  @Test
+  public void testVisitSiteOfOriginExtendedCommunities() {
+    BDD result =
+        _communityMatchExprToBDD.visitSiteOfOriginExtendedCommunities(
+            SiteOfOriginExtendedCommunities.instance(), _arg);
+
+    assertEquals(cvarToBDD(CommunityVar.from(ExtendedCommunity.of(0x0003, 1, 1))), result);
+  }
+
+  @Test
   public void testVisitStandardCommunityHighMatch() {
     StandardCommunityHighMatch schm =
         new StandardCommunityHighMatch(new IntComparison(IntComparator.EQ, new LiteralInt(20)));
@@ -258,6 +294,15 @@ public class CommunityMatchExprToBDDTest {
     CommunityVar cvar = CommunityVar.from(":30$");
 
     assertEquals(cvarToBDD(cvar), result);
+  }
+
+  @Test
+  public void testVisitVPNDistinguisherExtendedCommunities() {
+    BDD result =
+        _communityMatchExprToBDD.visitVpnDistinguisherExtendedCommunities(
+            VpnDistinguisherExtendedCommunities.instance(), _arg);
+
+    assertEquals(cvarToBDD(CommunityVar.from(ExtendedCommunity.of(0x0010, 1, 1))), result);
   }
 
   private BDD cvarToBDD(CommunityVar cvar) {

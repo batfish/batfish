@@ -52,23 +52,21 @@ import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
  */
 @ParametersAreNonnullByDefault
 public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, Arg> {
+
+  private final Predicate<CommunityVar> _isExtendedCommunityLiteral =
+      c -> c.getType() == Type.EXACT && c.getLiteralValue() instanceof ExtendedCommunity;
+
   @Override
   public BDD visitAllExtendedCommunities(AllExtendedCommunities allExtendedCommunities, Arg arg) {
     // we currently only support extended community literals (as opposed to also regexes)
-    Set<CommunityVar> allExtended =
-        filterCommunityVars(
-            c -> c.getType() == Type.EXACT && c.getLiteralValue() instanceof ExtendedCommunity,
-            arg);
-    return CommunitySetMatchExprToBDD.communityVarsToBDD(allExtended, arg);
+    return matchingCommunityVarsToBDD(_isExtendedCommunityLiteral, arg);
   }
 
   @Override
   public BDD visitAllLargeCommunities(AllLargeCommunities allLargeCommunities, Arg arg) {
     // we currently only support large community literals (as opposed to also regexes)
-    Set<CommunityVar> allLarge =
-        filterCommunityVars(
-            c -> c.getType() == Type.EXACT && c.getLiteralValue() instanceof LargeCommunity, arg);
-    return CommunitySetMatchExprToBDD.communityVarsToBDD(allLarge, arg);
+    return matchingCommunityVarsToBDD(
+        c -> c.getType() == Type.EXACT && c.getLiteralValue() instanceof LargeCommunity, arg);
   }
 
   @Override
@@ -185,15 +183,25 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   @Override
   public BDD visitRouteTargetExtendedCommunities(
       RouteTargetExtendedCommunities routeTargetExtendedCommunities, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return matchingCommunityVarsToBDD(
+        _isExtendedCommunityLiteral.and(
+            c -> {
+              assert c.getLiteralValue() != null;
+              return ((ExtendedCommunity) c.getLiteralValue()).isRouteTarget();
+            }),
+        arg);
   }
 
   @Override
   public BDD visitSiteOfOriginExtendedCommunities(
       SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return matchingCommunityVarsToBDD(
+        _isExtendedCommunityLiteral.and(
+            c -> {
+              assert c.getLiteralValue() != null;
+              return ((ExtendedCommunity) c.getLiteralValue()).isRouteOrigin();
+            }),
+        arg);
   }
 
   @Override
@@ -217,14 +225,21 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   @Override
   public BDD visitVpnDistinguisherExtendedCommunities(
       VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return matchingCommunityVarsToBDD(
+        _isExtendedCommunityLiteral.and(
+            c -> {
+              assert c.getLiteralValue() != null;
+              return ((ExtendedCommunity) c.getLiteralValue()).isVpnDistinguisher();
+            }),
+        arg);
   }
 
-  // produce the set of community variables that satisfy the given predicate
-  private static Set<CommunityVar> filterCommunityVars(Predicate<CommunityVar> predicate, Arg arg) {
-    return arg.getTransferBDD().getCommunityAtomicPredicates().keySet().stream()
-        .filter(predicate)
-        .collect(ImmutableSet.toImmutableSet());
+  // produce a BDD representing the set of community variables that satisfy the given predicate
+  private static BDD matchingCommunityVarsToBDD(Predicate<CommunityVar> predicate, Arg arg) {
+    Set<CommunityVar> cvars =
+        arg.getTransferBDD().getCommunityAtomicPredicates().keySet().stream()
+            .filter(predicate)
+            .collect(ImmutableSet.toImmutableSet());
+    return CommunitySetMatchExprToBDD.communityVarsToBDD(cvars, arg);
   }
 }
