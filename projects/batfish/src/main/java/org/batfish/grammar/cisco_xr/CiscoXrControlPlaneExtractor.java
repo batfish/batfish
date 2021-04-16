@@ -932,7 +932,6 @@ import org.batfish.representation.cisco_xr.OspfNetwork;
 import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.OspfRedistributionPolicy;
-import org.batfish.representation.cisco_xr.OspfWildcardNetwork;
 import org.batfish.representation.cisco_xr.PeerAs;
 import org.batfish.representation.cisco_xr.Prefix6List;
 import org.batfish.representation.cisco_xr.Prefix6ListLine;
@@ -6083,26 +6082,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_network(Ro_networkContext ctx) {
-    Ip address;
-    Ip wildcard;
-    if (ctx.prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      address = prefix.getStartIp();
-      wildcard = prefix.getPrefixWildcard();
-    } else {
-      address = toIp(ctx.ip);
-      wildcard = toIp(ctx.wildcard);
-    }
-    long area;
-    if (ctx.area_int != null) {
-      area = toLong(ctx.area_int);
-    } else if (ctx.area_ip != null) {
-      area = toIp(ctx.area_ip).asLong();
-    } else {
-      throw new BatfishException("bad area");
-    }
-    OspfWildcardNetwork network = new OspfWildcardNetwork(address, wildcard, area);
-    _currentOspfProcess.getWildcardNetworks().add(network);
+    todo(ctx);
   }
 
   @Override

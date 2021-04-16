@@ -1,0 +1,39 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-ospf
+!
+
+router ospf 1
+ nsr
+ log adjacency changes detail
+ router-id 1.2.3.4
+ network broadcast
+ network non-broadcast
+ network point-to-multipoint
+ network point-to-multipoint non-broadcast
+ network point-to-point
+ mpls ldp auto-config
+ mpls ldp sync
+ mpls ldp sync-igp-shortcuts
+ nsf ietf
+ timers throttle lsa all 0 1 1
+ timers throttle spf 1 1 1
+ timers lsa min-arrival 0
+ auto-cost reference-bandwidth 1
+ max-metric router-lsa on-startup wait-for-bgp include-stub summary-lsa external-lsa
+ area 0
+  authentication message-digest
+  mpls traffic-eng
+  interface Bundle-Ether1
+   authentication message-digest
+   bfd minimum-interval 50
+   bfd fast-detect
+   bfd multiplier 3
+   cost 1
+   message-digest-key 1 md5 encrypted xxxxxxxx
+   network point-to-point
+   passive enable
+  !
+ !
+ mpls traffic-eng router-id Loopback0
+!

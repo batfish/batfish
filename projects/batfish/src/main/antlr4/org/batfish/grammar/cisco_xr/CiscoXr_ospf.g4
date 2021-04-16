@@ -17,14 +17,17 @@ ro_area
    (
       area_int = uint_legacy
       | area_ip = IP_ADDRESS
-   ) NEWLINE
-   (
-      ro_common
-      | roa_cost
-      | roa_interface
-      | roa_network_null
-      | roa_range
-   )*
+   ) NEWLINE ro_area_inner*
+;
+
+ro_area_inner
+:
+  ro_common
+  | roa_cost
+  | roa_interface
+  | roa_mpls
+  | roa_network_null
+  | roa_range
 ;
 
 ro_area_default_cost
@@ -211,14 +214,10 @@ ro_network
 :
    NETWORK
    (
-      (
-         ip = IP_ADDRESS wildcard = IP_ADDRESS
-      )
-      | prefix = IP_PREFIX
-   ) AREA
-   (
-      area_int = uint_legacy
-      | area_ip = IP_ADDRESS
+     BROADCAST
+     | NON_BROADCAST
+     | POINT_TO_MULTIPOINT NON_BROADCAST?
+     | POINT_TO_POINT
    ) NEWLINE
 ;
 
@@ -516,6 +515,17 @@ roa_range
    )? NEWLINE
 ;
 
+roa_mpls
+:
+  MPLS
+  (
+    rompls_ldp
+    | roampls_traffic_eng
+  )
+;
+
+roampls_traffic_eng: TRAFFIC_ENG NEWLINE;
+
 roa_network_null
 :
    NETWORK POINT_TO_POINT NEWLINE
@@ -642,6 +652,7 @@ s_router_ospf
       | ro_distribute_list
       | ro_max_metric
       | ro_maximum_paths
+      | ro_mpls
       | ro_network
       | ro_passive_interface_default
       | ro_passive_interface
@@ -665,4 +676,42 @@ s_router_ospfv3
       rov3_address_family
       | rov3_common
    )*
+;
+
+ro_mpls
+:
+  MPLS
+  (
+    rompls_ldp
+    | rompls_traffic_eng
+  )
+;
+
+rompls_ldp
+:
+  LDP
+  (
+    rompls_ldp_auto_config
+    | rompls_ldp_sync
+    | rompls_ldp_sync_igp_shortcuts
+  )
+;
+
+rompls_ldp_auto_config: AUTO_CONFIG NEWLINE;
+
+rompls_ldp_sync: SYNC NEWLINE;
+
+rompls_ldp_sync_igp_shortcuts: SYNC_IGP_SHORTCUTS NEWLINE;
+
+rompls_traffic_eng: TRAFFIC_ENG rompls_traffic_eng_null;
+
+rompls_traffic_eng_null
+:
+  (
+    AUTOROUTE_EXCLUDE
+    | IGP_INTACT
+    | IDP_SYNC_UPDATE
+    | MULTICAST_INTACT
+    | ROUTER_ID
+  ) null_rest_of_line
 ;
