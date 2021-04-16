@@ -60,6 +60,7 @@ statement
   | s_ipv4
   | s_ipv6
   | s_lldp
+  | s_mpls
   | s_multicast_routing
   | s_null
   | s_no
@@ -969,9 +970,6 @@ stanza
    | s_line
    | s_logging
    | s_lpts
-   | s_mpls_label_range
-   | s_mpls_ldp
-   | s_mpls_traffic_eng
    | s_no_bfd
    | s_ntp
    | s_object_group

@@ -1713,4 +1713,11 @@ public final class XrGrammarTest {
         ccae,
         hasReferencedStructure(filename, SAMPLER_MAP, "sm4", INTERFACE_FLOW_IPV6_SAMPLER_INGRESS));
   }
+
+  @Test
+  public void testMplsParsing() {
+    String hostname = "xr-mpls";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
 }
