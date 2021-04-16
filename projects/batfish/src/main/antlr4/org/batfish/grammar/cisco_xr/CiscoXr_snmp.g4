@@ -19,12 +19,12 @@ s_snmp_server
 :
    SNMP_SERVER
    (
-      NEWLINE
-      | ss_community
+      ss_community
       | ss_host
       | ss_mib
       | ss_null
       | ss_trap_source
+      | ss_vrf
    )
 ;
 
@@ -125,13 +125,27 @@ ss_null
       | TRAPS
       | USER
       | VIEW
-      | VRF
    ) null_rest_of_line
 ;
 
 ss_trap_source
 :
    TRAP_SOURCE IPV4? iname = interface_name NEWLINE
+;
+
+ss_vrf: VRF name = vrf_name NEWLINE ss_vrf_inner*;
+
+ss_vrf_inner
+:
+  ss_host
+  | ssv_null
+;
+
+ssv_null
+:
+  (
+    CONTEXT
+  ) null_rest_of_line
 ;
 
 ssc_access_control

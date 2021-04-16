@@ -1,0 +1,44 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-snmp-server
+!
+snmp-server ifindex persist
+snmp-server ifmib stats cache
+snmp-server mibs cbqosmib persist
+snmp-server vrf mgmt
+ host 1.2.3.4 traps version 2c encrypted 0123456789ABCDEF0123
+!
+snmp-server community xxxxxxxx RO SystemOwner IPv4 ipv4acl1 IPv6 ipv6acl1
+snmp-server traps rf
+snmp-server traps bfd
+snmp-server traps ntp
+snmp-server traps copy-complete
+snmp-server traps snmp
+snmp-server traps snmp linkup
+snmp-server traps snmp linkdown
+snmp-server traps snmp coldstart
+snmp-server traps snmp warmstart
+snmp-server traps snmp authentication
+snmp-server traps flash removal
+snmp-server traps flash insertion
+snmp-server traps sonet
+snmp-server traps config
+snmp-server traps entity
+snmp-server traps system
+snmp-server traps ospf lsa lsa-maxage
+snmp-server traps ospf lsa lsa-originate
+snmp-server traps ospf errors bad-packet
+snmp-server traps ospf errors authentication-failure
+snmp-server traps ospf errors config-error
+snmp-server traps ospf errors virt-bad-packet
+snmp-server traps ospf errors virt-authentication-failure
+snmp-server traps ospf errors virt-config-error
+snmp-server traps ospf retransmit packets
+snmp-server traps ospf retransmit virt-packets
+snmp-server traps ospf state-change if-state-change
+snmp-server traps ospf state-change neighbor-state-change
+snmp-server traps ospf state-change virtif-state-change
+snmp-server traps ospf state-change virtneighbor-state-change
+snmp-server traps bridgemib
+snmp-server contact hello there
+snmp-server location magical place
