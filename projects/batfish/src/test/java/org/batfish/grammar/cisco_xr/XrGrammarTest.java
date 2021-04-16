@@ -84,6 +84,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_P
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SPT_THRESHOLD;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SSM_THRESHOLD_RANGE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_RD_IN;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.hamcrest.Matchers.allOf;
@@ -1719,6 +1721,25 @@ public final class XrGrammarTest {
     String hostname = "xr-mpls";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testSnmpServerParsing() {
+    String hostname = "xr-snmp-server";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // ipv4
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl1", SNMP_SERVER_COMMUNITY_ACL4));
+
+    // ipv6
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl1", SNMP_SERVER_COMMUNITY_ACL6));
   }
 
   @Test
