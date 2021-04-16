@@ -2,12 +2,13 @@ package org.batfish.representation.iptables;
 
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 import org.batfish.vendor.VendorConfiguration;
 
 public abstract class IptablesConfiguration extends VendorConfiguration {
 
-  Map<String, IptablesTable> _tables = new HashMap<>();
+  @Nonnull private final Map<String, IptablesTable> _tables = new HashMap<>();
 
   public void addChain(String tableName, String chainName) {
     addTable(tableName);
@@ -30,6 +31,7 @@ public abstract class IptablesConfiguration extends VendorConfiguration {
     _tables.get(tableName).setChainPolicy(chainName, policy);
   }
 
+  @Nonnull
   public Map<String, IptablesTable> getTables() {
     return _tables;
   }
