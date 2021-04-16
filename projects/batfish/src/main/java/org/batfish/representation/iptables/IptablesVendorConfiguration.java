@@ -42,7 +42,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   public void addAsIpAccessLists(Configuration config, VendorConfiguration vc, Warnings warnings) {
     _lineInInterfaces = new IdentityHashMap<>();
     _lineOutInterfaces = new IdentityHashMap<>();
-    for (Entry<String, IptablesTable> e : _tables.entrySet()) {
+    for (Entry<String, IptablesTable> e : getTables().entrySet()) {
       String tableName = e.getKey();
       IptablesTable table = e.getValue();
       for (Entry<String, IptablesChain> ec : table.getChains().entrySet()) {
