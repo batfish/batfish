@@ -2,6 +2,7 @@ package org.batfish.representation.iptables;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -25,6 +26,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.representation.iptables.IptablesRule.IptablesActionType;
 import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesVendorConfiguration extends IptablesConfiguration {
@@ -48,7 +50,8 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
         IptablesChain chain = ec.getValue();
 
         String aclName = toIpAccessListName(tableName, chainName);
-        IpAccessList list = toIpAccessList(aclName, chain, vc);
+        IpAccessList list =
+            toIpAccessList(aclName, chain, vc, warnings, _lineInInterfaces, _lineOutInterfaces);
 
         config.getIpAccessLists().put(aclName, list);
       }
@@ -150,10 +153,25 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     _vendor = format;
   }
 
-  private IpAccessList toIpAccessList(String aclName, IptablesChain chain, VendorConfiguration vc) {
+  @VisibleForTesting
+  static IpAccessList toIpAccessList(
+      String aclName,
+      IptablesChain chain,
+      VendorConfiguration vc,
+      Warnings warnings,
+      Map<AclLine, String> lineInInterfaces,
+      Map<AclLine, String> lineOutInterfaces) {
     ImmutableList.Builder<AclLine> lines = ImmutableList.builder();
 
     for (IptablesRule rule : chain.getRules()) {
+      if (rule.getActionType() != IptablesActionType.ACCEPT
+          && rule.getActionType() != IptablesActionType.DROP) {
+        warnings.redFlag(
+            String.format(
+                "IpTables action type '%s' is not supported. Skipped '%s'",
+                rule.getActionType(), rule.getName()));
+        continue;
+      }
       HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
       boolean anyInterface = true;
       List<IptablesMatch> inInterfaceMatches = new ArrayList<>();
@@ -203,16 +221,15 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
 
       inInterfaceMatches.forEach(
           match ->
-              _lineInInterfaces.put(
-                  aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
+              lineInInterfaces.put(aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
       outInterfaceMatches.forEach(
           match ->
-              _lineOutInterfaces.put(
+              lineOutInterfaces.put(
                   aclLine, vc.canonicalizeInterfaceName(match.toInterfaceName())));
 
       if (anyInterface) {
-        _lineInInterfaces.put(aclLine, null);
-        _lineOutInterfaces.put(aclLine, null);
+        lineInInterfaces.put(aclLine, null);
+        lineOutInterfaces.put(aclLine, null);
       }
 
       lines.add(aclLine);
