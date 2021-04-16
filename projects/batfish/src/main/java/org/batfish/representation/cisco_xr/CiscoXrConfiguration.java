@@ -804,16 +804,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _vrrpGroups;
   }
 
-  private void markAcls(CiscoXrStructureUsage... usages) {
-    for (CiscoXrStructureUsage usage : usages) {
-      markAbstractStructure(
-          CiscoXrStructureType.IP_ACCESS_LIST,
-          usage,
-          ImmutableList.of(
-              CiscoXrStructureType.IPV4_ACCESS_LIST, CiscoXrStructureType.IPV6_ACCESS_LIST));
-    }
-  }
-
   private void processFailoverSettings() {
     if (_failover) {
       Interface commIface;
@@ -2434,18 +2424,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
 
     CiscoXrStructureType.CONCRETE_STRUCTURES.forEach(this::markConcreteStructure);
-
-    // mark references to ACLs that may not appear in data model
-    markAcls(
-        CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP,
-        CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST,
-        CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
-        CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
-        CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
-        CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
-        CiscoXrStructureUsage.RIP_DISTRIBUTE_LIST,
-        CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
+    CiscoXrStructureType.ABSTRACT_STRUCTURES.asMap().forEach(this::markAbstractStructureAllUsages);
 
     return ImmutableList.of(c);
   }
