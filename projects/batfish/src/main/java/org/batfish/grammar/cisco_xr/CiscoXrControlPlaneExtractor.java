@@ -7601,9 +7601,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private static long toLong(Uint32Context ctx) {
-    Long val = Longs.tryParse(ctx.getText());
-    assert val != null;
-    return val;
+    return Longs.tryParse(ctx.getText());
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
