@@ -1,5 +1,10 @@
 package org.batfish.representation.cisco_xr;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import java.util.Set;
 import org.batfish.vendor.StructureType;
 
 public enum CiscoXrStructureType implements StructureType {
@@ -43,6 +48,15 @@ public enum CiscoXrStructureType implements StructureType {
   SAMPLER_MAP("sampler-map"),
   SERVICE_TEMPLATE("service-template"),
   TRACK("track");
+
+  public static final Multimap<CiscoXrStructureType, CiscoXrStructureType> ABSTRACT_STRUCTURES =
+      ImmutableListMultimap.<CiscoXrStructureType, CiscoXrStructureType>builder()
+          .putAll(IP_ACCESS_LIST, IPV4_ACCESS_LIST, IPV6_ACCESS_LIST)
+          .build();
+
+  public static final Set<CiscoXrStructureType> CONCRETE_STRUCTURES =
+      ImmutableSet.copyOf(
+          Sets.difference(ImmutableSet.copyOf(values()), ABSTRACT_STRUCTURES.keySet()));
 
   private final String _description;
 
