@@ -46,7 +46,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -811,16 +810,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           CiscoXrStructureType.IP_ACCESS_LIST,
           usage,
           ImmutableList.of(
-              CiscoXrStructureType.IPV4_ACCESS_LIST, CiscoXrStructureType.IPV6_ACCESS_LIST));
-    }
-  }
-
-  private void markIpAcls(CiscoXrStructureUsage... usages) {
-    for (CiscoXrStructureUsage usage : usages) {
-      markAbstractStructure(
-          CiscoXrStructureType.ACCESS_LIST,
-          usage,
-          Arrays.asList(
               CiscoXrStructureType.IPV4_ACCESS_LIST, CiscoXrStructureType.IPV6_ACCESS_LIST));
     }
   }
@@ -2444,100 +2433,19 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       defineSingleLineStructure(CiscoXrStructureType.INTERFACE, "Null0", firstRefToNull0.get());
     }
 
-    markConcreteStructure(CiscoXrStructureType.BFD_TEMPLATE);
-    markConcreteStructure(CiscoXrStructureType.COMMUNITY_SET);
-    markConcreteStructure(CiscoXrStructureType.EXTCOMMUNITY_SET_RT);
-    markConcreteStructure(CiscoXrStructureType.INTERFACE);
-
-    markConcreteStructure(CiscoXrStructureType.IPV4_ACCESS_LIST);
-    markConcreteStructure(CiscoXrStructureType.IPV6_ACCESS_LIST);
+    CiscoXrStructureType.CONCRETE_STRUCTURES.forEach(this::markConcreteStructure);
 
     // mark references to ACLs that may not appear in data model
-    markIpAcls(
-        CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST);
     markAcls(
-        CiscoXrStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
-        CiscoXrStructureUsage.COPS_LISTENER_ACCESS_LIST,
+        CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP,
+        CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST,
         CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
-        CiscoXrStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
-        CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_INGRESS,
-        CiscoXrStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
-        CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_EGRESS,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoXrStructureUsage.RIP_DISTRIBUTE_LIST,
-        CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
-        CiscoXrStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
-        CiscoXrStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
-        CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
-        CiscoXrStructureUsage.SSH_ACL,
-        CiscoXrStructureUsage.WCCP_GROUP_LIST,
-        CiscoXrStructureUsage.WCCP_REDIRECT_LIST,
-        CiscoXrStructureUsage.WCCP_SERVICE_LIST);
-
-    markConcreteStructure(CiscoXrStructureType.PREFIX_LIST);
-    markConcreteStructure(CiscoXrStructureType.PREFIX6_LIST);
-
-    markConcreteStructure(CiscoXrStructureType.PREFIX_SET);
-
-    markConcreteStructure(CiscoXrStructureType.ROUTE_POLICY);
-
-    // L2tp
-    markConcreteStructure(CiscoXrStructureType.L2TP_CLASS);
-
-    // Crypto, Isakmp, and IPSec
-    markConcreteStructure(CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET);
-    markConcreteStructure(CiscoXrStructureType.ISAKMP_PROFILE);
-    markConcreteStructure(CiscoXrStructureType.ISAKMP_POLICY);
-    markConcreteStructure(CiscoXrStructureType.IPSEC_PROFILE);
-    markConcreteStructure(CiscoXrStructureType.IPSEC_TRANSFORM_SET);
-    markConcreteStructure(CiscoXrStructureType.KEYRING);
-    markConcreteStructure(CiscoXrStructureType.NAMED_RSA_PUB_KEY);
-
-    // class-map
-    markConcreteStructure(CiscoXrStructureType.INSPECT_CLASS_MAP);
-    markConcreteStructure(CiscoXrStructureType.CLASS_MAP);
-
-    // policy-map
-    markConcreteStructure(CiscoXrStructureType.POLICY_MAP);
-
-    // object-group
-    markConcreteStructure(CiscoXrStructureType.NETWORK_OBJECT_GROUP);
-
-    // objects
-    markConcreteStructure(CiscoXrStructureType.NETWORK_OBJECT);
-
-    // service template
-    markConcreteStructure(CiscoXrStructureType.SERVICE_TEMPLATE);
-
-    // dynamic template
-    markConcreteStructure(CiscoXrStructureType.DYNAMIC_TEMPLATE);
-
-    // track
-    markConcreteStructure(CiscoXrStructureType.TRACK);
-
-    markConcreteStructure(CiscoXrStructureType.AS_PATH_SET);
-
-    // BGP inheritance. This is complicated, as there are many similar-but-overlapping concepts
-    markConcreteStructure(CiscoXrStructureType.BGP_AF_GROUP);
-    markConcreteStructure(CiscoXrStructureType.BGP_NEIGHBOR_GROUP);
-    markConcreteStructure(CiscoXrStructureType.BGP_PEER_GROUP);
-    markConcreteStructure(CiscoXrStructureType.BGP_SESSION_GROUP);
-    markConcreteStructure(CiscoXrStructureType.BGP_TEMPLATE_PEER_POLICY);
-    markConcreteStructure(CiscoXrStructureType.BGP_TEMPLATE_PEER_SESSION);
-
-    markConcreteStructure(CiscoXrStructureType.RD_SET);
-
-    // flow exporter-map
-    markConcreteStructure(CiscoXrStructureType.FLOW_EXPORTER_MAP);
-
-    // flow monitor-map
-    markConcreteStructure(CiscoXrStructureType.FLOW_MONITOR_MAP);
-
-    // sampler-map
-    markConcreteStructure(CiscoXrStructureType.SAMPLER_MAP);
+        CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
 
     return ImmutableList.of(c);
   }

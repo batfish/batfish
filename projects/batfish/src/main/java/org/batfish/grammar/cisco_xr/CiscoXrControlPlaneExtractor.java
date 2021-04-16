@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_AF_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR_GROUP;
@@ -3320,14 +3319,14 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       name = ctx.num.getText();
       line = ctx.num.start.getLine();
     }
-    _configuration.referenceStructure(ACCESS_LIST, name, CLASS_MAP_ACCESS_GROUP, line);
+    _configuration.referenceStructure(IP_ACCESS_LIST, name, CLASS_MAP_ACCESS_GROUP, line);
   }
 
   @Override
   public void exitCmm_access_list(Cmm_access_listContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(ACCESS_LIST, name, CLASS_MAP_ACCESS_LIST, line);
+    _configuration.referenceStructure(IP_ACCESS_LIST, name, CLASS_MAP_ACCESS_LIST, line);
   }
 
   @Override
