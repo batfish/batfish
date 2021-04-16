@@ -12,7 +12,7 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources:log4j_config",
-        "//projects/batfish/src/test/resources/org/batfish/grammar/iptables/testconfigs",
+        "//projects/batfish/src/test/resources",
     ],
     tags = ["cpu:4"],
     runtime_deps = [
