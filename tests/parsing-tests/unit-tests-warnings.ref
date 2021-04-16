@@ -1152,63 +1152,63 @@
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 18,
         "Text" : "Bundle-Ether101",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface Bundle-Ether101 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 24,
         "Text" : "Bundle-Ether103",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface Bundle-Ether103 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 28,
         "Text" : "Bundle-Ether201",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface Bundle-Ether201 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 33,
         "Text" : "Loopback0",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface Loopback0 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 36,
         "Text" : "TenGigE0/0/0/4",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface TenGigE0/0/0/4 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 39,
         "Text" : "TenGigE0/0/0/5",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface TenGigE0/0/0/5 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 42,
         "Text" : "HundredGigE0/2/0/0.292",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface HundredGigE0/2/0/0.292 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 44,
         "Text" : "HundredGigE0/2/0/3",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface HundredGigE0/2/0/3 not declared before OSPF process"
       },
       {
         "Filename" : "configs/ios_xr_ospf",
         "Line" : 51,
         "Text" : "TenGigE0/0/0/2",
-        "Parser_Context" : "[interface_name roa_interface ro_area s_router_ospf stanza cisco_xr_configuration]",
+        "Parser_Context" : "[interface_name roa_interface ro_area_inner ro_area s_router_ospf stanza cisco_xr_configuration]",
         "Comment" : "OSPF interface TenGigE0/0/0/2 not declared before OSPF process"
       },
       {
