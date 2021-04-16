@@ -106,6 +106,7 @@ Batfish supports configurations for a large and growing set of (physical and vir
 * Juniper (All JunOS platforms: MX, EX, QFX, SRX, T-series, PTX)
 * Palo Alto Networks
 * Free-Range Routing (FRR)
+* Fortinet
 
 Batfish has limited support for the following platforms:
 
