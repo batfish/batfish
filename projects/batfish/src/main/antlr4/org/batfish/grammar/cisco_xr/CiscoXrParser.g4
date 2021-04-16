@@ -11,6 +11,7 @@ CiscoXr_crypto,
 CiscoXr_callhome,
 CiscoXr_eigrp,
 CiscoXr_extcommunity_set,
+CiscoXr_flow,
 CiscoXr_hsrp,
 CiscoXr_igmp,
 CiscoXr_interface,
@@ -55,6 +56,7 @@ cisco_xr_configuration
 statement
 :
   s_end
+  | s_flow
   | s_ipv4
   | s_ipv6
   | s_lldp
@@ -63,6 +65,7 @@ statement
   | s_no
   | s_rd_set
   | s_router
+  | s_sampler_map
   | s_taskgroup
 ;
 
@@ -244,42 +247,6 @@ event_null
       ACTION
       | EVENT
       | SET
-   ) null_rest_of_line
-;
-
-flow_null
-:
-   NO?
-   (
-      CACHE
-      | COLLECT
-      | DESCRIPTION
-      | DESTINATION
-      | EXPORT_PROTOCOL
-      | EXPORTER
-      | MATCH
-      | OPTION
-      | RECORD
-      | SOURCE
-      | STATISTICS
-      | TRANSPORT
-   ) null_rest_of_line
-;
-
-flow_version
-:
-   NO? VERSION null_rest_of_line
-   (
-      flowv_null
-   )*
-;
-
-flowv_null
-:
-   NO?
-   (
-      OPTIONS
-      | TEMPLATE
    ) null_rest_of_line
 ;
 
@@ -657,19 +624,6 @@ s_event
    )*
 ;
 
-s_flow
-:
-   FLOW
-   (
-      EXPORTER_MAP
-      | MONITOR_MAP
-   ) null_rest_of_line
-   (
-      flow_null
-      | flow_version
-   )*
-;
-
 s_hostname: HOSTNAME hostname = host_name NEWLINE;
 
 host_name: WORD;
@@ -1005,7 +959,6 @@ stanza
    | s_ethernet_services
    | s_event
    | s_extcommunity_set
-   | s_flow
    | s_hostname
    | s_interface
    | s_ipv6_router_ospf

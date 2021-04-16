@@ -1906,7 +1906,7 @@ EXPORT_PROTOCOL: 'export-protocol';
 
 EXPORT_RT: 'export-rt';
 
-EXPORTER: 'exporter';
+EXPORTER: 'exporter' -> pushMode(M_Word);
 
 EXPORTER_MAP: 'exporter-map';
 
@@ -3792,6 +3792,8 @@ PACKET: 'packet';
 
 PACKET_CAPTURE_DEFAULTS: 'packet-capture-defaults';
 
+PACKET_LENGTH: 'packet-length';
+
 PACKET_TOO_BIG: 'packet-too-big';
 
 PACKETCABLE: 'packetcable';
@@ -4616,7 +4618,7 @@ SA_FILTER: 'sa-filter';
 
 SAMPLER: 'sampler';
 
-SAMPLER_MAP: 'sampler-map';
+SAMPLER_MAP: 'sampler-map' -> pushMode(M_Word);
 
 SAMPLES_OF_HISTORY_KEPT: 'samples-of-history-kept';
 
@@ -7820,11 +7822,23 @@ M_SsmMapStatic_WS: F_Whitespace+ -> channel(HIDDEN);
 mode M_Flow;
 
 M_Flow_EXPORTER_MAP: 'exporter-map' -> type(EXPORTER_MAP), mode(M_Word);
-M_Flow_MONITOR_MAP: 'monitor-map' -> type(EXPORTER_MAP), mode(M_Word);
+M_Flow_IPV4: 'ipv4' -> type(IPV4), mode(M_InterfaceFlow);
+M_Flow_IPV6: 'ipv6' -> type(IPV6), mode(M_InterfaceFlow);
+M_Flow_MONITOR_MAP: 'monitor-map' -> type(MONITOR_MAP), mode(M_Word);
 
 M_Flow_WORD: F_Word -> type(WORD), popMode;
 M_Flow_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_Flow_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_InterfaceFlow;
+
+M_InterfaceFlow_EGRESS: 'egress' -> type(EGRESS), popMode;
+M_InterfaceFlow_INGRESS: 'ingress' -> type(INGRESS), popMode;
+M_InterfaceFlow_MONITOR: 'monitor' -> type(MONITOR), pushMode(M_Word);
+M_InterfaceFlow_SAMPLER: 'sampler' -> type(SAMPLER), pushMode(M_Word);
+
+M_InterfaceFlow_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_InterfaceFlow_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_RpAddress;
 

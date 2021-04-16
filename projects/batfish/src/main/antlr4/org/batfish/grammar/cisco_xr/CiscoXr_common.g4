@@ -4,6 +4,68 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
+//// validated grammar
+
+// structure names
+access_list_name: WORD;
+community_set_name: WORD;
+flow_exporter_map_name: WORD;
+flow_monitor_map_name: WORD;
+parameter: PARAMETER;
+policy_map_name: WORD;
+rd_set_name: WORD;
+route_policy_name: WORD;
+sampler_map_name: WORD;
+vrf_name: WORD;
+
+// numbers
+uint8
+:
+  UINT8
+;
+
+uint16
+:
+  UINT8
+  | UINT16
+;
+
+uint32
+:
+  UINT8
+  | UINT16
+  | UINT32
+;
+
+uint64
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+;
+
+uint_big
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+  | UINT_BIG
+;
+
+// TODO: replace all references with one of above rules and remove this rule
+uint_legacy
+:
+  UINT8
+  | UINT16
+  | UINT32
+  | UINT64
+  | UINT_BIG
+;
+
+//// old/non-validated grammar
+
 access_list_action
 :
    PERMIT
@@ -548,51 +610,6 @@ switchport_trunk_encapsulation
    | NEGOTIATE
 ;
 
-uint8
-:
-  UINT8
-;
-
-uint16
-:
-  UINT8
-  | UINT16
-;
-
-uint32
-:
-  UINT8
-  | UINT16
-  | UINT32
-;
-
-uint64
-:
-  UINT8
-  | UINT16
-  | UINT32
-  | UINT64
-;
-
-uint_big
-:
-  UINT8
-  | UINT16
-  | UINT32
-  | UINT64
-  | UINT_BIG
-;
-
-// TODO: replace all references with one of above rules and remove this rule
-uint_legacy
-:
-  UINT8
-  | UINT16
-  | UINT32
-  | UINT64
-  | UINT_BIG
-;
-
 variable
 :
    ~NEWLINE
@@ -650,17 +667,3 @@ variable_group_id
 ;
 
 vlan_id: v = uint16;
-
-community_set_name: WORD;
-
-parameter: PARAMETER;
-
-route_policy_name: WORD;
-
-vrf_name: WORD;
-
-access_list_name: WORD;
-
-rd_set_name: WORD;
-
-policy_map_name: WORD;
