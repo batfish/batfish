@@ -1,0 +1,23 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-mpls
+!
+mpls ldp
+ log
+  hello-adjacency
+  neighbor
+ !
+ nsr
+ graceful-restart
+ igp sync delay on-session-up 5
+ router-id 1.2.3.4
+ address-family ipv4
+  discovery targeted-hello accept from ipv4acl1
+ !
+ interface Bundle-Ether1
+ !
+!
+mpls oam
+ echo reply-mode control-channel allow-reverse-lsp
+ echo disable-vendor-extension
+!
