@@ -147,13 +147,31 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       boolean inverted = (mCtx.NOT() != null);
 
       if (mCtx.OPTION_IPV4() != null || mCtx.OPTION_IPV6() != null) {
-        todo(ctx, String.format("Match '%s' is not supported", getFullText(mCtx)));
+        todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
       } else if (mCtx.OPTION_DESTINATION() != null) {
         rule.addMatch(inverted, MatchType.DESTINATION, getEndpoint(mCtx.endpoint()));
       } else if (mCtx.OPTION_DESTINATION_PORT() != null) {
         rule.addMatch(inverted, MatchType.DESTINATION_PORT, toInteger(mCtx.port));
       } else if (mCtx.OPTION_IN_INTERFACE() != null) {
         rule.addMatch(inverted, MatchType.IN_INTERFACE, mCtx.interface_name.getText());
+      } else if (mCtx.OPTION_MATCH() != null) {
+        // iptables save does '-p tcp -m tcp' where '-m tcp' is redundant
+        // spitting a warning for '-m tcp' is confusing in this case
+        if (mCtx.match_module() != null && mCtx.match_module().match_module_tcp() != null) {
+          boolean ruleHasProtocolTcp =
+              rule.getMatchList().stream()
+                  .anyMatch(
+                      m ->
+                          m.getMatchType() == MatchType.PROTOCOL
+                              && m.getMatchData() == IpProtocol.TCP);
+          if (!ruleHasProtocolTcp) {
+            todo(
+                ctx,
+                String.format("Option '%s' is supported only with '-p tcp'", getFullText(mCtx)));
+          }
+        } else {
+          todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
+        }
       } else if (mCtx.OPTION_PROTOCOL() != null) {
         rule.addMatch(inverted, MatchType.PROTOCOL, toProtocol(mCtx.protocol()));
       } else if (mCtx.OPTION_OUT_INTERFACE() != null) {
@@ -163,7 +181,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       } else if (mCtx.OPTION_SOURCE_PORT() != null) {
         rule.addMatch(inverted, MatchType.SOURCE_PORT, toInteger(mCtx.port));
       } else {
-        todo(ctx, String.format("Match '%s' is not supported", getFullText(mCtx)));
+        todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
       }
     }
 

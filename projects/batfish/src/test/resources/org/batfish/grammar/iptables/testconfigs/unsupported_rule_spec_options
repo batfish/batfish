@@ -3,6 +3,9 @@
 -A INPUT -p tcp -4 -j ACCEPT
 -A INPUT -p tcp -6 -j ACCEPT
 
-# -m is unknown to us
+# '-m tcp' after '-p tcp' is supported
 -A INPUT -p tcp -m tcp -j ACCEPT
+
+# '-m tcp' is not supported otherwise
+-A INPUT -m tcp -j ACCEPT
 COMMIT

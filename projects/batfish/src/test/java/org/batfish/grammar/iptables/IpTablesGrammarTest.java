@@ -63,14 +63,17 @@ public class IpTablesGrammarTest {
   }
 
   @Test
-  public void testUnsupportedRuleSpecMatch() {
-    IptablesVendorConfiguration c = parseVendorConfig("unsupported_rule_spec_match");
-    // warnings about unknown matches
-    assertThat(c.getWarnings(), hasParseWarning(hasComment("Match '-4' is not supported")));
-    assertThat(c.getWarnings(), hasParseWarning(hasComment("Match '-6' is not supported")));
-    assertThat(c.getWarnings(), hasParseWarning(hasComment("Match '-m tcp' is not supported")));
+  public void testUnsupportedRuleSpecOptions() {
+    IptablesVendorConfiguration c = parseVendorConfig("unsupported_rule_spec_options");
+    // warnings about unknown options
+    assertThat(c.getWarnings().getParseWarnings().size(), equalTo(3));
+    assertThat(c.getWarnings(), hasParseWarning(hasComment("Option '-4' is not supported")));
+    assertThat(c.getWarnings(), hasParseWarning(hasComment("Option '-6' is not supported")));
+    assertThat(
+        c.getWarnings(),
+        hasParseWarning(hasComment("Option '-m tcp' is supported only with '-p tcp'")));
 
     // rules are created for the matches we do understand
-    assertThat(c.getTables().get("filter").getChains().get("INPUT").getRules().size(), equalTo(3));
+    assertThat(c.getTables().get("filter").getChains().get("INPUT").getRules().size(), equalTo(4));
   }
 }
