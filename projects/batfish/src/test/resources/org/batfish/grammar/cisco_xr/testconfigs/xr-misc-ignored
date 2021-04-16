@@ -20,6 +20,7 @@ configuration display interface slot-order
 ipv4 netmask-format bit-count
 ipv4 virtual address vrf mgmt 1.2.3.4/5
 ipv4 virtual address use-as-src-addr
+isolation enable
 !
 nsr process-failures switchover
 !

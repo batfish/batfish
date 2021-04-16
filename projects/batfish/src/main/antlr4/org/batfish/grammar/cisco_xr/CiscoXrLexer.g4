@@ -58,6 +58,8 @@ ACCEPT_LIFETIME: 'accept-lifetime';
 
 ACCEPT_OWN: 'accept-own';
 
+ACCEPT_RATE: 'accept-rate';
+
 ACCEPT_REGISTER: 'accept-register' -> pushMode(M_Word);
 
 ACCEPT_RP: 'accept-rp';
@@ -1430,6 +1432,8 @@ DISABLE_CONNECTED_CHECK: 'disable-connected-check';
 
 DISCRIMINATOR: 'discriminator';
 
+DISPLAY: 'display';
+
 DISPUTE: 'dispute';
 
 DF: 'df';
@@ -1481,6 +1485,8 @@ DIRECT_INWARD_DIAL: 'direct-inward-dial';
 DIRECTED_BROADCAST: 'directed-broadcast';
 
 DIRECTED_REQUEST: 'directed-request';
+
+DIRECTORY: 'directory';
 
 DISABLE: 'disable';
 
@@ -3364,6 +3370,8 @@ MSP: 'msp';
 
 MSRPC: 'msrpc';
 
+MSS: 'mss';
+
 MST: 'mst';
 
 MTA: 'mta';
@@ -3658,6 +3666,8 @@ NTP: 'ntp' { setAccessGroupContextTokenType(NTP); };
 
 NULL: 'null';
 
+NUM_THREAD: 'num-thread';
+
 NV: 'nv';
 
 OAM: 'oam';
@@ -3876,6 +3886,8 @@ PAUSE: 'pause';
 PBKDF2: 'pbkdf2';
 
 PBR: 'pbr';
+
+PBTS: 'pbts';
 
 PCANYWHERE_DATA: 'pcanywhere-data';
 
@@ -4305,6 +4317,8 @@ REAUTHENTICATION: 'reauthentication';
 
 RECEIVE: 'receive';
 
+RECEIVE_QUEUE: 'receive-queue';
+
 RECEIVE_WINDOW: 'receive-window';
 
 RECONNECT_INTERVAL: 'reconnect-interval';
@@ -4683,6 +4697,8 @@ SELECT: 'select';
 SELECTION: 'selection';
 
 SELECTIVE: 'selective';
+
+SELECTIVE_ACK: 'selective-ack';
 
 SELF: 'self';
 
@@ -5208,6 +5224,8 @@ SYNCHRONIZATION: 'synchronization';
 
 SYNCHRONOUS: 'synchronous';
 
+SYNWAIT_TIME: 'synwait-time';
+
 SYSCONTACT: 'syscontact';
 
 SYSLOCATION: 'syslocation';
@@ -5336,6 +5354,8 @@ THREE_DES: '3des';
 
 THRESHOLD: 'threshold';
 
+THROTTLE: 'throttle';
+
 THROUGHPUT: 'throughput';
 
 THU: 'Thu';
@@ -5351,6 +5371,8 @@ TIME_FORMAT: 'time-format';
 TIME_RANGE: 'time-range';
 
 TIME_OUT: 'time-out';
+
+TIME_ZONE: 'time-zone';
 
 TIMED: 'timed';
 
@@ -5370,7 +5392,7 @@ TIMESTAMP_REPLY: 'timestamp-reply';
 
 TIMESTAMP_REQUEST: 'timestamp-request';
 
-TIME_ZONE: 'time-zone';
+TIMEZONE: 'timezone';
 
 TIMING: 'timing';
 

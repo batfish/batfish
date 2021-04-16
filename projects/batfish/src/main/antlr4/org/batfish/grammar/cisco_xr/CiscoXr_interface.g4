@@ -682,7 +682,6 @@ if_null_block
       | CHANNEL_PROTOCOL
       | CLASS
       | CLNS
-      | CLOCK
       | COUNTER
       | CRC
       | CRYPTO

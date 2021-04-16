@@ -55,10 +55,15 @@ cisco_xr_configuration
 // statement is for rewritten top-level rules. stanza is for old ones.
 statement
 :
-  s_end
+  s_cdp
+  | s_cef
+  | s_clock
+  | s_configuration
+  | s_end
   | s_flow
   | s_ipv4
   | s_ipv6
+  | s_isolation
   | s_lldp
   | s_multicast_routing
   | s_null
@@ -68,10 +73,56 @@ statement
   | s_router
   | s_sampler_map
   | s_taskgroup
+  | s_tcp
+  | s_telnet
   | s_usergroup
 ;
 
+s_cdp
+:
+  CDP
+  (
+    NEWLINE
+    | cdp_null
+  )
+;
+
+cdp_null
+:
+  (
+    ADVERTISE
+    | HOLDTIME
+    | LOG
+    | TIMER
+  ) null_rest_of_line
+;
+
+s_cef: CEF cef_null;
+
+cef_null
+:
+  (
+    ADJACENCY
+    | LOAD_BALANCING
+    | PBTS
+    | PLATFORM
+  ) null_rest_of_line
+;
+
 s_end: END NEWLINE;
+
+s_clock: CLOCK TIMEZONE null_rest_of_line;
+
+s_configuration: CONFIGURATION configuration_null;
+
+configuration_null
+:
+  (
+    COMMIT
+    | DISPLAY
+    | MODE
+  ) null_rest_of_line
+;
 
 s_ipv4
 :
@@ -94,6 +145,8 @@ s_ipv6
 :
   IPV6 ipv6_access_list
 ;
+
+s_isolation: ISOLATION ENABLE NEWLINE;
 
 s_no
 :
@@ -120,19 +173,12 @@ s_null
 :
   (
     BUILDING_CONFIGURATION
-    | CDP
-    | CEF
-    | CLOCK
     | CONFDCONFIG
-    | CONFIGURATION
     | FPD
     | FRI
-    | ISOLATION
     | MON
     | SAT
     | SUN
-    | TCP
-    | TELNET
     | THU
     | TUE
     | VTY_POOL
@@ -168,6 +214,35 @@ taskgroup_task
     | TASK_SPACE_EXECUTE
   )
   null_rest_of_line;
+
+s_tcp: TCP tcp_null;
+
+tcp_null:
+  (
+    ACCEPT_RATE
+    | DIRECTORY
+    | MSS
+    | NUM_THREAD
+    | PATH_MTU_DISCOVERY
+    | RECEIVE_QUEUE
+    | SELECTIVE_ACK
+    | SYNWAIT_TIME
+    | THROTTLE
+    | TIMESTAMP
+    | WINDOW_SIZE
+  ) null_rest_of_line
+;
+
+s_telnet: TELNET telnet_null;
+
+telnet_null
+:
+  (
+    IPV4
+    | IPV6
+    | VRF
+  ) null_rest_of_line
+;
 
 s_usergroup: USERGROUP name = usergroup_name NEWLINE usergroup_inner*;
 
