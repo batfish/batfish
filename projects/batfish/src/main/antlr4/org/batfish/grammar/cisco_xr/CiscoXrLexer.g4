@@ -519,6 +519,8 @@ AUTO_CERT_ALLOWED_ADDRS: 'auto-cert-allowed-addrs';
 
 AUTO_CERT_PROV: 'auto-cert-prov';
 
+AUTO_CONFIG: 'auto-config';
+
 AUTO_COST: 'auto-cost';
 
 AUTO_DISCARD: 'auto-discard';
@@ -550,6 +552,8 @@ AUTONOMOUS_SYSTEM: 'autonomous-system';
 AUTORECOVERY: 'autorecovery';
 
 AUTOROUTE: 'autoroute';
+
+AUTOROUTE_EXCLUDE: 'autoroute-exclude';
 
 AUTORP: 'autorp';
 
@@ -2401,6 +2405,8 @@ IDLE_TIMEOUT: 'idle-timeout';
 
 IDP_CERT: 'idp-cert';
 
+IDP_SYNC_UPDATE: 'idp-sync-update';
+
 IDS: 'ids';
 
 IDS_PROFILE: 'ids-profile';
@@ -2430,6 +2436,8 @@ IFMIB: 'ifmib';
 IGMP: 'igmp' { setAccessGroupContextTokenType(IGMP); };
 
 IGP_COST: 'igp-cost';
+
+IGP_INTACT: 'igp-intact';
 
 IGRP: 'igrp';
 
@@ -3383,6 +3391,8 @@ MTU_IGNORE: 'mtu-ignore';
 MULTICAST: 'multicast';
 
 MULTICAST_BOUNDARY: 'multicast-boundary';
+
+MULTICAST_INTACT: 'multicast-intact';
 
 MULTICAST_ROUTING: 'multicast-routing';
 
@@ -5219,6 +5229,8 @@ SYMMETRIC: 'symmetric';
 SYN: 'syn';
 
 SYNC: 'sync';
+
+SYNC_IGP_SHORTCUTS: 'sync-igp-shortcuts';
 
 SYNCHRONIZATION: 'synchronization';
 

@@ -1741,4 +1741,11 @@ public final class XrGrammarTest {
         ccae,
         hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl1", SNMP_SERVER_COMMUNITY_ACL6));
   }
+
+  @Test
+  public void testOspfParsing() {
+    String hostname = "xr-ospf";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
 }
