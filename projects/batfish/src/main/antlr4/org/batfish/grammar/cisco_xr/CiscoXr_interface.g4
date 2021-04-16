@@ -184,6 +184,11 @@ if_encapsulation
   ENCAPSULATION DOT1Q vlan = vlan_id NEWLINE
 ;
 
+if_flow
+:
+  FLOW (IPV4 | IPV6) MONITOR flow_monitor_map_name SAMPLER sampler_map_name (EGRESS | INGRESS) NEWLINE
+;
+
 if_flow_sampler
 :
    NO? FLOW_SAMPLER variable EGRESS? NEWLINE
@@ -1656,6 +1661,7 @@ if_inner
    | if_delay
    | if_description
    | if_encapsulation
+   | if_flow
    | if_flow_sampler
    | if_hsrp
    | if_hsrp6

@@ -664,3 +664,9 @@ access_list_name: WORD;
 rd_set_name: WORD;
 
 policy_map_name: WORD;
+
+flow_exporter_map_name: WORD;
+
+flow_monitor_map_name: WORD;
+
+sampler_map_name: WORD;

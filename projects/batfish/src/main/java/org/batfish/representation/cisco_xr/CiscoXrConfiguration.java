@@ -2530,6 +2530,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     markConcreteStructure(CiscoXrStructureType.RD_SET);
 
+    // flow exporter-map
+    markConcreteStructure(CiscoXrStructureType.FLOW_EXPORTER_MAP);
+
+    // flow monitor-map
+    markConcreteStructure(CiscoXrStructureType.FLOW_MONITOR_MAP);
+
+    // sampler-map
+    markConcreteStructure(CiscoXrStructureType.SAMPLER_MAP);
+
     return ImmutableList.of(c);
   }
 

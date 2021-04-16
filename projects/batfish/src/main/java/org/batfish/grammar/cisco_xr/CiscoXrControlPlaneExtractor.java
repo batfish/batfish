@@ -19,6 +19,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_DY
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_MAP_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.EXTCOMMUNITY_SET_RT;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_EXPORTER_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_MONITOR_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPSEC_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPSEC_TRANSFORM_SET;
@@ -38,6 +40,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LI
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SAMPLER_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
@@ -81,6 +84,15 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DOMAIN_L
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_AF_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_PASSIVE_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FLOW_MONITOR_MAP_EXPORTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_SAMPLER_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_SAMPLER_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV6_MONITOR_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV6_MONITOR_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV6_SAMPLER_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV6_SAMPLER_INGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
@@ -488,6 +500,11 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_lines
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_ipv6_access_list_tailContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Flow_exporter_mapContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Flow_exporter_map_nameContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Flow_monitor_mapContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Flow_monitor_map_nameContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Fmm_exporterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Hash_commentContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Host_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_autostateContext;
@@ -497,6 +514,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_crypto_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_delayContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_encapsulationContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.If_flowContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_igmpContext;
@@ -777,6 +795,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ntpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_rd_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ospfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_router_ripContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.S_sampler_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_serviceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_service_policy_globalContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_snmp_serverContext;
@@ -785,6 +804,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_trackContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_usernameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_vrfContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Sampler_map_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Send_community_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_rp_stanzaContext;
@@ -9021,5 +9041,71 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitMrv_ipv6(Mrv_ipv6Context ctx) {
     _multicastRoutingIpv6 = false;
+  }
+
+  @Override
+  public void enterFlow_exporter_map(Flow_exporter_mapContext ctx) {
+    _configuration.defineStructure(FLOW_EXPORTER_MAP, toString(ctx.name), ctx);
+  }
+
+  @Override
+  public void enterFlow_monitor_map(Flow_monitor_mapContext ctx) {
+    _configuration.defineStructure(FLOW_MONITOR_MAP, toString(ctx.name), ctx);
+  }
+
+  @Override
+  public void enterS_sampler_map(S_sampler_mapContext ctx) {
+    _configuration.defineStructure(SAMPLER_MAP, toString(ctx.name), ctx);
+  }
+
+  @Override
+  public void exitFmm_exporter(Fmm_exporterContext ctx) {
+    _configuration.referenceStructure(
+        FLOW_EXPORTER_MAP, toString(ctx.name), FLOW_MONITOR_MAP_EXPORTER, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitIf_flow(If_flowContext ctx) {
+    CiscoXrStructureUsage mUsage;
+    CiscoXrStructureUsage sUsage;
+    if (ctx.INGRESS() != null) {
+      if (ctx.IPV4() != null) {
+        mUsage = INTERFACE_FLOW_IPV4_MONITOR_INGRESS;
+        sUsage = INTERFACE_FLOW_IPV4_SAMPLER_INGRESS;
+      } else {
+        assert ctx.IPV6() != null;
+        mUsage = INTERFACE_FLOW_IPV6_MONITOR_INGRESS;
+        sUsage = INTERFACE_FLOW_IPV6_SAMPLER_INGRESS;
+      }
+    } else {
+      assert ctx.EGRESS() != null;
+      if (ctx.IPV4() != null) {
+        mUsage = INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
+        sUsage = INTERFACE_FLOW_IPV4_SAMPLER_EGRESS;
+      } else {
+        assert ctx.IPV6() != null;
+        mUsage = INTERFACE_FLOW_IPV6_MONITOR_EGRESS;
+        sUsage = INTERFACE_FLOW_IPV6_SAMPLER_EGRESS;
+      }
+    }
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(
+        FLOW_MONITOR_MAP, toString(ctx.flow_monitor_map_name()), mUsage, line);
+    _configuration.referenceStructure(SAMPLER_MAP, toString(ctx.sampler_map_name()), sUsage, line);
+  }
+
+  @Nonnull
+  private static String toString(Flow_exporter_map_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  @Nonnull
+  private static String toString(Flow_monitor_map_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  @Nonnull
+  private static String toString(Sampler_map_nameContext ctx) {
+    return ctx.getText();
   }
 }

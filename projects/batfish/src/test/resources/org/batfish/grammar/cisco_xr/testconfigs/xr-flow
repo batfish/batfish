@@ -1,0 +1,36 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-flow
+!
+flow exporter-map fem1
+ version v9
+  options interface-table timeout 1
+  options sampler-table timeout 1
+ !
+ transport udp 1234
+ source Loopback0
+ destination 1.2.3.4
+!
+flow monitor-map fmm1
+ record ipv4
+ exporter fem1
+ cache entries 4096
+ cache timeout active 1
+ cache timeout inactive 1
+!
+flow monitor-map fmm2
+ record ipv6
+ exporter fem2
+ cache entries 4096
+ cache timeout active 1
+ cache timeout inactive 1
+!
+sampler-map sm1
+ random 1 out-of 250
+!
+interface Bundle-Ether1
+ flow ipv4 monitor fmm1 sampler sm1 egress
+ flow ipv4 monitor fmm2 sampler sm2 ingress
+ flow ipv6 monitor fmm3 sampler sm3 egress
+ flow ipv6 monitor fmm4 sampler sm4 ingress
+!
