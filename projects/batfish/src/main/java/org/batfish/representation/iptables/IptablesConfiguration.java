@@ -29,4 +29,8 @@ public abstract class IptablesConfiguration extends VendorConfiguration {
     addTable(tableName);
     _tables.get(tableName).setChainPolicy(chainName, policy);
   }
+
+  public Map<String, IptablesTable> getTables() {
+    return _tables;
+  }
 }

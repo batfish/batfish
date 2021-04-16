@@ -1,0 +1,8 @@
+*filter
+# we know that we don't support ipv4 and ipv6 matches
+-A INPUT -p tcp -4 -j ACCEPT
+-A INPUT -p tcp -6 -j ACCEPT
+
+# -m is unknown to us
+-A INPUT -p tcp -m tcp -j ACCEPT
+COMMIT
