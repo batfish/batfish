@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-msdp-references
+!
+router msdp
+ cache-sa-state list ipv4acl1
+ cache-sa-state rp-list ipv4acl2
+ sa-filter in list ipv4acl3
+ sa-filter in rp-list ipv4acl4
+ sa-filter out list ipv4acl5
+ sa-filter out rp-list ipv4acl6
+ peer 1.1.1.1
+  sa-filter in list ipv4acl7
+  sa-filter in rp-list ipv4acl8
+  sa-filter out list ipv4acl9
+  sa-filter out rp-list ipv4acl10
+ !
+!

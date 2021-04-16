@@ -1,0 +1,43 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-pim-references
+!
+router pim
+ address-family ipv4
+  accept-register ipv4acl1
+  allow-rp group-list ipv4acl2
+  allow-rp rp-list ipv4acl3
+  bsr candidate-rp 1.1.1.1 group-list ipv4acl4
+  mdt neighbor-filter ipv4acl5
+  mofrr
+   flow ipv4acl6
+   rib ipv4acl7
+  !
+  neighbor-filter ipv4acl8
+  rp-address 1.1.1.1 ipv4acl9
+  rp-static-deny ipv4acl10
+  rpf topology rp1
+  sg-expiry-timer 40 sg-list ipv4acl11
+  spt-threshold infinity group-list ipv4acl12
+  ssm threshold range ipv4acl13
+  ! ipv4 only
+  auto-rp candidate-rp GigabitEthernet0/0/0/0 scope 1 group-list ipv4acl14
+ !
+ address-family ipv6
+  accept-register ipv6acl1
+  allow-rp group-list ipv6acl2
+  allow-rp rp-list ipv6acl3
+  bsr candidate-rp 1.1.1.1 group-list ipv6acl4
+  mdt neighbor-filter ipv6acl5
+  mofrr
+   flow ipv6acl6
+   rib ipv6acl7
+  !
+  neighbor-filter ipv6acl8
+  rp-address 1.1.1.1 ipv6acl9
+  rp-static-deny ipv6acl10
+  sg-expiry-timer 40 sg-list ipv6acl11
+  spt-threshold infinity group-list ipv6acl12
+  ssm threshold range ipv6acl13
+ !
+!
