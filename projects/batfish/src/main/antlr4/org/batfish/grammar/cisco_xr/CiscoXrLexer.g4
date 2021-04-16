@@ -4127,6 +4127,8 @@ PROBE: 'probe';
 
 PROCESS: 'process';
 
+PROCESS_FAILURES: 'process-failures';
+
 PROCESS_MAX_TIME: 'process-max-time';
 
 PROFILE: 'profile';
@@ -5192,6 +5194,8 @@ SWITCHING_MODE: 'switching-mode';
 
 SWITCHNAME: 'switchname';
 
+SWITCHOVER: 'switchover';
+
 SWITCHPORT: 'switchport';
 
 SYMMETRIC: 'symmetric';
@@ -5622,7 +5626,7 @@ USER_ROLE: 'user-role';
 
 USER_STATISTICS: 'user-statistics';
 
-USERGROUP: 'usergroup';
+USERGROUP: 'usergroup' -> pushMode(M_Word);
 
 USERNAME: 'username';
 

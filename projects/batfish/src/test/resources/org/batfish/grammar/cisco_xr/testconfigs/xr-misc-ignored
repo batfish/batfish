@@ -1,11 +1,27 @@
 !RANCID-CONTENT-TYPE: cisco-xr
 !
+Sun Feb 30 00:00:00.000 GMT
+Mon Feb 30 00:00:00.000 GMT
+Tue Feb 30 00:00:00.000 GMT
+Wed Feb 30 00:00:00.000 GMT
+Thu Feb 30 00:00:00.000 GMT
+Fri Feb 30 00:00:00.000 GMT
+Sat Feb 30 00:00:00.000 GMT
+Building configuration...
+!
 hostname xr-misc-ignored
 !
+cdp
+cdp holdtime 10
 cef load-balancing fields L4
 clock timezone UTC UTC
+configuration display interface slot-order
 !
 ipv4 netmask-format bit-count
+ipv4 virtual address vrf mgmt 1.2.3.4/5
+ipv4 virtual address use-as-src-addr
+!
+nsr process-failures switchover
 !
 taskgroup priv2
  task read bgp
@@ -15,8 +31,15 @@ taskgroup priv2
  task execute basic-services
  inherit taskgroup a
 !
-
-
+tcp path-mtu-discovery
+telnet vrf v1 ipv4 server max-servers 10
+!
+usergroup usergroup1
+ description abc
+ inherit usergroup usergroup2
+ taskgroup taskgroup1
+!
+vty-pool default 0 15 line-template default
 
 end
 

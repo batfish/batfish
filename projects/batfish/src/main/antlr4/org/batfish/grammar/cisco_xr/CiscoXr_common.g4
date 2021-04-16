@@ -16,6 +16,7 @@ policy_map_name: WORD;
 rd_set_name: WORD;
 route_policy_name: WORD;
 sampler_map_name: WORD;
+usergroup_name: WORD;
 vrf_name: WORD;
 
 // numbers

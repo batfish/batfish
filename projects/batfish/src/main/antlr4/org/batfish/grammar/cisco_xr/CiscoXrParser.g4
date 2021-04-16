@@ -63,10 +63,12 @@ statement
   | s_multicast_routing
   | s_null
   | s_no
+  | s_nsr
   | s_rd_set
   | s_router
   | s_sampler_map
   | s_taskgroup
+  | s_usergroup
 ;
 
 s_end: END NEWLINE;
@@ -84,6 +86,7 @@ ipv4_null
 :
   (
     NETMASK_FORMAT
+    | VIRTUAL
   ) null_rest_of_line
 ;
 
@@ -111,14 +114,29 @@ no_ipv6
   IPV6 no_ipv6_access_list
 ;
 
+s_nsr: NSR PROCESS_FAILURES SWITCHOVER NEWLINE;
+
 s_null
 :
   (
-    CEF
+    BUILDING_CONFIGURATION
+    | CDP
+    | CEF
     | CLOCK
     | CONFDCONFIG
+    | CONFIGURATION
     | FPD
+    | FRI
     | ISOLATION
+    | MON
+    | SAT
+    | SUN
+    | TCP
+    | TELNET
+    | THU
+    | TUE
+    | VTY_POOL
+    | WED
   ) null_rest_of_line
 ;
 
@@ -150,6 +168,19 @@ taskgroup_task
     | TASK_SPACE_EXECUTE
   )
   null_rest_of_line;
+
+s_usergroup: USERGROUP name = usergroup_name NEWLINE usergroup_inner*;
+
+usergroup_inner: usergroup_null;
+
+usergroup_null
+:
+  (
+    DESCRIPTION
+    | INHERIT
+    | TASKGROUP
+  ) null_rest_of_line
+;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
