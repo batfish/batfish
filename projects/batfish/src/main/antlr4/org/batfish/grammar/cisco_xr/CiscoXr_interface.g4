@@ -140,6 +140,8 @@ if_bundle_null
   ) null_rest_of_line
 ;
 
+if_cdp: CDP NEWLINE;
+
 if_channel_group
 :
    CHANNEL_GROUP num = uint_legacy
@@ -676,12 +678,10 @@ if_null_block
       | CABLE
       | CABLELENGTH
       | CARRIER_DELAY
-      | CDP
       | CHANNEL
       | CHANNEL_PROTOCOL
       | CLASS
       | CLNS
-      | CLOCK
       | COUNTER
       | CRC
       | CRYPTO
@@ -1655,6 +1655,7 @@ if_inner
    | if_bandwidth
    | if_bfd
    | if_bundle
+   | if_cdp
    | if_channel_group
    | if_crypto_map
    | if_default_gw
