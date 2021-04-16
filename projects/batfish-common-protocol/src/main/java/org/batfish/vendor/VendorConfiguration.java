@@ -162,6 +162,37 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   /**
+   * Updates referrers and/or warns for undefined structures based on references to an abstract
+   * {@link StructureType}: a reference type that may refer to one of a number of defined structure
+   * types passed in {@code structureTypesToCheck}.
+   */
+  protected void markAbstractStructureAllUsages(
+      StructureType type, Collection<? extends StructureType> structureTypesToCheck) {
+    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
+        firstNonNull(_structureReferences.get(type), Collections.emptyMap());
+    references.forEach(
+        (name, byUsage) ->
+            byUsage.forEach(
+                (usage, lines) -> {
+                  List<DefinedStructureInfo> matchingStructures =
+                      structureTypesToCheck.stream()
+                          .map(t -> _structureDefinitions.get(t.getDescription()))
+                          .filter(Objects::nonNull)
+                          .map(m -> m.get(name))
+                          .filter(Objects::nonNull)
+                          .collect(ImmutableList.toImmutableList());
+                  if (matchingStructures.isEmpty()) {
+                    for (int line : lines) {
+                      undefined(type, name, usage, line);
+                    }
+                  } else {
+                    matchingStructures.forEach(
+                        info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
+                  }
+                }));
+  }
+
+  /**
    * Updates referrers and/or warns for undefined structures based on references to then given
    * {@link StructureType}. Compared to {@link #markAbstractStructure}, this function is used when
    * the reference type and the structure type are guaranteed to match.
