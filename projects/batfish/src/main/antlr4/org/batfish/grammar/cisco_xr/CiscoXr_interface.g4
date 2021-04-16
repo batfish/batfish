@@ -277,15 +277,6 @@ if_ip_dhcp
    )
 ;
 
-if_ip_flow_monitor
-:
-   IP FLOW MONITOR name = variable
-   (
-      INPUT
-      | OUTPUT
-   ) NEWLINE
-;
-
 if_ip_forward
 :
    NO? IP FORWARD NEWLINE
@@ -711,7 +702,6 @@ if_null_block
       | EXIT
       | FAIR_QUEUE
       | FAST_REROUTE
-      | FLOW
       | FLOW_CONTROL
       | FLOWCONTROL
       | FORWARDER
@@ -757,7 +747,6 @@ if_null_block
             (
                DIRECTED_BROADCAST
             )
-            | FLOW
             | IP_ADDRESS
             | IRDP
             | LOAD_SHARING
@@ -1674,7 +1663,6 @@ if_inner
    | if_ip_verify
    | if_ip_authentication
    | if_ip_dhcp
-   | if_ip_flow_monitor
    | if_ip_forward
    | if_ip_hello_interval
    | if_ip_helper_address
