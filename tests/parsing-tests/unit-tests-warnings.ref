@@ -1378,48 +1378,13 @@
         "Text" : "$hub_comm",
         "Parser_Context" : "[community_set_expr_elem_half community_set_expr_elem community_set_expr set_community_rp_stanza set_rp_stanza rp_stanza else_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
         "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "iptables/host1.iptables",
-        "Line" : 16,
-        "Text" : "-s 1.2.3.4/32 -p tcp -m tcp --dport 22 -j ACCEPT",
-        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "iptables/host1.iptables",
-        "Line" : 17,
-        "Text" : "-s 11.22.33.44/32 -p tcp -m tcp --dport 25 -j ACCEPT",
-        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "iptables/host1.iptables",
-        "Line" : 18,
-        "Text" : "-s 111.222.111.222/32 -p tcp -m tcp --dport 80 -j ACCEPT",
-        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "iptables/host1.iptables",
-        "Line" : 19,
-        "Text" : "-s 4.3.2.1/32 -p tcp -m tcp --dport 110 -j ACCEPT",
-        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
-        "Comment" : "This feature is not currently supported"
-      },
-      {
-        "Filename" : "iptables/host1.iptables",
-        "Line" : 20,
-        "Text" : "-s 44.22.33.11/32 -p tcp -m tcp --dport 143 -j ACCEPT",
-        "Parser_Context" : "[rule_spec command_append command_tail command iptables_configuration]",
-        "Comment" : "This feature is not currently supported"
       }
     ],
     "summary" : {
-      "notes" : "Found 196 results",
+      "notes" : "Found 191 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 196
+      "numResults" : 191
     }
   }
 ]

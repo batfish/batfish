@@ -1,0 +1,44 @@
+*filter
+:OUTPUT ACCEPT [0:0]
+# supported
+--append INPUT -p tcp -j ACCEPT
+
+# unsupported
+--check INPUT -p tcp -j ACCEPT
+
+# unsupported
+--delete INPUT -p tcp -j ACCEPT
+
+# unsupported
+--delete-chain
+
+# unsupported
+--flush
+# unsupported
+-h
+
+# supported
+--insert INPUT -p tcp -j ACCEPT
+
+# unsupported
+--list
+
+# unsupported
+--list-rules
+
+# supported
+--new-chain chain
+
+# supported
+--policy chain ACCEPT
+
+# unsupported
+--rename-chain chain newchain
+
+# unsupported
+--replace chain 10 -p tcp -j ACCEPT
+
+# unsupported
+--zero
+COMMIT
+

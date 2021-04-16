@@ -85,17 +85,17 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       IptablesRule rule = extractRule(tailCtx.command_append().rule_spec());
       _configuration.addRule(table, chain, rule, -1);
     } else if (tailCtx.command_check() != null) {
-      todo(ctx);
+      todo(ctx, "Check command is not supported");
     } else if (tailCtx.command_delete() != null) {
-      todo(ctx);
+      todo(ctx, "Delete command is not supported");
     } else if (tailCtx.command_delete_chain() != null) {
-      todo(ctx);
+      todo(ctx, "Delete Chain command is not supported");
     } else if (tailCtx.command_flush() != null) {
-      todo(ctx);
+      todo(ctx, "Flush command is not supported");
     } else if (tailCtx.command_help() != null) {
-      todo(ctx);
+      todo(ctx, "Help command is not supported");
     } else if (tailCtx.command_insert() != null) {
-      String chain = tailCtx.command_append().chain().getText();
+      String chain = tailCtx.command_insert().chain().getText();
       int ruleNum = 1;
       if (tailCtx.command_insert().rulenum != null) {
         ruleNum = toInteger(tailCtx.command_insert().rulenum);
@@ -103,9 +103,9 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       IptablesRule rule = extractRule(tailCtx.command_insert().rule_spec());
       _configuration.addRule(table, chain, rule, ruleNum);
     } else if (tailCtx.command_list() != null) {
-      todo(ctx);
+      todo(ctx, "List command is not supported");
     } else if (tailCtx.command_list_rules() != null) {
-      todo(ctx);
+      todo(ctx, "List Rules command is not supported");
     } else if (tailCtx.command_new_chain() != null) {
       String chain = tailCtx.command_new_chain().chain().getText();
       _configuration.addChain(table, chain);
@@ -114,13 +114,13 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       ChainPolicy policy = getBuiltInTarget(tailCtx.command_policy().built_in_target());
       _configuration.setChainPolicy(table, chain, policy);
     } else if (tailCtx.command_rename_chain() != null) {
-      todo(ctx);
+      todo(ctx, "Rename Chain command is not supported");
     } else if (tailCtx.command_replace() != null) {
-      todo(ctx);
+      todo(ctx, "Replace command is not supported");
     } else if (tailCtx.command_zero() != null) {
-      todo(ctx);
+      todo(ctx, "Zero command is not supported");
     } else {
-      todo(ctx);
+      todo(ctx, "Unknown command in rule");
     }
   }
 
@@ -147,13 +147,31 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       boolean inverted = (mCtx.NOT() != null);
 
       if (mCtx.OPTION_IPV4() != null || mCtx.OPTION_IPV6() != null) {
-        todo(ctx);
+        todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
       } else if (mCtx.OPTION_DESTINATION() != null) {
         rule.addMatch(inverted, MatchType.DESTINATION, getEndpoint(mCtx.endpoint()));
       } else if (mCtx.OPTION_DESTINATION_PORT() != null) {
         rule.addMatch(inverted, MatchType.DESTINATION_PORT, toInteger(mCtx.port));
       } else if (mCtx.OPTION_IN_INTERFACE() != null) {
         rule.addMatch(inverted, MatchType.IN_INTERFACE, mCtx.interface_name.getText());
+      } else if (mCtx.OPTION_MATCH() != null) {
+        // iptables save does '-p tcp -m tcp' where '-m tcp' is redundant
+        // spitting a warning for '-m tcp' is confusing in this case
+        if (mCtx.match_module() != null && mCtx.match_module().match_module_tcp() != null) {
+          boolean ruleHasProtocolTcp =
+              rule.getMatchList().stream()
+                  .anyMatch(
+                      m ->
+                          m.getMatchType() == MatchType.PROTOCOL
+                              && m.getMatchData() == IpProtocol.TCP);
+          if (!ruleHasProtocolTcp) {
+            todo(
+                ctx,
+                String.format("Option '%s' is supported only with '-p tcp'", getFullText(mCtx)));
+          }
+        } else {
+          todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
+        }
       } else if (mCtx.OPTION_PROTOCOL() != null) {
         rule.addMatch(inverted, MatchType.PROTOCOL, toProtocol(mCtx.protocol()));
       } else if (mCtx.OPTION_OUT_INTERFACE() != null) {
@@ -163,7 +181,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       } else if (mCtx.OPTION_SOURCE_PORT() != null) {
         rule.addMatch(inverted, MatchType.SOURCE_PORT, toInteger(mCtx.port));
       } else {
-        todo(ctx);
+        todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
       }
     }
 
@@ -235,6 +253,10 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   private void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx), _parser);
+  }
+
+  private void todo(ParserRuleContext ctx, String comment) {
+    _w.addWarning(ctx, getFullText(ctx), _parser, comment);
   }
 
   private IpProtocol toProtocol(ProtocolContext protocol) {
