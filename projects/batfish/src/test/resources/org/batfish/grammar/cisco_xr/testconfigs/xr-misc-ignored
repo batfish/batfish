@@ -1,0 +1,31 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-misc-ignored
+!
+cef load-balancing fields L4
+clock timezone UTC UTC
+!
+ipv4 netmask-format bit-count
+!
+taskgroup priv2
+ task read bgp
+ task read rib
+ task read route-map
+ task read route-policy
+ task execute basic-services
+ inherit taskgroup a
+!
+
+
+
+end
+
+############ MultiConfigPart END
+
+############ MultiConfigPart admin configuration
+fpd auto-upgrade disable
+!
+confdConfig encryptedStrings DES3CBC key1 0123456789ABCDEF
+confdConfig encryptedStrings DES3CBC key2 0123456789ABCDEF
+
+############ MultiConfigPart END

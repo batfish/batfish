@@ -662,3 +662,5 @@ vrf_name: WORD;
 access_list_name: WORD;
 
 rd_set_name: WORD;
+
+policy_map_name: WORD;

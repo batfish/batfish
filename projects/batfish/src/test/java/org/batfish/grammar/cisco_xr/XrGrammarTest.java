@@ -37,10 +37,40 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV4_REDISTRIBUTE_BGP_ADVERTISE_TO;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV6_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV6_REDISTRIBUTE_BGP_ADVERTISE_TO;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MULTICAST_ROUTING_CORE_TREE_PROTOCOL_RSVP_TE_GROUP_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_PEER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_ACCESS_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_EXPLICIT_TRACKING;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_MAXIMUM_GROUPS_PER_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_SSM_MAP_STATIC;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_ACCESS_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_EXPLICIT_TRACKING;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_MAXIMUM_GROUPS_PER_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_SSM_MAP_STATIC;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_CACHE_SA_STATE_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_CACHE_SA_STATE_RP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_SA_FILTER_IN_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_SA_FILTER_IN_RP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_SA_FILTER_OUT_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_SA_FILTER_OUT_RP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_ACCEPT_REGISTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_ALLOW_RP_GROUP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_ALLOW_RP_RP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_AUTO_RP_CANDIDATE_RP_GROUP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_BSR_CANDIDATE_RP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_MDT_NEIGHBOR_FILTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_MOFRR_FLOW;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_MOFRR_RIB;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_NEIGHBOR_FILTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_RPF_TOPOLOGY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_RP_ADDRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_RP_STATIC_DENY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SG_EXPIRY_TIMER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SPT_THRESHOLD;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SSM_THRESHOLD_RANGE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_RD_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
@@ -1363,5 +1393,268 @@ public final class XrGrammarTest {
 
     // ipv4
     assertThat(ccae, hasReferencedStructure(filename, RD_SET, "rdset1", ROUTE_POLICY_RD_IN));
+  }
+
+  @Test
+  public void testMiscIgnoredParsing() {
+    String hostname = "xr-misc-ignored";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testIgmpReferences() {
+    String hostname = "xr-igmp-references";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl1", ROUTER_IGMP_ACCESS_GROUP));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl2", ROUTER_IGMP_EXPLICIT_TRACKING));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl3", ROUTER_IGMP_MAXIMUM_GROUPS_PER_INTERFACE));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl4", ROUTER_IGMP_SSM_MAP_STATIC));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl5", ROUTER_IGMP_ACCESS_GROUP));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl6", ROUTER_IGMP_EXPLICIT_TRACKING));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl7", ROUTER_IGMP_MAXIMUM_GROUPS_PER_INTERFACE));
+  }
+
+  @Test
+  public void testMldReferences() {
+    String hostname = "xr-mld-references";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl1", ROUTER_MLD_ACCESS_GROUP));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl2", ROUTER_MLD_EXPLICIT_TRACKING));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl3", ROUTER_MLD_MAXIMUM_GROUPS_PER_INTERFACE));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl4", ROUTER_MLD_SSM_MAP_STATIC));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl5", ROUTER_MLD_ACCESS_GROUP));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl6", ROUTER_MLD_EXPLICIT_TRACKING));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl7", ROUTER_MLD_MAXIMUM_GROUPS_PER_INTERFACE));
+  }
+
+  @Test
+  public void testPimReferences() {
+    String hostname = "xr-pim-references";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // route-policy
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_POLICY, "rp1", ROUTER_PIM_RPF_TOPOLOGY));
+
+    // ipv4 acls
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl1", ROUTER_PIM_ACCEPT_REGISTER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl2", ROUTER_PIM_ALLOW_RP_GROUP_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl3", ROUTER_PIM_ALLOW_RP_RP_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl4", ROUTER_PIM_BSR_CANDIDATE_RP));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl5", ROUTER_PIM_MDT_NEIGHBOR_FILTER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl6", ROUTER_PIM_MOFRR_FLOW));
+    assertThat(
+        ccae, hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl7", ROUTER_PIM_MOFRR_RIB));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl8", ROUTER_PIM_NEIGHBOR_FILTER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl9", ROUTER_PIM_RP_ADDRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl10", ROUTER_PIM_RP_STATIC_DENY));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl11", ROUTER_PIM_SG_EXPIRY_TIMER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV4_ACCESS_LIST, "ipv4acl12", ROUTER_PIM_SPT_THRESHOLD));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl13", ROUTER_PIM_SSM_THRESHOLD_RANGE));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl14", ROUTER_PIM_AUTO_RP_CANDIDATE_RP_GROUP_LIST));
+
+    // ipv6 acls
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl1", ROUTER_PIM_ACCEPT_REGISTER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl2", ROUTER_PIM_ALLOW_RP_GROUP_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl3", ROUTER_PIM_ALLOW_RP_RP_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl4", ROUTER_PIM_BSR_CANDIDATE_RP));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl5", ROUTER_PIM_MDT_NEIGHBOR_FILTER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl6", ROUTER_PIM_MOFRR_FLOW));
+    assertThat(
+        ccae, hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl7", ROUTER_PIM_MOFRR_RIB));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl8", ROUTER_PIM_NEIGHBOR_FILTER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl9", ROUTER_PIM_RP_ADDRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl10", ROUTER_PIM_RP_STATIC_DENY));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl11", ROUTER_PIM_SG_EXPIRY_TIMER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, IPV6_ACCESS_LIST, "ipv6acl12", ROUTER_PIM_SPT_THRESHOLD));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV6_ACCESS_LIST, "ipv6acl13", ROUTER_PIM_SSM_THRESHOLD_RANGE));
+  }
+
+  @Test
+  public void testMsdpReferences() {
+    String hostname = "xr-msdp-references";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl1", ROUTER_MSDP_CACHE_SA_STATE_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl2", ROUTER_MSDP_CACHE_SA_STATE_RP_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl3", ROUTER_MSDP_SA_FILTER_IN_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl4", ROUTER_MSDP_SA_FILTER_IN_RP_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl5", ROUTER_MSDP_SA_FILTER_OUT_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl6", ROUTER_MSDP_SA_FILTER_OUT_RP_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl7", ROUTER_MSDP_SA_FILTER_IN_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl8", ROUTER_MSDP_SA_FILTER_IN_RP_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl9", ROUTER_MSDP_SA_FILTER_OUT_LIST));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, IPV4_ACCESS_LIST, "ipv4acl10", ROUTER_MSDP_SA_FILTER_OUT_RP_LIST));
+  }
+
+  @Test
+  public void testMulticastRoutingReferences() {
+    String hostname = "xr-multicast-routing-references";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // ipv4
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            IPV4_ACCESS_LIST,
+            "ipv4acl1",
+            MULTICAST_ROUTING_CORE_TREE_PROTOCOL_RSVP_TE_GROUP_LIST));
+
+    // ipv6
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename,
+            IPV6_ACCESS_LIST,
+            "ipv6acl1",
+            MULTICAST_ROUTING_CORE_TREE_PROTOCOL_RSVP_TE_GROUP_LIST));
   }
 }

@@ -14,6 +14,7 @@ tokens {
    HEX_FRAGMENT,
    IS_LOCAL,
    ISO_ADDRESS,
+   ONE_LITERAL,
    PARAMETER,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
@@ -57,7 +58,7 @@ ACCEPT_LIFETIME: 'accept-lifetime';
 
 ACCEPT_OWN: 'accept-own';
 
-ACCEPT_REGISTER: 'accept-register';
+ACCEPT_REGISTER: 'accept-register' -> pushMode(M_Word);
 
 ACCEPT_RP: 'accept-rp';
 
@@ -76,7 +77,17 @@ ACCESS_GROUP
         break;
       case NTP:
       case NEWLINE: // need to update if access-group may be first word in other blocks
-        pushMode(M_NtpAccessGroup);
+        switch(accessGroupContextTokenType()) {
+          case IGMP:
+          case MLD:
+            pushMode(M_Word);
+            break;
+          case NTP:
+            pushMode(M_NtpAccessGroup);
+            break;
+          default:
+            break;
+        }
         break;
       default:
         break;
@@ -291,6 +302,10 @@ ALLOW_DEFAULT: 'allow-default';
 ALLOW_FAIL_THROUGH: 'allow-fail-through';
 
 ALLOW_NOPASSWORD_REMOTE_LOGIN: 'allow-nopassword-remote-login';
+
+ALLOW_OVERRIDE: 'allow-override';
+
+ALLOW_RP: 'allow-rp';
 
 ALLOW_SELF_PING: 'allow-self-ping';
 
@@ -698,6 +713,8 @@ BGP_COMMUNITY: 'bgp-community';
 
 BGP_POLICY: 'bgp-policy';
 
+BIDIR: 'bidir';
+
 BIDIR_ENABLE: 'bidir-enable';
 
 BIDIR_OFFER_INTERVAL: 'bidir-offer-interval';
@@ -770,6 +787,8 @@ BSD_CLIENT: 'bsd-client';
 
 BSD_USERNAME: 'bsd-username';
 
+BSR: 'bsr';
+
 BSR_BORDER: 'bsr-border';
 
 BSR_CANDIDATE: 'bsr-candidate';
@@ -795,6 +814,8 @@ BURST_SIZE: 'burst-size';
 
 BYTES: 'bytes';
 
+C_MULTICAST_ROUTING: 'c-multicast-routing';
+
 CA: 'ca';
 
 CABLE: 'cable';
@@ -807,6 +828,10 @@ CABLELENGTH
 ;
 
 CACHE: 'cache';
+
+CACHE_SA_HOLDTIME: 'cache-sa-holdtime';
+
+CACHE_SA_STATE: 'cache-sa-state';
 
 CACHE_TIMEOUT: 'cache-timeout';
 
@@ -827,6 +852,18 @@ CALLHOME: 'callhome';
 CAM_ACL: 'cam-acl';
 
 CAM_PROFILE: 'cam-profile';
+
+CANDIDATE_BSR: 'candidate-bsr';
+
+CANDIDATE_RP
+:
+  'candidate-rp'
+  {
+    if (lastTokenType() == AUTO_RP) {
+      pushMode(M_Interface);
+    }
+  }
+;
 
 CAPABILITY: 'capability';
 
@@ -936,6 +973,8 @@ CLNS: 'clns';
 CLOCK: 'clock';
 
 CLOCK_PERIOD: 'clock-period';
+
+CLONE: 'clone';
 
 CLOSED: 'closed';
 
@@ -1074,6 +1113,10 @@ CONTROLLER
    'controller' -> pushMode ( M_Interface )
 ;
 
+CONVERGENCE: 'convergence';
+
+CONVERGENCE_TIMEOUT: 'convergence-timeout';
+
 CONVERSION_ERROR: 'conversion-error';
 
 CONTROLLER_IP: 'controller-ip';
@@ -1085,6 +1128,8 @@ COPP: 'copp';
 COPS: 'cops';
 
 COPY: 'copy';
+
+CORE_TREE_PROTOCOL: 'core-tree-protocol';
 
 COS: 'cos';
 
@@ -1179,6 +1224,8 @@ DAMPENING_CHANGE: 'dampening-change';
 
 DAMPENING_INTERVAL: 'dampening-interval';
 
+DATA: 'data';
+
 DATA_PRIVACY: 'data-privacy';
 
 DATABASE: 'database';
@@ -1246,6 +1293,8 @@ DEFAULT_METRIC: 'default-metric';
 DEFAULT_NETWORK: 'default-network';
 
 DEFAULT_ORIGINATE: 'default-originate';
+
+DEFAULT_PEER: 'default-peer';
 
 DEFAULT_ROLE: 'default-role';
 
@@ -1650,6 +1699,8 @@ EMAIL_CONTACT
    'email-contact' -> pushMode ( M_Description )
 ;
 
+EMBEDDED_RP: 'embedded-rp';
+
 EMERGENCIES: 'emergencies';
 
 EMPTY: 'empty';
@@ -1845,9 +1896,15 @@ EXPECT: 'expect';
 
 EXPLICIT_NULL: 'explicit-null';
 
+EXPLICIT_RPF_VECTOR: 'explicit-rpf-vector';
+
+EXPLICIT_TRACKING: 'explicit-tracking' -> pushMode(M_ExplicitTracking);
+
 EXPORT: 'export';
 
 EXPORT_PROTOCOL: 'export-protocol';
+
+EXPORT_RT: 'export-rt';
 
 EXPORTER: 'exporter';
 
@@ -1874,6 +1931,8 @@ EXTENDED: 'extended';
 EXTENDED_COUNTERS: 'extended-counters';
 
 EXTENDED_DELAY: 'extended-delay';
+
+EXTENDED_SHOW_WIDTH: 'extended-show-width';
 
 EXTERNAL: 'external';
 
@@ -1959,7 +2018,7 @@ FLAP_LIST: 'flap-list';
 
 FLOATING_CONN: 'floating-conn';
 
-FLOW: 'flow';
+FLOW: 'flow' -> pushMode(M_Flow);
 
 FLOW_AGGREGATION: 'flow-aggregation';
 
@@ -2000,6 +2059,8 @@ FORWARD_PROTOCOL: 'forward-protocol';
 FORWARDER: 'forwarder';
 
 FORWARDING: 'forwarding';
+
+FORWARDING_LATENCY: 'forwarding-latency';
 
 FPD: 'fpd';
 
@@ -2106,7 +2167,7 @@ GROUP: 'group';
 
 GROUP_ALIAS: 'group-alias';
 
-GROUP_LIST: 'group-list';
+GROUP_LIST: 'group-list' -> pushMode(M_Word);
 
 GROUP_LOCK: 'group-lock';
 
@@ -2139,6 +2200,10 @@ GROUP21: 'group21';
 GROUP24: 'group24';
 
 GROUP5: 'group5';
+
+GROUPS: 'groups';
+
+GROUPS_PER_INTERFACE: 'groups-per-interface' -> pushMode(M_GroupsPerInterface);
 
 GT: 'gt';
 
@@ -2225,6 +2290,8 @@ HISTORY: 'history';
 HOLD_TIME: 'hold-time';
 
 HOLD_QUEUE: 'hold-queue';
+
+HOLDTIME: 'holdtime';
 
 HOMEDIR: 'homedir';
 
@@ -2354,7 +2421,7 @@ IFMAP: 'ifmap';
 
 IFMIB: 'ifmib';
 
-IGMP: 'igmp';
+IGMP: 'igmp' { setAccessGroupContextTokenType(IGMP); };
 
 IGP_COST: 'igp-cost';
 
@@ -2387,6 +2454,8 @@ IMPERSONATION_PROFILE: 'impersonation-profile';
 IMPLICIT_USER: 'implicit-user';
 
 IMPORT: 'import';
+
+IMPORT_RT: 'import-rt';
 
 IN
 :
@@ -2458,6 +2527,8 @@ INTERFACE
    { if (lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
 
 ;
+
+INTERFACE_INHERITANCE: 'interface-inheritance';
 
 INTERFACE_STATISTICS: 'interface-statistics';
 
@@ -2567,6 +2638,10 @@ ISPF: 'ispf';
 ISSUER_NAME: 'issuer-name';
 
 JOIN_GROUP: 'join-group';
+
+JOIN_PRUNE_INTERVAL: 'join-prune-interval';
+
+JOIN_PRUNE_MTU: 'join-prune-mtu';
 
 JUMBO: 'jumbo';
 
@@ -2743,7 +2818,7 @@ LINKSEC: 'linksec';
 
 LINKDEBOUNCE: 'linkdebounce';
 
-LIST: 'list';
+LIST: 'list' -> pushMode(M_Word);
 
 LISTEN: 'listen';
 
@@ -2813,6 +2888,8 @@ LOG_INTERNAL_SYNC: 'log-internal-sync';
 LOG_NEIGHBOR_CHANGES: 'log-neighbor-changes';
 
 LOG_NEIGHBOR_WARNINGS: 'log-neighbor-warnings';
+
+LOG_TRAPS: 'log-traps';
 
 LOGFILE: 'logfile';
 
@@ -2973,6 +3050,8 @@ MANAGEMENT: 'management';
 
 MANAGEMENT_ACCESS: 'management-access';
 
+MANAGEMENT_ADDRESS: 'management-address';
+
 MANAGEMENT_ONLY: 'management-only';
 
 MANAGEMENT_PLANE: 'management-plane';
@@ -2990,6 +3069,8 @@ MAP_GROUP: 'map-group';
 MAP_LIST: 'map-list';
 
 MAPPING: 'mapping';
+
+MAPPING_AGENT: 'mapping-agent';
 
 MASK: 'mask';
 
@@ -3097,6 +3178,8 @@ MDIX: 'mdix';
 
 MDT: 'mdt';
 
+MDT_HELLO_INTERVAL: 'mdt-hello-interval';
+
 MED: 'med';
 
 MEDIUM: 'medium';
@@ -3199,7 +3282,7 @@ MISMATCH: 'mismatch';
 
 MLAG: 'mlag';
 
-MLD: 'mld';
+MLD: 'mld' { setAccessGroupContextTokenType(MLD); };
 
 MLD_QUERY: 'mld-query';
 
@@ -3228,6 +3311,12 @@ MODEM: 'modem';
 MODULE: 'module';
 
 MODULE_TYPE: 'module-type';
+
+MOFRR: 'mofrr';
+
+MOFRR_LOCKOUT_TIMER: 'mofrr-lockout-timer';
+
+MOFRR_LOSS_DETECTION_TIMER: 'mofrr-loss-detection-timer';
 
 MON: 'Mon';
 
@@ -3368,9 +3457,13 @@ NEIGHBOR
    'neighbor' -> pushMode ( M_NEIGHBOR )
 ;
 
+NEIGHBOR_CHECK_ON_RECV: 'neighbor-check-on-recv';
+
+NEIGHBOR_CHECK_ON_SEND: 'neighbor-check-on-send';
+
 NEIGHBOR_DOWN: 'neighbor-down';
 
-NEIGHBOR_FILTER: 'neighbor-filter';
+NEIGHBOR_FILTER: 'neighbor-filter' -> pushMode(M_Word);
 
 NEIGHBOR_GROUP: 'neighbor-group';
 
@@ -3521,6 +3614,8 @@ NON_CLIENT_NRT: 'non-client-nrt';
 
 NON_DETERMINISTIC_MED: 'non-deterministic-med';
 
+NON_REVERTIVE: 'non-revertive';
+
 NON_SILENT: 'non-silent';
 
 NONE: 'none';
@@ -3547,6 +3642,10 @@ NSF: 'nsf';
 
 NSR: 'nsr';
 
+NSR_DELAY: 'nsr-delay';
+
+NSR_DOWN: 'nsr-down';
+
 NSSA: 'nssa';
 
 NSSA_EXTERNAL: 'nssa-external';
@@ -3555,7 +3654,7 @@ NSW_FE: 'nsw-fe';
 
 NT_ENCRYPTED: 'nt-encrypted';
 
-NTP: 'ntp';
+NTP: 'ntp' { setAccessGroupContextTokenType(NTP); };
 
 NULL: 'null';
 
@@ -3578,6 +3677,8 @@ OFDM_THROUGHPUT: 'ofdm-throughput';
 
 OFFSET_LIST: 'offset-list';
 
+OLD_REGISTER_CHECKSUM: 'old-register-checksum';
+
 OLSR: 'olsr';
 
 ON: 'on';
@@ -3597,6 +3698,8 @@ ONE_OUT_OF: 'one-out-of';
 ONEP: 'onep';
 
 ONLY_OFDM: 'only-ofdm';
+
+OOM_HANDLING: 'oom-handling';
 
 OPEN: 'open';
 
@@ -3678,6 +3781,8 @@ OUTSIDE: 'outside';
 OVERLOAD_CONTROL: 'overload-control';
 
 OVERRIDE: 'override';
+
+OVERRIDE_INTERVAL: 'override-interval';
 
 OWNER: 'owner';
 
@@ -3908,6 +4013,8 @@ PORT_CHANNEL: 'port-channel';
 
 PORT_CHANNEL_PROTOCOL: 'port-channel-protocol';
 
+PORT_DESCRIPTION: 'port-description';
+
 PORT_NAME: 'port-name';
 
 PORT_OBJECT: 'port-object';
@@ -4028,6 +4135,8 @@ PROMPT: 'prompt';
 
 PROPAGATE: 'propagate';
 
+PROPAGATION_DELAY: 'propagation-delay';
+
 PROPOSAL: 'proposal';
 
 PROPRIETARY: 'proprietary';
@@ -4096,6 +4205,8 @@ QOS_SC: 'qos-sc';
 
 QOTD: 'qotd';
 
+QUERY: 'query';
+
 QUERY_INTERVAL: 'query-interval';
 
 QUERY_MAX_RESPONSE_TIME: 'query-max-response-time';
@@ -4140,11 +4251,21 @@ RANDOM_DETECT: 'random-detect';
 
 RANDOM_DETECT_LABEL: 'random-detect-label';
 
-RANGE: 'range';
+RANGE
+:
+  'range'
+  {
+    if (lastTokenType() == THRESHOLD) {
+      pushMode(M_Word);
+    }
+  }
+;
 
 RATE_LIMIT: 'rate-limit';
 
 RATE_MODE: 'rate-mode';
+
+RATE_PER_ROUTE: 'rate-per-route';
 
 RATE_THRESHOLDS_PROFILE: 'rate-thresholds-profile';
 
@@ -4225,6 +4346,8 @@ REGISTER_RATE_LIMIT: 'register-rate-limit';
 REGISTER_SOURCE: 'register-source';
 
 REGULATORY_DOMAIN_PROFILE: 'regulatory-domain-profile';
+
+REINIT: 'reinit';
 
 RELAY: 'relay';
 
@@ -4334,6 +4457,8 @@ RFC1583: 'rfc1583';
 
 RFC1583COMPATIBILITY: 'rfc1583compatibility';
 
+RIB: 'rib' -> pushMode(M_Word);
+
 RIB_HAS_ROUTE: 'rib-has-route';
 
 RIB_METRIC_AS_EXTERNAL: 'rib-metric-as-external';
@@ -4362,6 +4487,8 @@ RO
 :
    [rR] [oO]
 ;
+
+ROBUSTNESS_COUNT: 'robustness-count';
 
 ROBUSTNESS_VARIABLE: 'robustness-variable';
 
@@ -4411,7 +4538,7 @@ ROUTING: 'routing';
 
 RP: 'rp';
 
-RP_ADDRESS: 'rp-address';
+RP_ADDRESS: 'rp-address' -> pushMode(M_RpAddress);
 
 RP_ANNOUNCE_FILTER: 'rp-announce-filter';
 
@@ -4420,9 +4547,15 @@ RP_CANDIDATE
    'rp-candidate' -> pushMode(M_Interface)
 ;
 
-RP_LIST: 'rp-list';
+RP_LIST: 'rp-list' -> pushMode(M_Word);
+
+RP_STATIC_DENY: 'rp-static-deny' -> pushMode(M_Word);
 
 RPC2PORTMAP: 'rpc2portmap';
+
+RPF: 'rpf';
+
+RPF_REDIRECT: 'rpf-redirect';
 
 RPF_VECTOR: 'rpf-vector';
 
@@ -4443,6 +4576,8 @@ RST: 'rst';
 RSTP: 'rstp';
 
 RSVP: 'rsvp';
+
+RSVP_TE: 'rsvp-te';
 
 RSYNC: 'rsync';
 
@@ -4665,6 +4800,8 @@ SFLOW: 'sflow';
 SFTP: 'sftp';
 
 SG_EXPIRY_TIMER: 'sg-expiry-timer';
+
+SG_LIST: 'sg-list' -> pushMode(M_Word);
 
 SGBP: 'sgbp';
 
@@ -4916,9 +5053,19 @@ STARTUP_QUERY_INTERVAL: 'startup-query-interval';
 
 STATE: 'state';
 
-STATIC: 'static';
+STATIC
+:
+  'static'
+  {
+    if (lastTokenType() == MAP) {
+      pushMode(M_SsmMapStatic);
+    }
+  }
+;
 
 STATIC_GROUP: 'static-group';
+
+STATIC_RPF: 'static-rpf';
 
 STATION_ROLE: 'station-role';
 
@@ -4965,6 +5112,8 @@ STUB: 'stub';
 
 SUBINTERFACE: 'subinterface';
 
+SUBINTERFACES: 'subinterfaces';
+
 SUBJECT_NAME: 'subject-name';
 
 SUBNET: 'subnet';
@@ -5007,7 +5156,11 @@ SUPPRESS: 'suppress';
 
 SUPPRESS_ARP: 'suppress-arp';
 
+SUPPRESS_DATA_REGISTERS: 'suppress-data-registers';
+
 SUPPRESS_FIB_PENDING: 'suppress-fib-pending';
+
+SUPPRESS_RPF_CHANGE_PRUNES: 'suppress-rpf-change-prunes';
 
 SUPPRESSED: 'suppressed';
 
@@ -5063,9 +5216,15 @@ SYSTAT: 'systat';
 
 SYSTEM: 'system';
 
+SYSTEM_CAPABILITIES: 'system-capabilities';
+
+SYSTEM_DESCRIPTION: 'system-description';
+
 SYSTEM_INIT: 'system-init';
 
 SYSTEM_MAX: 'system-max';
+
+SYSTEM_NAME: 'system-name';
 
 SYSTEM_PRIORITY: 'system-priority';
 
@@ -5211,6 +5370,8 @@ TIMING: 'timing';
 
 TLS_PROXY: 'tls-proxy';
 
+TLV_SELECT: 'tlv-select';
+
 TM_VOQ_COLLECTION: 'tm-voq-collection';
 
 TO
@@ -5229,7 +5390,15 @@ TOOL: 'tool';
 
 TOP: 'top';
 
-TOPOLOGY: 'topology';
+TOPOLOGY
+:
+  'topology'
+  {
+    if (lastTokenType() == RPF) {
+      pushMode(M_Word);
+    }
+  }
+;
 
 TOS: 'tos';
 
@@ -5367,6 +5536,8 @@ UNABLE: 'Unable';
 UNAUTHORIZED: 'unauthorized';
 
 UNAUTHORIZED_DEVICE_PROFILE: 'unauthorized-device-profile';
+
+UNICAST_QOS_ADJUST: 'unicast-qos-adjust';
 
 UNICAST_ROUTING: 'unicast-routing';
 
@@ -7059,6 +7230,8 @@ M_Interface_MULTIPOINT
    'multipoint' -> type ( MULTIPOINT ) , popMode
 ;
 
+M_Interface_SCOPE: 'scope' -> type(SCOPE), popMode;
+
 M_Interface_SHUTDOWN
 :
    'shutdown' -> type ( SHUTDOWN ) , popMode
@@ -7605,3 +7778,57 @@ M_RdMatchExpr_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
 M_RdMatchExpr_WORD: F_Word -> type(WORD), popMode;
 M_RdMatchExpr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_RdMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_ExplicitTracking;
+
+M_ExplicitTracking_DISABLE: 'disable' -> type(DISABLE), popMode;
+
+M_ExplicitTracking_WORD: F_Word -> type(WORD), popMode;
+M_ExplicitTracking_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_ExplicitTracking_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_GroupsPerInterface;
+
+M_GroupsPerInterface_UINT16: F_Uint16 -> type(UINT16), mode(M_GroupsPerInterface2);
+
+M_GroupsPerInterface_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_GroupsPerInterface_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_GroupsPerInterface2;
+
+M_GroupsPerInterface2_THRESHOLD: 'threshold' -> type(THRESHOLD), mode(M_GroupsPerInterfaceThreshold);
+M_GroupsPerInterface2_WORD: F_Word -> type(WORD), popMode;
+
+M_GroupsPerInterface2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_GroupsPerInterface2_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_GroupsPerInterfaceThreshold;
+
+M_GroupsPerInterfaceThreshold_1: '1' -> type(ONE_LITERAL), mode(M_Word);
+
+M_GroupsPerInterfaceThreshold_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_GroupsPerInterfaceThreshold_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_SsmMapStatic;
+
+M_SsmMapStatic_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS), mode(M_Word);
+M_SsmMapStatic_IPV6_ADDRESS: F_Ipv6Address -> type(IPV6_ADDRESS), mode(M_Word);
+
+M_SsmMapStatic_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_SsmMapStatic_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_Flow;
+
+M_Flow_EXPORTER_MAP: 'exporter-map' -> type(EXPORTER_MAP), mode(M_Word);
+M_Flow_MONITOR_MAP: 'monitor-map' -> type(EXPORTER_MAP), mode(M_Word);
+
+M_Flow_WORD: F_Word -> type(WORD), popMode;
+M_Flow_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Flow_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_RpAddress;
+
+M_RpAddress_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS), mode(M_Word);
+M_RpAddress_IPV6_ADDRESS: F_Ipv6Address -> type(IPV6_ADDRESS), mode(M_Word);
+M_RpAddress_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_RpAddress_WS: F_Whitespace+ -> channel(HIDDEN);
