@@ -6,6 +6,28 @@ options {
    tokenVocab = CiscoXrLexer;
 }
 
+s_mpls
+:
+  MPLS
+  (
+    mpls_label
+    | mpls_ldp
+    | mpls_oam
+    | mpls_traffic_eng
+  )
+;
+
+mpls_oam: OAM NEWLINE mpls_oam_inner*;
+
+mpls_oam_inner: mpls_oam_null;
+
+mpls_oam_null
+:
+  (
+    ECHO
+  ) null_rest_of_line
+;
+
 mldp_address_family
 :
    ADDRESS_FAMILY
@@ -174,12 +196,9 @@ mldpn_null
    ) null_rest_of_line
 ;
 
-s_mpls_ldp
+mpls_ldp
 :
-   MPLS
-   (
-      LABEL PROTOCOL
-   )? LDP NEWLINE
+   LDP NEWLINE
    (
       mldp_router_id
       | mldp_address_family
@@ -191,14 +210,11 @@ s_mpls_ldp
    )*
 ;
 
-s_mpls_label_range
-:
-   MPLS LABEL RANGE uint_legacy+ NEWLINE
-;
+mpls_label: LABEL RANGE uint_legacy+ NEWLINE;
 
-s_mpls_traffic_eng
+mpls_traffic_eng
 :
-   MPLS TRAFFIC_ENG NEWLINE
+   TRAFFIC_ENG NEWLINE
    (
       mte_attribute_set
       | mte_auto_tunnel
