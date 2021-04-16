@@ -108,7 +108,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV4_REDISTRIBUTE_BGP_ADVERTISE_TO;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV6_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MPLS_LDP_AF_IPV6_REDISTRIBUTE_BGP_ADVERTISE_TO;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MSDP_PEER_SA_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.MULTICAST_ROUTING_CORE_TREE_PROTOCOL_RSVP_TE_GROUP_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NAMED_RSA_PUB_KEY_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
@@ -128,19 +128,44 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DIS
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_ACCEPT_REGISTER_ACL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_ACCEPT_RP_ACL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_RP_ADDRESS_ACL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_RP_ANNOUNCE_FILTER;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_RP_CANDIDATE_ACL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.PIM_SPT_THRESHOLD_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.RIP_DISTRIBUTE_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_ACCESS_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_EXPLICIT_TRACKING;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_MAXIMUM_GROUPS_PER_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_SSM_MAP_STATIC;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_REDISTRIBUTE_STATIC_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_ACCESS_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_EXPLICIT_TRACKING;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_MAXIMUM_GROUPS_PER_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_SSM_MAP_STATIC;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_CACHE_SA_STATE_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_CACHE_SA_STATE_RP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_SA_FILTER_IN_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_SA_FILTER_IN_RP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_SA_FILTER_OUT_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MSDP_SA_FILTER_OUT_RP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_ACCEPT_REGISTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_ALLOW_RP_GROUP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_ALLOW_RP_RP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_AUTO_RP_CANDIDATE_RP_GROUP_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_BSR_CANDIDATE_RP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_EMBEDDED_RP_RENDEZVOUS_POINT;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_INTERFACE_NEIGHBOR_FILTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_MDT_NEIGHBOR_FILTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_MOFRR_FLOW;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_MOFRR_RIB;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_NEIGHBOR_FILTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_RPF_REDIRECT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_RPF_TOPOLOGY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_RP_ADDRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_RP_STATIC_DENY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SG_EXPIRY_TIMER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SPT_THRESHOLD;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_PIM_SSM_THRESHOLD_RANGE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_POLICY_APPLY_EXPR;
@@ -567,6 +592,9 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_peers_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Mldp_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Mldpafd_targeted_helloContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Mldpafrb_advertise_toContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Mr_ipv6Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Mrv_ipv6Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Mrvaf_core_tree_protocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_block_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Neighbor_group_rb_stanzaContext;
@@ -598,14 +626,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_default_is_s
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_group_assignment_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_group_creation_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Peer_sa_filterContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_accept_registerContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_accept_rpContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_addressContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_announce_filterContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_rp_candidateContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_send_rp_announceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Pim_spt_thresholdContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pint16Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_accountingContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pm_type_control_subscriberContext;
@@ -661,6 +681,22 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Remote_as_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ren_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ren_metric_weightsContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rigmp_access_groupContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rigmp_explicit_trackingContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rigmpi_access_groupContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rigmpi_explicit_trackingContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rigmpi_maximumContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rigmpm_groups_per_interfaceContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rigmps_staticContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmld_access_groupContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmld_explicit_trackingContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmld_ssm_staticContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmldi_access_groupContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmldi_explicit_trackingContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmldm_groups_per_interfaceContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdp_cache_sa_stateContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdp_sa_filterContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdpp_sa_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro6_distribute_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_area_filterlistContext;
@@ -704,6 +740,25 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_prefix_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_route_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_subrangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_accept_registerContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_allow_rp_group_listContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_allow_rp_rp_listContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_bsr_candidate_rpContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_mdt_neighbor_filterContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_mofrr_flowContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_mofrr_ribContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_neighbor_filterContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_rp_addressContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_rp_static_denyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_rpfContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_sg_expiry_timerContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_spt_thresholdContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_ssm_threshold_rangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimaf4_auto_rp_candidate_rpContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimaf4_rpf_redirectContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimaf6_embedded_rp_rendezvous_pointContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimaf_ipv6Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimafi_neighbor_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_distribute_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_passive_interfaceContext;
@@ -1216,6 +1271,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
    * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
    */
   private String _lastKnownOspfProcess;
+
+  private boolean _pimIpv6;
+
+  private boolean _multicastRoutingIpv6;
 
   public CiscoXrControlPlaneExtractor(
       String text, CiscoXrCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
@@ -5336,71 +5395,228 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitPeer_sa_filter(Peer_sa_filterContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, MSDP_PEER_SA_LIST, line);
+  public void exitRmsdp_cache_sa_state(Rmsdp_cache_sa_stateContext ctx) {
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST,
+        name,
+        ctx.LIST() != null ? ROUTER_MSDP_CACHE_SA_STATE_LIST : ROUTER_MSDP_CACHE_SA_STATE_RP_LIST,
+        line);
   }
 
   @Override
-  public void exitPim_accept_register(Pim_accept_registerContext ctx) {
-    String name = ctx.name.getText();
+  public void exitRmsdp_sa_filter(Rmsdp_sa_filterContext ctx) {
+    String name = toString(ctx.name);
     int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_ACCEPT_REGISTER_ACL, line);
-  }
-
-  @Override
-  public void exitPim_accept_rp(Pim_accept_rpContext ctx) {
-    if (ctx.name != null) {
-      String name = ctx.name.getText();
-      int line = ctx.name.getStart().getLine();
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_ACCEPT_RP_ACL, line);
+    CiscoXrStructureUsage usage;
+    if (ctx.IN() != null) {
+      if (ctx.LIST() != null) {
+        usage = ROUTER_MSDP_SA_FILTER_IN_LIST;
+      } else {
+        assert ctx.RP_LIST() != null;
+        usage = ROUTER_MSDP_SA_FILTER_IN_RP_LIST;
+      }
+    } else {
+      assert ctx.OUT() != null;
+      if (ctx.LIST() != null) {
+        usage = ROUTER_MSDP_SA_FILTER_OUT_LIST;
+      } else {
+        assert ctx.RP_LIST() != null;
+        usage = ROUTER_MSDP_SA_FILTER_OUT_RP_LIST;
+      }
     }
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, line);
   }
 
   @Override
-  public void exitPim_rp_address(Pim_rp_addressContext ctx) {
-    if (!_no && ctx.name != null) {
-      String name = ctx.name.getText();
+  public void exitRmsdpp_sa_filter(Rmsdpp_sa_filterContext ctx) {
+    String name = toString(ctx.name);
+    int line = ctx.name.getStart().getLine();
+    CiscoXrStructureUsage usage;
+    if (ctx.IN() != null) {
+      if (ctx.LIST() != null) {
+        usage = ROUTER_MSDP_SA_FILTER_IN_LIST;
+      } else {
+        assert ctx.RP_LIST() != null;
+        usage = ROUTER_MSDP_SA_FILTER_IN_RP_LIST;
+      }
+    } else {
+      assert ctx.OUT() != null;
+      if (ctx.LIST() != null) {
+        usage = ROUTER_MSDP_SA_FILTER_OUT_LIST;
+      } else {
+        assert ctx.RP_LIST() != null;
+        usage = ROUTER_MSDP_SA_FILTER_OUT_RP_LIST;
+      }
+    }
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, line);
+  }
+
+  @Override
+  public void exitRpim_accept_register(Rpim_accept_registerContext ctx) {
+    String name = toString(ctx.name);
+    int line = ctx.name.getStart().getLine();
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    _configuration.referenceStructure(type, name, ROUTER_PIM_ACCEPT_REGISTER, line);
+  }
+
+  @Override
+  public void enterRpimaf_ipv6(Rpimaf_ipv6Context ctx) {
+    _pimIpv6 = true;
+  }
+
+  @Override
+  public void exitRpimaf_ipv6(Rpimaf_ipv6Context ctx) {
+    _pimIpv6 = false;
+  }
+
+  @Override
+  public void exitRpim_allow_rp_group_list(Rpim_allow_rp_group_listContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_ALLOW_RP_GROUP_LIST, line);
+  }
+
+  @Override
+  public void exitRpim_allow_rp_rp_list(Rpim_allow_rp_rp_listContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_ALLOW_RP_RP_LIST, line);
+  }
+
+  @Override
+  public void exitRpim_rp_address(Rpim_rp_addressContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    if (ctx.name != null) {
+      String name = toString(ctx.name);
       int line = ctx.name.getStart().getLine();
       _configuration.referenceStructure(
-          IPV4_ACCESS_LIST, name,
-          PIM_RP_ADDRESS_ACL, line);
+          type, name,
+          ROUTER_PIM_RP_ADDRESS, line);
     }
   }
 
   @Override
-  public void exitPim_rp_announce_filter(Pim_rp_announce_filterContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_RP_ANNOUNCE_FILTER, line);
-  }
-
-  @Override
-  public void exitPim_rp_candidate(Pim_rp_candidateContext ctx) {
+  public void exitRpim_bsr_candidate_rp(Rpim_bsr_candidate_rpContext ctx) {
     if (ctx.name != null) {
-      String name = ctx.name.getText();
+      CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+      String name = toString(ctx.name);
       int line = ctx.name.getStart().getLine();
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_RP_CANDIDATE_ACL, line);
+      _configuration.referenceStructure(type, name, ROUTER_PIM_BSR_CANDIDATE_RP, line);
     }
   }
 
   @Override
-  public void exitPim_send_rp_announce(Pim_send_rp_announceContext ctx) {
+  public void exitRpim_spt_threshold(Rpim_spt_thresholdContext ctx) {
     if (ctx.name != null) {
-      String name = ctx.name.getText();
+      CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+      String name = toString(ctx.name);
       int line = ctx.name.getStart().getLine();
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_SEND_RP_ANNOUNCE_ACL, line);
+      _configuration.referenceStructure(type, name, ROUTER_PIM_SPT_THRESHOLD, line);
     }
   }
 
   @Override
-  public void exitPim_spt_threshold(Pim_spt_thresholdContext ctx) {
+  public void exitRpim_mdt_neighbor_filter(Rpim_mdt_neighbor_filterContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_MDT_NEIGHBOR_FILTER, line);
+  }
+
+  @Override
+  public void exitRpim_mofrr_flow(Rpim_mofrr_flowContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_MOFRR_FLOW, line);
+  }
+
+  @Override
+  public void exitRpim_mofrr_rib(Rpim_mofrr_ribContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_MOFRR_RIB, line);
+  }
+
+  @Override
+  public void exitRpim_neighbor_filter(Rpim_neighbor_filterContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_NEIGHBOR_FILTER, line);
+  }
+
+  @Override
+  public void exitRpim_rp_static_deny(Rpim_rp_static_denyContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_RP_STATIC_DENY, line);
+  }
+
+  @Override
+  public void exitRpim_rpf(Rpim_rpfContext ctx) {
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(ROUTE_POLICY, name, ROUTER_PIM_RPF_TOPOLOGY, line);
+  }
+
+  @Override
+  public void exitRpim_sg_expiry_timer(Rpim_sg_expiry_timerContext ctx) {
     if (ctx.name != null) {
-      String name = ctx.name.getText();
-      int line = ctx.name.getStart().getLine();
-      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_SPT_THRESHOLD_ACL, line);
+      CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+      String name = toString(ctx.name);
+      int line = ctx.start.getLine();
+      _configuration.referenceStructure(type, name, ROUTER_PIM_SG_EXPIRY_TIMER, line);
     }
+  }
+
+  @Override
+  public void exitRpim_ssm_threshold_range(Rpim_ssm_threshold_rangeContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_SSM_THRESHOLD_RANGE, line);
+  }
+
+  @Override
+  public void exitRpimaf4_auto_rp_candidate_rp(Rpimaf4_auto_rp_candidate_rpContext ctx) {
+    if (ctx.aclname != null) {
+      String name = toString(ctx.aclname);
+      int line = ctx.start.getLine();
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST, name, ROUTER_PIM_AUTO_RP_CANDIDATE_RP_GROUP_LIST, line);
+    }
+  }
+
+  @Override
+  public void exitRpimaf4_rpf_redirect(Rpimaf4_rpf_redirectContext ctx) {
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(
+        ROUTE_POLICY, name, ROUTER_PIM_RPF_REDIRECT_ROUTE_POLICY, line);
+  }
+
+  @Override
+  public void exitRpimaf6_embedded_rp_rendezvous_point(
+      Rpimaf6_embedded_rp_rendezvous_pointContext ctx) {
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST, name, ROUTER_PIM_EMBEDDED_RP_RENDEZVOUS_POINT, line);
+  }
+
+  @Override
+  public void exitRpimafi_neighbor_filter(Rpimafi_neighbor_filterContext ctx) {
+    CiscoXrStructureType type = _pimIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
+    String name = toString(ctx.name);
+    int line = ctx.start.getLine();
+    _configuration.referenceStructure(type, name, ROUTER_PIM_INTERFACE_NEIGHBOR_FILTER, line);
   }
 
   @Override
@@ -8689,5 +8905,121 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       warn(messageCtx, "Invalid interface ipv4 address");
     }
     return Optional.empty();
+  }
+
+  @Override
+  public void exitRigmp_access_group(Rigmp_access_groupContext ctx) {
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST, toString(ctx.name), ROUTER_IGMP_ACCESS_GROUP, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRigmpi_access_group(Rigmpi_access_groupContext ctx) {
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST, toString(ctx.name), ROUTER_IGMP_ACCESS_GROUP, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRigmp_explicit_tracking(Rigmp_explicit_trackingContext ctx) {
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST, toString(ctx.name), ROUTER_IGMP_EXPLICIT_TRACKING, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRigmpi_explicit_tracking(Rigmpi_explicit_trackingContext ctx) {
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST, toString(ctx.name), ROUTER_IGMP_EXPLICIT_TRACKING, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRigmpm_groups_per_interface(Rigmpm_groups_per_interfaceContext ctx) {
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST,
+        toString(ctx.name),
+        ROUTER_IGMP_MAXIMUM_GROUPS_PER_INTERFACE,
+        ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRigmpi_maximum(Rigmpi_maximumContext ctx) {
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST,
+        toString(ctx.name),
+        ROUTER_IGMP_MAXIMUM_GROUPS_PER_INTERFACE,
+        ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRigmps_static(Rigmps_staticContext ctx) {
+    _configuration.referenceStructure(
+        IPV4_ACCESS_LIST, toString(ctx.name), ROUTER_IGMP_SSM_MAP_STATIC, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRmld_access_group(Rmld_access_groupContext ctx) {
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST, toString(ctx.name), ROUTER_MLD_ACCESS_GROUP, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRmldi_access_group(Rmldi_access_groupContext ctx) {
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST, toString(ctx.name), ROUTER_MLD_ACCESS_GROUP, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRmld_explicit_tracking(Rmld_explicit_trackingContext ctx) {
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST, toString(ctx.name), ROUTER_MLD_EXPLICIT_TRACKING, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRmldi_explicit_tracking(Rmldi_explicit_trackingContext ctx) {
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST, toString(ctx.name), ROUTER_MLD_EXPLICIT_TRACKING, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRmldm_groups_per_interface(Rmldm_groups_per_interfaceContext ctx) {
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST,
+        toString(ctx.name),
+        ROUTER_MLD_MAXIMUM_GROUPS_PER_INTERFACE,
+        ctx.start.getLine());
+  }
+
+  @Override
+  public void exitRmld_ssm_static(Rmld_ssm_staticContext ctx) {
+    _configuration.referenceStructure(
+        IPV6_ACCESS_LIST, toString(ctx.name), ROUTER_MLD_SSM_MAP_STATIC, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitMrvaf_core_tree_protocol(Mrvaf_core_tree_protocolContext ctx) {
+    _configuration.referenceStructure(
+        _multicastRoutingIpv6 ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST,
+        toString(ctx.name),
+        MULTICAST_ROUTING_CORE_TREE_PROTOCOL_RSVP_TE_GROUP_LIST,
+        ctx.start.getLine());
+  }
+
+  @Override
+  public void enterMr_ipv6(Mr_ipv6Context ctx) {
+    _multicastRoutingIpv6 = true;
+  }
+
+  @Override
+  public void exitMr_ipv6(Mr_ipv6Context ctx) {
+    _multicastRoutingIpv6 = false;
+  }
+
+  @Override
+  public void enterMrv_ipv6(Mrv_ipv6Context ctx) {
+    _multicastRoutingIpv6 = true;
+  }
+
+  @Override
+  public void exitMrv_ipv6(Mrv_ipv6Context ctx) {
+    _multicastRoutingIpv6 = false;
   }
 }

@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-igmp-references
+!
+router igmp
+  access-group ipv4acl1
+  explicit-tracking ipv4acl2
+  maximum groups-per-interface 1 ipv4acl3
+  ssm map static 1.1.1.1 ipv4acl4
+  interface GigabitEthernet0/0/0/0
+   access-group ipv4acl5
+   explicit-tracking ipv4acl6
+   maximum groups-per-interface 1 ipv4acl7 
+  !
+!
