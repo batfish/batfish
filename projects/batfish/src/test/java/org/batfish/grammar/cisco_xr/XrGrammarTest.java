@@ -21,12 +21,24 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCo
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_EXPORTER_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_MONITOR_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SAMPLER_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FLOW_MONITOR_MAP_EXPORTER;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_SAMPLER_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_SAMPLER_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV6_MONITOR_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV6_MONITOR_INGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV6_SAMPLER_EGRESS;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV6_SAMPLER_INGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_COMMON;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_EGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_INGRESS;
@@ -1656,5 +1668,49 @@ public final class XrGrammarTest {
             IPV6_ACCESS_LIST,
             "ipv6acl1",
             MULTICAST_ROUTING_CORE_TREE_PROTOCOL_RSVP_TE_GROUP_LIST));
+  }
+
+  @Test
+  public void testFlowReferences() {
+    String hostname = "xr-flow";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, FLOW_EXPORTER_MAP, "fem1", FLOW_MONITOR_MAP_EXPORTER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, FLOW_EXPORTER_MAP, "fem2", FLOW_MONITOR_MAP_EXPORTER));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, FLOW_MONITOR_MAP, "fmm1", INTERFACE_FLOW_IPV4_MONITOR_EGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, FLOW_MONITOR_MAP, "fmm2", INTERFACE_FLOW_IPV4_MONITOR_INGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, FLOW_MONITOR_MAP, "fmm3", INTERFACE_FLOW_IPV6_MONITOR_EGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, FLOW_MONITOR_MAP, "fmm4", INTERFACE_FLOW_IPV6_MONITOR_INGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, SAMPLER_MAP, "sm1", INTERFACE_FLOW_IPV4_SAMPLER_EGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, SAMPLER_MAP, "sm2", INTERFACE_FLOW_IPV4_SAMPLER_INGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, SAMPLER_MAP, "sm3", INTERFACE_FLOW_IPV6_SAMPLER_EGRESS));
+    assertThat(
+        ccae,
+        hasReferencedStructure(filename, SAMPLER_MAP, "sm4", INTERFACE_FLOW_IPV6_SAMPLER_INGRESS));
   }
 }

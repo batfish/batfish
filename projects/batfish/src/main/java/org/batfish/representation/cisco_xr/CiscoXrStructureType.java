@@ -18,6 +18,8 @@ public enum CiscoXrStructureType implements StructureType {
   CRYPTO_MAP_SET("crypto-map-set"),
   DYNAMIC_TEMPLATE("dynamic-template"),
   EXTCOMMUNITY_SET_RT("extcommunity-set rt"),
+  FLOW_EXPORTER_MAP("flow exporter-map"),
+  FLOW_MONITOR_MAP("flow monitor-map"),
   INSPECT_CLASS_MAP("class-map type inspect"),
   INTERFACE("interface"),
   IP_ACCESS_LIST("ipv4/6 acl"),
@@ -38,6 +40,7 @@ public enum CiscoXrStructureType implements StructureType {
   PREFIX6_LIST("ipv6 prefix-list"),
   RD_SET("rd-set"),
   ROUTE_POLICY("route-policy"),
+  SAMPLER_MAP("sampler-map"),
   SERVICE_TEMPLATE("service-template"),
   TRACK("track");
 
