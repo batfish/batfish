@@ -1720,4 +1720,11 @@ public final class XrGrammarTest {
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
+
+  @Test
+  public void testOspfParsing() {
+    String hostname = "xr-ospf";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
 }
