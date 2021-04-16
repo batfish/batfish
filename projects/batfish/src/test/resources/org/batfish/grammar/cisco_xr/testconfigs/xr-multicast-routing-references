@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-multicast-routing-references
+!
+multicast-routing
+ address-family ipv4
+  core-tree-protocol rsvp-te group-list ipv4acl1
+ !
+ address-family ipv6
+  core-tree-protocol rsvp-te group-list ipv6acl1
+ !
+!

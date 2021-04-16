@@ -12,12 +12,16 @@ CiscoXr_callhome,
 CiscoXr_eigrp,
 CiscoXr_extcommunity_set,
 CiscoXr_hsrp,
-CiscoXr_ignored,
+CiscoXr_igmp,
 CiscoXr_interface,
 CiscoXr_isis,
 CiscoXr_line,
+CiscoXr_lldp,
 CiscoXr_logging,
+CiscoXr_mld,
 CiscoXr_mpls,
+CiscoXr_msdp,
+CiscoXr_multicast_routing,
 CiscoXr_ntp,
 CiscoXr_ospf,
 CiscoXr_pim,
@@ -50,16 +54,34 @@ cisco_xr_configuration
 // statement is for rewritten top-level rules. stanza is for old ones.
 statement
 :
-  s_ipv4
+  s_end
+  | s_ipv4
   | s_ipv6
-  | s_null_xr
+  | s_lldp
+  | s_multicast_routing
+  | s_null
   | s_no
   | s_rd_set
+  | s_router
+  | s_taskgroup
 ;
+
+s_end: END NEWLINE;
 
 s_ipv4
 :
-  IPV4 ipv4_access_list
+  IPV4
+  (
+    ipv4_access_list
+    | ipv4_null
+  )
+;
+
+ipv4_null
+:
+  (
+    NETMASK_FORMAT
+  ) null_rest_of_line
 ;
 
 s_ipv6
@@ -86,43 +108,51 @@ no_ipv6
   IPV6 no_ipv6_access_list
 ;
 
-s_null_xr
+s_null
 :
   (
-    ISOLATION
+    CEF
+    | CLOCK
+    | CONFDCONFIG
+    | FPD
+    | ISOLATION
   ) null_rest_of_line
 ;
+
+s_router
+:
+  ROUTER
+  (
+    router_igmp
+    | router_mld
+    | router_msdp
+    | router_pim
+  )
+;
+
+s_taskgroup: TASKGROUP null_rest_of_line taskgroup_inner*;
+
+taskgroup_inner
+:
+  taskgroup_inherit
+  | taskgroup_task
+;
+
+taskgroup_inherit: INHERIT null_rest_of_line;
+
+taskgroup_task
+:
+  (
+    TASK
+    | TASK_SPACE_EXECUTE
+  )
+  null_rest_of_line;
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 address_aiimgp_stanza
 :
    ADDRESS null_rest_of_line
-;
-
-address_family_multicast_stanza
-:
-   ADDRESS_FAMILY
-   (
-      IPV4
-      | IPV6
-   ) NEWLINE address_family_multicast_tail
-;
-
-address_family_multicast_tail
-:
-   (
-      (
-         MULTIPATH NEWLINE
-      )
-      |
-      (
-         INTERFACE ALL ENABLE NEWLINE
-      )
-      | null_af_multicast_tail
-      | interface_multicast_stanza
-      | ip_pim_tail
-   )*
 ;
 
 aiimgp_stanza
@@ -133,15 +163,6 @@ aiimgp_stanza
 allow_iimgp_stanza
 :
    ALLOW null_rest_of_line aiimgp_stanza*
-;
-
-cp_ip_flow
-:
-   IP FLOW MONITOR name = variable
-   (
-      INPUT
-      | OUTPUT
-   ) NEWLINE
 ;
 
 cp_management_plane
@@ -284,23 +305,6 @@ inband_mgp_stanza
 interface_imgp_stanza
 :
    INTERFACE null_rest_of_line iimgp_stanza*
-;
-
-interface_multicast_stanza
-:
-   INTERFACE interface_name NEWLINE interface_multicast_tail*
-;
-
-interface_multicast_tail
-:
-   (
-      BOUNDARY
-      | BSR_BORDER
-      | DISABLE
-      | DR_PRIORITY
-      | ENABLE
-      | ROUTER
-   ) null_rest_of_line
 ;
 
 ispla_operation
@@ -578,34 +582,9 @@ mgp_stanza
    inband_mgp_stanza
 ;
 
-mp_null
-:
-   NO?
-   (
-      CONNECT_SOURCE
-      | DESCRIPTION
-      | MESH_GROUP
-      | REMOTE_AS
-      | SHUTDOWN
-   ) null_rest_of_line
-;
-
-multicast_routing_stanza
-:
-   MULTICAST_ROUTING NEWLINE
-   (
-      address_family_multicast_stanza
-   )*
-;
-
 no_aaa_group_server_stanza
 :
    NO AAA GROUP SERVER null_rest_of_line
-;
-
-null_af_multicast_tail
-:
-   NSF NEWLINE
 ;
 
 null_imgp_stanza
@@ -614,62 +593,6 @@ null_imgp_stanza
    (
       VRF
    ) null_rest_of_line
-;
-
-peer_sa_filter
-:
-   SA_FILTER
-   (
-      IN
-      | OUT
-   )
-   (
-      LIST
-      | RP_LIST
-   ) name = variable NEWLINE
-;
-
-peer_stanza
-:
-   PEER IP_ADDRESS NEWLINE
-   (
-      mp_null
-      | peer_sa_filter
-   )*
-;
-
-rmc_null
-:
-   NO?
-   (
-      MAXIMUM
-   ) null_rest_of_line
-;
-
-router_multicast_stanza
-:
-   IPV6? ROUTER
-   (
-      IGMP
-      | MLD
-      | MSDP
-      | PIM
-   ) NEWLINE router_multicast_tail
-;
-
-router_multicast_tail
-:
-   (
-      address_family_multicast_stanza
-      |
-      (
-         INTERFACE ALL null_rest_of_line
-      )
-      | interface_multicast_stanza
-      | null_inner
-      | peer_stanza
-      | rmc_null
-   )*
 ;
 
 s_banner_ios
@@ -699,8 +622,7 @@ s_control_plane
 
 s_control_plane_tail
 :
-   cp_ip_flow
-   | cp_management_plane
+   cp_management_plane
    | cp_null
    | cp_service_policy
 ;
@@ -739,13 +661,8 @@ s_flow
 :
    FLOW
    (
-      EXPORTER
-      | EXPORTER_MAP
-      | HARDWARE
-      | MONITOR
+      EXPORTER_MAP
       | MONITOR_MAP
-      | PLATFORM
-      | RECORD
    ) null_rest_of_line
    (
       flow_null
@@ -1068,7 +985,6 @@ stanza
    | community_set_stanza
    | ip_prefix_list_stanza
    | ipv6_prefix_list_stanza
-   | multicast_routing_stanza
    | no_aaa_group_server_stanza
    | no_ip_prefix_list_stanza
    | prefix_set_stanza
@@ -1076,7 +992,6 @@ stanza
    | router_bgp_stanza
    | router_hsrp_stanza
    | router_isis_stanza
-   | router_multicast_stanza
    | rsvp_stanza
    | s_aaa
    | s_banner_ios
@@ -1106,7 +1021,6 @@ stanza
    | s_mpls_traffic_eng
    | s_no_bfd
    | s_ntp
-   | s_null
    | s_object_group
    | s_policy_map
    | s_radius_server

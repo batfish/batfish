@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-mld-references
+!
+router mld
+  access-group ipv6acl1
+  explicit-tracking ipv6acl2
+  maximum groups-per-interface 1 ipv6acl3
+  ssm map static 1::1 ipv6acl4
+  interface GigabitEthernet0/0/0/0
+   access-group ipv6acl5
+   explicit-tracking ipv6acl6
+   maximum groups-per-interface 1 ipv6acl7 
+  !
+!

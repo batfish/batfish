@@ -23,6 +23,10 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
     }
   }
 
+  protected final int accessGroupContextTokenType() {
+    return _accessGroupContextTokenType;
+  }
+
   protected final int lastTokenType() {
     return _lastTokenType;
   }
@@ -44,7 +48,16 @@ public abstract class CiscoXrBaseLexer extends BatfishLexer {
     _bannerIosDelimiter = null;
   }
 
+  /**
+   * Set the type of the token controlling which mode {@code access-group} should push the lexer
+   * into when it appears as the first word on the line.
+   */
+  protected final void setAccessGroupContextTokenType(int accessGroupContextTokenType) {
+    _accessGroupContextTokenType = accessGroupContextTokenType;
+  }
+
   private @Nullable Integer _bannerIosDelimiter;
+  private int _accessGroupContextTokenType = -1;
   private int _lastTokenType = -1;
   private int _secondToLastTokenType = -1;
 }

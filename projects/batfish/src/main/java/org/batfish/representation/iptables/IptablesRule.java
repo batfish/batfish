@@ -51,13 +51,18 @@ public class IptablesRule implements Serializable {
     return _actionType;
   }
 
+  /**
+   * Coverts IpTablesAction to a LineAction for the ACCEPT and DROP cases.
+   *
+   * @throws IllegalArgumentException if the action is not one of those two..
+   */
   public LineAction getIpAccessListLineAction() {
     if (_actionType == IptablesActionType.ACCEPT) {
       return LineAction.PERMIT;
     } else if (_actionType == IptablesActionType.DROP) {
       return LineAction.DENY;
     } else {
-      throw new BatfishException(
+      throw new IllegalArgumentException(
           "Unsupported IptablesActionType for mapping to LineAction: " + _actionType);
     }
   }
