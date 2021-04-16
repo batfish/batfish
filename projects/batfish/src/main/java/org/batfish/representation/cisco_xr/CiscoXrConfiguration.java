@@ -2437,26 +2437,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // mark references to ACLs that may not appear in data model
     markAcls(
-        CiscoXrStructureUsage.ACCESS_GROUP_GLOBAL_FILTER,
-        CiscoXrStructureUsage.COPS_LISTENER_ACCESS_LIST,
+        CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP,
+        CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST,
         CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
-        CiscoXrStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         CiscoXrStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         CiscoXrStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
-        CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_INGRESS,
-        CiscoXrStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
-        CiscoXrStructureUsage.INTERFACE_IPV4_ACCESS_GROUP_EGRESS,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN,
         CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT,
         CiscoXrStructureUsage.RIP_DISTRIBUTE_LIST,
-        CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
-        CiscoXrStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
-        CiscoXrStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
-        CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
-        CiscoXrStructureUsage.SSH_ACL,
-        CiscoXrStructureUsage.WCCP_GROUP_LIST,
-        CiscoXrStructureUsage.WCCP_REDIRECT_LIST,
-        CiscoXrStructureUsage.WCCP_SERVICE_LIST);
+        CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
 
     return ImmutableList.of(c);
   }

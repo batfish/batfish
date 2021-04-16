@@ -3,7 +3,6 @@ package org.batfish.representation.cisco_xr;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoXrStructureUsage implements StructureUsage {
-  ACCESS_GROUP_GLOBAL_FILTER("access-group global filter"),
   BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY("bgp additional-paths selection route-policy"),
   BGP_AGGREGATE_ROUTE_POLICY("aggregate-address route-policy"),
   BGP_DEFAULT_ORIGINATE_ROUTE_POLICY("bgp default-originate route-policy"),
@@ -36,7 +35,6 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   CONTROL_PLANE_ACCESS_GROUP("control-plane ip access-group"),
   CONTROL_PLANE_SERVICE_POLICY_INPUT("control-plane service-policy input"),
   CONTROL_PLANE_SERVICE_POLICY_OUTPUT("control-plane service-policy output"),
-  COPS_LISTENER_ACCESS_LIST("cops listener access-list"),
   CRYPTO_DYNAMIC_MAP_ACL("crypto dynamic-map acl"),
   CRYPTO_DYNAMIC_MAP_ISAKMP_PROFILE("crypto dynamic-map isakmp-profile"),
   CRYPTO_DYNAMIC_MAP_TRANSFORM_SET("crypto dynamic-map transform-set"),
@@ -51,7 +49,6 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   FAILOVER_LAN_INTERFACE("failover lan interface"),
   FAILOVER_LINK_INTERFACE("failover link interface"),
   FLOW_MONITOR_MAP_EXPORTER("flow monitor-map exporter"),
-  INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP("class-map type inspect match access-group"),
   INTERFACE_BFD_TEMPLATE("interface bfd template"),
   INTERFACE_FLOW_IPV4_MONITOR_EGRESS("interface flow ipv4 monitor egress"),
   INTERFACE_FLOW_IPV4_MONITOR_INGRESS("interface flow ipv4 monitor ingress"),
@@ -64,7 +61,6 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   INTERFACE_IGMP_ACCESS_GROUP_ACL("interface igmp access-group acl"),
   INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST("interface igmp host-proxy access-list"),
   INTERFACE_IGMP_STATIC_GROUP_ACL("interface igmp static-group acl"),
-  INTERFACE_IP_INBAND_ACCESS_GROUP("interface ip inband access-group"),
   INTERFACE_IP_VERIFY_ACCESS_LIST("interface ip verify access-list"),
   INTERFACE_IPV4_ACCESS_GROUP_COMMON("interface ipv4 access-group common"),
   INTERFACE_IPV4_ACCESS_GROUP_EGRESS("interface ipv4 access-group egress"),
@@ -179,15 +175,11 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   ROUTER_VRRP_INTERFACE("router vrrp interface"),
   SERVICE_OBJECT_GROUP_SERVICE_OBJECT("object-group service service-object object"),
   SERVICE_POLICY_GLOBAL("service-policy global"),
-  SNMP_SERVER_COMMUNITY_ACL("snmp server community acl"),
   SNMP_SERVER_COMMUNITY_ACL4("snmp server community ipv4 acl"),
   SNMP_SERVER_COMMUNITY_ACL6("snmp server community ipv6 acl"),
-  SNMP_SERVER_FILE_TRANSFER_ACL("snmp server file transfer acl"),
   SNMP_SERVER_SOURCE_INTERFACE("snmp-server source-interface"),
-  SNMP_SERVER_TFTP_SERVER_LIST("snmp server tftp-server list"),
   SNMP_SERVER_TRAP_SOURCE("snmp-server trap-source"),
   SYSTEM_SERVICE_POLICY("system service-policy"),
-  SSH_ACL("ssh acl"),
   SSH_IPV4_ACL("ssh ipv4 access-list"),
   SSH_IPV6_ACL("ssh ipv6 access-list"),
   TACACS_SOURCE_INTERFACE("tacacs source-interface"),
@@ -195,10 +187,7 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   TUNNEL_PROTECTION_IPSEC_PROFILE("interface TunnelX tunnel protection ipsec profile"),
   TUNNEL_SOURCE("tunnel source"),
   VRF_EXPORT_ROUTE_POLICY("vrf export route-policy"),
-  VRF_IMPORT_ROUTE_POLICY("vrf import route-policy"),
-  WCCP_GROUP_LIST("ip wccp group-list"),
-  WCCP_REDIRECT_LIST("ip wccp redirect-list"),
-  WCCP_SERVICE_LIST("ip wccp service-list");
+  VRF_IMPORT_ROUTE_POLICY("vrf import route-policy");
 
   private final String _description;
 
