@@ -207,7 +207,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
-import com.google.common.primitives.Longs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -7601,7 +7600,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private static long toLong(Uint32Context ctx) {
-    return Longs.tryParse(ctx.getText());
+    return Long.parseLong(ctx.getText());
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
