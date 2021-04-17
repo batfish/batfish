@@ -1,5 +1,10 @@
 package org.batfish.representation.cisco_nxos;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.vendor.StructureType;
 
@@ -43,6 +48,21 @@ public enum CiscoNxosStructureType implements StructureType {
   ROUTER_RIP("router rip"),
   VLAN("vlan"),
   VRF("vrf");
+
+  public static final Multimap<CiscoNxosStructureType, CiscoNxosStructureType> ABSTRACT_STRUCTURES =
+      ImmutableListMultimap.<CiscoNxosStructureType, CiscoNxosStructureType>builder()
+          .putAll(IP_ACCESS_LIST_ABSTRACT_REF, IP_ACCESS_LIST, IPV6_ACCESS_LIST)
+          .putAll(
+              IP_COMMUNITY_LIST_ABSTRACT_REF,
+              IP_COMMUNITY_LIST_EXPANDED,
+              IP_COMMUNITY_LIST_STANDARD)
+          .putAll(
+              IP_OR_MAC_ACCESS_LIST_ABSTRACT_REF, IP_ACCESS_LIST, IPV6_ACCESS_LIST, MAC_ACCESS_LIST)
+          .build();
+
+  public static final Set<CiscoNxosStructureType> CONCRETE_STRUCTURES =
+      ImmutableSet.copyOf(
+          Sets.difference(ImmutableSet.copyOf(values()), ABSTRACT_STRUCTURES.keySet()));
 
   private final @Nonnull String _description;
 
