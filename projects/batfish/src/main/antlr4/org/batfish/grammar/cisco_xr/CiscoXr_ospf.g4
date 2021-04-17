@@ -13,11 +13,7 @@ ro_address_family
 
 ro_area
 :
-   AREA
-   (
-      area_int = uint_legacy
-      | area_ip = IP_ADDRESS
-   ) NEWLINE ro_area_inner*
+   AREA area = ospf_area NEWLINE ro_area_inner*
 ;
 
 ro_area_inner
@@ -32,20 +28,12 @@ ro_area_inner
 
 ro_area_default_cost
 :
-   AREA
-   (
-      area_int = uint_legacy
-      | area_ip = IP_ADDRESS
-   ) DEFAULT_COST cost = uint_legacy NEWLINE
+   AREA ospf_area DEFAULT_COST cost = uint_legacy NEWLINE
 ;
 
 ro_area_filterlist
 :
-   AREA
-   (
-      area_int = uint_legacy
-      | area_ip = IP_ADDRESS
-   ) FILTER_LIST PREFIX list = variable
+   AREA area = ospf_area FILTER_LIST PREFIX list = variable
    (
       IN
       | OUT
@@ -54,11 +42,7 @@ ro_area_filterlist
 
 ro_area_nssa
 :
-   AREA
-   (
-      area_int = uint_legacy
-      | area_ip = IP_ADDRESS
-   ) NSSA
+   AREA area = ospf_area NSSA
    (
       (
          default_information_originate = DEFAULT_INFORMATION_ORIGINATE
@@ -79,11 +63,7 @@ ro_area_nssa
 
 ro_area_range
 :
-   AREA
-   (
-      area_int = uint_legacy
-      | area_ip = IP_ADDRESS
-   ) RANGE
+   AREA area = ospf_area RANGE
    (
       (
          area_ip = IP_ADDRESS area_subnet = IP_ADDRESS
@@ -101,11 +81,7 @@ ro_area_range
 
 ro_area_stub
 :
-   AREA
-   (
-      area_int = uint_legacy
-      | area_ip = IP_ADDRESS
-   ) STUB
+   AREA area = ospf_area STUB
    (
       no_summary = NO_SUMMARY
    )* NEWLINE
@@ -715,3 +691,5 @@ rompls_traffic_eng_null
     | ROUTER_ID
   ) null_rest_of_line
 ;
+
+ospf_area: ip = IP_ADDRESS | num = uint32;

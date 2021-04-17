@@ -637,6 +637,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ogn_ip_with_maskContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ogn_network_objectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Origin_exprContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Origin_expr_literalContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.ParameterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_default_is_stanzaContext;
@@ -2464,15 +2465,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterRo_area(Ro_areaContext ctx) {
-    long area;
-    if (ctx.area_int != null) {
-      area = toLong(ctx.area_int);
-    } else if (ctx.area_ip != null) {
-      area = toIp(ctx.area_ip).asLong();
-    } else {
-      throw new BatfishException("Missing area");
-    }
-    _currentOspfArea = area;
+    _currentOspfArea = toLong(ctx.area);
   }
 
   @Override
@@ -5930,7 +5923,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long area = toLong(ctx.area);
     NssaSettings settings = proc.getNssas().computeIfAbsent(area, a -> new NssaSettings());
     if (ctx.default_information_originate != null) {
       settings.setDefaultInformationOriginate(true);
@@ -5945,7 +5938,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_area_range(CiscoXrParser.Ro_area_rangeContext ctx) {
-    long areaNum = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long areaNum = toLong(ctx.area);
     Prefix prefix;
     if (ctx.area_prefix != null) {
       prefix = Prefix.parse(ctx.area_prefix.getText());
@@ -5969,7 +5962,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitRo_area_stub(Ro_area_stubContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    long area = toLong(ctx.area);
     StubSettings settings = proc.getStubs().computeIfAbsent(area, a -> new StubSettings());
     if (ctx.no_summary != null) {
       settings.setNoSummary(true);
@@ -7606,14 +7599,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private @Nullable Long toLong(Uint32Context ctx) {
-    try {
-      long val = Long.parseLong(ctx.getText(), 10);
-      checkArgument(0 <= val && val <= 0xFFFFFFFFL);
-      return val;
-    } catch (IllegalArgumentException e) {
-      return convProblem(Long.class, ctx, null);
-    }
+  private static long toLong(Uint32Context ctx) {
+    return Long.parseLong(ctx.getText());
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
@@ -9086,5 +9073,14 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Nonnull
   private static String toString(Sampler_map_nameContext ctx) {
     return ctx.getText();
+  }
+
+  private static long toLong(Ospf_areaContext ctx) {
+    if (ctx.num != null) {
+      return toLong(ctx.num);
+    } else {
+      assert ctx.ip != null;
+      return toIp(ctx.ip).asLong();
+    }
   }
 }
