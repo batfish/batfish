@@ -1698,81 +1698,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void markStructures() {
-    markConcreteStructure(CiscoNxosStructureType.CLASS_MAP_CONTROL_PLANE);
-    markConcreteStructure(CiscoNxosStructureType.CLASS_MAP_NETWORK_QOS);
-    markConcreteStructure(CiscoNxosStructureType.CLASS_MAP_QOS);
-    markConcreteStructure(CiscoNxosStructureType.CLASS_MAP_QUEUING);
-    markConcreteStructure(CiscoNxosStructureType.INTERFACE);
-    {
-      // Mark abstract [mac|ip|ipv6] ACL references
-      List<CiscoNxosStructureType> types =
-          ImmutableList.of(
-              CiscoNxosStructureType.IP_ACCESS_LIST,
-              CiscoNxosStructureType.IPV6_ACCESS_LIST,
-              CiscoNxosStructureType.MAC_ACCESS_LIST);
-      for (CiscoNxosStructureUsage usage :
-          ImmutableList.of(
-              CiscoNxosStructureUsage.CLASS_MAP_CP_MATCH_ACCESS_GROUP,
-              CiscoNxosStructureUsage.CLASS_MAP_QOS_MATCH_ACCESS_GROUP)) {
-        markAbstractStructure(
-            CiscoNxosStructureType.IP_OR_MAC_ACCESS_LIST_ABSTRACT_REF, usage, types);
-      }
-    }
-    {
-      // Mark abstract [v4|v6] ACL references
-      List<CiscoNxosStructureType> types =
-          ImmutableList.of(
-              CiscoNxosStructureType.IP_ACCESS_LIST, CiscoNxosStructureType.IPV6_ACCESS_LIST);
-      for (CiscoNxosStructureUsage usage :
-          ImmutableList.of(
-              CiscoNxosStructureUsage.NTP_ACCESS_GROUP_PEER,
-              CiscoNxosStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY,
-              CiscoNxosStructureUsage.NTP_ACCESS_GROUP_SERVE,
-              CiscoNxosStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY,
-              CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_ACL)) {
-        markAbstractStructure(CiscoNxosStructureType.IP_ACCESS_LIST_ABSTRACT_REF, usage, types);
-      }
-    }
-    markConcreteStructure(CiscoNxosStructureType.IP_ACCESS_LIST);
-    markConcreteStructure(CiscoNxosStructureType.IP_AS_PATH_ACCESS_LIST);
-    {
-      // Mark abstract community-list references
-      List<CiscoNxosStructureType> types =
-          ImmutableList.of(
-              CiscoNxosStructureType.IP_COMMUNITY_LIST_STANDARD,
-              CiscoNxosStructureType.IP_COMMUNITY_LIST_EXPANDED);
-      for (CiscoNxosStructureUsage usage :
-          ImmutableList.of(
-              CiscoNxosStructureUsage.ROUTE_MAP_MATCH_COMMUNITY,
-              CiscoNxosStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE)) {
-        markAbstractStructure(CiscoNxosStructureType.IP_COMMUNITY_LIST_ABSTRACT_REF, usage, types);
-      }
-    }
-    markConcreteStructure(CiscoNxosStructureType.IP_PREFIX_LIST);
-    markConcreteStructure(CiscoNxosStructureType.IPV6_ACCESS_LIST);
-    markConcreteStructure(CiscoNxosStructureType.IPV6_PREFIX_LIST);
-    markConcreteStructure(CiscoNxosStructureType.NVE);
-    markConcreteStructure(CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS);
-    markConcreteStructure(CiscoNxosStructureType.OBJECT_GROUP_IP_PORT);
-    markConcreteStructure(CiscoNxosStructureType.POLICY_MAP_CONTROL_PLANE);
-    markConcreteStructure(CiscoNxosStructureType.POLICY_MAP_NETWORK_QOS);
-    markConcreteStructure(CiscoNxosStructureType.POLICY_MAP_QOS);
-    markConcreteStructure(CiscoNxosStructureType.POLICY_MAP_QUEUING);
-    markConcreteStructure(CiscoNxosStructureType.PORT_CHANNEL);
-    markConcreteStructure(CiscoNxosStructureType.ROUTE_MAP);
-    markConcreteStructure(CiscoNxosStructureType.ROUTE_MAP_ENTRY);
-
-    markConcreteStructure(CiscoNxosStructureType.ROUTER_EIGRP);
-    markConcreteStructure(CiscoNxosStructureType.ROUTER_ISIS);
-    markConcreteStructure(CiscoNxosStructureType.ROUTER_OSPF);
-    markConcreteStructure(CiscoNxosStructureType.ROUTER_OSPFV3);
-    markConcreteStructure(CiscoNxosStructureType.ROUTER_RIP);
-
-    markConcreteStructure(CiscoNxosStructureType.BGP_TEMPLATE_PEER);
-    markConcreteStructure(CiscoNxosStructureType.BGP_TEMPLATE_PEER_POLICY);
-    markConcreteStructure(CiscoNxosStructureType.BGP_TEMPLATE_PEER_SESSION);
-    markConcreteStructure(CiscoNxosStructureType.VLAN);
-    markConcreteStructure(CiscoNxosStructureType.VRF);
+    CiscoNxosStructureType.CONCRETE_STRUCTURES.forEach(this::markConcreteStructure);
+    CiscoNxosStructureType.ABSTRACT_STRUCTURES
+        .asMap()
+        .forEach(this::markAbstractStructureAllUsages);
   }
 
   public void setBootKickstartSup1(@Nullable String bootKickstartSup1) {
