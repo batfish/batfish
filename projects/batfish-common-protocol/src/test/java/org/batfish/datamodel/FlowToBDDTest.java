@@ -35,7 +35,7 @@ public class FlowToBDDTest {
     assertThat(headerBdd.imp(_packet.getDscp().value(5)), isOne());
     assertThat(headerBdd.imp(_packet.getEcn().value(3)), isOne());
     assertThat(headerBdd.imp(_packet.getFragmentOffset().value(4)), isOne());
-    // TODO: packet length is not modeled in BDD
+    assertThat(headerBdd.imp(_packet.getPacketLength().value(71)), isOne());
     // Protocol-specific values are not constrained.
     assertThat(headerBdd.exist(_packet.getSrcPort().getVars()), equalTo(headerBdd));
     assertThat(headerBdd.exist(_packet.getDstPort().getVars()), equalTo(headerBdd));
