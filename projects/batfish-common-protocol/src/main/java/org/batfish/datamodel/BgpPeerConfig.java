@@ -1,6 +1,5 @@
 package org.batfish.datamodel;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -100,11 +99,12 @@ public abstract class BgpPeerConfig implements Serializable {
     _description = description;
     _ebgpMultihop = ebgpMultihop;
     _enforceFirstAs = enforceFirstAs;
-    _generatedRoutes = MoreObjects.firstNonNull(generatedRoutes, ImmutableSet.of());
+    _generatedRoutes =
+        com.google.common.base.MoreObjects.firstNonNull(generatedRoutes, ImmutableSet.of());
     _group = group;
     _localAs = localAs;
     _localIp = localIp;
-    _remoteAsns = MoreObjects.firstNonNull(remoteAsns, ALL_AS_NUMBERS);
+    _remoteAsns = com.google.common.base.MoreObjects.firstNonNull(remoteAsns, ALL_AS_NUMBERS);
     _ipv4UnicastAddressFamily = ipv4UnicastAddressFamily;
     _evpnAddressFamily = evpnAddressFamily;
   }
