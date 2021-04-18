@@ -525,7 +525,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
         .thenComparing(Flow::getIngressVrf, Comparator.nullsFirst(Comparator.naturalOrder()))
         .thenComparing(Flow::getSrcIp)
         .thenComparing(Flow::getDstIp)
-        .thenComparing((flow) -> flow.getIpProtocol().number())
+        .thenComparing(flow -> flow.getIpProtocol().number())
         .thenComparing(Flow::getSrcPort, Comparator.nullsFirst(Comparator.naturalOrder()))
         .thenComparing(Flow::getDstPort, Comparator.nullsFirst(Comparator.naturalOrder()))
         .thenComparing(Flow::getDscp)
