@@ -310,7 +310,6 @@ ro_redistribute_connected
          METRIC_TYPE type = dec
       )
       | ROUTE_MAP map = VARIABLE
-      | subnets = SUBNETS
       |
       (
          TAG tag = uint32
@@ -340,7 +339,6 @@ ro_redistribute_static
          METRIC_TYPE type = dec
       )
       | ROUTE_MAP map = VARIABLE
-      | subnets = SUBNETS
       |
       (
          TAG tag = uint32

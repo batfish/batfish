@@ -4318,8 +4318,6 @@ SUBMGMT: 'submgmt';
 
 SUBNET_MASK: 'subnet-mask';
 
-SUBNETS: 'subnets';
-
 SUB_OPTION: 'sub-option';
 
 SUB_ROUTE_MAP: 'sub-route-map';
