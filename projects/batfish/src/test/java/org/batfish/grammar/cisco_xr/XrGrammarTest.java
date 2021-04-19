@@ -1748,4 +1748,11 @@ public final class XrGrammarTest {
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
+
+  @Test
+  public void testLogging() {
+    String hostname = "xr-logging";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
 }
