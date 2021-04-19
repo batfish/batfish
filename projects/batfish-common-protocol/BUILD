@@ -34,6 +34,7 @@ filegroup(
         "src/main/java/org/batfish/grammar/BatfishParserATNSimulator.java",
         "src/main/java/org/batfish/grammar/BatfishParserErrorListener.java",
         "src/main/java/org/batfish/grammar/GrammarSettings.java",
+        "src/main/java/org/batfish/grammar/ImplementedRules.java",
         "src/main/java/org/batfish/grammar/ParseTreePrettyPrinter.java",
         "src/main/java/org/batfish/grammar/UnrecognizedLineToken.java",
         "src/main/java/org/batfish/grammar/flattener/FlattenerLineMap.java",

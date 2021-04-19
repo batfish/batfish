@@ -1,9 +1,14 @@
 package org.batfish.grammar;
 
+import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -15,18 +20,30 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.ParseTreeSentences;
 
+@ParametersAreNonnullByDefault
 public class ParseTreePrettyPrinter implements ParseTreeListener {
 
-  private BatfishCombinedParser<?, ?> _combinedParser;
-  private ParserRuleContext _ctx;
+  private final BatfishCombinedParser<?, ?> _combinedParser;
+  private final ParserRuleContext _ctx;
+
+  /** The current indentation level, based on the depth of the parse tree. */
   private int _indent;
-  private ParseTreeSentences _ptSentences;
-  private boolean _printLineNumbers;
-  private List<String> _ruleNames;
-  private Vocabulary _vocabulary;
+
+  /**
+   * If present, the (lowercase) names of rules for which methods are considered to be implemented.
+   */
+  private final @Nullable Set<String> _implementedRuleNames;
+
+  private final @Nonnull ParseTreeSentences _ptSentences;
+  private final boolean _printLineNumbers;
+  private final @Nonnull List<String> _ruleNames;
+  private final @Nonnull Vocabulary _vocabulary;
 
   private ParseTreePrettyPrinter(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
+      ParserRuleContext ctx,
+      BatfishCombinedParser<?, ?> combinedParser,
+      boolean printLineNumbers,
+      @Nullable Set<String> implementedRuleNames) {
     Parser grammar = combinedParser.getParser();
     List<String> ruleNames = Arrays.asList(grammar.getRuleNames());
     _vocabulary = grammar.getVocabulary();
@@ -35,6 +52,8 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     _ctx = ctx;
     _ptSentences = new ParseTreeSentences();
     _printLineNumbers = printLineNumbers;
+    _implementedRuleNames =
+        implementedRuleNames == null ? null : ImmutableSet.copyOf(implementedRuleNames);
     _indent = 0;
   }
 
@@ -42,7 +61,19 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
       ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(combinedParser);
     ParseTreePrettyPrinter printer =
-        new ParseTreePrettyPrinter(ctx, combinedParser, printLineNumbers);
+        new ParseTreePrettyPrinter(ctx, combinedParser, printLineNumbers, null);
+    walker.walk(printer, ctx);
+    return printer._ptSentences;
+  }
+
+  public static <L extends ParseTreeListener> ParseTreeSentences getParseTreeSentences(
+      ParserRuleContext ctx,
+      BatfishCombinedParser<?, ?> combinedParser,
+      boolean printLineNumbers,
+      @Nullable Set<String> implementedRuleNames) {
+    ParseTreeWalker walker = new BatfishParseTreeWalker(combinedParser);
+    ParseTreePrettyPrinter printer =
+        new ParseTreePrettyPrinter(ctx, combinedParser, printLineNumbers, implementedRuleNames);
     walker.walk(printer, ctx);
     return printer._ptSentences;
   }
@@ -107,6 +138,9 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
       }
     }
     _ptSentences.appendToLastSentence("(" + ruleName);
+    if (_implementedRuleNames != null && !_implementedRuleNames.contains(ruleName.toLowerCase())) {
+      _ptSentences.appendToLastSentence("*");
+    }
     _indent++;
   }
 

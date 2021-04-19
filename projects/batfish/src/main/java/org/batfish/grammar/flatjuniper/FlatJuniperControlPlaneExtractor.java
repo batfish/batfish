@@ -3,11 +3,13 @@ package org.batfish.grammar.flatjuniper;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.ImplementedRules;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -17,6 +19,13 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
   private final FlatJuniperCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
+
+  @Override
+  public Set<String> implementedRuleNames() {
+    // TODO: do we need to add things like InsertDeleteApplicator? I think not, since those don't
+    // make it to the final output.
+    return ImplementedRules.getImplementedRules(ConfigurationBuilder.class);
+  }
 
   public FlatJuniperControlPlaneExtractor(
       String fileText, FlatJuniperCombinedParser combinedParser, Warnings warnings) {
