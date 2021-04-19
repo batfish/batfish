@@ -385,15 +385,15 @@ public final class DataModelMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
-   * structure for {@code hostname} of type {@code type} named {@code structureName} with {@code
+   * structure for {@code filename} of type {@code type} named {@code structureName} with {@code
    * numReferrers} referrers.
    */
   public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasNumReferrers(
-      @Nonnull String hostname,
+      @Nonnull String filename,
       @Nonnull StructureType type,
       @Nonnull String structureName,
       int numReferrers) {
-    return new HasNumReferrers(hostname, type, structureName, numReferrers);
+    return new HasNumReferrers(filename, type, structureName, numReferrers);
   }
 
   /**
