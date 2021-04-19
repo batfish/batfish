@@ -39,7 +39,7 @@ public final class FlowToBDD {
         f.getIcmpCode() == null ? one : p.getIcmpCode().value(f.getIcmpCode()),
         f.getIcmpType() == null ? one : p.getIcmpType().value(f.getIcmpType()),
         p.getIpProtocol().value(f.getIpProtocol()),
-        // TODO: packet length
+        p.getPacketLength().value(f.getPacketLength()),
         p.getSrcIp().value(f.getSrcIp().asLong()),
         f.getSrcPort() == null ? one : p.getSrcPort().value(f.getSrcPort()),
         tcpFlags);
