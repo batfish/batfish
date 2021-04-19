@@ -45848,12 +45848,11 @@
             "  (stanza",
             "    (s_logging",
             "      LOGGING:'logging'",
-            "      (logging_common",
-            "        (logging_null",
-            "          HOSTNAMEPREFIX:'hostnameprefix'",
-            "          (null_rest_of_line",
-            "            VARIABLE:'boop'",
-            "            NEWLINE:'\\n')))))",
+            "      (logging_null",
+            "        HOSTNAMEPREFIX:'hostnameprefix'",
+            "        (null_rest_of_line",
+            "          VARIABLE:'boop'",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },

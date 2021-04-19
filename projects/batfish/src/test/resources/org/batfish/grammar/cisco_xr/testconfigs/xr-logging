@@ -1,0 +1,99 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-logging
+!
+! NOTE that different spellings of log-levels are not an accident; the CLI is inconsistent.
+!
+logging archive
+ archive-length 1
+ archive-size 1
+ device disk0
+ device disk1
+ device harddisk
+ file-size 1
+ frequency daily
+ frequency weekly
+ severity alerts
+ severity critical
+ severity debugging
+ severity emergencies
+ severity errors
+ severity informational
+ severity notifications
+ severity warnings
+ threshold 1
+!
+logging buffered 2097152
+logging buffered alerts
+logging buffered critical
+logging buffered debugging
+logging buffered discriminator
+ match1 a
+ match2 a
+ match3 a
+ nomatch1 a
+ nomatch2 a
+ nomatch3 a
+!
+logging buffered emergencies
+logging buffered errors
+logging buffered informational
+logging buffered notifications
+logging buffered warnings
+!
+logging console alerts
+logging console critical
+logging console debugging
+logging console disable
+logging console discriminator
+ match1 a
+ match2 a
+ match3 a
+ nomatch1 a
+ nomatch2 a
+ nomatch3 a
+!
+logging console emergencies
+logging console errors
+logging console informational
+logging console notifications
+logging console warning
+!
+logging 1.2.3.4 vrf mgmt severity alerts port 1234
+logging 1.2.3.4 vrf mgmt severity critical
+logging 1.2.3.4 vrf mgmt severity debugging
+logging 1.2.3.4 vrf mgmt severity emergencies
+logging 1.2.3.4 vrf mgmt severity error
+logging 1.2.3.4 vrf mgmt severity info
+logging 1.2.3.4 vrf mgmt severity notifications
+logging 1.2.3.4 vrf mgmt severity warning
+!
+logging hostnameprefix example
+!
+logging events buffer-size 1024
+logging events display-location
+logging events filter
+ match a
+!
+logging events level alerts
+logging events level critical
+logging events level emergencies
+logging events level errors
+logging events level informational
+logging events level notifications
+logging events level warnings
+logging events link-status disable
+logging events link-status software-interfaces
+logging events threshold 10
+!
+logging trap alerts
+logging trap critical
+logging trap debugging
+logging trap disable
+logging trap emergencies
+logging trap errors
+logging trap informational
+logging trap notifications
+logging trap warning
+!
+end
