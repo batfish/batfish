@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.SerializationUtils;
@@ -52,7 +51,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
 
@@ -128,9 +126,9 @@ public class Graph {
   }
 
   /**
-   * Create a graph, specifying an additional set of community regexes and AS-path regexes to be
-   * tracked. This is used by the BDD-based analyses to support user-defined constraints on symbolic
-   * route analysis (e.g., the user is interested only in routes tagged with a particular
+   * Create a graph, specifying an additional set of community literals/regexes and AS-path regexes
+   * to be tracked. This is used by the BDD-based analyses to support user-defined constraints on
+   * symbolic route analysis (e.g., the user is interested only in routes tagged with a particular
    * community).
    */
   public Graph(
@@ -138,7 +136,7 @@ public class Graph {
       NetworkSnapshot snapshot,
       @Nullable Map<String, Configuration> configs,
       @Nullable Set<String> routers,
-      @Nullable Set<String> communities,
+      @Nullable Set<CommunityVar> communities,
       @Nullable Set<String> asPathRegexes) {
     _batfish = batfish;
     _edgeMap = new HashMap<>();
@@ -198,12 +196,9 @@ public class Graph {
     initDomains();
     initAllCommunities(communities);
     // compute atomic predicates for the BDD-based analysis
-    // ignore community regexes of type OTHER, which are not used by that analysis
-    Set<CommunityVar> comms =
-        _allCommunities.stream()
-            .filter(c -> c.getType() != Type.OTHER)
-            .collect(ImmutableSet.toImmutableSet());
-    _communityAtomicPredicates = new RegexAtomicPredicates<>(comms, CommunityVar.ALL_COMMUNITIES);
+    Set<CommunityVar> comms = _allCommunities.stream().collect(ImmutableSet.toImmutableSet());
+    _communityAtomicPredicates =
+        new RegexAtomicPredicates<>(comms, CommunityVar.ALL_STANDARD_COMMUNITIES);
     _asPathRegexAtomicPredicates =
         new RegexAtomicPredicates<>(
             findAllAsPathRegexes(asPathRegexes), SymbolicAsPathRegex.ALL_AS_PATHS);
@@ -810,14 +805,13 @@ public class Graph {
 
   /**
    * Identifies all of the community literals and regexes in the given configurations. An optional
-   * set of additional community regexes is also included, which is used to support user-specified
-   * community constraints for symbolic analysis.
+   * set of additional community literals and regexes is also included, which is used to support
+   * user-specified community constraints for symbolic analysis.
    */
-  private void initAllCommunities(@Nullable Set<String> communities) {
+  private void initAllCommunities(@Nullable Set<CommunityVar> communities) {
     _allCommunities.addAll(findAllCommunities());
     if (communities != null) {
-      _allCommunities.addAll(
-          communities.stream().map(CommunityVar::from).collect(Collectors.toSet()));
+      _allCommunities.addAll(communities);
     }
   }
 

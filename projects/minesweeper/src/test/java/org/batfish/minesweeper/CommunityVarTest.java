@@ -48,7 +48,6 @@ public class CommunityVarTest {
     new EqualsTester()
         .addEqualityGroup(cv, cv, CommunityVar.from(StandardCommunity.of(1, 1)))
         .addEqualityGroup(CommunityVar.from("1:1"))
-        .addEqualityGroup(CommunityVar.other("1:1"))
         .addEqualityGroup(CommunityVar.from(StandardCommunity.of(1, 2)))
         .addEqualityGroup(CommunityVar.from("1:2"))
         .addEqualityGroup(new Object())
@@ -58,11 +57,7 @@ public class CommunityVarTest {
   @Test
   public void testCompare() {
     List<CommunityVar> ordered =
-        ImmutableList.of(
-            CommunityVar.from("1:1"),
-            CommunityVar.from("1:2"),
-            CommunityVar.other("1:1"),
-            CommunityVar.other("1:2"));
+        ImmutableList.of(CommunityVar.from("1:1"), CommunityVar.from("1:2"));
 
     for (int i = 0; i < ordered.size(); i++) {
       for (int j = 0; j < ordered.size(); j++) {

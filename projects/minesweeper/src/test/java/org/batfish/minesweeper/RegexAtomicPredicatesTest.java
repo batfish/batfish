@@ -26,7 +26,7 @@ public class RegexAtomicPredicatesTest {
             CommunityVar.from(StandardCommunity.parse("22:22")));
 
     RegexAtomicPredicates<CommunityVar> commAPs =
-        new RegexAtomicPredicates<>(cvars, CommunityVar.ALL_COMMUNITIES);
+        new RegexAtomicPredicates<>(cvars, CommunityVar.ALL_STANDARD_COMMUNITIES);
 
     assertEquals(commAPs.getNumAtomicPredicates(), 6);
 
