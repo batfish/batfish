@@ -595,14 +595,15 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.L_transportContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Literal_communityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_addressContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_bufferedContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_consoleContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_hostContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_onContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_serverContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_severityContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_buffer_sizeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_buffered_buffer_sizeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_buffered_set_severityContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_buffered_severityContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_console_set_severityContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_console_severityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_source_interfaceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_trapContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_trap_set_severityContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_trap_severityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Match_semanticsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_paths_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Maximum_peers_bgp_tailContext;
@@ -1039,6 +1040,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
 
+  private static final IntegerSpace LOGGING_BUFFER_SIZE_RANGE =
+      IntegerSpace.of(Range.closed(2097152, 125000000));
   private static final IntegerSpace PINT16_RANGE = IntegerSpace.of(Range.closed(1, 65535));
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
@@ -2732,9 +2735,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void enterS_logging(S_loggingContext ctx) {
     if (_configuration.getCf().getLogging() == null) {
       _configuration.getCf().setLogging(new Logging());
-    }
-    if (ctx.NO() != null) {
-      _no = true;
     }
   }
 
@@ -4757,91 +4757,62 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitLogging_buffered(Logging_bufferedContext ctx) {
-    if (_no) {
-      return;
-    }
-    Integer size = null;
-    Integer severityNum = null;
-    String severity = null;
-    if (ctx.size != null) {
-      // something was parsed as buffer size but it could be logging severity
-      // as well
-      // it is buffer size if the value is greater than min buffer size
-      // otherwise, it is logging severity
-      int sizeRawNum = toInteger(ctx.size);
-      if (sizeRawNum > Logging.MAX_LOGGING_SEVERITY) {
-        size = sizeRawNum;
-      } else {
-        if (ctx.logging_severity() != null) {
-          // if we have explicity severity as well; we've messed up
-          throw new BatfishException("Ambiguous parsing of logging buffered");
-        }
-        severityNum = sizeRawNum;
-        severity = toLoggingSeverity(severityNum);
-      }
-    } else if (ctx.logging_severity() != null) {
-      severityNum = toLoggingSeverityNum(ctx.logging_severity());
-      severity = toLoggingSeverity(ctx.logging_severity());
-    }
+  public void exitLogging_buffered_set_severity(Logging_buffered_set_severityContext ctx) {
+    getOrCreateBuffered().setSeverity(toSeverity(ctx.logging_buffered_severity()));
+    getOrCreateBuffered().setSeverityNum(toLoggingSeverityNum(ctx.logging_buffered_severity()));
+  }
+
+  @Nonnull
+  private static String toSeverity(Logging_buffered_severityContext ctx) {
+    return ctx.getText().toLowerCase();
+  }
+
+  @Nonnull
+  private static String toSeverity(Logging_console_severityContext ctx) {
+    return ctx.getText().toLowerCase();
+  }
+
+  @Nonnull
+  private static String toSeverity(Logging_trap_severityContext ctx) {
+    return ctx.getText().toLowerCase();
+  }
+
+  @Override
+  public void exitLogging_buffered_buffer_size(Logging_buffered_buffer_sizeContext ctx) {
+    toInteger(ctx, ctx.logging_buffer_size()).ifPresent(getOrCreateBuffered()::setSize);
+  }
+
+  @Nonnull
+  Optional<Integer> toInteger(ParserRuleContext messageCtx, Logging_buffer_sizeContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint32(), LOGGING_BUFFER_SIZE_RANGE, "logging buffer size");
+  }
+
+  @Nonnull
+  private Buffered getOrCreateBuffered() {
     Logging logging = _configuration.getCf().getLogging();
     Buffered buffered = logging.getBuffered();
     if (buffered == null) {
       buffered = new Buffered();
       logging.setBuffered(buffered);
     }
-    buffered.setSeverity(severity);
-    buffered.setSeverityNum(severityNum);
-    buffered.setSize(size);
+    return buffered;
   }
 
   @Override
-  public void exitLogging_console(Logging_consoleContext ctx) {
-    if (_no) {
-      return;
-    }
-    Integer severityNum = null;
-    String severity = null;
-    if (ctx.logging_severity() != null) {
-      severityNum = toLoggingSeverityNum(ctx.logging_severity());
-      severity = toLoggingSeverity(ctx.logging_severity());
-    }
+  public void exitLogging_console_set_severity(Logging_console_set_severityContext ctx) {
+    getOrCreateConsole().setSeverity(toSeverity(ctx.logging_console_severity()));
+    getOrCreateConsole().setSeverityNum(toLoggingSeverityNum(ctx.logging_console_severity()));
+  }
+
+  private @Nonnull LoggingType getOrCreateConsole() {
     Logging logging = _configuration.getCf().getLogging();
     LoggingType console = logging.getConsole();
     if (console == null) {
       console = new LoggingType();
       logging.setConsole(console);
     }
-    console.setSeverity(severity);
-    console.setSeverityNum(severityNum);
-  }
-
-  @Override
-  public void exitLogging_host(Logging_hostContext ctx) {
-    if (_no) {
-      return;
-    }
-    Logging logging = _configuration.getCf().getLogging();
-    String hostname = ctx.hostname.getText();
-    LoggingHost host = new LoggingHost(hostname);
-    logging.getHosts().put(hostname, host);
-  }
-
-  @Override
-  public void exitLogging_on(Logging_onContext ctx) {
-    Logging logging = _configuration.getCf().getLogging();
-    logging.setOn(!_no);
-  }
-
-  @Override
-  public void exitLogging_server(Logging_serverContext ctx) {
-    if (_no) {
-      return;
-    }
-    Logging logging = _configuration.getCf().getLogging();
-    String hostname = ctx.hostname.getText();
-    LoggingHost host = new LoggingHost(hostname);
-    logging.getHosts().put(hostname, host);
+    return console;
   }
 
   @Override
@@ -4855,24 +4826,20 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitLogging_trap(Logging_trapContext ctx) {
-    if (_no) {
-      return;
-    }
-    Integer severityNum = null;
-    String severity = null;
-    if (ctx.logging_severity() != null) {
-      severityNum = toLoggingSeverityNum(ctx.logging_severity());
-      severity = toLoggingSeverity(ctx.logging_severity());
-    }
+  public void exitLogging_trap_set_severity(Logging_trap_set_severityContext ctx) {
+    getOrCreateTrap().setSeverity(toSeverity(ctx.logging_trap_severity()));
+    getOrCreateTrap().setSeverityNum(toLoggingSeverityNum(ctx.logging_trap_severity()));
+  }
+
+  @Nonnull
+  private LoggingType getOrCreateTrap() {
     Logging logging = _configuration.getCf().getLogging();
     LoggingType trap = logging.getTrap();
     if (trap == null) {
       trap = new LoggingType();
       logging.setTrap(trap);
     }
-    trap.setSeverity(severity);
-    trap.setSeverityNum(severityNum);
+    return trap;
   }
 
   @Override
@@ -7544,19 +7511,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return ctx.getText();
   }
 
-  private String toLoggingSeverity(Logging_severityContext ctx) {
-    if (ctx.uint_legacy() != null) {
-      int severityNum = toInteger(ctx.uint_legacy());
-      return toLoggingSeverity(severityNum);
-    } else {
-      return ctx.getText();
-    }
-  }
-
-  private Integer toLoggingSeverityNum(Logging_severityContext ctx) {
-    if (ctx.uint_legacy() != null) {
-      return toInteger(ctx.uint_legacy());
-    } else if (ctx.EMERGENCIES() != null) {
+  private static int toLoggingSeverityNum(Logging_buffered_severityContext ctx) {
+    if (ctx.EMERGENCIES() != null) {
       return 0;
     } else if (ctx.ALERTS() != null) {
       return 1;
@@ -7570,10 +7526,51 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return 5;
     } else if (ctx.INFORMATIONAL() != null) {
       return 6;
-    } else if (ctx.DEBUGGING() != null) {
-      return 7;
     } else {
-      throw new BatfishException("Invalid logging severity: " + ctx.getText());
+      assert ctx.DEBUGGING() != null;
+      return 7;
+    }
+  }
+
+  private static int toLoggingSeverityNum(Logging_console_severityContext ctx) {
+    if (ctx.EMERGENCIES() != null) {
+      return 0;
+    } else if (ctx.ALERTS() != null) {
+      return 1;
+    } else if (ctx.CRITICAL() != null) {
+      return 2;
+    } else if (ctx.ERRORS() != null) {
+      return 3;
+    } else if (ctx.WARNING() != null) {
+      return 4;
+    } else if (ctx.NOTIFICATIONS() != null) {
+      return 5;
+    } else if (ctx.INFORMATIONAL() != null) {
+      return 6;
+    } else {
+      assert ctx.DEBUGGING() != null;
+      return 7;
+    }
+  }
+
+  private static int toLoggingSeverityNum(Logging_trap_severityContext ctx) {
+    if (ctx.EMERGENCIES() != null) {
+      return 0;
+    } else if (ctx.ALERTS() != null) {
+      return 1;
+    } else if (ctx.CRITICAL() != null) {
+      return 2;
+    } else if (ctx.ERRORS() != null) {
+      return 3;
+    } else if (ctx.WARNING() != null) {
+      return 4;
+    } else if (ctx.NOTIFICATIONS() != null) {
+      return 5;
+    } else if (ctx.INFORMATIONAL() != null) {
+      return 6;
+    } else {
+      assert ctx.DEBUGGING() != null;
+      return 7;
     }
   }
 

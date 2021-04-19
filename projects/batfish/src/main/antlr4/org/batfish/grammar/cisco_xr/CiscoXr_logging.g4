@@ -30,21 +30,32 @@ logging_address
    )* NEWLINE
 ;
 
-logging_archive
+logging_archive: ARCHIVE null_rest_of_line logging_archive_inner*;
+
+logging_archive_inner
 :
-   ARCHIVE null_rest_of_line
-   (
-      logging_archive_null
-   )*
+  logging_archive_no
+  | logging_archive_null
+;
+
+logging_archive_no
+:
+  NO
+  (
+    logging_archive_null
+  )
 ;
 
 logging_archive_null
 :
-   NO?
    (
       ARCHIVE_LENGTH
+      | ARCHIVE_SIZE
       | DEVICE
+      | FILE_SIZE
       | FREQUENCY
+      | SEVERITY
+      | THRESHOLD
    ) null_rest_of_line
 ;
 
@@ -52,164 +63,86 @@ logging_buffered
 :
    BUFFERED
    (
-      (
-         DISCRIMINATOR descr = variable
-      )? size = uint_legacy? logging_severity?
-   ) NEWLINE
+     logging_buffered_buffer_size
+     | logging_buffered_discriminator
+     | logging_buffered_set_severity
+   )
 ;
 
-logging_common
+logging_buffered_buffer_size: logging_buffer_size NEWLINE;
+
+logging_buffer_size
 :
-   logging_address
-   | logging_archive
-   | logging_buffered
-   | logging_console
-   | logging_device_id
-   | logging_enable
-   | logging_format
-   | logging_host
-   | logging_message
-   | logging_null
-   | logging_on
-   | logging_queue
-   | logging_server
-   | logging_source_interface
-   | logging_suppress
-   | logging_trap
+  // 2097152-125000000
+  uint32
+;
+
+logging_buffered_discriminator: DISCRIMINATOR NEWLINE discriminator_inner*;
+
+discriminator_inner: discriminator_null;
+
+discriminator_null
+:
+  (
+    MATCH1
+    | MATCH2
+    | MATCH3
+    | NOMATCH1
+    | NOMATCH2
+    | NOMATCH3
+  ) null_rest_of_line
+;
+
+logging_buffered_set_severity: logging_buffered_severity NEWLINE;
+
+logging_buffered_severity
+:
+  ALERTS
+  | CRITICAL
+  | DEBUGGING
+  | EMERGENCIES
+  | ERRORS
+  | INFORMATIONAL
+  | NOTIFICATIONS
+  | WARNINGS
 ;
 
 logging_console
 :
-   CONSOLE
-   (
-      DISABLE
-      | logging_severity
-   )?
-   (
-      EXCEPT ERRORS
-   )? NEWLINE
+  CONSOLE
+  (
+    logging_console_disable
+    | logging_console_discriminator
+    | logging_console_set_severity
+  )
 ;
 
-logging_device_id
-:
-   DEVICE_ID
-   (
-      CLUSTER_ID
-      | CONTEXT_NAME
-      | HOSTNAME
-      | (IPADDRESS variable)
-      | (STRING variable)
-   ) NEWLINE
-;
+logging_console_disable: DISABLE NEWLINE;
 
-logging_enable
-:
-   ENABLE NEWLINE
-;
+logging_console_discriminator: DISCRIMINATOR NEWLINE discriminator_inner*;
 
-logging_format
-:
-   FORMAT
-   (
-      (
-         HOSTNAME FQDN
-      )
-      |
-      (
-         TIMESTAMP
-         (
-            HIGH_RESOLUTION
-            |
-            (
-               TRADITIONAL ~NEWLINE*
-            )
-         )
-      )
-   ) NEWLINE
-;
+logging_console_set_severity: logging_console_severity NEWLINE;
 
-logging_host
+logging_console_severity
 :
-   HOST iname = variable? hostname = variable
-   (
-      VRF vrf = variable
-   )?
-   (
-      DISCRIMINATOR descr = variable
-   )?
-   (
-      TRANSPORT
-      (
-         TCP
-         | UDP
-      )
-   )?
-   (
-      PORT
-      (
-         DEFAULT
-         | uint_legacy
-      )
-   )?
-   (
-      FACILITY name = variable
-   )? NEWLINE
-;
-
-logging_message
-:
-   MESSAGE (syslog_id = uint_legacy) (LEVEL level = variable)? STANDBY? NEWLINE
+  ALERTS
+  | CRITICAL
+  | DEBUGGING
+  | EMERGENCIES
+  | ERRORS
+  | INFORMATIONAL
+  | NOTIFICATIONS
+  | WARNING
 ;
 
 logging_null
 :
    (
-      ALARM
-      | ASDM
-      | ASDM_BUFFER_SIZE
-      | BUFFER_SIZE
-      | COUNT
-      | CMTS
-      | DEBUG_TRACE
-      | DISCRIMINATOR
-      | ESM
-      | EVENT
-      | EVENTS
-      | FACILITY
+      FACILITY
       | HISTORY
       | HOSTNAMEPREFIX
-      | IP
-      | LEVEL
-      | LINECARD
-      | LOCAL_VOLATILE
-      | LOGFILE
-      | MESSAGE_COUNTER
       | MONITOR
-      | ORIGIN_ID
-      | PERMIT_HOSTDOWN
-      | PROPRIETARY
-      | ORIGIN_ID
-      | OVERRIDE
-      | QUEUE_LIMIT
-      | RATE_LIMIT
-      | SEQUENCE_NUMS
-      | SERVER_ARP
-      | SNMP_AUTHFAIL
-      | SYNCHRONOUS
-      | SYSLOG
-      | TIMESTAMP
-      | USERINFO
    ) null_rest_of_line
-;
-
-logging_on
-:
-   ON NEWLINE
-;
-
-logging_queue
-:
-   QUEUE (size = uint_legacy)? NEWLINE
 ;
 
 logging_severity
@@ -223,15 +156,6 @@ logging_severity
    | INFORMATIONAL
    | NOTIFICATIONS
    | WARNINGS
-;
-
-logging_server
-:
-   SERVER hostname =
-   (
-      IP_ADDRESS
-      | IPV6_ADDRESS
-   ) null_rest_of_line
 ;
 
 logging_source_interface
@@ -262,13 +186,67 @@ logging_suppress_null
 
 logging_trap
 :
-   TRAP logging_severity? NEWLINE
+  TRAP
+  (
+    logging_trap_disable
+    | logging_trap_set_severity
+  )
+;
+
+logging_trap_disable: DISABLE NEWLINE;
+
+logging_trap_set_severity: logging_trap_severity NEWLINE;
+
+logging_trap_severity
+:
+  ALERTS
+  | CRITICAL
+  | DEBUGGING
+  | EMERGENCIES
+  | ERRORS
+  | INFORMATIONAL
+  | NOTIFICATIONS
+  | WARNING
 ;
 
 s_logging
 :
-   NO? LOGGING
-   (
-      logging_common
-   )
+  LOGGING
+  (
+    logging_address
+    | logging_archive
+    | logging_buffered
+    | logging_console
+    | logging_events
+    | logging_null
+    | logging_source_interface
+    | logging_suppress
+    | logging_trap
+  )
+;
+
+logging_events
+:
+  EVENTS
+  (
+    logging_events_filter
+    | logging_events_null
+  )
+;
+
+logging_events_filter: FILTER NEWLINE logging_events_filter_inner*;
+
+logging_events_filter_inner: logging_events_filter_null;
+
+logging_events_filter_null: MATCH null_rest_of_line;
+
+logging_events_null
+:
+  (
+    BUFFER_SIZE
+    | DISPLAY_LOCATION
+    | LEVEL
+    | LINK_STATUS
+    | THRESHOLD
+  ) null_rest_of_line
 ;
