@@ -1,6 +1,7 @@
 package org.batfish.minesweeper;
 
 import static org.batfish.minesweeper.CommunityVar.Type.EXACT;
+import static org.batfish.minesweeper.CommunityVar.Type.REGEX;
 
 import com.google.common.base.MoreObjects;
 import dk.brics.automaton.Automaton;
@@ -13,24 +14,20 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
 
 /**
- * Representation of a community variable for the symbolic encoding. Configuration languages allow
- * users match community values using either <b>exact matches</b> or <b>regular expression</b>
- * matches. For example, a regular expression match such as .*:65001 will match any community string
- * that ends with 65001.
+ * Representation of a community literal/regex for the symbolic analysis. Configuration languages
+ * allow users to match community values using either <b>exact matches</b> or <b>regular
+ * expression</b> matches. For example, a regular expression match such as .*:65001 will match any
+ * community string that ends with 65001.
  *
- * <p>To encode community semantics, the model introduces a single new boolean variable for every
- * exact match, and two new boolean variables for every regex match. The first variable says whether
- * there is a community value that matches the regex, but is not specified in the configuration
- * (e.g., came from a neighbor). The second variable says if the regex match is successful, which is
- * based on both the communities in the configuration as well as other communities possibly sent by
- * neighbors.
+ * <p>Currently we support standard, extended, and large community literals, but regexes are assumed
+ * by the analysis to only match against standard communities.
  *
  * @author Ryan Beckett
  */
 @ParametersAreNonnullByDefault
 public final class CommunityVar extends SymbolicRegex implements Comparable<CommunityVar> {
 
-  public static final CommunityVar ALL_COMMUNITIES = CommunityVar.from(".*");
+  public static final CommunityVar ALL_STANDARD_COMMUNITIES = CommunityVar.from(".*");
 
   private static final Comparator<CommunityVar> COMPARATOR =
       Comparator.comparing(CommunityVar::getType)
@@ -40,8 +37,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
 
   public enum Type {
     EXACT,
-    REGEX,
-    OTHER
+    REGEX
   }
 
   @Nonnull private final Type _type;
@@ -49,27 +45,20 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
 
   @Nonnull private static final String NUM_REGEX = "(0|[1-9][0-9]*)";
 
-  // a regex that represents the language of community literals supported by Batfish
-  // see Community::matchString() and its implementations
+  // a regex that represents the syntax of standard community literals supported by Batfish
+  // see StandardCommunity::matchString()
   @Nonnull
   private static final String COMMUNITY_REGEX =
       // start-of-string character
       "^"
-          +
-          // standard and extended communities
-          "("
           + String.join(":", NUM_REGEX, NUM_REGEX)
-          + "|"
-          // large communities
-          + String.join(":", "large", NUM_REGEX, NUM_REGEX, NUM_REGEX)
-          + ")"
           // end-of-string character
           + "$";
 
   /**
-   * When converting a community variable to an automaton (see toAutomaton()), we intersect with
-   * this automaton, which represents the language of community literals supported by Batfish. Doing
-   * so serves two purposes. First, it is necessary for correctness of the symbolic analysis. For
+   * When converting a community regex to an automaton (see toAutomaton()), we intersect with this
+   * automaton, which represents the syntax of standard communities supported by Batfish. Doing so
+   * serves two purposes. First, it is necessary for correctness of the symbolic analysis. For
    * example, a regex like ".*" does not actually match any possible string since communities cannot
    * be arbitrary strings. Second, it ensures that when we solve for community literals that match
    * regexes, we will get examples that are sensible and also able to be parsed by Batfish.
@@ -84,19 +73,14 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
 
   /** Create a community var of type {@link Type#REGEX} */
   public static CommunityVar from(String regex) {
-    return new CommunityVar(Type.REGEX, regex, null);
+    return new CommunityVar(REGEX, regex, null);
   }
 
   /**
-   * Create a community var of type {@link Type#REGEX} based on a literal {@link Community} value
+   * Create a community var of type {@link Type#EXACT} based on a literal {@link Community} value
    */
   public static CommunityVar from(Community literalCommunity) {
-    return from("^" + literalCommunity.matchString() + "$");
-  }
-
-  /** Create a community var of type {@link Type#OTHER} based on a REGEX community var. */
-  public static CommunityVar other(String regex) {
-    return new CommunityVar(Type.OTHER, regex, null);
+    return new CommunityVar(EXACT, "^" + literalCommunity.matchString() + "$", literalCommunity);
   }
 
   @Nonnull
@@ -118,8 +102,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
   public Automaton toAutomaton() {
     String regex = _regex;
     if (_type == EXACT) {
-      // to turn a literal into a regex, add the start-of-string and end-of-string characters
-      regex = "^" + "(" + regex + ")" + "$";
+      return new RegExp(regex).toAutomaton();
     } else {
       /**
        * A regex need only match a portion of a given community string. For example, the regex
@@ -127,7 +110,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
        * another, for example to find their intersection, we need regexes that match completely.
        *
        * <p>The simple approach below converts a possibly-partial regex into a complete one. It
-       * works because below we intersect the resulting automaton with COMMUNITY_FSM, which notably
+       * works because we then intersect the resulting automaton with COMMUNITY_FSM, which notably
        * includes the start-of-string and end-of-string characters. Note that the automaton library
        * treats these as ordinary characters.
        *
@@ -135,8 +118,8 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
        * intersecting with COMMUNITY_FSM accepts the language of the regex "^40:[0-9]+$" as desired.
        */
       regex = ".*" + "(" + regex + ")" + ".*";
+      return new RegExp(regex).toAutomaton().intersection(COMMUNITY_FSM);
     }
-    return new RegExp(regex).toAutomaton().intersection(COMMUNITY_FSM);
   }
 
   @Override

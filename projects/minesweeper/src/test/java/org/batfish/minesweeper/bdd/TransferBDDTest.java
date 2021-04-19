@@ -839,7 +839,7 @@ public class TransferBDDTest {
             null,
             null,
             // add another community to be tracked by the analysis
-            ImmutableSet.of("^3:33$"),
+            ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("3:33"))),
             null);
 
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
@@ -891,7 +891,7 @@ public class TransferBDDTest {
             null,
             null,
             // add another community to be tracked by the analysis
-            ImmutableSet.of("^3:33$"),
+            ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("3:33"))),
             null);
 
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());

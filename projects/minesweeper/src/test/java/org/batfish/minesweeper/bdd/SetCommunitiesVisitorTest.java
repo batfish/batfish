@@ -57,7 +57,9 @@ public class SetCommunitiesVisitorTest {
             _batfish.getSnapshot(),
             null,
             null,
-            ImmutableSet.of("^20:30$", "^21:30$"),
+            ImmutableSet.of(
+                CommunityVar.from(StandardCommunity.parse("20:30")),
+                CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
 
     BDDRoute bddRoute = new BDDRoute(_g);

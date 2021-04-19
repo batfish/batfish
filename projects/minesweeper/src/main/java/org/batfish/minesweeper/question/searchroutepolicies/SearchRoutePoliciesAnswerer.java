@@ -473,7 +473,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _batfish.getSnapshot(),
             null,
             ImmutableSet.of(node),
-            _communityRegexes,
+            _communityRegexes.stream()
+                .map(CommunityVar::from)
+                .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes);
 
     return policies.stream()

@@ -1,16 +1,24 @@
 package org.batfish.minesweeper.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
+import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIn;
@@ -31,6 +39,8 @@ import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedComm
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
+import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 
@@ -42,21 +52,27 @@ import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
  */
 @ParametersAreNonnullByDefault
 public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, Arg> {
+
+  private final Predicate<CommunityVar> _isExtendedCommunityLiteral =
+      c -> c.getType() == Type.EXACT && c.getLiteralValue() instanceof ExtendedCommunity;
+
   @Override
   public BDD visitAllExtendedCommunities(AllExtendedCommunities allExtendedCommunities, Arg arg) {
-    throw new UnsupportedOperationException("Match on all extended communities");
+    // we currently only support extended community literals (as opposed to also regexes)
+    return matchingCommunityVarsToBDD(_isExtendedCommunityLiteral, arg);
   }
 
   @Override
   public BDD visitAllLargeCommunities(AllLargeCommunities allLargeCommunities, Arg arg) {
-    throw new UnsupportedOperationException("Match on all large communities");
+    // we currently only support large community literals (as opposed to also regexes)
+    return matchingCommunityVarsToBDD(
+        c -> c.getType() == Type.EXACT && c.getLiteralValue() instanceof LargeCommunity, arg);
   }
 
   @Override
   public BDD visitAllStandardCommunities(AllStandardCommunities allStandardCommunities, Arg arg) {
-    // TODO: Currently we are treating this as *all* communities, instead of only the
-    // standard ones.
-    return arg.getBDDRoute().anyCommunity();
+    return CommunitySetMatchExprToBDD.communityVarsToBDD(
+        ImmutableSet.of(CommunityVar.ALL_STANDARD_COMMUNITIES), arg);
   }
 
   @Override
@@ -115,6 +131,9 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
 
   @Override
   public BDD visitCommunityMatchRegex(CommunityMatchRegex communityMatchRegex, Arg arg) {
+    checkArgument(
+        communityMatchRegex.getCommunityRendering().equals(ColonSeparatedRendering.instance()),
+        "Currently only supporting community regexes using the colon-separated rendering");
     return CommunitySetMatchExprToBDD.communityVarsToBDD(
         communityMatchRegex.accept(
             new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
@@ -164,15 +183,25 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   @Override
   public BDD visitRouteTargetExtendedCommunities(
       RouteTargetExtendedCommunities routeTargetExtendedCommunities, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return matchingCommunityVarsToBDD(
+        _isExtendedCommunityLiteral.and(
+            c -> {
+              assert c.getLiteralValue() != null;
+              return ((ExtendedCommunity) c.getLiteralValue()).isRouteTarget();
+            }),
+        arg);
   }
 
   @Override
   public BDD visitSiteOfOriginExtendedCommunities(
       SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return matchingCommunityVarsToBDD(
+        _isExtendedCommunityLiteral.and(
+            c -> {
+              assert c.getLiteralValue() != null;
+              return ((ExtendedCommunity) c.getLiteralValue()).isRouteOrigin();
+            }),
+        arg);
   }
 
   @Override
@@ -196,7 +225,21 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   @Override
   public BDD visitVpnDistinguisherExtendedCommunities(
       VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return matchingCommunityVarsToBDD(
+        _isExtendedCommunityLiteral.and(
+            c -> {
+              assert c.getLiteralValue() != null;
+              return ((ExtendedCommunity) c.getLiteralValue()).isVpnDistinguisher();
+            }),
+        arg);
+  }
+
+  // produce a BDD representing the set of community variables that satisfy the given predicate
+  private static BDD matchingCommunityVarsToBDD(Predicate<CommunityVar> predicate, Arg arg) {
+    Set<CommunityVar> cvars =
+        arg.getTransferBDD().getCommunityAtomicPredicates().keySet().stream()
+            .filter(predicate)
+            .collect(ImmutableSet.toImmutableSet());
+    return CommunitySetMatchExprToBDD.communityVarsToBDD(cvars, arg);
   }
 }
