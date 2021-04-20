@@ -38,7 +38,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
       return new SimpleExtendedAccessListServiceSpecifier(this);
     }
 
-    public Builder setDscps(Iterable<Integer> dscps) {
+    public Builder setDscps(@Nonnull Iterable<Integer> dscps) {
       _dscps = ImmutableSet.copyOf(dscps);
       return this;
     }
