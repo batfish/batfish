@@ -8,7 +8,7 @@ options {
 
 ipv4_access_list
 :
-  ACCESS_LIST name = variable_aclname NEWLINE
+  ACCESS_LIST name = access_list_name NEWLINE
   (
     extended_access_list_tail
     | extended_access_list_null_tail
@@ -17,7 +17,7 @@ ipv4_access_list
 
 ipv6_access_list
 :
-  ACCESS_LIST name = variable_aclname NEWLINE
+  ACCESS_LIST name = access_list_name NEWLINE
   (
     extended_ipv6_access_list_tail
     | extended_access_list_null_tail
@@ -26,12 +26,12 @@ ipv6_access_list
 
 no_ipv4_access_list
 :
-  ACCESS_LIST name = variable_aclname NEWLINE
+  ACCESS_LIST name = access_list_name NEWLINE
 ;
 
 no_ipv6_access_list
 :
-  ACCESS_LIST name = variable_aclname NEWLINE
+  ACCESS_LIST name = access_list_name NEWLINE
 ;
 
 access_list_ip_range
@@ -469,11 +469,6 @@ no_ip_prefix_list_stanza
    NO IP PREFIX_LIST name = variable NEWLINE
 ;
 
-null_as_path_regex
-:
-   ~NEWLINE*
-;
-
 null_irs_stanza
 :
    NO?
@@ -536,7 +531,7 @@ rsvp_stanza
 
 s_ethernet_services
 :
-   ETHERNET_SERVICES ACCESS_LIST name = variable_permissive NEWLINE
+   ETHERNET_SERVICES ACCESS_LIST name = access_list_name NEWLINE
    s_ethernet_services_tail*
 ;
 

@@ -132,82 +132,11 @@
       ],
       "textDesc" : "Display diff of RIB routes"
     },
-    "rows" : [
-      {
-        "Node" : {
-          "id" : "node-as1border2",
-          "name" : "as1border2"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.0/8",
-        "Entry_Presence" : "Only in Snapshot",
-        "Snapshot_Next_Hop_IP" : "10.14.22.4",
-        "Snapshot_Protocol" : "bgp",
-        "Snapshot_Next_Hop" : null,
-        "Snapshot_Next_Hop_Interface" : "dynamic",
-        "Snapshot_Metric" : 20,
-        "Snapshot_Admin_Distance" : 20,
-        "Snapshot_Tag" : null,
-        "Reference_Next_Hop" : null,
-        "Reference_Next_Hop_Interface" : null,
-        "Reference_Metric" : null,
-        "Reference_Admin_Distance" : null,
-        "Reference_Tag" : null,
-        "Reference_Next_Hop_IP" : null,
-        "Reference_Protocol" : null
-      },
-      {
-        "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.0/8",
-        "Entry_Presence" : "Only in Snapshot",
-        "Snapshot_Next_Hop_IP" : "10.14.22.4",
-        "Snapshot_Protocol" : "ibgp",
-        "Snapshot_Next_Hop" : null,
-        "Snapshot_Next_Hop_Interface" : "dynamic",
-        "Snapshot_Metric" : 20,
-        "Snapshot_Admin_Distance" : 200,
-        "Snapshot_Tag" : null,
-        "Reference_Next_Hop" : null,
-        "Reference_Next_Hop_Interface" : null,
-        "Reference_Metric" : null,
-        "Reference_Admin_Distance" : null,
-        "Reference_Tag" : null,
-        "Reference_Next_Hop_IP" : null,
-        "Reference_Protocol" : null
-      },
-      {
-        "Node" : {
-          "id" : "node-as1core1",
-          "name" : "as1core1"
-        },
-        "VRF" : "default",
-        "Network" : "4.0.0.0/8",
-        "Entry_Presence" : "Only in Snapshot",
-        "Snapshot_Next_Hop_IP" : "10.14.22.4",
-        "Snapshot_Protocol" : "ibgp",
-        "Snapshot_Next_Hop" : null,
-        "Snapshot_Next_Hop_Interface" : "dynamic",
-        "Snapshot_Metric" : 20,
-        "Snapshot_Admin_Distance" : 200,
-        "Snapshot_Tag" : null,
-        "Reference_Next_Hop" : null,
-        "Reference_Next_Hop_Interface" : null,
-        "Reference_Metric" : null,
-        "Reference_Admin_Distance" : null,
-        "Reference_Tag" : null,
-        "Reference_Next_Hop_IP" : null,
-        "Reference_Protocol" : null
-      }
-    ],
     "summary" : {
-      "notes" : "Found 3 results",
+      "notes" : "Found 0 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 3
+      "numResults" : 0
     }
   }
 ]

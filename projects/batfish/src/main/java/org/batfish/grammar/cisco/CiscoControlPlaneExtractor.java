@@ -706,7 +706,6 @@ import org.batfish.grammar.cisco.CiscoParser.No_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.O_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.O_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_icmp_typeContext;
@@ -4844,17 +4843,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
-    CiscoStructureUsage usage = null;
+    CiscoStructureUsage usage;
     if (ctx.IN() != null || ctx.INGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setIncomingFilter(name);
-        usage = INTERFACE_INCOMING_FILTER;
       }
+      usage = INTERFACE_INCOMING_FILTER;
     } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setOutgoingFilter(name);
-        usage = INTERFACE_OUTGOING_FILTER;
       }
+      usage = INTERFACE_OUTGOING_FILTER;
     } else {
       throw new BatfishException("bad direction");
     }
@@ -6995,11 +6994,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.setNtpSourceInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, NTP_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
-  }
-
-  @Override
-  public void exitNull_as_path_regex(Null_as_path_regexContext ctx) {
-    todo(ctx);
   }
 
   @Override

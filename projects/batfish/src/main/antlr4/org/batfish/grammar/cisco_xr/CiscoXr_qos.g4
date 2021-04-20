@@ -64,7 +64,7 @@ cmm_access_group
 
 cmm_access_list
 :
-   ACCESS_LIST name = variable NEWLINE
+   ACCESS_LIST name = access_list_name NEWLINE
 ;
 
 cmm_activated_service_template

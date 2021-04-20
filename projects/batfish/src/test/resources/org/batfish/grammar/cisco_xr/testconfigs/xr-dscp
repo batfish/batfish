@@ -1,0 +1,31 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-dscp
+!
+
+ipv4 access-list ipv4dscpacl
+ permit ipv4 any any dscp af11
+ permit ipv4 any any dscp af12
+ permit ipv4 any any dscp af13
+ permit ipv4 any any dscp af21
+ permit ipv4 any any dscp af22
+ permit ipv4 any any dscp af23
+ permit ipv4 any any dscp af31
+ permit ipv4 any any dscp af32
+ permit ipv4 any any dscp af33
+ permit ipv4 any any dscp af41
+ permit ipv4 any any dscp af42
+ permit ipv4 any any dscp af43
+ permit ipv4 any any dscp cs1
+ permit ipv4 any any dscp cs2
+ permit ipv4 any any dscp cs3
+ permit ipv4 any any dscp cs4
+ permit ipv4 any any dscp cs5
+ permit ipv4 any any dscp cs6
+ permit ipv4 any any dscp cs7
+ permit ipv4 any any dscp default
+ permit ipv4 any any dscp ef
+ permit ipv4 any any dscp 1
+!
+
+end

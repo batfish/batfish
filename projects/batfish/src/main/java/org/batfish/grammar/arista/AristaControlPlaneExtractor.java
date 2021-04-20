@@ -684,7 +684,6 @@ import org.batfish.grammar.arista.AristaParser.Net_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_ip_prefix_list_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.No_route_map_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Ntp_serverContext;
-import org.batfish.grammar.arista.AristaParser.Null_as_path_regexContext;
 import org.batfish.grammar.arista.AristaParser.Origin_expr_literalContext;
 import org.batfish.grammar.arista.AristaParser.Ospf_areaContext;
 import org.batfish.grammar.arista.AristaParser.Passive_iis_stanzaContext;
@@ -5819,11 +5818,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (ctx.PREFER() != null) {
       // TODO: implement
     }
-  }
-
-  @Override
-  public void exitNull_as_path_regex(Null_as_path_regexContext ctx) {
-    todo(ctx);
   }
 
   @Override
