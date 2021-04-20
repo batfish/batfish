@@ -205,7 +205,8 @@ public abstract class VendorConfiguration implements Serializable {
     }
   }
 
-  public void referenceStructure(StructureType type, String name, StructureUsage usage, int line) {
+  public void referenceStructure(
+      @Nonnull StructureType type, @Nonnull String name, @Nonnull StructureUsage usage, int line) {
     SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
         _structureReferences.computeIfAbsent(type, k -> new TreeMap<>());
     SortedMap<StructureUsage, SortedMultiset<Integer>> byUsage =

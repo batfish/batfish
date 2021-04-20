@@ -4843,17 +4843,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
-    CiscoStructureUsage usage = null;
+    CiscoStructureUsage usage;
     if (ctx.IN() != null || ctx.INGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setIncomingFilter(name);
-        usage = INTERFACE_INCOMING_FILTER;
       }
+      usage = INTERFACE_INCOMING_FILTER;
     } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setOutgoingFilter(name);
-        usage = INTERFACE_OUTGOING_FILTER;
       }
+      usage = INTERFACE_OUTGOING_FILTER;
     } else {
       throw new BatfishException("bad direction");
     }
