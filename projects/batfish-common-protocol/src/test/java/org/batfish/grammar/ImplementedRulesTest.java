@@ -4,34 +4,35 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
+import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.junit.Test;
 
 /** Tests of {@link ImplementedRules}. */
 @SuppressWarnings("unused")
 public class ImplementedRulesTest {
-  private static class NoRules {
+  private abstract static class NoRules implements ParseTreeListener {
     public int someOtherMethod() {
       return 5;
     }
   }
 
-  private static class EnterRule {
+  private abstract static class EnterRule implements ParseTreeListener {
     public void enterRule() {}
   }
 
-  private static class EnterAndExit {
+  private abstract static class EnterAndExit implements ParseTreeListener {
     public void enterRule() {}
 
     public void exitRule2() {}
   }
 
-  private static class Collision {
+  private abstract static class Collision implements ParseTreeListener {
     public void enterRule() {}
 
     public void enterRULE() {}
   }
 
-  private static class Extends extends EnterRule {
+  private abstract static class Extends extends EnterRule {
     public void enterRule2() {}
   }
 
