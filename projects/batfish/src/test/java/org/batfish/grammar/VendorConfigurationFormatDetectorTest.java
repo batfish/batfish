@@ -90,7 +90,19 @@ public class VendorConfigurationFormatDetectorTest {
     String xrRancid = "!RANCID-CONTENT-TYPE: cisco-xr\n";
     String xrRancidGeneric = "!RANCID-CONTENT-TYPE: cisco\n" + xr;
 
-    for (String fileText : ImmutableList.of(xr, xrRancid, xrRancidGeneric)) {
+    // Doesn't have IOS XR in it, but indicates XR via other indicators.
+    String rancidGenericBundleEther = "!RANCID-CONTENT-TYPE: cisco\ninterface Bundle-Ether2\n";
+    String rancidGenericRoutePolicy = "!RANCID-CONTENT-TYPE: cisco\nroute-policy foo\nend-policy\n";
+    String rancidGenericPrefixSet = "!RANCID-CONTENT-TYPE: cisco\nprefix-set foo\nend-set\n";
+
+    for (String fileText :
+        ImmutableList.of(
+            xr,
+            xrRancid,
+            xrRancidGeneric,
+            rancidGenericBundleEther,
+            rancidGenericRoutePolicy,
+            rancidGenericPrefixSet)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_IOS_XR));
     }
   }
