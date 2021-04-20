@@ -14,7 +14,7 @@ eos_mlag_domain
 
 eos_mlag_local_interface
 :
-   LOCAL_INTERFACE iface = variable NEWLINE
+   LOCAL_INTERFACE iface = interface_name NEWLINE
 ;
 
 eos_mlag_peer_address
@@ -24,7 +24,7 @@ eos_mlag_peer_address
 
 eos_mlag_peer_link
 :
-   PEER_LINK iface = variable NEWLINE
+   PEER_LINK iface = interface_name NEWLINE
 ;
 
 eos_mlag_reload_delay

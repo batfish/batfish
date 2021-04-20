@@ -2407,7 +2407,9 @@ LOCAL_AS
 
 LOCAL_CASE: 'local-case';
 
-LOCAL_INTERFACE: 'local-interface';
+LOCAL_INTERFACE:
+    'local-interface' -> pushMode ( M_Interface )
+;
 
 LOCAL_IP: 'local-ip';
 
@@ -3235,7 +3237,10 @@ PEER_GATEWAY: 'peer-gateway';
 
 PEER_KEEPALIVE: 'peer-keepalive';
 
-PEER_LINK: 'peer-link';
+PEER_LINK
+:
+   'peer-link'  -> pushMode ( M_Interface )
+;
 
 PEER_MAC_RESOLUTION_TIMEOUT: 'peer-mac-resolution-timeout';
 
