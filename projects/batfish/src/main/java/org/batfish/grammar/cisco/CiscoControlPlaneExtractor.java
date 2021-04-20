@@ -706,7 +706,6 @@ import org.batfish.grammar.cisco.CiscoParser.No_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.O_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.O_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_icmp_typeContext;
@@ -6995,11 +6994,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.setNtpSourceInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, NTP_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
-  }
-
-  @Override
-  public void exitNull_as_path_regex(Null_as_path_regexContext ctx) {
-    todo(ctx);
   }
 
   @Override
