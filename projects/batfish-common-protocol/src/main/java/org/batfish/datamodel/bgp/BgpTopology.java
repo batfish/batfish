@@ -31,7 +31,8 @@ public final class BgpTopology {
 
   @JsonCreator
   private static @Nonnull BgpTopology create(
-      @JsonProperty(PROP_EDGES) List<ValueEdge<BgpPeerConfigId, BgpSessionProperties>> edges,
+      @JsonProperty(PROP_EDGES) @Nullable
+          List<ValueEdge<BgpPeerConfigId, BgpSessionProperties>> edges,
       @JsonProperty(PROP_NODES) @Nullable Set<BgpPeerConfigId> nodes) {
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
