@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-conflict-policy-longest-prefix
+!
+ipv4 conflict-policy longest-prefix
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.2/24
+ no shutdown
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.1/32
+ no shutdown
+!
+
+end

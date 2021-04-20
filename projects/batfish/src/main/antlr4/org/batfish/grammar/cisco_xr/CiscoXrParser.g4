@@ -132,8 +132,19 @@ s_ipv4
   IPV4
   (
     ipv4_access_list
+    | ipv4_conflict_policy
     | ipv4_null
   )
+;
+
+ipv4_conflict_policy
+:
+  CONFLICT_POLICY
+  (
+    HIGHEST_IP
+    | LONGEST_PREFIX
+    | STATIC
+  ) NEWLINE
 ;
 
 ipv4_null
