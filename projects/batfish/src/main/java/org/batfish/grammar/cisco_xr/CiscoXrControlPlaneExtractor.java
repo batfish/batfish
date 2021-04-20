@@ -630,7 +630,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.No_shutdown_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ntp_serverContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ntp_source_interfaceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Og_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ogn_group_objectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ogn_host_ipContext;
@@ -5305,11 +5304,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _configuration.setNtpSourceInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, NTP_SOURCE_INTERFACE, ctx.iname.getStart().getLine());
-  }
-
-  @Override
-  public void exitNull_as_path_regex(Null_as_path_regexContext ctx) {
-    todo(ctx);
   }
 
   @Override
