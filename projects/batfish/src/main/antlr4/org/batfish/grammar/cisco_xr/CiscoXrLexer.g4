@@ -97,7 +97,7 @@ ACCESS_GROUP
   }
 ;
 
-ACCESS_LIST: 'access-list';
+ACCESS_LIST: 'access-list' -> pushMode(M_Word);
 
 ACCESS_LOG: 'access-log';
 
@@ -2305,7 +2305,7 @@ HOLD_QUEUE: 'hold-queue';
 
 HOLDTIME: 'holdtime';
 
-HOMEDIR: 'homedir';
+HOMEDIR: 'homedir' -> pushMode(M_Word);
 
 HOP_LIMIT: 'hop-limit';
 
@@ -3164,6 +3164,8 @@ MAX_METRIC: 'max-metric';
 
 MAX_ROUTE: 'max-route';
 
+MAX_SERVERS: 'max-servers';
+
 MAX_SESSIONS: 'max-sessions';
 
 MAX_TX_POWER: 'max-tx-power';
@@ -3615,6 +3617,8 @@ NO_L4R_SHIM
 :
    'No l4r_shim'
 ;
+
+NO_LIMIT: 'no-limit';
 
 NO_PREPEND: 'no-prepend';
 
@@ -5475,8 +5479,6 @@ TRAFFIC: 'traffic';
 TRAFFIC_ENG: 'traffic-eng';
 
 TRAFFIC_EXPORT: 'traffic-export';
-
-TRAFFIC_FILTER: 'traffic-filter';
 
 TRAFFIC_SHARE: 'traffic-share';
 

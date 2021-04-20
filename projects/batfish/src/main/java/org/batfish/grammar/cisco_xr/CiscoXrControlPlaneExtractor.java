@@ -17,6 +17,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.COMMUNITY
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CRYPTO_MAP_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.EXTCOMMUNITY_SET_RT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_EXPORTER_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_MONITOR_MAP;
@@ -101,8 +102,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_COMMON;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_EGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_ACCESS_GROUP_INGRESS;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_IN;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_SELF_REF;
@@ -483,6 +482,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Distribute_list_is_stanzaConte
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_lookupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_name_serverContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Dscp_numContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Dscp_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Eigrp_metricContext;
@@ -534,7 +534,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_access_groupContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_isis_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_mtuContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_rp_stanzaContext;
@@ -787,6 +786,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rs_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_aaaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_iosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_class_mapContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ethernet_servicesContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_hostnameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_l2tp_classContext;
@@ -1040,6 +1040,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
 
+  private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
   private static final IntegerSpace LOGGING_BUFFER_SIZE_RANGE =
       IntegerSpace.of(Range.closed(2097152, 125000000));
   private static final IntegerSpace PINT16_RANGE = IntegerSpace.of(Range.closed(1, 65535));
@@ -1443,7 +1444,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterIpv4_access_list(Ipv4_access_listContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     _currentIpv4Acl = _configuration.getIpv4Acls().computeIfAbsent(name, Ipv4AccessList::new);
     _configuration.defineStructure(IPV4_ACCESS_LIST, name, ctx);
   }
@@ -1455,7 +1456,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterIpv6_access_list(Ipv6_access_listContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     _currentIpv6Acl = _configuration.getIpv6Acls().computeIfAbsent(name, Ipv6AccessList::new);
     _configuration.defineStructure(IPV6_ACCESS_LIST, name, ctx);
   }
@@ -2336,13 +2337,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitNo_ipv4_access_list(No_ipv4_access_listContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     _configuration.getIpv4Acls().remove(name);
   }
 
   @Override
   public void exitNo_ipv6_access_list(No_ipv6_access_listContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     _configuration.getIpv6Acls().remove(name);
   }
 
@@ -3607,8 +3608,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           icmpType = IcmpType.DESTINATION_UNREACHABLE;
           icmpCode = IcmpCode.DESTINATION_NETWORK_PROHIBITED;
         } else if (feature.DSCP() != null) {
-          int dscpType = toDscpType(feature.dscp_type());
-          dscps.add(dscpType);
+          toDscpType(ctx, feature.dscp_type()).ifPresent(dscps::add);
         } else if (feature.ECE() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
@@ -3831,8 +3831,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                 .setUseAck(true)
                 .build());
       } else if (feature.DSCP() != null) {
-        int dscpType = toDscpType(feature.dscp_type());
-        dscps.add(dscpType);
+        toDscpType(ctx, feature.dscp_type()).ifPresent(dscps::add);
       } else if (feature.ECE() != null) {
         tcpFlags.add(
             TcpFlagsMatchConditions.builder()
@@ -4191,14 +4190,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _configuration.referenceStructure(
           IPV4_ACCESS_LIST, acl, INTERFACE_IP_VERIFY_ACCESS_LIST, line);
     }
-  }
-
-  @Override
-  public void exitIf_ipv6_traffic_filter(If_ipv6_traffic_filterContext ctx) {
-    CiscoXrStructureUsage usage =
-        ctx.IN() != null ? INTERFACE_IPV6_TRAFFIC_FILTER_IN : INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
-    _configuration.referenceStructure(
-        IPV6_ACCESS_LIST, ctx.acl.getText(), usage, ctx.acl.getStart().getLine());
   }
 
   @Override
@@ -6567,12 +6558,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitSsh_server(Ssh_serverContext ctx) {
     if (ctx.acl != null) {
-      String acl = ctx.acl.getText();
+      String acl = toString(ctx.acl);
       int line = ctx.acl.getStart().getLine();
       _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, SSH_IPV4_ACL, line);
     }
     if (ctx.acl6 != null) {
-      String acl6 = ctx.acl6.getText();
+      String acl6 = toString(ctx.acl6);
       int line = ctx.acl6.getStart().getLine();
       _configuration.referenceStructure(IPV6_ACCESS_LIST, acl6, SSH_IPV6_ACL, line);
     }
@@ -7200,10 +7191,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private int toDscpType(Dscp_typeContext ctx) {
+  @Nonnull
+  private Optional<Integer> toDscpType(ParserRuleContext messageCtx, Dscp_typeContext ctx) {
     int val;
-    if (ctx.uint_legacy() != null) {
-      val = toInteger(ctx.uint_legacy());
+    if (ctx.dscp_num() != null) {
+      return toInteger(messageCtx, ctx.dscp_num());
     } else if (ctx.AF11() != null) {
       val = DscpType.AF11.number();
     } else if (ctx.AF12() != null) {
@@ -7244,12 +7236,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       val = DscpType.CS7.number();
     } else if (ctx.DEFAULT() != null) {
       val = DscpType.DEFAULT.number();
-    } else if (ctx.EF() != null) {
-      val = DscpType.EF.number();
     } else {
-      throw convError(DscpType.class, ctx);
+      assert ctx.EF() != null;
+      val = DscpType.EF.number();
     }
-    return val;
+    return Optional.of(val);
+  }
+
+  @Nonnull
+  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Dscp_numContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx.uint8(), DSCP_RANGE, "DSCP number");
   }
 
   private SwitchportEncapsulationType toEncapsulation(Switchport_trunk_encapsulationContext ctx) {
@@ -9079,5 +9075,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       assert ctx.ip != null;
       return toIp(ctx.ip).asLong();
     }
+  }
+
+  @Override
+  public void enterS_ethernet_services(S_ethernet_servicesContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineStructure(ETHERNET_SERVICES_ACCESS_LIST, name, ctx);
   }
 }
