@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-ethernet-services
+!
+ethernet-services access-list esacl1
+ 10 deny host 0000.0000.0000 any
+ 20 permit any any
+!
+end

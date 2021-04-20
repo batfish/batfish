@@ -120,7 +120,7 @@ double_quoted_string
 
 dscp_type
 :
-   uint_legacy
+   dscp_num
    | AF11
    | AF12
    | AF13
@@ -142,6 +142,12 @@ dscp_type
    | CS7
    | DEFAULT
    | EF
+;
+
+dscp_num
+:
+  // 0-63
+  uint8
 ;
 
 ec_literal
@@ -614,13 +620,6 @@ switchport_trunk_encapsulation
 variable
 :
    ~NEWLINE
-;
-
-variable_aclname
-:
-   (
-      ~( ETH | IN | NEWLINE | OUT | REMARK | SESSION | WS )
-   )+
 ;
 
 variable_community_name

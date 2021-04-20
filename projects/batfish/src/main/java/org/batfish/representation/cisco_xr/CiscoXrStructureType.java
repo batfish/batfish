@@ -22,6 +22,7 @@ public enum CiscoXrStructureType implements StructureType {
   CRYPTO_DYNAMIC_MAP_SET("crypto-dynamic-map-set"),
   CRYPTO_MAP_SET("crypto-map-set"),
   DYNAMIC_TEMPLATE("dynamic-template"),
+  ETHERNET_SERVICES_ACCESS_LIST("ethernet-services access-list"),
   EXTCOMMUNITY_SET_RT("extcommunity-set rt"),
   FLOW_EXPORTER_MAP("flow exporter-map"),
   FLOW_MONITOR_MAP("flow monitor-map"),

@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-tftp
+!
+tftp client dscp 0
+tftp client retries 0
+tftp client source-interface Loopback0
+tftp client timeout 0
+tftp client vrf v1 dscp 0
+tftp client vrf v1 retries 0
+tftp client vrf v1 source-interface 0
+tftp client vrf v1 timeout 0
+!
+tftp vrf default ipv4 server homedir foo max-servers 1 access-list ipv4acl1 dscp default
+tftp vrf default ipv6 server homedir foo max-servers 1 access-list ipv6acl1 dscp default
+!
+end

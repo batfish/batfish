@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
@@ -21,6 +22,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCo
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_EXPORTER_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_MONITOR_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
@@ -97,6 +99,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -110,6 +113,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -126,6 +130,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
@@ -155,6 +160,7 @@ import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
 import org.batfish.representation.cisco_xr.Ipv4AccessList;
+import org.batfish.representation.cisco_xr.Ipv4AccessListLine;
 import org.batfish.representation.cisco_xr.Ipv6AccessList;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint16Range;
@@ -174,6 +180,7 @@ import org.batfish.representation.cisco_xr.RoutePolicy;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
+import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
 import org.batfish.representation.cisco_xr.WildcardUint32RangeExpr;
@@ -1750,9 +1757,179 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testTftpParsing() {
+    String hostname = "xr-tftp";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testEthernetServicesDefinitions() {
+    String hostname = "xr-ethernet-services";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, ETHERNET_SERVICES_ACCESS_LIST, "esacl1"));
+  }
+
+  @Test
   public void testLogging() {
     String hostname = "xr-logging";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testDscpExtraction() {
+    String hostname = "xr-dscp";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    String aclName = "ipv4dscpacl";
+
+    assertThat(vc.getIpv4Acls(), hasKeys(aclName));
+
+    Ipv4AccessList acl = vc.getIpv4Acls().get(aclName);
+    Iterator<Ipv4AccessListLine> i = acl.getLines().iterator();
+    acl.getLines()
+        .forEach(
+            line ->
+                assertThat(
+                    line.getServiceSpecifier(),
+                    instanceOf(SimpleExtendedAccessListServiceSpecifier.class)));
+    Ipv4AccessListLine line;
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF11.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF12.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF13.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF21.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF22.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF23.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF31.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF32.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF33.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF41.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF42.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.AF43.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.CS1.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.CS2.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.CS3.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.CS4.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.CS5.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.CS6.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.CS7.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.DEFAULT.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(DscpType.EF.number()));
+    }
+    {
+      line = i.next();
+      assertThat(
+          ((SimpleExtendedAccessListServiceSpecifier) line.getServiceSpecifier()).getDscps(),
+          contains(1));
+    }
+    assertFalse(i.hasNext());
   }
 }

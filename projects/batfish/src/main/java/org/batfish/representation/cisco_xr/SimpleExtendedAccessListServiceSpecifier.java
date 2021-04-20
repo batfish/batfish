@@ -18,7 +18,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
   public static class Builder {
 
-    private Set<Integer> _dscps = ImmutableSet.of();
+    @Nonnull private Set<Integer> _dscps = ImmutableSet.of();
 
     private List<SubRange> _dstPortRanges = ImmutableList.of();
 
@@ -38,7 +38,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
       return new SimpleExtendedAccessListServiceSpecifier(this);
     }
 
-    public Builder setDscps(Iterable<Integer> dscps) {
+    public Builder setDscps(@Nonnull Iterable<Integer> dscps) {
       _dscps = ImmutableSet.copyOf(dscps);
       return this;
     }
@@ -83,7 +83,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
     return new Builder();
   }
 
-  private final Set<Integer> _dscps;
+  @Nonnull private final Set<Integer> _dscps;
 
   private final List<SubRange> _dstPortRanges;
 
@@ -108,6 +108,11 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
     _protocol = builder._protocol;
     _srcPortRanges = builder._srcPortRanges;
     _tcpFlags = builder._tcpFlags;
+  }
+
+  @Nonnull
+  public Set<Integer> getDscps() {
+    return _dscps;
   }
 
   @Override

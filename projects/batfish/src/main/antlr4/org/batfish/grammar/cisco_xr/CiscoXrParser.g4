@@ -32,6 +32,7 @@ CiscoXr_rip,
 CiscoXr_rpl,
 CiscoXr_snmp,
 CiscoXr_static,
+CiscoXr_tftp,
 CiscoXr_vrf;
 
 
@@ -76,6 +77,7 @@ statement
   | s_taskgroup
   | s_tcp
   | s_telnet
+  | s_tftp
   | s_usergroup
 ;
 
@@ -1015,11 +1017,11 @@ ssh_server
    SERVER
    (
       (
-         IPV4 ACCESS_LIST acl = variable
+         IPV4 ACCESS_LIST acl = access_list_name
       )
       |
       (
-         IPV6 ACCESS_LIST acl6 = variable
+         IPV6 ACCESS_LIST acl6 = access_list_name
       )
       | LOGGING
       |
