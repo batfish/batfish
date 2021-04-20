@@ -44567,8 +44567,8 @@
             "    (s_ethernet_services",
             "      ETHERNET_SERVICES:'ethernet-services'",
             "      ACCESS_LIST:'access-list'",
-            "      name = (variable_permissive",
-            "        VARIABLE:'sc-coe')",
+            "      name = (access_list_name",
+            "        WORD:'sc-coe'  <== mode:M_Word)",
             "      NEWLINE:'\\n'",
             "      (s_ethernet_services_tail",
             "        num = (uint_legacy",
@@ -44596,8 +44596,8 @@
             "      IPV4:'ipv4'",
             "      (ipv4_access_list",
             "        ACCESS_LIST:'access-list'",
-            "        name = (variable_aclname",
-            "          VARIABLE:'DENY_ALL')",
+            "        name = (access_list_name",
+            "          WORD:'DENY_ALL'  <== mode:M_Word)",
             "        NEWLINE:'\\n'",
             "        (extended_access_list_tail",
             "          num = (uint_legacy",
@@ -46908,8 +46908,8 @@
             "          WORD:'default'  <== mode:M_Word)",
             "        IPV4:'ipv4'",
             "        ACCESS_LIST:'access-list'",
-            "        acl = (variable",
-            "          VARIABLE:'GNS-VTY-ACCESS')",
+            "        acl = (access_list_name",
+            "          WORD:'GNS-VTY-ACCESS'  <== mode:M_Word)",
             "        NEWLINE:'\\n')))",
             "  (statement",
             "    (s_cef",
@@ -49410,12 +49410,12 @@
             "          WORD:'default'  <== mode:M_Word)",
             "        IPV4:'ipv4'",
             "        ACCESS_LIST:'access-list'",
-            "        acl = (variable",
-            "          VARIABLE:'ACL99')",
+            "        acl = (access_list_name",
+            "          WORD:'ACL99'  <== mode:M_Word)",
             "        IPV6:'ipv6'",
             "        ACCESS_LIST:'access-list'",
-            "        acl6 = (variable",
-            "          VARIABLE:'ipv6-vty-acl')",
+            "        acl6 = (access_list_name",
+            "          WORD:'ipv6-vty-acl'  <== mode:M_Word)",
             "        NEWLINE:'\\n')))",
             "  (stanza",
             "    (s_ssh",
@@ -72883,6 +72883,12 @@
           }
         },
         "configs/ios_xr_acl" : {
+          "ethernet-services access-list" : {
+            "sc-coe" : {
+              "definitionLines" : "5-7",
+              "numReferrers" : 0
+            }
+          },
           "ipv4 access-list" : {
             "DENY_ALL" : {
               "definitionLines" : "9-10",

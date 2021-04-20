@@ -533,7 +533,6 @@ if_ipv6_inner
    if_ipv6_access_group
    | if_ipv6_address
    | if_ipv6_enable
-   | if_ipv6_traffic_filter
 ;
 
 if_ipv6_access_group
@@ -567,11 +566,6 @@ ipv6_interface_address_length
 if_ipv6_enable
 :
    ENABLE NEWLINE
-;
-
-if_ipv6_traffic_filter
-:
-   TRAFFIC_FILTER acl = variable_aclname (IN | OUT) NEWLINE
 ;
 
 if_isis_circuit_type
@@ -1488,7 +1482,7 @@ ifigmp_host_proxy
 
 ifigmphp_access_list
 :
-   ACCESS_LIST name = variable NEWLINE
+   ACCESS_LIST name = access_list_name NEWLINE
 ;
 
 ifigmphp_null
