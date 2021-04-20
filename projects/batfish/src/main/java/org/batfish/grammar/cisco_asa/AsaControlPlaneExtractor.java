@@ -4988,12 +4988,13 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
           String.format("Access-group refers to interface '%s' which does not exist", ifaceName));
       return;
     }
-    AsaStructureUsage usage = null;
+    AsaStructureUsage usage;
     String aclName = ctx.name.getText();
     if (ctx.IN() != null) {
       iface.setIncomingFilter(aclName);
       usage = INTERFACE_INCOMING_FILTER;
-    } else if (ctx.OUT() != null) {
+    } else {
+      assert ctx.OUT() != null;
       iface.setOutgoingFilter(aclName);
       usage = INTERFACE_OUTGOING_FILTER;
     }
@@ -5014,17 +5015,17 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
-    AsaStructureUsage usage = null;
+    AsaStructureUsage usage;
     if (ctx.IN() != null || ctx.INGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setIncomingFilter(name);
-        usage = INTERFACE_INCOMING_FILTER;
       }
+      usage = INTERFACE_INCOMING_FILTER;
     } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setOutgoingFilter(name);
-        usage = INTERFACE_OUTGOING_FILTER;
       }
+      usage = INTERFACE_OUTGOING_FILTER;
     } else {
       throw new BatfishException("bad direction");
     }
