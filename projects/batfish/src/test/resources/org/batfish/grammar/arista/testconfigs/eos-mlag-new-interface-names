@@ -1,0 +1,8 @@
+! boot system flash:/EOS-4.23.1F.swi
+!
+hostname eos-mlag-new-interface-names
+!
+mlag configuration
+  local-interface vlan 4094
+  peer-link port-channel 1
+!

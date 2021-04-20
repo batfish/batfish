@@ -952,6 +952,15 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testEosMlagExtraction_newInterfaceNames() {
+    AristaConfiguration c = parseVendorConfig("eos-mlag-new-interface-names");
+    MlagConfiguration mlag = c.getEosMlagConfiguration();
+    assertThat(mlag, notNullValue());
+    assertThat(mlag.getLocalInterface(), equalTo("Vlan4094"));
+    assertThat(mlag.getPeerLink(), equalTo("Port-Channel1"));
+  }
+
+  @Test
   public void testEosMlagConversion() throws IOException {
     Configuration c = parseConfig("eos-mlag");
 
