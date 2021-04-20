@@ -140,7 +140,6 @@ ipv4_null
 :
   (
     NETMASK_FORMAT
-    | UNNUMBERED
     | VIRTUAL
   ) null_rest_of_line
 ;
