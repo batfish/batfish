@@ -141,6 +141,9 @@ public final class BgpTopologyUtils {
       @Nullable TracerouteEngine tracerouteEngine,
       @Nullable Layer2Topology layer2Topology) {
     checkArgument(
+        !checkReachability || !keepInvalid,
+        "Cannot check reachability while keeping invalid peers");
+    checkArgument(
         !checkReachability || tracerouteEngine != null,
         "Cannot check reachability without a traceroute engine");
     Span span = GlobalTracer.get().buildSpan("BgpTopologyUtils.initBgpTopology").start();
