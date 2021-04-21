@@ -1990,4 +1990,25 @@ public final class XrGrammarTest {
             OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
             Direction.OUT));
   }
+
+  @Test
+  public void testConflictPolicyHighestIpParsing() {
+    String hostname = "xr-conflict-policy-highest-ip";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testConflictPolicyLongestPrefixParsing() {
+    String hostname = "xr-conflict-policy-longest-prefix";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testConflictPolicyStaticParsing() {
+    String hostname = "xr-conflict-policy-static";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
 }

@@ -353,7 +353,10 @@ final class Conversions {
     } else {
       newNeighborBuilder =
           BgpActivePeerConfig.builder()
-              .setRemoteAs(neighbor.getRemoteAs())
+              .setRemoteAsns(
+                  Optional.ofNullable(neighbor.getRemoteAs())
+                      .map(LongSpace::of)
+                      .orElse(LongSpace.EMPTY))
               .setPeerAddress(prefix.getStartIp());
       // No remote AS set.
       if (neighbor.getRemoteAs() == null) {

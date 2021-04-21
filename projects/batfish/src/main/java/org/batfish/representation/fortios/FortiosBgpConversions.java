@@ -17,6 +17,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -244,7 +245,10 @@ public final class FortiosBgpConversions {
           .setLocalIp(localIp)
           .setLocalAs(localAs)
           .setPeerAddress(neighbor.getIp())
-          .setRemoteAs(neighbor.getRemoteAs())
+          .setRemoteAsns(
+              Optional.ofNullable(neighbor.getRemoteAs())
+                  .map(LongSpace::of)
+                  .orElse(LongSpace.EMPTY))
           .setBgpProcess(viProc)
           .setIpv4UnicastAddressFamily(
               Ipv4UnicastAddressFamily.builder()

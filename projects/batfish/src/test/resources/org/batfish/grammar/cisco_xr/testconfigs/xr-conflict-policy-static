@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-conflict-policy-static
+!
+ipv4 conflict-policy static
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.1/24
+ no shutdown
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.2/24
+ no shutdown
+!
+
+end

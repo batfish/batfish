@@ -1554,7 +1554,10 @@ public final class AsaConfiguration extends VendorConfiguration {
         newNeighborBuilder =
             BgpActivePeerConfig.builder()
                 .setPeerAddress(ipg.getIp())
-                .setRemoteAs(lpg.getRemoteAs());
+                .setRemoteAsns(
+                    Optional.ofNullable(lpg.getRemoteAs())
+                        .map(LongSpace::of)
+                        .orElse(LongSpace.EMPTY));
       } else if (lpg instanceof DynamicIpBgpPeerGroup) {
         DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
         LongSpace.Builder asns = LongSpace.builder().including(dpg.getRemoteAs());

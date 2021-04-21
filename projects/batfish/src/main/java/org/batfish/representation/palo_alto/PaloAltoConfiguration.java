@@ -114,6 +114,7 @@ import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
@@ -2401,7 +2402,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             // "number + 2" computation
             // See https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClKkCAK
             .setEbgpMultihop(true)
-            .setRemoteAs(peerAs);
+            .setRemoteAsns(Optional.ofNullable(peerAs).map(LongSpace::of).orElse(LongSpace.EMPTY));
     if (peer.getLocalAddress() != null) {
       peerB.setLocalIp(peer.getLocalAddress());
     } else {
