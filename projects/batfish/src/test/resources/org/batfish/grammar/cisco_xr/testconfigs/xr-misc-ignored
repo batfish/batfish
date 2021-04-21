@@ -17,6 +17,9 @@ cef load-balancing fields L4
 clock timezone UTC UTC
 configuration display interface slot-order
 !
+interface TenGigE0/0/0/13
+ ipv6 nd suppress-ra
+!
 ipv4 netmask-format bit-count
 ipv4 virtual address vrf mgmt 1.2.3.4/5
 ipv4 virtual address use-as-src-addr

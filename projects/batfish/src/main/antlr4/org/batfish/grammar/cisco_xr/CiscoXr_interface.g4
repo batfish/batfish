@@ -533,6 +533,7 @@ if_ipv6_inner
    if_ipv6_access_group
    | if_ipv6_address
    | if_ipv6_enable
+   | if_ipv6_nd
 ;
 
 if_ipv6_access_group
@@ -566,6 +567,11 @@ ipv6_interface_address_length
 if_ipv6_enable
 :
    ENABLE NEWLINE
+;
+
+if_ipv6_nd
+:
+  ND SUPPRESS_RA NEWLINE
 ;
 
 if_isis_circuit_type
