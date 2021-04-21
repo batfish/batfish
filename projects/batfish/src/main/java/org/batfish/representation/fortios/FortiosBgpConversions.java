@@ -236,9 +236,8 @@ public final class FortiosBgpConversions {
       if (localIp == null) {
         w.redFlag(
             String.format(
-                "Ignoring BGP neighbor %s: Update-source %s has no address",
-                remoteIp, updateSource.getName()));
-        continue;
+                "BGP neighbor %s in vrf %s: Update-source %s has no address",
+                remoteIp, vrf, updateSource.getName()));
       }
       BgpActivePeerConfig.builder()
           .setLocalIp(localIp)
