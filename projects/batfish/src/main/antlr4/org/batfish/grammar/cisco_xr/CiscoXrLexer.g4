@@ -1512,7 +1512,7 @@ DISTANCE: 'distance';
 
 DISTRIBUTE: 'distribute';
 
-DISTRIBUTE_LIST: 'distribute-list';
+DISTRIBUTE_LIST: 'distribute-list' -> pushMode(M_DistributeList);
 
 DISTRIBUTION: 'distribution';
 
@@ -7755,6 +7755,15 @@ M_DeleteCommunity_IN: 'in' -> type(IN), mode(M_CommunitySetMatchExpr);
 
 M_DeleteCommunity_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_DeleteCommunity_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_DistributeList;
+
+M_DistributeList_PREFIX_LIST: 'prefix-list' -> type(PREFIX_LIST), mode(M_Word);
+M_DistributeList_ROUTE_POLICY: 'route-policy' -> type(ROUTE_POLICY), mode(M_Word);
+M_DistributeList_WORD: F_Word -> type(WORD), popMode;
+
+M_DistributeList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_DistributeList_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_InterfaceAccessGroup;
 

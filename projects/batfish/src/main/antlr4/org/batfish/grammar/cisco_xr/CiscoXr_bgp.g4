@@ -228,7 +228,6 @@ bgp_tail
    | default_originate_bgp_tail
    | default_shutdown_bgp_tail
    | description_bgp_tail
-   | distribute_list_bgp_tail
    | ebgp_multihop_bgp_tail
    | local_as_bgp_tail
    | maximum_paths_bgp_tail
@@ -238,7 +237,6 @@ bgp_tail
    | next_hop_self_bgp_tail
    | no_network_bgp_tail
    | null_bgp_tail
-   | prefix_list_bgp_tail
    | redistribute_aggregate_bgp_tail
    | redistribute_connected_bgp_tail
    | redistribute_eigrp_bgp_tail
@@ -301,15 +299,6 @@ default_shutdown_bgp_tail
 description_bgp_tail
 :
    description_line
-;
-
-distribute_list_bgp_tail
-:
-   DISTRIBUTE_LIST  list_name = variable
-   (
-      IN
-      | OUT
-   ) NEWLINE
 ;
 
 ebgp_multihop_bgp_tail
@@ -678,15 +667,6 @@ peer_group_creation_rb_stanza
       | UNICAST
       | MULTICAST
    )* NEWLINE
-;
-
-prefix_list_bgp_tail
-:
-   PREFIX_LIST list_name = VARIABLE
-   (
-      IN
-      | OUT
-   ) NEWLINE
 ;
 
 remote_as_bgp_tail

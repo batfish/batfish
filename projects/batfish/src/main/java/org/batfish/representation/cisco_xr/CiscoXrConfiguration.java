@@ -12,7 +12,6 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertMatchesAnyToCommunitySetMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertMatchesEveryToCommunitySetMatchExpr;
@@ -21,7 +20,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgp
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getRsaPubKeyGeneratedName;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.insertDistributeListFilterAndGetPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveTunnelIfaceNames;
@@ -1440,27 +1438,28 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           eigrpRedistributionPoliciesToStatements(
               eigrpProcess.getRedistributionPolicies().values(), eigrpProcess, this);
 
-      List<If> redistributeAndAllowEigrpFromSelfAsn =
+      List<Statement> redistributeAndAllowEigrpFromSelfAsn =
           clearFalseStatementsAndAddMatchOwnAsn(
               redistributePolicyStatements, eigrpProcess.getAsn());
 
-      String policyName =
-          String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, eigrpProcess.getAsn(), ifaceName);
       RoutingPolicy routingPolicy =
-          insertDistributeListFilterAndGetPolicy(
-              c,
-              this,
-              eigrpProcess.getOutboundInterfaceDistributeLists().get(newIface.getName()),
-              redistributeAndAllowEigrpFromSelfAsn,
-              policyName);
+          RoutingPolicy.builder()
+              .setOwner(c)
+              .setName(
+                  String.format(
+                      "~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, eigrpProcess.getAsn(), ifaceName))
+              .setStatements(redistributeAndAllowEigrpFromSelfAsn)
+              .build();
 
-      c.getRoutingPolicies().put(policyName, routingPolicy);
+      c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
 
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn())
               .setEnabled(true)
-              .setExportPolicy(policyName)
+              .setExportPolicy(
+                  String.format(
+                      "~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, eigrpProcess.getAsn(), ifaceName))
               .setMetric(computeEigrpMetricForInterface(iface, eigrpProcess.getMode()))
               .setPassive(passive)
               .build());
@@ -1815,7 +1814,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                   Common.matchDefaultRoute(), new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
 
-    computeDistributeListPolicies(proc, newProcess, c, vrfName, proc.getName(), oldConfig, _w);
+    // TODO: distribute lists
 
     // policies for redistributing routes
     ospfExportStatements.addAll(
@@ -2554,39 +2553,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
   }
 
+  @SuppressWarnings("unused")
   private boolean isAclUsedForRouting(@Nonnull String aclName) {
-    for (Vrf vrf : _vrfs.values()) {
-      RipProcess ripProcess = vrf.getRipProcess();
-      if (ripProcess != null) {
-        // check rip distribute lists
-        if (ripProcess.getDistributeListInAcl()
-            && ripProcess.getDistributeListIn().equals(aclName)) {
-          return true;
-        }
-        if (ripProcess.getDistributeListOutAcl()
-            && ripProcess.getDistributeListOut().equals(aclName)) {
-          return true;
-        }
-      }
-      // check bgp policies
-      BgpProcess bgpProcess = vrf.getBgpProcess();
-      if (bgpProcess != null) {
-        for (BgpPeerGroup pg : bgpProcess.getAllPeerGroups()) {
-          if (aclName.equals(pg.getInboundIpAccessList())
-              || aclName.equals(pg.getOutboundIpAccessList())) {
-            return true;
-          }
-        }
-      }
-      // check EIGRP policies
-      // distribute lists
-      if (vrf.getEigrpProcesses().values().stream()
-          .flatMap(
-              eigrpProcess -> eigrpProcess.getOutboundInterfaceDistributeLists().values().stream())
-          .anyMatch(distributeList -> distributeList.getFilterName().equals(aclName))) {
-        return true;
-      }
-    }
+    // TODO: implement OSPF acl distribute-list
     return false;
   }
 
