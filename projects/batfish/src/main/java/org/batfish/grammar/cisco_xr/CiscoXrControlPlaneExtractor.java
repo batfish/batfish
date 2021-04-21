@@ -6516,7 +6516,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
     _configuration.setSnmpSourceInterface(ifaceName);
     _configuration.referenceStructure(
-        IP_ACCESS_LIST, ifaceName, SNMP_SERVER_TRAP_SOURCE, ctx.iname.getStart().getLine());
+        INTERFACE, ifaceName, SNMP_SERVER_TRAP_SOURCE, ctx.iname.getStart().getLine());
   }
 
   @Override
