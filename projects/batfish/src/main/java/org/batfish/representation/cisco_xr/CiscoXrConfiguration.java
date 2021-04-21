@@ -938,6 +938,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
     List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy.getStatements();
 
+    newBgpProcess.setRedistributionPolicy(bgpCommonExportPolicy.getName());
+
     // Never export routes suppressed because they are more specific than summary-only aggregate
     Stream<Prefix> summaryOnlyNetworks =
         proc.getAggregateNetworks().entrySet().stream()

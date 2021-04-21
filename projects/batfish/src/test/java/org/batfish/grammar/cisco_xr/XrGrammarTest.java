@@ -126,16 +126,20 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OriginType;
+import org.batfish.datamodel.OspfExternalRoute;
+import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
@@ -145,6 +149,8 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityContext;
@@ -1931,5 +1937,57 @@ public final class XrGrammarTest {
           contains(1));
     }
     assertFalse(i.hasNext());
+  }
+
+  @Test
+  public void testBgpRedistributionRoutePolicy() {
+    String hostname = "bgp-redist-policy";
+    Configuration c = parseConfig(hostname);
+    Prefix permittedPrefix = Prefix.parse("1.2.3.4/32");
+    Prefix permittedPrefix2 = Prefix.parse("1.2.3.5/32");
+    Prefix rejectedPrefix = Prefix.parse("2.0.0.0/8");
+    Prefix unmatchedPrefix = Prefix.parse("3.0.0.0/8");
+    StaticRoute permittedRoute = StaticRoute.testBuilder().setNetwork(permittedPrefix).build();
+    StaticRoute permittedRoute2 = StaticRoute.testBuilder().setNetwork(permittedPrefix2).build();
+    StaticRoute rejectedRoute = StaticRoute.testBuilder().setNetwork(rejectedPrefix).build();
+    StaticRoute unmatchedRoute = StaticRoute.testBuilder().setNetwork(unmatchedPrefix).build();
+    BgpProcess bgpProc = c.getDefaultVrf().getBgpProcess();
+    RoutingPolicy bgpRedistPolicy = c.getRoutingPolicies().get(bgpProc.getRedistributionPolicy());
+    // Export policy should permit static routes according to the specified redistribution policy
+    assertTrue(
+        bgpRedistPolicy.process(
+            permittedRoute,
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    assertTrue(
+        bgpRedistPolicy.process(
+            permittedRoute2,
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    assertFalse(
+        bgpRedistPolicy.process(
+            rejectedRoute,
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    assertFalse(
+        bgpRedistPolicy.process(
+            unmatchedRoute,
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    // Export policy does not permit routes of OSPF or other protocols, even if the static
+    // redistribution policy would permit them
+    assertFalse(
+        bgpRedistPolicy.process(
+            ConnectedRoute.builder()
+                .setNetwork(permittedPrefix)
+                .setNextHop(NextHopInterface.of("iface"))
+                .build(),
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    assertFalse(
+        bgpRedistPolicy.process(
+            OspfExternalType1Route.testBuilder().setNetwork(permittedPrefix).build(),
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
   }
 }
