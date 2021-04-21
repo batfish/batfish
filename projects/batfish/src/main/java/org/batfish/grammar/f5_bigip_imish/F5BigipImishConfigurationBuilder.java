@@ -25,6 +25,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_configurationContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Iipo_networkContext;
@@ -107,7 +109,8 @@ import org.batfish.representation.f5_bigip.RouteMapSetOrigin;
 import org.batfish.representation.f5_bigip.UpdateSourceInterface;
 import org.batfish.representation.f5_bigip.UpdateSourceIp;
 
-public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener {
+public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener
+    implements BatfishListener {
 
   private static int toInteger(Ip_prefix_lengthContext ctx) {
     return Integer.parseInt(ctx.getText(), 10);
@@ -759,11 +762,22 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     _currentBgpProcess = null;
   }
 
-  private @Nonnull String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
-    return text;
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   private @Nullable Long toLong(Standard_communityContext ctx) {
@@ -784,7 +798,8 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     }
   }
 
-  private void todo(ParserRuleContext ctx) {
+  @Override
+  public void todo(ParserRuleContext ctx) {
     _w.todo(ctx, getFullText(ctx).split("\\n", -1)[0], _parser);
   }
 

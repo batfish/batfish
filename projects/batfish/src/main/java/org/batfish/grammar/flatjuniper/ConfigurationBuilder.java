@@ -188,6 +188,8 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.vendor_family.juniper.TacplusServer;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_application_setContext;
@@ -830,7 +832,7 @@ import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.Zone;
 
-public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
+public class ConfigurationBuilder extends FlatJuniperParserBaseListener implements BatfishListener {
 
   private static final boolean DEFAULT_VRRP_PREEMPT = true;
 
@@ -3031,7 +3033,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void enterRores_rib(Rores_ribContext ctx) {
     String name = ctx.name.getText();
     if (!name.equals(RIB_IPV4_UNICAST)) {
-      todo(ctx, "Resolution ribs other than inet.0 are currently unsupported");
+      warn(ctx, "Resolution ribs other than inet.0 are currently unsupported");
     }
     _currentResolutionRib = _currentResolution.getOrReplaceRib(name);
   }
@@ -3151,7 +3153,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSesoi_fragment(Sesoi_fragmentContext ctx) {
     // Batfish does not currently model the IP fragmentation bits.
-    todo(ctx, "Unsupported netscreen ICMP option");
+    warn(ctx, "Unsupported netscreen ICMP option");
   }
 
   @Override
@@ -3162,19 +3164,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSesoi_ping_death(Sesoi_ping_deathContext ctx) {
     // Batfish does not currently model the IP fragmentation bits needed for this.
-    todo(ctx, "Unsupported netscreen ICMP option");
+    warn(ctx, "Unsupported netscreen ICMP option");
   }
 
   @Override
   public void exitSesop_block_frag(Sesop_block_fragContext ctx) {
     // Batfish does not currently model the IP fragmentation bits.
-    todo(ctx, "Unsupported netscreen IP option");
+    warn(ctx, "Unsupported netscreen IP option");
   }
 
   @Override
   public void exitSesop_spoofing(Sesop_spoofingContext ctx) {
     // Need to plumb into reachability and dataplane to support.
-    todo(ctx, "Unsupported netscreen IP option");
+    warn(ctx, "Unsupported netscreen IP option");
   }
 
   @Override
@@ -3190,7 +3192,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSesot_land(Sesot_landContext ctx) {
     // Batfish has no way to express SourceIp == DestIp.
-    todo(ctx, "Unsupported netscreen TCP option");
+    warn(ctx, "Unsupported netscreen TCP option");
   }
 
   @Override
@@ -3201,7 +3203,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSesot_syn_frag(Sesot_syn_fragContext ctx) {
     // Batfish does not currently model the IP fragmentation bits.
-    todo(ctx, "Unsupported netscreen TCP option");
+    warn(ctx, "Unsupported netscreen TCP option");
   }
 
   @Override
@@ -3212,7 +3214,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSesot_winnuke(Sesot_winnukeContext ctx) {
     // Batfish does not currently support transformation in filters.
-    todo(ctx, "Unsupported netscreen TCP option");
+    warn(ctx, "Unsupported netscreen TCP option");
   }
 
   @Override
@@ -4212,7 +4214,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentFwTerm.getThens().add(then);
     _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
     _currentFilter.setUsedForFBF(true);
-    todo(ctx, "Filter-based forwarding with next-hop-ip is not currently supported");
+    warn(ctx, "Filter-based forwarding with next-hop-ip is not currently supported");
   }
 
   @Override
@@ -4404,7 +4406,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         usage = INTERFACE_OUTGOING_FILTER_LIST;
       } else {
         // Should be unreachable.
-        todo(ctx, "Unhandled filter direction");
+        warn(ctx, "Unhandled filter direction");
       }
     }
     _configuration.referenceStructure(
@@ -6320,11 +6322,31 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return _configuration;
   }
 
-  private String getFullText(ParserRuleContext ctx) {
+  @Nonnull
+  @Override
+  public String getFullText(ParserRuleContext ctx) {
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
     String text = _tokenInputs.getOrDefault(ctx.getStart(), _text).substring(start, end + 1);
     return text;
+  }
+
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   private static String getInterfaceName(Interface_idContext ctx) {
@@ -6628,14 +6650,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return ImmutableList.of();
     }
     return ctx.proposal();
-  }
-
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private void todo(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private Family toFamily(F_familyContext ctx) {

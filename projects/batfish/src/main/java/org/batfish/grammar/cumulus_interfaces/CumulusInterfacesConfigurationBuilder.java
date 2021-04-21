@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -21,6 +20,8 @@ import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.AddressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
@@ -69,8 +70,8 @@ import org.batfish.representation.cumulus.StaticRoute;
  * Populates {@link CumulusInterfacesConfiguration} from a parse tree from {@link
  * org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser}.
  */
-public final class CumulusInterfacesConfigurationBuilder
-    extends CumulusInterfacesParserBaseListener {
+public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfacesParserBaseListener
+    implements BatfishListener {
   private final CumulusConcatenatedConfiguration _config;
 
   private final CumulusInterfacesCombinedParser _parser;
@@ -90,10 +91,22 @@ public final class CumulusInterfacesConfigurationBuilder
     _w = w;
   }
 
-  private String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    return _text.substring(start, end + 1);
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   @VisibleForTesting
@@ -266,7 +279,7 @@ public final class CumulusInterfacesConfigurationBuilder
   @Override
   public void exitI_bridge_vlan_aware(I_bridge_vlan_awareContext ctx) {
     if (ctx.NO() != null) {
-      _w.todo(ctx, getFullText(ctx), _parser);
+      todo(ctx);
     }
   }
 

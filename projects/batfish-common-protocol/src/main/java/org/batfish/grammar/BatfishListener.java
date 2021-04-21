@@ -3,11 +3,12 @@ package org.batfish.grammar;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.batfish.common.Warnings;
 
 /** Interface providing common parse-tree listener utility methods with default implementations. */
 @ParametersAreNonnullByDefault
-public interface BatfishListener {
+public interface BatfishListener extends ParseTreeListener {
 
   default @Nonnull String getFullText(ParserRuleContext ctx) {
     int start = ctx.getStart().getStartIndex();

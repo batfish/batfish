@@ -351,6 +351,8 @@ import org.batfish.datamodel.vendor_family.cisco_xr.Ntp;
 import org.batfish.datamodel.vendor_family.cisco_xr.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco_xr.Service;
 import org.batfish.datamodel.vendor_family.cisco_xr.User;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.UnrecognizedLineToken;
@@ -1036,7 +1038,7 @@ import org.batfish.representation.cisco_xr.XrWildcardCommunitySetElem;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
-    implements ControlPlaneExtractor {
+    implements ControlPlaneExtractor, BatfishListener {
 
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
 
@@ -6803,10 +6805,22 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return _configuration.canonicalizeInterfaceName(ifaceName);
   }
 
-  private String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    return _text.substring(start, end + 1);
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   private String getLocation(ParserRuleContext ctx) {
@@ -7152,14 +7166,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private static int toInteger(Uint16Context ctx) {
     return Integer.parseInt(ctx.getText());
-  }
-
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private void warn(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private DiffieHellmanGroup toDhGroup(Dh_groupContext ctx) {

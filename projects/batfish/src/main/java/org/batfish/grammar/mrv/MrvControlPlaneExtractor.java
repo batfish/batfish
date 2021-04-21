@@ -1,9 +1,12 @@
 package org.batfish.grammar.mrv;
 
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvParser.A_system_systemnameContext;
@@ -14,7 +17,7 @@ import org.batfish.representation.mrv.MrvConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class MrvControlPlaneExtractor extends MrvParserBaseListener
-    implements ControlPlaneExtractor {
+    implements ControlPlaneExtractor, BatfishListener {
 
   private MrvConfiguration _configuration;
 
@@ -41,10 +44,22 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
     _configuration.setHostname(hostname);
   }
 
-  private String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    return _text.substring(start, end + 1);
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   private String getText(Quoted_stringContext ctx) {
@@ -64,11 +79,6 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(this, tree);
-  }
-
-  @SuppressWarnings("unused")
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
   }
 
   private String toString(NsdeclContext ctx) {

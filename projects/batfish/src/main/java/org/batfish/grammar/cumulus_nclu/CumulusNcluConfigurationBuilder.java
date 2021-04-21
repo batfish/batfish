@@ -47,6 +47,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
@@ -193,7 +195,8 @@ import org.batfish.representation.cumulus_nclu.Vxlan;
  * A listener that builds a {@link CumulusNcluConfiguration} while walking a parse tree produced by
  * {@link CumulusNcluCombinedParser#parse}.
  */
-public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener {
+public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener
+    implements BatfishListener {
 
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
   private static final int MAX_VXLAN_ID = (1 << 24) - 1; // 24 bit number
@@ -1459,11 +1462,22 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return _c;
   }
 
-  private @Nonnull String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
-    return text;
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   /**
@@ -1613,11 +1627,6 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     names.forEach(
         name -> _c.referenceStructure(CumulusStructureType.ABSTRACT_INTERFACE, name, usage, line));
     return true;
-  }
-
-  @SuppressWarnings("unused")
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
   }
 
   private void unrecognized(ParserRuleContext ctx) {
