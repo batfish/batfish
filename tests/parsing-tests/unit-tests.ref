@@ -69102,18 +69102,6 @@
               "Line" : 11,
               "Parser_Context" : "[network6_bgp_tail bgp_tail address_family_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
               "Text" : "network 2607:f380::/32 route-policy originate-internal-ipv6"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 12,
-              "Parser_Context" : "[redistribute_connected_bgp_tail bgp_tail address_family_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
-              "Text" : "redistribute connected route-policy static-connected-to-bgp"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 16,
-              "Parser_Context" : "[redistribute_static_bgp_tail bgp_tail address_family_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
-              "Text" : "redistribute static route-policy static-to-bgp"
             }
           ]
         },
@@ -70219,16 +70207,6 @@
             }
           ]
         },
-        "configs/ios_xr_bgp" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 12,
-              "Parser_Context" : "[redistribute_static_bgp_tail bgp_tail address_family_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
-              "Text" : "redistribute static route-policy REDISTRIBUTE_STATIC_POLICY"
-            }
-          ]
-        },
         "configs/ios_xr_bgp_neighbor_group" : {
           "Parse warnings" : [
             {
@@ -70754,7 +70732,7 @@
         "ios_template" : "PASSED",
         "ios_xe_bgp" : "WARNINGS",
         "ios_xr_acl" : "PASSED",
-        "ios_xr_bgp" : "PASSED",
+        "ios_xr_bgp" : "WARNINGS",
         "ios_xr_bgp_neighbor_group" : "WARNINGS",
         "ios_xr_class_map" : "PASSED",
         "ios_xr_isis" : "WARNINGS",
@@ -75898,11 +75876,6 @@
             "static-connected-to-bgp" : {
               "bgp redistribute connected route-policy" : [
                 12
-              ]
-            },
-            "static-to-bgp" : {
-              "bgp redistribute static route-policy" : [
-                16
               ]
             }
           }
@@ -81441,11 +81414,6 @@
               "bgp redistribute connected route-policy" : [
                 12
               ]
-            },
-            "static-to-bgp" : {
-              "bgp redistribute static route-policy" : [
-                16
-              ]
             }
           }
         },
@@ -83713,6 +83681,10 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Could not determine update source for BGP neighbor: '64.57.21.1'"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring undefined route-policy static-connected-to-bgp in connected -> BGP redistribution"
             }
           ]
         },
@@ -83886,6 +83858,14 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "No remote-as set for peer: 1.1.1.1"
+            }
+          ]
+        },
+        "ios_xr_bgp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring undefined route-policy REDISTRIBUTE_STATIC_POLICY in static -> BGP redistribution"
             }
           ]
         },

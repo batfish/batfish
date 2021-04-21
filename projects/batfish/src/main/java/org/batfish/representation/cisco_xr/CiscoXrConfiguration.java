@@ -144,6 +144,7 @@ import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
@@ -1016,6 +1017,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
     }
 
+    Set<String> convertedRoutePolicyNames = c.getRoutingPolicies().keySet();
+
     // Export RIP routes that should be redistributed.
     BgpRedistributionPolicy redistributeRipPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.RIP);
@@ -1026,7 +1029,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportRipConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.RIP));
       String mapName = redistributeRipPolicy.getRouteMap();
       if (mapName != null) {
-        // TODO update to route-policy if valid, or delete grammar and VS
+        if (convertedRoutePolicyNames.contains(mapName)) {
+          exportRipConditions.getConjuncts().add(new CallExpr(mapName));
+        } else {
+          // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
+          // references to undefined route-policies and removal of route-policies that are in use.
+          _w.redFlag(
+              String.format(
+                  "Ignoring undefined route-policy %s in RIP -> BGP redistribution", mapName));
+        }
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportRipConditions.getConjuncts().add(we);
@@ -1043,7 +1054,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
       String mapName = redistributeStaticPolicy.getRouteMap();
       if (mapName != null) {
-        // TODO update to route-policy if valid, or delete grammar and VS
+        if (convertedRoutePolicyNames.contains(mapName)) {
+          exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
+        } else {
+          // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
+          // references to undefined route-policies and removal of route-policies that are in use.
+          _w.redFlag(
+              String.format(
+                  "Ignoring undefined route-policy %s in static -> BGP redistribution", mapName));
+        }
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportStaticConditions.getConjuncts().add(we);
@@ -1060,7 +1079,16 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
       String mapName = redistributeConnectedPolicy.getRouteMap();
       if (mapName != null) {
-        // TODO update to route-policy if valid, or delete grammar and VS
+        if (convertedRoutePolicyNames.contains(mapName)) {
+          exportConnectedConditions.getConjuncts().add(new CallExpr(mapName));
+        } else {
+          // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
+          // references to undefined route-policies and removal of route-policies that are in use.
+          _w.redFlag(
+              String.format(
+                  "Ignoring undefined route-policy %s in connected -> BGP redistribution",
+                  mapName));
+        }
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportConnectedConditions.getConjuncts().add(we);
@@ -1077,7 +1105,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportOspfConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.OSPF));
       String mapName = redistributeOspfPolicy.getRouteMap();
       if (mapName != null) {
-        // TODO update to route-policy if valid, or delete grammar and VS
+        if (convertedRoutePolicyNames.contains(mapName)) {
+          exportOspfConditions.getConjuncts().add(new CallExpr(mapName));
+        } else {
+          // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
+          // references to undefined route-policies and removal of route-policies that are in use.
+          _w.redFlag(
+              String.format(
+                  "Ignoring undefined route-policy %s in OSPF -> BGP redistribution", mapName));
+        }
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportOspfConditions.getConjuncts().add(we);
