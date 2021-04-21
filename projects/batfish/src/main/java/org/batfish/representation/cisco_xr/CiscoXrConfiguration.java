@@ -1058,8 +1058,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
           redistributeConditions.add(exportStaticConditions);
         } else {
-          // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
-          // references to undefined route-policies and removal of route-policies that are in use.
           _w.redFlag(
               String.format(
                   "Ignoring undefined route-policy %s in static -> BGP redistribution", mapName));
@@ -1084,8 +1082,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           exportConnectedConditions.getConjuncts().add(new CallExpr(mapName));
           redistributeConditions.add(exportConnectedConditions);
         } else {
-          // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
-          // references to undefined route-policies and removal of route-policies that are in use.
           _w.redFlag(
               String.format(
                   "Ignoring undefined route-policy %s in connected -> BGP redistribution",
