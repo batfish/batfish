@@ -231,19 +231,17 @@ public final class FortiosBgpConversions {
     for (Ip remoteIp : neighborIdsInVrf) {
       BgpNeighbor neighbor = bgpProcess.getNeighbors().get(remoteIp);
       @Nullable Interface updateSource = updateSources.get(remoteIp);
-      Ip localIp =
-          updateSource == null || updateSource.getConcreteAddress() == null
-              ? null
-              : updateSource.getConcreteAddress().getIp();
-      if (localIp == null) {
-        String warning =
-            updateSource == null
-                ? String.format(
-                    "BGP neighbor %s: Unable to infer its update source", neighbor.getIp())
-                : String.format(
-                    "BGP neighbor %s in vrf %s: Update-source %s has no address",
-                    remoteIp, vrf, updateSource.getName());
-        w.redFlag(warning);
+      @Nullable Ip localIp = null;
+      if (updateSource == null) {
+        w.redFlag(
+            String.format("BGP neighbor %s: Unable to infer its update source", neighbor.getIp()));
+      } else if (updateSource.getConcreteAddress() == null) {
+        w.redFlag(
+            String.format(
+                "BGP neighbor %s in vrf %s: Update-source %s has no address",
+                remoteIp, vrf, updateSource.getName()));
+      } else {
+        localIp = updateSource.getConcreteAddress().getIp();
       }
       BgpActivePeerConfig.builder()
           .setLocalIp(localIp)
