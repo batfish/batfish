@@ -581,6 +581,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ip_prefix_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_authenticationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_encryptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_access_listContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_conflict_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_tailContext;
@@ -9075,5 +9076,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void enterS_ethernet_services(S_ethernet_servicesContext ctx) {
     String name = toString(ctx.name);
     _configuration.defineStructure(ETHERNET_SERVICES_ACCESS_LIST, name, ctx);
+  }
+
+  @Override
+  public void exitIpv4_conflict_policy(Ipv4_conflict_policyContext ctx) {
+    todo(ctx);
   }
 }
