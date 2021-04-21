@@ -46,6 +46,7 @@ public final class Interface implements InterfaceOrZone, Serializable {
   public static final int DEFAULT_INTERFACE_MTU = 1500;
   public static final boolean DEFAULT_SECONDARY_IP_ENABLED = false;
   public static final Speed DEFAULT_SPEED = Speed.AUTO;
+  public static final String DEFAULT_VDOM = "root";
   public static final int DEFAULT_VRF = 0;
   public static final Type DEFAULT_TYPE = Type.VLAN;
   public static final boolean DEFAULT_STATUS = true;

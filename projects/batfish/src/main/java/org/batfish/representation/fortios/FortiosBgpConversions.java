@@ -1,6 +1,9 @@
 package org.batfish.representation.fortios;
 
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.representation.fortios.FortiosConfiguration.computeVrfName;
+import static org.batfish.representation.fortios.Interface.DEFAULT_VDOM;
+import static org.batfish.representation.fortios.Interface.DEFAULT_VRF;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -11,9 +14,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -121,15 +124,14 @@ public final class FortiosBgpConversions {
     Map<String, Set<Ip>> neighborsByVrf = new HashMap<>();
     for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
       Optional<Interface> updateSource = getUpdateSource(neighbor, c, w);
-      if (!updateSource.isPresent()) {
-        w.redFlag(
-            String.format(
-                "Ignoring BGP neighbor %s: Unable to infer its update source", neighbor.getIp()));
-        continue;
-      }
-      updateSources.put(neighbor.getIp(), updateSource.get());
+      updateSource.ifPresent(anInterface -> updateSources.put(neighbor.getIp(), anInterface));
       neighborsByVrf
-          .computeIfAbsent(updateSource.get().getVrfName(), k -> new HashSet<>())
+          .computeIfAbsent(
+              updateSource
+                  .map(Interface::getVrfName)
+                  // put neighbors without update sources in the default vrf
+                  .orElse(computeVrfName(DEFAULT_VDOM, DEFAULT_VRF)),
+              k -> new HashSet<>())
           .add(neighbor.getIp());
     }
 
@@ -228,16 +230,20 @@ public final class FortiosBgpConversions {
     long localAs = bgpProcess.getAsEffective();
     for (Ip remoteIp : neighborIdsInVrf) {
       BgpNeighbor neighbor = bgpProcess.getNeighbors().get(remoteIp);
-      Interface updateSource = updateSources.get(remoteIp);
+      @Nullable Interface updateSource = updateSources.get(remoteIp);
       Ip localIp =
-          Optional.ofNullable(updateSource.getConcreteAddress())
-              .map(ConcreteInterfaceAddress::getIp)
-              .orElse(null);
+          updateSource == null || updateSource.getConcreteAddress() == null
+              ? null
+              : updateSource.getConcreteAddress().getIp();
       if (localIp == null) {
-        w.redFlag(
-            String.format(
-                "BGP neighbor %s in vrf %s: Update-source %s has no address",
-                remoteIp, vrf, updateSource.getName()));
+        String warning =
+            updateSource == null
+                ? String.format(
+                    "BGP neighbor %s: Unable to infer its update source", neighbor.getIp())
+                : String.format(
+                    "BGP neighbor %s in vrf %s: Update-source %s has no address",
+                    remoteIp, vrf, updateSource.getName());
+        w.redFlag(warning);
       }
       BgpActivePeerConfig.builder()
           .setLocalIp(localIp)

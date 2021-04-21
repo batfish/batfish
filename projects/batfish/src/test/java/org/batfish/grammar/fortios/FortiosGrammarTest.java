@@ -908,18 +908,15 @@ public final class FortiosGrammarTest {
         warnings.getRedFlagWarnings(),
         containsInAnyOrder(
             WarningMatchers.hasText(
-                "Ignoring BGP neighbor 2.2.2.2: Update-source port1 has no address"),
+                "BGP neighbor 2.2.2.2 in vrf root:0: Update-source port1 has no address"),
             WarningMatchers.hasText(
                 "BGP neighbor 3.3.3.3 has an inactive update-source interface port2. Attempting to"
                     + " infer another update-source for this neighbor"),
-            WarningMatchers.hasText(
-                "Ignoring BGP neighbor 3.3.3.3: Unable to infer its update source"),
-            WarningMatchers.hasText(
-                "Ignoring BGP neighbor 4.4.4.4: Unable to infer its update source"),
+            WarningMatchers.hasText("BGP neighbor 3.3.3.3: Unable to infer its update source"),
+            WarningMatchers.hasText("BGP neighbor 4.4.4.4: Unable to infer its update source"),
             WarningMatchers.hasText(
                 "Interface port3 has unsupported type WL_MESH and will not be converted"),
-            WarningMatchers.hasText(
-                "Ignoring BGP neighbor 5.5.5.5: Unable to infer its update source")));
+            WarningMatchers.hasText("BGP neighbor 5.5.5.5: Unable to infer its update source")));
   }
 
   @Test
