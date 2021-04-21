@@ -206,11 +206,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     if (ctx.NON_BROADCAST() != null) {
       return Optional.of(OspfNetworkType.NON_BROADCAST);
     }
-    _w.addWarning(
-        ctx,
-        getFullText(messageCtx),
-        _parser,
-        String.format("Unhandled OSPF network type: %s", ctx.getText()));
+    warn(ctx, String.format("Unhandled OSPF network type: %s", ctx.getText()));
     return Optional.empty();
   }
 
@@ -798,9 +794,10 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     }
   }
 
+  @Nonnull
   @Override
-  public void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx).split("\\n", -1)[0], _parser);
+  public String getWarningText(ParserRuleContext ctx) {
+    return getFullText(ctx).split("\\n", -1)[0];
   }
 
   @Override

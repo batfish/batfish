@@ -3187,16 +3187,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
   }
 
+  @Nonnull
   @Override
-  public void todo(ParserRuleContext ctx) {
-    // Just print first line of unsupported feature
-    _w.todo(ctx, getFullText(ctx).split("\n", -1)[0], _parser);
-  }
-
-  @Override
-  public void warn(ParserRuleContext ctx, String message) {
-    // Just print first line of unsupported feature
-    _w.addWarning(ctx, getFullText(ctx).split("\n", -1)[0], _parser, message);
+  public String getWarningText(ParserRuleContext ctx) {
+    // Just print first line
+    return getFullText(ctx).split("\n", -1)[0];
   }
 
   private @Nullable IpProtocol toIpProtocol(Ip_protocolContext ctx) {
