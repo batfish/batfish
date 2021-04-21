@@ -1,5 +1,6 @@
 package org.batfish.grammar;
 
+import java.util.Set;
 import org.batfish.vendor.VendorConfiguration;
 
 /**
@@ -13,4 +14,15 @@ import org.batfish.vendor.VendorConfiguration;
 public interface ControlPlaneExtractor extends BatfishExtractor {
 
   VendorConfiguration getVendorConfiguration();
+
+  /**
+   * Returns the set of parser rules that this extractor implements, converted to lowercase. Default
+   * implementation verifies that this extractor is also used to walk the parse tree, and returns
+   * its implemented rules.
+   *
+   * @see ImplementedRules#getImplementedRules(Class)
+   */
+  default Set<String> implementedRuleNames() {
+    return ImplementedRules.getImplementedRules(getClass());
+  }
 }

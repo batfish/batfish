@@ -1,7 +1,9 @@
 package org.batfish.grammar.cumulus_concatenated;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,6 +19,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.ImplementedRules;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.cumulus_frr.CumulusFrrCombinedParser;
 import org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder;
@@ -67,6 +70,15 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
+  }
+
+  @Override
+  public Set<String> implementedRuleNames() {
+    return ImmutableSet.<String>builder()
+        .addAll(ImplementedRules.getImplementedRules(CumulusInterfacesConfigurationBuilder.class))
+        .addAll(ImplementedRules.getImplementedRules(CumulusPortsConfigurationBuilder.class))
+        .addAll(ImplementedRules.getImplementedRules(CumulusFrrConfigurationBuilder.class))
+        .build();
   }
 
   @Override

@@ -369,7 +369,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       if (_settings.getPrintParseTree()) {
         _ptSentences =
             ParseTreePrettyPrinter.getParseTreeSentences(
-                tree, combinedParser, _settings.getPrintParseTreeLineNums());
+                tree,
+                combinedParser,
+                _settings.getPrintParseTreeLineNums(),
+                extractor.implementedRuleNames());
       }
       if (!combinedParser.getErrors().isEmpty()) {
         throw new BatfishException(

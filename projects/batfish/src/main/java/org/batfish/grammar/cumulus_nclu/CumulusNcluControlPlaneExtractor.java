@@ -1,11 +1,13 @@
 package org.batfish.grammar.cumulus_nclu;
 
+import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.ImplementedRules;
 import org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -30,6 +32,11 @@ public class CumulusNcluControlPlaneExtractor implements ControlPlaneExtractor {
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
+  }
+
+  @Override
+  public Set<String> implementedRuleNames() {
+    return ImplementedRules.getImplementedRules(CumulusNcluConfigurationBuilder.class);
   }
 
   @Override

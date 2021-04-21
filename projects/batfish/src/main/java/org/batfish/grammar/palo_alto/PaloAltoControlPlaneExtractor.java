@@ -1,11 +1,13 @@
 package org.batfish.grammar.palo_alto;
 
+import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.ImplementedRules;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -26,6 +28,13 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
+  }
+
+  @Override
+  public Set<String> implementedRuleNames() {
+    // TODO: do we need to add things like InsertDeleteApplicator? I think not, since those don't
+    // make it to the final output.
+    return ImplementedRules.getImplementedRules(PaloAltoConfigurationBuilder.class);
   }
 
   @Override
