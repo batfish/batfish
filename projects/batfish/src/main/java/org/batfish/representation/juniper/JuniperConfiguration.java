@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.groupingBy;
+import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -454,18 +455,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpBgpGroup ig = e.getValue();
       Builder<?, ?> neighbor;
       Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
-      LongSpace remoteAs =
-          Optional.ofNullable(
-                  ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs())
-              .map(LongSpace::of)
-              .orElse(LongSpace.EMPTY);
+      Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
       if (ig.getDynamic()) {
-        neighbor = BgpPassivePeerConfig.builder().setPeerPrefix(prefix).setRemoteAsns(remoteAs);
+        neighbor =
+            BgpPassivePeerConfig.builder()
+                .setPeerPrefix(prefix)
+                .setRemoteAsns(
+                    Optional.ofNullable(remoteAs).map(LongSpace::of).orElse(ALL_AS_NUMBERS));
       } else {
         neighbor =
             BgpActivePeerConfig.builder()
                 .setPeerAddress(prefix.getStartIp())
-                .setRemoteAsns(remoteAs);
+                .setRemoteAsns(
+                    Optional.ofNullable(remoteAs).map(LongSpace::of).orElse(LongSpace.EMPTY));
       }
       neighbor.setDescription(ig.getDescription());
 
