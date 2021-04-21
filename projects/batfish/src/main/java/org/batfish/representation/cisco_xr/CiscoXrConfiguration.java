@@ -144,6 +144,7 @@ import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
@@ -1531,8 +1532,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
   }
 
-  // For testing.
-  If convertOspfRedistributionPolicy(OspfRedistributionPolicy policy, OspfProcess proc) {
+  private If convertOspfRedistributionPolicy(
+      OspfRedistributionPolicy policy, OspfProcess proc, Set<String> convertedRoutePolicyNames) {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
@@ -1563,10 +1564,18 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     long metric = policy.getMetric() != null ? policy.getMetric() : proc.getDefaultMetric(protocol);
     ospfExportStatements.add(new SetMetric(new LiteralLong(metric)));
 
-    // If a route-map filter is present, honor it.
+    // If a route-policy is present, honor it.
     String exportRouteMapName = policy.getRouteMap();
     if (exportRouteMapName != null) {
-      // TODO update to route-policy if valid, or delete grammar and VS
+      if (convertedRoutePolicyNames.contains(exportRouteMapName)) {
+        ospfExportConditions.getConjuncts().add(new CallExpr(policy.getRouteMap()));
+      } else {
+        // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
+        // references to undefined route-policies and removal of route-policies that are in use.
+        _w.redFlag(
+            String.format(
+                "Ignoring undefined route-policy %s in OSPF redistribution", exportRouteMapName));
+      }
     }
 
     ospfExportStatements.add(Statements.ExitAccept.toStaticStatement());
@@ -1770,7 +1779,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // policies for redistributing routes
     ospfExportStatements.addAll(
         proc.getRedistributionPolicies().values().stream()
-            .map(policy -> convertOspfRedistributionPolicy(policy, proc))
+            .map(
+                policy ->
+                    convertOspfRedistributionPolicy(policy, proc, c.getRoutingPolicies().keySet()))
             .collect(Collectors.toList()));
 
     return newProcess;

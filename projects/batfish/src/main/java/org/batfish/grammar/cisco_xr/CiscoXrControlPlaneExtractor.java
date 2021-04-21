@@ -6077,12 +6077,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_redistribute_connected(Ro_redistribute_connectedContext ctx) {
-    if (ctx.policy != null) {
-      todo(ctx);
-      String name = toString(ctx.policy);
-      _configuration.referenceStructure(
-          ROUTE_POLICY, name, OSPF_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
-    }
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocol sourceProtocol = RoutingProtocol.CONNECTED;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
@@ -6090,6 +6084,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
+    }
+    if (ctx.policy != null) {
+      String name = toString(ctx.policy);
+      r.setRouteMap(name);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, OSPF_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
     }
     if (ctx.type != null) {
       int typeInt = toInteger(ctx.type);
@@ -6132,12 +6132,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_redistribute_static(Ro_redistribute_staticContext ctx) {
-    if (ctx.policy != null) {
-      todo(ctx);
-      String name = toString(ctx.policy);
-      _configuration.referenceStructure(
-          ROUTE_POLICY, name, OSPF_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
-    }
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocol sourceProtocol = RoutingProtocol.STATIC;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
@@ -6145,6 +6139,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
+    }
+    if (ctx.policy != null) {
+      String name = toString(ctx.policy);
+      r.setRouteMap(name);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, OSPF_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
     }
     if (ctx.type != null) {
       int typeInt = toInteger(ctx.type);
