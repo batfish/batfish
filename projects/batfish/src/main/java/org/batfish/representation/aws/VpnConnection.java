@@ -501,22 +501,21 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
       // configure BGP peering
       if (_isBgpConnection) {
-        BgpActivePeerConfig activePeerConfig =
-            BgpActivePeerConfig.builder()
-                .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
-                .setRemoteAsns(
-                    Optional.ofNullable(ipsecTunnel.getCgwBgpAsn())
-                        .map(LongSpace::of)
-                        .orElse(LongSpace.EMPTY))
-                .setBgpProcess(tunnelVrf.getBgpProcess())
-                .setLocalAs(ipsecTunnel.getVgwBgpAsn())
-                .setLocalIp(ipsecTunnel.getVgwInsideAddress())
-                .setIpv4UnicastAddressFamily(
-                    Ipv4UnicastAddressFamily.builder()
-                        .setExportPolicy(exportPolicyName)
-                        .setImportPolicy(importPolicyName)
-                        .build())
-                .build();
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
+            .setRemoteAsns(
+                Optional.ofNullable(ipsecTunnel.getCgwBgpAsn())
+                    .map(LongSpace::of)
+                    .orElse(LongSpace.EMPTY))
+            .setBgpProcess(tunnelVrf.getBgpProcess())
+            .setLocalAs(ipsecTunnel.getVgwBgpAsn())
+            .setLocalIp(ipsecTunnel.getVgwInsideAddress())
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setExportPolicy(exportPolicyName)
+                    .setImportPolicy(importPolicyName)
+                    .build())
+            .build();
       }
 
       // configure static routes -- this list of routes should be empty in case of transit gateway
