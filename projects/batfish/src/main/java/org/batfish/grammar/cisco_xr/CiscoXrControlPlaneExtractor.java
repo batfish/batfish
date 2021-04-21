@@ -415,6 +415,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_route_type_is_rp_stanz
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_simple_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_tag_is_rp_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_validation_state_is_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_match_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_set_isakmp_profileContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_set_peerContext;
@@ -975,6 +976,7 @@ import org.batfish.representation.cisco_xr.RoutePolicyBooleanRdIn;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanRibHasRoute;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanRouteTypeIs;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanTagIs;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanValidationStateIs;
 import org.batfish.representation.cisco_xr.RoutePolicyComment;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
@@ -8231,11 +8233,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_simple_rp_stanzaContext ctx) {
-    {
-      Boolean_rp_stanzaContext bctx = ctx.boolean_rp_stanza();
-      if (bctx != null) {
-        return toRoutePolicyBoolean(bctx);
-      }
+    Boolean_rp_stanzaContext bctx = ctx.boolean_rp_stanza();
+    if (bctx != null) {
+      return toRoutePolicyBoolean(bctx);
     }
 
     Boolean_apply_rp_stanzaContext actx = ctx.boolean_apply_rp_stanza();
@@ -8303,6 +8303,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return toRoutePolicyBoolean(nctx);
     }
 
+    Boolean_rd_in_rp_stanzaContext rdctx = ctx.boolean_rd_in_rp_stanza();
+    if (rdctx != null) {
+      return toRoutePolicyBoolean(rdctx);
+    }
+
     Boolean_rib_has_route_rp_stanzaContext ribctx = ctx.boolean_rib_has_route_rp_stanza();
     if (ribctx != null) {
       return toRoutePolicyBoolean(ribctx);
@@ -8318,11 +8323,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return toRoutePolicyBoolean(tctx);
     }
 
-    {
-      Boolean_rd_in_rp_stanzaContext bctx = ctx.boolean_rd_in_rp_stanza();
-      if (bctx != null) {
-        return toRoutePolicyBoolean(bctx);
-      }
+    Boolean_validation_state_is_rp_stanzaContext vsctx =
+        ctx.boolean_validation_state_is_rp_stanza();
+    if (vsctx != null) {
+      return toRoutePolicyBoolean(vsctx);
     }
 
     throw convError(RoutePolicyBoolean.class, ctx);
@@ -8357,6 +8361,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     IntComparator cmp = toIntComparator(ctx.int_comp());
     LongExpr rhs = toTagLongExpr(ctx.int_expr());
     return new RoutePolicyBooleanTagIs(cmp, rhs);
+  }
+
+  private RoutePolicyBoolean toRoutePolicyBoolean(
+      Boolean_validation_state_is_rp_stanzaContext ctx) {
+    boolean valid = ctx.rp_validation_state().VALID() != null;
+    return new RoutePolicyBooleanValidationStateIs(valid);
   }
 
   private XrCommunitySetExpr toXrCommunitySetExpr(
