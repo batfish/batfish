@@ -2297,6 +2297,8 @@ HIGH_AVAILABILITY: 'high-availability';
 
 HIGH_RESOLUTION: 'high-resolution';
 
+HIGHEST_IP: 'highest-ip';
+
 HISTORY: 'history';
 
 HOLD_TIME: 'hold-time';
@@ -2922,6 +2924,8 @@ LOGIN_PAGE: 'login-page';
 LOGINSESSION: 'loginsession';
 
 LOGOUT_WARNING: 'logout-warning';
+
+LONGEST_PREFIX: 'longest-prefix';
 
 LOOKUP: 'lookup';
 
