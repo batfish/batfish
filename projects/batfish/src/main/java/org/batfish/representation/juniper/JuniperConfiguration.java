@@ -91,6 +91,7 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -453,12 +454,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpBgpGroup ig = e.getValue();
       Builder<?, ?> neighbor;
       Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
-      Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
+      LongSpace remoteAs =
+          Optional.ofNullable(
+                  ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs())
+              .map(LongSpace::of)
+              .orElse(LongSpace.EMPTY);
       if (ig.getDynamic()) {
-        neighbor = BgpPassivePeerConfig.builder().setPeerPrefix(prefix).setRemoteAs(remoteAs);
+        neighbor = BgpPassivePeerConfig.builder().setPeerPrefix(prefix).setRemoteAsns(remoteAs);
       } else {
         neighbor =
-            BgpActivePeerConfig.builder().setPeerAddress(prefix.getStartIp()).setRemoteAs(remoteAs);
+            BgpActivePeerConfig.builder()
+                .setPeerAddress(prefix.getStartIp())
+                .setRemoteAsns(remoteAs);
       }
       neighbor.setDescription(ig.getDescription());
 

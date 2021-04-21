@@ -22,6 +22,7 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -49,6 +50,7 @@ import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -499,18 +501,22 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
       // configure BGP peering
       if (_isBgpConnection) {
-        BgpActivePeerConfig.builder()
-            .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
-            .setRemoteAs(ipsecTunnel.getCgwBgpAsn())
-            .setBgpProcess(tunnelVrf.getBgpProcess())
-            .setLocalAs(ipsecTunnel.getVgwBgpAsn())
-            .setLocalIp(ipsecTunnel.getVgwInsideAddress())
-            .setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder()
-                    .setExportPolicy(exportPolicyName)
-                    .setImportPolicy(importPolicyName)
-                    .build())
-            .build();
+        BgpActivePeerConfig activePeerConfig =
+            BgpActivePeerConfig.builder()
+                .setPeerAddress(ipsecTunnel.getCgwInsideAddress())
+                .setRemoteAsns(
+                    Optional.ofNullable(ipsecTunnel.getCgwBgpAsn())
+                        .map(LongSpace::of)
+                        .orElse(LongSpace.EMPTY))
+                .setBgpProcess(tunnelVrf.getBgpProcess())
+                .setLocalAs(ipsecTunnel.getVgwBgpAsn())
+                .setLocalIp(ipsecTunnel.getVgwInsideAddress())
+                .setIpv4UnicastAddressFamily(
+                    Ipv4UnicastAddressFamily.builder()
+                        .setExportPolicy(exportPolicyName)
+                        .setImportPolicy(importPolicyName)
+                        .build())
+                .build();
       }
 
       // configure static routes -- this list of routes should be empty in case of transit gateway

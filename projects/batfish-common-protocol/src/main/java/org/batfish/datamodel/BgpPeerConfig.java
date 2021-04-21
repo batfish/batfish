@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -418,16 +419,15 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
-    /**
-     * Sets space of acceptable remote AS numbers to singleton of {@code remoteAs} if non-null, or
-     * else {@link BgpPeerConfig#ALL_AS_NUMBERS}.
-     */
-    public S setRemoteAs(@Nullable Long remoteAs) {
-      _remoteAsns = remoteAs != null ? LongSpace.of(remoteAs) : ALL_AS_NUMBERS;
+    /** Sets space of acceptable remote AS numbers to singleton of {@code remoteAs}. */
+    public S setRemoteAs(long remoteAs) {
+      checkArgument(ALL_AS_NUMBERS.contains(remoteAs), "Invalid remote-as value: %s", remoteAs);
+      _remoteAsns = LongSpace.of(remoteAs);
       return getThis();
     }
 
     public S setRemoteAsns(LongSpace remoteAs) {
+      checkArgument(ALL_AS_NUMBERS.contains(remoteAs), "Invalid remote-as space: %s", remoteAs);
       _remoteAsns = remoteAs;
       return getThis();
     }
