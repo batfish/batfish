@@ -5698,6 +5698,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRedistribute_connected_bgp_tail(Redistribute_connected_bgp_tailContext ctx) {
+    String policyName = null;
+    if (ctx.policy != null) {
+      policyName = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, policyName, BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
+    }
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
@@ -5708,11 +5714,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
       }
-      if (ctx.policy != null) {
-        String name = toString(ctx.policy);
-        r.setRouteMap(name);
-        _configuration.referenceStructure(
-            ROUTE_POLICY, name, BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
+      if (policyName != null) {
+        r.setRouteMap(policyName);
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
@@ -5789,6 +5792,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRedistribute_static_bgp_tail(Redistribute_static_bgp_tailContext ctx) {
+    String policyName = null;
+    if (ctx.policy != null) {
+      policyName = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, policyName, BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
+    }
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
@@ -5799,11 +5808,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         long metric = toLong(ctx.metric);
         r.setMetric(metric);
       }
-      if (ctx.policy != null) {
-        String name = toString(ctx.policy);
-        r.setRouteMap(name);
-        _configuration.referenceStructure(
-            ROUTE_POLICY, name, BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
+      if (policyName != null) {
+        r.setRouteMap(policyName);
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");

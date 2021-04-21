@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -938,7 +939,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
     List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy.getStatements();
 
-    newBgpProcess.setRedistributionPolicy(bgpCommonExportPolicy.getName());
+    // Create BGP redistribution policy
+    RoutingPolicy.Builder redistributionPolicyBuilder =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(String.format("~BGP_REDISTRIBUTION~%s~", vrfName));
+    List<BooleanExpr> redistributeConditions = new LinkedList<>();
 
     // Never export routes suppressed because they are more specific than summary-only aggregate
     Stream<Prefix> summaryOnlyNetworks =
@@ -1031,15 +1037,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportRipConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.RIP));
       String mapName = redistributeRipPolicy.getRouteMap();
       if (mapName != null) {
-        if (convertedRoutePolicyNames.contains(mapName)) {
-          exportRipConditions.getConjuncts().add(new CallExpr(mapName));
-        } else {
-          // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
-          // references to undefined route-policies and removal of route-policies that are in use.
-          _w.redFlag(
-              String.format(
-                  "Ignoring undefined route-policy %s in RIP -> BGP redistribution", mapName));
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportRipConditions.getConjuncts().add(we);
@@ -1058,6 +1056,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       if (mapName != null) {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
+          redistributeConditions.add(exportStaticConditions);
         } else {
           // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
           // references to undefined route-policies and removal of route-policies that are in use.
@@ -1083,6 +1082,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       if (mapName != null) {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportConnectedConditions.getConjuncts().add(new CallExpr(mapName));
+          redistributeConditions.add(exportConnectedConditions);
         } else {
           // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
           // references to undefined route-policies and removal of route-policies that are in use.
@@ -1107,20 +1107,24 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportOspfConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.OSPF));
       String mapName = redistributeOspfPolicy.getRouteMap();
       if (mapName != null) {
-        if (convertedRoutePolicyNames.contains(mapName)) {
-          exportOspfConditions.getConjuncts().add(new CallExpr(mapName));
-        } else {
-          // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
-          // references to undefined route-policies and removal of route-policies that are in use.
-          _w.redFlag(
-              String.format(
-                  "Ignoring undefined route-policy %s in OSPF -> BGP redistribution", mapName));
-        }
+        // TODO update to route-policy if valid, or delete grammar and VS
       }
       BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
       exportOspfConditions.getConjuncts().add(we);
       exportConditions.add(exportOspfConditions);
     }
+
+    // Finalize redistribution policy and attach to process
+    newBgpProcess.setRedistributionPolicy(
+        redistributionPolicyBuilder
+            .addStatement(
+                new If(
+                    "Redistribute routes into BGP",
+                    new Disjunction(redistributeConditions),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build()
+            .getName());
 
     // cause ip peer groups to inherit unset fields from owning named peer
     // group if it exists, and then always from process master peer group

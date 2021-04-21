@@ -75877,6 +75877,11 @@
               "bgp redistribute connected route-policy" : [
                 12
               ]
+            },
+            "static-to-bgp" : {
+              "bgp redistribute static route-policy" : [
+                16
+              ]
             }
           }
         },
@@ -81413,6 +81418,11 @@
             "static-connected-to-bgp" : {
               "bgp redistribute connected route-policy" : [
                 12
+              ]
+            },
+            "static-to-bgp" : {
+              "bgp redistribute static route-policy" : [
+                16
               ]
             }
           }

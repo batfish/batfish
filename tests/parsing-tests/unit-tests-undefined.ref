@@ -470,6 +470,18 @@
         }
       },
       {
+        "File_Name" : "configs/bgp_route_policy",
+        "Struct_Type" : "route-policy",
+        "Ref_Name" : "static-to-bgp",
+        "Context" : "bgp redistribute static route-policy",
+        "Lines" : {
+          "filename" : "configs/bgp_route_policy",
+          "lines" : [
+            16
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/cisco_additional_paths",
         "Struct_Type" : "undeclared bgp peer",
         "Ref_Name" : "1.2.3.4",
@@ -4339,10 +4351,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 352 results",
+      "notes" : "Found 353 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 352
+      "numResults" : 353
     }
   }
 ]
