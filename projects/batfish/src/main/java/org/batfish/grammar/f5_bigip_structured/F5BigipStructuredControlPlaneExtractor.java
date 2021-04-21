@@ -1,5 +1,7 @@
 package org.batfish.grammar.f5_bigip_structured;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -10,6 +12,7 @@ import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.ImplementedRules;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishCombinedParser;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishConfigurationBuilder;
@@ -44,6 +47,14 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
+  }
+
+  @Override
+  public Set<String> implementedRuleNames() {
+    return ImmutableSet.<String>builder()
+        .addAll(ImplementedRules.getImplementedRules(F5BigipStructuredConfigurationBuilder.class))
+        .addAll(ImplementedRules.getImplementedRules(F5BigipImishConfigurationBuilder.class))
+        .build();
   }
 
   @Override
@@ -84,14 +95,17 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
     // merge in imish configuration
     imishWalker.walk(icb, imishCtx);
 
-    // merge in imish parse tree if desired
+    // merge in imish parse tree if parse tree pretty printing is on.
     if (_ptSentences != null) {
       _ptSentences
           .get()
           .getSentences()
           .addAll(
               ParseTreePrettyPrinter.getParseTreeSentences(
-                      imishCtx, imishParser, _printParseTreeLineNums)
+                      imishCtx,
+                      imishParser,
+                      _printParseTreeLineNums,
+                      ImplementedRules.getImplementedRules(F5BigipImishConfigurationBuilder.class))
                   .getSentences());
     }
   }

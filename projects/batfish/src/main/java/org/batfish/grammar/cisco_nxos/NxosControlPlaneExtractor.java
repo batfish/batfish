@@ -1,5 +1,7 @@
 package org.batfish.grammar.cisco_nxos;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -9,6 +11,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.ImplementedRules;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -32,6 +35,14 @@ public final class NxosControlPlaneExtractor implements ControlPlaneExtractor {
   @Override
   public @Nullable VendorConfiguration getVendorConfiguration() {
     return _configuration;
+  }
+
+  @Override
+  public Set<String> implementedRuleNames() {
+    return ImmutableSet.<String>builder()
+        .addAll(ImplementedRules.getImplementedRules(CiscoNxosPreprocessor.class))
+        .addAll(ImplementedRules.getImplementedRules(CiscoNxosControlPlaneExtractor.class))
+        .build();
   }
 
   @Override
