@@ -1,6 +1,7 @@
 package org.batfish.grammar.iptables;
 
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -10,6 +11,8 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesParser.Built_in_targetContext;
@@ -31,7 +34,7 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
-    implements ControlPlaneExtractor {
+    implements ControlPlaneExtractor, BatfishListener {
 
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
@@ -85,15 +88,15 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       IptablesRule rule = extractRule(tailCtx.command_append().rule_spec());
       _configuration.addRule(table, chain, rule, -1);
     } else if (tailCtx.command_check() != null) {
-      todo(ctx, "Check command is not supported");
+      warn(ctx, "Check command is not supported");
     } else if (tailCtx.command_delete() != null) {
-      todo(ctx, "Delete command is not supported");
+      warn(ctx, "Delete command is not supported");
     } else if (tailCtx.command_delete_chain() != null) {
-      todo(ctx, "Delete Chain command is not supported");
+      warn(ctx, "Delete Chain command is not supported");
     } else if (tailCtx.command_flush() != null) {
-      todo(ctx, "Flush command is not supported");
+      warn(ctx, "Flush command is not supported");
     } else if (tailCtx.command_help() != null) {
-      todo(ctx, "Help command is not supported");
+      warn(ctx, "Help command is not supported");
     } else if (tailCtx.command_insert() != null) {
       String chain = tailCtx.command_insert().chain().getText();
       int ruleNum = 1;
@@ -103,9 +106,9 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       IptablesRule rule = extractRule(tailCtx.command_insert().rule_spec());
       _configuration.addRule(table, chain, rule, ruleNum);
     } else if (tailCtx.command_list() != null) {
-      todo(ctx, "List command is not supported");
+      warn(ctx, "List command is not supported");
     } else if (tailCtx.command_list_rules() != null) {
-      todo(ctx, "List Rules command is not supported");
+      warn(ctx, "List Rules command is not supported");
     } else if (tailCtx.command_new_chain() != null) {
       String chain = tailCtx.command_new_chain().chain().getText();
       _configuration.addChain(table, chain);
@@ -114,13 +117,13 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       ChainPolicy policy = getBuiltInTarget(tailCtx.command_policy().built_in_target());
       _configuration.setChainPolicy(table, chain, policy);
     } else if (tailCtx.command_rename_chain() != null) {
-      todo(ctx, "Rename Chain command is not supported");
+      warn(ctx, "Rename Chain command is not supported");
     } else if (tailCtx.command_replace() != null) {
-      todo(ctx, "Replace command is not supported");
+      warn(ctx, "Replace command is not supported");
     } else if (tailCtx.command_zero() != null) {
-      todo(ctx, "Zero command is not supported");
+      warn(ctx, "Zero command is not supported");
     } else {
-      todo(ctx, "Unknown command in rule");
+      warn(ctx, "Unknown command in rule");
     }
   }
 
@@ -147,7 +150,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       boolean inverted = (mCtx.NOT() != null);
 
       if (mCtx.OPTION_IPV4() != null || mCtx.OPTION_IPV6() != null) {
-        todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
+        warn(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
       } else if (mCtx.OPTION_DESTINATION() != null) {
         rule.addMatch(inverted, MatchType.DESTINATION, getEndpoint(mCtx.endpoint()));
       } else if (mCtx.OPTION_DESTINATION_PORT() != null) {
@@ -165,12 +168,12 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
                           m.getMatchType() == MatchType.PROTOCOL
                               && m.getMatchData() == IpProtocol.TCP);
           if (!ruleHasProtocolTcp) {
-            todo(
+            warn(
                 ctx,
                 String.format("Option '%s' is supported only with '-p tcp'", getFullText(mCtx)));
           }
         } else {
-          todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
+          warn(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
         }
       } else if (mCtx.OPTION_PROTOCOL() != null) {
         rule.addMatch(inverted, MatchType.PROTOCOL, toProtocol(mCtx.protocol()));
@@ -181,7 +184,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
       } else if (mCtx.OPTION_SOURCE_PORT() != null) {
         rule.addMatch(inverted, MatchType.SOURCE_PORT, toInteger(mCtx.port));
       } else {
-        todo(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
+        warn(ctx, String.format("Option '%s' is not supported", getFullText(mCtx)));
       }
     }
 
@@ -201,11 +204,22 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     return rule;
   }
 
-  private String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
-    return text;
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   @Nullable
@@ -249,14 +263,6 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
   public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
     ParseTreeWalker walker = new BatfishParseTreeWalker(_parser);
     walker.walk(this, tree);
-  }
-
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private void todo(ParserRuleContext ctx, String comment) {
-    _w.addWarning(ctx, getFullText(ctx), _parser, comment);
   }
 
   private IpProtocol toProtocol(ProtocolContext protocol) {
