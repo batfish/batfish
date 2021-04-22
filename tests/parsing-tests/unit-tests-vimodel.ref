@@ -40139,7 +40139,7 @@
                 "network" : "1.0.0.0/8",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
-                "originType" : "incomplete",
+                "originType" : "igp",
                 "tag" : -1,
                 "weight" : 0
               }
