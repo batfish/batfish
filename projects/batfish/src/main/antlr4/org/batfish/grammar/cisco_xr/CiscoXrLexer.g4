@@ -5210,6 +5210,8 @@ SUPPRESS: 'suppress';
 
 SUPPRESS_ARP: 'suppress-arp';
 
+SUPPRESS_RA: 'suppress-ra';
+
 SUPPRESS_DATA_REGISTERS: 'suppress-data-registers';
 
 SUPPRESS_FIB_PENDING: 'suppress-fib-pending';
