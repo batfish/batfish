@@ -22753,6 +22753,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -22762,6 +22771,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -22958,6 +22968,15 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -22967,6 +22986,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : true,
@@ -40120,6 +40140,15 @@
                 "type" : "ReturnFalse"
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -40147,6 +40176,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -40264,6 +40294,15 @@
                 ]
               }
             ]
+          },
+          "~BGP_REDISTRIBUTION~default~" : {
+            "name" : "~BGP_REDISTRIBUTION~default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -40273,6 +40312,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
