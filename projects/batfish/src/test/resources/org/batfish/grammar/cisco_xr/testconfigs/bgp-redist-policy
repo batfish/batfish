@@ -25,6 +25,4 @@ router bgp 1
   bgp router-id 1.1.1.1
   address-family ipv4 unicast
     redistribute static route-policy rp_ip
-    !redistribute rip route-policy rp_ip
-  !redistribute static route-policy rp_ip
 !

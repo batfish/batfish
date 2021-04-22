@@ -5720,6 +5720,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
+    } else {
+      // Warn about other cases we don't handle yet, like multicast address-families
+      todo(ctx);
     }
   }
 
@@ -5814,6 +5817,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
+    } else {
+      // Warn about other cases we don't handle yet, like multicast address-families
+      todo(ctx);
     }
   }
 
