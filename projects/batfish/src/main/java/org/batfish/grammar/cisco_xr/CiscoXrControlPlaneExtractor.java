@@ -5701,11 +5701,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRedistribute_connected_bgp_tail(Redistribute_connected_bgp_tailContext ctx) {
+    String policyName = null;
     if (ctx.policy != null) {
-      todo(ctx);
-      String name = toString(ctx.policy);
+      policyName = toString(ctx.policy);
       _configuration.referenceStructure(
-          ROUTE_POLICY, name, BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
+          ROUTE_POLICY, policyName, BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY, ctx.start.getLine());
     }
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
@@ -5717,8 +5717,14 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
       }
+      if (policyName != null) {
+        r.setRouteMap(policyName);
+      }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
+    } else {
+      // Warn about other cases we don't handle yet, like multicast address-families
+      todo(ctx);
     }
   }
 
@@ -5792,11 +5798,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRedistribute_static_bgp_tail(Redistribute_static_bgp_tailContext ctx) {
+    String policyName = null;
     if (ctx.policy != null) {
-      todo(ctx);
-      String name = toString(ctx.policy);
+      policyName = toString(ctx.policy);
       _configuration.referenceStructure(
-          ROUTE_POLICY, name, BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
+          ROUTE_POLICY, policyName, BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY, ctx.start.getLine());
     }
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
@@ -5808,8 +5814,14 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         long metric = toLong(ctx.metric);
         r.setMetric(metric);
       }
+      if (policyName != null) {
+        r.setRouteMap(policyName);
+      }
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
+    } else {
+      // Warn about other cases we don't handle yet, like multicast address-families
+      todo(ctx);
     }
   }
 

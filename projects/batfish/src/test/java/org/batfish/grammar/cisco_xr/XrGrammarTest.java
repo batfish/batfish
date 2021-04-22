@@ -126,6 +126,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -1993,6 +1994,58 @@ public final class XrGrammarTest {
           contains(1));
     }
     assertFalse(i.hasNext());
+  }
+
+  @Test
+  public void testBgpRedistributionRoutePolicy() {
+    String hostname = "bgp-redist-policy";
+    Configuration c = parseConfig(hostname);
+    Prefix permittedPrefix = Prefix.parse("1.2.3.4/32");
+    Prefix permittedPrefix2 = Prefix.parse("1.2.3.5/32");
+    Prefix rejectedPrefix = Prefix.parse("2.0.0.0/8");
+    Prefix unmatchedPrefix = Prefix.parse("3.0.0.0/8");
+    StaticRoute permittedRoute = StaticRoute.testBuilder().setNetwork(permittedPrefix).build();
+    StaticRoute permittedRoute2 = StaticRoute.testBuilder().setNetwork(permittedPrefix2).build();
+    StaticRoute rejectedRoute = StaticRoute.testBuilder().setNetwork(rejectedPrefix).build();
+    StaticRoute unmatchedRoute = StaticRoute.testBuilder().setNetwork(unmatchedPrefix).build();
+    BgpProcess bgpProc = c.getDefaultVrf().getBgpProcess();
+    RoutingPolicy bgpRedistPolicy = c.getRoutingPolicies().get(bgpProc.getRedistributionPolicy());
+    // Export policy should permit static routes according to the specified redistribution policy
+    assertTrue(
+        bgpRedistPolicy.process(
+            permittedRoute,
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    assertTrue(
+        bgpRedistPolicy.process(
+            permittedRoute2,
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    assertFalse(
+        bgpRedistPolicy.process(
+            rejectedRoute,
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    assertFalse(
+        bgpRedistPolicy.process(
+            unmatchedRoute,
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    // Export policy does not permit routes of OSPF or other protocols, even if the static
+    // redistribution policy would permit them
+    assertFalse(
+        bgpRedistPolicy.process(
+            ConnectedRoute.builder()
+                .setNetwork(permittedPrefix)
+                .setNextHop(NextHopInterface.of("iface"))
+                .build(),
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
+    assertFalse(
+        bgpRedistPolicy.process(
+            OspfExternalType1Route.testBuilder().setNetwork(permittedPrefix).build(),
+            OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
+            Direction.OUT));
   }
 
   @Test
