@@ -222,6 +222,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
@@ -586,7 +588,8 @@ import org.batfish.representation.f5_bigip.Vlan;
 import org.batfish.representation.f5_bigip.VlanInterface;
 
 @ParametersAreNonnullByDefault
-public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener {
+public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener
+    implements BatfishListener {
 
   private static int toInteger(Ip_address_portContext ctx) {
     String text = ctx.getText();
@@ -3144,11 +3147,22 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     return _c;
   }
 
-  private @Nonnull String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
-    return text;
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   public @Nullable Integer getImishConfigurationLine() {
@@ -3173,14 +3187,11 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
   }
 
-  private void todo(ParserRuleContext ctx) {
-    // Just print first line of unsupported feature
-    _w.todo(ctx, getFullText(ctx).split("\n", -1)[0], _parser);
-  }
-
-  private void warn(ParserRuleContext ctx, String message) {
-    // Just print first line of unsupported feature
-    _w.addWarning(ctx, getFullText(ctx).split("\n", -1)[0], _parser, message);
+  @Nonnull
+  @Override
+  public String getWarningText(ParserRuleContext ctx) {
+    // Just print first line
+    return getFullText(ctx).split("\n", -1)[0];
   }
 
   private @Nullable IpProtocol toIpProtocol(Ip_protocolContext ctx) {

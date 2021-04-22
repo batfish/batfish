@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatvyos;
 
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -14,6 +15,8 @@ import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_nexthop_selfContext;
@@ -93,7 +96,7 @@ import org.batfish.representation.vyos.VyosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
-    implements ControlPlaneExtractor {
+    implements ControlPlaneExtractor, BatfishListener {
 
   private static LineAction toAction(Line_actionContext ctx) {
     if (ctx.DENY() != null) {
@@ -693,7 +696,21 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
     walker.walk(this, tree);
   }
 
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, _text, _parser);
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 }

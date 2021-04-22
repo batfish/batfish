@@ -107,6 +107,8 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
@@ -445,7 +447,8 @@ import org.batfish.representation.palo_alto.Zone;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 
-public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
+public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
+    implements BatfishListener {
 
   /** Indicates which rulebase that new rules go into. */
   private enum RulebaseId {
@@ -533,11 +536,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return defaultReturnValue;
   }
 
-  private String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
-    return text;
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
+  }
+
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   /** Return original line number for specified token */
@@ -3317,14 +3331,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
           "Application definitions only affect App-ID, so Batfish ignores custom application"
               + " definitions.");
     }
-  }
-
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
-  }
-
-  private void warn(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, getFullText(ctx), _parser, message);
   }
 
   private void warn(ParserRuleContext ctx, ParserRuleContext warnCtx, String message) {

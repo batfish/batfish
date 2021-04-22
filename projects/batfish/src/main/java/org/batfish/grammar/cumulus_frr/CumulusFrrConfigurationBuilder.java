@@ -60,6 +60,8 @@ import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Bgp_redist_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
@@ -234,7 +236,8 @@ import org.batfish.representation.cumulus.RouteMapSetWeight;
 import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
-public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener {
+public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
+    implements BatfishListener {
   private static final IntegerSpace OSPF_AREA_RANGE_COST_SPACE =
       IntegerSpace.of(Range.closed(0, 16777215));
   private static final IntegerSpace PREFIX_LENGTH_SPACE =
@@ -335,20 +338,22 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     }
   }
 
-  /** Return the text of a given rule context */
   @Nonnull
-  String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    return _text.substring(start, end + 1);
+  @Override
+  public String getInputText() {
+    return _text;
   }
 
-  private void todo(ParserRuleContext ctx) {
-    _w.todo(ctx, getFullText(ctx), _parser);
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
   }
 
-  private void warn(ParserRuleContext ctx, String message) {
-    _w.addWarning(ctx, getFullText(ctx), _parser, message);
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   private LongExpr toMetricLongExpr(Int_exprContext ctx) {
