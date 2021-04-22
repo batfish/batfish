@@ -69102,6 +69102,12 @@
               "Line" : 11,
               "Parser_Context" : "[network6_bgp_tail bgp_tail address_family_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
               "Text" : "network 2607:f380::/32 route-policy originate-internal-ipv6"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 16,
+              "Parser_Context" : "[redistribute_static_bgp_tail bgp_tail address_family_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_xr_configuration]",
+              "Text" : "redistribute static route-policy static-to-bgp"
             }
           ]
         },
