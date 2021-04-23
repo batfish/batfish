@@ -100,7 +100,7 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
       return;
     }
     path.setStatement(statement);
-    tree.addPath(path, _currentSetLine, null);
+    tree.addPath(path, _currentSetLine, null, null);
   }
 
   @Override
