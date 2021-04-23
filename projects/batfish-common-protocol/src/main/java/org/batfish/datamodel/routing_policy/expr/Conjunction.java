@@ -80,21 +80,16 @@ public final class Conjunction extends BooleanExpr {
       return _simplified;
     }
     ImmutableList.Builder<BooleanExpr> simpleConjunctsBuilder = ImmutableList.builder();
-    boolean atLeastOneFalse = false;
-    boolean atLeastOneComplex = false;
     for (BooleanExpr conjunct : _conjuncts) {
       BooleanExpr simpleConjunct = conjunct.simplify();
+      if (simpleConjunct.equals(BooleanExprs.TRUE)) {
+        // Skip true.
+        continue;
+      }
+      simpleConjunctsBuilder.add(simpleConjunct);
       if (simpleConjunct.equals(BooleanExprs.FALSE)) {
-        atLeastOneFalse = true;
-        if (!atLeastOneComplex) {
-          _simplified = BooleanExprs.FALSE;
-          return _simplified;
-        } else if (!atLeastOneFalse) {
-          simpleConjunctsBuilder.add(simpleConjunct);
-        }
-      } else if (!simpleConjunct.equals(BooleanExprs.TRUE)) {
-        atLeastOneComplex = true;
-        simpleConjunctsBuilder.add(simpleConjunct);
+        // Short-circuit the conjunction after the first false.
+        break;
       }
     }
     List<BooleanExpr> simpleConjuncts = simpleConjunctsBuilder.build();
