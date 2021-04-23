@@ -1,5 +1,11 @@
 ####BATFISH PRE-PROCESSED JUNIPER CONFIG####
+set garbage line
 set system host-name preprocess-hierarchical
+set garbage line
 set interfaces lo0 disable
+set interfaces lo0 unit 0 family inet garbage line2
 set interfaces lo0 unit 0 family inet address 192.0.2.1/24
+set garbage line3
 set interfaces lo0 unit 1 family inet address 192.0.3.1/24
+set garbage line4
+set garbage line5 garbage line6
