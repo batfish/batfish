@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groups_exceptContext;
@@ -20,6 +21,8 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
 
   private boolean _reenablePathRecording;
 
+  private HierarchyPath _lastPath;
+
   public InitialTreeBuilder(Hierarchy hierarchy) {
     _hierarchy = hierarchy;
   }
@@ -27,7 +30,7 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterApply_groups_except(Apply_groups_exceptContext ctx) {
     _addLine = false;
-    _hierarchy.addMasterPath(_currentPath, null);
+    _hierarchy.addMasterPath(_currentPath, null, null);
     String groupName = ctx.name.getText();
     _hierarchy.setApplyGroupsExcept(_currentPath, groupName);
   }
@@ -71,8 +74,18 @@ public class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSet_line(Set_lineContext ctx) {
     if (_addLine) {
-      _hierarchy.addMasterPath(_currentPath, ctx);
+      _hierarchy.addMasterPath(_currentPath, ctx, null);
+      _lastPath = _currentPath;
       _currentPath = null;
+    }
+  }
+
+  @Override
+  public void visitErrorNode(ErrorNode node) {
+    if (_lastPath == null) {
+      _hierarchy.addMasterRootErrorNode(node);
+    } else {
+      _hierarchy.addMasterPath(_lastPath, null, node);
     }
   }
 

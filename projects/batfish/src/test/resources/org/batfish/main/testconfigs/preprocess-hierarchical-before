@@ -1,7 +1,9 @@
+garbage line;
 #
 system {
   host-name preprocess-hierarchical;
 }
+garbage line;
 groups {
   g1 {
     interfaces {
@@ -16,9 +18,15 @@ interfaces {
     apply-groups g1;
     unit 0 {
       family inet {
+        garbage line2;
         address 192.0.2.1/24;
       }
     }
   }
 }
+set garbage line3
 set interfaces lo0 unit 1 family inet address 192.0.3.1/24
+set garbage line4
+garbage line5 {
+  garbage line6;
+}

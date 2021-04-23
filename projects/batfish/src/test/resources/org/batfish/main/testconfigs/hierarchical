@@ -10,6 +10,7 @@ routing-options {
           interface reth0.0 {
             authentication {
 #              md5 1 key <removed>;
+            }
           }
       }
     }

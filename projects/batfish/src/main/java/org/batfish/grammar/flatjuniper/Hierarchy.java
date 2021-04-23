@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -143,6 +145,7 @@ public final class Hierarchy {
 
       protected Set<String> _blacklistedGroups;
       private final Map<String, HierarchyChildNode> _children;
+      protected List<ErrorNode> _errorNodes;
 
       /**
        * Add a set line to {@code output} prefixed by {@code prefix} for each path from this node to
@@ -152,6 +155,7 @@ public final class Hierarchy {
         if (_children.isEmpty()) {
           // leaf, so append set line
           output.append(prefix).append("\n");
+          _errorNodes.forEach(errorNode -> output.append(errorNode.getText().trim()).append("\n"));
         }
         _children.forEach(
             (childText, child) -> {
@@ -163,6 +167,7 @@ public final class Hierarchy {
       public HierarchyNode() {
         _children = new LinkedHashMap<>();
         _blacklistedGroups = new HashSet<>();
+        _errorNodes = ImmutableList.of();
       }
 
       public void addBlacklistedGroup(String groupName) {
@@ -361,7 +366,7 @@ public final class Hierarchy {
       if (groupLine != null) {
         int overrideLine = groupLine.getStart().getLine();
         Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
-        if (masterTree.addPath(path, setLine, _groupName) == AddPathResult.BLACKLISTED) {
+        if (masterTree.addPath(path, setLine, _groupName, null) == AddPathResult.BLACKLISTED) {
           return;
         }
         StatementContext newStatement =
@@ -387,7 +392,10 @@ public final class Hierarchy {
     }
 
     public AddPathResult addPath(
-        HierarchyPath path, @Nullable Set_lineContext ctx, @Nullable String group) {
+        HierarchyPath path,
+        @Nullable Set_lineContext ctx,
+        @Nullable String group,
+        @Nullable ErrorNode errorNode) {
       AddPathResult result = AddPathResult.UNMODIFIED;
       HierarchyNode currentNode = _root;
       HierarchyChildNode matchNode = null;
@@ -406,6 +414,10 @@ public final class Hierarchy {
       assert matchNode != null;
       matchNode._line = ctx;
       matchNode._sourceGroup = group;
+      if (errorNode != null) {
+        matchNode._errorNodes =
+            ImmutableList.<ErrorNode>builder().addAll(matchNode._errorNodes).add(errorNode).build();
+      }
       return result;
     }
 
@@ -750,6 +762,8 @@ public final class Hierarchy {
      */
     private @Nonnull String toSetLines(@Nonnull String header) {
       StringBuilder output = new StringBuilder(header);
+      _root._errorNodes.forEach(
+          errorNode -> output.append(errorNode.getText().trim()).append("\n"));
       _root.appendSetLines("set", output);
       return output.toString();
     }
@@ -770,16 +784,23 @@ public final class Hierarchy {
     _tokenInputs = new HashMap<>();
   }
 
+  /** Add an error node to the root that would be printed first by {@link #toSetLines}. */
+  public void addMasterRootErrorNode(ErrorNode node) {
+    _masterTree._root._errorNodes =
+        ImmutableList.<ErrorNode>builder().addAll(_masterTree._root._errorNodes).add(node).build();
+  }
+
   public void addDeactivatePath(HierarchyPath path, Deactivate_lineContext ctx) {
     if (isDeactivated(path)) {
       return;
     }
-    _deactivateTree.addPath(path, null, null);
+    _deactivateTree.addPath(path, null, null, null);
     _deactivateTree.pruneAfterPath(path);
   }
 
-  public void addMasterPath(HierarchyPath path, @Nullable Set_lineContext ctx) {
-    _masterTree.addPath(path, ctx, null);
+  public void addMasterPath(
+      HierarchyPath path, @Nullable Set_lineContext ctx, @Nullable ErrorNode errorNode) {
+    _masterTree.addPath(path, ctx, null, errorNode);
   }
 
   public List<ParseTree> getApplyGroupsLines(
