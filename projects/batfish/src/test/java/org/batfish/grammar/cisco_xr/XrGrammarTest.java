@@ -105,6 +105,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -2046,6 +2047,38 @@ public final class XrGrammarTest {
             OspfExternalType1Route.testBuilder().setNetwork(permittedPrefix).build(),
             OspfExternalRoute.builder().setNextHop(NextHopDiscard.instance()),
             Direction.OUT));
+  }
+
+  @Test
+  public void testBgpDefaultImportExport() {
+    // BGP peers with no import/export filters defined deny all routes in XR
+    String hostname = "bgp-default-import-export";
+    Configuration c = parseConfig(hostname);
+    Map<Prefix, BgpActivePeerConfig> peers = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    Bgpv4Route route = Bgpv4Route.testBuilder().setNetwork(Prefix.parse("1.1.1.0/24")).build();
+
+    // EBGP peers with unconfigured or undefined import/export policies should deny all routes
+    for (Prefix ebgpPeerPrefix :
+        ImmutableList.of(Prefix.parse("10.1.0.2/32"), Prefix.parse("10.1.0.3/32"))) {
+      BgpActivePeerConfig ebgpPeer = peers.get(ebgpPeerPrefix);
+      RoutingPolicy importPolicy =
+          c.getRoutingPolicies().get(ebgpPeer.getIpv4UnicastAddressFamily().getImportPolicy());
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies().get(ebgpPeer.getIpv4UnicastAddressFamily().getExportPolicy());
+      assertFalse(importPolicy.process(route, Bgpv4Route.testBuilder(), Direction.IN));
+      assertFalse(exportPolicy.process(route, Bgpv4Route.testBuilder(), Direction.OUT));
+    }
+
+    // IBGP peers with unconfigured or undefined import/export policies should permit all BGP routes
+    for (Prefix ibgpPeerPrefix :
+        ImmutableList.of(Prefix.parse("10.1.0.4/32"), Prefix.parse("10.1.0.5/32"))) {
+      BgpActivePeerConfig ibgpPeer = peers.get(ibgpPeerPrefix);
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies().get(ibgpPeer.getIpv4UnicastAddressFamily().getExportPolicy());
+      // Currently, there is no import policy in this case because import is completely unrestricted
+      assertNull(ibgpPeer.getIpv4UnicastAddressFamily().getImportPolicy());
+      assertTrue(exportPolicy.process(route, Bgpv4Route.testBuilder(), Direction.OUT));
+    }
   }
 
   @Test

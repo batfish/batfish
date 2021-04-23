@@ -294,10 +294,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
   }
 
-  public static String computeBgpPeerImportPolicyName(String vrf, String peer) {
-    return String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", vrf, peer);
-  }
-
   public static @Nonnull String computeCommunitySetMatchAnyName(String name) {
     return String.format("~MATCH_ANY~%s~", name);
   }
@@ -1209,8 +1205,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
 
       // Generate import and export policies
-      String peerImportPolicyName = generateBgpImportPolicy(lpg, vrfName, c, _w);
-      generateBgpExportPolicy(lpg, vrfName, ipv4, c, _w);
+      long localAs = firstNonNull(lpg.getLocalAs(), proc.getProcnum());
+      String peerImportPolicyName = generateBgpImportPolicy(lpg, localAs, vrfName, c, _w);
+      generateBgpExportPolicy(lpg, localAs, vrfName, ipv4, c, _w);
 
       // If defaultOriginate is set, create default route for this peer group
       GeneratedRoute.Builder defaultRoute = null;
@@ -1239,8 +1236,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         clusterId = bgpRouterId;
       }
       String description = lpg.getDescription();
-      Long pgLocalAs = lpg.getLocalAs();
-      long localAs = pgLocalAs != null ? pgLocalAs : proc.getProcnum();
 
       BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
       if (lpg instanceof IpBgpPeerGroup) {
