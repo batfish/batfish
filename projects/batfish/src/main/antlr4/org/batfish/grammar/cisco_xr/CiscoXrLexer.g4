@@ -7673,7 +7673,7 @@ M_CommunitySetElem_UINT16: F_Uint16 -> type(UINT16);
 M_CommunitySetElem_COLON: ':' -> type(COLON);
 
 // NEWLINE can be interspersed between any other tokens in this mode
-M_CommunitySetElem_NEWLINE: F_Newline -> channel(HIDDEN);
+M_CommunitySetElem_NEWLINE: F_Newline -> type(NEWLINE);
 
 // TODO: save remarks
 M_CommunitySetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
