@@ -178,13 +178,6 @@ final class AristaConversions {
       w.redFlag("No supported address-family configured for " + name);
       return false;
     }
-
-    // No remote AS set.
-    if (neighbor.getRemoteAs() == null) {
-      w.redFlag("No remote-as configured for " + name);
-      return false;
-    }
-
     return true;
   }
 
@@ -209,13 +202,6 @@ final class AristaConversions {
       w.redFlag("No supported address-family configured for " + name);
       return false;
     }
-
-    // No remote AS set.
-    if (neighbor.getRemoteAs() == null && neighbor.getPeerFilter() == null) {
-      w.redFlag("No remote-as configured for " + name);
-      return false;
-    }
-
     return true;
   }
 
