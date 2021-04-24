@@ -161,11 +161,17 @@ boolean_simple_rp_stanza
    | boolean_rib_has_route_rp_stanza
    | boolean_route_type_is_rp_stanza
    | boolean_tag_is_rp_stanza
+   | boolean_validation_state_is_rp_stanza
 ;
 
 boolean_tag_is_rp_stanza
 :
    TAG int_comp int_expr
+;
+
+boolean_validation_state_is_rp_stanza
+:
+   VALIDATION_STATE IS state = rp_validation_state
 ;
 
 delete_community_rp_stanza
@@ -390,6 +396,8 @@ rp_stanza
    | if_rp_stanza
    | set_rp_stanza
 ;
+
+rp_validation_state: INVALID | VALID;
 
 set_community_rp_stanza
 :
