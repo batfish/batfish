@@ -1362,8 +1362,10 @@ public class AristaGrammarTest {
     }
     {
       Prefix neighborPrefix = Prefix.parse("5.5.5.5/32");
-      // neighbor with missing remote-as is not converted
-      assertThat(proc.getActiveNeighbors(), not(hasKey(neighborPrefix)));
+      // neighbor with missing remote-as is converted to empty longspace
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(neighbor.getRemoteAsns(), equalTo(LongSpace.EMPTY));
     }
   }
 
