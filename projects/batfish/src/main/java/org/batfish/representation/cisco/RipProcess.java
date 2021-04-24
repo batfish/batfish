@@ -24,13 +24,9 @@ public class RipProcess implements Serializable {
 
   private boolean _distributeListInAcl;
 
-  private int _distributeListInLine;
-
   private String _distributeListOut;
 
   private boolean _distributeListOutAcl;
-
-  private int _distributeListOutLine;
 
   private final SortedSet<Prefix> _networks;
 
@@ -72,20 +68,12 @@ public class RipProcess implements Serializable {
     return _distributeListInAcl;
   }
 
-  public int getDistributeListInLine() {
-    return _distributeListInLine;
-  }
-
   public String getDistributeListOut() {
     return _distributeListOut;
   }
 
   public boolean getDistributeListOutAcl() {
     return _distributeListOutAcl;
-  }
-
-  public int getDistributeListOutLine() {
-    return _distributeListOutLine;
   }
 
   public SortedSet<Prefix> getNetworks() {
@@ -124,20 +112,12 @@ public class RipProcess implements Serializable {
     _distributeListInAcl = distributeListInAcl;
   }
 
-  public void setDistributeListInLine(int distributeListInLine) {
-    _distributeListInLine = distributeListInLine;
-  }
-
   public void setDistributeListOut(String distributeListOut) {
     _distributeListOut = distributeListOut;
   }
 
   public void setDistributeListOutAcl(boolean distributeListOutAcl) {
     _distributeListOutAcl = distributeListOutAcl;
-  }
-
-  public void setDistributeListOutLine(int distributeListOutLine) {
-    _distributeListOutLine = distributeListOutLine;
   }
 
   public void setPassiveInterfaceDefault(boolean passiveInterfaceDefault) {

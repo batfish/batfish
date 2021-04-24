@@ -8141,11 +8141,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (in) {
       proc.setDistributeListIn(name);
       proc.setDistributeListInAcl(acl);
-      proc.setDistributeListInLine(line);
     } else {
       proc.setDistributeListOut(name);
       proc.setDistributeListOutAcl(acl);
-      proc.setDistributeListOutLine(line);
     }
   }
 
