@@ -20,13 +20,17 @@ rd_set_elem_list
 
 rd_set_elem
 :
-  rd_set_elem_asdot COLON lo16 = rd_set_elem_lo16
-  | asplain_hi16 = uint16 COLON rd_set_elem_32
-  | asplain_hi32 = rd_set_elem_32 COLON rd_set_elem_lo16
-  | IP_PREFIX COLON rd_set_elem_lo16
-  | IP_ADDRESS COLON rd_set_elem_lo16
-  | DFA_REGEX COMMUNITY_SET_REGEX
-  | IOS_REGEX COMMUNITY_SET_REGEX
+  NEWLINE*
+  (
+    rd_set_elem_asdot COLON lo16 = rd_set_elem_lo16
+    | asplain_hi16 = uint16 COLON rd_set_elem_32
+    | asplain_hi32 = rd_set_elem_32 COLON rd_set_elem_lo16
+    | IP_PREFIX COLON rd_set_elem_lo16
+    | IP_ADDRESS COLON rd_set_elem_lo16
+    | DFA_REGEX COMMUNITY_SET_REGEX
+    | IOS_REGEX COMMUNITY_SET_REGEX
+  )
+  NEWLINE*
 ;
 
 rd_set_elem_asdot
