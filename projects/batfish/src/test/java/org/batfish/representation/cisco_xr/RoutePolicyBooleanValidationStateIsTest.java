@@ -22,7 +22,7 @@ public class RoutePolicyBooleanValidationStateIsTest {
         .testEquals();
   }
 
-  public BooleanExpr test(RoutePolicyBooleanValidationStateIs rp) {
+  public BooleanExpr runTest(RoutePolicyBooleanValidationStateIs rp) {
     return rp.toBooleanExpr(
         new CiscoXrConfiguration(),
         Configuration.builder()
@@ -35,12 +35,12 @@ public class RoutePolicyBooleanValidationStateIsTest {
   @Test
   public void testValidConversion() {
     RoutePolicyBooleanValidationStateIs rp = new RoutePolicyBooleanValidationStateIs(true);
-    assertThat(test(rp), equalTo(BooleanExprs.TRUE));
+    assertThat(runTest(rp), equalTo(BooleanExprs.TRUE));
   }
 
   @Test
   public void testInvalidConversion() {
     RoutePolicyBooleanValidationStateIs rp = new RoutePolicyBooleanValidationStateIs(false);
-    assertThat(test(rp), equalTo(BooleanExprs.FALSE));
+    assertThat(runTest(rp), equalTo(BooleanExprs.FALSE));
   }
 }
