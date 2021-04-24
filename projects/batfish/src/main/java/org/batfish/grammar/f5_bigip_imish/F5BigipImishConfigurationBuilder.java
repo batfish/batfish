@@ -26,7 +26,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_configurationContext;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.Iipo_networkContext;
@@ -110,7 +111,7 @@ import org.batfish.representation.f5_bigip.UpdateSourceInterface;
 import org.batfish.representation.f5_bigip.UpdateSourceIp;
 
 public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
 
   private static int toInteger(Ip_prefix_lengthContext ctx) {
     return Integer.parseInt(ctx.getText(), 10);
@@ -168,16 +169,19 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
+  private final @Nonnull SilentSyntax _silentSyntax;
 
   public F5BigipImishConfigurationBuilder(
       F5BigipImishCombinedParser parser,
       String text,
       Warnings w,
-      F5BigipConfiguration configuration) {
+      F5BigipConfiguration configuration,
+      SilentSyntax silentSyntax) {
     _parser = parser;
     _text = text;
     _w = w;
     _c = configuration;
+    _silentSyntax = silentSyntax;
   }
 
   private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
@@ -811,5 +815,16 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  @Nonnull
+  @Override
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

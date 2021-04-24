@@ -411,9 +411,10 @@ import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_asa.AsaParser.Aaa_accountingContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Aaa_accounting_commands_lineContext;
@@ -1135,7 +1136,7 @@ import org.batfish.representation.cisco_asa.WildcardAddressSpecifier;
 import org.batfish.vendor.VendorConfiguration;
 
 public class AsaControlPlaneExtractor extends AsaParserBaseListener
-    implements BatfishListener, ControlPlaneExtractor {
+    implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
@@ -1390,6 +1391,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private final Warnings _w;
 
+  @Nonnull private final SilentSyntax _silentSyntax;
+
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
   private String _currentNetworkObjectName;
@@ -1417,11 +1420,19 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
    */
   private String _lastKnownOspfProcess;
 
-  public AsaControlPlaneExtractor(String text, AsaCombinedParser parser, Warnings warnings) {
+  public AsaControlPlaneExtractor(
+      String text, AsaCombinedParser parser, Warnings warnings, SilentSyntax silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
     _peerGroupStack = new ArrayList<>();
+    _silentSyntax = silentSyntax;
+  }
+
+  @Nonnull
+  @Override
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
   }
 
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
@@ -10300,5 +10311,10 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

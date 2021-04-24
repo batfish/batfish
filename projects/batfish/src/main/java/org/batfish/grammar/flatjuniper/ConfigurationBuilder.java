@@ -189,7 +189,8 @@ import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.vendor_family.juniper.TacplusServer;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_application_setContext;
@@ -832,7 +833,8 @@ import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.Zone;
 
-public class ConfigurationBuilder extends FlatJuniperParserBaseListener implements BatfishListener {
+public class ConfigurationBuilder extends FlatJuniperParserBaseListener
+    implements SilentSyntaxListener {
 
   private static final boolean DEFAULT_VRRP_PREEMPT = true;
 
@@ -2104,6 +2106,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener implemen
 
   private final Warnings _w;
 
+  @Nonnull private final SilentSyntax _silentSyntax;
+
   private ApplicationSet _currentApplicationSet;
 
   private NssaSettings _currentNssaSettings;
@@ -2124,7 +2128,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener implemen
       FlatJuniperCombinedParser parser,
       String text,
       Warnings warnings,
-      Map<Token, String> tokenInputs) {
+      Map<Token, String> tokenInputs,
+      SilentSyntax silentSyntax) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
@@ -2134,6 +2139,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener implemen
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
     _tokenInputs = tokenInputs;
+    _silentSyntax = silentSyntax;
   }
 
   private void setLogicalSystem(LogicalSystem logicalSystem) {
@@ -6349,6 +6355,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener implemen
     return _w;
   }
 
+  @Nonnull
+  @Override
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
+  }
+
   private static String getInterfaceName(Interface_idContext ctx) {
     String name = ctx.name.getText();
     if (ctx.chnl != null) {
@@ -6689,5 +6701,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener implemen
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

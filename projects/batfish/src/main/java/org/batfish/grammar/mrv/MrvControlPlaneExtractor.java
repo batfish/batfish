@@ -6,9 +6,10 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.mrv.MrvParser.A_system_systemnameContext;
 import org.batfish.grammar.mrv.MrvParser.Mrv_configurationContext;
 import org.batfish.grammar.mrv.MrvParser.NsdeclContext;
@@ -17,7 +18,7 @@ import org.batfish.representation.mrv.MrvConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class MrvControlPlaneExtractor extends MrvParserBaseListener
-    implements ControlPlaneExtractor, BatfishListener {
+    implements ControlPlaneExtractor, SilentSyntaxListener {
 
   private MrvConfiguration _configuration;
 
@@ -27,10 +28,20 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
   private Warnings _w;
 
-  public MrvControlPlaneExtractor(String fileText, MrvCombinedParser mrvParser, Warnings warnings) {
+  @Nonnull private final SilentSyntax _silentSyntax;
+
+  public MrvControlPlaneExtractor(
+      String fileText, MrvCombinedParser mrvParser, Warnings warnings, SilentSyntax silentSyntax) {
     _text = fileText;
     _parser = mrvParser;
     _w = warnings;
+    _silentSyntax = silentSyntax;
+  }
+
+  @Override
+  @Nonnull
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
   }
 
   @Override
@@ -84,5 +95,10 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
   private String toString(NsdeclContext ctx) {
     String text = getText(ctx.quoted_string());
     return text;
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

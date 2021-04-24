@@ -108,7 +108,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
@@ -448,7 +449,13 @@ import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
+
+  @Nonnull
+  @Override
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
+  }
 
   /** Indicates which rulebase that new rules go into. */
   private enum RulebaseId {
@@ -465,6 +472,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private PaloAltoCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
+  @Nonnull private final SilentSyntax _silentSyntax;
 
   /** Should file at most one warning about ignored application statements */
   private boolean _filedWarningApplicationStatementIgnored = false;
@@ -513,10 +521,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private Zone _currentZone;
 
   public PaloAltoConfigurationBuilder(
-      PaloAltoCombinedParser parser, String text, Warnings warnings) {
+      PaloAltoCombinedParser parser, String text, Warnings warnings, SilentSyntax silentSyntax) {
     _parser = parser;
     _text = text;
     _w = warnings;
+    _silentSyntax = silentSyntax;
   }
 
   @SuppressWarnings("unused")
@@ -3339,5 +3348,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   private void warn(ParserRuleContext ctx, Token warnToken, String message) {
     _w.addWarningOnLine(_parser.getLine(warnToken), ctx, getFullText(ctx), _parser, message);
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

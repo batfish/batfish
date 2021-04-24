@@ -12,9 +12,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.iptables.IptablesParser.Built_in_targetContext;
 import org.batfish.grammar.iptables.IptablesParser.CommandContext;
 import org.batfish.grammar.iptables.IptablesParser.Command_tailContext;
@@ -34,7 +35,7 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
-    implements ControlPlaneExtractor, BatfishListener {
+    implements ControlPlaneExtractor, SilentSyntaxListener {
 
   private static int toInteger(Token t) {
     return Integer.parseInt(t.getText());
@@ -56,12 +57,25 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   private Warnings _w;
 
+  @Nonnull private final SilentSyntax _silentSyntax;
+
   public IptablesControlPlaneExtractor(
-      String fileText, IptablesCombinedParser iptablesParser, Warnings warnings, String fileName) {
+      String fileText,
+      IptablesCombinedParser iptablesParser,
+      Warnings warnings,
+      String fileName,
+      SilentSyntax silentSyntax) {
     _text = fileText;
     _parser = iptablesParser;
     _w = warnings;
     _fileName = fileName;
+    _silentSyntax = silentSyntax;
+  }
+
+  @Override
+  @Nonnull
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
   }
 
   @Override
@@ -267,5 +281,10 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   private IpProtocol toProtocol(ProtocolContext protocol) {
     return IpProtocol.fromString(protocol.getText());
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

@@ -223,8 +223,9 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Cm_deviceContext;
@@ -589,7 +590,7 @@ import org.batfish.representation.f5_bigip.VlanInterface;
 
 @ParametersAreNonnullByDefault
 public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
 
   private static int toInteger(Ip_address_portContext ctx) {
     String text = ctx.getText();
@@ -728,12 +729,20 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private final @Nonnull F5BigipStructuredCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
+  private final @Nonnull SilentSyntax _silentSyntax;
 
   public F5BigipStructuredConfigurationBuilder(
-      F5BigipStructuredCombinedParser parser, String text, Warnings w) {
+      F5BigipStructuredCombinedParser parser, String text, Warnings w, SilentSyntax silentSyntax) {
     _parser = parser;
     _text = text;
     _w = w;
+    _silentSyntax = silentSyntax;
+  }
+
+  @Override
+  @Nonnull
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
   }
 
   private @Nonnull String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
@@ -3314,5 +3323,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

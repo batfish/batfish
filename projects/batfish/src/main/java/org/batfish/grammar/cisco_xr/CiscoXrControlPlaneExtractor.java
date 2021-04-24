@@ -352,9 +352,10 @@ import org.batfish.datamodel.vendor_family.cisco_xr.NtpServer;
 import org.batfish.datamodel.vendor_family.cisco_xr.Service;
 import org.batfish.datamodel.vendor_family.cisco_xr.User;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_accountingContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_accounting_commands_lineContext;
@@ -1038,7 +1039,7 @@ import org.batfish.representation.cisco_xr.XrWildcardCommunitySetElem;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
-    implements ControlPlaneExtractor, BatfishListener {
+    implements ControlPlaneExtractor, SilentSyntaxListener {
 
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
 
@@ -1286,6 +1287,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private final Warnings _w;
 
+  @Nonnull private final SilentSyntax _silentSyntax;
+
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
   private Integer _currentHsrpGroup;
@@ -1302,13 +1305,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private boolean _multicastRoutingIpv6;
 
   public CiscoXrControlPlaneExtractor(
-      String text, CiscoXrCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
+      String text,
+      CiscoXrCombinedParser parser,
+      ConfigurationFormat format,
+      Warnings warnings,
+      SilentSyntax silentSyntax) {
     _text = text;
     _parser = parser;
     _format = format;
     _w = warnings;
     _peerGroupStack = new ArrayList<>();
     _currentBlockNeighborAddressFamilies = new HashSet<>();
+    _silentSyntax = silentSyntax;
   }
 
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
@@ -9099,5 +9107,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIpv4_conflict_policy(Ipv4_conflict_policyContext ctx) {
     todo(ctx);
+  }
+
+  @Nonnull
+  @Override
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

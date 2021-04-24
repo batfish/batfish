@@ -407,9 +407,10 @@ import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accountingContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_commands_lineContext;
@@ -1147,7 +1148,7 @@ import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
-    implements BatfishListener, ControlPlaneExtractor {
+    implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
@@ -1443,6 +1444,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private final Warnings _w;
 
+  @Nonnull private final SilentSyntax _silentSyntax;
+
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
   private String _currentNetworkObjectName;
@@ -1471,12 +1474,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private String _lastKnownOspfProcess;
 
   public CiscoControlPlaneExtractor(
-      String text, CiscoCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
+      String text,
+      CiscoCombinedParser parser,
+      ConfigurationFormat format,
+      Warnings warnings,
+      SilentSyntax silentSyntax) {
     _text = text;
     _parser = parser;
     _format = format;
     _w = warnings;
     _peerGroupStack = new ArrayList<>();
+    _silentSyntax = silentSyntax;
   }
 
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
@@ -10269,5 +10277,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  @Nonnull
+  @Override
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

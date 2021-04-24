@@ -16,9 +16,10 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_nexthop_selfContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_remote_asContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_route_map_exportContext;
@@ -96,7 +97,7 @@ import org.batfish.representation.vyos.VyosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
-    implements ControlPlaneExtractor, BatfishListener {
+    implements ControlPlaneExtractor, SilentSyntaxListener {
 
   private static LineAction toAction(Line_actionContext ctx) {
     if (ctx.DENY() != null) {
@@ -204,11 +205,20 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   private final Warnings _w;
 
+  @Nonnull private final SilentSyntax _silentSyntax;
+
   public FlatVyosControlPlaneExtractor(
-      String text, FlatVyosCombinedParser parser, Warnings warnings) {
+      String text, FlatVyosCombinedParser parser, Warnings warnings, SilentSyntax silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
+    _silentSyntax = silentSyntax;
+  }
+
+  @Override
+  @Nonnull
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
   }
 
   @Override
@@ -712,5 +722,10 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   @Override
   public Warnings getWarnings() {
     return _w;
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }
