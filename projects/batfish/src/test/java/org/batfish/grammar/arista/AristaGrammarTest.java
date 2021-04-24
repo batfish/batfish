@@ -980,8 +980,6 @@ public class AristaGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * Both peers with and without remote-as should appear in the datamodel.
