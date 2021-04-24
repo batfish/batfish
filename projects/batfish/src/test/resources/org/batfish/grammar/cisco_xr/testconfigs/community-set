@@ -11,12 +11,15 @@ community-set universe2
 end-set
 
 community-set wellknown
+  # Comments can appear at the start
   accept-own,
   graceful-shutdown,
   internet,
+  # Comments can appear in the middle
   local-AS,
   no-advertise,
   no-export
+  # Comments can appear at the end
 end-set
 
 community-set mixed

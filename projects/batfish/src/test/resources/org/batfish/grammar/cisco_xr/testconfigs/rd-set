@@ -7,17 +7,20 @@ rd-set universe
 end-set
 
 rd-set mixed
+  # Comments can appear at the start
   dfa-regex '_5678:.*',
   ios-regex '_1234:.*',
   1.2:3,
   4:5,
   600000:6,
+  # Comments can appear in the middle
   *:7,
   800000:*,
   9.*:10,
   *.0:11,
   1.1.1.0/24:3,
   4.4.4.4:5
+  # Comments can appear at the end
 end-set
 
 route-policy any

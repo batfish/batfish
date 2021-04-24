@@ -7672,7 +7672,7 @@ M_CommunitySetElem_UINT16: F_Uint16 -> type(UINT16);
 M_CommunitySetElem_COLON: ':' -> type(COLON);
 
 // NEWLINE can be interspersed between any other tokens in this mode
-M_CommunitySetElem_NEWLINE: F_Newline -> channel(HIDDEN);
+M_CommunitySetElem_NEWLINE: F_Newline -> type(NEWLINE);
 
 // TODO: save remarks
 M_CommunitySetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
@@ -7807,7 +7807,7 @@ M_RdSetElem_UINT32: F_Uint32 -> type(UINT32);
 M_RdSetElem_COLON: ':' -> type(COLON);
 
 // NEWLINE can be interspersed between any other tokens in this mode
-M_RdSetElem_NEWLINE: F_Newline -> channel(HIDDEN);
+M_RdSetElem_NEWLINE: F_Newline -> type(NEWLINE);
 
 // TODO: save remarks
 M_RdSetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
