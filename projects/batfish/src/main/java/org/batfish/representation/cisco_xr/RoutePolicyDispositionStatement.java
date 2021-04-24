@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco_xr;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.common.BatfishException;
@@ -12,7 +13,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public final class RoutePolicyDispositionStatement extends RoutePolicyStatement {
 
-  private RoutePolicyDispositionType _dispositionType;
+  private final RoutePolicyDispositionType _dispositionType;
 
   public RoutePolicyDispositionStatement(RoutePolicyDispositionType dType) {
     _dispositionType = dType;
@@ -68,8 +69,7 @@ public final class RoutePolicyDispositionStatement extends RoutePolicyStatement 
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof RoutePolicyDispositionStatement)) {
+    } else if (!(o instanceof RoutePolicyDispositionStatement)) {
       return false;
     }
     RoutePolicyDispositionStatement that = (RoutePolicyDispositionStatement) o;
@@ -83,5 +83,10 @@ public final class RoutePolicyDispositionStatement extends RoutePolicyStatement 
 
   public RoutePolicyDispositionType getDispositionType() {
     return _dispositionType;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("dispositionType", _dispositionType).toString();
   }
 }

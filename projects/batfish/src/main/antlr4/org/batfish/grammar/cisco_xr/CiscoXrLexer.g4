@@ -2558,6 +2558,8 @@ INTERVAL: 'interval';
 
 INTERWORKING: 'interworking';
 
+INVALID: 'invalid';
+
 INVALID_SPI_RECOVERY: 'invalid-spi-recovery';
 
 INVALID_USERNAME_LOG: 'invalid-username-log';
@@ -5724,6 +5726,8 @@ VACL: 'vacl';
 
 VAD: 'vad';
 
+VALID: 'valid';
+
 VALID_11A_40MHZ_CHANNEL_PAIR: 'valid-11a-40mhz-channel-pair';
 
 VALID_11A_80MHZ_CHANNEL_GROUP: 'valid-11a-80mhz-channel-group';
@@ -5737,6 +5741,8 @@ VALID_11G_CHANNEL: 'valid-11g-channel';
 VALID_AND_PROTECTED_SSID: 'valid-and-protected-ssid';
 
 VALID_NETWORK_OUI_PROFILE: 'valid-network-oui-profile';
+
+VALIDATION_STATE: 'validation-state';
 
 VALIDATION_USAGE: 'validation-usage';
 

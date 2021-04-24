@@ -111,6 +111,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -183,8 +184,10 @@ import org.batfish.representation.cisco_xr.RdSetIosRegex;
 import org.batfish.representation.cisco_xr.RdSetIpAddress;
 import org.batfish.representation.cisco_xr.RdSetIpPrefix;
 import org.batfish.representation.cisco_xr.RoutePolicy;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanValidationStateIs;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
+import org.batfish.representation.cisco_xr.RoutePolicyElseIfBlock;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
 import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco_xr.Vrf;
@@ -1189,6 +1192,27 @@ public final class XrGrammarTest {
     assertTrue(bgpRpOut.process(permittedRoute, Bgpv4Route.testBuilder(), Direction.OUT));
     assertTrue(bgpRpOut.process(permittedRoute2, Bgpv4Route.testBuilder(), Direction.OUT));
     assertFalse(bgpRpOut.process(rejectedRoute, Bgpv4Route.testBuilder(), Direction.OUT));
+  }
+
+  @Test
+  public void testRoutePolicyValidationStateExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("rp-validation-state");
+    assertThat(c.getRoutePolicies(), hasKeys("validation-state-testing"));
+    RoutePolicy p = c.getRoutePolicies().get("validation-state-testing");
+    assertThat(p.getStatements(), contains(instanceOf(RoutePolicyIfStatement.class)));
+    RoutePolicyIfStatement ifs = (RoutePolicyIfStatement) p.getStatements().get(0);
+    assertThat(ifs.getGuard(), equalTo(new RoutePolicyBooleanValidationStateIs(false)));
+    assertThat(ifs.getElseBlock(), nullValue());
+    assertThat(ifs.getStatements(), hasSize(1));
+    assertThat(
+        ifs.getStatements(),
+        contains(new RoutePolicyDispositionStatement(RoutePolicyDispositionType.DROP)));
+    assertThat(ifs.getElseIfBlocks(), hasSize(1));
+    RoutePolicyElseIfBlock elses = Iterables.getOnlyElement(ifs.getElseIfBlocks());
+    assertThat(elses.getGuard(), equalTo(new RoutePolicyBooleanValidationStateIs(true)));
+    assertThat(
+        elses.getStatements(),
+        contains(new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
   }
 
   @Test
