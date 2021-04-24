@@ -1,0 +1,25 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+  host-name a.example.com;
+}
+interface xe-0/0/0 {
+  unit 0 {
+    unrecognized syntax;
+  }
+}
+protocols {
+  bgp {
+    # traceoptions should be silently ignored
+    traceoptions {
+      file update;
+    }
+  }
+  isis {
+    interface ge-0/0/0.0 {
+      level 2 {
+        # priority 65 unsupported for now
+        priority 65;
+      }
+    }
+  }
+}
