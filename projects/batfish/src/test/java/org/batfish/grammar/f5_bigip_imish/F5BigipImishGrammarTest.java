@@ -103,6 +103,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredCombinedParser;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredControlPlaneExtractor;
 import org.batfish.main.Batfish;
@@ -213,7 +214,8 @@ public final class F5BigipImishGrammarTest {
             new Warnings(),
             String.format("configs/%s", hostname),
             () -> pts,
-            settings.getPrintParseTreeLineNums());
+            settings.getPrintParseTreeLineNums(),
+            new SilentSyntax());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);

@@ -378,6 +378,7 @@ import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -434,7 +435,8 @@ public final class CiscoGrammarTest {
     configureBatfishTestSettings(settings);
     CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings);
     CiscoControlPlaneExtractor extractor =
-        new CiscoControlPlaneExtractor(src, ciscoParser, format, new Warnings());
+        new CiscoControlPlaneExtractor(
+            src, ciscoParser, format, new Warnings(), new SilentSyntax());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);

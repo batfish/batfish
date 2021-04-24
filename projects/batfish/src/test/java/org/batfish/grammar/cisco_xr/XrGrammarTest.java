@@ -159,6 +159,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
@@ -253,7 +254,11 @@ public final class XrGrammarTest {
     CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(src, settings);
     CiscoXrControlPlaneExtractor extractor =
         new CiscoXrControlPlaneExtractor(
-            src, ciscoXrParser, ConfigurationFormat.CISCO_IOS_XR, new Warnings());
+            src,
+            ciscoXrParser,
+            ConfigurationFormat.CISCO_IOS_XR,
+            new Warnings(),
+            new SilentSyntax());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoXrParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);

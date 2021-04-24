@@ -91,6 +91,7 @@ import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.grammar.BatfishParseTreeWalker;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -213,7 +214,7 @@ public class CumulusFrrGrammarTest {
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     CumulusFrrConfigurationBuilder cb =
-        new CumulusFrrConfigurationBuilder(_config, parser, _warnings, src);
+        new CumulusFrrConfigurationBuilder(_config, parser, _warnings, src, new SilentSyntax());
     walker.walk(cb, tree);
 
     // SerializationUtils.clone will clear transient state, which we save and restore.

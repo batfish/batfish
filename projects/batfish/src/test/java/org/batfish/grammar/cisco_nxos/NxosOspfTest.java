@@ -39,6 +39,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
@@ -83,7 +84,7 @@ public final class NxosOspfTest {
     configureBatfishTestSettings(settings);
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
     NxosControlPlaneExtractor extractor =
-        new NxosControlPlaneExtractor(src, ciscoNxosParser, new Warnings());
+        new NxosControlPlaneExtractor(src, ciscoNxosParser, new Warnings(), new SilentSyntax());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoNxosParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);

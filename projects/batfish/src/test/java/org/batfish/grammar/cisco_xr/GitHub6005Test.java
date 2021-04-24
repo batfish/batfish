@@ -15,6 +15,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.main.Batfish;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.junit.Rule;
@@ -36,7 +37,11 @@ public final class GitHub6005Test {
     CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(src, settings);
     CiscoXrControlPlaneExtractor extractor =
         new CiscoXrControlPlaneExtractor(
-            src, ciscoXrParser, ConfigurationFormat.CISCO_IOS_XR, new Warnings());
+            src,
+            ciscoXrParser,
+            ConfigurationFormat.CISCO_IOS_XR,
+            new Warnings(),
+            new SilentSyntax());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoXrParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);

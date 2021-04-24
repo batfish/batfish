@@ -65,6 +65,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -96,7 +97,7 @@ public class CumulusConcatenatedGrammarTest {
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
-            src, new Warnings(), "", settings, null, false);
+            src, new Warnings(), "", settings, null, false, new SilentSyntax());
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     return SerializationUtils.clone(
         (CumulusConcatenatedConfiguration) extractor.getVendorConfiguration());
@@ -127,7 +128,7 @@ public class CumulusConcatenatedGrammarTest {
     CumulusConcatenatedCombinedParser parser = new CumulusConcatenatedCombinedParser(src, settings);
     CumulusConcatenatedControlPlaneExtractor extractor =
         new CumulusConcatenatedControlPlaneExtractor(
-            src, new Warnings(), filename, parser.getSettings(), null, false);
+            src, new Warnings(), filename, parser.getSettings(), null, false, new SilentSyntax());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);

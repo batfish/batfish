@@ -34,6 +34,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.arista.AristaConfiguration;
@@ -53,7 +54,8 @@ public class AristaRouteMapTest {
     configureBatfishTestSettings(settings);
     AristaCombinedParser parser = new AristaCombinedParser(src, settings);
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(src, parser, ConfigurationFormat.ARISTA, new Warnings());
+        new AristaControlPlaneExtractor(
+            src, parser, ConfigurationFormat.ARISTA, new Warnings(), new SilentSyntax());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);

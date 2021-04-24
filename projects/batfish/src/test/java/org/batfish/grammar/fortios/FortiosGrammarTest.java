@@ -103,6 +103,7 @@ import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.fortios.AccessList;
@@ -3042,7 +3043,7 @@ public final class FortiosGrammarTest {
     configureBatfishTestSettings(settings);
     FortiosCombinedParser parser = new FortiosCombinedParser(src, settings);
     FortiosControlPlaneExtractor extractor =
-        new FortiosControlPlaneExtractor(src, parser, new Warnings());
+        new FortiosControlPlaneExtractor(src, parser, new Warnings(), new SilentSyntax());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
