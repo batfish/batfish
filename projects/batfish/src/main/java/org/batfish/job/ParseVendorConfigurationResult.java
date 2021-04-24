@@ -16,6 +16,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationResult
@@ -29,6 +30,7 @@ public class ParseVendorConfigurationResult
   private final @Nonnull ConfigurationFormat _format;
 
   @Nonnull private ParseTreeSentences _parseTree;
+  @Nonnull private final SilentSyntax _silentSyntax;
 
   private final ParseStatus _status;
 
@@ -43,13 +45,15 @@ public class ParseVendorConfigurationResult
       @Nonnull ConfigurationFormat format,
       @Nonnull Warnings warnings,
       @Nonnull ParseTreeSentences parseTree,
-      @Nonnull Throwable failureCause) {
+      @Nonnull Throwable failureCause,
+      @Nonnull SilentSyntax silentSyntax) {
     super(elapsedTime, history, failureCause);
     _filename = filename;
     _format = format;
     _parseTree = parseTree;
     _status = ParseStatus.FAILED;
     _warnings = warnings;
+    _silentSyntax = silentSyntax;
   }
 
   public ParseVendorConfigurationResult(
@@ -61,7 +65,8 @@ public class ParseVendorConfigurationResult
       @Nonnull Warnings warnings,
       @Nonnull ParseTreeSentences parseTree,
       @Nonnull ParseStatus status,
-      @Nonnull Multimap<String, String> duplicateHostnames) {
+      @Nonnull Multimap<String, String> duplicateHostnames,
+      @Nonnull SilentSyntax silentSyntax) {
     super(elapsedTime, history);
     _filename = filename;
     _format = format;
@@ -70,6 +75,7 @@ public class ParseVendorConfigurationResult
     _warnings = warnings;
     _status = status;
     _duplicateHostnames = duplicateHostnames;
+    _silentSyntax = silentSyntax;
   }
 
   public ParseVendorConfigurationResult(
@@ -85,6 +91,7 @@ public class ParseVendorConfigurationResult
     _parseTree = new ParseTreeSentences();
     _status = status;
     _warnings = warnings;
+    _silentSyntax = new SilentSyntax();
   }
 
   @Override
@@ -138,6 +145,7 @@ public class ParseVendorConfigurationResult
       if (!_parseTree.isEmpty()) {
         answerElement.getParseTrees().put(_filename, _parseTree);
       }
+      answerElement.getSilentSyntax().put(_filename, _silentSyntax);
     } else if (_status == ParseStatus.FAILED) {
       assert _failureCause != null; // status == FAILED, failureCause must be non-null
       answerElement

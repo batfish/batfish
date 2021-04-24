@@ -1,9 +1,11 @@
 package org.batfish.datamodel.answers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -13,6 +15,7 @@ import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.grammar.SilentSyntax;
 
 public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     implements Serializable {
@@ -35,6 +38,8 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   private SortedMap<String, ParseTreeSentences> _parseTrees;
 
+  private Map<String, SilentSyntax> _silentSyntax;
+
   private String _version;
 
   /* Map of filename to warnings */
@@ -48,6 +53,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
     _warnings = new TreeMap<>();
     _errors = new TreeMap<>();
     _errorDetails = new TreeMap<>();
+    _silentSyntax = new HashMap<>();
   }
 
   public void addRedFlagWarning(String name, Warning warning) {
@@ -121,6 +127,11 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
   @Override
   public void setParseTrees(SortedMap<String, ParseTreeSentences> parseTrees) {
     _parseTrees = parseTrees;
+  }
+
+  @JsonIgnore
+  public Map<String, SilentSyntax> getSilentSyntax() {
+    return _silentSyntax;
   }
 
   @JsonProperty(PROP_VERSION)

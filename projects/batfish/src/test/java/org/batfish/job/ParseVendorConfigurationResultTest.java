@@ -15,6 +15,8 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxElem;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Test;
@@ -30,6 +32,9 @@ public class ParseVendorConfigurationResultTest {
     ParseTreeSentences parseTree = new ParseTreeSentences();
     parseTree.setSentences(ImmutableList.of("test"));
 
+    SilentSyntax silentSyntax = new SilentSyntax();
+    silentSyntax.addElement(new SilentSyntaxElem("rule1", 1, "text"));
+
     Warnings warnings = new Warnings();
     warnings.getParseWarnings().add(new ParseWarning(1, "text", "context", null));
 
@@ -43,7 +48,8 @@ public class ParseVendorConfigurationResultTest {
             warnings,
             parseTree,
             ParseStatus.PASSED,
-            HashMultimap.create());
+            HashMultimap.create(),
+            silentSyntax);
 
     SortedMap<String, VendorConfiguration> configs = new TreeMap<>();
     ParseVendorConfigurationAnswerElement answerElement =
@@ -59,5 +65,7 @@ public class ParseVendorConfigurationResultTest {
 
     // Confirm result warning was properly applied to answerElement
     assertThat(answerWarnings, hasEntry(filename, warnings));
+
+    assertThat(answerElement.getSilentSyntax(), hasEntry(filename, silentSyntax));
   }
 }

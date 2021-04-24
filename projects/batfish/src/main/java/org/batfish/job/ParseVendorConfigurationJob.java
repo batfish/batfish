@@ -27,6 +27,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.SilentSyntax;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.arista.AristaCombinedParser;
 import org.batfish.grammar.arista.AristaControlPlaneExtractor;
@@ -91,6 +92,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   private ConfigurationFormat _expectedFormat;
 
   private ParseTreeSentences _ptSentences;
+  @Nonnull private SilentSyntax _silentSyntax;
   final NetworkSnapshot _snapshot;
   @Nullable private SpanContext _spanContext;
   private Warnings _warnings;
@@ -108,6 +110,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     _fileText = fileText;
     _filename = filename;
     _ptSentences = new ParseTreeSentences();
+    _silentSyntax = new SilentSyntax();
     _warnings = warnings;
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;
@@ -169,7 +172,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             AristaCombinedParser aristaParser = new AristaCombinedParser(_fileText, _settings);
             combinedParser = aristaParser;
-            extractor = new AristaControlPlaneExtractor(_fileText, aristaParser, format, _warnings);
+            extractor =
+                new AristaControlPlaneExtractor(
+                    _fileText, aristaParser, format, _warnings, _silentSyntax);
             break;
           }
 
@@ -181,14 +186,17 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             CiscoCombinedParser ciscoParser = new CiscoCombinedParser(_fileText, _settings);
             combinedParser = ciscoParser;
-            extractor = new CiscoControlPlaneExtractor(_fileText, ciscoParser, format, _warnings);
+            extractor =
+                new CiscoControlPlaneExtractor(
+                    _fileText, ciscoParser, format, _warnings, _silentSyntax);
             break;
           }
         case CISCO_ASA:
           {
             AsaCombinedParser asaParser = new AsaCombinedParser(_fileText, _settings);
             combinedParser = asaParser;
-            extractor = new AsaControlPlaneExtractor(_fileText, asaParser, _warnings);
+            extractor =
+                new AsaControlPlaneExtractor(_fileText, asaParser, _warnings, _silentSyntax);
             break;
           }
 
@@ -197,7 +205,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             CiscoNxosCombinedParser ciscoNxosParser =
                 new CiscoNxosCombinedParser(_fileText, _settings);
             combinedParser = ciscoNxosParser;
-            extractor = new NxosControlPlaneExtractor(_fileText, ciscoNxosParser, _warnings);
+            extractor =
+                new NxosControlPlaneExtractor(_fileText, ciscoNxosParser, _warnings, _silentSyntax);
             break;
           }
 
@@ -206,7 +215,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(_fileText, _settings);
             combinedParser = ciscoXrParser;
             extractor =
-                new CiscoXrControlPlaneExtractor(_fileText, ciscoXrParser, format, _warnings);
+                new CiscoXrControlPlaneExtractor(
+                    _fileText, ciscoXrParser, format, _warnings, _silentSyntax);
             break;
           }
         case CUMULUS_CONCATENATED:
@@ -221,7 +231,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _filename,
                     parser.getSettings(),
                     _settings.getPrintParseTree() ? () -> _ptSentences : null,
-                    _settings.getPrintParseTreeLineNums());
+                    _settings.getPrintParseTreeLineNums(),
+                    _silentSyntax);
             break;
           }
 
@@ -229,7 +240,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             CumulusNcluCombinedParser parser = new CumulusNcluCombinedParser(_fileText, _settings);
             combinedParser = parser;
-            extractor = new CumulusNcluControlPlaneExtractor(_fileText, parser, _warnings);
+            extractor =
+                new CumulusNcluControlPlaneExtractor(_fileText, parser, _warnings, _silentSyntax);
             break;
           }
 
@@ -245,7 +257,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _warnings,
                     _filename,
                     _settings.getPrintParseTree() ? () -> _ptSentences : null,
-                    _settings.getPrintParseTreeLineNums());
+                    _settings.getPrintParseTreeLineNums(),
+                    _silentSyntax);
             break;
           }
 
@@ -253,7 +266,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           {
             FortiosCombinedParser parser = new FortiosCombinedParser(_fileText, _settings);
             combinedParser = parser;
-            extractor = new FortiosControlPlaneExtractor(_fileText, parser, _warnings);
+            extractor =
+                new FortiosControlPlaneExtractor(_fileText, parser, _warnings, _silentSyntax);
             break;
           }
 
@@ -287,7 +301,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         case FLAT_VYOS:
           FlatVyosCombinedParser flatVyosParser = new FlatVyosCombinedParser(_fileText, _settings);
           combinedParser = flatVyosParser;
-          extractor = new FlatVyosControlPlaneExtractor(_fileText, flatVyosParser, _warnings);
+          extractor =
+              new FlatVyosControlPlaneExtractor(
+                  _fileText, flatVyosParser, _warnings, _silentSyntax);
           break;
 
         case JUNIPER:
@@ -311,20 +327,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           FlatJuniperCombinedParser flatJuniperParser =
               new FlatJuniperCombinedParser(_fileText, _settings, lineMap);
           combinedParser = flatJuniperParser;
-          extractor = new FlatJuniperControlPlaneExtractor(_fileText, flatJuniperParser, _warnings);
+          extractor =
+              new FlatJuniperControlPlaneExtractor(
+                  _fileText, flatJuniperParser, _warnings, _silentSyntax);
           break;
 
         case IPTABLES:
           IptablesCombinedParser iptablesParser = new IptablesCombinedParser(_fileText, _settings);
           combinedParser = iptablesParser;
           extractor =
-              new IptablesControlPlaneExtractor(_fileText, iptablesParser, _warnings, _filename);
+              new IptablesControlPlaneExtractor(
+                  _fileText, iptablesParser, _warnings, _filename, _silentSyntax);
           break;
 
         case MRV:
           MrvCombinedParser mrvParser = new MrvCombinedParser(_fileText, _settings);
           combinedParser = mrvParser;
-          extractor = new MrvControlPlaneExtractor(_fileText, mrvParser, _warnings);
+          extractor = new MrvControlPlaneExtractor(_fileText, mrvParser, _warnings, _silentSyntax);
           break;
 
         case PALO_ALTO_NESTED:
@@ -348,7 +367,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           PaloAltoCombinedParser paParser =
               new PaloAltoCombinedParser(_fileText, _settings, lineMap);
           combinedParser = paParser;
-          extractor = new PaloAltoControlPlaneExtractor(_fileText, paParser, _warnings);
+          extractor =
+              new PaloAltoControlPlaneExtractor(_fileText, paParser, _warnings, _silentSyntax);
           break;
 
         default:
@@ -439,15 +459,29 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     if (format == ConfigurationFormat.EMPTY) {
       _warnings.redFlag("Empty file: '" + _filename + "'\n");
       return new ParseResult(
-          null, null, _filename, format, _ptSentences, ParseStatus.EMPTY, _warnings);
+          null, null, _filename, format, _ptSentences, ParseStatus.EMPTY, _warnings, _silentSyntax);
     } else if (format == ConfigurationFormat.IGNORED) {
       _warnings.redFlag("Ignored file: " + _filename + "\n");
       return new ParseResult(
-          null, null, _filename, format, _ptSentences, ParseStatus.IGNORED, _warnings);
+          null,
+          null,
+          _filename,
+          format,
+          _ptSentences,
+          ParseStatus.IGNORED,
+          _warnings,
+          _silentSyntax);
     } else if (format == ConfigurationFormat.UNKNOWN) {
       _warnings.redFlag("Unable to detect format for file: '" + _filename + "'\n");
       return new ParseResult(
-          null, null, _filename, format, _ptSentences, ParseStatus.UNKNOWN, _warnings);
+          null,
+          null,
+          _filename,
+          format,
+          _ptSentences,
+          ParseStatus.UNKNOWN,
+          _warnings,
+          _silentSyntax);
     } else if (UNIMPLEMENTED_FORMATS.contains(format)) {
       String unsupportedError =
           "Unsupported configuration format: '" + format + "' for file: '" + _filename + "'\n";
@@ -459,11 +493,19 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             format,
             _ptSentences,
             ParseStatus.FAILED,
-            _warnings);
+            _warnings,
+            _silentSyntax);
       }
       _warnings.redFlag(unsupportedError);
       return new ParseResult(
-          null, null, _filename, format, _ptSentences, ParseStatus.UNSUPPORTED, _warnings);
+          null,
+          null,
+          _filename,
+          format,
+          _ptSentences,
+          ParseStatus.UNSUPPORTED,
+          _warnings,
+          _silentSyntax);
     }
 
     try {
@@ -471,17 +513,32 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       VendorConfiguration vc = parseFile(format);
       ParseStatus status =
           vc.getUnrecognized() ? ParseStatus.PARTIALLY_UNRECOGNIZED : ParseStatus.PASSED;
-      return new ParseResult(vc, null, _filename, format, _ptSentences, status, _warnings);
+      return new ParseResult(
+          vc, null, _filename, format, _ptSentences, status, _warnings, _silentSyntax);
     } catch (WillNotCommitException e) {
       if (_settings.getHaltOnParseError()) {
         // Fail the job if we need to
         return new ParseResult(
-            null, e, _filename, format, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
+            null,
+            e,
+            _filename,
+            format,
+            _ptSentences,
+            ParseStatus.WILL_NOT_COMMIT,
+            _warnings,
+            _silentSyntax);
       }
       // Otherwise just generate a warning
       _warnings.redFlag(e.getMessage());
       return new ParseResult(
-          null, null, _filename, format, _ptSentences, ParseStatus.WILL_NOT_COMMIT, _warnings);
+          null,
+          null,
+          _filename,
+          format,
+          _ptSentences,
+          ParseStatus.WILL_NOT_COMMIT,
+          _warnings,
+          _silentSyntax);
     } catch (Exception e) {
       return new ParseResult(
           null,
@@ -490,7 +547,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           format,
           _ptSentences,
           ParseStatus.FAILED,
-          _warnings);
+          _warnings,
+          _silentSyntax);
     }
   }
 
@@ -505,7 +563,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           result.getWarnings(),
           result.getParseTreeSentences(),
           result.getStatus(),
-          _duplicateHostnames);
+          _duplicateHostnames,
+          result.getSilentSyntax());
     } else if (result.getFailureCause() != null) {
       return new ParseVendorConfigurationResult(
           elapsed,
@@ -514,7 +573,8 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           result.getFormat(),
           result.getWarnings(),
           result.getParseTreeSentences(),
-          result.getFailureCause());
+          result.getFailureCause(),
+          result.getSilentSyntax());
     } else {
       return new ParseVendorConfigurationResult(
           elapsed,
