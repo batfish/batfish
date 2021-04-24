@@ -6211,8 +6211,7 @@ WS
 
 VARIABLE
 :
-  F_Variable_RequiredVarChar F_Variable_VarChar*
-  | F_Variable_VarChar+ F_Variable_RequiredVarChar F_Variable_VarChar*
+  F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
 ;
 
 fragment
