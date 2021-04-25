@@ -29,6 +29,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -980,6 +981,8 @@ public class AristaGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * Both peers with and without remote-as should appear in the datamodel.
@@ -991,6 +994,14 @@ public class AristaGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(neighborWithoutRemoteAs, hasRemoteAs(LongSpace.EMPTY)))));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "No remote-as configured for BGP neighbor %s in vrf default",
+                    neighborWithoutRemoteAs.getStartIp()))));
 
     /*
      * Also ensure that default value of allowRemoteAsOut is true.

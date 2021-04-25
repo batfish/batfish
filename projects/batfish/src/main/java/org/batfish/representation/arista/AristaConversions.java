@@ -157,6 +157,9 @@ final class AristaConversions {
     return highestIp.get();
   }
 
+  /**
+   * Checks that the neighbor is not shutdown and at least one of the address families is activated
+   */
   private static boolean isActive(
       String name, AristaBgpVrf vrf, AristaBgpV4Neighbor neighbor, Warnings w) {
     if (firstNonNull(neighbor.getShutdown(), Boolean.FALSE)) {
@@ -181,6 +184,9 @@ final class AristaConversions {
     return true;
   }
 
+  /**
+   * Checks that the neighbor is not shutdown and at least one of the address families is activated
+   */
   private static boolean isActive(
       String name, AristaBgpVrf vrf, AristaBgpV4DynamicNeighbor neighbor, Warnings w) {
     if (firstNonNull(neighbor.getShutdown(), Boolean.FALSE)) {
@@ -362,6 +368,13 @@ final class AristaConversions {
               .setRemoteAsns(getAsnSpace((AristaBgpV4DynamicNeighbor) neighbor, peerFilters))
               .setPeerPrefix(prefix);
     } else {
+      assert neighbor instanceof AristaBgpV4Neighbor;
+      if (neighbor.getRemoteAs() == null) {
+        warnings.redFlag(
+            String.format(
+                "No remote-as configured for %s",
+                getTextDesc(((AristaBgpV4Neighbor) neighbor).getIp(), vrf)));
+      }
       newNeighborBuilder =
           BgpActivePeerConfig.builder()
               .setRemoteAsns(
