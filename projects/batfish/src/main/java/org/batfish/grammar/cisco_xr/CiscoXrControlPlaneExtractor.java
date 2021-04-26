@@ -46,21 +46,13 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_ADDITIONAL_PATHS_SELECTION_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_AGGREGATE_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_PREFIX6_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INBOUND_PREFIX_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INHERITED_PEER_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_INHERITED_SESSION;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_LISTEN_RANGE_PEER_GROUP;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_PEER_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NEIGHBOR_ROUTE_POLICY_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_NETWORK_ROUTE_POLICY;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_REDISTRIBUTE_STATIC_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
@@ -82,7 +74,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CRYPTO_M
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_AF_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.EIGRP_PASSIVE_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FLOW_MONITOR_MAP_EXPORTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
@@ -132,18 +123,15 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_ARE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DEFAULT_INFORMATION_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_EXPLICIT_TRACKING;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_MAXIMUM_GROUPS_PER_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_SSM_MAP_STATIC;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_ISIS_REDISTRIBUTE_STATIC_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_MLD_ACCESS_GROUP;
@@ -478,8 +466,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Description_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Description_lineContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Dh_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Disposition_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Distribute_list_bgp_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Distribute_list_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_lookupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Domain_name_serverContext;
@@ -657,7 +643,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcse_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcsec_activateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.PortContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Port_specifierContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_list_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_set_elemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_set_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prepend_as_path_rp_stanzaContext;
@@ -672,7 +657,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rd_set_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_classicContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_default_metricContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_distribute_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_eigrp_router_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Re_passive_interfaceContext;
@@ -723,7 +707,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_area_stubContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_default_informationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_default_metricContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_distribute_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_max_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_networkContext;
@@ -739,6 +722,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_router_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_rangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_aclContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
@@ -777,7 +762,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimaf4_rpf_redirectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimaf6_embedded_rp_rendezvous_pointContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimaf_ipv6Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpimafi_neighbor_filterContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_distribute_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_passive_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_passive_interface_defaultContext;
@@ -1269,8 +1253,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private boolean _inBlockNeighbor;
 
-  private boolean _inIpv6BgpPeer;
-
   private Boolean _inMplsLdpAddressFamilyIpv4;
 
   private boolean _no;
@@ -1516,9 +1498,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       pushPeer(_dummyPeerGroup);
     } else {
       pushPeer(_currentPeerGroup);
-    }
-    if (af.IPV6() != null || af.VPNV6() != null) {
-      _inIpv6BgpPeer = true;
     }
   }
 
@@ -3435,44 +3414,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitDescription_bgp_tail(Description_bgp_tailContext ctx) {
     _currentPeerGroup.setDescription(getDescription(ctx.description_line()));
-  }
-
-  @Override
-  public void exitDistribute_list_bgp_tail(Distribute_list_bgp_tailContext ctx) {
-    // Note: Mutually exclusive with Prefix_list_bgp_tail
-    // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
-    String name = ctx.list_name.getText();
-    int line = ctx.list_name.getStart().getLine();
-    CiscoXrStructureUsage usage;
-    if (_inIpv6BgpPeer) {
-      // TODO Support IPv6 access lists in BGP distribute-lists
-      if (ctx.IN() != null) {
-        usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_IN;
-      } else if (ctx.OUT() != null) {
-        usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS6_LIST_OUT;
-      } else {
-        throw new BatfishException("Invalid direction for BGP distribute-list");
-      }
-    } else {
-      if (ctx.IN() != null) {
-        _currentPeerGroup.setInboundIpAccessList(name);
-        usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_IN;
-      } else if (ctx.OUT() != null) {
-        _currentPeerGroup.setOutboundIpAccessList(name);
-        usage = BGP_NEIGHBOR_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-      } else {
-        throw new BatfishException("Invalid direction for BGP distribute-list");
-      }
-    }
-    CiscoXrStructureType type = _inIpv6BgpPeer ? IPV6_ACCESS_LIST : IPV4_ACCESS_LIST;
-    _configuration.referenceStructure(type, name, usage, line);
-  }
-
-  @Override
-  public void exitDistribute_list_is_stanza(Distribute_list_is_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(IP_ACCESS_LIST, name, ROUTER_ISIS_DISTRIBUTE_LIST_ACL, line);
   }
 
   @Override
@@ -5602,35 +5543,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
-    String listName = ctx.list_name.getText();
-    int line = ctx.list_name.getLine();
-    CiscoXrStructureUsage usage;
-    if (_inIpv6BgpPeer) {
-      // TODO Support IPv6 prefix-lists in BGP
-      if (ctx.IN() != null) {
-        usage = BGP_INBOUND_PREFIX6_LIST;
-      } else if (ctx.OUT() != null) {
-        usage = BGP_OUTBOUND_PREFIX6_LIST;
-      } else {
-        throw new BatfishException("Invalid direction for BGP prefix-list");
-      }
-    } else {
-      if (ctx.IN() != null) {
-        _currentPeerGroup.setInboundPrefixList(listName);
-        usage = BGP_INBOUND_PREFIX_LIST;
-      } else if (ctx.OUT() != null) {
-        _currentPeerGroup.setOutboundPrefixList(listName);
-        usage = BGP_OUTBOUND_PREFIX_LIST;
-      } else {
-        throw new BatfishException("Invalid direction for BGP prefix-list");
-      }
-    }
-    CiscoXrStructureType type = _inIpv6BgpPeer ? PREFIX6_LIST : PREFIX_LIST;
-    _configuration.referenceStructure(type, listName, usage, line);
-  }
-
-  @Override
   public void exitPrefix_set_elem(Prefix_set_elemContext ctx) {
     String name = _currentPrefixSetName;
     if (name != null) {
@@ -5970,64 +5882,32 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRe_distribute_list(Re_distribute_listContext ctx) {
-    if (_currentEigrpProcess == null) {
-      warn(ctx, "No EIGRP process available");
-      return;
+  public void exitRodl_acl(Rodl_aclContext ctx) {
+    String name = toString(ctx.acl);
+    DistributeList distributeList = new DistributeList(name, DistributeListFilterType.ACCESS_LIST);
+
+    if (ctx.IN() != null) {
+      _configuration.referenceStructure(
+          IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN, ctx.acl.getStart().getLine());
+      _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
+    } else {
+      assert ctx.OUT() != null;
+      _configuration.referenceStructure(
+          IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT, ctx.acl.getStart().getLine());
+      _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
     }
-    if (ctx.iname == null) {
-      _w.addWarning(
-          ctx, getFullText(ctx), _parser, "Global distribute-list not supported for EIGRP");
-      return;
-    }
-    String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-    String filterName = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(
-        IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
-    _configuration.referenceStructure(
-        INTERFACE, ifaceName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_OUT, line);
-    _currentEigrpProcess
-        .getOutboundInterfaceDistributeLists()
-        .put(ifaceName, new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST));
+    todo(ctx);
   }
 
   @Override
-  public void exitRo_distribute_list(Ro_distribute_listContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    boolean in = ctx.IN() != null;
-    CiscoXrStructureType type;
-    CiscoXrStructureUsage usage;
-    DistributeListFilterType filterType;
-    if (ctx.PREFIX() != null) {
-      type = PREFIX_LIST;
-      filterType = DistributeListFilterType.PREFIX_LIST;
-      usage = in ? OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN : OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-    } else {
-      filterType = DistributeListFilterType.ACCESS_LIST;
-      type = IP_ACCESS_LIST;
-      usage = in ? OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN : OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
-      todo(ctx);
-    }
-    _configuration.referenceStructure(type, name, usage, line);
+  public void exitRodl_route_policy(Rodl_route_policyContext ctx) {
+    String name = toString(ctx.rp);
+    _configuration.referenceStructure(
+        ROUTE_POLICY, name, OSPF_DISTRIBUTE_LIST_ROUTE_POLICY_IN, ctx.rp.getStart().getLine());
 
-    DistributeList distributeList = new DistributeList(name, filterType);
-    if (ctx.iname != null) {
-      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-      _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
-      if (in) {
-        _currentOspfProcess.getInboundInterfaceDistributeLists().put(ifaceName, distributeList);
-      } else {
-        _currentOspfProcess.getOutboundInterfaceDistributeLists().put(ifaceName, distributeList);
-      }
-    } else {
-      if (in) {
-        _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
-      } else {
-        _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
-      }
-    }
+    DistributeList distributeList = new DistributeList(name, DistributeListFilterType.ROUTE_POLICY);
+    _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
+    todo(ctx);
   }
 
   @Override
@@ -6270,31 +6150,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitRouter_isis_stanza(Router_isis_stanzaContext ctx) {
     _currentIsisProcess = null;
-  }
-
-  @Override
-  public void exitRr_distribute_list(Rr_distribute_listContext ctx) {
-    RipProcess proc = _currentRipProcess;
-    int line = ctx.getStart().getLine();
-    boolean in = ctx.IN() != null;
-    String name;
-    boolean acl;
-    if (ctx.acl != null) {
-      name = ctx.acl.getText();
-      acl = true;
-      _configuration.referenceStructure(IP_ACCESS_LIST, name, RIP_DISTRIBUTE_LIST, line);
-    } else {
-      name = ctx.prefix_list.getText();
-      acl = false;
-      _configuration.referenceStructure(PREFIX_LIST, name, RIP_DISTRIBUTE_LIST, line);
-    }
-    if (in) {
-      proc.setDistributeListIn(name);
-      proc.setDistributeListInAcl(acl);
-    } else {
-      proc.setDistributeListOut(name);
-      proc.setDistributeListOutAcl(acl);
-    }
   }
 
   @Override
@@ -6873,7 +6728,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     int index = _peerGroupStack.size() - 1;
     _currentPeerGroup = _peerGroupStack.get(index);
     _peerGroupStack.remove(index);
-    _inIpv6BgpPeer = false;
   }
 
   @Override

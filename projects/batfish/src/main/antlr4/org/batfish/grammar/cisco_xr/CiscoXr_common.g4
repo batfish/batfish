@@ -628,11 +628,6 @@ variable_community_name
    SYSTEMOWNER | USE_ACL | USE_IPV4_ACL | USE_IPV6_ACL | VIEW )
 ;
 
-variable_distribute_list
-:
-  ~( NEWLINE | IN | OUT )+
-;
-
 variable_hostname
 :
    ~( USE_VRF | NEWLINE | VRF )+

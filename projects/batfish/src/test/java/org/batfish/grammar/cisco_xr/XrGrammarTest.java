@@ -163,6 +163,8 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
+import org.batfish.representation.cisco_xr.DistributeList;
+import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
@@ -1058,6 +1060,24 @@ public final class XrGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
         equalTo(OspfProcess.DEFAULT_OSPF_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testOspfDistributeListExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("ospf-distribute-list");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2"));
+    OspfProcess p1 = c.getDefaultVrf().getOspfProcesses().get("1");
+    assertThat(
+        p1.getInboundGlobalDistributeList(),
+        equalTo(new DistributeList("RP", DistributeListFilterType.ROUTE_POLICY)));
+    assertThat(
+        p1.getOutboundGlobalDistributeList(),
+        equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
+    OspfProcess p2 = c.getDefaultVrf().getOspfProcesses().get("2");
+    assertThat(
+        p2.getInboundGlobalDistributeList(),
+        equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
+    assertThat(p2.getOutboundGlobalDistributeList(), nullValue());
   }
 
   @Test
