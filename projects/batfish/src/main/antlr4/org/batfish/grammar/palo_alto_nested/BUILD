@@ -12,8 +12,8 @@ java_library(
     ],
     javacopts = ["-XepDisableAllChecks"],
     deps = [
-        "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto_nested/parsing:palo_alto_nested_base",
         "//projects/batfish-common-protocol:parser_common",
+        "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto_nested/parsing:palo_alto_nested_base",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )

@@ -11,8 +11,8 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
-        "//projects/batfish/src/test/resources:log4j_config",
         "//projects/batfish/src/test/resources",
+        "//projects/batfish/src/test/resources:log4j_config",
     ],
     tags = ["cpu:4"],
     runtime_deps = [
