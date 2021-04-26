@@ -21,7 +21,6 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ImplementedRules;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.cumulus_frr.CumulusFrrCombinedParser;
 import org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
@@ -31,6 +30,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.grammar.cumulus_ports.CumulusPortsCombinedParser;
 import org.batfish.grammar.cumulus_ports.CumulusPortsConfigurationBuilder;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Cumulus_ports_configurationContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 

@@ -15,9 +15,9 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishCombinedParser;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishConfigurationBuilder;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 

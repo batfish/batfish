@@ -127,7 +127,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.vendor_family.cumulus.InterfaceClagSettings;
 import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.grammar.SilentSyntaxCollection;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;

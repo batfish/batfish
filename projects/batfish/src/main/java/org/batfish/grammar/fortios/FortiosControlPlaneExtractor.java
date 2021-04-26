@@ -8,7 +8,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntaxCollection;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 

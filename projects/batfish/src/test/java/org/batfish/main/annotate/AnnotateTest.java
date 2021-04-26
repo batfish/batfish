@@ -1,10 +1,10 @@
-package org.batfish.main;
+package org.batfish.main.annotate;
 
 import static com.google.common.io.MoreFiles.createParentDirectories;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.CommonUtil.writeFile;
 import static org.batfish.common.util.Resources.readResource;
-import static org.batfish.main.Annotate.main;
+import static org.batfish.main.annotate.Annotate.main;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public final class AnnotateTest {
 
-  private static final String TESTCONFIGS_PREFIX = "org/batfish/main/testconfigs/";
+  private static final String TESTCONFIGS_PREFIX = "org/batfish/main/annotate/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
   @Rule public ExpectedException _thrown = ExpectedException.none();

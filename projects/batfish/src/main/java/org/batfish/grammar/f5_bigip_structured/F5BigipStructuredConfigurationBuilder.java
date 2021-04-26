@@ -224,7 +224,6 @@ import org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
@@ -540,6 +539,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Unrecogni
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Vlan_idContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.WordContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Word_portContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.f5_bigip.BgpAddressFamily;
 import org.batfish.representation.f5_bigip.BgpIpv4AddressFamily;
 import org.batfish.representation.f5_bigip.BgpNeighbor;

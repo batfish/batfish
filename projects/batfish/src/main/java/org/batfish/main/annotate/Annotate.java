@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.main.annotate;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.answers.ParseStatus.FAILED;
@@ -27,8 +27,8 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.grammar.SilentSyntaxCollection;
-import org.batfish.grammar.SilentSyntaxCollection.SilentSyntaxElem;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection.SilentSyntaxElem;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.job.ParseVendorConfigurationJob;

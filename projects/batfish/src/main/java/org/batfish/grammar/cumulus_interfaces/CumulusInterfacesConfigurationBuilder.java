@@ -22,7 +22,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.AddressContext;
@@ -60,6 +59,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoCont
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;

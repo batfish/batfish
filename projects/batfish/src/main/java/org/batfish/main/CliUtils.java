@@ -19,12 +19,14 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishLogger;
 
 /** Utility functions for internal CLI tools */
-final class CliUtils {
+@ParametersAreNonnullByDefault
+public final class CliUtils {
 
   private static final Logger LOGGER = LogManager.getLogger(CliUtils.class);
 
@@ -76,7 +78,7 @@ final class CliUtils {
    * @throws IOException if there is an error
    */
   @Nonnull
-  static SortedMap<Path, String> readAllFiles(Path directory) throws IOException {
+  public static SortedMap<Path, String> readAllFiles(Path directory) throws IOException {
     return readAllFiles(directory, null);
   }
 
@@ -88,7 +90,7 @@ final class CliUtils {
    *
    * @throws IOException if there is an error
    */
-  static void writeAllFiles(Map<Path, String> outputDataByPath) throws IOException {
+  public static void writeAllFiles(Map<Path, String> outputDataByPath) throws IOException {
     for (Entry<Path, String> outputDataEntry : outputDataByPath.entrySet()) {
       Path outputPath = outputDataEntry.getKey();
       LOGGER.debug("Writing: {}", outputPath);
@@ -97,7 +99,8 @@ final class CliUtils {
     }
   }
 
-  static <T> Map<Path, T> relativize(Path basePath, Map<Path, T> pathKeyedMap) {
+  @Nonnull
+  public static <T> Map<Path, T> relativize(Path basePath, Map<Path, T> pathKeyedMap) {
     ImmutableMap.Builder<Path, T> builder =
         ImmutableMap.builderWithExpectedSize(pathKeyedMap.size());
     pathKeyedMap.forEach(
@@ -105,7 +108,8 @@ final class CliUtils {
     return builder.build();
   }
 
-  static <T> Map<Path, T> resolve(Path basePath, Map<Path, T> pathKeyedMap) {
+  @Nonnull
+  public static <T> Map<Path, T> resolve(Path basePath, Map<Path, T> pathKeyedMap) {
     ImmutableMap.Builder<Path, T> builder =
         ImmutableMap.builderWithExpectedSize(pathKeyedMap.size());
     pathKeyedMap.forEach((relativePath, data) -> builder.put(basePath.resolve(relativePath), data));

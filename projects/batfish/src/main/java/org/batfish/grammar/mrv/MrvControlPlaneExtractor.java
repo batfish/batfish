@@ -8,12 +8,12 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.mrv.MrvParser.A_system_systemnameContext;
 import org.batfish.grammar.mrv.MrvParser.Mrv_configurationContext;
 import org.batfish.grammar.mrv.MrvParser.NsdeclContext;
 import org.batfish.grammar.mrv.MrvParser.Quoted_stringContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.mrv.MrvConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 

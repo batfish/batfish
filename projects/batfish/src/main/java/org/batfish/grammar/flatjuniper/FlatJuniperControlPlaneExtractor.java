@@ -11,7 +11,7 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
-import org.batfish.grammar.SilentSyntaxCollection;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 

@@ -1,4 +1,4 @@
-package org.batfish.grammar;
+package org.batfish.grammar.silent_syntax;
 
 import com.google.common.collect.ImmutableList;
 import java.util.Collection;

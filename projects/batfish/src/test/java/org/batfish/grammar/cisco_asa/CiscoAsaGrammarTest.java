@@ -171,7 +171,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEva
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.grammar.SilentSyntaxCollection;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_asa.AsaConfiguration;

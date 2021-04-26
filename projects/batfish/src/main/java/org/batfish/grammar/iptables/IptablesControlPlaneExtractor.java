@@ -14,7 +14,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.iptables.IptablesParser.Built_in_targetContext;
 import org.batfish.grammar.iptables.IptablesParser.CommandContext;
@@ -26,6 +25,7 @@ import org.batfish.grammar.iptables.IptablesParser.Iptables_configurationContext
 import org.batfish.grammar.iptables.IptablesParser.MatchContext;
 import org.batfish.grammar.iptables.IptablesParser.ProtocolContext;
 import org.batfish.grammar.iptables.IptablesParser.Rule_specContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.iptables.IptablesChain.ChainPolicy;
 import org.batfish.representation.iptables.IptablesConfiguration;
 import org.batfish.representation.iptables.IptablesMatch.MatchType;

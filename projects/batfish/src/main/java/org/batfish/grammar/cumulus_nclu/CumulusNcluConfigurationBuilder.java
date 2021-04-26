@@ -49,7 +49,6 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
@@ -162,6 +161,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_arp_nd_suppressCon
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_learningContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_local_tunnelipContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus_nclu.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus_nclu.BgpIpNeighbor;
 import org.batfish.representation.cumulus_nclu.BgpIpv4UnicastAddressFamily;

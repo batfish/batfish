@@ -1,7 +1,7 @@
-package org.batfish.grammar;
+package org.batfish.grammar.silent_syntax;
 
 import com.google.common.testing.EqualsTester;
-import org.batfish.grammar.SilentSyntaxCollection.SilentSyntaxElem;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection.SilentSyntaxElem;
 import org.junit.Test;
 
 /** Test of {@link SilentSyntaxCollection}. */

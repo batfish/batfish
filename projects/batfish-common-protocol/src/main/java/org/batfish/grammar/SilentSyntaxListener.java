@@ -3,7 +3,8 @@ package org.batfish.grammar;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.batfish.grammar.SilentSyntaxCollection.SilentSyntaxElem;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection.SilentSyntaxElem;
 
 /**
  * Interface extending {@link BatfishListener} that provides utility methods for recording silent
