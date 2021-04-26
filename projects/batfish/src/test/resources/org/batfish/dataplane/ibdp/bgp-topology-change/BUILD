@@ -5,5 +5,8 @@ package(
 
 filegroup(
     name = "bgp-topology-change",
-    srcs = glob(["**"], exclude=["BUILD"]),
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD"],
+    ),
 )

@@ -10,8 +10,8 @@ java_library(
         exclude = ["BUILD"],
     ),
     deps = [
-        "//projects/batfish/src/main/java/org/batfish/representation/iptables",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish/src/main/java/org/batfish/representation/iptables",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",

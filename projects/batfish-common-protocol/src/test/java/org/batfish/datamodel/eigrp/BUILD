@@ -16,8 +16,8 @@ junit_tests(
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
-        "@maven//:org_hamcrest_hamcrest",
         "@maven//:junit_junit",
         "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_hamcrest_hamcrest",
     ],
 )
