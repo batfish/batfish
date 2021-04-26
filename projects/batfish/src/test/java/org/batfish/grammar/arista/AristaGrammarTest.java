@@ -21,6 +21,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
@@ -978,6 +979,7 @@ public class AristaGrammarTest {
     String hostname = "eos-bgp-peers";
     Prefix neighborWithRemoteAs = Prefix.parse("1.1.1.1/32");
     Prefix neighborWithoutRemoteAs = Prefix.parse("2.2.2.2/32");
+    Prefix dynamicNeighborWithoutRemoteAs = Prefix.parse("3.3.3.0/24");
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -985,7 +987,7 @@ public class AristaGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
-     * Both peers with and without remote-as should appear in the datamodel.
+     * All peers with and without remote-as should appear in the datamodel.
      */
     assertThat(
         c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
@@ -1002,6 +1004,19 @@ public class AristaGrammarTest {
                 String.format(
                     "No remote-as configured for BGP neighbor %s in vrf default",
                     neighborWithoutRemoteAs.getStartIp()))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasPassiveNeighbor(dynamicNeighborWithoutRemoteAs, hasRemoteAs(LongSpace.EMPTY)))));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "No acceptable remote-as for BGP neighbor %s in vrf default",
+                    dynamicNeighborWithoutRemoteAs))));
 
     /*
      * Also ensure that default value of allowRemoteAsOut is true.
