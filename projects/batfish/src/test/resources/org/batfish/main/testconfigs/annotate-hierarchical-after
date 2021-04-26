@@ -1,8 +1,10 @@
 ####BATFISH PRE-PROCESSED JUNIPER CONFIG####
 set system host-name a.example.com
-# UNRECOGNIZED SYNTAX
+# UNRECOGNIZED SYNTAX: set interface xe-0/0/0 unit 0 unrecognized syntax
 set interface xe-0/0/0 unit 0 unrecognized syntax
 # SILENTLY IGNORED: traceoptions file update
 set protocols bgp traceoptions file update
 # PARTIALLY UNSUPPORTED: priority 65
 set protocols isis interface ge-0/0/0.0 level 2 priority 65
+# WARNING: Resolution ribs other than inet.0 are currently unsupported: rib inet.4 import policy1
+set routing-options resolution rib inet.4 import policy1

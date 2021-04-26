@@ -59,6 +59,8 @@ public final class Annotate {
 
   private static void annotate(Path inputPath, Path outputPath, Settings settings)
       throws IOException {
+    // Get annotated text for all files in inputPath, then write them under outputPath to the same
+    // relative location.
     writeAllFiles(
         resolve(
             outputPath,
@@ -71,6 +73,7 @@ public final class Annotate {
 
   @Nonnull
   private static Map<Path, String> annotate(Map<Path, String> inputData, Settings settings) {
+    // For each (path, text) in inputData, return an entry (path, annotated text).
     Map<Path, String> outputData = new ConcurrentHashMap<>(inputData.size());
     inputData.entrySet().parallelStream()
         .forEach(
@@ -88,6 +91,7 @@ public final class Annotate {
   @Nullable
   private static String annotateText(Path inputFile, String inputText, Settings settings) {
     LOGGER.debug("Preprocessing: {}", inputFile);
+    // preprocess the input text
     PreprocessResult preprocessResult =
         new PreprocessJob(
                 settings,
@@ -99,6 +103,7 @@ public final class Annotate {
     String preprocessedText = preprocessResult.getOutputText();
     Warnings warnings = new Warnings(true, true, true);
     LOGGER.debug("Parsing: {}", inputFile);
+    // parse the preprocessed text
     ParseVendorConfigurationResult parseResult =
         new ParseVendorConfigurationJob(
                 settings,
@@ -114,6 +119,7 @@ public final class Annotate {
       LOGGER.error("Failed to parse: {}", inputFile);
       return null;
     }
+    // annotate the preprocessed text based on warnings and silent syntax in parse result
     LOGGER.debug("Annotating: {}", inputFile);
     return annotatePreprocessedFile(
         preprocessedText,
@@ -134,10 +140,12 @@ public final class Annotate {
     StringBuilder sb = new StringBuilder();
     String[] lines = inputText.split("\n", -1);
     for (int i = 0; i < lines.length; i++) {
-      // silent syntax line indices start at 1
+      // Silent syntax and warning line indices start at 1.
+      // Annotate silent syntax for this line.
       silentSyntaxByLine.get(i + 1).stream()
           .map(elem -> printElem(commentHeader, elem))
           .forEach(sb::append);
+      // Annotate all warnings for this line.
       parseWarningsByLine.get(i + 1).stream()
           .map(pw -> printParseWarning(commentHeader, pw))
           .filter(Objects::nonNull)
@@ -159,12 +167,14 @@ public final class Annotate {
   static String printParseWarning(String commentHeader, ParseWarning parseWarning) {
     switch (parseWarning.getComment()) {
       case "This syntax is unrecognized":
-        return String.format("%s UNRECOGNIZED SYNTAX\n", commentHeader);
+        return String.format("%s UNRECOGNIZED SYNTAX: %s\n", commentHeader, parseWarning.getText());
       case "This feature is not currently supported":
         return String.format(
             "%s PARTIALLY UNSUPPORTED: %s\n", commentHeader, parseWarning.getText());
       default:
-        return null;
+        return String.format(
+            "%s WARNING: %s: %s\n",
+            commentHeader, parseWarning.getComment(), parseWarning.getText());
     }
   }
 

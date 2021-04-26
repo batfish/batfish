@@ -145,7 +145,6 @@ public class ParseVendorConfigurationResult
       if (!_parseTree.isEmpty()) {
         answerElement.getParseTrees().put(_filename, _parseTree);
       }
-      answerElement.getSilentSyntax().put(_filename, _silentSyntax);
     } else if (_status == ParseStatus.FAILED) {
       assert _failureCause != null; // status == FAILED, failureCause must be non-null
       answerElement

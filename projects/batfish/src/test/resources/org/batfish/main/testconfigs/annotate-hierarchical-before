@@ -23,3 +23,4 @@ protocols {
     }
   }
 }
+set routing-options resolution rib inet.4 import policy1

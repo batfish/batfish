@@ -65,7 +65,5 @@ public class ParseVendorConfigurationResultTest {
 
     // Confirm result warning was properly applied to answerElement
     assertThat(answerWarnings, hasEntry(filename, warnings));
-
-    assertThat(answerElement.getSilentSyntax(), hasEntry(filename, silentSyntax));
   }
 }
