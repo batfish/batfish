@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -51,8 +50,6 @@ public class OspfProcess implements Serializable {
 
   @Nullable private DistributeList _inboundGlobalDistributeList;
 
-  @Nonnull private Map<String, DistributeList> _inboundIInterfaceDistributeLists;
-
   private Long _maxMetricExternalLsa;
 
   private boolean _maxMetricIncludeStub;
@@ -69,11 +66,9 @@ public class OspfProcess implements Serializable {
 
   private Map<Long, NssaSettings> _nssas;
 
-  private Map<Long, StubSettings> _stubs;
-
   @Nullable private DistributeList _outboundGlobalDistributeList;
 
-  @Nonnull private Map<String, DistributeList> _outboundInterfaceDistributeLists;
+  private Map<Long, StubSettings> _stubs;
 
   private boolean _passiveInterfaceDefault;
 
@@ -110,10 +105,8 @@ public class OspfProcess implements Serializable {
     _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
-    _inboundIInterfaceDistributeLists = new HashMap<>();
     _nonDefaultInterfaces = new HashSet<>();
     _nssas = new HashMap<>();
-    _outboundInterfaceDistributeLists = new HashMap<>();
     _passiveInterfaces = new HashSet<>();
     _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
@@ -175,11 +168,6 @@ public class OspfProcess implements Serializable {
     return _inboundGlobalDistributeList;
   }
 
-  @Nonnull
-  public Map<String, DistributeList> getInboundInterfaceDistributeLists() {
-    return _inboundIInterfaceDistributeLists;
-  }
-
   public Long getMaxMetricExternalLsa() {
     return _maxMetricExternalLsa;
   }
@@ -215,11 +203,6 @@ public class OspfProcess implements Serializable {
   @Nullable
   public DistributeList getOutboundGlobalDistributeList() {
     return _outboundGlobalDistributeList;
-  }
-
-  @Nonnull
-  public Map<String, DistributeList> getOutboundInterfaceDistributeLists() {
-    return _outboundInterfaceDistributeLists;
   }
 
   public boolean getPassiveInterfaceDefault() {

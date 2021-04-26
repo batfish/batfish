@@ -140,17 +140,14 @@ ro_distribute_list
 :
   DISTRIBUTE_LIST
   (
-    PREFIX
-  )? name = variable_distribute_list
-  (
-    IN
-    | OUT
+    rodl_acl
+    | rodl_route_policy
   )
-  (
-    iname = interface_name_unstructured
-  )?
-  NEWLINE
 ;
+
+rodl_acl: acl = access_list_name (IN | OUT) NEWLINE;
+
+rodl_route_policy: ROUTE_POLICY rp = route_policy_name IN NEWLINE;
 
 ro_max_metric
 :

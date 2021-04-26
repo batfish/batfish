@@ -29,24 +29,6 @@ rr_distance
    NEWLINE
 ;
 
-rr_distribute_list
-:
-   DISTRIBUTE_LIST
-   (
-      (
-         PREFIX prefix_list = variable
-      )
-      | acl = variable
-   )
-   (
-      IN
-      | OUT
-   )
-   (
-      i = interface_name_unstructured
-   )? NEWLINE
-;
-
 rr_network
 :
    NETWORK network = IP_ADDRESS NEWLINE
@@ -88,7 +70,6 @@ s_router_rip
       rr_default_metric
       | rr_default_information
       | rr_distance
-      | rr_distribute_list
       | rr_network
       | rr_null
       | rr_passive_interface

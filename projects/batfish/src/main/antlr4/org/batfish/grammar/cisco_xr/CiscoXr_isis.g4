@@ -68,7 +68,6 @@ common_iis_stanza
 common_is_stanza
 :
    advertise_is_stanza
-   | distribute_list_is_stanza
    | is_type_is_stanza
    | metric_is_stanza
    | metric_style_is_stanza
@@ -80,15 +79,6 @@ common_is_stanza
    | passive_interface_default_is_stanza
    | passive_interface_is_stanza
    | summary_address_is_stanza
-;
-
-distribute_list_is_stanza
-:
-   DISTRIBUTE_LIST name = variable
-   (
-      IN
-      | OUT
-   ) CONNECTED NEWLINE
 ;
 
 iis_stanza

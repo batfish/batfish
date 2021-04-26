@@ -4,16 +4,16 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-/** Represents CiscoXr specific distribute-lists */
+/** OSPF distribute-list */
 public final class DistributeList implements Serializable {
-  /** Different types of filter used in a distribute-list */
+  /** OSPF distribute-list can be route-policy (in) or ACL (in | out). */
   public enum DistributeListFilterType {
     ACCESS_LIST,
-    PREFIX_LIST,
+    ROUTE_POLICY,
   }
 
-  @Nonnull private DistributeListFilterType _filterType;
-  @Nonnull private String _filterName;
+  @Nonnull private final DistributeListFilterType _filterType;
+  @Nonnull private final String _filterName;
 
   public DistributeList(
       @Nonnull String filterName, @Nonnull DistributeListFilterType distributeListFilterType) {
@@ -21,13 +21,11 @@ public final class DistributeList implements Serializable {
     _filterType = distributeListFilterType;
   }
 
-  @Nonnull
-  public DistributeListFilterType getFilterType() {
+  public @Nonnull DistributeListFilterType getFilterType() {
     return _filterType;
   }
 
-  @Nonnull
-  public String getFilterName() {
+  public @Nonnull String getFilterName() {
     return _filterName;
   }
 
@@ -35,8 +33,7 @@ public final class DistributeList implements Serializable {
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof DistributeList)) {
+    } else if (!(o instanceof DistributeList)) {
       return false;
     }
     DistributeList that = (DistributeList) o;

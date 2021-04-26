@@ -20,14 +20,6 @@ public class RipProcess implements Serializable {
 
   private String _defaultInformationOriginateMap;
 
-  private String _distributeListIn;
-
-  private boolean _distributeListInAcl;
-
-  private String _distributeListOut;
-
-  private boolean _distributeListOutAcl;
-
   private final SortedSet<Prefix> _networks;
 
   private boolean _passiveInterfaceDefault;
@@ -60,22 +52,6 @@ public class RipProcess implements Serializable {
     return _defaultInformationOriginateMap;
   }
 
-  public String getDistributeListIn() {
-    return _distributeListIn;
-  }
-
-  public boolean getDistributeListInAcl() {
-    return _distributeListInAcl;
-  }
-
-  public String getDistributeListOut() {
-    return _distributeListOut;
-  }
-
-  public boolean getDistributeListOutAcl() {
-    return _distributeListOutAcl;
-  }
-
   public SortedSet<Prefix> getNetworks() {
     return _networks;
   }
@@ -102,22 +78,6 @@ public class RipProcess implements Serializable {
 
   public void setDefaultInformationOriginateMap(String defaultInformationOriginateMap) {
     _defaultInformationOriginateMap = defaultInformationOriginateMap;
-  }
-
-  public void setDistributeListIn(String distributeListIn) {
-    _distributeListIn = distributeListIn;
-  }
-
-  public void setDistributeListInAcl(boolean distributeListInAcl) {
-    _distributeListInAcl = distributeListInAcl;
-  }
-
-  public void setDistributeListOut(String distributeListOut) {
-    _distributeListOut = distributeListOut;
-  }
-
-  public void setDistributeListOutAcl(boolean distributeListOutAcl) {
-    _distributeListOutAcl = distributeListOutAcl;
   }
 
   public void setPassiveInterfaceDefault(boolean passiveInterfaceDefault) {
