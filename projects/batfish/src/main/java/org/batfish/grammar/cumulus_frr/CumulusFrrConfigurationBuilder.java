@@ -61,7 +61,7 @@ import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Bgp_redist_typeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
@@ -171,6 +171,7 @@ import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Standard_communityContex
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_routeContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Sv_vniContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Uint32Context;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus.BgpIpNeighbor;
 import org.batfish.representation.cumulus.BgpIpv4UnicastAddressFamily;
@@ -237,7 +238,7 @@ import org.batfish.representation.cumulus.StaticRoute;
 import org.batfish.representation.cumulus.Vrf;
 
 public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
   private static final IntegerSpace OSPF_AREA_RANGE_COST_SPACE =
       IntegerSpace.of(Range.closed(0, 16777215));
   private static final IntegerSpace PREFIX_LENGTH_SPACE =
@@ -248,6 +249,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private final CumulusFrrCombinedParser _parser;
   private final Warnings _w;
   private final String _text;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   private @Nullable Vrf _currentVrf;
   private RouteMapEntry _currentRouteMapEntry;
@@ -264,12 +266,20 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       CumulusConcatenatedConfiguration configuration,
       CumulusFrrCombinedParser parser,
       Warnings w,
-      String fullText) {
+      String fullText,
+      SilentSyntaxCollection silentSyntax) {
     _c = configuration;
     _frr = configuration.getFrrConfiguration();
     _parser = parser;
     _w = w;
     _text = fullText;
+    _silentSyntax = silentSyntax;
+  }
+
+  @Override
+  @Nonnull
+  public SilentSyntaxCollection getSilentSyntax() {
+    return _silentSyntax;
   }
 
   CumulusConcatenatedConfiguration getVendorConfiguration() {
@@ -1711,5 +1721,10 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   @VisibleForTesting
   static long nextMultipleOfFive(@Nullable Long lastNum) {
     return (long) (Math.ceil((Optional.ofNullable(lastNum).orElse(0L) + 1) * 1.0 / 5) * 5);
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

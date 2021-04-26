@@ -60,6 +60,7 @@ import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.trace.TraceTree;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
@@ -99,7 +100,8 @@ public class PaloAltoSecurityRuleTest {
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     PaloAltoControlPlaneExtractor extractor =
-        new PaloAltoControlPlaneExtractor(src, parser, new Warnings());
+        new PaloAltoControlPlaneExtractor(
+            src, parser, new Warnings(), new SilentSyntaxCollection());
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
