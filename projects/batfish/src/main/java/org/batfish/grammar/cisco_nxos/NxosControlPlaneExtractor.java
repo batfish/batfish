@@ -12,6 +12,7 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -25,11 +26,16 @@ import org.batfish.vendor.VendorConfiguration;
 @ParametersAreNonnullByDefault
 public final class NxosControlPlaneExtractor implements ControlPlaneExtractor {
 
-  public NxosControlPlaneExtractor(String text, CiscoNxosCombinedParser parser, Warnings warnings) {
+  public NxosControlPlaneExtractor(
+      String text,
+      CiscoNxosCombinedParser parser,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
     _configuration = new CiscoNxosConfiguration();
+    _silentSyntax = silentSyntax;
   }
 
   @Override
@@ -51,11 +57,14 @@ public final class NxosControlPlaneExtractor implements ControlPlaneExtractor {
     // extract metadata and set defaults
     walker.walk(new CiscoNxosPreprocessor(_text, _parser, _w, _configuration), tree);
     // build the configuration
-    walker.walk(new CiscoNxosControlPlaneExtractor(_text, _parser, _w, _configuration), tree);
+    walker.walk(
+        new CiscoNxosControlPlaneExtractor(_text, _parser, _w, _configuration, _silentSyntax),
+        tree);
   }
 
   private final @Nonnull CiscoNxosConfiguration _configuration;
   private final @Nonnull CiscoNxosCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 }

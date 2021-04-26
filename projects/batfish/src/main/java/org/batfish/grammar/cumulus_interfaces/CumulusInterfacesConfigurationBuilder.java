@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -21,7 +22,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.AddressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
@@ -58,6 +59,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_autoCont
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.S_ifaceContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_inetContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Si_no_inetContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
 import org.batfish.representation.cumulus.CumulusStructureType;
@@ -71,7 +73,7 @@ import org.batfish.representation.cumulus.StaticRoute;
  * org.batfish.grammar.cumulus_interfaces.CumulusInterfacesCombinedParser}.
  */
 public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfacesParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
   private final CumulusConcatenatedConfiguration _config;
 
   private final CumulusInterfacesCombinedParser _parser;
@@ -79,16 +81,19 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   private final Warnings _w;
   private InterfacesInterface _currentIface;
   private @Nullable String _currentIfaceName;
+  private @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public CumulusInterfacesConfigurationBuilder(
       CumulusConcatenatedConfiguration config,
       CumulusInterfacesCombinedParser parser,
       String text,
-      Warnings w) {
+      Warnings w,
+      SilentSyntaxCollection silentSyntax) {
     _config = config;
     _parser = parser;
     _text = text;
     _w = w;
+    _silentSyntax = silentSyntax;
   }
 
   @Nonnull
@@ -107,6 +112,12 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   @Override
   public Warnings getWarnings() {
     return _w;
+  }
+
+  @Nonnull
+  @Override
+  public SilentSyntaxCollection getSilentSyntax() {
+    return _silentSyntax;
   }
 
   @VisibleForTesting
@@ -453,5 +464,10 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     } else {
       return IntegerSpace.of(lo);
     }
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

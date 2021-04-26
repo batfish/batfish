@@ -108,7 +108,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_enableContext;
@@ -378,6 +378,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrt_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Vrrtn_next_vrContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Yes_or_noContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.palo_alto.AddressGroup;
 import org.batfish.representation.palo_alto.AddressObject;
 import org.batfish.representation.palo_alto.AddressPrefix;
@@ -448,7 +449,13 @@ import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
+
+  @Nonnull
+  @Override
+  public SilentSyntaxCollection getSilentSyntax() {
+    return _silentSyntax;
+  }
 
   /** Indicates which rulebase that new rules go into. */
   private enum RulebaseId {
@@ -465,6 +472,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private PaloAltoCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   /** Should file at most one warning about ignored application statements */
   private boolean _filedWarningApplicationStatementIgnored = false;
@@ -513,10 +521,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private Zone _currentZone;
 
   public PaloAltoConfigurationBuilder(
-      PaloAltoCombinedParser parser, String text, Warnings warnings) {
+      PaloAltoCombinedParser parser,
+      String text,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _parser = parser;
     _text = text;
     _w = warnings;
+    _silentSyntax = silentSyntax;
   }
 
   @SuppressWarnings("unused")
@@ -3339,5 +3351,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   private void warn(ParserRuleContext ctx, Token warnToken, String message) {
     _w.addWarningOnLine(_parser.getLine(warnToken), ctx, getFullText(ctx), _parser, message);
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

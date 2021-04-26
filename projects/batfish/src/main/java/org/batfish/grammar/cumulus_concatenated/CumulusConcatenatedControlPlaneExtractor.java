@@ -30,6 +30,7 @@ import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_in
 import org.batfish.grammar.cumulus_ports.CumulusPortsCombinedParser;
 import org.batfish.grammar.cumulus_ports.CumulusPortsConfigurationBuilder;
 import org.batfish.grammar.cumulus_ports.CumulusPortsParser.Cumulus_ports_configurationContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -51,6 +52,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   private int _line = -1;
   private int _offset = -1;
   private List<String> _errors = new ArrayList<>();
+  private final SilentSyntaxCollection _silentSyntax;
 
   public CumulusConcatenatedControlPlaneExtractor(
       String fileText,
@@ -58,13 +60,15 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
       String filename,
       GrammarSettings grammarSettings,
       @Nullable Supplier<ParseTreeSentences> ptSentences,
-      boolean printParseTreeLineNums) {
+      boolean printParseTreeLineNums,
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _w = warnings;
     _filename = filename;
     _grammarSettings = grammarSettings;
     _ptSentences = ptSentences;
     _printParseTreeLineNums = printParseTreeLineNums;
+    _silentSyntax = silentSyntax;
   }
 
   @Override
@@ -99,7 +103,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     CumulusFrrConfigurationBuilder cb =
-        new CumulusFrrConfigurationBuilder(_configuration, parser, _w, _text);
+        new CumulusFrrConfigurationBuilder(_configuration, parser, _w, _text, _silentSyntax);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
   }
@@ -114,7 +118,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
     checkErrors(parser);
     ParseTreeWalker walker = new BatfishParseTreeWalker(parser);
     CumulusInterfacesConfigurationBuilder cb =
-        new CumulusInterfacesConfigurationBuilder(_configuration, parser, _text, _w);
+        new CumulusInterfacesConfigurationBuilder(_configuration, parser, _text, _w, _silentSyntax);
     walker.walk(cb, ctxt);
     mergeParseTree(ctxt, parser);
 

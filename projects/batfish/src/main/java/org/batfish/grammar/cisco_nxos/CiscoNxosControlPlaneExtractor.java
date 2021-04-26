@@ -240,7 +240,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_source_interfaceContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_use_vrfContext;
@@ -718,6 +718,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vrf_non_default_nameContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vv_vn_segmentContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
@@ -851,7 +852,7 @@ import org.batfish.representation.cisco_nxos.VrfAddressFamily;
  */
 @ParametersAreNonnullByDefault
 public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
 
   private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
   private static final IntegerSpace BGP_ALLOWAS_IN = IntegerSpace.of(Range.closed(1, 10));
@@ -1362,21 +1363,30 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private final @Nonnull CiscoNxosCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public CiscoNxosControlPlaneExtractor(
       String text,
       CiscoNxosCombinedParser parser,
       Warnings warnings,
-      CiscoNxosConfiguration configuration) {
+      CiscoNxosConfiguration configuration,
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _preferredNames = HashBasedTable.create();
     _w = warnings;
     _c = configuration;
+    _silentSyntax = silentSyntax;
 
     // initialize preferred names
     getPreferredName(DEFAULT_VRF_NAME, VRF);
     getPreferredName(MANAGEMENT_VRF_NAME, VRF);
+  }
+
+  @Nonnull
+  @Override
+  public SilentSyntaxCollection getSilentSyntax() {
+    return _silentSyntax;
   }
 
   @Override
@@ -7622,5 +7632,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     // TODO: warn about/delete any existing VLAN assignments in the new reserved range.
     _c.setReservedVlanRange(newReservedRange);
     _currentValidVlanRange = VLAN_RANGE.difference(_c.getReservedVlanRange());
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

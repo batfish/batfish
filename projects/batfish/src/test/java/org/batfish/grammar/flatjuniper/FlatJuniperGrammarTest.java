@@ -332,6 +332,7 @@ import org.batfish.datamodel.transformation.ShiftIpAddressIntoSubnet;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -449,7 +450,8 @@ public final class FlatJuniperGrammarTest {
         new FlatJuniperCombinedParser(src, settings, null);
     Warnings w = new Warnings();
     FlatJuniperControlPlaneExtractor extractor =
-        new FlatJuniperControlPlaneExtractor(src, flatJuniperParser, w);
+        new FlatJuniperControlPlaneExtractor(
+            src, flatJuniperParser, w, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(
             flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);

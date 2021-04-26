@@ -36,7 +36,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.fortios.FortiosParser.Access_list_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Access_list_or_prefix_list_nameContext;
@@ -211,6 +211,7 @@ import org.batfish.grammar.fortios.FortiosParser.VlanidContext;
 import org.batfish.grammar.fortios.FortiosParser.VrfContext;
 import org.batfish.grammar.fortios.FortiosParser.WordContext;
 import org.batfish.grammar.fortios.FortiosParser.Zone_nameContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.fortios.AccessList;
 import org.batfish.representation.fortios.AccessListRule;
 import org.batfish.representation.fortios.Address;
@@ -244,17 +245,19 @@ import org.batfish.representation.fortios.Zone.IntrazoneAction;
  * metadata and defaults by {@link FortiosPreprocessor}.
  */
 public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
 
   public FortiosConfigurationBuilder(
       String text,
       FortiosCombinedParser parser,
       Warnings warnings,
-      FortiosConfiguration configuration) {
+      FortiosConfiguration configuration,
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
     _c = configuration;
+    _silentSyntax = silentSyntax;
   }
 
   /** Get a new, unique BatfishUUID. */
@@ -3047,6 +3050,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return type == Address.Type.IPRANGE || type == Address.Type.IPMASK;
   }
 
+  @Nonnull
+  @Override
+  public SilentSyntaxCollection getSilentSyntax() {
+    return _silentSyntax;
+  }
+
   /**
    * Class representing a set of interfaces as well as a set of zones. For use with firewall
    * policies srcintf and dstintf references.
@@ -3171,4 +3180,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   // Internal sequence number to generate unique UUIDs for structure that may be renamed or cloned
   private int _uuidSequenceNumber = 0;
   private final @Nonnull Warnings _w;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
+  }
 }

@@ -4,12 +4,14 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -19,6 +21,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
   private final FlatJuniperCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   @Override
   public Set<String> implementedRuleNames() {
@@ -28,10 +31,14 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
   }
 
   public FlatJuniperControlPlaneExtractor(
-      String fileText, FlatJuniperCombinedParser combinedParser, Warnings warnings) {
+      String fileText,
+      FlatJuniperCombinedParser combinedParser,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _parser = combinedParser;
     _w = warnings;
+    _silentSyntax = silentSyntax;
   }
 
   @Override
@@ -49,7 +56,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       assert scope != null; // avoid unused warning
       // Build configuration from pre-processed parse tree
       ConfigurationBuilder cb =
-          new ConfigurationBuilder(_parser, _text, _w, hierarchy.getTokenInputs());
+          new ConfigurationBuilder(_parser, _text, _w, hierarchy.getTokenInputs(), _silentSyntax);
       new BatfishParseTreeWalker(_parser).walk(cb, tree);
       _configuration = cb.getConfiguration();
     } finally {
