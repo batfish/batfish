@@ -10,7 +10,6 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BfConsts;
 import org.batfish.common.util.CommonUtil;
 import org.junit.Rule;
@@ -19,7 +18,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Test of {@link Annotate}. */
-@ParametersAreNonnullByDefault
 public final class AnnotateTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/main/annotate/testconfigs/";
