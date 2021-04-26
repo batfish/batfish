@@ -5,7 +5,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.grammar.SilentSyntaxCollection.SilentSyntaxElem;
 
-/** Interface providing common parse-tree listener utility methods with default implementations. */
+/**
+ * Interface extending {@link BatfishListener} that provides utility methods for recording silent
+ * syntax within a parse tree.
+ */
 @ParametersAreNonnullByDefault
 public interface SilentSyntaxListener extends BatfishListener {
 
