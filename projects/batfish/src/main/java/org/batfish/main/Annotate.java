@@ -1,39 +1,42 @@
 package org.batfish.main;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.Warnings.forLogger;
+import static org.batfish.datamodel.answers.ParseStatus.FAILED;
 import static org.batfish.main.CliUtils.readAllFiles;
+import static org.batfish.main.CliUtils.relativize;
+import static org.batfish.main.CliUtils.resolve;
+import static org.batfish.main.CliUtils.writeAllFiles;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.LinkedHashMultimap;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishLogger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.grammar.SilentSyntax;
 import org.batfish.grammar.SilentSyntaxElem;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.batfish.job.BatfishJobExecutor;
 import org.batfish.job.ParseVendorConfigurationJob;
+import org.batfish.job.ParseVendorConfigurationResult;
+import org.batfish.job.PreprocessJob;
+import org.batfish.job.PreprocessResult;
 
+/** Tool to annotate configurations with silent syntax and warnings */
 public final class Annotate {
 
   public static void main(String[] args) throws IOException {
@@ -49,75 +52,78 @@ public final class Annotate {
     }
 
     Settings settings = new Settings(new String[] {"-storagebase", "/"});
-    settings.setLogger(new BatfishLogger(BatfishLogger.LEVELSTR_WARN, false, System.out));
     settings.setPrintParseTree(true);
 
-    Preprocess.main(new String[] {inputPath.toString(), outputPath.toString()});
-    // Overwrite output in-place
-    annotate(outputPath, outputPath, settings);
+    annotate(inputPath, outputPath, settings);
   }
 
   private static void annotate(Path inputPath, Path outputPath, Settings settings)
       throws IOException {
-    BatfishLogger logger = settings.getLogger();
-    logger.info("\n*** READING INPUT FILES ***\n");
-    Map<Path, String> configurationData =
-        readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), logger);
-
-    logger.info("\n*** COMPUTING OUTPUT FILES ***\n");
-    logger.resetTimer();
-    List<ParseVendorConfigurationJob> parseJobs = new ArrayList<>();
-    for (Entry<Path, String> configFile : configurationData.entrySet()) {
-      Path inputFile = configFile.getKey();
-      System.out.println("loop1 inputFile: " + inputFile);
-      String fileText = configFile.getValue();
-      Warnings warnings = forLogger(logger);
-      String name = inputPath.relativize(inputFile).toString();
-      System.out.println("loop1 name: " + name);
-      parseJobs.add(
-          new ParseVendorConfigurationJob(
-              settings,
-              new NetworkSnapshot(new NetworkId("dummyNetwork"), new SnapshotId("dummySnapshot")),
-              fileText,
-              name,
-              warnings,
-              ConfigurationFormat.UNKNOWN,
-              ImmutableMultimap.of(),
-              null));
-    }
-    ParseVendorConfigurationAnswerElement answer = new ParseVendorConfigurationAnswerElement();
-    BatfishJobExecutor.runJobsInExecutor(
-        settings,
-        logger,
-        parseJobs,
-        new TreeMap<>(),
-        answer,
-        settings.getFlatten() || settings.getHaltOnParseError(),
-        "Annotate silent syntax");
-    logger.printElapsedTime();
-    System.out.println("keys: " + configurationData.keySet());
-    answer
-        .getSilentSyntax()
-        .forEach(
-            (relativizedInputFile, silentSyntax) -> {
-              System.out.println("loop2 relativized: " + relativizedInputFile);
-              Path outputFile = outputPath.resolve(relativizedInputFile);
-              System.out.println("loop2 outputFile: " + outputFile);
-              String textToAnnotate = configurationData.get(outputFile);
-              logger.debugf("Writing config to \"%s\"...", relativizedInputFile);
-              CommonUtil.writeFile(
-                  outputFile,
-                  annotateFile(
-                      textToAnnotate,
-                      silentSyntax,
-                      answer.getWarnings().get(relativizedInputFile),
-                      getCommentHeader(answer.getFileFormats().get(relativizedInputFile))));
-              logger.debug("OK\n");
-            });
+    writeAllFiles(
+        resolve(
+            outputPath,
+            relativize(
+                inputPath,
+                annotate(
+                    readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR)),
+                    settings))));
   }
 
   @Nonnull
-  private static String annotateFile(
+  private static Map<Path, String> annotate(Map<Path, String> inputData, Settings settings) {
+    Map<Path, String> outputData = new ConcurrentHashMap<>(inputData.size());
+    inputData.entrySet().parallelStream()
+        .forEach(
+            inputDataEntry -> {
+              Path inputFile = inputDataEntry.getKey();
+              String annotatedText = annotateText(inputFile, inputDataEntry.getValue(), settings);
+              if (annotatedText != null) {
+                outputData.put(inputFile, annotatedText);
+              }
+            });
+    return ImmutableMap.copyOf(outputData);
+  }
+
+  /** Return annotated input text, or {@code null} if there is an error. */
+  @Nullable
+  private static String annotateText(Path inputFile, String inputText, Settings settings) {
+    LOGGER.debug("Preprocessing: {}", inputFile);
+    PreprocessResult preprocessResult =
+        new PreprocessJob(
+                settings,
+                inputText,
+                inputFile,
+                Paths.get("/dev/null"), // Output file unused when not using executor.
+                new Warnings(false, false, false)) // Suppress preprocess warnings.
+            .call();
+    String preprocessedText = preprocessResult.getOutputText();
+    Warnings warnings = new Warnings(true, true, true);
+    LOGGER.debug("Parsing: {}", inputFile);
+    ParseVendorConfigurationResult parseResult =
+        new ParseVendorConfigurationJob(
+                settings,
+                new NetworkSnapshot(new NetworkId("dummyNetwork"), new SnapshotId("dummySnapshot")),
+                preprocessedText,
+                inputFile.toString(),
+                warnings,
+                ConfigurationFormat.UNKNOWN,
+                ImmutableMultimap.of(),
+                null)
+            .call();
+    if (parseResult.getStatus() == FAILED) {
+      LOGGER.error("Failed to parse: {}", inputFile);
+      return null;
+    }
+    LOGGER.debug("Annotating: {}", inputFile);
+    return annotatePreprocessedFile(
+        preprocessedText,
+        parseResult.getSilentSyntax(),
+        warnings,
+        getCommentHeader(parseResult.getConfigurationFormat()));
+  }
+
+  @Nonnull
+  private static String annotatePreprocessedFile(
       String inputText, SilentSyntax silentSyntax, Warnings warnings, String commentHeader) {
     LinkedHashMultimap<Integer, SilentSyntaxElem> silentSyntaxByLine = LinkedHashMultimap.create();
     silentSyntax.getElements().forEach(elem -> silentSyntaxByLine.put(elem.getLine(), elem));
@@ -155,11 +161,14 @@ public final class Annotate {
       case "This syntax is unrecognized":
         return String.format("%s UNRECOGNIZED SYNTAX\n", commentHeader);
       case "This feature is not currently supported":
-        return String.format("%s PARTIALLY UNSUPPORTED\n", commentHeader);
+        return String.format(
+            "%s PARTIALLY UNSUPPORTED: %s\n", commentHeader, parseWarning.getText());
       default:
         return null;
     }
   }
+
+  private static final Logger LOGGER = LogManager.getLogger(Annotate.class);
 
   @Nonnull
   private static String getCommentHeader(ConfigurationFormat format) {

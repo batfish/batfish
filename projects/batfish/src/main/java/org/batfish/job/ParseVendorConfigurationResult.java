@@ -187,6 +187,11 @@ public class ParseVendorConfigurationResult
     return modifiedName;
   }
 
+  @Nonnull
+  public ParseStatus getStatus() {
+    return _status;
+  }
+
   /** Returns a modified host name to use when duplicate hostnames are encountered */
   public static String getModifiedNameBase(String baseName, String filename) {
     return baseName + "__" + filename.replaceAll(File.separator, "__");
@@ -194,6 +199,16 @@ public class ParseVendorConfigurationResult
 
   public VendorConfiguration getVendorConfiguration() {
     return _vc;
+  }
+
+  @Nonnull
+  public ConfigurationFormat getConfigurationFormat() {
+    return _format;
+  }
+
+  @Nonnull
+  public SilentSyntax getSilentSyntax() {
+    return _silentSyntax;
   }
 
   @Override

@@ -4,5 +4,5 @@ set system host-name a.example.com
 set interface xe-0/0/0 unit 0 unrecognized syntax
 # SILENTLY IGNORED: traceoptions file update
 set protocols bgp traceoptions file update
-# PARTIALLY UNSUPPORTED
+# PARTIALLY UNSUPPORTED: priority 65
 set protocols isis interface ge-0/0/0.0 level 2 priority 65
