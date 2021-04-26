@@ -1451,15 +1451,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               .setStatements(redistributeAndAllowEigrpFromSelfAsn)
               .build();
 
-      c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
-
       newIface.setEigrp(
           EigrpInterfaceSettings.builder()
               .setAsn(eigrpProcess.getAsn())
               .setEnabled(true)
-              .setExportPolicy(
-                  String.format(
-                      "~EIGRP_EXPORT_POLICY_%s_%s_%s", vrfName, eigrpProcess.getAsn(), ifaceName))
+              .setExportPolicy(routingPolicy.getName())
               .setMetric(computeEigrpMetricForInterface(iface, eigrpProcess.getMode()))
               .setPassive(passive)
               .build());
