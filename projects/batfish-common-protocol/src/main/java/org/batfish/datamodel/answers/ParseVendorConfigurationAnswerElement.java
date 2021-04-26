@@ -38,7 +38,7 @@ public class ParseVendorConfigurationAnswerElement extends ParseAnswerElement
 
   private SortedMap<String, ParseTreeSentences> _parseTrees;
 
-  private Map<String, SilentSyntax> _silentSyntax;
+  private transient Map<String, SilentSyntax> _silentSyntax;
 
   private String _version;
 
