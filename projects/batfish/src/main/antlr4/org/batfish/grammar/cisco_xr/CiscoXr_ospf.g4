@@ -390,78 +390,6 @@ ro_vrf
    )*
 ;
 
-ro6_area
-:
-   AREA null_rest_of_line
-;
-
-ro6_auto_cost
-:
-   AUTO_COST REFERENCE_BANDWIDTH uint_legacy NEWLINE
-;
-
-ro6_default_information
-:
-   DEFAULT_INFORMATION null_rest_of_line
-;
-
-ro6_distance
-:
-   DISTANCE value = uint_legacy NEWLINE
-;
-
-ro6_distribute_list
-:
-   DISTRIBUTE_LIST PREFIX_LIST name = variable_distribute_list
-   (
-      IN
-      | OUT
-   )
-   (
-      iname = interface_name_unstructured
-   )?
-   NEWLINE
-;
-
-ro6_log_adjacency_changes
-:
-   LOG_ADJACENCY_CHANGES DETAIL? NEWLINE
-;
-
-ro6_maximum_paths
-:
-   (
-      MAXIMUM_PATHS
-      |
-      (
-         MAXIMUM PATHS
-      )
-   ) uint_legacy NEWLINE
-;
-
-ro6_null
-:
-   NO?
-   (
-      TIMERS
-   ) null_rest_of_line
-;
-
-ro6_passive_interface
-:
-   NO? PASSIVE_INTERFACE null_rest_of_line
-;
-
-ro6_router_id
-:
-   ROUTER_ID null_rest_of_line
-;
-
-ro6_redistribute
-:
-   REDISTRIBUTE null_rest_of_line
-;
-
 roa_cost
 :
    COST cost = uint_legacy NEWLINE
@@ -586,24 +514,6 @@ rov3_null
       | ROUTER_ID
       | TIMERS
    ) null_rest_of_line
-;
-
-s_ipv6_router_ospf
-:
-   IPV6 ROUTER OSPF procname = variable NEWLINE
-   (
-      ro6_area
-      | ro6_auto_cost
-      | ro6_default_information
-      | ro6_distance
-      | ro6_distribute_list
-      | ro6_log_adjacency_changes
-      | ro6_maximum_paths
-      | ro6_null
-      | ro6_passive_interface
-      | ro6_redistribute
-      | ro6_router_id
-   )*
 ;
 
 s_router_ospf

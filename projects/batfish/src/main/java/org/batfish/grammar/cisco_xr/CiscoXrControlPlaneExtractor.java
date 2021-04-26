@@ -127,8 +127,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_SOURCE_INTERFACE;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN;
-import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_AREA_FILTER_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DEFAULT_INFORMATION_ROUTE_POLICY;
@@ -718,7 +716,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmldm_groups_per_interfaceCont
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdp_cache_sa_stateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdp_sa_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rmsdpp_sa_filterContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro6_distribute_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_area_filterlistContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_area_nssaContext;
@@ -6192,21 +6189,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
     _currentOspfProcess = currentVrf().getOspfProcesses().get(_lastKnownOspfProcess);
     _lastKnownOspfProcess = null;
-  }
-
-  @Override
-  public void exitRo6_distribute_list(Ro6_distribute_listContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    boolean in = ctx.IN() != null;
-    CiscoXrStructureUsage usage =
-        in ? OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN : OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
-    _configuration.referenceStructure(PREFIX6_LIST, name, usage, line);
-
-    if (ctx.iname != null) {
-      String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
-      _configuration.referenceStructure(INTERFACE, ifaceName, usage, line);
-    }
   }
 
   @Override
