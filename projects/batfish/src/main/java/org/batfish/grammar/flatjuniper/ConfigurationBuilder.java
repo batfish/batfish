@@ -189,7 +189,7 @@ import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.vendor_family.juniper.TacplusServer;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.A_applicationContext;
@@ -2106,7 +2106,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   private ApplicationSet _currentApplicationSet;
 
@@ -2129,7 +2129,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       String text,
       Warnings warnings,
       Map<Token, String> tokenInputs,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _parser = parser;
     _text = text;
     _configuration = new JuniperConfiguration();
@@ -6357,7 +6357,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

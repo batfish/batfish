@@ -15,8 +15,8 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.grammar.SilentSyntax;
-import org.batfish.grammar.SilentSyntaxElem;
+import org.batfish.grammar.SilentSyntaxCollection;
+import org.batfish.grammar.SilentSyntaxCollection.SilentSyntaxElem;
 import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Test;
@@ -32,7 +32,7 @@ public class ParseVendorConfigurationResultTest {
     ParseTreeSentences parseTree = new ParseTreeSentences();
     parseTree.setSentences(ImmutableList.of("test"));
 
-    SilentSyntax silentSyntax = new SilentSyntax();
+    SilentSyntaxCollection silentSyntax = new SilentSyntaxCollection();
     silentSyntax.addElement(new SilentSyntaxElem("rule1", 1, "text"));
 
     Warnings warnings = new Warnings();

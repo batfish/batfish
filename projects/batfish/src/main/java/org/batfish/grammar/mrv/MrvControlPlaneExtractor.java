@@ -8,7 +8,7 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.mrv.MrvParser.A_system_systemnameContext;
 import org.batfish.grammar.mrv.MrvParser.Mrv_configurationContext;
@@ -28,10 +28,13 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
   private Warnings _w;
 
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   public MrvControlPlaneExtractor(
-      String fileText, MrvCombinedParser mrvParser, Warnings warnings, SilentSyntax silentSyntax) {
+      String fileText,
+      MrvCombinedParser mrvParser,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _parser = mrvParser;
     _w = warnings;
@@ -40,7 +43,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
   @Override
   @Nonnull
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

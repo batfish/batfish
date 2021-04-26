@@ -3,6 +3,7 @@ package org.batfish.grammar;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.grammar.SilentSyntaxCollection.SilentSyntaxElem;
 
 /** Interface providing common parse-tree listener utility methods with default implementations. */
 @ParametersAreNonnullByDefault
@@ -40,7 +41,9 @@ public interface SilentSyntaxListener extends BatfishListener {
     return getParser().getRuleName(ctx).endsWith("_null");
   }
 
-  /** Returns {@link SilentSyntax} to be populated by this {@link SilentSyntaxListener}. */
+  /**
+   * Returns {@link SilentSyntaxCollection} to be populated by this {@link SilentSyntaxListener}.
+   */
   @Nonnull
-  SilentSyntax getSilentSyntax();
+  SilentSyntaxCollection getSilentSyntax();
 }

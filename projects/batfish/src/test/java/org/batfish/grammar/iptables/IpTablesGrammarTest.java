@@ -15,7 +15,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class IpTablesGrammarTest {
     IptablesCombinedParser parser = new IptablesCombinedParser(src, settings);
     Warnings w = new Warnings(true, true, true);
     IptablesControlPlaneExtractor extractor =
-        new IptablesControlPlaneExtractor(src, parser, w, filepath, new SilentSyntax());
+        new IptablesControlPlaneExtractor(src, parser, w, filepath, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);

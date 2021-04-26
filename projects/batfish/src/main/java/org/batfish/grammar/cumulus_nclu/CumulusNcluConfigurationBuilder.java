@@ -49,7 +49,7 @@ import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
@@ -389,10 +389,13 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private final @Nonnull CumulusNcluCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
-  private final @Nonnull SilentSyntax _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public CumulusNcluConfigurationBuilder(
-      CumulusNcluCombinedParser parser, String text, Warnings w, SilentSyntax silentSyntax) {
+      CumulusNcluCombinedParser parser,
+      String text,
+      Warnings w,
+      SilentSyntaxCollection silentSyntax) {
     _parser = parser;
     _text = text;
     _w = w;
@@ -1485,7 +1488,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

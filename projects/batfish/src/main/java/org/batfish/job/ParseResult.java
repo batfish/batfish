@@ -8,7 +8,7 @@ import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.vendor.VendorConfiguration;
 
 /** An intermediate class that holds a cacheable result of parsing input configuration files. */
@@ -22,7 +22,7 @@ public class ParseResult implements Serializable {
   @Nonnull private final ConfigurationFormat _format;
   @Nonnull private final ParseStatus _status;
   @Nonnull private final Warnings _warnings;
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   public ParseResult(
       @Nullable VendorConfiguration config,
@@ -32,7 +32,7 @@ public class ParseResult implements Serializable {
       ParseTreeSentences parseTreeSentences,
       ParseStatus status,
       Warnings warnings,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _config = config;
     _failureCause = failureCause;
     _filename = filename;
@@ -79,7 +79,7 @@ public class ParseResult implements Serializable {
   }
 
   @Nonnull
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 }

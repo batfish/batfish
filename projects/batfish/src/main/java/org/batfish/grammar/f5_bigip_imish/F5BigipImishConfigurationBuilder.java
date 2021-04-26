@@ -26,7 +26,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishParser.F5_bigip_imish_configurationContext;
@@ -169,14 +169,14 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
-  private final @Nonnull SilentSyntax _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public F5BigipImishConfigurationBuilder(
       F5BigipImishCombinedParser parser,
       String text,
       Warnings w,
       F5BigipConfiguration configuration,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _parser = parser;
     _text = text;
     _w = w;
@@ -819,7 +819,7 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

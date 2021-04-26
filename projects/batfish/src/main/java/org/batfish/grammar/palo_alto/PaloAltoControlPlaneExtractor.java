@@ -9,7 +9,7 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -18,14 +18,14 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
   private final PaloAltoCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
   private PaloAltoConfiguration _configuration;
 
   public PaloAltoControlPlaneExtractor(
       String fileText,
       PaloAltoCombinedParser combinedParser,
       Warnings warnings,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _parser = combinedParser;
     _w = warnings;

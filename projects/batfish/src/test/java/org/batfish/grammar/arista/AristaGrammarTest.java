@@ -175,7 +175,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -237,7 +237,8 @@ public class AristaGrammarTest {
     configureBatfishTestSettings(settings);
     AristaCombinedParser parser = new AristaCombinedParser(src, settings);
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(src, parser, ARISTA, new Warnings(), new SilentSyntax());
+        new AristaControlPlaneExtractor(
+            src, parser, ARISTA, new Warnings(), new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);

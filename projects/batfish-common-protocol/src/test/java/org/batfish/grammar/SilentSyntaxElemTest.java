@@ -1,9 +1,10 @@
 package org.batfish.grammar;
 
 import com.google.common.testing.EqualsTester;
+import org.batfish.grammar.SilentSyntaxCollection.SilentSyntaxElem;
 import org.junit.Test;
 
-/** Test of {@link SilentSyntaxElem}. */
+/** Test of {@link SilentSyntaxCollection}. */
 public final class SilentSyntaxElemTest {
 
   @Test

@@ -108,7 +108,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Bgp_asnContext;
@@ -453,7 +453,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
@@ -472,7 +472,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private PaloAltoCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   /** Should file at most one warning about ignored application statements */
   private boolean _filedWarningApplicationStatementIgnored = false;
@@ -521,7 +521,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private Zone _currentZone;
 
   public PaloAltoConfigurationBuilder(
-      PaloAltoCombinedParser parser, String text, Warnings warnings, SilentSyntax silentSyntax) {
+      PaloAltoCombinedParser parser,
+      String text,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _parser = parser;
     _text = text;
     _w = warnings;

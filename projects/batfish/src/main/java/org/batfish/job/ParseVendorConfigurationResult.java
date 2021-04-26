@@ -16,7 +16,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.vendor.VendorConfiguration;
 
 public class ParseVendorConfigurationResult
@@ -30,7 +30,7 @@ public class ParseVendorConfigurationResult
   private final @Nonnull ConfigurationFormat _format;
 
   @Nonnull private ParseTreeSentences _parseTree;
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   private final ParseStatus _status;
 
@@ -46,7 +46,7 @@ public class ParseVendorConfigurationResult
       @Nonnull Warnings warnings,
       @Nonnull ParseTreeSentences parseTree,
       @Nonnull Throwable failureCause,
-      @Nonnull SilentSyntax silentSyntax) {
+      @Nonnull SilentSyntaxCollection silentSyntax) {
     super(elapsedTime, history, failureCause);
     _filename = filename;
     _format = format;
@@ -66,7 +66,7 @@ public class ParseVendorConfigurationResult
       @Nonnull ParseTreeSentences parseTree,
       @Nonnull ParseStatus status,
       @Nonnull Multimap<String, String> duplicateHostnames,
-      @Nonnull SilentSyntax silentSyntax) {
+      @Nonnull SilentSyntaxCollection silentSyntax) {
     super(elapsedTime, history);
     _filename = filename;
     _format = format;
@@ -91,7 +91,7 @@ public class ParseVendorConfigurationResult
     _parseTree = new ParseTreeSentences();
     _status = status;
     _warnings = warnings;
-    _silentSyntax = new SilentSyntax();
+    _silentSyntax = new SilentSyntaxCollection();
   }
 
   @Override
@@ -206,7 +206,7 @@ public class ParseVendorConfigurationResult
   }
 
   @Nonnull
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

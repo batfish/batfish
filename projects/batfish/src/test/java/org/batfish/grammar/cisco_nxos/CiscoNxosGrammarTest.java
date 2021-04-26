@@ -263,7 +263,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.ParserBatfishException;
@@ -488,7 +488,8 @@ public final class CiscoNxosGrammarTest {
     configureBatfishTestSettings(settings);
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
     NxosControlPlaneExtractor extractor =
-        new NxosControlPlaneExtractor(src, ciscoNxosParser, new Warnings(), new SilentSyntax());
+        new NxosControlPlaneExtractor(
+            src, ciscoNxosParser, new Warnings(), new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoNxosParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);

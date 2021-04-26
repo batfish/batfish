@@ -413,7 +413,7 @@ import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_asa.AsaParser.Aaa_accountingContext;
@@ -1391,7 +1391,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
@@ -1421,7 +1421,10 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   private String _lastKnownOspfProcess;
 
   public AsaControlPlaneExtractor(
-      String text, AsaCombinedParser parser, Warnings warnings, SilentSyntax silentSyntax) {
+      String text,
+      AsaCombinedParser parser,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
@@ -1431,7 +1434,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

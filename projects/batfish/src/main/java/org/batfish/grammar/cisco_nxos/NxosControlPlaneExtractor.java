@@ -12,7 +12,7 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -27,7 +27,10 @@ import org.batfish.vendor.VendorConfiguration;
 public final class NxosControlPlaneExtractor implements ControlPlaneExtractor {
 
   public NxosControlPlaneExtractor(
-      String text, CiscoNxosCombinedParser parser, Warnings warnings, SilentSyntax silentSyntax) {
+      String text,
+      CiscoNxosCombinedParser parser,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
@@ -63,5 +66,5 @@ public final class NxosControlPlaneExtractor implements ControlPlaneExtractor {
   private final @Nonnull CiscoNxosCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
-  private final @Nonnull SilentSyntax _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 }

@@ -240,7 +240,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Aaagr_source_interfaceContext;
@@ -1363,14 +1363,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private final @Nonnull CiscoNxosCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
-  private final @Nonnull SilentSyntax _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public CiscoNxosControlPlaneExtractor(
       String text,
       CiscoNxosCombinedParser parser,
       Warnings warnings,
       CiscoNxosConfiguration configuration,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _preferredNames = HashBasedTable.create();
@@ -1385,7 +1385,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

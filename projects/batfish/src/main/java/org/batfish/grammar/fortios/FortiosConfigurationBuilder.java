@@ -36,7 +36,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.fortios.FortiosParser.Access_list_nameContext;
@@ -252,7 +252,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       FortiosCombinedParser parser,
       Warnings warnings,
       FortiosConfiguration configuration,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
@@ -3052,7 +3052,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
@@ -3180,7 +3180,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   // Internal sequence number to generate unique UUIDs for structure that may be renamed or cloned
   private int _uuidSequenceNumber = 0;
   private final @Nonnull Warnings _w;
-  private final @Nonnull SilentSyntax _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   @Override
   public void exitEveryRule(ParserRuleContext ctx) {

@@ -18,7 +18,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_nexthop_selfContext;
 import org.batfish.grammar.flatvyos.FlatVyosParser.Bnt_remote_asContext;
@@ -205,10 +205,13 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   public FlatVyosControlPlaneExtractor(
-      String text, FlatVyosCombinedParser parser, Warnings warnings, SilentSyntax silentSyntax) {
+      String text,
+      FlatVyosCombinedParser parser,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
@@ -217,7 +220,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   @Override
   @Nonnull
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

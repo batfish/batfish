@@ -8,7 +8,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.representation.fortios.FortiosConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -22,7 +22,10 @@ import org.batfish.vendor.VendorConfiguration;
 public final class FortiosControlPlaneExtractor implements ControlPlaneExtractor {
 
   public FortiosControlPlaneExtractor(
-      String text, FortiosCombinedParser parser, Warnings warnings, SilentSyntax silentSyntax) {
+      String text,
+      FortiosCombinedParser parser,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _w = warnings;
@@ -49,5 +52,5 @@ public final class FortiosControlPlaneExtractor implements ControlPlaneExtractor
   private final @Nonnull FortiosCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
-  private final @Nonnull SilentSyntax _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 }

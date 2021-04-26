@@ -27,8 +27,8 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.grammar.SilentSyntax;
-import org.batfish.grammar.SilentSyntaxElem;
+import org.batfish.grammar.SilentSyntaxCollection;
+import org.batfish.grammar.SilentSyntaxCollection.SilentSyntaxElem;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.job.ParseVendorConfigurationJob;
@@ -130,7 +130,10 @@ public final class Annotate {
 
   @Nonnull
   private static String annotatePreprocessedFile(
-      String inputText, SilentSyntax silentSyntax, Warnings warnings, String commentHeader) {
+      String inputText,
+      SilentSyntaxCollection silentSyntax,
+      Warnings warnings,
+      String commentHeader) {
     LinkedHashMultimap<Integer, SilentSyntaxElem> silentSyntaxByLine = LinkedHashMultimap.create();
     silentSyntax.getElements().forEach(elem -> silentSyntaxByLine.put(elem.getLine(), elem));
     LinkedHashMultimap<Integer, ParseWarning> parseWarningsByLine = LinkedHashMultimap.create();
@@ -157,9 +160,10 @@ public final class Annotate {
 
   @VisibleForTesting
   @Nonnull
-  static String printElem(String commentHeader, SilentSyntaxElem elem) {
+  static String printElem(String commentHeader, SilentSyntaxElem silentSyntaxElem) {
     // TODO: optional extra debug information
-    return String.format("%s SILENTLY IGNORED: %s\n", commentHeader, elem.getText().trim());
+    return String.format(
+        "%s SILENTLY IGNORED: %s\n", commentHeader, silentSyntaxElem.getText().trim());
   }
 
   @VisibleForTesting

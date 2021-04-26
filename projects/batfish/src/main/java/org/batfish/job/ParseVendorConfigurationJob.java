@@ -27,7 +27,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.arista.AristaCombinedParser;
 import org.batfish.grammar.arista.AristaControlPlaneExtractor;
@@ -92,7 +92,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
   private ConfigurationFormat _expectedFormat;
 
   private ParseTreeSentences _ptSentences;
-  @Nonnull private SilentSyntax _silentSyntax;
+  @Nonnull private SilentSyntaxCollection _silentSyntax;
   final NetworkSnapshot _snapshot;
   @Nullable private SpanContext _spanContext;
   private Warnings _warnings;
@@ -110,7 +110,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     _fileText = fileText;
     _filename = filename;
     _ptSentences = new ParseTreeSentences();
-    _silentSyntax = new SilentSyntax();
+    _silentSyntax = new SilentSyntaxCollection();
     _warnings = warnings;
     _expectedFormat = expectedFormat;
     _duplicateHostnames = duplicateHostnames;

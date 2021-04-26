@@ -15,7 +15,7 @@ import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishCombinedParser;
 import org.batfish.grammar.f5_bigip_imish.F5BigipImishConfigurationBuilder;
 import org.batfish.representation.f5_bigip.F5BigipConfiguration;
@@ -29,7 +29,7 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
   private F5BigipConfiguration _configuration;
   private final String _filename;
   private final @Nullable Supplier<ParseTreeSentences> _ptSentences;
-  private final @Nonnull SilentSyntax _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
   private final boolean _printParseTreeLineNums;
 
   public F5BigipStructuredControlPlaneExtractor(
@@ -39,7 +39,7 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
       String filename,
       @Nullable Supplier<ParseTreeSentences> ptSentences,
       boolean printParseTreeLineNums,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _parser = combinedParser;
     _w = warnings;

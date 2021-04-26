@@ -354,7 +354,7 @@ import org.batfish.datamodel.vendor_family.cisco_xr.User;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aaa_accountingContext;
@@ -1287,7 +1287,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
@@ -1309,7 +1309,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       CiscoXrCombinedParser parser,
       ConfigurationFormat format,
       Warnings warnings,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _format = format;
@@ -9111,7 +9111,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

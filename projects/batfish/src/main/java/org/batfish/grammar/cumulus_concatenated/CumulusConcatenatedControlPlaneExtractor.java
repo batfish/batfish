@@ -21,7 +21,7 @@ import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ImplementedRules;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.cumulus_frr.CumulusFrrCombinedParser;
 import org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
@@ -52,7 +52,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
   private int _line = -1;
   private int _offset = -1;
   private List<String> _errors = new ArrayList<>();
-  private final SilentSyntax _silentSyntax;
+  private final SilentSyntaxCollection _silentSyntax;
 
   public CumulusConcatenatedControlPlaneExtractor(
       String fileText,
@@ -61,7 +61,7 @@ public class CumulusConcatenatedControlPlaneExtractor implements ControlPlaneExt
       GrammarSettings grammarSettings,
       @Nullable Supplier<ParseTreeSentences> ptSentences,
       boolean printParseTreeLineNums,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _w = warnings;
     _filename = filename;

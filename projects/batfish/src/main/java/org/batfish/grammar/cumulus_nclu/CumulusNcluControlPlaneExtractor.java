@@ -8,7 +8,7 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -22,13 +22,13 @@ public class CumulusNcluControlPlaneExtractor implements ControlPlaneExtractor {
   private final CumulusNcluCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  private final SilentSyntax _silentSyntax;
+  private final SilentSyntaxCollection _silentSyntax;
 
   public CumulusNcluControlPlaneExtractor(
       String fileText,
       CumulusNcluCombinedParser combinedParser,
       Warnings warnings,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _parser = combinedParser;
     _w = warnings;

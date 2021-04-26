@@ -14,7 +14,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.iptables.IptablesParser.Built_in_targetContext;
 import org.batfish.grammar.iptables.IptablesParser.CommandContext;
@@ -57,14 +57,14 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   private Warnings _w;
 
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   public IptablesControlPlaneExtractor(
       String fileText,
       IptablesCombinedParser iptablesParser,
       Warnings warnings,
       String fileName,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _parser = iptablesParser;
     _w = warnings;
@@ -74,7 +74,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   @Override
   @Nonnull
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

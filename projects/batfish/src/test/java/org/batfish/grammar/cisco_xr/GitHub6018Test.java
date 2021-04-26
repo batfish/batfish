@@ -23,7 +23,7 @@ import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
@@ -68,7 +68,7 @@ public final class GitHub6018Test {
             ciscoXrParser,
             ConfigurationFormat.CISCO_IOS_XR,
             new Warnings(),
-            new SilentSyntax());
+            new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoXrParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);

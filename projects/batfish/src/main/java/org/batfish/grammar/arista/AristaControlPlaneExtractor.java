@@ -278,7 +278,7 @@ import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.arista.AristaParser.Aaa_accountingContext;
@@ -1195,7 +1195,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   private InspectClassMap _currentInspectClassMap;
 
@@ -1212,7 +1212,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       AristaCombinedParser parser,
       ConfigurationFormat format,
       Warnings warnings,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _format = format;
@@ -8020,7 +8020,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

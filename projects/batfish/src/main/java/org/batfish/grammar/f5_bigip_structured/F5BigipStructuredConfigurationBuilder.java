@@ -224,7 +224,7 @@ import org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType;
 import org.batfish.datamodel.vendor_family.f5_bigip.RouteAdvertisementMode;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Bundle_speedContext;
@@ -729,10 +729,13 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private final @Nonnull F5BigipStructuredCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
-  private final @Nonnull SilentSyntax _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public F5BigipStructuredConfigurationBuilder(
-      F5BigipStructuredCombinedParser parser, String text, Warnings w, SilentSyntax silentSyntax) {
+      F5BigipStructuredCombinedParser parser,
+      String text,
+      Warnings w,
+      SilentSyntaxCollection silentSyntax) {
     _parser = parser;
     _text = text;
     _w = w;
@@ -741,7 +744,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   @Nonnull
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

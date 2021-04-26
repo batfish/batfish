@@ -409,7 +409,7 @@ import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accountingContext;
@@ -1444,7 +1444,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
@@ -1478,7 +1478,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       CiscoCombinedParser parser,
       ConfigurationFormat format,
       Warnings warnings,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _format = format;
@@ -10281,7 +10281,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

@@ -11,7 +11,7 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.ImplementedRules;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -21,7 +21,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
   private final FlatJuniperCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   @Override
   public Set<String> implementedRuleNames() {
@@ -34,7 +34,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
       String fileText,
       FlatJuniperCombinedParser combinedParser,
       Warnings warnings,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _text = fileText;
     _parser = combinedParser;
     _w = warnings;

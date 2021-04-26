@@ -22,7 +22,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.AddressContext;
@@ -81,14 +81,14 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   private final Warnings _w;
   private InterfacesInterface _currentIface;
   private @Nullable String _currentIfaceName;
-  private @Nonnull SilentSyntax _silentSyntax;
+  private @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public CumulusInterfacesConfigurationBuilder(
       CumulusConcatenatedConfiguration config,
       CumulusInterfacesCombinedParser parser,
       String text,
       Warnings w,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _config = config;
     _parser = parser;
     _text = text;
@@ -116,7 +116,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
 
   @Nonnull
   @Override
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

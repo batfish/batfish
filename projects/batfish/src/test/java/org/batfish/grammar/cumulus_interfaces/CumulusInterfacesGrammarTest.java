@@ -28,7 +28,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.MockGrammarSettings;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.batfish.representation.cumulus.CumulusInterfacesConfiguration;
@@ -95,7 +95,7 @@ public class CumulusInterfacesGrammarTest {
     Cumulus_interfaces_configurationContext ctxt = parser.parse();
     CumulusInterfacesConfigurationBuilder configurationBuilder =
         new CumulusInterfacesConfigurationBuilder(
-            _config, parser, input, _warnings, new SilentSyntax());
+            _config, parser, input, _warnings, new SilentSyntaxCollection());
     new BatfishParseTreeWalker(parser).walk(configurationBuilder, ctxt);
     _config = SerializationUtils.clone(_config);
     return configurationBuilder.getConfig().getInterfacesConfiguration();

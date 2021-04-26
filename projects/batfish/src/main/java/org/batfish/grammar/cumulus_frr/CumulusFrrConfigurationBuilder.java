@@ -61,7 +61,7 @@ import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.SilentSyntax;
+import org.batfish.grammar.SilentSyntaxCollection;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Bgp_redist_typeContext;
@@ -249,7 +249,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private final CumulusFrrCombinedParser _parser;
   private final Warnings _w;
   private final String _text;
-  @Nonnull private final SilentSyntax _silentSyntax;
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
 
   private @Nullable Vrf _currentVrf;
   private RouteMapEntry _currentRouteMapEntry;
@@ -267,7 +267,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
       CumulusFrrCombinedParser parser,
       Warnings w,
       String fullText,
-      SilentSyntax silentSyntax) {
+      SilentSyntaxCollection silentSyntax) {
     _c = configuration;
     _frr = configuration.getFrrConfiguration();
     _parser = parser;
@@ -278,7 +278,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
 
   @Override
   @Nonnull
-  public SilentSyntax getSilentSyntax() {
+  public SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
