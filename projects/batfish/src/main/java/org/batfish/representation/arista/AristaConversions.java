@@ -157,6 +157,9 @@ final class AristaConversions {
     return highestIp.get();
   }
 
+  /**
+   * Checks that the neighbor is not shutdown and at least one of the address families is activated
+   */
   private static boolean isActive(
       String name, AristaBgpVrf vrf, AristaBgpV4Neighbor neighbor, Warnings w) {
     if (firstNonNull(neighbor.getShutdown(), Boolean.FALSE)) {
@@ -178,16 +181,12 @@ final class AristaConversions {
       w.redFlag("No supported address-family configured for " + name);
       return false;
     }
-
-    // No remote AS set.
-    if (neighbor.getRemoteAs() == null) {
-      w.redFlag("No remote-as configured for " + name);
-      return false;
-    }
-
     return true;
   }
 
+  /**
+   * Checks that the neighbor is not shutdown and at least one of the address families is activated
+   */
   private static boolean isActive(
       String name, AristaBgpVrf vrf, AristaBgpV4DynamicNeighbor neighbor, Warnings w) {
     if (firstNonNull(neighbor.getShutdown(), Boolean.FALSE)) {
@@ -209,13 +208,6 @@ final class AristaConversions {
       w.redFlag("No supported address-family configured for " + name);
       return false;
     }
-
-    // No remote AS set.
-    if (neighbor.getRemoteAs() == null && neighbor.getPeerFilter() == null) {
-      w.redFlag("No remote-as configured for " + name);
-      return false;
-    }
-
     return true;
   }
 
@@ -371,17 +363,28 @@ final class AristaConversions {
     BgpPeerConfig.Builder<?, ?> newNeighborBuilder;
     if (dynamic) {
       assert neighbor instanceof AristaBgpV4DynamicNeighbor;
+      LongSpace remoteAsns = getAsnSpace((AristaBgpV4DynamicNeighbor) neighbor, peerFilters);
+      if (remoteAsns.isEmpty()) {
+        warnings.redFlag(
+            String.format(
+                "No acceptable remote-as for %s",
+                getTextDesc(((AristaBgpV4DynamicNeighbor) neighbor).getRange(), vrf)));
+      }
       newNeighborBuilder =
-          BgpPassivePeerConfig.builder()
-              .setRemoteAsns(getAsnSpace((AristaBgpV4DynamicNeighbor) neighbor, peerFilters))
-              .setPeerPrefix(prefix);
+          BgpPassivePeerConfig.builder().setRemoteAsns(remoteAsns).setPeerPrefix(prefix);
     } else {
+      assert neighbor instanceof AristaBgpV4Neighbor;
+      LongSpace remoteAsns =
+          Optional.ofNullable(neighbor.getRemoteAs()).map(LongSpace::of).orElse(LongSpace.EMPTY);
+      if (remoteAsns.isEmpty()) {
+        warnings.redFlag(
+            String.format(
+                "No remote-as configured for %s",
+                getTextDesc(((AristaBgpV4Neighbor) neighbor).getIp(), vrf)));
+      }
       newNeighborBuilder =
           BgpActivePeerConfig.builder()
-              .setRemoteAsns(
-                  Optional.ofNullable(neighbor.getRemoteAs())
-                      .map(LongSpace::of)
-                      .orElse(LongSpace.EMPTY))
+              .setRemoteAsns(remoteAsns)
               .setPeerAddress(prefix.getStartIp());
     }
 
