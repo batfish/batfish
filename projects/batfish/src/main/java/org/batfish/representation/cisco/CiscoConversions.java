@@ -905,7 +905,8 @@ public class CiscoConversions {
 
     if (ipsecProfile != null && ipsecProfile.getIsakmpProfile() != null) {
       ipsecStaticPeerConfigBuilder.setIkePhase1Policy(ipsecProfile.getIsakmpProfile());
-    } else {
+    } else if (tunnel.getDestination() != null) {
+      // Try to infer policy from destination IP and source interface name.
       ipsecStaticPeerConfigBuilder.setIkePhase1Policy(
           getIkePhase1Policy(
               newConfig.getIkePhase1Policies(),
