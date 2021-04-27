@@ -25,7 +25,7 @@ public class ParseEnvironmentBgpTableResultTest {
     parseTree.setSentences(ImmutableList.of("test"));
 
     Warnings warnings = new Warnings();
-    warnings.getParseWarnings().add(new ParseWarning(1, "text", "context", null));
+    warnings.getParseWarnings().add(new ParseWarning(1, "text", "context", "comment"));
 
     ParseEnvironmentBgpTableResult result =
         new ParseEnvironmentBgpTableResult(
