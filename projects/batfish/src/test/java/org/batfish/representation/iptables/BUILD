@@ -11,9 +11,7 @@ junit_tests(
         "**/*Test.java",
     ]),
     deps = [
-        "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish/src/main/java/org/batfish/representation/iptables",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",

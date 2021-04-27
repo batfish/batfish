@@ -20,13 +20,9 @@ junit_tests(
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
-        "//projects/batfish",
-        "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/main/java/org/batfish/representation/host",
-        "//projects/bdd",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
