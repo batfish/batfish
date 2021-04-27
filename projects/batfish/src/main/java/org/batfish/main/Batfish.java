@@ -287,7 +287,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static @Nonnull Flattener flatten(
       String input,
       BatfishLogger logger,
-      Settings settings,
+      GrammarSettings settings,
       Warnings warnings,
       ConfigurationFormat format,
       String header) {
