@@ -1,15 +1,17 @@
-package org.batfish.job;
+package org.batfish.main.preprocess;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
-import org.batfish.config.Settings;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishParseException;
+import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.PreprocessExtractor;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
@@ -19,118 +21,89 @@ import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.palo_alto.PaloAltoCombinedParser;
 import org.batfish.grammar.palo_alto.PreprocessPaloAltoExtractor;
 import org.batfish.main.Batfish;
-import org.batfish.main.ParserBatfishException;
 
-/**
- * {@link BatfishJob} that performs pre-processing on a configuration file and returns the output in
- * a {@link PreprocessResult}. If the input text is not recognized as a preprocessible
- * configuration, it is returned unmodified.
- */
 @ParametersAreNonnullByDefault
-public final class PreprocessJob extends BatfishJob<PreprocessResult> {
+public final class Preprocessor {
 
-  private @Nonnull String _fileText;
-  private @Nonnull Path _inputFile;
-  private @Nonnull Path _outputFile;
-  private @Nonnull Warnings _warnings;
-
-  public PreprocessJob(
-      Settings settings, String fileText, Path inputFile, Path outputFile, Warnings warnings) {
-    super(settings);
-    _fileText = fileText;
-    _inputFile = inputFile;
-    _outputFile = outputFile;
-    _warnings = warnings;
-  }
-
-  @Override
-  public @Nonnull PreprocessResult call() {
-    long startTime = System.currentTimeMillis();
-    long elapsedTime;
-    String inputFileAsString = _inputFile.toAbsolutePath().toString();
+  /**
+   * Performs pre-processing on a configuration file and returns the output. If the input text is
+   * not recognized as a preprocessible configuration, it is returned unmodified.
+   *
+   * @throws IOException if there is an error parsing or pre-processing the input
+   */
+  public static @Nonnull String preprocess(
+      GrammarSettings settings, String fileText, Path inputFile, Warnings warnings)
+      throws IOException {
+    BatfishLogger logger = new BatfishLogger(BatfishLogger.LEVELSTR_INFO, true);
     String flatConfigText;
     FlattenerLineMap lineMap;
     // If flat, proceed with original input text. If hierarchical, flatten first. If
     // not non-preprocessible, just return the original text.
     String header = null;
     ConfigurationFormat format =
-        VendorConfigurationFormatDetector.identifyConfigurationFormat(_fileText);
+        VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText);
     try {
-      Flattener flattener =
-          Batfish.flatten(_fileText, _logger, _settings, _warnings, format, header);
+      Flattener flattener = Batfish.flatten(fileText, logger, settings, warnings, format, header);
       flatConfigText = flattener.getFlattenedConfigurationText();
       lineMap = flattener.getOriginalLineMap();
-    } catch (ParserBatfishException e) {
-      String error = "Error parsing configuration file: \"" + inputFileAsString + "\"";
-      elapsedTime = System.currentTimeMillis() - startTime;
-      return new PreprocessResult(
-          elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
     } catch (Exception e) {
-      String error =
-          "Error post-processing parse tree of configuration file: \"" + inputFileAsString + "\"";
-      elapsedTime = System.currentTimeMillis() - startTime;
-      return new PreprocessResult(
-          elapsedTime, _logger.getHistory(), _outputFile, new BatfishException(error, e));
+      throw new IOException(String.format("Error flattening %s", inputFile), e);
     } finally {
-      Batfish.logWarnings(_logger, _warnings);
+      Batfish.logWarnings(logger, warnings);
     }
 
-    _logger.debugf("Preprocessing config: \"%s\"...", _inputFile);
+    logger.debugf("Preprocessing config: \"%s\"...", inputFile);
     BatfishCombinedParser<?, ?> parser = null;
     PreprocessExtractor extractor = null;
     switch (format) {
       case JUNIPER:
       case FLAT_JUNIPER:
         FlatJuniperCombinedParser juniperParser =
-            new FlatJuniperCombinedParser(flatConfigText, _settings, lineMap);
-        extractor = new PreprocessJuniperExtractor(juniperParser, _warnings);
+            new FlatJuniperCombinedParser(flatConfigText, settings, lineMap);
+        extractor = new PreprocessJuniperExtractor(juniperParser, warnings);
         parser = juniperParser;
         break;
       case PALO_ALTO:
       case PALO_ALTO_NESTED:
         PaloAltoCombinedParser paloAltoParser =
-            new PaloAltoCombinedParser(flatConfigText, _settings, lineMap);
-        extractor = new PreprocessPaloAltoExtractor(paloAltoParser, _warnings);
+            new PaloAltoCombinedParser(flatConfigText, settings, lineMap);
+        extractor = new PreprocessPaloAltoExtractor(paloAltoParser, warnings);
         parser = paloAltoParser;
         break;
       default:
-        _logger.debugf("Skipping: \"%s\"\n", _inputFile);
-        elapsedTime = System.currentTimeMillis() - startTime;
-        return new PreprocessResult(elapsedTime, _logger.getHistory(), _outputFile, _fileText);
+        logger.debugf("Skipping: \"%s\"\n", inputFile);
+        return fileText;
     }
-    _logger.info("\tParsing...");
+    logger.info("\tParsing...");
     // Parse the flat text
-    ParserRuleContext tree = Batfish.parse(parser, _logger, _settings);
+    ParserRuleContext tree = Batfish.parse(parser, logger, settings);
 
     if (!parser.getErrors().isEmpty()) {
       throw new BatfishException(
           String.format(
               "Configuration file: '%s' contains unrecognized lines:\n%s",
-              inputFileAsString, String.join("\n", parser.getErrors())));
+              inputFile.toAbsolutePath(), String.join("\n", parser.getErrors())));
     }
 
     try {
-      _logger.info("\tPost-processing...");
+      logger.info("\tPost-processing...");
 
       try {
         // Pre-process the initial flat parse tree
         extractor.processParseTree(tree);
       } catch (BatfishParseException e) {
-        _warnings.setErrorDetails(e.getErrorDetails());
-        throw new BatfishException("Error processing parse tree", e);
+        warnings.setErrorDetails(e.getErrorDetails());
+        throw new IOException("Error processing parse tree", e);
       }
 
-      _logger.info("OK\n");
+      logger.info("OK\n");
     } finally {
-      Batfish.logWarnings(_logger, _warnings);
+      Batfish.logWarnings(logger, warnings);
     }
 
-    elapsedTime = System.currentTimeMillis() - startTime;
     // Return configuration text corresponding to the pre-processed parse tree.
-    return new PreprocessResult(
-        elapsedTime,
-        _logger.getHistory(),
-        _outputFile,
-        extractor.getPreprocessedConfigurationText());
+    return extractor.getPreprocessedConfigurationText();
   }
+
+  private Preprocessor() {} // prevent instantiation
 }
