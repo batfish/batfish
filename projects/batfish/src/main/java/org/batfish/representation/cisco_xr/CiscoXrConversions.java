@@ -8,6 +8,7 @@ import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeBgpDefaultRouteExportPolicyName;
@@ -109,6 +110,7 @@ import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatc
 import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
@@ -743,7 +745,7 @@ public class CiscoXrConversions {
    */
   @Nullable
   static String generateBgpImportPolicy(
-      LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
+      LeafBgpPeerGroup lpg, long localAs, String vrfName, Configuration c) {
     // TODO Support filter-list
     // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
 
@@ -754,6 +756,13 @@ public class CiscoXrConversions {
     }
     // Warnings for references will be surfaced elsewhere.
 
+    if (!Objects.equals(localAs, lpg.getRemoteAs())) {
+      // For EBGP peers, if no inbound filter is defined, deny all routes (special XR behavior)
+      Statement rejectAll = Statements.ExitReject.toStaticStatement();
+      String policyName = generatedBgpPeerImportPolicyName(vrfName, lpg.getName());
+      RoutingPolicy.builder().setOwner(c).setName(policyName).addStatement(rejectAll).build();
+      return policyName;
+    }
     // Return null to indicate no constraints were imposed on inbound BGP routes.
     return null;
   }
@@ -763,21 +772,25 @@ public class CiscoXrConversions {
    * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
    */
   static void generateBgpExportPolicy(
-      LeafBgpPeerGroup lpg, String vrfName, boolean ipv4, Configuration c, Warnings w) {
-    List<Statement> exportPolicyStatements = new ArrayList<>();
+      LeafBgpPeerGroup lpg, long localAs, String vrfName, boolean ipv4, Configuration c) {
+    RoutingPolicy.Builder exportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(generatedBgpPeerExportPolicyName(vrfName, lpg.getName()));
     if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
-      exportPolicyStatements.add(new SetNextHop(SelfNextHop.getInstance()));
+      exportPolicy.addStatement(new SetNextHop(SelfNextHop.getInstance()));
     }
     if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
-      exportPolicyStatements.add(Statements.RemovePrivateAs.toStaticStatement());
+      exportPolicy.addStatement(Statements.RemovePrivateAs.toStaticStatement());
     }
 
     // If defaultOriginate is set, generate a default route export policy. Default route will match
     // this policy and get exported without going through the rest of the export policy.
     // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
+    // TODO Verify that default route can be originated even if no export filter is configured.
     if (lpg.getDefaultOriginate()) {
       initBgpDefaultRouteExportPolicy(vrfName, lpg.getName(), ipv4, c);
-      exportPolicyStatements.add(
+      exportPolicy.addStatement(
           new If(
               "Export default route from peer with default-originate configured",
               new CallExpr(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, lpg.getName())),
@@ -793,17 +806,17 @@ public class CiscoXrConversions {
     String outboundRouteMapName = lpg.getOutboundRouteMap();
     if (outboundRouteMapName != null && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
       peerExportConjuncts.add(new CallExpr(outboundRouteMapName));
+    } else if (!Objects.equals(localAs, lpg.getRemoteAs())) {
+      // For EBGP peers, if no outbound filter is defined, deny all routes (special XR behavior)
+      peerExportConjuncts.add(BooleanExprs.FALSE);
     }
-    exportPolicyStatements.add(
-        new If(
-            "peer-export policy main conditional: exitAccept if true / exitReject if false",
-            new Conjunction(peerExportConjuncts),
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(generatedBgpPeerExportPolicyName(vrfName, lpg.getName()))
-        .setStatements(exportPolicyStatements)
+    exportPolicy
+        .addStatement(
+            new If(
+                "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                new Conjunction(peerExportConjuncts),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())))
         .build();
   }
 

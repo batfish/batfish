@@ -1,0 +1,44 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname bgp-default-import-export
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.1.0.1/24
+!
+interface Loopback0
+ ipv4 address 10.0.0.1/32
+!
+router bgp 65100
+ bgp router-id 10.0.0.1
+ !
+ address-family ipv4 unicast
+ !
+ ! EBGP neighbor with no import/export filters should not exchange routes
+ neighbor 10.1.0.2
+  remote-as 65200
+  address-family ipv4 unicast
+  !
+ !
+ ! EBGP neighbor with undefined import/export filters should not exchange routes
+ neighbor 10.1.0.3
+  remote-as 65200
+  address-family ipv4 unicast
+   route-policy rp1 in
+   route-policy rp2 out
+  !
+ !
+ ! IBGP neighbor with no import/export filters should exchange routes
+ neighbor 10.1.0.4
+  remote-as 65100
+  address-family ipv4 unicast
+  !
+ !
+ ! IBGP neighbor with undefined import/export filters should exchange routes
+ neighbor 10.1.0.5
+  remote-as 65100
+  address-family ipv4 unicast
+   route-policy rp1 in
+   route-policy rp2 out
+  !
+ !
+!
