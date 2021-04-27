@@ -205,7 +205,7 @@ public class Warnings implements Serializable {
     private static final String PROP_PARSER_CONTEXT = "Parser_Context";
     private static final String PROP_TEXT = "Text";
 
-    @Nullable private final String _comment;
+    @Nonnull private final String _comment;
     private final int _line;
     @Nonnull private final String _parserContext;
     @Nonnull private final String _text;
@@ -219,19 +219,19 @@ public class Warnings implements Serializable {
       checkArgument(line != null, "Missing %s", PROP_LINE);
       // empty strings can get serialized as nulls
       return new ParseWarning(
-          line, firstNonNull(text, ""), firstNonNull(parserContext, ""), comment);
+          line, firstNonNull(text, ""), firstNonNull(parserContext, ""), firstNonNull(comment, ""));
     }
 
     public ParseWarning(
-        int line, @Nonnull String text, @Nonnull String parserContext, @Nullable String comment) {
+        int line, @Nonnull String text, @Nonnull String parserContext, @Nonnull String comment) {
       _line = line;
       _text = requireNonNull(text, PROP_TEXT);
       _parserContext = requireNonNull(parserContext, PROP_PARSER_CONTEXT);
-      _comment = comment;
+      _comment = requireNonNull(comment, PROP_COMMENT);
     }
 
     @JsonProperty(PROP_COMMENT)
-    @Nullable
+    @Nonnull
     public String getComment() {
       return _comment;
     }
@@ -276,7 +276,6 @@ public class Warnings implements Serializable {
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(this)
-          .omitNullValues()
           .add("line", _line)
           .add("text", _text)
           .add("comment", _comment)

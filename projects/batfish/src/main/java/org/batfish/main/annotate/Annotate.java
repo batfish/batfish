@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -150,7 +149,6 @@ public final class Annotate {
       // Annotate all warnings for this line.
       parseWarningsByLine.get(i + 1).stream()
           .map(pw -> printParseWarning(commentHeader, pw))
-          .filter(Objects::nonNull)
           .forEach(sb::append);
       sb.append(lines[i]).append('\n');
     }
@@ -166,12 +164,8 @@ public final class Annotate {
   }
 
   @VisibleForTesting
-  @Nullable
-  static String printParseWarning(String commentHeader, ParseWarning parseWarning) {
+  static @Nonnull String printParseWarning(String commentHeader, ParseWarning parseWarning) {
     String comment = parseWarning.getComment();
-    if (comment == null) {
-      return null;
-    }
     switch (comment) {
       case "This syntax is unrecognized":
         return String.format("%s UNRECOGNIZED SYNTAX: %s\n", commentHeader, parseWarning.getText());
