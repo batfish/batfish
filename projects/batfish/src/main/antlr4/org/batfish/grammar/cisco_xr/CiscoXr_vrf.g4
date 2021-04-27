@@ -15,21 +15,19 @@ vrf_inner
   | vrf_null
 ;
 
-vrf_address_family
+vrf_address_family: ADDRESS_FAMILY af = vrf_address_family_type NEWLINE vrf_af_inner*;
+
+vrf_address_family_type
 :
-   ADDRESS_FAMILY
-   (
-      IPV4
-      | IPV6
-   )
-   (
-      MULTICAST
-      | UNICAST
-   )?
-   (
-      MAX_ROUTE uint_legacy
-   )? NEWLINE
-   vrf_af_inner*
+  (
+    IPV4
+    | IPV6
+  )
+  (
+    FLOWSPEC
+    | MULTICAST
+    | UNICAST
+  )
 ;
 
 vrf_af_inner

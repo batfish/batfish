@@ -2078,6 +2078,8 @@ FPD: 'fpd';
 
 FQDN: 'fqdn';
 
+FLOWSPEC: 'flowspec';
+
 FRAGMENTATION: 'fragmentation';
 
 FRAGMENTS: 'fragments';

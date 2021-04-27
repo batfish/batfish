@@ -4,6 +4,8 @@ hostname xr-vrf-route-policy
 !
 
 vrf v0
+  address-family ipv4 unicast
+  !
 !
 
 vrf v1
@@ -15,4 +17,7 @@ vrf v1
     import from default-vrf route-policy p5
     import from v0 route-policy p6
   !
+!
+
+vrf v2
 !
