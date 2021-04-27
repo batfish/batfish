@@ -214,6 +214,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -312,7 +313,7 @@ public final class PaloAltoGrammarTest {
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     Warnings parseWarnings = new Warnings();
     PaloAltoControlPlaneExtractor extractor =
-        new PaloAltoControlPlaneExtractor(src, parser, parseWarnings);
+        new PaloAltoControlPlaneExtractor(src, parser, parseWarnings, new SilentSyntaxCollection());
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
@@ -339,7 +340,7 @@ public final class PaloAltoGrammarTest {
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
     PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(fileText, settings, lineMap);
     PaloAltoControlPlaneExtractor extractor =
-        new PaloAltoControlPlaneExtractor(fileText, paParser, w);
+        new PaloAltoControlPlaneExtractor(fileText, paParser, w, new SilentSyntaxCollection());
     ParserRuleContext tree = Batfish.parse(paParser, logger, settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();

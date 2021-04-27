@@ -112,6 +112,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -160,9 +161,12 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprEvaluator;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
+import org.batfish.representation.cisco_xr.DistributeList;
+import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
@@ -184,8 +188,10 @@ import org.batfish.representation.cisco_xr.RdSetIosRegex;
 import org.batfish.representation.cisco_xr.RdSetIpAddress;
 import org.batfish.representation.cisco_xr.RdSetIpPrefix;
 import org.batfish.representation.cisco_xr.RoutePolicy;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanValidationStateIs;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
+import org.batfish.representation.cisco_xr.RoutePolicyElseIfBlock;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
 import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco_xr.Vrf;
@@ -254,7 +260,11 @@ public final class XrGrammarTest {
     CiscoXrCombinedParser ciscoXrParser = new CiscoXrCombinedParser(src, settings);
     CiscoXrControlPlaneExtractor extractor =
         new CiscoXrControlPlaneExtractor(
-            src, ciscoXrParser, ConfigurationFormat.CISCO_IOS_XR, new Warnings());
+            src,
+            ciscoXrParser,
+            ConfigurationFormat.CISCO_IOS_XR,
+            new Warnings(),
+            new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoXrParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
@@ -1059,6 +1069,24 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testOspfDistributeListExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("ospf-distribute-list");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2"));
+    OspfProcess p1 = c.getDefaultVrf().getOspfProcesses().get("1");
+    assertThat(
+        p1.getInboundGlobalDistributeList(),
+        equalTo(new DistributeList("RP", DistributeListFilterType.ROUTE_POLICY)));
+    assertThat(
+        p1.getOutboundGlobalDistributeList(),
+        equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
+    OspfProcess p2 = c.getDefaultVrf().getOspfProcesses().get("2");
+    assertThat(
+        p2.getInboundGlobalDistributeList(),
+        equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
+    assertThat(p2.getOutboundGlobalDistributeList(), nullValue());
+  }
+
+  @Test
   public void testOspfRedistributionRoutePolicy() {
     String hostname = "ospf-redist-policy";
     Configuration c = parseConfig(hostname);
@@ -1190,6 +1218,27 @@ public final class XrGrammarTest {
     assertTrue(bgpRpOut.process(permittedRoute, Bgpv4Route.testBuilder(), Direction.OUT));
     assertTrue(bgpRpOut.process(permittedRoute2, Bgpv4Route.testBuilder(), Direction.OUT));
     assertFalse(bgpRpOut.process(rejectedRoute, Bgpv4Route.testBuilder(), Direction.OUT));
+  }
+
+  @Test
+  public void testRoutePolicyValidationStateExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("rp-validation-state");
+    assertThat(c.getRoutePolicies(), hasKeys("validation-state-testing"));
+    RoutePolicy p = c.getRoutePolicies().get("validation-state-testing");
+    assertThat(p.getStatements(), contains(instanceOf(RoutePolicyIfStatement.class)));
+    RoutePolicyIfStatement ifs = (RoutePolicyIfStatement) p.getStatements().get(0);
+    assertThat(ifs.getGuard(), equalTo(new RoutePolicyBooleanValidationStateIs(false)));
+    assertThat(ifs.getElseBlock(), nullValue());
+    assertThat(ifs.getStatements(), hasSize(1));
+    assertThat(
+        ifs.getStatements(),
+        contains(new RoutePolicyDispositionStatement(RoutePolicyDispositionType.DROP)));
+    assertThat(ifs.getElseIfBlocks(), hasSize(1));
+    RoutePolicyElseIfBlock elses = Iterables.getOnlyElement(ifs.getElseIfBlocks());
+    assertThat(elses.getGuard(), equalTo(new RoutePolicyBooleanValidationStateIs(true)));
+    assertThat(
+        elses.getStatements(),
+        contains(new RoutePolicyDispositionStatement(RoutePolicyDispositionType.PASS)));
   }
 
   @Test

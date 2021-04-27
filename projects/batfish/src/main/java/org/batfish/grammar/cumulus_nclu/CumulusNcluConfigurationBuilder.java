@@ -48,8 +48,8 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bgpContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.A_bondContext;
@@ -161,6 +161,7 @@ import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_arp_nd_suppressCon
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxb_learningContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_idContext;
 import org.batfish.grammar.cumulus_nclu.CumulusNcluParser.Vxv_local_tunnelipContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cumulus_nclu.BgpInterfaceNeighbor;
 import org.batfish.representation.cumulus_nclu.BgpIpNeighbor;
 import org.batfish.representation.cumulus_nclu.BgpIpv4UnicastAddressFamily;
@@ -196,7 +197,7 @@ import org.batfish.representation.cumulus_nclu.Vxlan;
  * {@link CumulusNcluCombinedParser#parse}.
  */
 public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListener
-    implements BatfishListener {
+    implements SilentSyntaxListener {
 
   private static final Pattern NUMBERED_WORD_PATTERN = Pattern.compile("^(.*[^0-9])([0-9]+)$");
   private static final int MAX_VXLAN_ID = (1 << 24) - 1; // 24 bit number
@@ -388,12 +389,17 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   private final @Nonnull CumulusNcluCombinedParser _parser;
   private final @Nonnull String _text;
   private final @Nonnull Warnings _w;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public CumulusNcluConfigurationBuilder(
-      CumulusNcluCombinedParser parser, String text, Warnings w) {
+      CumulusNcluCombinedParser parser,
+      String text,
+      Warnings w,
+      SilentSyntaxCollection silentSyntax) {
     _parser = parser;
     _text = text;
     _w = w;
+    _silentSyntax = silentSyntax;
   }
 
   @SuppressWarnings("unused")
@@ -1480,6 +1486,12 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
     return _w;
   }
 
+  @Nonnull
+  @Override
+  public SilentSyntaxCollection getSilentSyntax() {
+    return _silentSyntax;
+  }
+
   /**
    * Returns already-present or newly-created {@link Interface}s with given {@code names}, or an
    * empty {@link List} if any name in {@code names} is invalid.
@@ -1677,5 +1689,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
     _w.getParseWarnings().add(warning);
     _c.setUnrecognized(true);
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

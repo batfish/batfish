@@ -3,7 +3,6 @@ package org.batfish.representation.cisco_xr;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -26,7 +25,6 @@ public class EigrpProcess implements Serializable {
   private final EigrpProcessMode _mode;
   private final Set<IpWildcard> _wildcardNetworks;
   private final Set<Prefix> _networks;
-  @Nonnull private Map<String, DistributeList> _outboundInterfaceDistributeLists;
   private final Map<RoutingProtocol, EigrpRedistributionPolicy> _redistributionPolicies;
   private final @Nonnull String _vrfName;
   private String _addressFamily;
@@ -43,7 +41,6 @@ public class EigrpProcess implements Serializable {
     _interfacePassiveStatus = new TreeMap<>();
     _mode = mode;
     _networks = new TreeSet<>();
-    _outboundInterfaceDistributeLists = new HashMap<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _vrfName = vrfName;
     _wildcardNetworks = new TreeSet<>();
@@ -109,11 +106,6 @@ public class EigrpProcess implements Serializable {
 
   public Set<Prefix> getNetworks() {
     return _networks;
-  }
-
-  @Nonnull
-  public Map<String, DistributeList> getOutboundInterfaceDistributeLists() {
-    return _outboundInterfaceDistributeLists;
   }
 
   public boolean getPassiveInterfaceDefault() {

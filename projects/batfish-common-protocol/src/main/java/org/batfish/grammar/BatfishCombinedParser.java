@@ -208,4 +208,13 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
     }
     _currentModeStart = _tokens.size() + 1;
   }
+
+  /**
+   * Returns the name of the parser rule corresponding to the given context. Behavior is undefined
+   * if the context was produced by a different parser.
+   */
+  @Nonnull
+  public String getRuleName(ParserRuleContext ctx) {
+    return _parser.getRuleNames()[ctx.getRuleIndex()];
+  }
 }

@@ -32,7 +32,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -82,7 +81,6 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.isis.IsisLevelSettings;
-import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -115,7 +113,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
@@ -129,10 +126,8 @@ import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.LongMatchAll;
 import org.batfish.datamodel.routing_policy.expr.LongMatchExpr;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.Uint32HighLowExpr;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
@@ -201,7 +196,7 @@ public class CiscoXrConversions {
    * IpsecPeerConfig}
    */
   private static void convertCryptoMapEntry(
-      final Configuration c,
+      Configuration c,
       CryptoMapEntry cryptoMapEntry,
       String cryptoMapNameSeqNumber,
       String cryptoMapName,
@@ -750,57 +745,22 @@ public class CiscoXrConversions {
    */
   @Nullable
   static String generateBgpImportPolicy(
-      LeafBgpPeerGroup lpg, long localAs, String vrfName, Configuration c, Warnings w) {
+      LeafBgpPeerGroup lpg, long localAs, String vrfName, Configuration c) {
     // TODO Support filter-list
     // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
 
     String inboundRouteMapName = lpg.getInboundRouteMap();
-    String inboundPrefixListName = lpg.getInboundPrefixList();
-    String inboundIpAccessListName = lpg.getInboundIpAccessList();
-
-    // TODO Support using multiple filters in BGP import policies
-    if (Stream.of(inboundRouteMapName, inboundPrefixListName, inboundIpAccessListName)
-            .filter(Objects::nonNull)
-            .count()
-        > 1) {
-      w.redFlag(
-          "Batfish does not support configuring more than one filter"
-              + " (route-map/prefix-list/distribute-list) for incoming BGP routes. When this"
-              + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
-              + " configured.");
-    }
-
-    // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
     if (inboundRouteMapName != null && c.getRoutingPolicies().containsKey(inboundRouteMapName)) {
       // Inbound route-map is defined. Use that as the BGP import policy.
       return inboundRouteMapName;
     }
+    // Warnings for references will be surfaced elsewhere.
 
-    String importRouteFilter = null;
-    if (inboundPrefixListName != null
-        && c.getRouteFilterLists().containsKey(inboundPrefixListName)) {
-      importRouteFilter = inboundPrefixListName;
-    } else if (inboundIpAccessListName != null
-        && c.getRouteFilterLists().containsKey(inboundIpAccessListName)) {
-      importRouteFilter = inboundIpAccessListName;
-    }
-
-    Statement importStatement = null;
-    if (importRouteFilter != null) {
-      // Inbound prefix-list or distribute-list is defined. Build an import policy around it.
-      importStatement =
-          new If(
-              new MatchPrefixSet(
-                  DestinationNetwork.instance(), new NamedPrefixSet(importRouteFilter)),
-              ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-    } else if (!Objects.equals(localAs, lpg.getRemoteAs())) {
+    if (!Objects.equals(localAs, lpg.getRemoteAs())) {
       // For EBGP peers, if no inbound filter is defined, deny all routes (special XR behavior)
-      importStatement = Statements.ExitReject.toStaticStatement();
-    }
-    if (importStatement != null) {
+      Statement rejectAll = Statements.ExitReject.toStaticStatement();
       String policyName = generatedBgpPeerImportPolicyName(vrfName, lpg.getName());
-      RoutingPolicy.builder().setOwner(c).setName(policyName).addStatement(importStatement).build();
+      RoutingPolicy.builder().setOwner(c).setName(policyName).addStatement(rejectAll).build();
       return policyName;
     }
     // Return null to indicate no constraints were imposed on inbound BGP routes.
@@ -812,12 +772,7 @@ public class CiscoXrConversions {
    * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
    */
   static void generateBgpExportPolicy(
-      LeafBgpPeerGroup lpg,
-      long localAs,
-      String vrfName,
-      boolean ipv4,
-      Configuration c,
-      Warnings w) {
+      LeafBgpPeerGroup lpg, long localAs, String vrfName, boolean ipv4, Configuration c) {
     RoutingPolicy.Builder exportPolicy =
         RoutingPolicy.builder()
             .setOwner(c)
@@ -848,32 +803,9 @@ public class CiscoXrConversions {
     peerExportConjuncts.add(new CallExpr(generatedBgpCommonExportPolicyName(vrfName)));
 
     // Add constraints on export routes from configured outbound filter.
-    // TODO support configuring multiple outbound filters
-    String outboundPrefixListName = lpg.getOutboundPrefixList();
     String outboundRouteMapName = lpg.getOutboundRouteMap();
-    String outboundIpAccessListName = lpg.getOutboundIpAccessList();
-    if (Stream.of(outboundRouteMapName, outboundPrefixListName, outboundIpAccessListName)
-            .filter(Objects::nonNull)
-            .count()
-        > 1) {
-      w.redFlag(
-          "Batfish does not support configuring more than one filter"
-              + " (route-map/prefix-list/distribute-list) for outgoing BGP routes. When this"
-              + " occurs, only the route-map will be used, or the prefix-list if no route-map is"
-              + " configured.");
-    }
     if (outboundRouteMapName != null && c.getRoutingPolicies().containsKey(outboundRouteMapName)) {
       peerExportConjuncts.add(new CallExpr(outboundRouteMapName));
-    } else if (outboundPrefixListName != null
-        && c.getRouteFilterLists().containsKey(outboundPrefixListName)) {
-      peerExportConjuncts.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixListName)));
-    } else if (outboundIpAccessListName != null
-        && c.getRouteFilterLists().containsKey(outboundIpAccessListName)) {
-      peerExportConjuncts.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(), new NamedPrefixSet(outboundIpAccessListName)));
     } else if (!Objects.equals(localAs, lpg.getRemoteAs())) {
       // For EBGP peers, if no outbound filter is defined, deny all routes (special XR behavior)
       peerExportConjuncts.add(BooleanExprs.FALSE);
@@ -1698,122 +1630,14 @@ public class CiscoXrConversions {
     return newRouteFilterList;
   }
 
-  @VisibleForTesting
-  static boolean sanityCheckDistributeList(
-      @Nonnull DistributeList distributeList,
-      @Nonnull Configuration c,
-      @Nonnull CiscoXrConfiguration oldConfig,
-      String vrfName,
-      String ospfProcessId) {
-    if (distributeList.getFilterType() != DistributeListFilterType.PREFIX_LIST) {
-      // only prefix-lists are supported in distribute-list
-      oldConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are"
-                      + " supported in dist-lists by Batfish",
-                  vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType()));
-      return false;
-    } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
-      // if referred prefix-list is not defined, all prefixes will be allowed
-      oldConfig
-          .getWarnings()
-          .redFlag(
-              String.format(
-                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this"
-                      + " dist-list will allow everything",
-                  vrfName, ospfProcessId));
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * Populates the {@link RoutingPolicy}s for inbound {@link DistributeList}s which use {@link
-   * PrefixList} as the {@link DistributeList#getFilterType()}. {@link
-   * DistributeListFilterType#ACCESS_LIST} is not supported currently.
-   *
-   * @param ospfProcess {@link OspfProcess} for which {@link DistributeList}s are to be processed
-   * @param c {@link Configuration} containing the Vendor Independent representation
-   * @param vrf Id of the {@link Vrf} containing the {@link OspfProcess}
-   * @param ospfProcessId {@link OspfProcess}'s Id
-   */
-  static void computeDistributeListPolicies(
-      @Nonnull OspfProcess ospfProcess,
-      @Nonnull org.batfish.datamodel.ospf.OspfProcess newOspfProcess,
-      @Nonnull Configuration c,
-      @Nonnull String vrf,
-      @Nonnull String ospfProcessId,
-      @Nonnull CiscoXrConfiguration oldConfig,
-      @Nonnull Warnings w) {
-    DistributeList globalDistributeList = ospfProcess.getInboundGlobalDistributeList();
-
-    BooleanExpr globalCondition = null;
-    if (globalDistributeList != null
-        && sanityCheckDistributeList(globalDistributeList, c, oldConfig, vrf, ospfProcessId)) {
-      globalCondition =
-          new MatchPrefixSet(
-              DestinationNetwork.instance(),
-              new NamedPrefixSet(globalDistributeList.getFilterName()));
-    }
-
-    Map<String, DistributeList> interfaceDistributeLists =
-        ospfProcess.getInboundInterfaceDistributeLists();
-
-    for (String ifaceName :
-        newOspfProcess.getAreas().values().stream()
-            .flatMap(a -> a.getInterfaces().stream())
-            .collect(Collectors.toList())) {
-      org.batfish.datamodel.Interface iface = c.getAllInterfaces(vrf).get(ifaceName);
-      DistributeList ifaceDistributeList = interfaceDistributeLists.get(ifaceName);
-      BooleanExpr ifaceCondition = null;
-      if (ifaceDistributeList != null
-          && sanityCheckDistributeList(ifaceDistributeList, c, oldConfig, vrf, ospfProcessId)) {
-        ifaceCondition =
-            new MatchPrefixSet(
-                DestinationNetwork.instance(),
-                new NamedPrefixSet(ifaceDistributeList.getFilterName()));
-      }
-
-      if (globalCondition == null && ifaceCondition == null) {
-        // doing nothing if both global and interface conditions are empty
-        continue;
-      }
-
-      String policyName = String.format("~OSPF_DIST_LIST_%s_%s_%s~", vrf, ospfProcessId, ifaceName);
-      RoutingPolicy routingPolicy = new RoutingPolicy(policyName, c);
-      routingPolicy
-          .getStatements()
-          .add(
-              new If(
-                  new Conjunction(
-                      Stream.of(globalCondition, ifaceCondition)
-                          .filter(Objects::nonNull)
-                          .collect(ImmutableList.toImmutableList())),
-                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                  ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-      c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
-      OspfInterfaceSettings ospfSettings = iface.getOspfSettings();
-      if (ospfSettings == null) {
-        w.redFlag(
-            String.format(
-                "Cannot attach inbound distribute list policy '%s' to interface '%s' not"
-                    + " configured for OSPF.",
-                ifaceName, iface.getName()));
-      } else {
-        ospfSettings.setInboundDistributeListPolicy(policyName);
-      }
-    }
-  }
-
   /**
    * Given a list of {@link If} statements, sets the false statements of every {@link If} to an
    * empty list and adds a rule at the end to allow EIGRP from provided ownAsn.
    */
-  static List<If> clearFalseStatementsAndAddMatchOwnAsn(List<If> redistributeIfs, long ownAsn) {
+  static List<Statement> clearFalseStatementsAndAddMatchOwnAsn(
+      List<If> redistributeIfs, long ownAsn) {
     List<Statement> emptyFalseStatements = ImmutableList.of();
-    List<If> redistributeIfsWithEmptyFalse =
+    List<Statement> redistributeIfsWithEmptyFalse =
         redistributeIfs.stream()
             .map(
                 redistributionStatement ->
@@ -1826,34 +1650,6 @@ public class CiscoXrConversions {
     redistributeIfsWithEmptyFalse.add(ifToAllowEigrpToOwnAsn(ownAsn));
 
     return ImmutableList.copyOf(redistributeIfsWithEmptyFalse);
-  }
-
-  /**
-   * Inserts an {@link If} generated from the provided distributeList to the beginning of
-   * existingStatements and creates a {@link RoutingPolicy} from the result
-   */
-  static RoutingPolicy insertDistributeListFilterAndGetPolicy(
-      @Nonnull Configuration c,
-      @Nonnull CiscoXrConfiguration vsConfig,
-      @Nullable DistributeList distributeList,
-      @Nonnull List<If> existingStatements,
-      @Nonnull String name) {
-    ImmutableList.Builder<Statement> combinedStatments = ImmutableList.builder();
-    if (distributeList != null && sanityCheckEigrpDistributeList(c, distributeList, vsConfig)) {
-      combinedStatments.add(
-          new If(
-              new MatchPrefixSet(
-                  DestinationNetwork.instance(),
-                  new NamedPrefixSet(distributeList.getFilterName())),
-              ImmutableList.of(),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    }
-    combinedStatments.addAll(existingStatements);
-    return RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(name)
-        .setStatements(combinedStatments.build())
-        .build();
   }
 
   /**

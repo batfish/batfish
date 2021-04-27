@@ -14,8 +14,7 @@ re_classic
 
 re_classic_tail
 :
-   re_distribute_list
-   | re_eigrp_null
+   re_eigrp_null
    | re_eigrp_router_id
    | rec_address_family
    | rec_metric_weights
@@ -33,11 +32,6 @@ re_default_metric
    (
       metric = eigrp_metric
    )? NEWLINE
-;
-
-re_distribute_list
-:
-   DISTRIBUTE_LIST name = variable_distribute_list OUT (iname = interface_name_unstructured)? NEWLINE
 ;
 
 re_eigrp_null
@@ -224,7 +218,6 @@ reaf_topology_null
       | CTS
       | DEFAULT_INFORMATION
       | DISTANCE
-      | DISTRIBUTE_LIST
       | FAST_REROUTE
       | MAXIMUM_PATHS
       | (METRIC MAXIMUM_HOPS)
@@ -264,7 +257,6 @@ rec_address_family_null
       | BFD
       | DEFAULT_INFORMATION
       | DISTANCE
-      | DISTRIBUTE_LIST
       | MAXIMUM_PATHS
       | MAXIMUM_PREFIX
       | (METRIC MAXIMUM_HOPS)
@@ -301,7 +293,6 @@ rec_null
       | BFD
       | DEFAULT_INFORMATION
       | DISTANCE
-      | DISTRIBUTE_LIST
       | HELLO_INTERVAL
       | MAXIMUM_PATHS
       | (METRIC MAXIMUM_HOPS)

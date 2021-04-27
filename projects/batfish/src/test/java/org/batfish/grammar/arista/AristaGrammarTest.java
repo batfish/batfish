@@ -21,7 +21,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasActiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
-import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasPassiveNeighbor;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
@@ -175,6 +175,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -236,7 +237,8 @@ public class AristaGrammarTest {
     configureBatfishTestSettings(settings);
     AristaCombinedParser parser = new AristaCombinedParser(src, settings);
     AristaControlPlaneExtractor extractor =
-        new AristaControlPlaneExtractor(src, parser, ARISTA, new Warnings());
+        new AristaControlPlaneExtractor(
+            src, parser, ARISTA, new Warnings(), new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
@@ -979,6 +981,7 @@ public class AristaGrammarTest {
     String hostname = "eos-bgp-peers";
     Prefix neighborWithRemoteAs = Prefix.parse("1.1.1.1/32");
     Prefix neighborWithoutRemoteAs = Prefix.parse("2.2.2.2/32");
+    Prefix dynamicNeighborWithoutRemoteAs = Prefix.parse("3.3.3.0/24");
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
@@ -986,12 +989,15 @@ public class AristaGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
-     * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
-     * should not appear, and there should be a warning about the missing remote-as.
+     * All peers with and without remote-as should appear in the datamodel.
      */
     assertThat(
         c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
-    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(not(hasKey(neighborWithoutRemoteAs))))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasActiveNeighbor(neighborWithoutRemoteAs, hasRemoteAs(LongSpace.EMPTY)))));
     assertThat(
         ccae,
         hasRedFlagWarning(
@@ -1000,6 +1006,19 @@ public class AristaGrammarTest {
                 String.format(
                     "No remote-as configured for BGP neighbor %s in vrf default",
                     neighborWithoutRemoteAs.getStartIp()))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasBgpProcess(
+                hasPassiveNeighbor(dynamicNeighborWithoutRemoteAs, hasRemoteAs(LongSpace.EMPTY)))));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "No acceptable remote-as for BGP neighbor %s in vrf default",
+                    dynamicNeighborWithoutRemoteAs))));
 
     /*
      * Also ensure that default value of allowRemoteAsOut is true.
@@ -1369,8 +1388,10 @@ public class AristaGrammarTest {
     }
     {
       Prefix neighborPrefix = Prefix.parse("5.5.5.5/32");
-      // neighbor with missing remote-as is not converted
-      assertThat(proc.getActiveNeighbors(), not(hasKey(neighborPrefix)));
+      // neighbor with missing remote-as is converted to empty longspace
+      assertThat(proc.getActiveNeighbors(), hasKey(neighborPrefix));
+      BgpActivePeerConfig neighbor = proc.getActiveNeighbors().get(neighborPrefix);
+      assertThat(neighbor.getRemoteAsns(), equalTo(LongSpace.EMPTY));
     }
   }
 

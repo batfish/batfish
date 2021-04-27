@@ -20,11 +20,15 @@ community_set_elem_list
 
 community_set_elem
 :
-  ASTERISK
-  | literal_community
-  | hi = community_set_elem_half COLON lo = community_set_elem_half
-  | DFA_REGEX COMMUNITY_SET_REGEX
-  | IOS_REGEX COMMUNITY_SET_REGEX
+  NEWLINE*
+  (
+    ASTERISK
+    | literal_community
+    | hi = community_set_elem_half COLON lo = community_set_elem_half
+    | DFA_REGEX COMMUNITY_SET_REGEX
+    | IOS_REGEX COMMUNITY_SET_REGEX
+  )
+  NEWLINE*
 ;
 
 community_set_elem_half

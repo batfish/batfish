@@ -1,0 +1,11 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname rp-validation-state
+!
+route-policy validation-state-testing
+  if validation-state is invalid then
+    drop
+  elseif validation-state is valid then
+    pass
+  endif
+end-policy

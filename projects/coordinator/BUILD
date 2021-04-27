@@ -57,7 +57,6 @@ java_library(
     deps = [
         ":coordinator",
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/questions:TestQuestion",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",

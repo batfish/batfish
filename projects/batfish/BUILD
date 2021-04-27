@@ -24,7 +24,6 @@ java_library(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatvyos",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/iptables",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/mrv",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/eos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/ios",

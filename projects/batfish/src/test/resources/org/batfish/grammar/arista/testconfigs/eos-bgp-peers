@@ -2,8 +2,14 @@
 boot system flash eos.swi
 hostname eos-bgp-peers
 !
+peer-filter PF
+ 10 match as-range 1-4294967295 result reject
+!
 router bgp 1
  neighbor 1.1.1.1 description foo
  neighbor 1.1.1.1 remote-as 1
  neighbor 2.2.2.2 description bar
+!
+ neighbor DYNAMIC peer-group
+ bgp listen range 3.3.3.0/24 peer-group DYNAMIC peer-filter PF
 !

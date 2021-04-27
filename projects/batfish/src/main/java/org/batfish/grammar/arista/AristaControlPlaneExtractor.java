@@ -276,9 +276,9 @@ import org.batfish.datamodel.vendor_family.cisco.SntpServer;
 import org.batfish.datamodel.vendor_family.cisco.SshSettings;
 import org.batfish.datamodel.vendor_family.cisco.User;
 import org.batfish.grammar.BatfishCombinedParser;
-import org.batfish.grammar.BatfishListener;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.arista.AristaParser.Aaa_accountingContext;
 import org.batfish.grammar.arista.AristaParser.Aaa_accounting_commands_lineContext;
@@ -835,6 +835,7 @@ import org.batfish.grammar.arista.AristaParser.Viafv_priorityContext;
 import org.batfish.grammar.arista.AristaParser.Vrfd_descriptionContext;
 import org.batfish.grammar.arista.AristaParser.Vrrp_interfaceContext;
 import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.arista.AccessListAddressSpecifier;
 import org.batfish.representation.arista.AccessListServiceSpecifier;
 import org.batfish.representation.arista.AristaConfiguration;
@@ -958,7 +959,7 @@ import org.batfish.representation.arista.eos.AristaRedistributeType;
 import org.batfish.vendor.VendorConfiguration;
 
 public class AristaControlPlaneExtractor extends AristaParserBaseListener
-    implements BatfishListener, ControlPlaneExtractor {
+    implements SilentSyntaxListener, ControlPlaneExtractor {
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
@@ -1194,6 +1195,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private final Warnings _w;
 
+  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+
   private InspectClassMap _currentInspectClassMap;
 
   private InspectPolicyMap _currentInspectPolicyMap;
@@ -1205,11 +1208,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private AristaEosVxlan _eosVxlan;
 
   public AristaControlPlaneExtractor(
-      String text, AristaCombinedParser parser, ConfigurationFormat format, Warnings warnings) {
+      String text,
+      AristaCombinedParser parser,
+      ConfigurationFormat format,
+      Warnings warnings,
+      SilentSyntaxCollection silentSyntax) {
     _text = text;
     _parser = parser;
     _format = format;
     _w = warnings;
+    _silentSyntax = silentSyntax;
   }
 
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
@@ -6411,11 +6419,9 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     if (in) {
       proc.setDistributeListIn(name);
       proc.setDistributeListInAcl(acl);
-      proc.setDistributeListInLine(line);
     } else {
       proc.setDistributeListOut(name);
       proc.setDistributeListOutAcl(acl);
-      proc.setDistributeListOutLine(line);
     }
   }
 
@@ -8008,5 +8014,16 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
     }
+  }
+
+  @Nonnull
+  @Override
+  public SilentSyntaxCollection getSilentSyntax() {
+    return _silentSyntax;
+  }
+
+  @Override
+  public void exitEveryRule(ParserRuleContext ctx) {
+    tryProcessSilentSyntax(ctx);
   }
 }

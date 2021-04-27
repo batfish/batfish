@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname ospf-distribute-list
+!
+route-policy RP
+  # RP must be defined or else config will not commit
+end-policy
+!
+router ospf 1
+  ! ACL in will get overridden.
+  distribute-list ACL in
+  distribute-list route-policy RP in
+  distribute-list ACL2 out
+!
+router ospf 2
+  distribute-list ACL3 in
+!

@@ -1081,7 +1081,6 @@ stanza
    | s_extcommunity_set
    | s_hostname
    | s_interface
-   | s_ipv6_router_ospf
    | s_ipsla
    | s_key
    | s_l2tp_class

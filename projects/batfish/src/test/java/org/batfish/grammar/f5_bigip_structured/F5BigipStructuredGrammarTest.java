@@ -235,6 +235,7 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationEvaluator.TransformationResult;
 import org.batfish.datamodel.vendor_family.f5_bigip.DeviceGroupType;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
+import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -346,7 +347,7 @@ public final class F5BigipStructuredGrammarTest {
     F5BigipStructuredCombinedParser parser = new F5BigipStructuredCombinedParser(src, settings);
     F5BigipStructuredControlPlaneExtractor extractor =
         new F5BigipStructuredControlPlaneExtractor(
-            src, parser, new Warnings(), filename, null, false);
+            src, parser, new Warnings(), filename, null, false, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);

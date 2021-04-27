@@ -1512,7 +1512,7 @@ DISTANCE: 'distance';
 
 DISTRIBUTE: 'distribute';
 
-DISTRIBUTE_LIST: 'distribute-list';
+DISTRIBUTE_LIST: 'distribute-list' -> pushMode(M_DistributeList);
 
 DISTRIBUTION: 'distribution';
 
@@ -2557,6 +2557,8 @@ INTERNET: 'internet';
 INTERVAL: 'interval';
 
 INTERWORKING: 'interworking';
+
+INVALID: 'invalid';
 
 INVALID_SPI_RECOVERY: 'invalid-spi-recovery';
 
@@ -5724,6 +5726,8 @@ VACL: 'vacl';
 
 VAD: 'vad';
 
+VALID: 'valid';
+
 VALID_11A_40MHZ_CHANNEL_PAIR: 'valid-11a-40mhz-channel-pair';
 
 VALID_11A_80MHZ_CHANNEL_GROUP: 'valid-11a-80mhz-channel-group';
@@ -5737,6 +5741,8 @@ VALID_11G_CHANNEL: 'valid-11g-channel';
 VALID_AND_PROTECTED_SSID: 'valid-and-protected-ssid';
 
 VALID_NETWORK_OUI_PROFILE: 'valid-network-oui-profile';
+
+VALIDATION_STATE: 'validation-state';
 
 VALIDATION_USAGE: 'validation-usage';
 
@@ -6211,8 +6217,7 @@ WS
 
 VARIABLE
 :
-  F_Variable_RequiredVarChar F_Variable_VarChar*
-  | F_Variable_VarChar+ F_Variable_RequiredVarChar F_Variable_VarChar*
+  F_Variable_VarChar* F_Variable_RequiredVarChar F_Variable_VarChar*
 ;
 
 fragment
@@ -7673,7 +7678,7 @@ M_CommunitySetElem_UINT16: F_Uint16 -> type(UINT16);
 M_CommunitySetElem_COLON: ':' -> type(COLON);
 
 // NEWLINE can be interspersed between any other tokens in this mode
-M_CommunitySetElem_NEWLINE: F_Newline -> channel(HIDDEN);
+M_CommunitySetElem_NEWLINE: F_Newline -> type(NEWLINE);
 
 // TODO: save remarks
 M_CommunitySetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
@@ -7751,6 +7756,15 @@ M_DeleteCommunity_IN: 'in' -> type(IN), mode(M_CommunitySetMatchExpr);
 M_DeleteCommunity_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_DeleteCommunity_WS: F_Whitespace+ -> channel(HIDDEN);
 
+mode M_DistributeList;
+
+M_DistributeList_PREFIX_LIST: 'prefix-list' -> type(PREFIX_LIST), mode(M_Word);
+M_DistributeList_ROUTE_POLICY: 'route-policy' -> type(ROUTE_POLICY), mode(M_Word);
+M_DistributeList_WORD: F_Word -> type(WORD), popMode;
+
+M_DistributeList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_DistributeList_WS: F_Whitespace+ -> channel(HIDDEN);
+
 mode M_InterfaceAccessGroup;
 
 M_InterfaceAccessGroup_COMMON: 'common' -> type(COMMON), mode(M_InterfaceAccessGroupCommon1);
@@ -7808,7 +7822,7 @@ M_RdSetElem_UINT32: F_Uint32 -> type(UINT32);
 M_RdSetElem_COLON: ':' -> type(COLON);
 
 // NEWLINE can be interspersed between any other tokens in this mode
-M_RdSetElem_NEWLINE: F_Newline -> channel(HIDDEN);
+M_RdSetElem_NEWLINE: F_Newline -> type(NEWLINE);
 
 // TODO: save remarks
 M_RdSetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
