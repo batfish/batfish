@@ -34,7 +34,7 @@ public class ParseWarningAnswererTest {
   public void testAggregateRow() {
     Row row =
         getAggregateRow(
-            new ParseWarningTriplet("dup", "[configuration]", null),
+            new ParseWarningTriplet("dup", "[configuration]", "comment"),
             ImmutableMultimap.of("f1", 3, "f1", 4, "f2", 23),
             createMetadata(new ParseWarningQuestion(true)).toColumnMap());
 
@@ -49,35 +49,13 @@ public class ParseWarningAnswererTest {
             COL_PARSER_CONTEXT,
             "[configuration]",
             COL_COMMENT,
-            "(not provided)");
+            "comment");
 
     assertThat(row, equalTo(expected));
   }
 
   @Test
-  public void testGetRowWithoutComment() {
-    ParseWarning input = new ParseWarning(3, "text", "[configuration]", null);
-    Row expected =
-        Row.of(
-            COL_FILENAME,
-            "nohost",
-            COL_LINE,
-            input.getLine(),
-            COL_TEXT,
-            input.getText(),
-            COL_PARSER_CONTEXT,
-            input.getParserContext(),
-            COL_COMMENT,
-            "(not provided)");
-
-    Row row =
-        ParseWarningAnswerer.getRow(
-            "nohost", input, createMetadata(new ParseWarningQuestion(false)).toColumnMap());
-    assertThat(row, equalTo(expected));
-  }
-
-  @Test
-  public void testGetRowWithComment() {
+  public void testGetRow() {
     ParseWarning input = new ParseWarning(3, "text", "[configuration]", "comment");
     Row expected =
         Row.of(

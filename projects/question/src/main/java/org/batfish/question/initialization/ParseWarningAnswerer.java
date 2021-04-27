@@ -98,7 +98,7 @@ class ParseWarningAnswerer extends Answerer {
         .put(COL_LINE, warning.getLine())
         .put(COL_TEXT, warning.getText())
         .put(COL_PARSER_CONTEXT, warning.getParserContext())
-        .put(COL_COMMENT, firstNonNull(warning.getComment(), "(not provided)"))
+        .put(COL_COMMENT, warning.getComment())
         .build();
   }
 

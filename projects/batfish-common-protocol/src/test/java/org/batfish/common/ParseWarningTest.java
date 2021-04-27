@@ -29,20 +29,17 @@ public class ParseWarningTest {
     assertThat(
         new ParseWarning(1, "text", "ctx", "comment").toString(),
         equalTo("ParseWarning{line=1, text=text, comment=comment, parserContext=ctx}"));
-    assertThat(
-        new ParseWarning(1, "text", "ctx", null).toString(),
-        equalTo("ParseWarning{line=1, text=text, parserContext=ctx}"));
   }
 
   @Test
   public void testParseWarningsJavaSerialization() {
-    ParseWarning pw = new ParseWarning(1, "", "", "");
+    ParseWarning pw = new ParseWarning(1, "t", "ctx", "com");
     assertThat(SerializationUtils.clone(pw), equalTo(pw));
   }
 
   @Test
   public void testParseWarningsJsonSerialization() {
-    ParseWarning pw = new ParseWarning(1, "", "", null);
+    ParseWarning pw = new ParseWarning(1, "t", "ctx", "com");
     assertThat(BatfishObjectMapper.clone(pw, ParseWarning.class), equalTo(pw));
   }
 }

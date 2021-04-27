@@ -36,7 +36,7 @@ public class ParseVendorConfigurationResultTest {
     silentSyntax.addElement(new SilentSyntaxElem("rule1", 1, "text"));
 
     Warnings warnings = new Warnings();
-    warnings.getParseWarnings().add(new ParseWarning(1, "text", "context", null));
+    warnings.getParseWarnings().add(new ParseWarning(1, "text", "context", "comment"));
 
     ParseVendorConfigurationResult result =
         new ParseVendorConfigurationResult(

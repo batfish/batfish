@@ -75,21 +75,21 @@ public class IssueAggregationTest {
         .getParseWarnings()
         .addAll(
             ImmutableList.of(
-                new ParseWarning(3, "dup", "[configuration]", null),
-                new ParseWarning(4, "dup", "[configuration]", null),
-                new ParseWarning(5, "unique", "[configuration]", null)));
+                new ParseWarning(3, "dup", "[configuration]", "c"),
+                new ParseWarning(4, "dup", "[configuration]", "c"),
+                new ParseWarning(5, "unique", "[configuration]", "c")));
     Warnings f2Warnings = new Warnings();
     f2Warnings
         .getParseWarnings()
-        .addAll(ImmutableList.of(new ParseWarning(23, "dup", "[configuration]", null)));
+        .addAll(ImmutableList.of(new ParseWarning(23, "dup", "[configuration]", "c")));
 
     Map<String, Warnings> fileWarnings = ImmutableMap.of("f1", f1Warnings, "f2", f2Warnings);
 
     // Confirm that only the duplicate parse warnings are aggregated
     Map<ParseWarningTriplet, Multimap<String, Integer>> aggregatedWarnings =
         aggregateDuplicateParseWarnings(fileWarnings);
-    ParseWarningTriplet expectedKey1 = new ParseWarningTriplet("dup", "[configuration]", null);
-    ParseWarningTriplet expectedKey2 = new ParseWarningTriplet("unique", "[configuration]", null);
+    ParseWarningTriplet expectedKey1 = new ParseWarningTriplet("dup", "[configuration]", "c");
+    ParseWarningTriplet expectedKey2 = new ParseWarningTriplet("unique", "[configuration]", "c");
 
     assertThat(aggregatedWarnings.keySet(), contains(expectedKey1, expectedKey2));
     assertThat(aggregatedWarnings.get(expectedKey1).values(), containsInAnyOrder(3, 4, 23));
