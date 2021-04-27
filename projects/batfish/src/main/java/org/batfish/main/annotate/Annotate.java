@@ -33,8 +33,7 @@ import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
 import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.job.ParseVendorConfigurationResult;
-import org.batfish.job.PreprocessJob;
-import org.batfish.job.PreprocessResult;
+import org.batfish.main.preprocess.Preprocessor;
 
 /** Tool to annotate configurations with silent syntax and warnings */
 public final class Annotate {
@@ -92,15 +91,15 @@ public final class Annotate {
   private static String annotateText(Path inputFile, String inputText, Settings settings) {
     LOGGER.debug("Preprocessing: {}", inputFile);
     // preprocess the input text
-    PreprocessResult preprocessResult =
-        new PreprocessJob(
-                settings,
-                inputText,
-                inputFile,
-                Paths.get("/dev/null"), // Output file unused when not using executor.
-                new Warnings(false, false, false)) // Suppress preprocess warnings.
-            .call();
-    String preprocessedText = preprocessResult.getOutputText();
+    String preprocessedText;
+    try {
+      preprocessedText =
+          Preprocessor.preprocess(
+              settings, inputText, inputFile, new Warnings(false, false, false));
+    } catch (IOException e) {
+      LOGGER.warn("Skipping {} because of preprocessing error: {}", inputText, e);
+      return null;
+    }
     Warnings warnings = new Warnings(true, true, true);
     LOGGER.debug("Parsing: {}", inputFile);
     // parse the preprocessed text
@@ -153,7 +152,7 @@ public final class Annotate {
           .map(pw -> printParseWarning(commentHeader, pw))
           .filter(Objects::nonNull)
           .forEach(sb::append);
-      sb.append(lines[i] + "\n");
+      sb.append(lines[i]).append('\n');
     }
     return sb.toString();
   }
@@ -169,7 +168,11 @@ public final class Annotate {
   @VisibleForTesting
   @Nullable
   static String printParseWarning(String commentHeader, ParseWarning parseWarning) {
-    switch (parseWarning.getComment()) {
+    String comment = parseWarning.getComment();
+    if (comment == null) {
+      return null;
+    }
+    switch (comment) {
       case "This syntax is unrecognized":
         return String.format("%s UNRECOGNIZED SYNTAX: %s\n", commentHeader, parseWarning.getText());
       case "This feature is not currently supported":
@@ -177,8 +180,7 @@ public final class Annotate {
             "%s PARTIALLY UNSUPPORTED: %s\n", commentHeader, parseWarning.getText());
       default:
         return String.format(
-            "%s WARNING: %s: %s\n",
-            commentHeader, parseWarning.getComment(), parseWarning.getText());
+            "%s WARNING: %s: %s\n", commentHeader, comment, parseWarning.getText());
     }
   }
 
