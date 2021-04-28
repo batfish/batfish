@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname route-policy-implicit-actions
+!
+prefix-set DEST_A
+  10.10.0.0/16 le 32
+end-set
+prefix-set DEST_B
+  10.10.10.0/24
+end-set
+prefix-set DEST_C
+  192.168.1.0/24
+end-set
+prefix-set DEST_D
+  192.168.2.0/24
+end-set
+!
+route-policy implicit-actions
+  if destination in DEST_A and not destination in DEST_B then
+    set local-preference 100
+  elseif destination in DEST_C then
+    set metric-type type-2
+  endif
+  if destination in DEST_D then
+    prepend as-path 65432
+  endif
+end-policy
+!
+end

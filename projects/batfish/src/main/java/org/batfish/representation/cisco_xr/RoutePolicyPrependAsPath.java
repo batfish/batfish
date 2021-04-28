@@ -13,6 +13,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 
 public class RoutePolicyPrependAsPath extends RoutePolicyStatement {
 
@@ -30,5 +31,7 @@ public class RoutePolicyPrependAsPath extends RoutePolicyStatement {
     statements.add(
         // prepend once by default, unless number modifier is present. TODO: verify this is correct
         new PrependAsPath(new MultipliedAs(_expr, firstNonNull(_number, new LiteralInt(1)))));
+    // Modified routes are not subject to default-drop disposition
+    statements.add(Statements.SetDefaultActionAccept.toStaticStatement());
   }
 }
