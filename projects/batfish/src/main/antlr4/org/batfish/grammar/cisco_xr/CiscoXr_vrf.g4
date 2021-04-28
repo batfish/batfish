@@ -46,12 +46,10 @@ vrf_af_export_inner
 :
   vrf_afe_route_policy
   | vrf_afe_route_target
+  | vrf_afe_to
 ;
 
-vrf_afe_route_policy
-:
-  (TO vrf = vrf_name)? ROUTE_POLICY policy = route_policy_name NEWLINE
-;
+vrf_afe_route_policy: ROUTE_POLICY policy = route_policy_name NEWLINE;
 
 vrf_afe_route_target
 :
@@ -64,6 +62,19 @@ vrf_afe_route_target
 
 vrf_afe_route_target_value: route_target NEWLINE;
 
+vrf_afe_to
+:
+  TO
+  (
+    vrf_afet_default_vrf
+    | vrf_afet_vrf
+  )
+;
+
+vrf_afet_default_vrf: DEFAULT_VRF ROUTE_POLICY policy = route_policy_name ALLOW_IMPORTED_VPN? NEWLINE;
+
+vrf_afet_vrf: VRF ALLOW_IMPORTED_VPN NEWLINE;
+
 vrf_af_import
 :
   IMPORT vrf_af_import_inner
@@ -71,14 +82,25 @@ vrf_af_import
 
 vrf_af_import_inner
 :
-  vrf_afi_route_policy
+  vrf_afi_from
+  | vrf_afi_route_policy
   | vrf_afi_route_target
 ;
 
-vrf_afi_route_policy
+vrf_afi_from
 :
-  (FROM vrf = vrf_name)? ROUTE_POLICY policy = route_policy_name NEWLINE
+  FROM
+  (
+    vrf_afif_default_vrf
+    | vrf_afif_vrf
+  )
 ;
+
+vrf_afif_default_vrf: DEFAULT_VRF ROUTE_POLICY policy = route_policy_name ADVERTISE_AS_VPN? NEWLINE;
+
+vrf_afif_vrf: VRF ADVERTISE_AS_VPN NEWLINE;
+
+vrf_afi_route_policy: ROUTE_POLICY policy = route_policy_name NEWLINE;
 
 vrf_afi_route_target
 :

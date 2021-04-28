@@ -5,35 +5,37 @@ options {
 }
 
 tokens {
-   AS_PATH_SET_REGEX,
-   BANNER_DELIMITER_IOS,
-   BANNER_BODY,
-   COMMUNITY_SET_REGEX,
-   CONFIG_SAVE,
-   DOTDOT,
-   HEX_FRAGMENT,
-   IS_LOCAL,
-   ISO_ADDRESS,
-   ONE_LITERAL,
-   PARAMETER,
-   PAREN_LEFT_LITERAL,
-   PAREN_RIGHT_LITERAL,
-   PASSWORD_SEED,
-   PEERAS,
-   PIPE,
-   PROMPT_TIMEOUT,
-   QUOTED_TEXT,
-   RAW_TEXT,
-   SELF_SIGNED,
-   SLIP_PPP,
-   STATEFUL_DOT1X,
-   STATEFUL_KERBEROS,
-   STATEFUL_NTLM,
-   TEXT,
-   VALUE,
-   WIRED,
-   WISPR,
-   WORD
+  ADVERTISE_AS_VPN,
+  ALLOW_IMPORTED_VPN,
+  AS_PATH_SET_REGEX,
+  BANNER_DELIMITER_IOS,
+  BANNER_BODY,
+  COMMUNITY_SET_REGEX,
+  CONFIG_SAVE,
+  DOTDOT,
+  HEX_FRAGMENT,
+  IS_LOCAL,
+  ISO_ADDRESS,
+  ONE_LITERAL,
+  PARAMETER,
+  PAREN_LEFT_LITERAL,
+  PAREN_RIGHT_LITERAL,
+  PASSWORD_SEED,
+  PEERAS,
+  PIPE,
+  PROMPT_TIMEOUT,
+  QUOTED_TEXT,
+  RAW_TEXT,
+  SELF_SIGNED,
+  SLIP_PPP,
+  STATEFUL_DOT1X,
+  STATEFUL_KERBEROS,
+  STATEFUL_NTLM,
+  TEXT,
+  VALUE,
+  WIRED,
+  WISPR,
+  WORD
 } 
 
 // CiscoXr Keywords
@@ -1312,6 +1314,8 @@ DEFAULT_TASKGROUP: 'default-taskgroup';
 
 DEFAULT_VALUE: 'default-value';
 
+DEFAULT_VRF: 'default-vrf';
+
 DEFINITION: 'definition';
 
 DEL: 'Del';
@@ -2100,7 +2104,6 @@ FROM
   {
     switch(lastTokenType()) {
       case ACCEPT:
-      case IMPORT:
         pushMode(M_Word);
         break;
       default:
@@ -5444,15 +5447,7 @@ TLV_SELECT: 'tlv-select';
 
 TM_VOQ_COLLECTION: 'tm-voq-collection';
 
-TO
-:
-  'to'
-  {
-    if (lastTokenType() == EXPORT) {
-      pushMode(M_Word);
-    }
-  }
-;
+TO: 'to';
 
 TOKEN: 'token';
 
@@ -5856,7 +5851,7 @@ VPNV4: 'vpnv4';
 
 VPNV6: 'vpnv6';
 
-VRF: 'vrf' -> pushMode(M_Word);
+VRF: 'vrf' -> pushMode(M_VrfName);
 
 VRF_ALSO: 'vrf-also';
 
@@ -7926,3 +7921,12 @@ M_RpAddress_IP_ADDRESS: F_IpAddress -> type(IP_ADDRESS), mode(M_Word);
 M_RpAddress_IPV6_ADDRESS: F_Ipv6Address -> type(IPV6_ADDRESS), mode(M_Word);
 M_RpAddress_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_RpAddress_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_VrfName;
+
+M_VrfName_ADVERTISE_AS_VPN: 'advertise-as-vpn' -> type(ADVERTISE_AS_VPN), popMode;
+M_VrfName_ALLOW_IMPORTED_VPN: 'allow-imported-vpn' -> type(ALLOW_IMPORTED_VPN), popMode;
+M_VrfName_WORD: F_Word -> type(WORD), popMode;
+
+M_VrfName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_VrfName_WS: F_Whitespace+ -> channel(HIDDEN);

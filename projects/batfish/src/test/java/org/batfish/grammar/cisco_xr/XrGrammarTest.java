@@ -89,9 +89,10 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTE_PO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_TO_DEFAULT_VRF_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -1348,20 +1349,16 @@ public final class XrGrammarTest {
     {
       Vrf v = vc.getVrfs().get("v0");
       assertThat(v.getIpv4UnicastAddressFamily().getExportPolicy(), nullValue());
-      assertThat(v.getIpv4UnicastAddressFamily().getExportPolicyByVrf(), anEmptyMap());
+      assertThat(v.getIpv4UnicastAddressFamily().getExportToDefaultVrfPolicy(), nullValue());
       assertThat(v.getIpv4UnicastAddressFamily().getImportPolicy(), nullValue());
-      assertThat(v.getIpv4UnicastAddressFamily().getImportPolicyByVrf(), anEmptyMap());
+      assertThat(v.getIpv4UnicastAddressFamily().getImportFromDefaultVrfPolicy(), nullValue());
     }
     {
       Vrf v = vc.getVrfs().get("v1");
       assertThat(v.getIpv4UnicastAddressFamily().getExportPolicy(), equalTo("p1"));
-      assertThat(
-          v.getIpv4UnicastAddressFamily().getExportPolicyByVrf(),
-          equalTo(ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, "p2", "v0", "p3")));
-      assertThat(v.getIpv4UnicastAddressFamily().getImportPolicy(), equalTo("p4"));
-      assertThat(
-          v.getIpv4UnicastAddressFamily().getImportPolicyByVrf(),
-          equalTo(ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, "p5", "v0", "p6")));
+      assertThat(v.getIpv4UnicastAddressFamily().getExportToDefaultVrfPolicy(), equalTo("p2"));
+      assertThat(v.getIpv4UnicastAddressFamily().getImportPolicy(), equalTo("p3"));
+      assertThat(v.getIpv4UnicastAddressFamily().getImportFromDefaultVrfPolicy(), equalTo("p4"));
     }
     {
       Vrf v = vc.getVrfs().get("v2");
@@ -1377,11 +1374,15 @@ public final class XrGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p1", VRF_EXPORT_ROUTE_POLICY));
-    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p2", VRF_EXPORT_ROUTE_POLICY));
-    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p3", VRF_EXPORT_ROUTE_POLICY));
-    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p4", VRF_IMPORT_ROUTE_POLICY));
-    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p5", VRF_IMPORT_ROUTE_POLICY));
-    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p6", VRF_IMPORT_ROUTE_POLICY));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, ROUTE_POLICY, "p2", VRF_EXPORT_TO_DEFAULT_VRF_ROUTE_POLICY));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_POLICY, "p3", VRF_IMPORT_ROUTE_POLICY));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, ROUTE_POLICY, "p4", VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY));
   }
 
   @Test

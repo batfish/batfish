@@ -185,6 +185,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TRACK_IN
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.TUNNEL_SOURCE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_TO_DEFAULT_VRF_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 
 import com.google.common.collect.ImmutableList;
@@ -852,11 +854,13 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Vlan_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_address_family_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_policyContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_target_valueContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afet_default_vrfContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afet_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_policyContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afi_route_target_valueContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afif_default_vrfContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afif_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_block_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_descriptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_nameContext;
@@ -1349,10 +1353,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterVrf_address_family(Vrf_address_familyContext ctx) {
+    AddressFamilyType type = toAddressFamilyType(ctx.af);
+    if (type == AddressFamilyType.IPV4_UNICAST) {
+      // Warn for ipv4 unicast until VRF leaking is implemented; ignore others.
+      todo(ctx);
+    }
     _currentVrfAddressFamily =
-        currentVrf()
-            .getAddressFamilies()
-            .computeIfAbsent(toAddressFamilyType(ctx.af), af -> new VrfAddressFamily());
+        currentVrf().getAddressFamilies().computeIfAbsent(type, af -> new VrfAddressFamily());
   }
 
   @Override
@@ -6645,18 +6652,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitVrf_afi_route_target(Vrf_afi_route_targetContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void exitVrf_afi_route_target_value(Vrf_afi_route_target_valueContext ctx) {
     _currentVrfAddressFamily.addRouteTargetImport(toRouteTarget(ctx.route_target()));
-  }
-
-  @Override
-  public void exitVrf_afe_route_target(Vrf_afe_route_targetContext ctx) {
-    todo(ctx);
   }
 
   @Override
@@ -6666,30 +6663,50 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitVrf_afe_route_policy(Vrf_afe_route_policyContext ctx) {
-    todo(ctx);
     String policy = toString(ctx.policy);
     _configuration.referenceStructure(
         ROUTE_POLICY, policy, VRF_EXPORT_ROUTE_POLICY, ctx.start.getLine());
-    if (ctx.vrf != null) {
-      String vrf = toString(ctx.vrf);
-      _currentVrfAddressFamily.setExportPolicyForVrf(vrf, policy);
-    } else {
-      _currentVrfAddressFamily.setExportPolicy(policy);
+    _currentVrfAddressFamily.setExportPolicy(policy);
+  }
+
+  @Override
+  public void exitVrf_afet_default_vrf(Vrf_afet_default_vrfContext ctx) {
+    if (ctx.ALLOW_IMPORTED_VPN() != null) {
+      todo(ctx);
     }
+    String policy = toString(ctx.policy);
+    _configuration.referenceStructure(
+        ROUTE_POLICY, policy, VRF_EXPORT_TO_DEFAULT_VRF_ROUTE_POLICY, ctx.start.getLine());
+    _currentVrfAddressFamily.setExportToDefaultVrfPolicy(policy);
+  }
+
+  @Override
+  public void exitVrf_afet_vrf(Vrf_afet_vrfContext ctx) {
+    todo(ctx);
   }
 
   @Override
   public void exitVrf_afi_route_policy(Vrf_afi_route_policyContext ctx) {
-    todo(ctx);
     String policy = toString(ctx.policy);
     _configuration.referenceStructure(
         ROUTE_POLICY, policy, VRF_IMPORT_ROUTE_POLICY, ctx.start.getLine());
-    if (ctx.vrf != null) {
-      String vrf = toString(ctx.vrf);
-      _currentVrfAddressFamily.setImportPolicyForVrf(vrf, policy);
-    } else {
-      _currentVrfAddressFamily.setImportPolicy(policy);
+    _currentVrfAddressFamily.setImportPolicy(policy);
+  }
+
+  @Override
+  public void exitVrf_afif_default_vrf(Vrf_afif_default_vrfContext ctx) {
+    if (ctx.ADVERTISE_AS_VPN() != null) {
+      todo(ctx);
     }
+    String policy = toString(ctx.policy);
+    _configuration.referenceStructure(
+        ROUTE_POLICY, policy, VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY, ctx.start.getLine());
+    _currentVrfAddressFamily.setImportFromDefaultVrfPolicy(policy);
+  }
+
+  @Override
+  public void exitVrf_afif_vrf(Vrf_afif_vrfContext ctx) {
+    todo(ctx);
   }
 
   @Nullable
@@ -8727,8 +8744,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nonnull
   private static String toString(Vrf_nameContext ctx) {
-    String name = ctx.getText();
-    return name.equals("default-vrf") ? Configuration.DEFAULT_VRF_NAME : name;
+    return ctx.getText();
   }
 
   @Nonnull
