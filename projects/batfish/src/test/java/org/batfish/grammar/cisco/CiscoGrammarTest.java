@@ -1469,9 +1469,10 @@ public final class CiscoGrammarTest {
 
   /** Tests that Cisco parser doesn't crash in conversion for incomplete ipsec profile. */
   @Test
-  public void testIosIpsecGh5849() throws IOException {
+  public void testIosIpsecIncomplete() throws IOException {
     // doesn't crash.
     parseConfig("ios-ipsec-gh-5849");
+    parseConfig("ios-ipsec-ghe-5274");
   }
 
   @Test
