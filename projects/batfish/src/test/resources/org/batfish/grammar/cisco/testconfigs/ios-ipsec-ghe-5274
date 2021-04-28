@@ -1,0 +1,8 @@
+hostname ios-ipsec-ghe-5274
+!
+crypto isakmp key xxxxxxxx address 0.0.0.0
+interface Tunnel30
+ tunnel source TenGigabitEthernet0/0/0.70
+ tunnel protection ipsec profile SOMEPROF
+interface TenGigabitEthernet0/0/0.70
+ ip address 1.2.3.2 255.255.255.252
