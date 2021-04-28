@@ -40,3 +40,24 @@ vrf multiple
     !
   !
 !
+
+vrf multiple-af
+  address-family ipv4 unicast
+    export route-target 1:13
+  !
+  address-family ipv4 multicast
+    export route-target 1:14
+  !
+  address-family ipv4 flowspec
+    export route-target 1:15
+  !
+  address-family ipv6 unicast
+    export route-target 1:16
+  !
+  address-family ipv6 multicast
+    export route-target 1:17
+  !
+  address-family ipv6 flowspec
+    export route-target 1:18
+  !
+!

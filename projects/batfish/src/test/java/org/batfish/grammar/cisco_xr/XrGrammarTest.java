@@ -164,6 +164,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.cisco_xr.AddressFamilyType;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.DistributeList;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
@@ -1275,33 +1276,67 @@ public final class XrGrammarTest {
     assertThat(
         vc.getVrfs(),
         hasKeys(
-            Configuration.DEFAULT_VRF_NAME, "none", "single-oneline", "single-block", "multiple"));
+            Configuration.DEFAULT_VRF_NAME,
+            "none",
+            "single-oneline",
+            "single-block",
+            "multiple",
+            "multiple-af"));
     {
       Vrf v = vc.getVrfs().get("none");
-      assertThat(v.getRouteTargetExport(), empty());
-      assertThat(v.getRouteTargetImport(), empty());
+      assertThat(v.getIpv4UnicastAddressFamily().getRouteTargetExport(), empty());
+      assertThat(v.getIpv4UnicastAddressFamily().getRouteTargetImport(), empty());
     }
     {
       Vrf v = vc.getVrfs().get("single-oneline");
-      assertThat(v.getRouteTargetExport(), contains(ExtendedCommunity.target(1L, 1L)));
-      assertThat(v.getRouteTargetImport(), contains(ExtendedCommunity.target(2L, 2L)));
+      assertThat(
+          v.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+          contains(ExtendedCommunity.target(1L, 1L)));
+      assertThat(
+          v.getIpv4UnicastAddressFamily().getRouteTargetImport(),
+          contains(ExtendedCommunity.target(2L, 2L)));
     }
     {
       Vrf v = vc.getVrfs().get("single-block");
-      assertThat(v.getRouteTargetExport(), contains(ExtendedCommunity.target(3L, 3L)));
-      assertThat(v.getRouteTargetImport(), contains(ExtendedCommunity.target(4L, 4L)));
+      assertThat(
+          v.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+          contains(ExtendedCommunity.target(3L, 3L)));
+      assertThat(
+          v.getIpv4UnicastAddressFamily().getRouteTargetImport(),
+          contains(ExtendedCommunity.target(4L, 4L)));
     }
     {
       Vrf v = vc.getVrfs().get("multiple");
       assertThat(
-          v.getRouteTargetExport(),
+          v.getIpv4UnicastAddressFamily().getRouteTargetExport(),
           contains(ExtendedCommunity.target(5L, 5L), ExtendedCommunity.target(6L, 6L)));
       assertThat(
-          v.getRouteTargetImport(),
+          v.getIpv4UnicastAddressFamily().getRouteTargetImport(),
           contains(
               ExtendedCommunity.target(7L, 7L),
               ExtendedCommunity.target(8L, 9L),
               ExtendedCommunity.target(((10L << 16) + 11L), 12L)));
+    }
+    {
+      Vrf v = vc.getVrfs().get("multiple-af");
+      assertThat(
+          v.getAddressFamilies().get(AddressFamilyType.IPV4_UNICAST).getRouteTargetExport(),
+          contains(ExtendedCommunity.target(1L, 13L)));
+      assertThat(
+          v.getAddressFamilies().get(AddressFamilyType.IPV4_MULTICAST).getRouteTargetExport(),
+          contains(ExtendedCommunity.target(1L, 14L)));
+      assertThat(
+          v.getAddressFamilies().get(AddressFamilyType.IPV4_FLOWSPEC).getRouteTargetExport(),
+          contains(ExtendedCommunity.target(1L, 15L)));
+      assertThat(
+          v.getAddressFamilies().get(AddressFamilyType.IPV6_UNICAST).getRouteTargetExport(),
+          contains(ExtendedCommunity.target(1L, 16L)));
+      assertThat(
+          v.getAddressFamilies().get(AddressFamilyType.IPV6_MULTICAST).getRouteTargetExport(),
+          contains(ExtendedCommunity.target(1L, 17L)));
+      assertThat(
+          v.getAddressFamilies().get(AddressFamilyType.IPV6_FLOWSPEC).getRouteTargetExport(),
+          contains(ExtendedCommunity.target(1L, 18L)));
     }
   }
 
@@ -1309,24 +1344,28 @@ public final class XrGrammarTest {
   public void testVrfRoutePolicyExtraction() {
     String hostname = "xr-vrf-route-policy";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
-    assertThat(vc.getVrfs(), hasKeys(Configuration.DEFAULT_VRF_NAME, "v0", "v1"));
+    assertThat(vc.getVrfs(), hasKeys(Configuration.DEFAULT_VRF_NAME, "v0", "v1", "v2"));
     {
       Vrf v = vc.getVrfs().get("v0");
-      assertThat(v.getExportPolicy(), nullValue());
-      assertThat(v.getExportPolicyByVrf(), anEmptyMap());
-      assertThat(v.getImportPolicy(), nullValue());
-      assertThat(v.getImportPolicyByVrf(), anEmptyMap());
+      assertThat(v.getIpv4UnicastAddressFamily().getExportPolicy(), nullValue());
+      assertThat(v.getIpv4UnicastAddressFamily().getExportPolicyByVrf(), anEmptyMap());
+      assertThat(v.getIpv4UnicastAddressFamily().getImportPolicy(), nullValue());
+      assertThat(v.getIpv4UnicastAddressFamily().getImportPolicyByVrf(), anEmptyMap());
     }
     {
       Vrf v = vc.getVrfs().get("v1");
-      assertThat(v.getExportPolicy(), equalTo("p1"));
+      assertThat(v.getIpv4UnicastAddressFamily().getExportPolicy(), equalTo("p1"));
       assertThat(
-          v.getExportPolicyByVrf(),
+          v.getIpv4UnicastAddressFamily().getExportPolicyByVrf(),
           equalTo(ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, "p2", "v0", "p3")));
-      assertThat(v.getImportPolicy(), equalTo("p4"));
+      assertThat(v.getIpv4UnicastAddressFamily().getImportPolicy(), equalTo("p4"));
       assertThat(
-          v.getImportPolicyByVrf(),
+          v.getIpv4UnicastAddressFamily().getImportPolicyByVrf(),
           equalTo(ImmutableMap.of(Configuration.DEFAULT_VRF_NAME, "p5", "v0", "p6")));
+    }
+    {
+      Vrf v = vc.getVrfs().get("v2");
+      assertThat(v.getIpv4UnicastAddressFamily(), nullValue());
     }
   }
 

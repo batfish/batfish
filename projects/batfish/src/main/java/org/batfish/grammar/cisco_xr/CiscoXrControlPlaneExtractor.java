@@ -849,6 +849,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_preemptContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Viafv_priorityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vlan_idContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_address_familyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_address_family_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrf_afe_route_target_valueContext;
@@ -862,6 +864,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Vrrp_interfaceContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.cisco_xr.AccessListAddressSpecifier;
 import org.batfish.representation.cisco_xr.AccessListServiceSpecifier;
+import org.batfish.representation.cisco_xr.AddressFamilyType;
 import org.batfish.representation.cisco_xr.AsPathSet;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv6Network;
@@ -999,6 +1002,7 @@ import org.batfish.representation.cisco_xr.Uint16Reference;
 import org.batfish.representation.cisco_xr.Uint32RangeExpr;
 import org.batfish.representation.cisco_xr.UnimplementedAccessListServiceSpecifier;
 import org.batfish.representation.cisco_xr.Vrf;
+import org.batfish.representation.cisco_xr.VrfAddressFamily;
 import org.batfish.representation.cisco_xr.VrrpGroup;
 import org.batfish.representation.cisco_xr.VrrpInterface;
 import org.batfish.representation.cisco_xr.WildcardAddressSpecifier;
@@ -1285,6 +1289,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private boolean _multicastRoutingIpv6;
 
+  private VrfAddressFamily _currentVrfAddressFamily;
+
   public CiscoXrControlPlaneExtractor(
       String text,
       CiscoXrCombinedParser parser,
@@ -1339,6 +1345,43 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private Vrf currentVrf() {
     return initVrf(_currentVrf);
+  }
+
+  @Override
+  public void enterVrf_address_family(Vrf_address_familyContext ctx) {
+    _currentVrfAddressFamily =
+        currentVrf()
+            .getAddressFamilies()
+            .computeIfAbsent(toAddressFamilyType(ctx.af), af -> new VrfAddressFamily());
+  }
+
+  @Override
+  public void exitVrf_address_family(Vrf_address_familyContext ctx) {
+    _currentVrfAddressFamily = null;
+  }
+
+  @Nonnull
+  private static AddressFamilyType toAddressFamilyType(Vrf_address_family_typeContext ctx) {
+    if (ctx.IPV4() != null) {
+      if (ctx.FLOWSPEC() != null) {
+        return AddressFamilyType.IPV4_FLOWSPEC;
+      } else if (ctx.MULTICAST() != null) {
+        return AddressFamilyType.IPV4_MULTICAST;
+      } else {
+        assert ctx.UNICAST() != null;
+        return AddressFamilyType.IPV4_UNICAST;
+      }
+    } else {
+      assert ctx.IPV6() != null;
+      if (ctx.FLOWSPEC() != null) {
+        return AddressFamilyType.IPV6_FLOWSPEC;
+      } else if (ctx.MULTICAST() != null) {
+        return AddressFamilyType.IPV6_MULTICAST;
+      } else {
+        assert ctx.UNICAST() != null;
+        return AddressFamilyType.IPV6_UNICAST;
+      }
+    }
   }
 
   @Override
@@ -6608,7 +6651,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitVrf_afi_route_target_value(Vrf_afi_route_target_valueContext ctx) {
-    currentVrf().addRouteTargetImport(toRouteTarget(ctx.route_target()));
+    _currentVrfAddressFamily.addRouteTargetImport(toRouteTarget(ctx.route_target()));
   }
 
   @Override
@@ -6618,7 +6661,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitVrf_afe_route_target_value(Vrf_afe_route_target_valueContext ctx) {
-    currentVrf().addRouteTargetExport(toRouteTarget(ctx.route_target()));
+    _currentVrfAddressFamily.addRouteTargetExport(toRouteTarget(ctx.route_target()));
   }
 
   @Override
@@ -6629,9 +6672,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         ROUTE_POLICY, policy, VRF_EXPORT_ROUTE_POLICY, ctx.start.getLine());
     if (ctx.vrf != null) {
       String vrf = toString(ctx.vrf);
-      currentVrf().setExportPolicyForVrf(vrf, policy);
+      _currentVrfAddressFamily.setExportPolicyForVrf(vrf, policy);
     } else {
-      currentVrf().setExportPolicy(policy);
+      _currentVrfAddressFamily.setExportPolicy(policy);
     }
   }
 
@@ -6643,9 +6686,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         ROUTE_POLICY, policy, VRF_IMPORT_ROUTE_POLICY, ctx.start.getLine());
     if (ctx.vrf != null) {
       String vrf = toString(ctx.vrf);
-      currentVrf().setImportPolicyForVrf(vrf, policy);
+      _currentVrfAddressFamily.setImportPolicyForVrf(vrf, policy);
     } else {
-      currentVrf().setImportPolicy(policy);
+      _currentVrfAddressFamily.setImportPolicy(policy);
     }
   }
 
