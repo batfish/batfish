@@ -79096,6 +79096,10 @@
                     "metricType" : "INTERNAL"
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetDefaultActionAccept"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
                     "statement" : {
                       "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
@@ -79489,6 +79493,10 @@
                         "value" : 3
                       }
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetDefaultActionAccept"
                   }
                 ]
               },
@@ -81378,6 +81386,10 @@
                                     "value" : 3
                                   }
                                 }
+                              },
+                              {
+                                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                "type" : "SetDefaultActionAccept"
                               },
                               {
                                 "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
