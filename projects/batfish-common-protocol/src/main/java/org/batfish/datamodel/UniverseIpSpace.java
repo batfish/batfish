@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.ObjectStreamException;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class UniverseIpSpace extends IpSpace {
@@ -31,5 +33,17 @@ public class UniverseIpSpace extends IpSpace {
   @Override
   public String toString() {
     return "universe";
+  }
+
+  ///////// Ensure that instances are interned.
+
+  @JsonCreator
+  private static UniverseIpSpace jsonCreator() {
+    return INSTANCE;
+  }
+
+  /** Cache after deserialization. */
+  private Object readResolve() throws ObjectStreamException {
+    return INSTANCE;
   }
 }
