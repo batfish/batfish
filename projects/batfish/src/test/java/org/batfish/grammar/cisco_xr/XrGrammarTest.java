@@ -617,32 +617,33 @@ public final class XrGrammarTest {
     Prefix prefixLocalPrefThenDrop = Prefix.parse("10.10.10.0/24");
     Prefix prefixAsPath = Prefix.parse("192.168.2.0/24");
     Prefix prefixOspfMetricType = Prefix.parse("192.168.1.0/24");
-    Bgpv4Route.Builder baseBgp = Bgpv4Route.testBuilder();
-    OspfExternalRoute.Builder baseOspf =
-        OspfExternalRoute.testBuilder()
-            .setOspfMetricType(OspfMetricType.E1)
-            .setNetwork(prefixOspfMetricType);
+    Bgpv4Route.Builder bgpLocalPref = Bgpv4Route.testBuilder().setNetwork(prefixLocalPref);
+    Bgpv4Route.Builder bgpLocalPrefThenDrop =
+        Bgpv4Route.testBuilder().setNetwork(prefixLocalPrefThenDrop);
+    Bgpv4Route.Builder bgpNoMatch = Bgpv4Route.testBuilder().setNetwork(prefixNoMatch);
+    Bgpv4Route.Builder bgpAsPath = Bgpv4Route.testBuilder().setNetwork(prefixAsPath);
+    OspfExternalRoute.Builder ospfMetricType =
+        OspfExternalType1Route.testBuilder().setNetwork(prefixOspfMetricType);
 
     assertThat(c.getRoutingPolicies(), hasKeys("implicit-actions"));
     RoutingPolicy rp = c.getRoutingPolicies().get("implicit-actions");
 
     // If routes are updated, default-deny doesn't apply
     // Confirm default is accept when local-pref is updated
-    assertRoutingPolicyPermitsRoute(rp, baseBgp.setNetwork(prefixLocalPref).build(), baseBgp);
-    assertThat(baseBgp.build().getLocalPreference(), equalTo(100L));
+    assertRoutingPolicyPermitsRoute(rp, bgpLocalPref.build(), bgpLocalPref);
+    assertThat(bgpLocalPref.build().getLocalPreference(), equalTo(100L));
     // Confirm default is pass when as-path is updated
-    assertRoutingPolicyPermitsRoute(rp, baseBgp.setNetwork(prefixAsPath).build(), baseBgp);
-    assertThat(baseBgp.build().getAsPath(), equalTo(AsPath.ofSingletonAsSets(65432L)));
+    assertRoutingPolicyPermitsRoute(rp, bgpAsPath.build(), bgpAsPath);
+    assertThat(bgpAsPath.build().getAsPath(), equalTo(AsPath.ofSingletonAsSets(65432L)));
     // Confirm default is pass when OSPF metric type is updated
-    assertRoutingPolicyPermitsRoute(rp, baseOspf.build(), baseOspf);
-    assertThat(baseOspf.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+    assertRoutingPolicyPermitsRoute(rp, ospfMetricType.build(), ospfMetricType);
+    assertThat(ospfMetricType.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
 
     // Even if default is pass, explicit drop should still take effect
-    assertRoutingPolicyDeniesRoute(rp, baseBgp.setNetwork(prefixLocalPrefThenDrop).build());
+    assertRoutingPolicyDeniesRoute(rp, bgpLocalPrefThenDrop.build());
 
     // No match / no route update should use default-deny
-    Bgpv4Route bgpNoMatch = baseBgp.setNetwork(prefixNoMatch).build();
-    assertRoutingPolicyDeniesRoute(rp, bgpNoMatch);
+    assertRoutingPolicyDeniesRoute(rp, bgpNoMatch.build());
   }
 
   @Test
