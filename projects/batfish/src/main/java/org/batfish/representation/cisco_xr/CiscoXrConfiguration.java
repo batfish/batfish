@@ -1048,10 +1048,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportStaticConditions.setComment("Redistribute static routes into BGP");
       exportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
       String mapName = redistributeStaticPolicy.getRouteMap();
+      redistributeConditions.add(exportStaticConditions);
       if (mapName != null) {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
-          redistributeConditions.add(exportStaticConditions);
         } else {
           _w.redFlag(
               String.format(
@@ -1072,10 +1072,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportConnectedConditions.setComment("Redistribute connected routes into BGP");
       exportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
       String mapName = redistributeConnectedPolicy.getRouteMap();
+      redistributeConditions.add(exportConnectedConditions);
       if (mapName != null) {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportConnectedConditions.getConjuncts().add(new CallExpr(mapName));
-          redistributeConditions.add(exportConnectedConditions);
         } else {
           _w.redFlag(
               String.format(
