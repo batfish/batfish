@@ -612,8 +612,9 @@ public final class XrGrammarTest {
   public void testRoutePolicyImplicitActionsConversion() {
     Configuration c = parseConfig("route-policy-implicit-actions");
 
-    Prefix prefixNoMatch = Prefix.parse("10.10.10.0/24");
-    Prefix prefixLocalPref = Prefix.parse("10.10.11.0/24");
+    Prefix prefixNoMatch = Prefix.parse("10.11.0.0/16");
+    Prefix prefixLocalPref = Prefix.parse("10.10.0.0/16");
+    Prefix prefixLocalPrefThenDrop = Prefix.parse("10.10.10.0/24");
     Prefix prefixAsPath = Prefix.parse("192.168.2.0/24");
     Prefix prefixOspfMetricType = Prefix.parse("192.168.1.0/24");
     Bgpv4Route.Builder baseBgp = Bgpv4Route.testBuilder();
@@ -625,25 +626,23 @@ public final class XrGrammarTest {
     assertThat(c.getRoutingPolicies(), hasKeys("implicit-actions"));
     RoutingPolicy rp = c.getRoutingPolicies().get("implicit-actions");
 
+    // If routes are updated, default-deny doesn't apply
+    // Confirm default is accept when local-pref is updated
+    assertRoutingPolicyPermitsRoute(rp, baseBgp.setNetwork(prefixLocalPref).build(), baseBgp);
+    assertThat(baseBgp.build().getLocalPreference(), equalTo(100L));
+    // Confirm default is pass when as-path is updated
+    assertRoutingPolicyPermitsRoute(rp, baseBgp.setNetwork(prefixAsPath).build(), baseBgp);
+    assertThat(baseBgp.build().getAsPath(), equalTo(AsPath.ofSingletonAsSets(65432L)));
+    // Confirm default is pass when OSPF metric type is updated
+    assertRoutingPolicyPermitsRoute(rp, baseOspf.build(), baseOspf);
+    assertThat(baseOspf.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+
+    // Even if default is pass, explicit drop should still take effect
+    assertRoutingPolicyDeniesRoute(rp, baseBgp.setNetwork(prefixLocalPrefThenDrop).build());
+
     // No match / no route update should use default-deny
     Bgpv4Route bgpNoMatch = baseBgp.setNetwork(prefixNoMatch).build();
     assertRoutingPolicyDeniesRoute(rp, bgpNoMatch);
-
-    // If bgp route is updated, default-deny doesn't apply
-    // Confirm default is accept when local-pref is updated
-    assertRoutingPolicyPermitsRoute(rp, baseBgp.setNetwork(prefixLocalPref).build(), baseBgp);
-    // Also confirm update is applied
-    assertThat(baseBgp.build().getLocalPreference(), equalTo(100L));
-
-    // Confirm default is accept when as-path is updated
-    assertRoutingPolicyPermitsRoute(rp, baseBgp.setNetwork(prefixAsPath).build(), baseBgp);
-    // Also confirm update is applied
-    assertThat(baseBgp.build().getAsPath(), equalTo(AsPath.ofSingletonAsSets(65432L)));
-
-    // If ospf route is updated, default-deny doesn't apply
-    assertRoutingPolicyPermitsRoute(rp, baseOspf.build(), baseOspf);
-    // Also confirm update is applied
-    assertThat(baseOspf.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
   }
 
   @Test

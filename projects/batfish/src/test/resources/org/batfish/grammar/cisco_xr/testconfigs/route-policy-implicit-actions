@@ -5,24 +5,28 @@ hostname route-policy-implicit-actions
 prefix-set DEST_A
   10.10.0.0/16 le 32
 end-set
-prefix-set DEST_B
+prefix-set SUB_DEST_A
   10.10.10.0/24
 end-set
-prefix-set DEST_C
+prefix-set DEST_B
   192.168.1.0/24
 end-set
-prefix-set DEST_D
+prefix-set DEST_C
   192.168.2.0/24
 end-set
 !
 route-policy implicit-actions
-  if destination in DEST_A and not destination in DEST_B then
+  if destination in DEST_A then
     set local-preference 100
-  elseif destination in DEST_C then
+  elseif destination in DEST_B then
     set metric-type type-2
-  endif
-  if destination in DEST_D then
+  elseif destination in DEST_C then
     prepend as-path 65432
+  endif
+  ! Even through SUB_DEST_A is covered above / default-pass
+  ! It should still be dropped
+  if destination in SUB_DEST_A then
+    drop
   endif
 end-policy
 !
