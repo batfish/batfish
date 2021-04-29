@@ -172,7 +172,9 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   TUNNEL_PROTECTION_IPSEC_PROFILE("interface TunnelX tunnel protection ipsec profile"),
   TUNNEL_SOURCE("tunnel source"),
   VRF_EXPORT_ROUTE_POLICY("vrf export route-policy"),
-  VRF_IMPORT_ROUTE_POLICY("vrf import route-policy");
+  VRF_EXPORT_TO_DEFAULT_VRF_ROUTE_POLICY("vrf export to default-vrf route-policy"),
+  VRF_IMPORT_ROUTE_POLICY("vrf import route-policy"),
+  VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY("vrf import from default-vrf route-policy");
 
   private final String _description;
 
