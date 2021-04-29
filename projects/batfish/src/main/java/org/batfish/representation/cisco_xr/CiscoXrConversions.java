@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
@@ -16,10 +17,12 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaReg
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Multimap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -74,9 +77,12 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.VrfLeakingConfig;
+import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
@@ -86,10 +92,12 @@ import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
+import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprs;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
@@ -102,8 +110,12 @@ import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalA
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunityExpr;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
@@ -1828,6 +1840,254 @@ public class CiscoXrConversions {
         return null;
     }
   }
+
+  /**
+   * Convert VRF leaking configs, if needed. Must be called after VRF address family inheritance is
+   * completed, and routing policies have been converted.
+   */
+  public static void convertVrfLeakingConfig(Collection<Vrf> vrfs, Configuration c) {
+    List<Vrf> vrfsWithIpv4Af =
+        vrfs.stream()
+            .filter(v -> v.getIpv4UnicastAddressFamily() != null)
+            .collect(ImmutableList.toImmutableList());
+    List<Vrf> vrfsWithImportRt =
+        vrfsWithIpv4Af.stream()
+            .filter(v -> !v.getIpv4UnicastAddressFamily().getRouteTargetImport().isEmpty())
+            .collect(ImmutableList.toImmutableList());
+    List<Vrf> vrfsWithoutExportPolicy =
+        vrfsWithIpv4Af.stream()
+            .filter(v -> v.getIpv4UnicastAddressFamily().getExportPolicy() == null)
+            .collect(ImmutableList.toImmutableList());
+    List<Vrf> vrfsWithExportPolicy =
+        vrfsWithIpv4Af.stream()
+            .filter(v -> v.getIpv4UnicastAddressFamily().getExportPolicy() != null)
+            .collect(ImmutableList.toImmutableList());
+    Multimap<ExtendedCommunity, Vrf> vrfsByExportRt = HashMultimap.create();
+    // pre-compute RT to VRF name mapping
+    for (Vrf vrf : vrfsWithoutExportPolicy) {
+      assert vrf.getIpv4UnicastAddressFamily() != null;
+      vrf.getIpv4UnicastAddressFamily()
+          .getRouteTargetExport()
+          .forEach(rt -> vrfsByExportRt.put(rt, vrf));
+    }
+
+    // Create non-default VRF <-> non-default VRF leaking configs for each VRF with import RT
+    for (Vrf importingVrf : vrfsWithImportRt) {
+      assert !importingVrf.getName().equals(Configuration.DEFAULT_VRF_NAME);
+      VrfAddressFamily ipv4uaf = importingVrf.getIpv4UnicastAddressFamily();
+      assert ipv4uaf != null;
+      org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(importingVrf.getName());
+      assert viVrf != null;
+      ipv4uaf.getRouteTargetImport().stream()
+          .flatMap(importRt -> vrfsByExportRt.get(importRt).stream())
+          .forEach(
+              exportingVrf -> {
+                // Add leak config for every exporting vrf with no export policy whose export
+                // route-target matches this vrf's import route-target.
+                // Take care to prevent self-loops.
+                if (importingVrf == exportingVrf) {
+                  return;
+                }
+                viVrf.addVrfLeakingConfig(
+                    VrfLeakingConfig.builder()
+                        .setBgpLeakConfig(
+                            BgpLeakConfig.forRouteTargets(
+                                exportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport()))
+                        .setImportFromVrf(exportingVrf.getName())
+                        .setImportPolicy(routePolicyOrDrop(ipv4uaf.getImportPolicy(), c))
+                        .build());
+              });
+      // Add leak config for every exporting vrf with an export route-policy, since the policy can
+      // potentially alter the route-target to match the import route-target.
+      for (Vrf policyExportingVrf : vrfsWithExportPolicy) {
+        if (importingVrf == policyExportingVrf) {
+          // Take care to prevent self-loops
+          continue;
+        }
+        viVrf.addVrfLeakingConfig(
+            VrfLeakingConfig.builder()
+                .setBgpLeakConfig(BgpLeakConfig.forRouteTargets()) // RT handled by policy
+                .setImportFromVrf(policyExportingVrf.getName())
+                .setImportPolicy(
+                    vrfExportImportPolicy(
+                        policyExportingVrf.getName(),
+                        routePolicyOrDrop(
+                            policyExportingVrf.getIpv4UnicastAddressFamily().getExportPolicy(), c),
+                        policyExportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+                        importingVrf.getName(),
+                        routePolicyOrDrop(ipv4uaf.getImportPolicy(), c),
+                        ipv4uaf.getRouteTargetImport(),
+                        c))
+                .build());
+      }
+    }
+    org.batfish.datamodel.Vrf viDefaultVrf = c.getVrfs().get(Configuration.DEFAULT_VRF_NAME);
+    for (Vrf nonDefaultVrf : vrfsWithIpv4Af) {
+      org.batfish.datamodel.Vrf viNonDefaultVrf = c.getVrfs().get(nonDefaultVrf.getName());
+      VrfAddressFamily af = nonDefaultVrf.getIpv4UnicastAddressFamily();
+      if (af.getExportToDefaultVrfPolicy() != null) {
+        viDefaultVrf.addVrfLeakingConfig(
+            VrfLeakingConfig.builder()
+                .setBgpLeakConfig(BgpLeakConfig.forRouteTargets()) // RT handled by policy
+                .setImportFromVrf(nonDefaultVrf.getName())
+                .setImportPolicy(
+                    vrfExportImportPolicy(
+                        nonDefaultVrf.getName(),
+                        routePolicyOrDrop(
+                            nonDefaultVrf
+                                .getIpv4UnicastAddressFamily()
+                                .getExportToDefaultVrfPolicy(),
+                            c),
+                        nonDefaultVrf.getIpv4UnicastAddressFamily().getRouteTargetExport(),
+                        Configuration.DEFAULT_VRF_NAME,
+                        null,
+                        null,
+                        c))
+                .build());
+      }
+      if (af.getImportFromDefaultVrfPolicy() != null) {
+        viNonDefaultVrf.addVrfLeakingConfig(
+            VrfLeakingConfig.builder()
+                .setBgpLeakConfig(BgpLeakConfig.forRouteTargets()) // RT handled by policy
+                .setImportFromVrf(Configuration.DEFAULT_VRF_NAME)
+                .setImportPolicy(
+                    vrfExportImportPolicy(
+                        Configuration.DEFAULT_VRF_NAME,
+                        routePolicyOrDrop(
+                            nonDefaultVrf
+                                .getIpv4UnicastAddressFamily()
+                                .getImportFromDefaultVrfPolicy(),
+                            c),
+                        nonDefaultVrf
+                            .getIpv4UnicastAddressFamily()
+                            .getRouteTargetImport(), // auto-apply import route-target on pass
+                        nonDefaultVrf.getName(),
+                        null,
+                        null,
+                        c))
+                .build());
+      }
+    }
+  }
+
+  /**
+   * Create a policy for exporting from one VRF to another in the presence of an export policy. <br>
+   * Preconditions:
+   *
+   * <ul>
+   *   <li>{@code routeTargetImport} is {@code null} iff {@code exportingVrf} or {@code
+   *       importingVrf} is the default VRF.
+   *   <li>{@code routeTargetImport} must be {@code null} or non-empty.
+   * </ul>
+   *
+   * @throws IllegalArgumentException when a precondition is violated.
+   */
+  private static @Nonnull String vrfExportImportPolicy(
+      String exportingVrf,
+      String exportPolicy,
+      Set<ExtendedCommunity> routeTargetExport,
+      String importingVrf,
+      @Nullable String importPolicy,
+      @Nullable Set<ExtendedCommunity> routeTargetImport,
+      Configuration c) {
+    // Implementation overview:
+    // 1. (Re)write the export route-target to intermediate BGP properties so that they can be read
+    //    later. Input communities fromt the original route are copied.
+    // 2. Apply the export route-policy. At the beginning of export policy evalution, the input
+    //    communities are the union of the original route's communities and the export RTs.
+    // 3. If import route-target is non-null, drop the route if does not have a route-target
+    //    matching the importing VRF's import route-target communities.
+    // 4. Apply the import route-policy if it exists. This route-policy may permit with or without
+    //    further modification, or may reject the route.
+    boolean defaultVrfInvolved =
+        importingVrf.equals(Configuration.DEFAULT_VRF_NAME)
+            || exportingVrf.equals(Configuration.DEFAULT_VRF_NAME);
+    checkArgument(
+        (routeTargetImport != null && !defaultVrfInvolved)
+            || (routeTargetImport == null && defaultVrfInvolved),
+        "importPolicy must be null iff importing from or exporting to the default VRF");
+    checkArgument(
+        routeTargetImport == null || !routeTargetImport.isEmpty(),
+        "When leaking between non-default VRFs, the importing VRF must have at least one import"
+            + " RT");
+    String policyName = computeVrfExportImportPolicyName(exportingVrf, importingVrf);
+    if (c.getRoutingPolicies().containsKey(policyName)) {
+      return policyName;
+    }
+    Statement addExportRt =
+        new SetCommunities(
+            CommunitySetUnion.of(
+                InputCommunities.instance(),
+                new LiteralCommunitySet(CommunitySet.of(routeTargetExport))));
+    Statement applyExportPolicy =
+        new If(
+            new CallExpr(exportPolicy),
+            ImmutableList.of(),
+            ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
+    Statement applyImportMap =
+        importPolicy != null
+            ? new If(
+                new CallExpr(importPolicy),
+                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))
+            : Statements.ReturnTrue.toStaticStatement();
+    RoutingPolicy.Builder builder =
+        RoutingPolicy.builder()
+            .setName(policyName)
+            .addStatement(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement())
+            .addStatement(addExportRt)
+            .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
+            .addStatement(applyExportPolicy);
+    if (routeTargetImport != null) {
+      Statement filterImportRt =
+          new If(
+              new MatchCommunities(
+                  InputCommunities.instance(),
+                  new CommunitySetMatchAny(
+                      routeTargetImport.stream()
+                          .map(CommunityIs::new)
+                          .map(HasCommunity::new)
+                          .collect(ImmutableList.toImmutableList()))),
+              ImmutableList.of(),
+              ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
+      builder.addStatement(filterImportRt);
+    }
+    builder.addStatement(applyImportMap).setOwner(c).build();
+    return policyName;
+  }
+
+  @VisibleForTesting
+  public static @Nonnull String computeVrfExportImportPolicyName(
+      String exportingVrf, String importingVrf) {
+    return String.format("~vrfExportImport~%s~%s", exportingVrf, importingVrf);
+  }
+
+  /**
+   * Implements best-effort behavior for undefined route-policy.
+   *
+   * <p>Always returns {@code null} when given a null {@code policyName}, and non-null otherwise.
+   */
+  private static @Nullable String routePolicyOrDrop(@Nullable String policyName, Configuration c) {
+    if (policyName == null || c.getRoutingPolicies().containsKey(policyName)) {
+      return policyName;
+    }
+    String undefinedName = policyName + "~undefined";
+    if (!c.getRoutingPolicies().containsKey(undefinedName)) {
+      // For undefined route-policy, generate a RoutingPolicy that denies everything.
+      RoutingPolicy.builder()
+          .setName(undefinedName)
+          .addStatement(ROUTE_POLICY_DENY_STATEMENT)
+          .setOwner(c)
+          .build();
+    }
+    return undefinedName;
+  }
+
+  private static final Statement ROUTE_POLICY_DENY_STATEMENT =
+      new If(
+          BooleanExprs.CALL_EXPR_CONTEXT,
+          ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   private CiscoXrConversions() {} // prevent instantiation of utility class
 }

@@ -15,6 +15,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseS
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertMatchesAnyToCommunitySetMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertMatchesEveryToCommunitySetMatchExpr;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertVrfLeakingConfig;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.eigrpRedistributionPoliciesToStatements;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpImportPolicy;
@@ -2270,6 +2271,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             }
           }
         });
+
+    convertVrfLeakingConfig(_vrfs.values(), c);
 
     // copy tracking groups
     c.getTrackingGroups().putAll(_trackingGroups);
