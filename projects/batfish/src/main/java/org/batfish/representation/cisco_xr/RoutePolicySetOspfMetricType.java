@@ -1,13 +1,12 @@
 package org.batfish.representation.cisco_xr;
 
-import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-public class RoutePolicySetOspfMetricType extends RoutePolicyStatement {
+public class RoutePolicySetOspfMetricType extends RoutePolicySetStatement {
 
   private OspfMetricType _type;
 
@@ -16,8 +15,7 @@ public class RoutePolicySetOspfMetricType extends RoutePolicyStatement {
   }
 
   @Override
-  public void applyTo(
-      List<Statement> statements, CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    statements.add(new SetOspfMetricType(_type));
+  public Statement toSetStatement(CiscoXrConfiguration cc, Configuration c, Warnings w) {
+    return new SetOspfMetricType(_type);
   }
 }

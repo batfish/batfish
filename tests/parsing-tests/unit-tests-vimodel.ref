@@ -79111,8 +79111,30 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetIsisMetricType",
-                    "metricType" : "INTERNAL"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.SetIsisMetricType",
+                      "metricType" : "INTERNAL"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
@@ -79496,18 +79518,40 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MultipliedAs",
+                    "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                    "statement" : {
+                      "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
                       "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                        "as" : 2152
-                      },
-                      "number" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                        "value" : 3
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MultipliedAs",
+                        "expr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                          "as" : 2152
+                        },
+                        "number" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                          "value" : 3
+                        }
                       }
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                    "falseStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      }
+                    ],
+                    "guard" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "CallExprContext"
+                    },
+                    "trueStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetLocalDefaultActionAccept"
+                      }
+                    ]
                   }
                 ]
               },
@@ -81385,18 +81429,40 @@
                             },
                             "trueStatements" : [
                               {
-                                "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
-                                "expr" : {
-                                  "class" : "org.batfish.datamodel.routing_policy.expr.MultipliedAs",
+                                "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",
+                                "statement" : {
+                                  "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
                                   "expr" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                                    "as" : 2152
-                                  },
-                                  "number" : {
-                                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                                    "value" : 3
+                                    "class" : "org.batfish.datamodel.routing_policy.expr.MultipliedAs",
+                                    "expr" : {
+                                      "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                                      "as" : 2152
+                                    },
+                                    "number" : {
+                                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                                      "value" : 3
+                                    }
                                   }
                                 }
+                              },
+                              {
+                                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                                "falseStatements" : [
+                                  {
+                                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                    "type" : "SetDefaultActionAccept"
+                                  }
+                                ],
+                                "guard" : {
+                                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                                  "type" : "CallExprContext"
+                                },
+                                "trueStatements" : [
+                                  {
+                                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                                    "type" : "SetLocalDefaultActionAccept"
+                                  }
+                                ]
                               },
                               {
                                 "class" : "org.batfish.datamodel.routing_policy.statement.BufferedStatement",

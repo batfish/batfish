@@ -1,13 +1,12 @@
 package org.batfish.representation.cisco_xr;
 
-import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.isis.IsisMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-public class RoutePolicySetIsisMetricType extends RoutePolicyStatement {
+public class RoutePolicySetIsisMetricType extends RoutePolicySetStatement {
 
   private IsisMetricType _type;
 
@@ -16,8 +15,7 @@ public class RoutePolicySetIsisMetricType extends RoutePolicyStatement {
   }
 
   @Override
-  public void applyTo(
-      List<Statement> statements, CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    statements.add(new SetIsisMetricType(_type));
+  public Statement toSetStatement(CiscoXrConfiguration cc, Configuration c, Warnings w) {
+    return new SetIsisMetricType(_type);
   }
 }
