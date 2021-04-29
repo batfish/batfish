@@ -19,7 +19,7 @@ public interface ApplicationSetMember {
 
   AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w);
 
-  static TraceElement getTraceElement(
+  static TraceElement getTraceElementForUserApplication(
       String filename, JuniperStructureType structureType, String structureName) {
     return TraceElement.builder()
         .add("Matched ")

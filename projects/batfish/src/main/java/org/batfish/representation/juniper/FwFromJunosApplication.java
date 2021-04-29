@@ -2,12 +2,10 @@ package org.batfish.representation.juniper;
 
 import java.util.List;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public final class FwFromJunosApplication implements FwFromApplicationSetMember {
 
@@ -25,7 +23,10 @@ public final class FwFromJunosApplication implements FwFromApplicationSetMember 
       List<? super ExprAclLine> lines,
       Warnings w) {
     if (!_junosApplication.hasDefinition()) {
-      w.redFlag("Reference to undefined application: \"" + _junosApplication.name() + "\"");
+      w.redFlag(
+          "Reference to unimplemented built-in application: \""
+              + _junosApplication.getJuniperName()
+              + "\"");
     } else {
       _junosApplication.applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
     }
@@ -33,14 +34,6 @@ public final class FwFromJunosApplication implements FwFromApplicationSetMember 
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
-    if (!_junosApplication.hasDefinition()) {
-      w.redFlag("Reference to undefined application: \"" + _junosApplication.name() + "\"");
-      // match nothing
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
-          ApplicationSetMember.getTraceElement(
-              jc.getFilename(), JuniperStructureType.APPLICATION, _junosApplication.name()));
-    }
     return _junosApplication.toAclLineMatchExpr(jc, w);
   }
 }

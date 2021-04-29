@@ -42,17 +42,17 @@ public class ApplicationSetTest {
             ImmutableList.of(
                 new MatchHeaderSpace(
                     HeaderSpace.builder().build(),
-                    ApplicationSetMember.getTraceElement(
+                    ApplicationSetMember.getTraceElementForUserApplication(
                         "host", JuniperStructureType.APPLICATION, "app1")),
                 new OrMatchExpr(
                     ImmutableList.of(
                         new MatchHeaderSpace(
                             HeaderSpace.builder().build(),
-                            ApplicationSetMember.getTraceElement(
+                            ApplicationSetMember.getTraceElementForUserApplication(
                                 "host", JuniperStructureType.APPLICATION, "app2"))),
-                    ApplicationSetMember.getTraceElement(
+                    ApplicationSetMember.getTraceElementForUserApplication(
                         "host", JuniperStructureType.APPLICATION_SET, "appSet"))),
-            ApplicationSetMember.getTraceElement(
+            ApplicationSetMember.getTraceElementForUserApplication(
                 "host", JuniperStructureType.APPLICATION_SET, "masterAppSet")));
   }
 }

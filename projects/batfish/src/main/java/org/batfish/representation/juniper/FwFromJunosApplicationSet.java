@@ -38,7 +38,7 @@ public final class FwFromJunosApplicationSet implements FwFromApplicationSetMemb
       // match nothing
       return new MatchHeaderSpace(
           HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
-          ApplicationSetMember.getTraceElement(
+          ApplicationSetMember.getTraceElementForUserApplication(
               jc.getFilename(), JuniperStructureType.APPLICATION, _junosApplicationSet.name()));
     }
 

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
@@ -15,8 +14,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.representation.juniper.BaseApplication.Term;
 
 public enum JunosApplication implements Application {
@@ -240,12 +240,12 @@ public enum JunosApplication implements Application {
     }
   }
 
-  private String convertToJuniperName() {
+  public String getJuniperName() {
     return name().toLowerCase().replace("_", "-");
   }
 
   private BaseApplication init() {
-    BaseApplication baseApplication = new BaseApplication(convertToJuniperName());
+    BaseApplication baseApplication = new BaseApplication(getJuniperName());
     Map<String, Term> terms = baseApplication.getTerms();
 
     Integer portRangeStart = null;
@@ -1062,14 +1062,15 @@ public enum JunosApplication implements Application {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
-    String name = convertToJuniperName();
+    TraceElement builtinApplicationTraceElement = getTraceElementForBuiltInApplication(this);
     if (!hasDefinition()) {
-      w.redFlag(String.format("%s is not defined", name));
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(), // match nothing
-          ApplicationSetMember.getTraceElement(
-              jc.getFilename(), JuniperStructureType.APPLICATION, name));
+      w.redFlag(String.format("Built-in application %s is not implemented", getJuniperName()));
+      return new FalseExpr(builtinApplicationTraceElement);
     }
-    return _baseApplication.get().toAclLineMatchExpr(jc, w);
+    return _baseApplication.get().toAclLineMatchExpr(builtinApplicationTraceElement);
+  }
+
+  public static TraceElement getTraceElementForBuiltInApplication(JunosApplication app) {
+    return TraceElement.of("Matched built-in application " + app.getJuniperName());
   }
 }

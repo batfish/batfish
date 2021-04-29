@@ -46,7 +46,7 @@ public class ApplicationSet implements ApplicationSetMember, Serializable {
             .filter(Predicates.notNull())
             .map(member -> member.toAclLineMatchExpr(jc, w))
             .collect(ImmutableList.toImmutableList()),
-        ApplicationSetMember.getTraceElement(
+        ApplicationSetMember.getTraceElementForUserApplication(
             jc.getFilename(), JuniperStructureType.APPLICATION_SET, _name));
   }
 
