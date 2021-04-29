@@ -23,7 +23,7 @@ route-policy implicit-actions
   elseif destination in DEST_C then
     prepend as-path 65432
   endif
-  ! Even through SUB_DEST_A is covered above / default-pass
+  ! Even though SUB_DEST_A is covered above / default-pass
   ! It should still be dropped
   if destination in SUB_DEST_A then
     drop
