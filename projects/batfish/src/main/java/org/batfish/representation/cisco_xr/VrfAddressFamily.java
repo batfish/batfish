@@ -1,10 +1,8 @@
 package org.batfish.representation.cisco_xr;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -15,10 +13,8 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 public final class VrfAddressFamily implements Serializable {
 
   public VrfAddressFamily() {
-    _routeTargetExport = ImmutableList.of();
-    _routeTargetImport = ImmutableList.of();
-    _exportPolicyByVrf = ImmutableMap.of();
-    _importPolicyByVrf = ImmutableMap.of();
+    _routeTargetExport = ImmutableSet.of();
+    _routeTargetImport = ImmutableSet.of();
   }
 
   @Nullable
@@ -30,14 +26,13 @@ public final class VrfAddressFamily implements Serializable {
     _exportPolicy = exportPolicy;
   }
 
-  @Nonnull
-  public Map<String, String> getExportPolicyByVrf() {
-    return _exportPolicyByVrf;
+  @Nullable
+  public String getExportToDefaultVrfPolicy() {
+    return _exportToDefaultVrfPolicy;
   }
 
-  public void setExportPolicyForVrf(String vrf, String policy) {
-    _exportPolicyByVrf =
-        ImmutableMap.<String, String>builder().putAll(_exportPolicyByVrf).put(vrf, policy).build();
+  public void setExportToDefaultVrfPolicy(String exportToDefaultVrfPolicy) {
+    _exportToDefaultVrfPolicy = exportToDefaultVrfPolicy;
   }
 
   @Nullable
@@ -49,14 +44,13 @@ public final class VrfAddressFamily implements Serializable {
     _importPolicy = importPolicy;
   }
 
-  @Nonnull
-  public Map<String, String> getImportPolicyByVrf() {
-    return _importPolicyByVrf;
+  @Nullable
+  public String getImportFromDefaultVrfPolicy() {
+    return _importFromDefaultVrfPolicy;
   }
 
-  public void setImportPolicyForVrf(String vrf, String policy) {
-    _importPolicyByVrf =
-        ImmutableMap.<String, String>builder().putAll(_importPolicyByVrf).put(vrf, policy).build();
+  public void setImportFromDefaultVrfPolicy(String importFromDefaultVrfPolicy) {
+    _importFromDefaultVrfPolicy = importFromDefaultVrfPolicy;
   }
 
   /**
@@ -64,13 +58,13 @@ public final class VrfAddressFamily implements Serializable {
    * must be auto-derived.
    */
   @Nonnull
-  public List<ExtendedCommunity> getRouteTargetExport() {
+  public Set<ExtendedCommunity> getRouteTargetExport() {
     return _routeTargetExport;
   }
 
   public void addRouteTargetExport(ExtendedCommunity routeTargetExport) {
     _routeTargetExport =
-        ImmutableList.<ExtendedCommunity>builder()
+        ImmutableSet.<ExtendedCommunity>builder()
             .addAll(_routeTargetExport)
             .add(routeTargetExport)
             .build();
@@ -81,22 +75,22 @@ public final class VrfAddressFamily implements Serializable {
    * empty if it must be auto-derived.
    */
   @Nonnull
-  public List<ExtendedCommunity> getRouteTargetImport() {
+  public Set<ExtendedCommunity> getRouteTargetImport() {
     return _routeTargetImport;
   }
 
   public void addRouteTargetImport(ExtendedCommunity routeTargetImport) {
     _routeTargetImport =
-        ImmutableList.<ExtendedCommunity>builder()
+        ImmutableSet.<ExtendedCommunity>builder()
             .addAll(_routeTargetImport)
             .add(routeTargetImport)
             .build();
   }
 
-  @Nonnull private List<ExtendedCommunity> _routeTargetExport;
-  @Nonnull private List<ExtendedCommunity> _routeTargetImport;
-  @Nonnull private Map<String, String> _exportPolicyByVrf;
-  @Nonnull private Map<String, String> _importPolicyByVrf;
+  @Nonnull private Set<ExtendedCommunity> _routeTargetExport;
+  @Nonnull private Set<ExtendedCommunity> _routeTargetImport;
   @Nullable private String _exportPolicy;
+  @Nullable private String _exportToDefaultVrfPolicy;
   @Nullable private String _importPolicy;
+  @Nullable private String _importFromDefaultVrfPolicy;
 }
