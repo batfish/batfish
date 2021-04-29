@@ -518,10 +518,11 @@ public final class FlatJuniperGrammarTest {
                                                     .setSrcPorts(
                                                         ImmutableList.of(SubRange.singleton(1)))
                                                     .build(),
-                                                ApplicationSetMember.getTraceElement(
-                                                    "configs/" + c.getHostname(),
-                                                    APPLICATION,
-                                                    "a1")),
+                                                ApplicationSetMember
+                                                    .getTraceElementForUserApplication(
+                                                        "configs/" + c.getHostname(),
+                                                        APPLICATION,
+                                                        "a1")),
                                             // a2
                                             new MatchHeaderSpace(
                                                 HeaderSpace.builder()
@@ -530,11 +531,12 @@ public final class FlatJuniperGrammarTest {
                                                     .setDstPorts(
                                                         ImmutableList.of(SubRange.singleton(2)))
                                                     .build(),
-                                                ApplicationSetMember.getTraceElement(
-                                                    "configs/" + c.getHostname(),
-                                                    APPLICATION,
-                                                    "a2"))),
-                                        ApplicationSetMember.getTraceElement(
+                                                ApplicationSetMember
+                                                    .getTraceElementForUserApplication(
+                                                        "configs/" + c.getHostname(),
+                                                        APPLICATION,
+                                                        "a2"))),
+                                        ApplicationSetMember.getTraceElementForUserApplication(
                                             "configs/" + c.getHostname(),
                                             APPLICATION_SET,
                                             "appset1")),
@@ -544,9 +546,9 @@ public final class FlatJuniperGrammarTest {
                                             .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                             .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                             .build(),
-                                        ApplicationSetMember.getTraceElement(
+                                        ApplicationSetMember.getTraceElementForUserApplication(
                                             "configs/" + c.getHostname(), APPLICATION, "a3"))),
-                                ApplicationSetMember.getTraceElement(
+                                ApplicationSetMember.getTraceElementForUserApplication(
                                     "configs/" + c.getHostname(), APPLICATION_SET, "appset2")),
                             "p1",
                             matchingSecurityPolicyTerm(
@@ -677,7 +679,7 @@ public final class FlatJuniperGrammarTest {
                                             .setSrcPorts(ImmutableList.of(SubRange.singleton(4)))
                                             .build(),
                                         TraceElement.of("Matched term t2"))),
-                                ApplicationSetMember.getTraceElement(
+                                ApplicationSetMember.getTraceElementForUserApplication(
                                     "configs/" + c.getHostname(), APPLICATION, "a1")),
                             "p1",
                             matchingSecurityPolicyTerm(

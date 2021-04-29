@@ -141,20 +141,28 @@ public final class BaseApplication implements Application, Serializable {
     _ipv6 = true;
   }
 
-  @Override
-  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
+  /**
+   * Convert this {@link BaseApplication} to an {@link AclLineMatchExpr}, but using the given {@link
+   * TraceElement}. This enables the same conversion code to be used for built-in and user-defined
+   * applications.
+   */
+  public AclLineMatchExpr toAclLineMatchExpr(TraceElement topLevelTraceElement) {
     if (_terms.isEmpty()) {
-      return new MatchHeaderSpace(
-          _mainTerm.toHeaderSpace(),
-          ApplicationSetMember.getTraceElement(
-              jc.getFilename(), JuniperStructureType.APPLICATION, _name));
+      return new MatchHeaderSpace(_mainTerm.toHeaderSpace(), topLevelTraceElement);
     }
 
     return new OrMatchExpr(
         _terms.values().stream()
             .map(Term::toAclLineMatchExpr)
             .collect(ImmutableList.toImmutableList()),
-        ApplicationSetMember.getTraceElement(
-            jc.getFilename(), JuniperStructureType.APPLICATION, _name));
+        topLevelTraceElement);
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
+    TraceElement userDefinedApplicationTraceElement =
+        ApplicationSetMember.getTraceElementForUserApplication(
+            jc.getFilename(), JuniperStructureType.APPLICATION, _name);
+    return toAclLineMatchExpr(userDefinedApplicationTraceElement);
   }
 }
