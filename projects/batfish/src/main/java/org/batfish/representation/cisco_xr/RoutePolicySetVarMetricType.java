@@ -1,12 +1,11 @@
 package org.batfish.representation.cisco_xr;
 
-import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
-public class RoutePolicySetVarMetricType extends RoutePolicyStatement {
+public class RoutePolicySetVarMetricType extends RoutePolicySetStatement {
 
   private String _var;
 
@@ -15,8 +14,7 @@ public class RoutePolicySetVarMetricType extends RoutePolicyStatement {
   }
 
   @Override
-  public void applyTo(
-      List<Statement> statements, CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    statements.add(new SetVarMetricType(_var));
+  public Statement toSetStatement(CiscoXrConfiguration cc, Configuration c, Warnings w) {
+    return new SetVarMetricType(_var);
   }
 }

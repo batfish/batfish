@@ -126,6 +126,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -151,6 +152,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -286,9 +288,13 @@ public final class XrGrammarTest {
 
   private static void assertRoutingPolicyPermitsRoute(
       RoutingPolicy routingPolicy, AbstractRoute route) {
-    assertTrue(
-        routingPolicy.process(
-            route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
+    assertRoutingPolicyPermitsRoute(
+        routingPolicy, route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()));
+  }
+
+  private static void assertRoutingPolicyPermitsRoute(
+      RoutingPolicy routingPolicy, AbstractRoute route, AbstractRouteBuilder<?, ?> builder) {
+    assertTrue(routingPolicy.process(route, builder, Direction.OUT));
   }
 
   private static @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
@@ -602,6 +608,44 @@ public final class XrGrammarTest {
               XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.NO_ADVERTISE),
               XrCommunitySetHighLowRangeExprs.of(WellKnownCommunity.NO_EXPORT)));
     }
+  }
+
+  @Test
+  public void testRoutePolicyImplicitActionsConversion() {
+    Configuration c = parseConfig("route-policy-implicit-actions");
+
+    Prefix prefixNoMatch = Prefix.parse("10.11.0.0/16");
+    Prefix prefixLocalPref = Prefix.parse("10.10.0.0/16");
+    Prefix prefixLocalPrefThenDrop = Prefix.parse("10.10.10.0/24");
+    Prefix prefixAsPath = Prefix.parse("192.168.2.0/24");
+    Prefix prefixOspfMetricType = Prefix.parse("192.168.1.0/24");
+    Bgpv4Route.Builder bgpLocalPref = Bgpv4Route.testBuilder().setNetwork(prefixLocalPref);
+    Bgpv4Route.Builder bgpLocalPrefThenDrop =
+        Bgpv4Route.testBuilder().setNetwork(prefixLocalPrefThenDrop);
+    Bgpv4Route.Builder bgpNoMatch = Bgpv4Route.testBuilder().setNetwork(prefixNoMatch);
+    Bgpv4Route.Builder bgpAsPath = Bgpv4Route.testBuilder().setNetwork(prefixAsPath);
+    OspfExternalRoute.Builder ospfMetricType =
+        OspfExternalType1Route.testBuilder().setNetwork(prefixOspfMetricType);
+
+    assertThat(c.getRoutingPolicies(), hasKeys("implicit-actions"));
+    RoutingPolicy rp = c.getRoutingPolicies().get("implicit-actions");
+
+    // If routes are updated, default-deny doesn't apply
+    // Confirm default is accept when local-pref is updated
+    assertRoutingPolicyPermitsRoute(rp, bgpLocalPref.build(), bgpLocalPref);
+    assertThat(bgpLocalPref.build().getLocalPreference(), equalTo(100L));
+    // Confirm default is pass when as-path is updated
+    assertRoutingPolicyPermitsRoute(rp, bgpAsPath.build(), bgpAsPath);
+    assertThat(bgpAsPath.build().getAsPath(), equalTo(AsPath.ofSingletonAsSets(65432L)));
+    // Confirm default is pass when OSPF metric type is updated
+    assertRoutingPolicyPermitsRoute(rp, ospfMetricType.build(), ospfMetricType);
+    assertThat(ospfMetricType.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
+
+    // Even if default is pass, explicit drop should still take effect
+    assertRoutingPolicyDeniesRoute(rp, bgpLocalPrefThenDrop.build());
+
+    // No match / no route update should use default-deny
+    assertRoutingPolicyDeniesRoute(rp, bgpNoMatch.build());
   }
 
   @Test
