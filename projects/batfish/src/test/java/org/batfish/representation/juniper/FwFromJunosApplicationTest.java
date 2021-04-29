@@ -20,11 +20,11 @@ import org.junit.Test;
 
 /** Test for {@link FwFromJunosApplication} */
 public class FwFromJunosApplicationTest {
-  private final JuniperConfiguration jc = new JuniperConfiguration();
+  private final JuniperConfiguration _jc = new JuniperConfiguration();
 
   @Before
   public void setUp() {
-    jc.setFilename("host");
+    _jc.setFilename("host");
   }
 
   @Test
@@ -62,7 +62,7 @@ public class FwFromJunosApplicationTest {
     JunosApplication junosApp = JunosApplication.JUNOS_BGP;
 
     assertEquals(
-        new FwFromJunosApplication(junosApp).toAclLineMatchExpr(jc, null),
-        junosApp.toAclLineMatchExpr(jc, null));
+        new FwFromJunosApplication(junosApp).toAclLineMatchExpr(_jc, null),
+        junosApp.toAclLineMatchExpr(_jc, null));
   }
 }
