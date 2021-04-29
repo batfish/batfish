@@ -4,13 +4,17 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -180,8 +184,14 @@ public final class VrfLeakingConfig implements Serializable {
     }
 
     /** Additional route-targets to attach to a leaked route, on top of any set by policy. */
+    @JsonIgnore
     public Set<ExtendedCommunity> getAttachRouteTargets() {
       return _attachRouteTargets;
+    }
+
+    @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
+    private SortedSet<ExtendedCommunity> getAttachRouteTargetsSorted() {
+      return ImmutableSortedSet.copyOf(Comparator.naturalOrder(), _attachRouteTargets);
     }
 
     @Override
@@ -209,7 +219,7 @@ public final class VrfLeakingConfig implements Serializable {
     }
 
     @Nonnull private final Set<ExtendedCommunity> _attachRouteTargets;
-    private static final String PROP_ATTACH_ROUTE_TARGETS = "attachRouteTarget";
+    private static final String PROP_ATTACH_ROUTE_TARGETS = "attachRouteTargets";
 
     @JsonCreator
     private static BgpLeakConfig jsonCreate(
