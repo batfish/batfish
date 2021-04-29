@@ -19,7 +19,7 @@ public class JunosApplicationSetTest {
             ImmutableList.of(
                 JunosApplication.JUNOS_NETBIOS_SESSION.toAclLineMatchExpr(jc, null),
                 JunosApplication.JUNOS_SMB_SESSION.toAclLineMatchExpr(jc, null)),
-            ApplicationSetMember.getTraceElement(
+            ApplicationSetMember.getTraceElementForUserApplication(
                 "host", JuniperStructureType.APPLICATION_SET, "junos-cifs")));
   }
 }

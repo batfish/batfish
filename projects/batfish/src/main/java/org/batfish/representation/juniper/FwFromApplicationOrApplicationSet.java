@@ -53,7 +53,7 @@ public final class FwFromApplicationOrApplicationSet implements FwFromApplicatio
       // match nothing
       return new MatchHeaderSpace(
           HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
-          ApplicationSetMember.getTraceElement(
+          ApplicationSetMember.getTraceElementForUserApplication(
               jc.getFilename(),
               JuniperStructureType.APPLICATION,
               _applicationOrApplicationSetName));
