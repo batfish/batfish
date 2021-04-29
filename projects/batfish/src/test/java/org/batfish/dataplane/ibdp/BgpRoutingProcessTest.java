@@ -622,7 +622,7 @@ public class BgpRoutingProcessTest {
             RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(deniedPrefix).build())),
         policy.getName(),
         otherVrf,
-        new BgpLeakConfig(routeTarget));
+        BgpLeakConfig.forRouteTargets(routeTarget));
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
@@ -637,7 +637,7 @@ public class BgpRoutingProcessTest {
             RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(allowedPrefix).build())),
         policy.getName(),
         otherVrf,
-        new BgpLeakConfig(routeTarget));
+        BgpLeakConfig.forRouteTargets(routeTarget));
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
@@ -658,7 +658,7 @@ public class BgpRoutingProcessTest {
             RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(deniedPrefix).build())),
         null, // no policy
         otherVrf,
-        new BgpLeakConfig(routeTarget));
+        BgpLeakConfig.forRouteTargets(routeTarget));
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()

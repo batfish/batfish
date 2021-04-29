@@ -558,13 +558,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // Do not place BGP routes back into BGP process.
       return RibDelta.empty();
     }
+    RoutingProtocol targetProtocol =
+        route.getAbstractRoute().getProtocol() == RoutingProtocol.BGP
+            ? RoutingProtocol.BGP
+            : RoutingProtocol.IBGP;
     Bgpv4Route.Builder bgpBuilder =
         BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
                 route,
                 getRouterId(),
                 route.getAbstractRoute().getNextHopIp(),
-                _process.getAdminCost(RoutingProtocol.BGP),
-                RoutingProtocol.BGP)
+                _process.getAdminCost(targetProtocol),
+                targetProtocol)
             // Prevent from funneling to main RIB
             .setNonRouting(true);
     // Hopefully, the direction should not matter here.
@@ -1712,7 +1716,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               route.toBuilder()
                   .setNonRouting(false)
                   .setNextHop(NextHopVrf.of(importFromVrf))
-                  .addCommunity(bgpConfig.getAttachRouteTarget());
+                  .addCommunities(bgpConfig.getAttachRouteTargets());
 
           // Process route through import policy, if one exists
           boolean accept = true;
