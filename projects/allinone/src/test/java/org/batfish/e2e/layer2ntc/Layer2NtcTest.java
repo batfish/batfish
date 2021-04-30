@@ -1,6 +1,7 @@
 package org.batfish.e2e.layer2ntc;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -17,29 +18,39 @@ import org.junit.rules.TemporaryFolder;
 /**
  * A test of an issue reported by {@code Sharon Saadon} on Slack. Link:
  * https://networktocode.slack.com/archives/CCE02JK7T/p1619679666156900
+ *
+ * <p>The network is a simple linear chain of devices, rtr-1 -> sw-1 -> fw-1 -> rtr-isp-1, with the
+ * complication that a self-loop on fw-1 is used to bridge vlan10 and vlan20.
  */
 public class Layer2NtcTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  @Test
-  public void testLayer3Connectivity() throws IOException {
+  private Topology getLayer3Edges(String nameOfBatfishFolderContainingL1) throws IOException {
+    String prefix = "org/batfish/e2e/layer2ntc";
     IBatfish batfish =
         BatfishTestUtils.getBatfishFromTestrigText(
             TestrigText.builder()
-                .setConfigurationFiles(
-                    "org/batfish/e2e/layer2ntc",
-                    "fw-1.cfg",
-                    "rtr-1.cfg",
-                    "rtr-isp-1.cfg",
-                    "sw-1.cfg")
+                .setConfigurationFiles(prefix, "fw-1.cfg", "rtr-1.cfg", "rtr-isp-1.cfg", "sw-1.cfg")
+                .setLayer1TopologyPrefix(prefix + '/' + nameOfBatfishFolderContainingL1)
                 .build(),
             _folder);
-    Topology layer3 = batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
+    return batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
+  }
 
+  /** When the entire l1 topology is present, the L3 edge comes up. */
+  @Test
+  public void testLayer3Connectivity() throws IOException {
     Edge forward =
         new Edge(
             NodeInterfacePair.of("rtr-1", "xe-0/0/0.10"),
             NodeInterfacePair.of("rtr-isp-1", "xe-0/0/1.20"));
-    assertThat(layer3.getEdges(), containsInAnyOrder(forward, forward.reverse()));
+    assertThat(
+        getLayer3Edges("batfish").getEdges(), containsInAnyOrder(forward, forward.reverse()));
+  }
+
+  /** When the self-loop is missing from l1 topology, the L3 edge does not come up. */
+  @Test
+  public void testLayer3ConnectivityMissingLoop() throws IOException {
+    assertThat(getLayer3Edges("batfish-missing-loop").getEdges(), empty());
   }
 }
