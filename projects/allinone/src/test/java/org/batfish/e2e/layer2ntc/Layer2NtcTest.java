@@ -19,8 +19,10 @@ import org.junit.rules.TemporaryFolder;
  * A test of an issue reported by {@code Sharon Saadon} on Slack. Link:
  * https://networktocode.slack.com/archives/CCE02JK7T/p1619679666156900
  *
- * <p>The network is a simple linear chain of devices, rtr-1 -> sw-1 -> fw-1 -> rtr-isp-1, with the
- * complication that a self-loop on fw-1 is used to bridge vlan10 and vlan20.
+ * <p>The network is a simple star topology with a central switch sw-1 at the center that has two
+ * routers (one inward facing rtr-1 and one outward facing rtr-isp-1) and a firewall attached. The a
+ * self-loop on fw-1 is used to bridge vlan10 and vlan20 and connect the inner and outer routers
+ * through the firewall.
  */
 public class Layer2NtcTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
