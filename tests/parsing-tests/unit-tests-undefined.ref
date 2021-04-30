@@ -4121,6 +4121,18 @@
         }
       },
       {
+        "File_Name" : "configs/pim",
+        "Struct_Type" : "ipv4 access-list",
+        "Ref_Name" : "override",
+        "Context" : "router pim rp-address",
+        "Lines" : {
+          "filename" : "configs/pim",
+          "lines" : [
+            7
+          ]
+        }
+      },
+      {
         "File_Name" : "configs/route_policy_as_path",
         "Struct_Type" : "community-set",
         "Ref_Name" : "13979:90",
@@ -4351,10 +4363,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 353 results",
+      "notes" : "Found 354 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 353
+      "numResults" : 354
     }
   }
 ]
