@@ -25478,10 +25478,7 @@
             "          MTU:'mtu'",
             "          (null_rest_of_line*",
             "            UINT16:'2112'",
-            "            NEWLINE:'\\n')))",
-            "      (pm_end_policy_map*",
-            "        END_POLICY_MAP:'end-policy-map'",
-            "        NEWLINE:'\\n')))",
+            "            NEWLINE:'\\n')))))",
             "  (stanza*",
             "    (s_policy_map",
             "      POLICY_MAP:'policy-map'",
@@ -71745,7 +71742,7 @@
           },
           "service-template" : {
             "template_name" : {
-              "definitionLines" : "142-150",
+              "definitionLines" : "141-149",
               "numReferrers" : 0
             }
           }
@@ -76991,12 +76988,12 @@
           "class-map" : {
             "MY_CLASS_1" : {
               "policy-map event class" : [
-                129
+                128
               ]
             },
             "MY_CLASS_2" : {
               "policy-map event class" : [
-                131
+                130
               ]
             },
             "bippetyboo-drop" : {
@@ -77016,52 +77013,52 @@
             },
             "bleefee" : {
               "policy-map class" : [
-                102
+                101
               ]
             },
             "bleefee2" : {
               "policy-map class" : [
-                107
+                106
               ]
             },
             "blerf" : {
               "policy-map class" : [
-                98
+                97
               ]
             },
             "c-bleeb-drop" : {
               "policy-map class" : [
-                109
+                108
               ]
             },
             "c-bleeb-ndrop-fcoe" : {
               "policy-map class" : [
-                114
+                113
               ]
             },
             "c-foob-drop" : {
               "policy-map class" : [
-                81
+                80
               ]
             },
             "c-foob-ndrop" : {
               "policy-map class" : [
-                93
+                92
               ]
             },
             "c-foob-ndrop-fcoe" : {
               "policy-map class" : [
-                89
+                88
               ]
             },
             "fffoooddd" : {
               "policy-map class" : [
-                72
+                71
               ]
             },
             "floop" : {
               "policy-map class" : [
-                119
+                118
               ]
             }
           },
@@ -77075,7 +77072,7 @@
           "policy-map" : {
             "prioritize_backbone" : {
               "policy-map class service-policy" : [
-                74
+                73
               ]
             }
           },
@@ -77092,7 +77089,7 @@
             },
             "my_TEMPLATE_NAME" : {
               "policy-map event class activate" : [
-                130
+                129
               ]
             }
           }
@@ -82115,12 +82112,12 @@
           "class-map" : {
             "MY_CLASS_1" : {
               "policy-map event class" : [
-                129
+                128
               ]
             },
             "MY_CLASS_2" : {
               "policy-map event class" : [
-                131
+                130
               ]
             },
             "bippetyboo-drop" : {
@@ -82140,52 +82137,52 @@
             },
             "bleefee" : {
               "policy-map class" : [
-                102
+                101
               ]
             },
             "bleefee2" : {
               "policy-map class" : [
-                107
+                106
               ]
             },
             "blerf" : {
               "policy-map class" : [
-                98
+                97
               ]
             },
             "c-bleeb-drop" : {
               "policy-map class" : [
-                109
+                108
               ]
             },
             "c-bleeb-ndrop-fcoe" : {
               "policy-map class" : [
-                114
+                113
               ]
             },
             "c-foob-drop" : {
               "policy-map class" : [
-                81
+                80
               ]
             },
             "c-foob-ndrop" : {
               "policy-map class" : [
-                93
+                92
               ]
             },
             "c-foob-ndrop-fcoe" : {
               "policy-map class" : [
-                89
+                88
               ]
             },
             "fffoooddd" : {
               "policy-map class" : [
-                72
+                71
               ]
             },
             "floop" : {
               "policy-map class" : [
-                119
+                118
               ]
             }
           },
@@ -82199,7 +82196,7 @@
           "policy-map" : {
             "prioritize_backbone" : {
               "policy-map class service-policy" : [
-                74
+                73
               ]
             }
           },
@@ -82216,7 +82213,7 @@
             },
             "my_TEMPLATE_NAME" : {
               "policy-map event class activate" : [
-                130
+                129
               ]
             }
           }
