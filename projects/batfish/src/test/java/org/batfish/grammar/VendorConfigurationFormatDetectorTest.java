@@ -87,20 +87,16 @@ public class VendorConfigurationFormatDetectorTest {
 
   @Test
   public void testIosXr() {
+    String rancidGeneric = "!RANCID-CONTENT-TYPE: cisco\n";
     String xr = "!! IOS XR Configuration 5.2.4\n";
     String xrRancid = "!RANCID-CONTENT-TYPE: cisco-xr\n";
-    String xrRancidGeneric = "!RANCID-CONTENT-TYPE: cisco\n" + xr;
+    String xrRancidGeneric = rancidGeneric + xr;
 
     // Doesn't have IOS XR in it, but indicates XR via other indicators.
-    String rancidGenericBundleEther = "!RANCID-CONTENT-TYPE: cisco\ninterface Bundle-Ether2\n";
-    String rancidGenericRoutePolicy =
-        "!RANCID-CONTENT-TYPE: cisco\nroute-policy foo\n end-policy\n";
-    String rancidGenericPrefixSet = "!RANCID-CONTENT-TYPE: cisco\nprefix-set foo\n end-set\n";
-    String rancidGenericIpv4AccessList = "!RANCID-CONTENT-TYPE: cisco\n ipv4 access-list acl1\n";
-
-    // Don't force XR for Bundle-Ether outside of interface declaration
-    String rancidGenericBundleEtherDesc =
-        "!RANCID-CONTENT-TYPE: cisco\ninterface Ethernet0/0\n description To foo:Bundle-Ether2\n";
+    String rancidGenericBundleEther = rancidGeneric + "interface Bundle-Ether2\n";
+    String rancidGenericRoutePolicy = rancidGeneric + "route-policy foo\n end-policy\n";
+    String rancidGenericPrefixSet = rancidGeneric + "prefix-set foo\n end-set\n";
+    String rancidGenericIpv4AccessList = rancidGeneric + " ipv4 access-list acl1\n";
 
     for (String fileText :
         ImmutableList.of(
@@ -113,8 +109,17 @@ public class VendorConfigurationFormatDetectorTest {
             rancidGenericIpv4AccessList)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_IOS_XR));
     }
-    assertThat(
-        identifyConfigurationFormat(rancidGenericBundleEtherDesc), not(equalTo(CISCO_IOS_XR)));
+
+    // Don't force XR for some other types of lines
+    String bundleEtherInDesc =
+        rancidGeneric + "interface Ethernet0/0\n description To foo:Bundle-Ether2\n";
+    String partialKw = rancidGeneric + "blend-setting\n";
+    String inComment = rancidGeneric + "!end-policy\n";
+    String notFirstWord = rancidGeneric + "description ipv4 access-list acl1\n";
+    for (String fileText :
+        ImmutableList.of(bundleEtherInDesc, partialKw, inComment, notFirstWord)) {
+      assertThat(identifyConfigurationFormat(fileText), not(equalTo(CISCO_IOS_XR)));
+    }
   }
 
   @Test
