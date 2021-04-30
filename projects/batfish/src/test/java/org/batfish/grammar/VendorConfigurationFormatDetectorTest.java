@@ -17,6 +17,7 @@ import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
 import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -92,8 +93,14 @@ public class VendorConfigurationFormatDetectorTest {
 
     // Doesn't have IOS XR in it, but indicates XR via other indicators.
     String rancidGenericBundleEther = "!RANCID-CONTENT-TYPE: cisco\ninterface Bundle-Ether2\n";
-    String rancidGenericRoutePolicy = "!RANCID-CONTENT-TYPE: cisco\nroute-policy foo\nend-policy\n";
-    String rancidGenericPrefixSet = "!RANCID-CONTENT-TYPE: cisco\nprefix-set foo\nend-set\n";
+    String rancidGenericRoutePolicy =
+        "!RANCID-CONTENT-TYPE: cisco\nroute-policy foo\n end-policy\n";
+    String rancidGenericPrefixSet = "!RANCID-CONTENT-TYPE: cisco\nprefix-set foo\n end-set\n";
+    String rancidGenericIpv4AccessList = "!RANCID-CONTENT-TYPE: cisco\n ipv4 access-list acl1\n";
+
+    // Don't force XR for Bundle-Ether outside of interface declaration
+    String rancidGenericBundleEtherDesc =
+        "!RANCID-CONTENT-TYPE: cisco\ninterface Ethernet0/0\n description To foo:Bundle-Ether2\n";
 
     for (String fileText :
         ImmutableList.of(
@@ -102,9 +109,12 @@ public class VendorConfigurationFormatDetectorTest {
             xrRancidGeneric,
             rancidGenericBundleEther,
             rancidGenericRoutePolicy,
-            rancidGenericPrefixSet)) {
+            rancidGenericPrefixSet,
+            rancidGenericIpv4AccessList)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(CISCO_IOS_XR));
     }
+    assertThat(
+        identifyConfigurationFormat(rancidGenericBundleEtherDesc), not(equalTo(CISCO_IOS_XR)));
   }
 
   @Test

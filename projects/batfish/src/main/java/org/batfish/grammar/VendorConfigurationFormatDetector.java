@@ -142,7 +142,8 @@ public final class VendorConfigurationFormatDetector {
   }
 
   /** Assuming Cisco device, try to find things that indicate IOS-XR. */
-  private static final Pattern XR_QUALIFIERS = Pattern.compile("(Bundle-Ether|end-policy|end-set)");
+  private static final Pattern XR_QUALIFIERS =
+      Pattern.compile("(?m)(^interface Bundle-Ether|end-policy|end-set|ipv4 access-list)");
 
   @Nullable
   private ConfigurationFormat checkCisco() {
