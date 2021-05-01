@@ -50,6 +50,10 @@ public final class Layer2Node implements Serializable {
     _interfaceName = interfaceName;
     _switchportVlanRange =
         vlanRange == null ? null : vlanRange.canonical(DiscreteDomain.integers());
+    if (_switchportVlanRange != null) {
+      // Note: empty ranges may not be detected before canonicalization, e.g., (3, 4).
+      checkArgument(!_switchportVlanRange.isEmpty(), "Illegal empty VLAN range %s", vlanRange);
+    }
   }
 
   public Layer2Node(@Nonnull String hostname, @Nonnull String interfaceName, int vlan) {
