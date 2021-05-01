@@ -2,6 +2,7 @@ package org.batfish.common.topology;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
@@ -104,8 +105,9 @@ class InterfacesByVlanRange {
           .asMapOfRanges()
           .forEach(
               (intersectedRange, interfaceSet) -> {
-                if (interfaceSet.contains(interfaceName)) {
-                  builder.add(intersectedRange);
+                Range<Integer> canonical = intersectedRange.canonical(DiscreteDomain.integers());
+                if (!canonical.isEmpty() && interfaceSet.contains(interfaceName)) {
+                  builder.add(canonical);
                 }
               });
     }
