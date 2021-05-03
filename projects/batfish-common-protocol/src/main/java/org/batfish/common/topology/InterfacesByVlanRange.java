@@ -51,11 +51,12 @@ class InterfacesByVlanRange {
    * of existing and provided interfaces.
    */
   public void add(Range<Integer> vlans, Collection<String> interfaces) {
-    if (vlans.isEmpty() || interfaces.isEmpty()) {
+    Range<Integer> canonical = vlans.canonical(DiscreteDomain.integers());
+    if (canonical.isEmpty() || interfaces.isEmpty()) {
       return;
     }
     _ranges.merge(
-        vlans,
+        canonical,
         ImmutableSet.copyOf(interfaces),
         (a, b) -> ImmutableSet.<String>builder().addAll(a).addAll(b).build());
   }
