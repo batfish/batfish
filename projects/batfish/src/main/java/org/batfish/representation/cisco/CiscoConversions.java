@@ -1810,7 +1810,7 @@ public class CiscoConversions {
           }
           viVrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setBgpLeakConfig(new BgpLeakConfig(importRt))
+                  .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(importRt))
                   .setImportFromVrf(exportingVrf)
                   .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
                   .build());
@@ -1824,7 +1824,7 @@ public class CiscoConversions {
           }
           viVrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setBgpLeakConfig(new BgpLeakConfig(importRt))
+                  .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(importRt))
                   .setImportFromVrf(mapExportingVrf.getName())
                   .setImportPolicy(
                       vrfExportImportPolicy(
