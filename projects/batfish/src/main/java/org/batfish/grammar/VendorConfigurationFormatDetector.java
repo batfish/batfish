@@ -141,12 +141,16 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  /** Assuming Cisco device, try to find things that indicate IOS-XR. */
+  private static final Pattern XR_QUALIFIERS =
+      Pattern.compile(
+          "(?m)^\\s*(interface Bundle-Ether|end-policy\\b|end-set\\b|ipv4 access-list\\b)");
+
   @Nullable
   private ConfigurationFormat checkCisco() {
     if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_ASA;
-    }
-    if (checkCiscoXr() == ConfigurationFormat.CISCO_IOS_XR) {
+    } else if (fileTextMatches(XR_QUALIFIERS)) {
       return ConfigurationFormat.CISCO_IOS_XR;
     }
     if (fileTextMatches(NEXUS_BOOT_NXOS_PATTERN)

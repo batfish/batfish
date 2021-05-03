@@ -103,6 +103,7 @@ rpimaf4_null
 :
   (
     EXPLICIT_RPF_VECTOR
+    | RPF_VECTOR
   ) null_rest_of_line
 ;
 
