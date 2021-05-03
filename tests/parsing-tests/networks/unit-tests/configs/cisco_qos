@@ -67,7 +67,6 @@ policy-map type network-qos default-ploosh-policy
     pause
     no congestion-control random-detect
     mtu 2112
-  end-policy-map
 policy-map type control-plane feefoo
  class fffoooddd
   set cos 7
