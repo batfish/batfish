@@ -26,7 +26,7 @@ public final class Layer2Node implements Serializable {
       @JsonProperty(PROP_SWITCHPORT_VLAN_ID) Integer switchportVlanId,
       @JsonProperty(PROP_SWITCHPORT_VLAN_RANGE) Range<Integer> switchportVlanRange) {
     checkArgument(hostname != null, String.format("Missing %s", PROP_HOSTNAME));
-    checkArgument(hostname != null, String.format("Missing %s", PROP_INTERFACE_NAME));
+    checkArgument(interfaceName != null, String.format("Missing %s", PROP_INTERFACE_NAME));
     @Nullable Range<Integer> range = null;
     if (switchportVlanRange != null) {
       range = switchportVlanRange;
