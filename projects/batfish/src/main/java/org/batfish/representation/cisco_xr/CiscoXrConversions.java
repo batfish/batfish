@@ -1992,7 +1992,7 @@ public class CiscoXrConversions {
       Configuration c) {
     // Implementation overview:
     // 1. (Re)write the export route-target to intermediate BGP properties so that they can be read
-    //    later. Input communities fromt the original route are copied.
+    //    later. Input communities from the original route are copied.
     // 2. Apply the export route-policy. At the beginning of export policy evalution, the input
     //    communities are the union of the original route's communities and the export RTs.
     // 3. If import route-target is non-null, drop the route if does not have a route-target
