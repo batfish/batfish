@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname xr_dhcp
+!
+dhcp ipv4
+ profile irnc-dhcp relay
+  helper-address vrf default 137.164.55.68
+  lease 0 0 5
+  pool mgmt-net
+  dns-server 130.59.31.251 130.59.31.248
+  domain-name switch.ch
+  subnet-mask 255.255.255.240
+  default-router 13.9.2.1
+ !
+ interface Bundle-Ether4.12 relay profile irnc-dhcp
+ interface Bundle-Ether4.13 relay profile irnc-dhcp
+ interface Bundle-Ether1.1031 relay profile irnc-dhcp
+ interface Bundle-Ether1.1032 relay profile irnc-dhcp
+!

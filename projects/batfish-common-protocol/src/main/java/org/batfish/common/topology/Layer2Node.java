@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import java.io.Serializable;
 import java.util.Objects;
@@ -47,7 +48,12 @@ public final class Layer2Node implements Serializable {
       @Nonnull String hostname, @Nonnull String interfaceName, @Nullable Range<Integer> vlanRange) {
     _hostname = hostname;
     _interfaceName = interfaceName;
-    _switchportVlanRange = vlanRange;
+    _switchportVlanRange =
+        vlanRange == null ? null : vlanRange.canonical(DiscreteDomain.integers());
+    if (_switchportVlanRange != null) {
+      // Note: empty ranges may not be detected before canonicalization, e.g., (3, 4).
+      checkArgument(!_switchportVlanRange.isEmpty(), "Illegal empty VLAN range %s", vlanRange);
+    }
   }
 
   public Layer2Node(@Nonnull String hostname, @Nonnull String interfaceName, int vlan) {

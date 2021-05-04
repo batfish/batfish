@@ -33,9 +33,10 @@ public class InterfacesByVlanRangeTest {
   @Test
   public void testAddToEmpty() {
     Range<Integer> range = Range.closed(1, 2);
+    Range<Integer> canonical = Range.closedOpen(1, 3);
     ImmutableSet<String> interfaces = ImmutableSet.of("iface1", "iface2");
     _interfacesByVlanRange.add(range, interfaces);
-    assertThat(_interfacesByVlanRange.asMap(), hasEntry(range, interfaces));
+    assertThat(_interfacesByVlanRange.asMap(), hasEntry(canonical, interfaces));
   }
 
   @Test
@@ -50,8 +51,8 @@ public class InterfacesByVlanRangeTest {
         _interfacesByVlanRange.asMap(),
         allOf(
             hasEntry(Range.closedOpen(1, 5), set1),
-            hasEntry(Range.closed(5, 10), ImmutableSet.of("iface1", "iface2")),
-            hasEntry(Range.openClosed(10, 20), set2)));
+            hasEntry(Range.closedOpen(5, 11), ImmutableSet.of("iface1", "iface2")),
+            hasEntry(Range.closedOpen(11, 21), set2)));
   }
 
   @Test
@@ -69,10 +70,10 @@ public class InterfacesByVlanRangeTest {
         _interfacesByVlanRange.asMap(),
         allOf(
             hasEntry(Range.closedOpen(1, 5), set1),
-            hasEntry(Range.closed(5, 10), ImmutableSet.of("iface1", "iface3")),
-            hasEntry(Range.open(10, 20), set3),
-            hasEntry(Range.closed(20, 25), ImmutableSet.of("iface2", "iface3")),
-            hasEntry(Range.openClosed(25, 30), set2)));
+            hasEntry(Range.closedOpen(5, 11), ImmutableSet.of("iface1", "iface3")),
+            hasEntry(Range.closedOpen(11, 20), set3),
+            hasEntry(Range.closedOpen(20, 26), ImmutableSet.of("iface2", "iface3")),
+            hasEntry(Range.closedOpen(26, 31), set2)));
   }
 
   @Test
@@ -87,8 +88,8 @@ public class InterfacesByVlanRangeTest {
         _interfacesByVlanRange.asMap(),
         allOf(
             hasEntry(Range.closedOpen(1, 5), set1),
-            hasEntry(Range.closed(5, 10), ImmutableSet.of("iface1", "iface2")),
-            hasEntry(Range.openClosed(10, 20), set1)));
+            hasEntry(Range.closedOpen(5, 11), ImmutableSet.of("iface1", "iface2")),
+            hasEntry(Range.closedOpen(11, 21), set1)));
   }
 
   @Test
@@ -105,10 +106,11 @@ public class InterfacesByVlanRangeTest {
   @Test
   public void testGetRange() {
     Range<Integer> range = Range.closed(1, 10);
+    Range<Integer> canonicalRange = Range.closedOpen(1, 11);
     ImmutableSet<String> interfaces = ImmutableSet.of("iface1", "iface2");
     _interfacesByVlanRange.add(range, interfaces);
     for (int i = 1; i <= 10; i++) {
-      assertThat(_interfacesByVlanRange.getRange(i), equalTo(range));
+      assertThat(_interfacesByVlanRange.getRange(i), equalTo(canonicalRange));
     }
     assertThat(_interfacesByVlanRange.getRange(11), nullValue());
   }
@@ -116,8 +118,11 @@ public class InterfacesByVlanRangeTest {
   @Test
   public void testIntersect() {
     String localIface = "i1";
-    _interfacesByVlanRange.add(Range.closed(10, 20), localIface);
+    String otherIface = "i2";
+    _interfacesByVlanRange.add(Range.closedOpen(10, 21), localIface);
     _interfacesByVlanRange.add(Range.closed(40, 50), localIface);
+    // [., 21) above and (20, .] here will create an empty (20, 21) range.
+    _interfacesByVlanRange.add(Range.openClosed(20, 25), otherIface);
     {
       // simple intersection
       Range<Integer> remoteIfaceRange = Range.closedOpen(12, 15);
@@ -130,12 +135,15 @@ public class InterfacesByVlanRangeTest {
       assertThat(
           _interfacesByVlanRange.intersect(localIface, IntegerSpace.of(Range.closed(21, 39))),
           empty());
+      assertThat(
+          _interfacesByVlanRange.intersect(localIface, IntegerSpace.of(Range.openClosed(20, 39))),
+          empty());
     }
     {
       // local ranges are subset of remote range
       assertThat(
           _interfacesByVlanRange.intersect(localIface, IntegerSpace.of(Range.closed(1, 100))),
-          containsInAnyOrder(Range.closed(10, 20), Range.closed(40, 50)));
+          containsInAnyOrder(Range.closedOpen(10, 21), Range.closedOpen(40, 51)));
     }
     {
       // complex intersection
@@ -145,7 +153,7 @@ public class InterfacesByVlanRangeTest {
               IntegerSpace.unionOf(
                   Range.closed(15, 25), Range.closed(39, 42), Range.singleton(49))),
           containsInAnyOrder(
-              Range.closed(15, 20), Range.closedOpen(40, 43), Range.closedOpen(49, 50)));
+              Range.closedOpen(15, 21), Range.closedOpen(40, 43), Range.closedOpen(49, 50)));
     }
   }
 }

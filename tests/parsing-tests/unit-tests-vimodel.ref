@@ -29625,41 +29625,13 @@
         }
       },
       "cisco_mpls" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "cisco_mpls",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "cisco_mpls",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default"
-          }
-        }
-      },
-      "cisco_multicast" : {
-        "configurationFormat" : "CISCO_IOS",
-        "name" : "cisco_multicast",
-        "defaultCrossZoneAction" : "PERMIT",
-        "defaultInboundAction" : "PERMIT",
-        "deviceModel" : "CISCO_UNSPECIFIED",
-        "deviceType" : "SWITCH",
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "cisco_multicast",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -78007,49 +77979,13 @@
         }
       },
       "pim" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "pim",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
-        "interfaces" : {
-          "Loopback1" : {
-            "name" : "Loopback1",
-            "active" : true,
-            "additionalArpIps" : {
-              "class" : "org.batfish.datamodel.EmptyIpSpace"
-            },
-            "allPrefixes" : [
-              "137.164.17.8/32"
-            ],
-            "allowedVlans" : "",
-            "autostate" : true,
-            "bandwidth" : 8.0E9,
-            "declaredNames" : [
-              "loopback1"
-            ],
-            "mtu" : 1500,
-            "prefix" : "137.164.17.8/32",
-            "proxyArp" : true,
-            "ripEnabled" : false,
-            "ripPassive" : false,
-            "spanningTreePortfast" : false,
-            "switchport" : false,
-            "switchportMode" : "NONE",
-            "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "LOOPBACK",
-            "vrf" : "default"
-          }
-        },
-        "vendorFamily" : {
-          "cisco" : {
-            "hostname" : "pim",
-            "logging" : {
-              "on" : true
-            }
-          }
-        },
+        "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default"
@@ -84374,6 +84310,34 @@
           },
           "vr" : {
             "name" : "vr"
+          }
+        }
+      },
+      "xr_dhcp" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "xr_dhcp",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "xr_multicast" : {
+        "configurationFormat" : "CISCO_IOS_XR",
+        "name" : "xr_multicast",
+        "defaultCrossZoneAction" : "PERMIT",
+        "defaultInboundAction" : "PERMIT",
+        "deviceModel" : "CISCO_UNSPECIFIED",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : { },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       }

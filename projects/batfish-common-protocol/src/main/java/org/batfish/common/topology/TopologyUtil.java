@@ -6,6 +6,7 @@ import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
 import static org.batfish.datamodel.Interface.TUNNEL_INTERFACE_TYPES;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -274,13 +275,19 @@ public final class TopologyUtil {
         .asMap()
         .forEach(
             (vlanRange, interfaceNames) -> {
+              Range<Integer> canonicalRange = vlanRange.canonical(DiscreteDomain.integers());
+              if (canonicalRange.isEmpty()) {
+                // RangeMap produces all intervals, and is not always aware that the underlying
+                // domain is discrete. So it can produce empty intervals like (3, 4). Skip these.
+                return;
+              }
               assert !interfaceNames.isEmpty();
               Iterator<String> iterator = interfaceNames.iterator();
               String firstInterface = iterator.next();
-              Layer2Node firstNode = new Layer2Node(hostname, firstInterface, vlanRange);
+              Layer2Node firstNode = new Layer2Node(hostname, firstInterface, canonicalRange);
               while (iterator.hasNext()) {
                 String otherInterface = iterator.next();
-                Layer2Node otherNode = new Layer2Node(hostname, otherInterface, vlanRange);
+                Layer2Node otherNode = new Layer2Node(hostname, otherInterface, canonicalRange);
                 edges.accept(new Layer2Edge(firstNode, otherNode));
               }
             });
