@@ -20,7 +20,7 @@ public class VrfLeakingConfigTest {
         VrfLeakingConfig.builder()
             .setImportFromVrf("vrf1")
             .setImportPolicy("policy")
-            .setBgpLeakConfig(new BgpLeakConfig(ExtendedCommunity.target(1, 2)))
+            .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(ExtendedCommunity.target(1, 2)))
             .build();
     assertThat(SerializationUtils.clone(val), equalTo(val));
   }
@@ -31,7 +31,7 @@ public class VrfLeakingConfigTest {
         VrfLeakingConfig.builder()
             .setImportFromVrf("vrf1")
             .setImportPolicy("policy")
-            .setBgpLeakConfig(new BgpLeakConfig(ExtendedCommunity.target(1, 2)))
+            .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(ExtendedCommunity.target(1, 2)))
             .build();
     assertThat(BatfishObjectMapper.clone(val, VrfLeakingConfig.class), equalTo(val));
   }
@@ -45,7 +45,8 @@ public class VrfLeakingConfigTest {
         .addEqualityGroup(b.setImportFromVrf("vrf2").build())
         .addEqualityGroup(b.setImportPolicy("policy2").build())
         .addEqualityGroup(
-            b.setBgpLeakConfig(new BgpLeakConfig(ExtendedCommunity.target(1, 2))).build())
+            b.setBgpLeakConfig(BgpLeakConfig.forRouteTargets(ExtendedCommunity.target(1, 2)))
+                .build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
