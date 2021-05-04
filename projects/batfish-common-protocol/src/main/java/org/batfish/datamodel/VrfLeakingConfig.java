@@ -1,12 +1,20 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -163,12 +171,27 @@ public final class VrfLeakingConfig implements Serializable {
 
   public static final class BgpLeakConfig implements Serializable {
 
-    public BgpLeakConfig(ExtendedCommunity attachRouteTarget) {
-      _attachRouteTarget = attachRouteTarget;
+    private BgpLeakConfig(Set<ExtendedCommunity> attachRouteTargets) {
+      _attachRouteTargets = attachRouteTargets;
     }
 
-    public ExtendedCommunity getAttachRouteTarget() {
-      return _attachRouteTarget;
+    public static BgpLeakConfig forRouteTargets(Iterable<ExtendedCommunity> attachRouteTargets) {
+      return new BgpLeakConfig(ImmutableSet.copyOf(attachRouteTargets));
+    }
+
+    public static BgpLeakConfig forRouteTargets(ExtendedCommunity... attachRouteTargets) {
+      return new BgpLeakConfig(ImmutableSet.copyOf(Arrays.asList(attachRouteTargets)));
+    }
+
+    /** Additional route-targets to attach to a leaked route, on top of any set by policy. */
+    @JsonIgnore
+    public Set<ExtendedCommunity> getAttachRouteTargets() {
+      return _attachRouteTargets;
+    }
+
+    @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
+    private SortedSet<ExtendedCommunity> getAttachRouteTargetsSorted() {
+      return ImmutableSortedSet.copyOf(Comparator.naturalOrder(), _attachRouteTargets);
     }
 
     @Override
@@ -180,29 +203,30 @@ public final class VrfLeakingConfig implements Serializable {
         return false;
       }
       BgpLeakConfig that = (BgpLeakConfig) o;
-      return _attachRouteTarget.equals(that._attachRouteTarget);
+      return _attachRouteTargets.equals(that._attachRouteTargets);
     }
 
     @Override
     public int hashCode() {
-      return _attachRouteTarget.hashCode();
+      return _attachRouteTargets.hashCode();
     }
 
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(BgpLeakConfig.class)
-          .add("attachRouteTarget", _attachRouteTarget)
+          .add("attachRouteTargets", _attachRouteTargets)
           .toString();
     }
 
-    @Nonnull private final ExtendedCommunity _attachRouteTarget;
-    private static final String PROP_ATTACH_ROUTE_TARGET = "attachRouteTarget";
+    @Nonnull private final Set<ExtendedCommunity> _attachRouteTargets;
+    private static final String PROP_ATTACH_ROUTE_TARGETS = "attachRouteTargets";
 
     @JsonCreator
     private static BgpLeakConfig jsonCreate(
-        @Nullable @JsonProperty(PROP_ATTACH_ROUTE_TARGET) ExtendedCommunity attachRouteTarget) {
-      checkArgument(attachRouteTarget != null, "Missing %s", PROP_ATTACH_ROUTE_TARGET);
-      return new BgpLeakConfig(attachRouteTarget);
+        @Nullable @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
+            Iterable<ExtendedCommunity> attachRouteTarget) {
+      return new BgpLeakConfig(
+          ImmutableSet.copyOf(firstNonNull(attachRouteTarget, ImmutableSet.of())));
     }
   }
 }

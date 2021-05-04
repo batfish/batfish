@@ -5703,7 +5703,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     VrfLeakingConfig.Builder builder =
         VrfLeakingConfig.builder()
-            .setBgpLeakConfig(new BgpLeakConfig(ExtendedCommunity.target(65003, 11)));
+            .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(ExtendedCommunity.target(65003, 11)));
     assertThat(
         c.getVrfs().get("DST_VRF").getVrfLeakConfigs(),
         containsInAnyOrder(
