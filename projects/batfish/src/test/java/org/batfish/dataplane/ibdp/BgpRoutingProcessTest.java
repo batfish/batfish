@@ -3,17 +3,20 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.isNonRouting;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.isBgpv4RouteThat;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.dataplane.ibdp.BgpRoutingProcess.initEvpnType3Route;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -593,7 +596,8 @@ public class BgpRoutingProcessTest {
   @Test
   public void testCrossVrfImport() {
     // Make up a policy
-    Prefix allowedPrefix = Prefix.parse("1.1.1.0/24");
+    Prefix allowedPrefix1 = Prefix.parse("1.1.1.0/24");
+    Prefix allowedPrefix2 = Prefix.parse("1.1.1.0/25");
     RoutingPolicy policy =
         RoutingPolicy.builder()
             .setOwner(_c)
@@ -603,7 +607,8 @@ public class BgpRoutingProcessTest {
                     new MatchPrefixSet(
                         DestinationNetwork.instance(),
                         new ExplicitPrefixSet(
-                            new PrefixSpace(new PrefixRange(allowedPrefix, new SubRange(24, 32))))),
+                            new PrefixSpace(
+                                new PrefixRange(allowedPrefix1, new SubRange(24, 32))))),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))
             .build();
@@ -619,10 +624,14 @@ public class BgpRoutingProcessTest {
     ExtendedCommunity routeTarget = ExtendedCommunity.target(1, 1);
     _routingProcess.importCrossVrfV4Routes(
         Stream.of(
-            RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(deniedPrefix).build())),
+            RouteAdvertisement.adding(
+                Bgpv4Route.testBuilder()
+                    .setNetwork(deniedPrefix)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .build())),
         policy.getName(),
         otherVrf,
-        BgpLeakConfig.forRouteTargets(routeTarget));
+        BgpLeakConfig.builder().setAttachRouteTargets(routeTarget).build());
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
@@ -631,23 +640,50 @@ public class BgpRoutingProcessTest {
             .collect(Collectors.toList()),
         empty());
 
-    // Process allowed prefix with policy
+    // Process allowed prefixes from IGP/BGP with policy
+    int igpLeakAdmin = 6;
+    int igpLeakWeight = 5;
     _routingProcess.importCrossVrfV4Routes(
         Stream.of(
-            RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(allowedPrefix).build())),
+            RouteAdvertisement.adding(
+                Bgpv4Route.testBuilder()
+                    .setNetwork(allowedPrefix1)
+                    .setSrcProtocol(RoutingProtocol.OSPF)
+                    .build()),
+            RouteAdvertisement.adding(
+                Bgpv4Route.testBuilder()
+                    .setNetwork(allowedPrefix2)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .build())),
         policy.getName(),
         otherVrf,
-        BgpLeakConfig.forRouteTargets(routeTarget));
+        BgpLeakConfig.builder()
+            .setAdmin(igpLeakAdmin)
+            .setAttachRouteTargets(routeTarget)
+            .setWeight(igpLeakWeight)
+            .build());
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
             .build()
             .getRoutesStream()
             .collect(Collectors.toList()),
-        contains(
+        containsInAnyOrder(
             isBgpv4RouteThat(
                 allOf(
-                    hasPrefix(allowedPrefix),
+                    // leaked IGP route
+                    hasAdministrativeCost(igpLeakAdmin),
+                    hasWeight(igpLeakWeight),
+                    hasPrefix(allowedPrefix1),
+                    hasNextHop(NextHopVrf.of(otherVrf)),
+                    isNonRouting(false),
+                    hasCommunities(routeTarget))),
+            isBgpv4RouteThat(
+                allOf(
+                    // leaked BGP route
+                    hasAdministrativeCost(not(equalTo(igpLeakAdmin))),
+                    hasWeight(not(equalTo(igpLeakWeight))),
+                    hasPrefix(allowedPrefix2),
                     hasNextHop(NextHopVrf.of(otherVrf)),
                     isNonRouting(false),
                     hasCommunities(routeTarget)))));
@@ -655,10 +691,14 @@ public class BgpRoutingProcessTest {
     // Process denied prefix, but because no policy is specified, allow it
     _routingProcess.importCrossVrfV4Routes(
         Stream.of(
-            RouteAdvertisement.adding(Bgpv4Route.testBuilder().setNetwork(deniedPrefix).build())),
+            RouteAdvertisement.adding(
+                Bgpv4Route.testBuilder()
+                    .setNetwork(deniedPrefix)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .build())),
         null, // no policy
         otherVrf,
-        BgpLeakConfig.forRouteTargets(routeTarget));
+        BgpLeakConfig.builder().setAttachRouteTargets(routeTarget).build());
     assertThat(
         _routingProcess
             .getBgpv4DeltaBuilder()
