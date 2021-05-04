@@ -20,7 +20,12 @@ public class VrfLeakingConfigTest {
         VrfLeakingConfig.builder()
             .setImportFromVrf("vrf1")
             .setImportPolicy("policy")
-            .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(ExtendedCommunity.target(1, 2)))
+            .setBgpLeakConfig(
+                BgpLeakConfig.builder()
+                    .setAdmin(5)
+                    .setAttachRouteTargets(ExtendedCommunity.target(1, 2))
+                    .setWeight(3)
+                    .build())
             .build();
     assertThat(SerializationUtils.clone(val), equalTo(val));
   }
@@ -31,7 +36,12 @@ public class VrfLeakingConfigTest {
         VrfLeakingConfig.builder()
             .setImportFromVrf("vrf1")
             .setImportPolicy("policy")
-            .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(ExtendedCommunity.target(1, 2)))
+            .setBgpLeakConfig(
+                BgpLeakConfig.builder()
+                    .setAdmin(5)
+                    .setAttachRouteTargets(ExtendedCommunity.target(1, 2))
+                    .setWeight(3)
+                    .build())
             .build();
     assertThat(BatfishObjectMapper.clone(val, VrfLeakingConfig.class), equalTo(val));
   }
@@ -39,14 +49,21 @@ public class VrfLeakingConfigTest {
   @Test
   public void testEquals() {
     Builder b = VrfLeakingConfig.builder().setImportFromVrf("vrf1").setImportPolicy("policy");
+    BgpLeakConfig.Builder bgpLeakConfigBuilder = BgpLeakConfig.builder();
     VrfLeakingConfig val = b.build();
     new EqualsTester()
         .addEqualityGroup(val, val, b.build())
         .addEqualityGroup(b.setImportFromVrf("vrf2").build())
         .addEqualityGroup(b.setImportPolicy("policy2").build())
+        .addEqualityGroup(b.setBgpLeakConfig(bgpLeakConfigBuilder.build()).build())
+        .addEqualityGroup(b.setBgpLeakConfig(bgpLeakConfigBuilder.setAdmin(5).build()).build())
         .addEqualityGroup(
-            b.setBgpLeakConfig(BgpLeakConfig.forRouteTargets(ExtendedCommunity.target(1, 2)))
+            b.setBgpLeakConfig(
+                    bgpLeakConfigBuilder
+                        .setAttachRouteTargets(ExtendedCommunity.target(1, 2))
+                        .build())
                 .build())
+        .addEqualityGroup(b.setBgpLeakConfig(bgpLeakConfigBuilder.setWeight(3).build()).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
