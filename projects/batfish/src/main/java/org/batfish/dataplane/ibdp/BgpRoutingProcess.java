@@ -1717,6 +1717,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   .setNonRouting(false)
                   .setNextHop(NextHopVrf.of(importFromVrf))
                   .addCommunities(bgpConfig.getAttachRouteTargets());
+          switch (route.getSrcProtocol()) {
+            case AGGREGATE: // local BGP route
+            case BGP:
+            case IBGP:
+              break;
+            default:
+              builder.setAdmin(bgpConfig.getAdmin()).setWeight(bgpConfig.getWeight());
+              break;
+          }
 
           // Process route through import policy, if one exists
           boolean accept = true;

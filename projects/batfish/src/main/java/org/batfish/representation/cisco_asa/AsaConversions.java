@@ -1846,7 +1846,8 @@ public class AsaConversions {
           }
           viVrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(importRt))
+                  // TODO: VRF leaking even allowed? If so, write admin and weight.
+                  .setBgpLeakConfig(BgpLeakConfig.builder().setAttachRouteTargets(importRt).build())
                   .setImportFromVrf(exportingVrf)
                   .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
                   .build());
@@ -1860,7 +1861,8 @@ public class AsaConversions {
           }
           viVrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(importRt))
+                  // TODO: VRF leaking even allowed? If so, write admin and weight.
+                  .setBgpLeakConfig(BgpLeakConfig.builder().setAttachRouteTargets(importRt).build())
                   .setImportFromVrf(mapExportingVrf.getName())
                   .setImportPolicy(
                       vrfExportImportPolicy(

@@ -171,27 +171,79 @@ public final class VrfLeakingConfig implements Serializable {
 
   public static final class BgpLeakConfig implements Serializable {
 
-    private BgpLeakConfig(Set<ExtendedCommunity> attachRouteTargets) {
+    public static final class Builder {
+
+      @Nonnull
+      public BgpLeakConfig build() {
+        return new BgpLeakConfig(_admin, _attachRouteTargets, _weight);
+      }
+
+      @Nonnull
+      public Builder setAdmin(int admin) {
+        _admin = admin;
+        return this;
+      }
+
+      @Nonnull
+      public Builder setAttachRouteTargets(Iterable<ExtendedCommunity> attachRouteTargets) {
+        _attachRouteTargets = ImmutableSet.copyOf(attachRouteTargets);
+        return this;
+      }
+
+      @Nonnull
+      public Builder setAttachRouteTargets(ExtendedCommunity... attachRouteTargets) {
+        return setAttachRouteTargets(Arrays.asList(attachRouteTargets));
+      }
+
+      @Nonnull
+      public Builder setWeight(int weight) {
+        _weight = weight;
+        return this;
+      }
+
+      private int _admin;
+      @Nonnull private Set<ExtendedCommunity> _attachRouteTargets;
+      private int _weight;
+
+      private Builder() {
+        _attachRouteTargets = ImmutableSet.of();
+      }
+    }
+
+    @Nonnull
+    public static Builder builder() {
+      return new Builder();
+    }
+
+    private BgpLeakConfig(int admin, Set<ExtendedCommunity> attachRouteTargets, int weight) {
+      _admin = admin;
       _attachRouteTargets = attachRouteTargets;
+      _weight = weight;
     }
 
-    public static BgpLeakConfig forRouteTargets(Iterable<ExtendedCommunity> attachRouteTargets) {
-      return new BgpLeakConfig(ImmutableSet.copyOf(attachRouteTargets));
-    }
-
-    public static BgpLeakConfig forRouteTargets(ExtendedCommunity... attachRouteTargets) {
-      return new BgpLeakConfig(ImmutableSet.copyOf(Arrays.asList(attachRouteTargets)));
+    /** Administrative distance to apply to leaked routes. */
+    @JsonProperty(PROP_ADMIN)
+    public int getAdmin() {
+      return _admin;
     }
 
     /** Additional route-targets to attach to a leaked route, on top of any set by policy. */
     @JsonIgnore
+    @Nonnull
     public Set<ExtendedCommunity> getAttachRouteTargets() {
       return _attachRouteTargets;
     }
 
     @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
+    @Nonnull
     private SortedSet<ExtendedCommunity> getAttachRouteTargetsSorted() {
       return ImmutableSortedSet.copyOf(Comparator.naturalOrder(), _attachRouteTargets);
+    }
+
+    /** Weight to apply to leaked routes. */
+    @JsonProperty(PROP_WEIGHT)
+    public int getWeight() {
+      return _weight;
     }
 
     @Override
@@ -203,30 +255,41 @@ public final class VrfLeakingConfig implements Serializable {
         return false;
       }
       BgpLeakConfig that = (BgpLeakConfig) o;
-      return _attachRouteTargets.equals(that._attachRouteTargets);
+      return _admin == that._admin
+          && _attachRouteTargets.equals(that._attachRouteTargets)
+          && _weight == that._weight;
     }
 
     @Override
     public int hashCode() {
-      return _attachRouteTargets.hashCode();
+      return Objects.hash(_admin, _attachRouteTargets, _weight);
     }
 
     @Override
     public String toString() {
       return MoreObjects.toStringHelper(BgpLeakConfig.class)
+          .add("admin", _admin)
           .add("attachRouteTargets", _attachRouteTargets)
+          .add("weight", _weight)
           .toString();
     }
 
+    private final int _admin;
     @Nonnull private final Set<ExtendedCommunity> _attachRouteTargets;
+    private final int _weight;
+
+    private static final String PROP_ADMIN = "admin";
     private static final String PROP_ATTACH_ROUTE_TARGETS = "attachRouteTargets";
+    private static final String PROP_WEIGHT = "weight";
 
     @JsonCreator
     private static BgpLeakConfig jsonCreate(
+        @JsonProperty(PROP_ADMIN) int admin,
         @Nullable @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
-            Iterable<ExtendedCommunity> attachRouteTarget) {
+            Iterable<ExtendedCommunity> attachRouteTarget,
+        @JsonProperty(PROP_WEIGHT) int weight) {
       return new BgpLeakConfig(
-          ImmutableSet.copyOf(firstNonNull(attachRouteTarget, ImmutableSet.of())));
+          admin, ImmutableSet.copyOf(firstNonNull(attachRouteTarget, ImmutableSet.of())), weight);
     }
   }
 }
