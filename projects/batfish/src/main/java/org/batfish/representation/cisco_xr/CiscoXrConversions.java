@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1880,6 +1881,7 @@ public class CiscoXrConversions {
       assert viVrf != null;
       ipv4uaf.getRouteTargetImport().stream()
           .flatMap(importRt -> vrfsByExportRt.get(importRt).stream())
+          .distinct()
           .forEach(
               exportingVrf -> {
                 // Add leak config for every exporting vrf with no export policy whose export
@@ -1891,7 +1893,7 @@ public class CiscoXrConversions {
                 viVrf.addVrfLeakingConfig(
                     VrfLeakingConfig.builder()
                         .setBgpLeakConfig(
-                            BgpLeakConfig.forRouteTargets(
+                            bgpLeakConfig(
                                 exportingVrf.getIpv4UnicastAddressFamily().getRouteTargetExport()))
                         .setImportFromVrf(exportingVrf.getName())
                         .setImportPolicy(routePolicyOrDrop(ipv4uaf.getImportPolicy(), c))
@@ -1906,7 +1908,7 @@ public class CiscoXrConversions {
         }
         viVrf.addVrfLeakingConfig(
             VrfLeakingConfig.builder()
-                .setBgpLeakConfig(BgpLeakConfig.forRouteTargets()) // RT handled by policy
+                .setBgpLeakConfig(bgpLeakConfig()) // RT handled by policy
                 .setImportFromVrf(policyExportingVrf.getName())
                 .setImportPolicy(
                     vrfExportImportPolicy(
@@ -1928,7 +1930,7 @@ public class CiscoXrConversions {
       if (af.getExportToDefaultVrfPolicy() != null) {
         viDefaultVrf.addVrfLeakingConfig(
             VrfLeakingConfig.builder()
-                .setBgpLeakConfig(BgpLeakConfig.forRouteTargets()) // RT handled by policy
+                .setBgpLeakConfig(bgpLeakConfig()) // RT handled by policy
                 .setImportFromVrf(nonDefaultVrf.getName())
                 .setImportPolicy(
                     vrfExportImportPolicy(
@@ -1948,7 +1950,7 @@ public class CiscoXrConversions {
       if (af.getImportFromDefaultVrfPolicy() != null) {
         viNonDefaultVrf.addVrfLeakingConfig(
             VrfLeakingConfig.builder()
-                .setBgpLeakConfig(BgpLeakConfig.forRouteTargets()) // RT handled by policy
+                .setBgpLeakConfig(bgpLeakConfig()) // RT handled by policy
                 .setImportFromVrf(Configuration.DEFAULT_VRF_NAME)
                 .setImportPolicy(
                     vrfExportImportPolicy(
@@ -1969,6 +1971,24 @@ public class CiscoXrConversions {
       }
     }
   }
+
+  @Nonnull
+  private static BgpLeakConfig bgpLeakConfig(ExtendedCommunity... attachRouteTargets) {
+    return bgpLeakConfig(Arrays.asList(attachRouteTargets));
+  }
+
+  @Nonnull
+  private static BgpLeakConfig bgpLeakConfig(Iterable<ExtendedCommunity> attachRouteTargets) {
+    return BgpLeakConfig.builder()
+        // TODO: input and honor result of 'bgp distance' command argument 3 (local BGP admin)
+        .setAdmin(
+            RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS_XR))
+        .setAttachRouteTargets(attachRouteTargets)
+        .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
+        .build();
+  }
+
+  @VisibleForTesting public static final int BGP_VRF_LEAK_IGP_WEIGHT = 0;
 
   /**
    * Create a policy for exporting from one VRF to another in the presence of an export policy. <br>
