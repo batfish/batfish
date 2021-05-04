@@ -542,11 +542,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           .getActions()
           .map(a -> redistributeRouteToLocalRib(a, policy.get()))
           .forEach(_localDeltaBuilder::from);
-      LOGGER.debug(
-          "Redistributed into local BGP RIB node {}, VRF {}: {}",
-          _hostname,
-          _vrfName,
-          _localDeltaBuilder.build());
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(
+            "Redistributed into local BGP RIB node {}, VRF {}: {}",
+            _hostname,
+            _vrfName,
+            _localDeltaBuilder.build());
+      }
     }
   }
 
