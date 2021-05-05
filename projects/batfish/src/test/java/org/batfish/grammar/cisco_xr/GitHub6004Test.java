@@ -8,7 +8,6 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.junit.Assert.assertThat;
 
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
@@ -23,7 +22,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /** Tests for https://github.com/batfish/batfish/issues/6004. */
-@ParametersAreNonnullByDefault
 public final class GitHub6004Test {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_xr/testconfigs/";
