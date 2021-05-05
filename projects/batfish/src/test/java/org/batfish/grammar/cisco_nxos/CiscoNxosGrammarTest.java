@@ -6729,8 +6729,9 @@ public final class CiscoNxosGrammarTest {
       assertRoutingPolicyDeniesRoute(rp, base);
     }
     {
+      // when the prefix-list is undefined, the term matches all routes
       RoutingPolicy rp = c.getRoutingPolicies().get("match_undefined_prefix_list");
-      assertRoutingPolicyDeniesRoute(rp, base);
+      assertRoutingPolicyPermitsRoute(rp, base);
     }
 
     // continue route-maps
