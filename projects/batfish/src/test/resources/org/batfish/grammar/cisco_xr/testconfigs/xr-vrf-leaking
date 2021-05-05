@@ -1,0 +1,158 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-vrf-leaking
+!
+vrf v1
+ address-family ipv4 unicast
+  export route-policy rp-v1-export
+  export to default-vrf route-policy rp-v1-export-default
+  import route-policy rp-v1-import
+  import from default-vrf route-policy rp-import-default
+ !
+!
+vrf v2
+ address-family ipv4 unicast
+  export route-policy rp-v2-export
+  export to default-vrf route-policy rp-v2-export-default
+  import from default-vrf route-policy rp-import-default
+  import route-target
+   1:2
+   2:2
+  !
+  export route-target
+   2:1
+   2:11
+  !
+ !
+!
+vrf v3
+ address-family ipv4 unicast
+ import route-policy rp-v3-import
+ import route-target
+  3:3
+ !
+!
+interface Loopback0
+ ipv4 address 1.1.1.1/32
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 1.0.0.1/30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 1.0.0.5/30
+ no shutdown
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 1.0.0.9/30
+ no shutdown
+!
+interface GigabitEthernet0/0/1/0
+ ipv4 address 1.0.1.1/30
+ vrf v1
+ no shutdown
+!
+interface GigabitEthernet0/0/1/1
+ ipv4 address 1.0.1.5/30
+ vrf v1
+ no shutdown
+!
+interface GigabitEthernet0/0/1/2
+ ipv4 address 1.0.1.9/30
+ vrf v1
+ no shutdown
+!
+interface GigabitEthernet0/0/2/0
+ ipv4 address 1.0.2.1/30
+ vrf v2
+ no shutdown
+!
+interface GigabitEthernet0/0/2/1
+ ipv4 address 1.0.2.5/30
+ vrf v2
+ no shutdown
+!
+interface GigabitEthernet0/0/2/2
+ ipv4 address 1.0.2.9/30
+ vrf v2
+ no shutdown
+!
+route-policy rp-v1-export
+ if destination in (1.0.1.0/30, 1.0.1.4/30) then
+  set extcommunity rt (1:2)
+ endif
+ pass
+end-policy
+!
+route-policy rp-v2-export
+ if destination in (1.0.2.0/30, 1.0.2.8/30) then
+  set extcommunity rt (3:3) additive
+  pass
+ else
+  drop
+ endif
+end-policy
+!
+route-policy rp-v1-export-default
+ if destination in (1.0.1.0/30, 1.0.1.4/30) then
+  set extcommunity rt (1:0)
+  pass
+ else
+  drop
+ endif
+end-policy
+!
+route-policy rp-v2-export-default
+ if destination in (1.0.2.0/30, 1.0.2.4/30) then
+  pass
+ else
+  drop
+ endif
+end-policy
+!
+route-policy rp-v1-import
+ pass
+end-policy
+!
+route-policy rp-v3-import
+ if destination in (1.0.2.0/30, 1.0.2.4/30) then
+  pass
+ else
+  drop
+ endif
+end-policy
+!
+route-policy rp-import-default
+ if destination in (1.0.0.0/30, 1.0.0.4/30) then
+  pass
+ else
+  drop
+ endif
+end-policy
+!
+router bgp 65500
+ bgp router-id 1.1.1.1
+ address-family ipv4 unicast
+  redistribute connected
+ !
+ address-family vpnv4 unicast
+ !
+ vrf v1
+  rd 1:1
+  address-family ipv4 unicast
+   redistribute connected
+  !
+ !
+ vrf v2
+  rd 2:2
+  address-family ipv4 unicast
+   redistribute connected
+  !
+ !
+ vrf v3
+  rd 3:3
+  address-family ipv4 unicast
+  !
+ !
+!
+end

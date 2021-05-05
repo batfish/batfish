@@ -1353,13 +1353,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterVrf_address_family(Vrf_address_familyContext ctx) {
-    AddressFamilyType type = toAddressFamilyType(ctx.af);
-    if (type == AddressFamilyType.IPV4_UNICAST) {
-      // Warn for ipv4 unicast until VRF leaking is implemented; ignore others.
-      todo(ctx);
-    }
     _currentVrfAddressFamily =
-        currentVrf().getAddressFamilies().computeIfAbsent(type, af -> new VrfAddressFamily());
+        currentVrf()
+            .getAddressFamilies()
+            .computeIfAbsent(toAddressFamilyType(ctx.af), af -> new VrfAddressFamily());
   }
 
   @Override
