@@ -27,6 +27,10 @@ public class AsPathSet implements Serializable {
   }
 
   public void addElement(AsPathSetElem element) {
-    _elements = ImmutableList.<AsPathSetElem>builder().addAll(_elements).add(element).build();
+    _elements =
+        ImmutableList.<AsPathSetElem>builderWithExpectedSize(_elements.size() + 1)
+            .addAll(_elements)
+            .add(element)
+            .build();
   }
 }
