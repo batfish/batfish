@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-as-path-set
+!
+as-path-set mixed
+ dfa-regex '^1_',
+ ios-regex '^2_',
+ length eq 1,
+ length eq 2 all,
+ length ge 3,
+ length ge 4 all,
+ length is 5,
+ length is 6 all,
+ length le 7,
+ length le 8 all,
+ neighbor-is '1 [2..3]',
+ originates-from '4 [5..6]',
+ passes-through '7 [8..9]',
+ unique-length eq 1,
+ unique-length eq 2 all,
+ unique-length ge 3,
+ unique-length ge 4 all,
+ unique-length is 5,
+ unique-length is 6 all,
+ unique-length le 7,
+ unique-length le 8 all
+end-set
+!
+end

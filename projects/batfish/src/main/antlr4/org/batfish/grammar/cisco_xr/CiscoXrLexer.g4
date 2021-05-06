@@ -7,19 +7,24 @@ options {
 tokens {
   ADVERTISE_AS_VPN,
   ALLOW_IMPORTED_VPN,
-  AS_PATH_SET_REGEX,
+  AS_PATH_REGEX,
   BANNER_DELIMITER_IOS,
   BANNER_BODY,
   COMMUNITY_SET_REGEX,
   CONFIG_SAVE,
+  DFA_REGEX,
   DOTDOT,
   HEX_FRAGMENT,
+  IOS_REGEX,
   IS_LOCAL,
   ISO_ADDRESS,
+  NEIGHBOR_IS,
   ONE_LITERAL,
+  ORIGINATES_FROM,
   PARAMETER,
   PAREN_LEFT_LITERAL,
   PAREN_RIGHT_LITERAL,
+  PASSES_THROUGH,
   PASSWORD_SEED,
   PEERAS,
   PIPE,
@@ -32,6 +37,7 @@ tokens {
   STATEFUL_KERBEROS,
   STATEFUL_NTLM,
   TEXT,
+  UNIQUE_LENGTH,
   VALUE,
   WIRED,
   WISPR,
@@ -407,12 +413,9 @@ AS: 'as';
 
 AS_OVERRIDE: 'as-override';
 
-AS_PATH
-:
-   'as-path' -> pushMode ( M_AsPath )
-;
+AS_PATH: 'as-path' -> pushMode (M_AsPath);
 
-AS_PATH_SET: 'as-path-set';
+AS_PATH_SET: 'as-path-set' -> pushMode(M_AsPathSet);
 
 AS_SET: 'as-set';
 
@@ -1449,8 +1452,6 @@ DISPUTE: 'dispute';
 DF: 'df';
 
 DF_BIT: 'df-bit';
-
-DFA_REGEX: 'dfa-regex';
 
 DFS: 'dfs';
 
@@ -2571,11 +2572,6 @@ INVALID_USERNAME_LOG: 'invalid-username-log';
 
 INVERT: 'invert';
 
-IOS_REGEX
-:
-   'ios-regex' -> pushMode ( M_IosRegex )
-;
-
 IP: 'ip';
 
 IPADDRESS: 'ipaddress';
@@ -3508,8 +3504,6 @@ NEIGHBOR_FILTER: 'neighbor-filter' -> pushMode(M_Word);
 
 NEIGHBOR_GROUP: 'neighbor-group';
 
-NEIGHBOR_IS: 'neighbor-is';
-
 NEQ: 'neq';
 
 NESTED: 'nested';
@@ -3790,8 +3784,6 @@ ORIGIN_ID: 'origin-id';
 
 ORIGINATE: 'originate';
 
-ORIGINATES_FROM: 'originates-from';
-
 ORIGINATOR_ID: 'originator-id';
 
 OSPF: 'ospf';
@@ -3876,8 +3868,6 @@ PARSER: 'parser';
 PARTICIPATE: 'participate';
 
 PASS: 'pass';
-
-PASSES_THROUGH: 'passes-through';
 
 PASSIVE: 'passive';
 
@@ -4142,7 +4132,7 @@ PREFIX_LIST
 
 PREFIX_SET: 'prefix-set';
 
-PREPEND: 'prepend';
+PREPEND: 'prepend' -> pushMode(M_Prepend);
 
 PRF: 'prf';
 
@@ -4397,8 +4387,6 @@ REFLECT: 'reflect';
 REFLECTION: 'reflection';
 
 REFLEXIVE_LIST: 'reflexive-list';
-
-REGEX_MODE: 'regex-mode';
 
 REGISTER_RATE_LIMIT: 'register-rate-limit';
 
@@ -6647,6 +6635,18 @@ F_LocalAs
 ;
 
 fragment
+F_AsPathRegexChar
+:
+  ~['&<>\r\n]
+;
+
+fragment
+F_AsPathRegex
+:
+  F_AsPathRegexChar+
+;
+
+fragment
 F_CommunitySetRegexComponentChar
 :
   ~[':&<> ]
@@ -6666,77 +6666,6 @@ M_Alias_VARIABLE
 ;
 
 M_Alias_WS
-:
-   F_Whitespace+ -> channel ( HIDDEN )
-;
-
-mode M_AsPath;
-
-M_AsPath_CONFED
-:
-   'confed' -> type ( CONFED ) , popMode
-;
-
-M_AsPath_UINT32: F_Uint32 -> type(UINT32), popMode;
-
-M_AsPath_RP_VARIABLE
-:
-   '$' F_Variable_RequiredVarChar F_Variable_VarChar_Ipv6* -> type (
-   RP_VARIABLE ) , popMode
-;
-
-M_AsPath_IN
-:
-   'in' -> type ( IN ) , popMode
-;
-
-M_AsPath_IS_LOCAL
-:
-   'is-local' -> type ( IS_LOCAL ) , popMode
-;
-
-M_AsPath_MULTIPATH_RELAX
-:
-   'multipath-relax' -> type ( MULTIPATH_RELAX ) , popMode
-;
-
-M_AsPath_NEIGHBOR_IS
-:
-   'neighbor-is' -> type ( NEIGHBOR_IS ) , popMode
-;
-
-M_AsPath_PASSES_THROUGH
-:
-   'passes-through' -> type ( PASSES_THROUGH ) , popMode
-;
-
-M_AsPath_PREPEND
-:
-   'prepend' -> type ( PREPEND ) , popMode
-;
-
-M_AsPath_ORIGINATES_FROM
-:
-   'originates-from' -> type ( ORIGINATES_FROM ) , popMode
-;
-
-M_AsPath_REGEX_MODE
-:
-   'regex-mode' -> type ( REGEX_MODE ) , popMode
-;
-
-M_AsPath_TAG
-:
-   'tag' -> type ( TAG ) , popMode
-;
-
-M_AsPath_VARIABLE
-:
-   F_Variable_RequiredVarChar F_Variable_VarChar* -> type ( VARIABLE ) ,
-   popMode
-;
-
-M_AsPath_WS
 :
    F_Whitespace+ -> channel ( HIDDEN )
 ;
@@ -7395,23 +7324,6 @@ M_Hostname_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 M_Hostname_WS: F_Whitespace+ -> channel(HIDDEN);
 
-mode M_DfaRegex;
-
-M_DfaRegex_COMMUNITY_SET_REGEX: F_CommunitySetRegex -> type(COMMUNITY_SET_REGEX), popMode;
-
-M_DfaRegex_WS: F_Whitespace+ -> channel(HIDDEN);
-
-mode M_IosRegex;
-
-M_IosRegex_COMMUNITY_SET_REGEX: F_CommunitySetRegex -> type(COMMUNITY_SET_REGEX), popMode;
-
-M_IosRegex_AS_PATH_SET_REGEX
-:
-   '\'' ~'\''* '\'' -> type ( AS_PATH_SET_REGEX ) , popMode
-;
-
-M_IosRegex_WS: F_Whitespace+ -> channel(HIDDEN);
-
 mode M_ISO_Address;
 
 M_ISO_Address_ISO_ADDRESS
@@ -7647,6 +7559,139 @@ M_Words_WS
    F_Whitespace+ -> channel ( HIDDEN )
 ;
 
+
+mode M_AsPath;
+
+M_AsPath_CONFED: 'confed' -> type (CONFED), popMode;
+M_AsPath_IN: 'in' -> type(IN), mode(M_AsPathSetInline);
+M_AsPath_IS_LOCAL: 'is-local' -> type(IS_LOCAL), popMode;
+M_AsPath_LENGTH: 'length' -> type(LENGTH), mode(M_AsPathLength);
+M_AsPath_MULTIPATH_RELAX: 'multipath-relax' -> type (MULTIPATH_RELAX), popMode;
+M_AsPath_NEIGHBOR_IS: 'neighbor-is' -> type(NEIGHBOR_IS), mode(M_AsPathSetInlineElemAsRangeList);
+M_AsPath_ORIGINATES_FROM: 'originates-from' -> type(ORIGINATES_FROM), mode(M_AsPathSetInlineElemAsRangeList);
+M_AsPath_PASSES_THROUGH: 'passes-through' -> type (PASSES_THROUGH), mode(M_AsPathSetInlineElemAsRangeList);
+M_AsPath_UNIQUE_LENGTH: 'unique-length' -> type(LENGTH), mode(M_AsPathLength);
+
+M_AsPath_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPath_WS: F_Whitespace+ -> channel(HIDDEN);
+
+// as-path-set definition
+mode M_AsPathSet;
+
+M_AsPathSet_WORD: F_Word -> type(WORD);
+M_AsPathSet_NEWLINE: F_Newline -> type(NEWLINE), mode(M_AsPathSetElem);
+M_AsPathSet_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_AsPathSetElem;
+
+M_AsPathSetElem_ALL: 'all' -> type(ALL);
+M_AsPathSetElem_COMMA: ',' -> type(COMMA);
+M_AsPathSetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_AsPathRegex);
+M_AsPathSetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_AsPathRegex);
+M_AsPathSetElem_LENGTH: 'length' -> type(LENGTH), pushMode(M_AsPathLength);
+M_AsPathSetElem_NEIGHOR_IS: 'neighbor-is' -> type(NEIGHBOR_IS), pushMode(M_AsPathSetElemAsRangeList);
+M_AsPathSetElem_ORIGINATES_FROM: 'originates-from' -> type(ORIGINATES_FROM), pushMode(M_AsPathSetElemAsRangeList);
+M_AsPathSetElem_PASSES_THROUGH: 'passes-through' -> type(PASSES_THROUGH), pushMode(M_AsPathSetElemAsRangeList);
+M_AsPathSetElem_UNIQUE_LENGTH: 'unique-length' -> type(UNIQUE_LENGTH), pushMode(M_AsPathLength);
+
+M_AsPathSetElem_END_SET: 'end-set' -> type(END_SET), popMode;
+M_AsPathSetElem_UINT16: F_Uint16 -> type(UINT16);
+
+// TODO: save remarks
+M_AsPathSetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
+
+M_AsPathSetElem_NEWLINE: F_Newline -> type(NEWLINE);
+M_AsPathSetElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_AsPathLength;
+M_AsPathLength_GE: 'ge' -> type(GE);
+M_AsPathLength_EQ: 'eq' -> type(EQ);
+M_AsPathLength_IS: 'is' -> type(IS);
+M_AsPathLength_LE: 'le' -> type(LE);
+
+M_AsPathLength_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
+M_AsPathLength_UINT16: F_Uint16 -> type(UINT16), popMode;
+M_AsPathLength_UINT32: F_Uint32 -> type(UINT32), popMode;
+
+M_AsPathLength_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathLength_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_AsPathRegex;
+
+M_AsPathRegex_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), mode(M_AsPathRegex2);
+
+M_AsPathRegex_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathRegex_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_AsPathRegex2;
+
+M_AsPathRegex2_AS_PATH_REGEX: F_AsPathRegex -> type(AS_PATH_REGEX);
+M_AsPathRegex2_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), popMode;
+
+M_AsPathRegex2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_AsPathSetElemAsRangeList;
+M_AsPathSetElemAsRangeList_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), mode(M_AsPathSetElemAsRangeList2);
+
+M_AsPathSetElemAsRangeList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathSetElemAsRangeList_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_AsPathSetElemAsRangeList2;
+M_AsPathSetElemAsRangeList2_BRACKET_LEFT: '[' -> type(BRACKET_LEFT);
+M_AsPathSetElemAsRangeList2_BRACKET_RIGHT: ']' -> type(BRACKET_RIGHT);
+M_AsPathSetElemAsRangeList2_DOTDOT: '..' -> type(DOTDOT);
+M_AsPathSetElemAsRangeList2_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), popMode;
+M_AsPathSetElemAsRangeList2_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathSetElemAsRangeList2_UINT32: F_Uint32 -> type(UINT32);
+
+M_AsPathSetElemAsRangeList2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathSetElemAsRangeList2_WS: F_Whitespace+ -> channel(HIDDEN);
+
+// inline as-path-set
+mode M_AsPathSetInline;
+
+M_AsPathSetInline_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
+M_AsPathSetInline_PAREN_LEFT: '(' -> type(PAREN_LEFT), mode(M_AsPathSetInlineElem);
+M_AsPathSetInline_WORD: F_Word -> type(WORD), popMode;
+M_AsPathSetInline_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathSetInline_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_AsPathSetInlineElem;
+
+M_AsPathSetInlineElem_ALL: 'all' -> type(ALL);
+M_AsPathSetInlineElem_COMMA: ',' -> type(COMMA);
+M_AsPathSetInlineElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_AsPathRegex);
+M_AsPathSetInlineElem_END_SET: 'end-set' -> type(END_SET), popMode;
+M_AsPathSetInlineElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_AsPathRegex);
+M_AsPathSetInlineElem_LENGTH: 'length' -> type(LENGTH), pushMode(M_AsPathLength);
+M_AsPathSetInlineElem_NEIGHOR_IS: 'neighbor-is' -> type(NEIGHBOR_IS), pushMode(M_AsPathSetInlineElemAsRangeList);
+M_AsPathSetInlineElem_ORIGINATES_FROM: 'originates-from' -> type(ORIGINATES_FROM), pushMode(M_AsPathSetInlineElemAsRangeList);
+M_AsPathSetInlineElem_PASSES_THROUGH: 'passes-through' -> type(PASSES_THROUGH), pushMode(M_AsPathSetInlineElemAsRangeList);
+M_AsPathSetInlineElem_UNIQUE_LENGTH: 'unique-length' -> type(UNIQUE_LENGTH), pushMode(M_AsPathLength);
+
+M_AsPathSetInlineElem_PARAMETER: F_Parameter -> type(PARAMETER);
+M_AsPathSetInlineElem_PAREN_RIGHT: ')' -> type(PAREN_RIGHT), popMode;
+M_AsPathSetInlineElem_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathSetInlineElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_AsPathSetInlineElemAsRangeList;
+M_AsPathSetInlineElemAsRangeList_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), mode(M_AsPathSetInlineElemAsRangeList2);
+
+M_AsPathSetInlineElemAsRangeList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathSetInlineElemAsRangeList_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_AsPathSetInlineElemAsRangeList2;
+M_AsPathSetInlineElemAsRangeList2_BRACKET_LEFT: '[' -> type(BRACKET_LEFT);
+M_AsPathSetInlineElemAsRangeList2_BRACKET_RIGHT: ']' -> type(BRACKET_RIGHT);
+M_AsPathSetInlineElemAsRangeList2_DOTDOT: '..' -> type(DOTDOT);
+M_AsPathSetInlineElemAsRangeList2_PARAMETER: F_Parameter -> type(PARAMETER);
+M_AsPathSetInlineElemAsRangeList2_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), popMode;
+M_AsPathSetInlineElemAsRangeList2_UINT16: F_Uint16 -> type(UINT16);
+M_AsPathSetInlineElemAsRangeList2_UINT32: F_Uint32 -> type(UINT32);
+
+M_AsPathSetInlineElemAsRangeList2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_AsPathSetInlineElemAsRangeList2_WS: F_Whitespace+ -> channel(HIDDEN);
+
 // community-set definition
 mode M_CommunitySet;
 
@@ -7656,10 +7701,10 @@ M_CommunitySet_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_CommunitySetElem;
 M_CommunitySetElem_ACCEPT_OWN: 'accept-own' -> type(ACCEPT_OWN);
-M_CommunitySetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_DfaRegex);
+M_CommunitySetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_CommunitySetRegex);
 M_CommunitySetElem_GRACEFUL_SHUTDOWN: 'graceful-shutdown' -> type(GRACEFUL_SHUTDOWN);
 M_CommunitySetElem_INTERNET: 'internet' -> type(INTERNET);
-M_CommunitySetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_IosRegex);
+M_CommunitySetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_CommunitySetRegex);
 M_CommunitySetElem_LOCAL_AS: F_LocalAs -> type(LOCAL_AS);
 M_CommunitySetElem_NO_ADVERTISE: 'no-advertise' -> type(NO_ADVERTISE);
 M_CommunitySetElem_NO_EXPORT: 'no-export' -> type(NO_EXPORT);
@@ -7681,6 +7726,11 @@ M_CommunitySetElem_NEWLINE: F_Newline -> type(NEWLINE);
 M_CommunitySetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
 
 M_CommunitySetElem_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_CommunitySetRegex;
+
+M_CommunitySetRegex_COMMUNITY_SET_REGEX: F_CommunitySetRegex -> type(COMMUNITY_SET_REGEX), popMode;
+M_CommunitySetRegex_WS: F_Whitespace+ -> channel(HIDDEN);
 
 // route-policy set community expression
 mode M_CommunitySetExpr;
@@ -7722,10 +7772,10 @@ M_CommunitySetMatchExpr_WS: F_Whitespace+ -> channel(HIDDEN);
 mode M_CommunitySetMatchExprElem;
 
 M_CommunitySetMatchExprElem_ACCEPT_OWN: 'accept-own' -> type(ACCEPT_OWN);
-M_CommunitySetMatchExprElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_DfaRegex);
+M_CommunitySetMatchExprElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_CommunitySetRegex);
 M_CommunitySetMatchExprElem_GRACEFUL_SHUTDOWN: 'graceful-shutdown' -> type(GRACEFUL_SHUTDOWN);
 M_CommunitySetMatchExprElem_INTERNET: 'internet' -> type(INTERNET);
-M_CommunitySetMatchExprElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_IosRegex);
+M_CommunitySetMatchExprElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_CommunitySetRegex);
 M_CommunitySetMatchExprElem_LOCAL_AS: F_LocalAs -> type(LOCAL_AS);
 M_CommunitySetMatchExprElem_NO_ADVERTISE: 'no-advertise' -> type(NO_ADVERTISE);
 M_CommunitySetMatchExprElem_NO_EXPORT: 'no-export' -> type(NO_EXPORT);
@@ -7805,8 +7855,8 @@ M_RdSet_NEWLINE: F_Newline -> type(NEWLINE), mode(M_RdSetElem);
 M_RdSet_WS: F_Whitespace+ -> channel(HIDDEN);
 
 mode M_RdSetElem;
-M_RdSetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_DfaRegex);
-M_RdSetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_IosRegex);
+M_RdSetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_CommunitySetRegex);
+M_RdSetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_CommunitySetRegex);
 
 M_RdSetElem_ASTERISK: '*' -> type(ASTERISK);
 M_RdSetElem_COMMA: ',' -> type(COMMA);
@@ -7930,3 +7980,13 @@ M_VrfName_WORD: F_Word -> type(WORD), popMode;
 
 M_VrfName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_VrfName_WS: F_Whitespace+ -> channel(HIDDEN);
+
+mode M_Prepend;
+
+M_Prepend_AS_PATH: 'as-path' -> type(AS_PATH);
+
+M_Prepend_UINT16: F_Uint16 -> type(UINT16);
+M_Prepend_UINT32: F_Uint32 -> type(UINT32);
+M_Prepend_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_Prepend_WS: F_Whitespace+ -> channel(HIDDEN);
+
