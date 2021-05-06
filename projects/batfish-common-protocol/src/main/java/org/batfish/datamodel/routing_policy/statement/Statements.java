@@ -126,12 +126,18 @@ public enum Statements {
           if (environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>) {
             environment.setWriteToIntermediateBgpAttributes(true);
             if (environment.getIntermediateBgpAttributes() == null) {
-              BgpRoute.Builder<?, ?> bgpRouteBuilder = (Builder<?, ?>) environment.getOutputRoute();
-              AbstractRoute or = environment.getOriginalRoute();
+              BgpRoute.Builder<?, ?> outputRouteBuilder =
+                  (Builder<?, ?>) environment.getOutputRoute();
+              AbstractRoute originalRoute = environment.getOriginalRoute();
               Builder<?, ?> intermediateBgpAttributes =
-                  bgpRouteBuilder.newBuilder().setMetric(or.getMetric()).setTag(or.getTag());
-              if (or instanceof BgpRoute) {
-                intermediateBgpAttributes.setCommunities(((BgpRoute<?, ?>) or).getCommunities());
+                  outputRouteBuilder
+                      .newBuilder()
+                      .setMetric(originalRoute.getMetric())
+                      .setTag(originalRoute.getTag());
+              if (originalRoute instanceof BgpRoute) {
+                intermediateBgpAttributes
+                    .setAsPath(((BgpRoute<?, ?>) originalRoute).getAsPath())
+                    .setCommunities(((BgpRoute<?, ?>) originalRoute).getCommunities());
               }
               environment.setIntermediateBgpAttributes(intermediateBgpAttributes);
             }
