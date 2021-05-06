@@ -51,7 +51,12 @@ public final class AutoAs extends AsExpr {
       }
       // really should not receive empty as-path in route from neighbor
       List<AsSet> asSets = asPath.getAsSets();
-      assert !asSets.isEmpty();
+      if (asSets.isEmpty()) {
+        // Default to remote AS. TODO Is this the correct behavior?
+        BgpSessionProperties sessionProps = environment.getBgpSessionProperties();
+        checkState(sessionProps != null, "Expected BGP session properties");
+        return sessionProps.getHeadAs();
+      }
       SortedSet<Long> firstAsSetAsns = asSets.get(0).getAsns();
       // TODO: see if clients of AsExpr should really be provided the entire AsSet instead of a
       // single AS
