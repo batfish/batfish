@@ -11,48 +11,52 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 
+/**
+ * Routing policy statement that sets the output route's tag to some default value if the tag has
+ * not already been explicitly set according to {@link Environment#getTagExplicitlySet()}.
+ */
 @ParametersAreNonnullByDefault
-public final class SetTag extends Statement {
+public final class SetDefaultTag extends Statement {
   private static final String PROP_TAG = "tag";
 
   @Nonnull private final LongExpr _tag;
 
   @JsonCreator
-  private static SetTag jsonCreator(@Nullable @JsonProperty(PROP_TAG) LongExpr expr) {
+  private static SetDefaultTag jsonCreator(@Nullable @JsonProperty(PROP_TAG) LongExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_TAG);
-    return new SetTag(expr);
+    return new SetDefaultTag(expr);
   }
 
-  public SetTag(LongExpr expr) {
+  public SetDefaultTag(LongExpr expr) {
     _tag = expr;
   }
 
   @Override
   public <T, U> T accept(StatementVisitor<T, U> visitor, U arg) {
-    return visitor.visitSetTag(this, arg);
+    return visitor.visitSetDefaultTag(this, arg);
   }
 
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    } else if (!(obj instanceof SetTag)) {
+    } else if (!(obj instanceof SetDefaultTag)) {
       return false;
     }
-    SetTag other = (SetTag) obj;
+    SetDefaultTag other = (SetDefaultTag) obj;
     return _tag.equals(other._tag);
   }
 
   @Override
   public Result execute(Environment environment) {
-    Result result = new Result();
-    long tag = _tag.evaluate(environment);
-    environment.getOutputRoute().setTag(tag);
-    environment.setTagExplicitlySet(true);
-    if (environment.getWriteToIntermediateBgpAttributes()) {
-      environment.getIntermediateBgpAttributes().setTag(tag);
+    if (!environment.getTagExplicitlySet()) {
+      long tag = _tag.evaluate(environment);
+      environment.getOutputRoute().setTag(tag);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+        environment.getIntermediateBgpAttributes().setTag(tag);
+      }
     }
-    return result;
+    return new Result();
   }
 
   @JsonProperty(PROP_TAG)

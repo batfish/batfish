@@ -40,6 +40,8 @@ public interface StatementVisitor<T, U> {
 
   T visitSetTag(SetTag setTag, U arg);
 
+  T visitSetDefaultTag(SetDefaultTag setDefaultTag, U arg);
+
   T visitSetVarMetricType(SetVarMetricType setVarMetricType, U arg);
 
   T visitSetWeight(SetWeight setWeight, U arg);
