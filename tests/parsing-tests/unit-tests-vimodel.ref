@@ -74576,17 +74576,38 @@
             "name" : "~BGP_PEER_IMPORT_POLICY:default:1.1.1.1~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetTag",
-                "tag" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.AsnValue",
-                  "as" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.RemoteAs"
-                  }
-                }
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "SetWriteIntermediateBgpAttributes"
               },
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
-                "calledPolicyName" : "IN_BBB~undefined"
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "IN_BBB~undefined"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetReadIntermediateBgpAttributes"
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultTag",
+                    "tag" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.AsnValue",
+                      "as" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.AutoAs"
+                      }
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
               }
             ]
           }
