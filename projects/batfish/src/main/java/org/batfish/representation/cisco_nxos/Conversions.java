@@ -730,7 +730,7 @@ final class Conversions {
                 + " configured.");
       }
     } else if (prefixList != null) {
-      ret.addStatement(getPrefixListStatement(c, prefixList, false));
+      ret.addStatement(getPrefixListStatement(c, prefixList));
     } else {
       // Accept everything if neither is set
       ret.addStatement(Statements.ExitAccept.toStaticStatement());
@@ -744,8 +744,7 @@ final class Conversions {
    * routes. If the prefix-list is undefined, the statement will simply accept all destination
    * networks.
    */
-  private static Statement getPrefixListStatement(
-      Configuration c, String prefixList, boolean fallThrough) {
+  private static Statement getPrefixListStatement(Configuration c, String prefixList) {
     // An undefined prefix-list is treated as matching everything in this context
     if (!c.getRouteFilterLists().containsKey(prefixList)) {
       return Statements.ExitAccept.toStaticStatement();
@@ -753,9 +752,7 @@ final class Conversions {
 
     return new If(
         new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(prefixList)),
-        fallThrough
-            ? ImmutableList.of()
-            : ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+        ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
         ImmutableList.of(Statements.ExitReject.toStaticStatement()));
   }
 
@@ -829,7 +826,7 @@ final class Conversions {
                 + " only the route-map will be used.");
       }
     } else if (outboundPrefixList != null) {
-      statementsBuilder.add(getPrefixListStatement(configuration, outboundPrefixList, true));
+      statementsBuilder.add(getPrefixListStatement(configuration, outboundPrefixList));
     }
 
     return statementsBuilder
@@ -904,7 +901,7 @@ final class Conversions {
                 + " only the route-map will be used.");
       }
     } else if (outboundPrefixList != null) {
-      statementsBuilder.add(getPrefixListStatement(configuration, outboundPrefixList, true));
+      statementsBuilder.add(getPrefixListStatement(configuration, outboundPrefixList));
     }
 
     return statementsBuilder
