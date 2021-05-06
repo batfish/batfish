@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpRoute.Builder;
+import org.batfish.datamodel.HasReadableAsPath;
+import org.batfish.datamodel.HasReadableCommunities;
 import org.batfish.datamodel.HasWritableAsPath;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -134,10 +136,13 @@ public enum Statements {
                       .newBuilder()
                       .setMetric(originalRoute.getMetric())
                       .setTag(originalRoute.getTag());
-              if (originalRoute instanceof BgpRoute) {
-                intermediateBgpAttributes
-                    .setAsPath(((BgpRoute<?, ?>) originalRoute).getAsPath())
-                    .setCommunities(((BgpRoute<?, ?>) originalRoute).getCommunities());
+              if (originalRoute instanceof HasReadableAsPath) {
+                intermediateBgpAttributes.setAsPath(
+                    ((HasReadableAsPath) originalRoute).getAsPath());
+              }
+              if (originalRoute instanceof HasReadableCommunities) {
+                intermediateBgpAttributes.setCommunities(
+                    ((HasReadableCommunities) originalRoute).getCommunities());
               }
               environment.setIntermediateBgpAttributes(intermediateBgpAttributes);
             }

@@ -5,6 +5,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENG
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasIpv4UnicastAddressFamily;
@@ -202,21 +203,21 @@ public class NxosBgpTest {
       Bgpv4Route route = rb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
       Bgpv4Route.Builder outputRoute = route.toBuilder();
       assertTrue(importPolicy1.process(route, outputRoute, Environment.Direction.IN));
-      assertThat(outputRoute.build().getTag(), equalTo(200L));
+      assertThat(outputRoute.build(), hasTag(200L));
     }
     {
       // Route-map sets tag to 100 for routes for 2.2.2.2/32. Explicit tag shouldn't be overwritten
       Bgpv4Route route = rb.setNetwork(Prefix.parse("2.2.2.2/32")).build();
       Bgpv4Route.Builder outputRoute = route.toBuilder();
       assertTrue(importPolicy1.process(route, outputRoute, Environment.Direction.IN));
-      assertThat(outputRoute.build().getTag(), equalTo(100L));
+      assertThat(outputRoute.build(), hasTag(100L));
     }
     {
       // Route-map permits remaining routes without modifications. Tag should default to latest AS
       Bgpv4Route route = rb.setNetwork(Prefix.parse("3.3.3.3/32")).build();
       Bgpv4Route.Builder outputRoute = route.toBuilder();
       assertTrue(importPolicy1.process(route, outputRoute, Environment.Direction.IN));
-      assertThat(outputRoute.build().getTag(), equalTo(65100L));
+      assertThat(outputRoute.build(), hasTag(65100L));
     }
 
     // Second neighbor has no inbound route-map. Should permit all routes and set tag to latest AS
@@ -227,7 +228,7 @@ public class NxosBgpTest {
       Bgpv4Route route = rb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
       Bgpv4Route.Builder outputRoute = route.toBuilder();
       assertTrue(importPolicy2.process(route, outputRoute, Environment.Direction.IN));
-      assertThat(outputRoute.build().getTag(), equalTo(65100L));
+      assertThat(outputRoute.build(), hasTag(65100L));
     }
   }
 
