@@ -1199,6 +1199,34 @@
       },
       {
         "Filename" : "configs/ios_xr_route_policy",
+        "Line" : 77,
+        "Text" : "passes-through '[65412..65535]'",
+        "Parser_Context" : "[boolean_as_path_passes_through boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/ios_xr_route_policy",
+        "Line" : 101,
+        "Text" : "neighbor-is '17369'",
+        "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/ios_xr_route_policy",
+        "Line" : 133,
+        "Text" : "neighbor-is '17369'",
+        "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/ios_xr_route_policy",
+        "Line" : 148,
+        "Text" : "neighbor-is '12345  6360'",
+        "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/ios_xr_route_policy",
         "Line" : 161,
         "Text" : "$hub_comm",
         "Parser_Context" : "[community_set_expr_elem_half community_set_expr_elem community_set_expr set_community_rp_stanza set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
@@ -1352,6 +1380,27 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/route_policy_as_path",
+        "Line" : 17,
+        "Text" : "passes-through '5556'",
+        "Parser_Context" : "[boolean_as_path_passes_through boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/route_policy_as_path",
+        "Line" : 23,
+        "Text" : "originates-from '64527'",
+        "Parser_Context" : "[boolean_as_path_originates_from boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/route_policy_param",
+        "Line" : 6,
+        "Text" : "in $cust_v4_as_path",
+        "Parser_Context" : "[boolean_as_path_in boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
         "Filename" : "configs/route_policy_param",
         "Line" : 16,
         "Text" : "$hub_comm",
@@ -1367,10 +1416,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 189 results",
+      "notes" : "Found 196 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 189
+      "numResults" : 196
     }
   }
 ]

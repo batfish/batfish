@@ -4,6 +4,7 @@ import
 CiscoXr_common,
 CiscoXr_aaa,
 CiscoXr_acl,
+CiscoXr_as_path_set,
 CiscoXr_bfd,
 CiscoXr_bgp,
 CiscoXr_community_set,
@@ -56,7 +57,8 @@ cisco_xr_configuration
 // statement is for rewritten top-level rules. stanza is for old ones.
 statement
 :
-  s_cdp
+  s_as_path_set
+  | s_cdp
   | s_cef
   | s_clock
   | s_configuration
@@ -1055,8 +1057,7 @@ ssh_timeout
 // old top-level rules (from hybrid cisco parser)
 stanza
 :
-   as_path_set_stanza
-   | community_set_stanza
+   community_set_stanza
    | ip_prefix_list_stanza
    | ipv6_prefix_list_stanza
    | no_aaa_group_server_stanza

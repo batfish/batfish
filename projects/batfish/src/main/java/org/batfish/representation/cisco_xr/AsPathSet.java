@@ -1,25 +1,36 @@
 package org.batfish.representation.cisco_xr;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 
+@ParametersAreNonnullByDefault
 public class AsPathSet implements Serializable {
 
-  private final List<AsPathSetElem> _elements;
-  private final String _name;
+  private @Nonnull List<AsPathSetElem> _elements;
+  private final @Nonnull String _name;
 
   public AsPathSet(String name) {
     _name = name;
-    _elements = new ArrayList<>();
+    _elements = ImmutableList.of();
   }
 
-  public List<AsPathSetElem> getElements() {
+  public @Nonnull List<AsPathSetElem> getElements() {
     return _elements;
   }
 
   public String getName() {
     return _name;
+  }
+
+  public void addElement(AsPathSetElem element) {
+    _elements =
+        ImmutableList.<AsPathSetElem>builderWithExpectedSize(_elements.size() + 1)
+            .addAll(_elements)
+            .add(element)
+            .build();
   }
 }
