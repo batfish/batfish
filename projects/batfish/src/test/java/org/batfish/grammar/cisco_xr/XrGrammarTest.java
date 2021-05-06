@@ -2232,4 +2232,18 @@ public final class XrGrammarTest {
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }
+
+  @Test
+  public void testAsPathSetParsing() {
+    String hostname = "xr-as-path-set";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testAsPathBooleanParsing() {
+    String hostname = "xr-as-path-boolean";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
 }

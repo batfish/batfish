@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import java.util.Collections;
+import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -16,11 +17,18 @@ import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
  */
 public class RoutePolicyBooleanAsPathIsLocal extends RoutePolicyBoolean {
 
-  public RoutePolicyBooleanAsPathIsLocal() {}
+  public static @Nonnull RoutePolicyBooleanAsPathIsLocal instance() {
+    return INSTANCE;
+  }
 
   @Override
   public BooleanExpr toBooleanExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
     MatchAsPath match = new MatchAsPath(new ExplicitAsPathSet(Collections.emptyList()));
     return match;
   }
+
+  private static final @Nonnull RoutePolicyBooleanAsPathIsLocal INSTANCE =
+      new RoutePolicyBooleanAsPathIsLocal();
+
+  private RoutePolicyBooleanAsPathIsLocal() {}
 }
