@@ -1,0 +1,25 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_tag_imports
+feature bgp
+!
+ip prefix-list PL_1 seq 5 permit 1.1.1.1/32
+ip prefix-list PL_2 seq 5 permit 2.2.2.2/32
+!
+route-map RM permit 10
+  match ip address prefix-list PL_1
+    set as-path prepend 200
+route-map RM permit 20
+  match ip address prefix-list PL_2
+    set tag 100
+route-map RM permit 40
+!
+router bgp 65000
+  address-family ipv4 unicast
+  neighbor 10.10.10.1
+    remote-as 65001
+    address-family ipv4 unicast
+      route-map RM in
+  neighbor 10.10.10.2
+    remote-as 65001
+    address-family ipv4 unicast

@@ -765,6 +765,51 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpTagImportedRoutes() throws IOException {
+    Configuration c = parseConfig("nxos_bgp_tag_imports");
+    Map<Prefix, BgpActivePeerConfig> neighbors =
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    Bgpv4Route.Builder rb =
+        Bgpv4Route.testBuilder().setAsPath(AsPath.ofSingletonAsSets(65100L, 65101L));
+
+    BgpActivePeerConfig neighbor1 = neighbors.get(Prefix.parse("10.10.10.1/32"));
+    RoutingPolicy importPolicy1 =
+        c.getRoutingPolicies().get(neighbor1.getIpv4UnicastAddressFamily().getImportPolicy());
+    {
+      // Route-map prepends 200 to the AS-path of routes for 1.1.1.1/32. Tag should default to 200
+      Bgpv4Route route = rb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
+      Bgpv4Route.Builder outputRoute = route.toBuilder();
+      assertTrue(importPolicy1.process(route, outputRoute, Direction.IN));
+      assertThat(outputRoute.build().getTag(), equalTo(200L));
+    }
+    {
+      // Route-map sets tag to 100 for routes for 2.2.2.2/32. Explicit tag shouldn't be overwritten
+      Bgpv4Route route = rb.setNetwork(Prefix.parse("2.2.2.2/32")).build();
+      Bgpv4Route.Builder outputRoute = route.toBuilder();
+      assertTrue(importPolicy1.process(route, outputRoute, Direction.IN));
+      assertThat(outputRoute.build().getTag(), equalTo(100L));
+    }
+    {
+      // Route-map permits remaining routes without modifications. Tag should default to latest AS
+      Bgpv4Route route = rb.setNetwork(Prefix.parse("3.3.3.3/32")).build();
+      Bgpv4Route.Builder outputRoute = route.toBuilder();
+      assertTrue(importPolicy1.process(route, outputRoute, Direction.IN));
+      assertThat(outputRoute.build().getTag(), equalTo(65100L));
+    }
+
+    // Second neighbor has no inbound route-map. Should permit all routes and set tag to latest AS
+    BgpActivePeerConfig neighbor2 = neighbors.get(Prefix.parse("10.10.10.2/32"));
+    RoutingPolicy importPolicy2 =
+        c.getRoutingPolicies().get(neighbor2.getIpv4UnicastAddressFamily().getImportPolicy());
+    {
+      Bgpv4Route route = rb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
+      Bgpv4Route.Builder outputRoute = route.toBuilder();
+      assertTrue(importPolicy2.process(route, outputRoute, Direction.IN));
+      assertThat(outputRoute.build().getTag(), equalTo(65100L));
+    }
+  }
+
+  @Test
   public void testBgpDefaultOriginateExtraction() {
     CiscoNxosConfiguration vc = parseVendorConfig("nxos_bgp_default_originate");
     assertFalse(
