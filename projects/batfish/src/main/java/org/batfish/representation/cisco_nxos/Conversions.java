@@ -854,6 +854,14 @@ final class Conversions {
 
     String outboundMap = naf.getOutboundRouteMap();
     String outboundPrefixList = naf.getOutboundPrefixList();
+
+    // TODO Support using multiple filters in import policies
+    if (outboundMap != null && outboundPrefixList != null) {
+      w.redFlag(
+          "Batfish does not support configuring more than one filter"
+              + " (route-map/prefix-list) for outgoing BGP routes. When this occurs,"
+              + " only the route-map will be used.");
+    }
     if (outboundMap == null && outboundPrefixList != null) {
       statementsBuilder.add(
           new If(
@@ -861,13 +869,6 @@ final class Conversions {
                   DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixList)),
               ImmutableList.of(),
               ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    }
-    // TODO Support using multiple filters in import policies
-    if (outboundMap != null && outboundPrefixList != null) {
-      w.redFlag(
-          "Batfish does not support configuring more than one filter"
-              + " (route-map/prefix-list) for outgoing BGP routes. When this occurs,"
-              + " only the route-map will be used.");
     }
 
     // If defaultOriginate is set, generate route and default route export policy. Default route
