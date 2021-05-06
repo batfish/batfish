@@ -7595,7 +7595,6 @@ M_AsPathSetElem_PASSES_THROUGH: 'passes-through' -> type(PASSES_THROUGH), pushMo
 M_AsPathSetElem_UNIQUE_LENGTH: 'unique-length' -> type(UNIQUE_LENGTH), pushMode(M_AsPathLength);
 
 M_AsPathSetElem_END_SET: 'end-set' -> type(END_SET), popMode;
-M_AsPathSetElem_UINT16: F_Uint16 -> type(UINT16);
 
 // TODO: save remarks
 M_AsPathSetElem_REMARK: F_Whitespace* '#' F_NonNewline* F_Newline {lastTokenType() == NEWLINE}? -> skip;
