@@ -7610,7 +7610,6 @@ M_AsPathLength_LE: 'le' -> type(LE);
 
 M_AsPathLength_PARAMETER: F_Parameter -> type(PARAMETER), popMode;
 M_AsPathLength_UINT16: F_Uint16 -> type(UINT16), popMode;
-M_AsPathLength_UINT32: F_Uint32 -> type(UINT32), popMode;
 
 M_AsPathLength_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_AsPathLength_WS: F_Whitespace+ -> channel(HIDDEN);
