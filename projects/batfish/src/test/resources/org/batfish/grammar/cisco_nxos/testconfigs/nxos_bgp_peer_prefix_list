@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+feature bgp
+!
+hostname nxos_bgp_peer_prefix_list
+!
+ip prefix-list PREFIX_LIST_1 deny 10.10.10.0/24
+ip prefix-list PREFIX_LIST_1 permit 10.10.0.0/16 le 32
+!
+interface loopback0
+  ip address 192.168.0.1/32
+!
+interface Ethernet1/1
+  no switchport
+  speed 1000
+  no bfd echo
+  ip address 192.168.0.100/24
+!
+router bgp 65001
+  router-id 192.168.0.1
+  neighbor 192.168.0.2 remote-as 65002
+    address-family ipv4 unicast
+      prefix-list PREFIX_LIST_1 in
+      prefix-list PREFIX_LIST_1 out
+  neighbor 192.168.0.3 remote-as 65003
+    address-family l2vpn evpn
+      prefix-list PREFIX_LIST_1 in
+      prefix-list PREFIX_LIST_1 out
+!

@@ -6,6 +6,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerEvpnImportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
@@ -59,8 +60,11 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RemoteAs;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
@@ -401,14 +405,16 @@ final class Conversions {
               c,
               generatedBgpPeerImportPolicyName(
                   vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
-              naf4);
+              naf4,
+              warnings);
 
       // export policy
       RoutingPolicy exportPolicy =
           createExportPolicyFromStatements(
               generatedBgpPeerExportPolicyName(
                   vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
-              getExportStatementsForIpv4(c, naf4, neighbor, newNeighborBuilder, vrf.getName()),
+              getExportStatementsForIpv4(
+                  c, naf4, neighbor, newNeighborBuilder, vrf.getName(), warnings),
               c);
 
       Ipv4UnicastAddressFamily.Builder ipv4FamilyBuilder =
@@ -431,9 +437,17 @@ final class Conversions {
       EvpnAddressFamily.Builder evpnFamilyBuilder =
           EvpnAddressFamily.builder().setPropagateUnmatched(false);
 
+      RoutingPolicy importPolicy =
+          createNeighborImportPolicy(
+              c,
+              generatedBgpPeerEvpnImportPolicyName(
+                  vrf.getName(), dynamic ? prefix.toString() : prefix.getStartIp().toString()),
+              neighborL2VpnAf,
+              warnings);
+
       evpnFamilyBuilder
           .setAddressFamilyCapabilities(getAddressFamilyCapabilities(neighborL2VpnAf, false))
-          .setImportPolicy(routeMapOrRejectAll(neighborL2VpnAf.getInboundRouteMap(), c))
+          .setImportPolicy(importPolicy.getName())
           .setRouteReflectorClient(
               firstNonNull(neighborL2VpnAf.getRouteReflectorClient(), Boolean.FALSE));
       if (vrfL2VpnAf != null) {
@@ -447,7 +461,8 @@ final class Conversions {
       evpnFamilyBuilder.setL2Vnis(getL2VniConfigs(c, vrf, proc, localAs, vsConfig, warnings));
       evpnFamilyBuilder.setL3Vnis(getL3VniConfigs(c, vrf, proc, localAs, vsConfig, warnings));
 
-      List<Statement> evpnStatements = getExportStatementsForEvpn(c, neighborL2VpnAf, neighbor);
+      List<Statement> evpnStatements =
+          getExportStatementsForEvpn(c, neighborL2VpnAf, neighbor, warnings);
       RoutingPolicy exportPolicy =
           createExportPolicyFromStatements(
               generatedBgpPeerEvpnExportPolicyName(
@@ -693,17 +708,37 @@ final class Conversions {
    * the given {@link Configuration}.
    */
   private static RoutingPolicy createNeighborImportPolicy(
-      Configuration c, String policyName, BgpVrfNeighborAddressFamilyConfiguration af) {
+      Configuration c, String policyName, BgpVrfNeighborAddressFamilyConfiguration af, Warnings w) {
     RoutingPolicy.Builder ret = RoutingPolicy.builder().setOwner(c).setName(policyName);
 
     // NX-OS applies peer tag at import.
     ret.addStatement(new SetTag(AsnValue.of(RemoteAs.instance())));
 
-    if (af.getInboundRouteMap() != null) {
-      // Call inbound route-map if set.
-      ret.addStatement(new CallStatement(routeMapOrRejectAll(af.getInboundRouteMap(), c)));
-    } else {
-      // Accept everything if not.
+    String routeMap = af.getInboundRouteMap();
+    String prefixList = af.getInboundPrefixList();
+
+    // TODO Support using multiple filters in import policies
+    if (routeMap != null && prefixList != null) {
+      w.redFlag(
+          "Batfish does not support configuring more than one filter"
+              + " (route-map/prefix-list) for incoming BGP routes. When this occurs,"
+              + " only the route-map will be used, or the prefix-list if no route-map is"
+              + " configured.");
+    }
+
+    // Use inbound route-map or prefix-list if set
+    if (routeMap == null && prefixList != null) {
+      ret.addStatement(
+          new If(
+              new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(prefixList)),
+              ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    }
+    if (routeMap != null) {
+      ret.addStatement(new CallStatement(routeMapOrRejectAll(routeMap, c)));
+    }
+    // Accept everything if neither is set
+    if (routeMap == null && prefixList == null) {
       ret.addStatement(Statements.ExitAccept.toStaticStatement());
     }
 
@@ -750,12 +785,33 @@ final class Conversions {
   private static List<Statement> getExportStatementsForEvpn(
       Configuration configuration,
       BgpVrfNeighborAddressFamilyConfiguration naf,
-      BgpVrfNeighborConfiguration neighbor) {
+      BgpVrfNeighborConfiguration neighbor,
+      Warnings w) {
     ImmutableList.Builder<Statement> statementsBuilder = ImmutableList.builder();
 
     if (neighbor.getRemovePrivateAs() != null) {
       statementsBuilder.add(RemovePrivateAs.toStaticStatement());
     }
+
+    String outboundMap = naf.getOutboundRouteMap();
+    String outboundPrefixList = naf.getOutboundPrefixList();
+
+    // TODO Support using multiple filters in import policies
+    if (outboundMap != null && outboundPrefixList != null) {
+      w.redFlag(
+          "Batfish does not support configuring more than one filter"
+              + " (route-map/prefix-list) for outgoing BGP routes. When this occurs,"
+              + " only the route-map will be used.");
+    }
+    if (outboundMap == null && outboundPrefixList != null) {
+      statementsBuilder.add(
+          new If(
+              new MatchPrefixSet(
+                  DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixList)),
+              ImmutableList.of(),
+              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    }
+
     // Peer-specific export policy
     Conjunction peerExportGuard = new Conjunction();
     statementsBuilder.add(
@@ -770,7 +826,6 @@ final class Conversions {
     peerExportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
     // Export policy generated for outbound route-map (if any)
-    String outboundMap = naf.getOutboundRouteMap();
     if (outboundMap != null) {
       peerExportConditions.add(new CallExpr(routeMapOrRejectAll(outboundMap, configuration)));
     }
@@ -784,7 +839,8 @@ final class Conversions {
       BgpVrfNeighborAddressFamilyConfiguration naf,
       BgpVrfNeighborConfiguration neighbor,
       BgpPeerConfig.Builder<?, ?> newNeighborBuilder,
-      String vrfName) {
+      String vrfName,
+      Warnings w) {
     ImmutableList.Builder<Statement> statementsBuilder = ImmutableList.builder();
 
     // Next Hop Self
@@ -794,6 +850,24 @@ final class Conversions {
     if (neighbor.getRemovePrivateAs() != null) {
       // TODO(handle different types of RemovePrivateAs)
       statementsBuilder.add(RemovePrivateAs.toStaticStatement());
+    }
+
+    String outboundMap = naf.getOutboundRouteMap();
+    String outboundPrefixList = naf.getOutboundPrefixList();
+    if (outboundMap == null && outboundPrefixList != null) {
+      statementsBuilder.add(
+          new If(
+              new MatchPrefixSet(
+                  DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixList)),
+              ImmutableList.of(),
+              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    }
+    // TODO Support using multiple filters in import policies
+    if (outboundMap != null && outboundPrefixList != null) {
+      w.redFlag(
+          "Batfish does not support configuring more than one filter"
+              + " (route-map/prefix-list) for outgoing BGP routes. When this occurs,"
+              + " only the route-map will be used.");
     }
 
     // If defaultOriginate is set, generate route and default route export policy. Default route
@@ -831,7 +905,6 @@ final class Conversions {
     peerExportConditions.add(new CallExpr(generatedBgpCommonExportPolicyName(vrfName)));
 
     // Export policy generated for route-map (if any)
-    String outboundMap = naf.getOutboundRouteMap();
     if (outboundMap != null) {
       peerExportConditions.add(new CallExpr(routeMapOrRejectAll(outboundMap, configuration)));
     }

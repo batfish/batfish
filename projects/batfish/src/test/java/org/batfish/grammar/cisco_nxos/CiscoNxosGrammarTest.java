@@ -165,6 +165,7 @@ import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.Bgpv4Route;
@@ -906,6 +907,99 @@ public final class CiscoNxosGrammarTest {
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP_EX)
                   .build()));
+    }
+  }
+
+  @Test
+  public void testBgpPeerPrefixList() throws IOException {
+    String hostname = "nxos_bgp_peer_prefix_list";
+    Configuration c = parseConfig(hostname);
+
+    Prefix permittedPrefix = Prefix.parse("10.10.11.0/24");
+    Prefix rejectedPrefix = Prefix.parse("10.10.10.0/24");
+    Prefix unmatchedPrefix = Prefix.parse("3.0.0.0/8");
+
+    Ip bgpPeerId = Ip.parse("192.168.0.2");
+    Ip nextHopIp = Ip.parse("192.168.100.100"); // not actually in config, just made up
+    BgpSessionProperties bgpSessionProps =
+        BgpSessionProperties.builder()
+            .setTailAs(1L)
+            .setTailIp(bgpPeerId)
+            .setHeadIp(nextHopIp)
+            .setHeadAs(2L)
+            .setSessionType(SessionType.IBGP)
+            .build();
+
+    Bgpv4Route permittedRoute = Bgpv4Route.testBuilder().setNetwork(permittedPrefix).build();
+    Bgpv4Route rejectedRoute = Bgpv4Route.testBuilder().setNetwork(rejectedPrefix).build();
+    Bgpv4Route unmatchedRoute = Bgpv4Route.testBuilder().setNetwork(unmatchedPrefix).build();
+
+    BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
+
+    // IPv4 address family
+    {
+      org.batfish.datamodel.bgp.AddressFamily af =
+          bgpProcess
+              .getActiveNeighbors()
+              .get(Prefix.parse("192.168.0.2/32"))
+              .getIpv4UnicastAddressFamily();
+      RoutingPolicy bgpImportPolicy = c.getRoutingPolicies().get(af.getImportPolicy());
+      RoutingPolicy bgpExportPolicy = c.getRoutingPolicies().get(af.getExportPolicy());
+
+      // Import policy should permit routes according to the specified prefix-list
+      assertTrue(
+          bgpImportPolicy.processBgpRoute(
+              permittedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+      assertFalse(
+          bgpImportPolicy.processBgpRoute(
+              rejectedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+      assertFalse(
+          bgpImportPolicy.processBgpRoute(
+              unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+
+      // Export policy should permit routes according to the specified prefix-list
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(
+              permittedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(
+              rejectedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(
+              unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+    }
+
+    // EVPN address family
+    {
+      org.batfish.datamodel.bgp.AddressFamily af =
+          bgpProcess
+              .getActiveNeighbors()
+              .get(Prefix.parse("192.168.0.3/32"))
+              .getEvpnAddressFamily();
+      RoutingPolicy bgpImportPolicy = c.getRoutingPolicies().get(af.getImportPolicy());
+      RoutingPolicy bgpExportPolicy = c.getRoutingPolicies().get(af.getExportPolicy());
+
+      // Import policy should permit routes according to the specified prefix-list
+      assertTrue(
+          bgpImportPolicy.processBgpRoute(
+              permittedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+      assertFalse(
+          bgpImportPolicy.processBgpRoute(
+              rejectedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+      assertFalse(
+          bgpImportPolicy.processBgpRoute(
+              unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+
+      // Export policy should permit routes according to the specified prefix-list
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(
+              permittedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(
+              rejectedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(
+              unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
     }
   }
 
