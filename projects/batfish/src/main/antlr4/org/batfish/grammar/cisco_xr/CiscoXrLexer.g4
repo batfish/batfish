@@ -7589,7 +7589,7 @@ M_AsPathSetElem_COMMA: ',' -> type(COMMA);
 M_AsPathSetElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_AsPathRegex);
 M_AsPathSetElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_AsPathRegex);
 M_AsPathSetElem_LENGTH: 'length' -> type(LENGTH), pushMode(M_AsPathLength);
-M_AsPathSetElem_NEIGHOR_IS: 'neighbor-is' -> type(NEIGHBOR_IS), pushMode(M_AsPathSetElemAsRangeList);
+M_AsPathSetElem_NEIGHBOR_IS: 'neighbor-is' -> type(NEIGHBOR_IS), pushMode(M_AsPathSetElemAsRangeList);
 M_AsPathSetElem_ORIGINATES_FROM: 'originates-from' -> type(ORIGINATES_FROM), pushMode(M_AsPathSetElemAsRangeList);
 M_AsPathSetElem_PASSES_THROUGH: 'passes-through' -> type(PASSES_THROUGH), pushMode(M_AsPathSetElemAsRangeList);
 M_AsPathSetElem_UNIQUE_LENGTH: 'unique-length' -> type(UNIQUE_LENGTH), pushMode(M_AsPathLength);
@@ -7662,12 +7662,11 @@ M_AsPathSetInlineElem_DFA_REGEX: 'dfa-regex' -> type(DFA_REGEX), pushMode(M_AsPa
 M_AsPathSetInlineElem_END_SET: 'end-set' -> type(END_SET), popMode;
 M_AsPathSetInlineElem_IOS_REGEX: 'ios-regex' -> type(IOS_REGEX), pushMode(M_AsPathRegex);
 M_AsPathSetInlineElem_LENGTH: 'length' -> type(LENGTH), pushMode(M_AsPathLength);
-M_AsPathSetInlineElem_NEIGHOR_IS: 'neighbor-is' -> type(NEIGHBOR_IS), pushMode(M_AsPathSetInlineElemAsRangeList);
+M_AsPathSetInlineElem_NEIGHBOR_IS: 'neighbor-is' -> type(NEIGHBOR_IS), pushMode(M_AsPathSetInlineElemAsRangeList);
 M_AsPathSetInlineElem_ORIGINATES_FROM: 'originates-from' -> type(ORIGINATES_FROM), pushMode(M_AsPathSetInlineElemAsRangeList);
 M_AsPathSetInlineElem_PASSES_THROUGH: 'passes-through' -> type(PASSES_THROUGH), pushMode(M_AsPathSetInlineElemAsRangeList);
 M_AsPathSetInlineElem_UNIQUE_LENGTH: 'unique-length' -> type(UNIQUE_LENGTH), pushMode(M_AsPathLength);
 
-M_AsPathSetInlineElem_PARAMETER: F_Parameter -> type(PARAMETER);
 M_AsPathSetInlineElem_PAREN_RIGHT: ')' -> type(PAREN_RIGHT), popMode;
 M_AsPathSetInlineElem_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_AsPathSetInlineElem_WS: F_Whitespace+ -> channel(HIDDEN);
