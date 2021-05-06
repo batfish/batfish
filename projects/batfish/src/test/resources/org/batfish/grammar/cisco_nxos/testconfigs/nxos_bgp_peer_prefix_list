@@ -4,8 +4,11 @@ feature bgp
 !
 hostname nxos_bgp_peer_prefix_list
 !
-ip prefix-list PREFIX_LIST_1 deny 10.10.10.0/24
-ip prefix-list PREFIX_LIST_1 permit 10.10.0.0/16 le 32
+ip prefix-list PREFIX_LIST_IN deny 10.10.10.0/24
+ip prefix-list PREFIX_LIST_IN permit 10.10.11.0/24
+!
+ip prefix-list PREFIX_LIST_OUT permit 10.10.10.0/24
+ip prefix-list PREFIX_LIST_OUT deny 10.10.11.0/24
 !
 interface loopback0
   ip address 192.168.0.1/32
@@ -20,10 +23,14 @@ router bgp 65001
   router-id 192.168.0.1
   neighbor 192.168.0.2 remote-as 65002
     address-family ipv4 unicast
-      prefix-list PREFIX_LIST_1 in
-      prefix-list PREFIX_LIST_1 out
+      prefix-list PREFIX_LIST_IN in
+      prefix-list PREFIX_LIST_OUT out
   neighbor 192.168.0.3 remote-as 65003
     address-family l2vpn evpn
-      prefix-list PREFIX_LIST_1 in
-      prefix-list PREFIX_LIST_1 out
+      prefix-list PREFIX_LIST_IN in
+      prefix-list PREFIX_LIST_OUT out
+  neighbor 192.168.0.4 remote-as 65004
+    address-family ipv4 unicast
+      prefix-list PREFIX_LIST_UNDEFINED in
+      prefix-list PREFIX_LIST_UNDEFINED out
 !

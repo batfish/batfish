@@ -717,32 +717,46 @@ final class Conversions {
     String routeMap = af.getInboundRouteMap();
     String prefixList = af.getInboundPrefixList();
 
-    // TODO Support using multiple filters in import policies
-    if (routeMap != null && prefixList != null) {
-      w.redFlag(
-          "Batfish does not support configuring more than one filter"
-              + " (route-map/prefix-list) for incoming BGP routes. When this occurs,"
-              + " only the route-map will be used, or the prefix-list if no route-map is"
-              + " configured.");
-    }
-
-    // Use inbound route-map or prefix-list if set
-    if (routeMap == null && prefixList != null) {
-      ret.addStatement(
-          new If(
-              new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(prefixList)),
-              ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    }
+    // Use inbound route-map or prefix-list if set, preferring route-map for now
     if (routeMap != null) {
       ret.addStatement(new CallStatement(routeMapOrRejectAll(routeMap, c)));
-    }
-    // Accept everything if neither is set
-    if (routeMap == null && prefixList == null) {
+
+      // TODO Support using multiple filters in import policies
+      if (prefixList != null) {
+        w.redFlag(
+            "Batfish does not support configuring more than one filter"
+                + " (route-map/prefix-list) for incoming BGP routes. When this occurs,"
+                + " only the route-map will be used, or the prefix-list if no route-map is"
+                + " configured.");
+      }
+    } else if (prefixList != null) {
+      ret.addStatement(getPrefixListStatement(c, prefixList, false));
+    } else {
+      // Accept everything if neither is set
       ret.addStatement(Statements.ExitAccept.toStaticStatement());
     }
 
     return ret.build();
+  }
+
+  /**
+   * Get the statement for the specified prefix-list used as a destination-network filter for BGP
+   * routes. If the prefix-list is undefined, the statement will simply accept all destination
+   * networks.
+   */
+  private static Statement getPrefixListStatement(
+      Configuration c, String prefixList, boolean fallThrough) {
+    // An undefined prefix-list is treated as matching everything in this context
+    if (!c.getRouteFilterLists().containsKey(prefixList)) {
+      return Statements.ExitAccept.toStaticStatement();
+    }
+
+    return new If(
+        new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(prefixList)),
+        fallThrough
+            ? ImmutableList.of()
+            : ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
   }
 
   /** Get address family capabilities for IPv4 and L2VPN address families */
@@ -793,44 +807,39 @@ final class Conversions {
       statementsBuilder.add(RemovePrivateAs.toStaticStatement());
     }
 
-    String outboundMap = naf.getOutboundRouteMap();
-    String outboundPrefixList = naf.getOutboundPrefixList();
-
-    // TODO Support using multiple filters in import policies
-    if (outboundMap != null && outboundPrefixList != null) {
-      w.redFlag(
-          "Batfish does not support configuring more than one filter"
-              + " (route-map/prefix-list) for outgoing BGP routes. When this occurs,"
-              + " only the route-map will be used.");
-    }
-    if (outboundMap == null && outboundPrefixList != null) {
-      statementsBuilder.add(
-          new If(
-              new MatchPrefixSet(
-                  DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixList)),
-              ImmutableList.of(),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
-    }
-
     // Peer-specific export policy
     Conjunction peerExportGuard = new Conjunction();
-    statementsBuilder.add(
-        new If(
-            "peer-export policy main conditional: exitAccept if true / exitReject if false",
-            peerExportGuard,
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
 
     // Always export BGP or IBGP routes
     List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
     peerExportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
 
+    String outboundMap = naf.getOutboundRouteMap();
+    String outboundPrefixList = naf.getOutboundPrefixList();
+
     // Export policy generated for outbound route-map (if any)
     if (outboundMap != null) {
       peerExportConditions.add(new CallExpr(routeMapOrRejectAll(outboundMap, configuration)));
+
+      // TODO Support using multiple filters in import policies
+      if (outboundPrefixList != null) {
+        w.redFlag(
+            "Batfish does not support configuring more than one filter"
+                + " (route-map/prefix-list) for outgoing BGP routes. When this occurs,"
+                + " only the route-map will be used.");
+      }
+    } else if (outboundPrefixList != null) {
+      statementsBuilder.add(getPrefixListStatement(configuration, outboundPrefixList, true));
     }
 
-    return statementsBuilder.build();
+    return statementsBuilder
+        .add(
+            new If(
+                "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                peerExportGuard,
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+        .build();
   }
 
   /** Get export statements for IPv4 address family */
@@ -850,25 +859,6 @@ final class Conversions {
     if (neighbor.getRemovePrivateAs() != null) {
       // TODO(handle different types of RemovePrivateAs)
       statementsBuilder.add(RemovePrivateAs.toStaticStatement());
-    }
-
-    String outboundMap = naf.getOutboundRouteMap();
-    String outboundPrefixList = naf.getOutboundPrefixList();
-
-    // TODO Support using multiple filters in import policies
-    if (outboundMap != null && outboundPrefixList != null) {
-      w.redFlag(
-          "Batfish does not support configuring more than one filter"
-              + " (route-map/prefix-list) for outgoing BGP routes. When this occurs,"
-              + " only the route-map will be used.");
-    }
-    if (outboundMap == null && outboundPrefixList != null) {
-      statementsBuilder.add(
-          new If(
-              new MatchPrefixSet(
-                  DestinationNetwork.instance(), new NamedPrefixSet(outboundPrefixList)),
-              ImmutableList.of(),
-              ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     }
 
     // If defaultOriginate is set, generate route and default route export policy. Default route
@@ -894,23 +884,37 @@ final class Conversions {
 
     // Peer-specific export policy, after matching default-originate route.
     Conjunction peerExportGuard = new Conjunction();
-    statementsBuilder.add(
-        new If(
-            "peer-export policy main conditional: exitAccept if true / exitReject if false",
-            peerExportGuard,
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
 
     // Common BGP export policy
     List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
     peerExportConditions.add(new CallExpr(generatedBgpCommonExportPolicyName(vrfName)));
 
+    String outboundMap = naf.getOutboundRouteMap();
+    String outboundPrefixList = naf.getOutboundPrefixList();
+
     // Export policy generated for route-map (if any)
     if (outboundMap != null) {
       peerExportConditions.add(new CallExpr(routeMapOrRejectAll(outboundMap, configuration)));
+
+      // TODO Support using multiple filters in import policies
+      if (outboundPrefixList != null) {
+        w.redFlag(
+            "Batfish does not support configuring more than one filter"
+                + " (route-map/prefix-list) for outgoing BGP routes. When this occurs,"
+                + " only the route-map will be used.");
+      }
+    } else if (outboundPrefixList != null) {
+      statementsBuilder.add(getPrefixListStatement(configuration, outboundPrefixList, true));
     }
 
-    return statementsBuilder.build();
+    return statementsBuilder
+        .add(
+            new If(
+                "peer-export policy main conditional: exitAccept if true / exitReject if false",
+                peerExportGuard,
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+        .build();
   }
 
   /**

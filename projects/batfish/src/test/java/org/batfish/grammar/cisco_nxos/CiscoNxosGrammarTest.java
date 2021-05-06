@@ -930,8 +930,8 @@ public final class CiscoNxosGrammarTest {
             .setSessionType(SessionType.IBGP)
             .build();
 
-    Bgpv4Route permittedRoute = Bgpv4Route.testBuilder().setNetwork(permittedPrefix).build();
-    Bgpv4Route rejectedRoute = Bgpv4Route.testBuilder().setNetwork(rejectedPrefix).build();
+    Bgpv4Route permittedInNotOut = Bgpv4Route.testBuilder().setNetwork(permittedPrefix).build();
+    Bgpv4Route permittedOutNotIn = Bgpv4Route.testBuilder().setNetwork(rejectedPrefix).build();
     Bgpv4Route unmatchedRoute = Bgpv4Route.testBuilder().setNetwork(unmatchedPrefix).build();
 
     BgpProcess bgpProcess = c.getDefaultVrf().getBgpProcess();
@@ -949,21 +949,21 @@ public final class CiscoNxosGrammarTest {
       // Import policy should permit routes according to the specified prefix-list
       assertTrue(
           bgpImportPolicy.processBgpRoute(
-              permittedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+              permittedInNotOut, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
       assertFalse(
           bgpImportPolicy.processBgpRoute(
-              rejectedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+              permittedOutNotIn, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
       assertFalse(
           bgpImportPolicy.processBgpRoute(
               unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
 
       // Export policy should permit routes according to the specified prefix-list
-      assertTrue(
-          bgpExportPolicy.processBgpRoute(
-              permittedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
       assertFalse(
           bgpExportPolicy.processBgpRoute(
-              rejectedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+              permittedInNotOut, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+      assertTrue(
+          bgpExportPolicy.processBgpRoute(
+              permittedOutNotIn, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
       assertFalse(
           bgpExportPolicy.processBgpRoute(
               unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
@@ -982,22 +982,41 @@ public final class CiscoNxosGrammarTest {
       // Import policy should permit routes according to the specified prefix-list
       assertTrue(
           bgpImportPolicy.processBgpRoute(
-              permittedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+              permittedInNotOut, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
       assertFalse(
           bgpImportPolicy.processBgpRoute(
-              rejectedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+              permittedOutNotIn, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
       assertFalse(
           bgpImportPolicy.processBgpRoute(
               unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
 
       // Export policy should permit routes according to the specified prefix-list
+      assertFalse(
+          bgpExportPolicy.processBgpRoute(
+              permittedInNotOut, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
       assertTrue(
           bgpExportPolicy.processBgpRoute(
-              permittedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+              permittedOutNotIn, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
       assertFalse(
           bgpExportPolicy.processBgpRoute(
-              rejectedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
-      assertFalse(
+              unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
+    }
+
+    // Undefined prefix-lists
+    {
+      org.batfish.datamodel.bgp.AddressFamily af =
+          bgpProcess
+              .getActiveNeighbors()
+              .get(Prefix.parse("192.168.0.4/32"))
+              .getIpv4UnicastAddressFamily();
+      RoutingPolicy bgpImportPolicy = c.getRoutingPolicies().get(af.getImportPolicy());
+      RoutingPolicy bgpExportPolicy = c.getRoutingPolicies().get(af.getExportPolicy());
+
+      // Undefined prefix-list should result in matching everything
+      assertTrue(
+          bgpImportPolicy.processBgpRoute(
+              unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.IN, null));
+      assertTrue(
           bgpExportPolicy.processBgpRoute(
               unmatchedRoute, Bgpv4Route.builder(), bgpSessionProps, Direction.OUT, null));
     }
