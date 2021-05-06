@@ -81,33 +81,6 @@ appletalk_access_list_null_tail
    )? NEWLINE
 ;
 
-as_path_set_elem
-:
-   ios_regex = aspse_ios_regex
-   | passes_through = aspse_passes_through
-;
-
-aspse_ios_regex
-:
-  IOS_REGEX AS_PATH_SET_REGEX
-;
-
-aspse_passes_through
-:
-  PASSES_THROUGH as_range_expr
-;
-
-as_path_set_stanza
-:
-   AS_PATH_SET name = variable NEWLINE
-   (
-      elems += as_path_set_elem NEWLINE?
-      (
-         COMMA NEWLINE? elems += as_path_set_elem NEWLINE?
-      )*
-   )? END_SET NEWLINE
-;
-
 bandwidth_irs_stanza
 :
    BANDWIDTH null_rest_of_line

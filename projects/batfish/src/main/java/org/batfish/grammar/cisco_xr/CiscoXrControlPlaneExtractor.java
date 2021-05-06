@@ -197,6 +197,7 @@ import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -289,7 +290,6 @@ import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
@@ -313,7 +313,6 @@ import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.RouteType;
 import org.batfish.datamodel.routing_policy.expr.RouteTypeExpr;
-import org.batfish.datamodel.routing_policy.expr.SubRangeExpr;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
 import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
@@ -370,10 +369,22 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Always_compare_med_rb_stanzaCo
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Apply_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_exprContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_multipath_relax_rb_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_elemContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_inlineContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_regexContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_nameContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_dfa_regexContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_ios_regexContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_lengthContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_neighbor_isContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_originates_fromContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_passes_throughContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_unique_lengthContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_dfa_regexContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_ios_regexContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_lengthContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_neighbor_isContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_originates_fromContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_passes_throughContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspsee_unique_lengthContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Auto_summary_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_advertise_inactive_rb_stanzaContext;
@@ -385,11 +396,14 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_vrf_address_familyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Bgp_vrf_rdContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_and_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_apply_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_in_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_is_local_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_neighbor_is_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_originates_from_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_passes_through_rp_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_pathContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_inContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_is_localContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_lengthContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_neighbor_isContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_originates_fromContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_passes_throughContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_as_path_unique_lengthContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_community_matches_any_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_community_matches_every_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_destination_rp_stanzaContext;
@@ -744,7 +758,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_ospf_metric_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_prefix_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_route_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_subrangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_accept_registerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_allow_rp_group_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_allow_rp_rp_listContext;
@@ -770,6 +783,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rr_passive_interface_defaultCo
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rs_routeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rs_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_aaaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.S_as_path_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_banner_iosContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_class_mapContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.S_ethernet_servicesContext;
@@ -952,9 +966,6 @@ import org.batfish.representation.cisco_xr.RoutePolicyBooleanAnd;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanApply;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathIn;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathIsLocal;
-import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathNeighborIs;
-import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathOriginatesFrom;
-import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathPassesThrough;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanDestination;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanLocalPreference;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanMed;
@@ -1005,6 +1016,7 @@ import org.batfish.representation.cisco_xr.Uint16RangeExpr;
 import org.batfish.representation.cisco_xr.Uint16Reference;
 import org.batfish.representation.cisco_xr.Uint32RangeExpr;
 import org.batfish.representation.cisco_xr.UnimplementedAccessListServiceSpecifier;
+import org.batfish.representation.cisco_xr.UnimplementedBoolean;
 import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.VrfAddressFamily;
 import org.batfish.representation.cisco_xr.VrrpGroup;
@@ -1165,6 +1177,17 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private CiscoXrConfiguration _configuration;
 
+  private AsPathSet _currentAsPathSet;
+
+  // TODO: create VS InlineAsPathSet supporting extra functionality
+  private AsPathSet _currentInlineAsPathSet;
+
+  // Temporary workaround to allow building as-path route-policy booleans with listener functions.
+  // Can be removed when route-policy is no longer computed by recursion.
+  private Map<ParserRuleContext, RoutePolicyBoolean> _asPathBooleansByCtx;
+
+  private RoutePolicyBoolean _currentAsPathBoolean;
+
   @SuppressWarnings("unused")
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
@@ -1308,6 +1331,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _peerGroupStack = new ArrayList<>();
     _currentBlockNeighborAddressFamilies = new HashSet<>();
     _silentSyntax = silentSyntax;
+    _asPathBooleansByCtx = new IdentityHashMap<>();
   }
 
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
@@ -2553,9 +2577,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     String name = toString(ctx.name);
     _currentRoutePolicy = _configuration.getRoutePolicies().computeIfAbsent(name, RoutePolicy::new);
 
-    List<RoutePolicyStatement> stmts = _currentRoutePolicy.getStatements();
-
-    stmts.addAll(toRoutePolicyStatementList(ctx.stanzas));
     _configuration.defineStructure(ROUTE_POLICY, name, ctx);
   }
 
@@ -3132,18 +3153,23 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitAs_path_set_stanza(As_path_set_stanzaContext ctx) {
-    String name = ctx.name.getText();
-    AsPathSet asPathSet = _configuration.getAsPathSets().get(name);
-    if (asPathSet != null) {
+  public void enterS_as_path_set(S_as_path_setContext ctx) {
+    String name = toString(ctx.name);
+    if (_configuration.getAsPathSets().containsKey(name)) {
       warn(ctx, "Redeclaration of as-path-set: '" + name + "'.");
     }
-    asPathSet = new AsPathSet(name);
-    _configuration.getAsPathSets().put(name, asPathSet);
-    for (As_path_set_elemContext elemCtx : ctx.elems) {
-      toAsPathSetElem(elemCtx).ifPresent(asPathSet.getElements()::add);
-    }
+    _currentAsPathSet = new AsPathSet(name);
     _configuration.defineStructure(AS_PATH_SET, name, ctx);
+    _configuration.getAsPathSets().put(name, _currentAsPathSet);
+  }
+
+  @Override
+  public void exitS_as_path_set(S_as_path_setContext ctx) {
+    _currentAsPathSet = null;
+  }
+
+  private static @Nonnull String toString(As_path_set_nameContext ctx) {
+    return ctx.getText();
   }
 
   @Override
@@ -6182,6 +6208,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRoute_policy_stanza(Route_policy_stanzaContext ctx) {
+    _currentRoutePolicy.getStatements().addAll(toRoutePolicyStatementList(ctx.stanzas));
     _currentRoutePolicy = null;
   }
 
@@ -6826,30 +6853,94 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private Optional<AsPathSetElem> toAsPathSetElem(As_path_set_elemContext ctx) {
-    if (ctx.ios_regex != null) {
-      return Optional.of(toAsPathSetElem(ctx.ios_regex));
-    } else {
-      warn(ctx, convErrorMessage(AsPathSetElem.class, ctx));
-      return Optional.empty();
-    }
+  @Override
+  public void exitAspse_dfa_regex(Aspse_dfa_regexContext ctx) {
+    todo(ctx);
+    // For now, just treat like ios-regex
+    String vendorRegex = toString(ctx.as_path_regex());
+    String regex = toJavaRegex(vendorRegex);
+    // TODO: VS model for elements
+    _currentAsPathSet.addElement(new RegexAsPathSetElem(regex));
   }
 
-  private AsPathSetElem toAsPathSetElem(Aspse_ios_regexContext ctx) {
-    String withQuotes = ctx.AS_PATH_SET_REGEX().getText();
-    String iosRegex = withQuotes.substring(1, withQuotes.length() - 1);
-    String regex = toJavaRegex(iosRegex);
-    return new RegexAsPathSetElem(regex);
+  @Override
+  public void exitAspsee_dfa_regex(Aspsee_dfa_regexContext ctx) {
+    todo(ctx);
+    // For now, just treat like ios-regex
+    String vendorRegex = toString(ctx.as_path_regex());
+    String regex = toJavaRegex(vendorRegex);
+    // TODO: VS model for elements
+    _currentInlineAsPathSet.addElement(new RegexAsPathSetElem(regex));
   }
 
-  private AsPathSetExpr toAsPathSetExpr(As_path_set_inlineContext ctx) {
-    List<AsPathSetElem> elems =
-        ctx.elems.stream()
-            .map(this::toAsPathSetElem)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
-    return new ExplicitAsPathSet(elems);
+  @Override
+  public void exitAspse_ios_regex(Aspse_ios_regexContext ctx) {
+    String vendorRegex = toString(ctx.as_path_regex());
+    String regex = toJavaRegex(vendorRegex);
+    // TODO: VS model for elements
+    _currentAsPathSet.addElement(new RegexAsPathSetElem(regex));
+  }
+
+  @Override
+  public void exitAspsee_ios_regex(Aspsee_ios_regexContext ctx) {
+    String vendorRegex = toString(ctx.as_path_regex());
+    String regex = toJavaRegex(vendorRegex);
+    // TODO: VS model for elements
+    _currentInlineAsPathSet.addElement(new RegexAsPathSetElem(regex));
+  }
+
+  @Override
+  public void exitAspse_length(Aspse_lengthContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspsee_length(Aspsee_lengthContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspse_neighbor_is(Aspse_neighbor_isContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspsee_neighbor_is(Aspsee_neighbor_isContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspse_originates_from(Aspse_originates_fromContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspsee_originates_from(Aspsee_originates_fromContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspse_passes_through(Aspse_passes_throughContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspsee_passes_through(Aspsee_passes_throughContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspse_unique_length(Aspse_unique_lengthContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitAspsee_unique_length(Aspsee_unique_lengthContext ctx) {
+    todo(ctx);
+  }
+
+  private static @Nonnull String toString(As_path_regexContext ctx) {
+    return ctx.AS_PATH_REGEX().getText();
   }
 
   private EigrpMetricValues toEigrpMetricValues(Eigrp_metricContext ctx) {
@@ -8021,51 +8112,75 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return new RoutePolicyBooleanApply(name);
   }
 
-  private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_as_path_in_rp_stanzaContext ctx) {
+  @Override
+  public void exitBoolean_as_path(Boolean_as_pathContext ctx) {
+    _asPathBooleansByCtx.put(
+        ctx, firstNonNull(_currentAsPathBoolean, UnimplementedBoolean.instance()));
+    _currentAsPathBoolean = null;
+  }
+
+  private @Nullable RoutePolicyBoolean toRoutePolicyBoolean(Boolean_as_pathContext ctx) {
+    RoutePolicyBoolean result = _asPathBooleansByCtx.remove(ctx);
+    assert result != null;
+    return result;
+  }
+
+  @Override
+  public void enterBoolean_as_path_in(Boolean_as_path_inContext ctx) {
+    if (ctx.PAREN_LEFT() != null) {
+      // TODO: create and use VS InlineAsPathSet
+      _currentInlineAsPathSet = new AsPathSet("dummy");
+    }
+  }
+
+  @Override
+  public void exitBoolean_as_path_in(Boolean_as_path_inContext ctx) {
     AsPathSetExpr asPathSetExpr;
-    if (ctx.expr.named != null) {
-      String name = ctx.expr.named.getText();
+    if (ctx.name != null) {
+      String name = toString(ctx.name);
       asPathSetExpr = new NamedAsPathSet(name);
       _configuration.referenceStructure(
-          AS_PATH_SET, name, ROUTE_POLICY_AS_PATH_IN, ctx.expr.named.getStart().getLine());
-    } else if (ctx.expr.rpvar != null) {
-      asPathSetExpr = new VarAsPathSet(ctx.expr.rpvar.getText());
-    } else if (ctx.expr.inline != null) {
-      asPathSetExpr = toAsPathSetExpr(ctx.expr.inline);
+          AS_PATH_SET, name, ROUTE_POLICY_AS_PATH_IN, ctx.name.getStart().getLine());
+    } else if (ctx.param != null) {
+      todo(ctx);
+      asPathSetExpr = new VarAsPathSet(toString(ctx.param));
     } else {
-      throw convError(AsPathSetExpr.class, ctx.expr);
+      assert _currentInlineAsPathSet != null;
+      // TODO: move VI structure creation to conversion
+      asPathSetExpr = new ExplicitAsPathSet(_currentInlineAsPathSet.getElements());
     }
-    return new RoutePolicyBooleanAsPathIn(asPathSetExpr);
+    _currentAsPathBoolean = new RoutePolicyBooleanAsPathIn(asPathSetExpr);
+    _currentInlineAsPathSet = null;
   }
 
-  private RoutePolicyBoolean toRoutePolicyBoolean(
-      Boolean_as_path_neighbor_is_rp_stanzaContext ctx) {
-    List<SubRangeExpr> range =
-        ctx.as_range_expr().subranges.stream()
-            .map(this::toSubRangeExpr)
-            .collect(Collectors.toList());
-    boolean exact = ctx.as_range_expr().EXACT() != null;
-    return new RoutePolicyBooleanAsPathNeighborIs(range, exact);
+  @Override
+  public void exitBoolean_as_path_is_local(Boolean_as_path_is_localContext ctx) {
+    _currentAsPathBoolean = RoutePolicyBooleanAsPathIsLocal.instance();
   }
 
-  private RoutePolicyBoolean toRoutePolicyBoolean(
-      Boolean_as_path_originates_from_rp_stanzaContext ctx) {
-    List<SubRangeExpr> range =
-        ctx.as_range_expr().subranges.stream()
-            .map(this::toSubRangeExpr)
-            .collect(Collectors.toList());
-    boolean exact = ctx.as_range_expr().EXACT() != null;
-    return new RoutePolicyBooleanAsPathOriginatesFrom(range, exact);
+  @Override
+  public void exitBoolean_as_path_length(Boolean_as_path_lengthContext ctx) {
+    todo(ctx);
   }
 
-  private RoutePolicyBoolean toRoutePolicyBoolean(
-      Boolean_as_path_passes_through_rp_stanzaContext ctx) {
-    List<SubRangeExpr> range =
-        ctx.as_range_expr().subranges.stream()
-            .map(this::toSubRangeExpr)
-            .collect(Collectors.toList());
-    boolean exact = ctx.as_range_expr().EXACT() != null;
-    return new RoutePolicyBooleanAsPathPassesThrough(range, exact);
+  @Override
+  public void exitBoolean_as_path_neighbor_is(Boolean_as_path_neighbor_isContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitBoolean_as_path_originates_from(Boolean_as_path_originates_fromContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitBoolean_as_path_passes_through(Boolean_as_path_passes_throughContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitBoolean_as_path_unique_length(Boolean_as_path_unique_lengthContext ctx) {
+    todo(ctx);
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(
@@ -8142,32 +8257,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       return toRoutePolicyBoolean(actx);
     }
 
-    Boolean_as_path_in_rp_stanzaContext aictx = ctx.boolean_as_path_in_rp_stanza();
-    if (aictx != null) {
-      return toRoutePolicyBoolean(aictx);
-    }
-
-    Boolean_as_path_is_local_rp_stanzaContext alctx = ctx.boolean_as_path_is_local_rp_stanza();
-    if (alctx != null) {
-      return new RoutePolicyBooleanAsPathIsLocal();
-    }
-
-    Boolean_as_path_neighbor_is_rp_stanzaContext anctx =
-        ctx.boolean_as_path_neighbor_is_rp_stanza();
-    if (anctx != null) {
-      return toRoutePolicyBoolean(anctx);
-    }
-
-    Boolean_as_path_originates_from_rp_stanzaContext aoctx =
-        ctx.boolean_as_path_originates_from_rp_stanza();
-    if (aoctx != null) {
-      return toRoutePolicyBoolean(aoctx);
-    }
-
-    Boolean_as_path_passes_through_rp_stanzaContext apctx =
-        ctx.boolean_as_path_passes_through_rp_stanza();
-    if (apctx != null) {
-      return toRoutePolicyBoolean(apctx);
+    Boolean_as_pathContext aspctx = ctx.boolean_as_path();
+    if (aspctx != null) {
+      return toRoutePolicyBoolean(aspctx);
     }
 
     Boolean_community_matches_any_rp_stanzaContext cmactx =
@@ -8716,15 +8808,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       throw convError(RouteTypeExpr.class, ctx);
     }
-  }
-
-  private SubRangeExpr toSubRangeExpr(Rp_subrangeContext ctx) {
-    IntExpr first = toCommonIntExpr(ctx.first);
-    IntExpr last = first;
-    if (ctx.last != null) {
-      last = toCommonIntExpr(ctx.first);
-    }
-    return new SubRangeExpr(first, last);
   }
 
   private LongExpr toTagLongExpr(Int_exprContext ctx) {

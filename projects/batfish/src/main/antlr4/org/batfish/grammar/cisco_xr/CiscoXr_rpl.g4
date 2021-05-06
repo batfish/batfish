@@ -21,33 +21,46 @@ as_expr
    | RP_VARIABLE
 ;
 
-as_path_set_elem
+as_path_set_expr_elem
 :
-   IOS_REGEX AS_PATH_SET_REGEX
+  aspsee_dfa_regex
+  | aspsee_ios_regex
+  | aspsee_length
+  | aspsee_neighbor_is
+  | aspsee_originates_from
+  | aspsee_passes_through
+  | aspsee_unique_length
 ;
 
-as_path_set_expr
-:
-   inline = as_path_set_inline
-   | rpvar = RP_VARIABLE
-   | named = variable
-;
+aspsee_dfa_regex: DFA_REGEX as_path_regex;
 
-as_path_set_inline
-:
-   PAREN_LEFT elems += as_path_set_elem
-   (
-      COMMA elems += as_path_set_elem
-   )* PAREN_RIGHT
-;
+aspsee_ios_regex: IOS_REGEX as_path_regex;
+
+aspsee_length: LENGTH comparator as_path_length_expr ALL?;
+
+aspsee_neighbor_is: NEIGHBOR_IS as_range_expr_list EXACT?;
+
+aspsee_originates_from: ORIGINATES_FROM as_range_expr_list EXACT?;
+
+aspsee_passes_through: PASSES_THROUGH as_range_expr_list EXACT?;
+
+aspsee_unique_length: UNIQUE_LENGTH comparator as_path_length_expr ALL?;
+
+as_range_expr_list: SINGLE_QUOTE as_range_expr+ SINGLE_QUOTE;
 
 as_range_expr
 :
-   SINGLE_QUOTE
-   (
-      subranges += rp_subrange
-   )+ SINGLE_QUOTE EXACT?
+  lo = as_number_expr
+  | BRACKET_LEFT lo = as_number_expr DOTDOT hi = as_number_expr BRACKET_RIGHT
 ;
+
+as_number_expr
+:
+  num = as_number
+  | param = parameter
+;
+
+as_path_length_expr: as_path_length | parameter;
 
 boolean_and_rp_stanza
 :
@@ -63,30 +76,40 @@ boolean_apply_rp_stanza
    )?
 ;
 
-boolean_as_path_in_rp_stanza
+boolean_as_path
 :
-   AS_PATH IN expr = as_path_set_expr
+  AS_PATH
+  (
+    boolean_as_path_in
+    | boolean_as_path_is_local
+    | boolean_as_path_length
+    | boolean_as_path_neighbor_is
+    | boolean_as_path_originates_from
+    | boolean_as_path_passes_through
+  )
 ;
 
-boolean_as_path_is_local_rp_stanza
+boolean_as_path_in
 :
-   AS_PATH IS_LOCAL
+  IN
+  (
+    name = as_path_set_name
+    | PAREN_LEFT elems += as_path_set_expr_elem (COMMA elems += as_path_set_expr_elem)* PAREN_RIGHT
+    | param = parameter
+  )
 ;
 
-boolean_as_path_neighbor_is_rp_stanza
-:
-   AS_PATH NEIGHBOR_IS as_range_expr
-;
+boolean_as_path_is_local: IS_LOCAL;
 
-boolean_as_path_originates_from_rp_stanza
-:
-   AS_PATH ORIGINATES_FROM as_range_expr
-;
+boolean_as_path_length: LENGTH comparator as_path_length_expr ALL?;
 
-boolean_as_path_passes_through_rp_stanza
-:
-   AS_PATH PASSES_THROUGH as_range_expr
-;
+boolean_as_path_neighbor_is: NEIGHBOR_IS as_range_expr_list EXACT?;
+
+boolean_as_path_originates_from: ORIGINATES_FROM as_range_expr_list EXACT?;
+
+boolean_as_path_passes_through: PASSES_THROUGH as_range_expr_list EXACT?;
+
+boolean_as_path_unique_length: UNIQUE_LENGTH comparator as_path_length_expr ALL?;
 
 boolean_community_matches_any_rp_stanza
 :
@@ -146,11 +169,7 @@ boolean_simple_rp_stanza
 :
    PAREN_LEFT boolean_rp_stanza PAREN_RIGHT
    | boolean_apply_rp_stanza
-   | boolean_as_path_in_rp_stanza
-   | boolean_as_path_is_local_rp_stanza
-   | boolean_as_path_neighbor_is_rp_stanza
-   | boolean_as_path_originates_from_rp_stanza
-   | boolean_as_path_passes_through_rp_stanza
+   | boolean_as_path
    | boolean_community_matches_any_rp_stanza
    | boolean_community_matches_every_rp_stanza
    | boolean_destination_rp_stanza

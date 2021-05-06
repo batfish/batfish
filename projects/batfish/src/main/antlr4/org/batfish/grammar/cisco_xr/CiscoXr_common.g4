@@ -6,8 +6,19 @@ options {
 
 //// validated grammar
 
+as_path_regex: SINGLE_QUOTE AS_PATH_REGEX SINGLE_QUOTE;
+
+comparator
+:
+  EQ
+  | GE
+  | IS
+  | LE
+;
+
 // structure names
 access_list_name: WORD;
+as_path_set_name: WORD;
 community_set_name: WORD;
 flow_exporter_map_name: WORD;
 flow_monitor_map_name: WORD;
@@ -20,6 +31,18 @@ usergroup_name: WORD;
 vrf_name: WORD;
 
 // numbers
+as_number
+:
+  // 1-4294967295
+  uint32
+;
+
+as_path_length
+:
+  // 0-2047
+  uint16
+;
+
 uint8
 :
   UINT8
@@ -591,15 +614,6 @@ route_policy_params_list
    (
       COMMA params_list += variable
    )*
-;
-
-rp_subrange
-:
-   first = int_expr
-   |
-   (
-      BRACKET_LEFT first = int_expr PERIOD PERIOD last = int_expr BRACKET_RIGHT
-   )
 ;
 
 subrange
