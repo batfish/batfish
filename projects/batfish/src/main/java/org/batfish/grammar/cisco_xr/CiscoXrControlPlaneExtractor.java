@@ -2587,6 +2587,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     RoutePolicy currentRoutePolicy = new RoutePolicy(name);
     _configuration.getRoutePolicies().put(name, currentRoutePolicy);
     _configuration.defineStructure(ROUTE_POLICY, name, ctx);
+    assert _elseIfs.empty();
+    assert _ifs.empty();
     assert _statementCollectors.empty();
     _statementCollectors.push(currentRoutePolicy::addStatement);
   }
@@ -2594,6 +2596,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitRoute_policy_stanza(Route_policy_stanzaContext ctx) {
     _statementCollectors.pop();
+    assert _elseIfs.empty();
+    assert _ifs.empty();
     assert _statementCollectors.empty();
   }
 
