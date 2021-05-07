@@ -3,6 +3,8 @@
 hostname nxos_bgp_tag_imports
 feature bgp
 !
+ip prefix-list PL_IN seq 5 permit 1.1.1.1/32
+!
 ip prefix-list PL_1 seq 5 permit 1.1.1.1/32
 ip prefix-list PL_2 seq 5 permit 2.2.2.2/32
 !
@@ -23,3 +25,7 @@ router bgp 65000
   neighbor 10.10.10.2
     remote-as 65001
     address-family ipv4 unicast
+  neighbor 10.10.10.3
+    remote-as 65001
+    address-family ipv4 unicast
+      prefix-list PL_IN in

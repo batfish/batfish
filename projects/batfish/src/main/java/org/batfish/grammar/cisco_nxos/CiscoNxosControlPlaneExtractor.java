@@ -4068,13 +4068,20 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!prefixList.isPresent()) {
       return;
     }
-    todo(ctx);
+    String prefixListName = prefixList.get();
+
     CiscoNxosStructureType type = _inIpv6BgpPeer ? IPV6_PREFIX_LIST : IP_PREFIX_LIST;
     CiscoNxosStructureUsage usage =
         _inIpv6BgpPeer
             ? ((ctx.IN() != null) ? BGP_NEIGHBOR6_PREFIX_LIST_IN : BGP_NEIGHBOR6_PREFIX_LIST_OUT)
             : ((ctx.IN() != null) ? BGP_NEIGHBOR_PREFIX_LIST_IN : BGP_NEIGHBOR_PREFIX_LIST_OUT);
-    _c.referenceStructure(type, prefixList.get(), usage, ctx.getStart().getLine());
+    if (ctx.IN() != null) {
+      _currentBgpVrfNeighborAddressFamily.setInboundPrefixList(prefixListName);
+    } else {
+      assert ctx.OUT() != null;
+      _currentBgpVrfNeighborAddressFamily.setOutboundPrefixList(prefixListName);
+    }
+    _c.referenceStructure(type, prefixListName, usage, ctx.getStart().getLine());
   }
 
   @Override

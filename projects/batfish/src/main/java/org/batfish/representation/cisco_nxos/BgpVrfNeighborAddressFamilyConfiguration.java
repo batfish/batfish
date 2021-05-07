@@ -64,6 +64,15 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
   }
 
   @Nullable
+  public String getInboundPrefixList() {
+    return _inboundPrefixList;
+  }
+
+  public void setInboundPrefixList(@Nullable String inboundPrefixList) {
+    _inboundPrefixList = inboundPrefixList;
+  }
+
+  @Nullable
   public String getInboundRouteMap() {
     return _inboundRouteMap;
   }
@@ -92,6 +101,15 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
 
   public void setNextHopThirdParty(@Nullable Boolean nextHopThirdParty) {
     _nextHopThirdParty = nextHopThirdParty;
+  }
+
+  @Nullable
+  public String getOutboundPrefixList() {
+    return _outboundPrefixList;
+  }
+
+  public void setOutboundPrefixList(@Nullable String outboundPrefixList) {
+    _outboundPrefixList = outboundPrefixList;
   }
 
   @Nullable
@@ -145,10 +163,12 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
   private @Nullable String _defaultOriginateMap;
   private @Nullable Boolean _disablePeerAsCheck;
   private boolean _doneInheriting;
+  private @Nullable String _inboundPrefixList;
   private @Nullable String _inboundRouteMap;
   private final SortedMap<Integer, String> _inheritPeerPolicies;
   private @Nullable Boolean _nextHopSelf;
   private @Nullable Boolean _nextHopThirdParty;
+  private @Nullable String _outboundPrefixList;
   private @Nullable String _outboundRouteMap;
   private @Nullable Boolean _routeReflectorClient;
   private @Nullable Boolean _sendCommunityExtended;
@@ -191,6 +211,9 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     if (_disablePeerAsCheck == null) {
       _disablePeerAsCheck = policy._disablePeerAsCheck;
     }
+    if (_inboundPrefixList == null) {
+      _inboundPrefixList = policy._inboundPrefixList;
+    }
     if (_inboundRouteMap == null) {
       _inboundRouteMap = policy._inboundRouteMap;
     }
@@ -199,6 +222,9 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     }
     if (_nextHopThirdParty == null) {
       _nextHopThirdParty = policy._nextHopThirdParty;
+    }
+    if (_outboundPrefixList == null) {
+      _outboundPrefixList = policy._outboundPrefixList;
     }
     if (_outboundRouteMap == null) {
       _outboundRouteMap = policy._outboundRouteMap;
