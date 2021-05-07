@@ -1,29 +1,41 @@
 package org.batfish.representation.cisco_xr;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
+@ParametersAreNonnullByDefault
 public final class RoutePolicyIfStatement extends RoutePolicyStatement {
 
   private RoutePolicyElseBlock _elseBlock;
 
-  private List<RoutePolicyElseIfBlock> _elseIfBlocks;
+  private @Nonnull List<RoutePolicyElseIfBlock> _elseIfBlocks;
 
   private RoutePolicyBoolean _guard;
 
-  private List<RoutePolicyStatement> _stmtList;
+  private @Nonnull List<RoutePolicyStatement> _stmtList;
 
+  public RoutePolicyIfStatement() {
+    _stmtList = ImmutableList.of();
+    _elseIfBlocks = ImmutableList.of();
+  }
+
+  @VisibleForTesting
   public RoutePolicyIfStatement(
       RoutePolicyBoolean guard,
       List<RoutePolicyStatement> stmtList,
       List<RoutePolicyElseIfBlock> elseIfBlocks,
-      RoutePolicyElseBlock elseBlock) {
+      @Nullable RoutePolicyElseBlock elseBlock) {
     _guard = guard;
     _stmtList = stmtList;
     _elseIfBlocks = elseIfBlocks;
@@ -31,12 +43,25 @@ public final class RoutePolicyIfStatement extends RoutePolicyStatement {
   }
 
   public void addStatement(RoutePolicyStatement stmt) {
-    _stmtList.add(stmt);
+    _stmtList =
+        ImmutableList.<RoutePolicyStatement>builderWithExpectedSize(_stmtList.size() + 1)
+            .addAll(_stmtList)
+            .add(stmt)
+            .build();
+  }
+
+  public void addElseIfBlock(RoutePolicyElseIfBlock elseIfBlock) {
+    _elseIfBlocks =
+        ImmutableList.<RoutePolicyElseIfBlock>builderWithExpectedSize(_elseIfBlocks.size() + 1)
+            .addAll(_elseIfBlocks)
+            .add(elseIfBlock)
+            .build();
   }
 
   @Override
   public void applyTo(
       List<Statement> statements, CiscoXrConfiguration cc, Configuration c, Warnings w) {
+    assert _guard != null;
     If mainIf = new If();
     mainIf.setGuard(_guard.toBooleanExpr(cc, c, w));
     If currentIf = mainIf;
@@ -47,6 +72,7 @@ public final class RoutePolicyIfStatement extends RoutePolicyStatement {
     }
     for (RoutePolicyElseIfBlock elseIfBlock : _elseIfBlocks) {
       If elseIf = new If();
+      assert elseIfBlock.getGuard() != null;
       elseIf.setGuard(elseIfBlock.getGuard().toBooleanExpr(cc, c, w));
       List<Statement> elseIfStatements = new ArrayList<>();
       elseIf.setTrueStatements(elseIfStatements);
@@ -66,19 +92,27 @@ public final class RoutePolicyIfStatement extends RoutePolicyStatement {
     statements.add(mainIf);
   }
 
-  public RoutePolicyElseBlock getElseBlock() {
+  public @Nullable RoutePolicyElseBlock getElseBlock() {
     return _elseBlock;
   }
 
-  public List<RoutePolicyElseIfBlock> getElseIfBlocks() {
+  public void setElseBlock(@Nullable RoutePolicyElseBlock elseBlock) {
+    _elseBlock = elseBlock;
+  }
+
+  public @Nonnull List<RoutePolicyElseIfBlock> getElseIfBlocks() {
     return _elseIfBlocks;
   }
 
-  public RoutePolicyBoolean getGuard() {
+  public @Nullable RoutePolicyBoolean getGuard() {
     return _guard;
   }
 
-  public List<RoutePolicyStatement> getStatements() {
+  public void setGuard(RoutePolicyBoolean guard) {
+    _guard = guard;
+  }
+
+  public @Nonnull List<RoutePolicyStatement> getStatements() {
     return _stmtList;
   }
 
@@ -93,7 +127,7 @@ public final class RoutePolicyIfStatement extends RoutePolicyStatement {
     RoutePolicyIfStatement that = (RoutePolicyIfStatement) o;
     return Objects.equals(_elseBlock, that._elseBlock)
         && _elseIfBlocks.equals(that._elseIfBlocks)
-        && _guard.equals(that._guard)
+        && Objects.equals(_guard, that._guard)
         && _stmtList.equals(that._stmtList);
   }
 

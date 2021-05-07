@@ -1236,8 +1236,8 @@
         "Filename" : "configs/ios_xr_route_policy",
         "Line" : 164,
         "Text" : "set path-selection backup 1 install multipath-protect advertise",
-        "Parser_Context" : "[set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-        "Comment" : "Could not convert to RoutePolicyStatement: set path-selection backup 1 install multipath-protect advertise\n"
+        "Parser_Context" : "[set_path_selection_rp_stanza set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
+        "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/ip_default_route_classless",

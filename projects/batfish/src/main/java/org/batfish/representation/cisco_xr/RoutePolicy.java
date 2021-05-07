@@ -1,25 +1,36 @@
 package org.batfish.representation.cisco_xr;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
-public class RoutePolicy implements Serializable {
-
-  private final String _name;
-
-  private List<RoutePolicyStatement> _stmtList;
+/** Policy for matching/transforming routes. */
+@ParametersAreNonnullByDefault
+public final class RoutePolicy implements Serializable {
 
   public RoutePolicy(String name) {
     _name = name;
-    _stmtList = new ArrayList<>();
+    _statements = ImmutableList.of();
   }
 
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  public List<RoutePolicyStatement> getStatements() {
-    return _stmtList;
+  public @Nonnull List<RoutePolicyStatement> getStatements() {
+    return _statements;
   }
+
+  public void addStatement(RoutePolicyStatement statement) {
+    _statements =
+        ImmutableList.<RoutePolicyStatement>builderWithExpectedSize(_statements.size() + 1)
+            .addAll(_statements)
+            .add(statement)
+            .build();
+  }
+
+  private final @Nonnull String _name;
+  private @Nonnull List<RoutePolicyStatement> _statements;
 }

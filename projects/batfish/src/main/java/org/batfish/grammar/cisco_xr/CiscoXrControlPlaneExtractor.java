@@ -207,9 +207,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -757,7 +759,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_metric_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_ospf_metric_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_prefix_setContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_route_typeContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_accept_registerContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_allow_rp_group_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rpim_allow_rp_rp_listContext;
@@ -809,7 +810,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Sampler_map_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Send_community_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_community_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_extcommunity_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_extcommunity_rtContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_isis_metric_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_level_rp_stanzaContext;
@@ -819,7 +819,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_metric_type_rp_stanzaConte
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_next_hop_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_next_hop_self_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_origin_rp_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_rp_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_path_selection_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_tag_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Set_weight_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Shutdown_bgp_tailContext;
@@ -1262,7 +1262,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private RipProcess _currentRipProcess;
 
-  private RoutePolicy _currentRoutePolicy;
+  private Stack<RoutePolicyIfStatement> _ifs;
+  private Stack<RoutePolicyElseIfBlock> _elseIfs;
+  private Stack<Consumer<RoutePolicyStatement>> _statementCollectors;
 
   private SnmpCommunity _currentSnmpCommunity;
 
@@ -1332,6 +1334,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _currentBlockNeighborAddressFamilies = new HashSet<>();
     _silentSyntax = silentSyntax;
     _asPathBooleansByCtx = new IdentityHashMap<>();
+    _statementCollectors = new Stack<>();
+    _ifs = new Stack<>();
+    _elseIfs = new Stack();
+  }
+
+  private void addStatement(RoutePolicyStatement statement) {
+    _statementCollectors.peek().accept(statement);
   }
 
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
@@ -2575,9 +2584,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void enterRoute_policy_stanza(Route_policy_stanzaContext ctx) {
     String name = toString(ctx.name);
-    _currentRoutePolicy = _configuration.getRoutePolicies().computeIfAbsent(name, RoutePolicy::new);
-
+    // always replace entire policy
+    RoutePolicy currentRoutePolicy = new RoutePolicy(name);
+    _configuration.getRoutePolicies().put(name, currentRoutePolicy);
     _configuration.defineStructure(ROUTE_POLICY, name, ctx);
+    _statementCollectors.push(currentRoutePolicy::addStatement);
+  }
+
+  @Override
+  public void exitRoute_policy_stanza(Route_policy_stanzaContext ctx) {
+    _statementCollectors.pop();
   }
 
   @Override
@@ -6207,12 +6223,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRoute_policy_stanza(Route_policy_stanzaContext ctx) {
-    _currentRoutePolicy.getStatements().addAll(toRoutePolicyStatementList(ctx.stanzas));
-    _currentRoutePolicy = null;
-  }
-
-  @Override
   public void exitRoute_reflector_client_bgp_tail(Route_reflector_client_bgp_tailContext ctx) {
     _currentPeerGroup.setRouteReflectorClient(true);
   }
@@ -8400,15 +8410,33 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private RoutePolicyElseBlock toRoutePolicyElseBlock(Else_rp_stanzaContext ctx) {
-    List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctx.rp_stanza());
-    return new RoutePolicyElseBlock(stmts);
+  @Override
+  public void enterElse_rp_stanza(Else_rp_stanzaContext ctx) {
+    RoutePolicyElseBlock currentElse = new RoutePolicyElseBlock();
+    _statementCollectors.push(currentElse::addStatement);
+    _ifs.peek().setElseBlock(currentElse);
   }
 
-  private RoutePolicyElseIfBlock toRoutePolicyElseIfBlock(Elseif_rp_stanzaContext ctx) {
+  @Override
+  public void exitElse_rp_stanza(Else_rp_stanzaContext ctx) {
+    _statementCollectors.pop();
+  }
+
+  @Override
+  public void enterElseif_rp_stanza(Elseif_rp_stanzaContext ctx) {
+    RoutePolicyElseIfBlock currentElseIf = new RoutePolicyElseIfBlock();
+    _elseIfs.push(currentElseIf);
+    _statementCollectors.push(currentElseIf::addStatement);
+  }
+
+  @Override
+  public void exitElseif_rp_stanza(Elseif_rp_stanzaContext ctx) {
+    _statementCollectors.pop();
+    RoutePolicyElseIfBlock elseIf = _elseIfs.pop();
+    _ifs.peek().addElseIfBlock(elseIf);
+    // TODO: listener-style creation of guard
     RoutePolicyBoolean b = toRoutePolicyBoolean(ctx.boolean_rp_stanza());
-    List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctx.rp_stanza());
-    return new RoutePolicyElseIfBlock(b, stmts);
+    elseIf.setGuard(b);
   }
 
   private RoutePolicyPrefixSet toRoutePolicyPrefixSet(Rp_prefix_setContext ctx) {
@@ -8472,25 +8500,32 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private RoutePolicyApplyStatement toRoutePolicyStatement(Apply_rp_stanzaContext ctx) {
+  @Override
+  public void exitApply_rp_stanza(Apply_rp_stanzaContext ctx) {
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         ROUTE_POLICY, name, ROUTE_POLICY_APPLY_STATEMENT, ctx.name.getStart().getLine());
-    return new RoutePolicyApplyStatement(name);
+    addStatement(new RoutePolicyApplyStatement(name));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Delete_community_rp_stanzaContext ctx) {
+  @Override
+  public void exitDelete_community_rp_stanza(Delete_community_rp_stanzaContext ctx) {
+    RoutePolicyStatement statement;
     if (ctx.ALL() != null) {
-      return XrRoutePolicyDeleteAllStatement.instance();
+      statement = XrRoutePolicyDeleteAllStatement.instance();
     } else {
       boolean negated = (ctx.NOT() != null);
-      return new XrRoutePolicyDeleteCommunityStatement(
-          negated,
-          toXrCommunitySetExpr(ctx.community_set_match_expr(), ROUTE_POLICY_DELETE_COMMUNITY_IN));
+      statement =
+          new XrRoutePolicyDeleteCommunityStatement(
+              negated,
+              toXrCommunitySetExpr(
+                  ctx.community_set_match_expr(), ROUTE_POLICY_DELETE_COMMUNITY_IN));
     }
+    addStatement(statement);
   }
 
-  private RoutePolicyDispositionStatement toRoutePolicyStatement(Disposition_rp_stanzaContext ctx) {
+  @Override
+  public void exitDisposition_rp_stanza(Disposition_rp_stanzaContext ctx) {
     RoutePolicyDispositionType t = null;
     if (ctx.DONE() != null) {
       t = RoutePolicyDispositionType.DONE;
@@ -8501,92 +8536,56 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else if (ctx.UNSUPPRESS_ROUTE() != null) {
       t = RoutePolicyDispositionType.UNSUPPRESS_ROUTE;
     }
-    return new RoutePolicyDispositionStatement(t);
+    addStatement(new RoutePolicyDispositionStatement(t));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Hash_commentContext ctx) {
+  @Override
+  public void exitHash_comment(Hash_commentContext ctx) {
     String text = ctx.RAW_TEXT().getText();
-    return new RoutePolicyComment(text);
+    addStatement(new RoutePolicyComment(text));
   }
 
-  private RoutePolicyIfStatement toRoutePolicyStatement(If_rp_stanzaContext ctx) {
+  @Override
+  public void enterIf_rp_stanza(If_rp_stanzaContext ctx) {
+    RoutePolicyIfStatement currentIf = new RoutePolicyIfStatement();
+    _ifs.push(currentIf);
+    _statementCollectors.push(currentIf::addStatement);
+  }
+
+  @Override
+  public void exitIf_rp_stanza(If_rp_stanzaContext ctx) {
+    RoutePolicyIfStatement currentIf = _ifs.pop();
+    // TODO: listener-style creation of guard
     RoutePolicyBoolean b = toRoutePolicyBoolean(ctx.boolean_rp_stanza());
-    List<RoutePolicyStatement> stmts = toRoutePolicyStatementList(ctx.rp_stanza());
-    List<RoutePolicyElseIfBlock> elseIfs = new ArrayList<>();
-    for (Elseif_rp_stanzaContext ectxt : ctx.elseif_rp_stanza()) {
-      elseIfs.add(toRoutePolicyElseIfBlock(ectxt));
-    }
-    RoutePolicyElseBlock els = null;
-    Else_rp_stanzaContext elctxt = ctx.else_rp_stanza();
-    if (elctxt != null) {
-      els = toRoutePolicyElseBlock(elctxt);
-    }
-    return new RoutePolicyIfStatement(b, stmts, elseIfs, els);
+    currentIf.setGuard(b);
+    _statementCollectors.pop();
+    addStatement(currentIf);
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Prepend_as_path_rp_stanzaContext ctx) {
+  @Override
+  public void exitPrepend_as_path_rp_stanza(Prepend_as_path_rp_stanzaContext ctx) {
     AsExpr expr = toAsExpr(ctx.as);
     IntExpr number = null;
     if (ctx.number != null) {
       number = toIntExpr(ctx.number);
     }
-    return new RoutePolicyPrependAsPath(expr, number);
+    addStatement(new RoutePolicyPrependAsPath(expr, number));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Rp_stanzaContext ctx) {
-    Apply_rp_stanzaContext actx = ctx.apply_rp_stanza();
-    if (actx != null) {
-      return toRoutePolicyStatement(actx);
-    }
-
-    Delete_community_rp_stanzaContext dectx = ctx.delete_community_rp_stanza();
-    if (dectx != null) {
-      return toRoutePolicyStatement(dectx);
-    }
-
-    Disposition_rp_stanzaContext dictx = ctx.disposition_rp_stanza();
-    if (dictx != null) {
-      return toRoutePolicyStatement(dictx);
-    }
-
-    Hash_commentContext hctx = ctx.hash_comment();
-    if (hctx != null) {
-      return toRoutePolicyStatement(hctx);
-    }
-
-    If_rp_stanzaContext ictx = ctx.if_rp_stanza();
-    if (ictx != null) {
-      return toRoutePolicyStatement(ictx);
-    }
-
-    Set_rp_stanzaContext sctx = ctx.set_rp_stanza();
-    if (sctx != null) {
-      return toRoutePolicyStatement(sctx);
-    }
-
-    throw convError(RoutePolicyStatement.class, ctx);
-  }
-
-  private RoutePolicyStatement toRoutePolicyStatement(Set_community_rp_stanzaContext ctx) {
+  @Override
+  public void exitSet_community_rp_stanza(Set_community_rp_stanzaContext ctx) {
     XrCommunitySetExpr cset =
         toXrCommunitySetExpr(ctx.community_set_expr(), ROUTE_POLICY_SET_COMMUNITY);
     boolean additive = (ctx.ADDITIVE() != null);
-    return new XrRoutePolicySetCommunity(cset, additive);
+    addStatement(new XrRoutePolicySetCommunity(cset, additive));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_extcommunity_rp_stanzaContext ctx) {
-    if (ctx.set_extcommunity_rt() != null) {
-      return toRoutePolicyStatement(ctx.set_extcommunity_rt());
-    } else {
-      throw convError(RoutePolicyStatement.class, ctx);
-    }
-  }
-
-  private RoutePolicyStatement toRoutePolicyStatement(Set_extcommunity_rtContext ctx) {
+  @Override
+  public void exitSet_extcommunity_rt(Set_extcommunity_rtContext ctx) {
     ExtcommunitySetRtExpr expr =
         toExtcommunitySetRtExpr(ctx.rp_extcommunity_set_rt(), ROUTE_POLICY_SET_EXTCOMMUNITY_RT);
     boolean additive = (ctx.ADDITIVE() != null);
-    return new RoutePolicySetExtcommunityRt(expr, additive);
+    addStatement(new RoutePolicySetExtcommunityRt(expr, additive));
   }
 
   private ExtcommunitySetRtExpr toExtcommunitySetRtExpr(
@@ -8607,37 +8606,43 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_isis_metric_rp_stanzaContext ctx) {
+  @Override
+  public void exitSet_isis_metric_rp_stanza(Set_isis_metric_rp_stanzaContext ctx) {
     LongExpr metric = toCommonLongExpr(ctx.int_expr());
-    return new RoutePolicySetIsisMetric(metric);
+    addStatement(new RoutePolicySetIsisMetric(metric));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_level_rp_stanzaContext ctx) {
-    return new RoutePolicySetLevel(toIsisLevelExpr(ctx.isis_level_expr()));
+  @Override
+  public void exitSet_level_rp_stanza(Set_level_rp_stanzaContext ctx) {
+    addStatement(new RoutePolicySetLevel(toIsisLevelExpr(ctx.isis_level_expr())));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_local_preference_rp_stanzaContext ctx) {
-    return new RoutePolicySetLocalPref(toLocalPreferenceLongExpr(ctx.pref));
+  @Override
+  public void exitSet_local_preference_rp_stanza(Set_local_preference_rp_stanzaContext ctx) {
+    addStatement(new RoutePolicySetLocalPref(toLocalPreferenceLongExpr(ctx.pref)));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_med_rp_stanzaContext ctx) {
-    return new RoutePolicySetMed(toMetricLongExpr(ctx.med));
+  @Override
+  public void exitSet_med_rp_stanza(Set_med_rp_stanzaContext ctx) {
+    addStatement(new RoutePolicySetMed(toMetricLongExpr(ctx.med)));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_metric_type_rp_stanzaContext ctx) {
+  @Override
+  public void exitSet_metric_type_rp_stanza(Set_metric_type_rp_stanzaContext ctx) {
     Rp_metric_typeContext t = ctx.type;
     if (t.rp_ospf_metric_type() != null) {
-      return new RoutePolicySetOspfMetricType(toOspfMetricType(t.rp_ospf_metric_type()));
+      addStatement(new RoutePolicySetOspfMetricType(toOspfMetricType(t.rp_ospf_metric_type())));
     } else if (t.rp_isis_metric_type() != null) {
-      return new RoutePolicySetIsisMetricType(toIsisMetricType(t.rp_isis_metric_type()));
+      addStatement(new RoutePolicySetIsisMetricType(toIsisMetricType(t.rp_isis_metric_type())));
     } else if (t.RP_VARIABLE() != null) {
-      return new RoutePolicySetVarMetricType(t.RP_VARIABLE().getText());
+      addStatement(new RoutePolicySetVarMetricType(t.RP_VARIABLE().getText()));
     } else {
-      throw convError(RoutePolicyStatement.class, ctx);
+      todo(ctx);
     }
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_next_hop_rp_stanzaContext ctx) {
+  @Override
+  public void exitSet_next_hop_rp_stanza(Set_next_hop_rp_stanzaContext ctx) {
     RoutePolicyNextHop hop = null;
     if (ctx.DISCARD() != null) {
       hop = new RoutePolicyNextHopDiscard();
@@ -8652,87 +8657,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (destVrf) {
       warn(ctx, "Unimplemented 'destination-vrf' directive.");
     }
-    return new RoutePolicySetNextHop(hop, destVrf);
+    addStatement(new RoutePolicySetNextHop(hop, destVrf));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_origin_rp_stanzaContext ctx) {
+  @Override
+  public void exitSet_origin_rp_stanza(Set_origin_rp_stanzaContext ctx) {
     OriginExpr origin = toOriginExpr(ctx.origin_expr());
-    return new RoutePolicySetOrigin(origin);
-  }
-
-  private RoutePolicyStatement toRoutePolicyStatement(Set_rp_stanzaContext ctx) {
-    Prepend_as_path_rp_stanzaContext pasctx = ctx.prepend_as_path_rp_stanza();
-    if (pasctx != null) {
-      return toRoutePolicyStatement(pasctx);
-    }
-
-    Set_community_rp_stanzaContext cctx = ctx.set_community_rp_stanza();
-    if (cctx != null) {
-      return toRoutePolicyStatement(cctx);
-    }
-
-    {
-      Set_extcommunity_rp_stanzaContext child = ctx.set_extcommunity_rp_stanza();
-      if (child != null) {
-        return toRoutePolicyStatement(child);
-      }
-    }
-
-    Set_isis_metric_rp_stanzaContext ictx = ctx.set_isis_metric_rp_stanza();
-    if (ictx != null) {
-      return toRoutePolicyStatement(ictx);
-    }
-
-    Set_level_rp_stanzaContext lctx = ctx.set_level_rp_stanza();
-    if (lctx != null) {
-      return toRoutePolicyStatement(lctx);
-    }
-
-    Set_local_preference_rp_stanzaContext lpctx = ctx.set_local_preference_rp_stanza();
-    if (lpctx != null) {
-      return toRoutePolicyStatement(lpctx);
-    }
-
-    Set_med_rp_stanzaContext medctx = ctx.set_med_rp_stanza();
-    if (medctx != null) {
-      return toRoutePolicyStatement(medctx);
-    }
-
-    Set_metric_type_rp_stanzaContext mctx = ctx.set_metric_type_rp_stanza();
-    if (mctx != null) {
-      return toRoutePolicyStatement(mctx);
-    }
-
-    Set_next_hop_rp_stanzaContext nhctx = ctx.set_next_hop_rp_stanza();
-    if (nhctx != null) {
-      return toRoutePolicyStatement(nhctx);
-    }
-
-    Set_next_hop_self_rp_stanzaContext nhsctx = ctx.set_next_hop_self_rp_stanza();
-    if (nhsctx != null) {
-      return new RoutePolicySetNextHop(new RoutePolicyNextHopSelf(), false);
-    }
-
-    Set_origin_rp_stanzaContext octx = ctx.set_origin_rp_stanza();
-    if (octx != null) {
-      return toRoutePolicyStatement(octx);
-    }
-
-    Set_tag_rp_stanzaContext tctx = ctx.set_tag_rp_stanza();
-    if (tctx != null) {
-      return toRoutePolicyStatement(tctx);
-    }
-
-    Set_weight_rp_stanzaContext wctx = ctx.set_weight_rp_stanza();
-    if (wctx != null) {
-      return toRoutePolicyStatement(wctx);
-    }
-
-    return convProblem(
-        RoutePolicyStatement.class,
-        ctx,
-        new RoutePolicyComment(
-            String.format("NOP: unsupported route-policy statement: '%s'", getFullText(ctx))));
+    addStatement(new RoutePolicySetOrigin(origin));
   }
 
   private <T, U extends T> T convProblem(
@@ -8741,18 +8672,26 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return defaultReturnValue;
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_tag_rp_stanzaContext ctx) {
+  @Override
+  public void exitSet_tag_rp_stanza(Set_tag_rp_stanzaContext ctx) {
     LongExpr tag = toTagLongExpr(ctx.tag);
-    return new RoutePolicySetTag(tag);
+    addStatement(new RoutePolicySetTag(tag));
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_weight_rp_stanzaContext wctx) {
-    IntExpr weight = toCommonIntExpr(wctx.weight);
-    return new RoutePolicySetWeight(weight);
+  @Override
+  public void exitSet_weight_rp_stanza(Set_weight_rp_stanzaContext ctx) {
+    IntExpr weight = toCommonIntExpr(ctx.weight);
+    addStatement(new RoutePolicySetWeight(weight));
   }
 
-  private List<RoutePolicyStatement> toRoutePolicyStatementList(List<Rp_stanzaContext> ctxts) {
-    return ctxts.stream().map(this::toRoutePolicyStatement).collect(Collectors.toList());
+  @Override
+  public void exitSet_next_hop_self_rp_stanza(Set_next_hop_self_rp_stanzaContext ctx) {
+    addStatement(new RoutePolicySetNextHop(new RoutePolicyNextHopSelf(), false));
+  }
+
+  @Override
+  public void exitSet_path_selection_rp_stanza(Set_path_selection_rp_stanzaContext ctx) {
+    todo(ctx);
   }
 
   @Nonnull
