@@ -55,6 +55,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsnValue;
+import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -62,10 +63,9 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RemoteAs;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
@@ -83,11 +83,7 @@ import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfigu
 final class Conversions {
 
   /** Matches anything but the IPv4 default route. */
-  static final Not NOT_DEFAULT_ROUTE;
-
-  static {
-    NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
-  }
+  static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
@@ -696,14 +692,23 @@ final class Conversions {
       Configuration c, String policyName, BgpVrfNeighborAddressFamilyConfiguration af) {
     RoutingPolicy.Builder ret = RoutingPolicy.builder().setOwner(c).setName(policyName);
 
-    // NX-OS applies peer tag at import.
-    ret.addStatement(new SetTag(AsnValue.of(RemoteAs.instance())));
-
     if (af.getInboundRouteMap() != null) {
       // Call inbound route-map if set.
-      ret.addStatement(new CallStatement(routeMapOrRejectAll(af.getInboundRouteMap(), c)));
+      // If the inbound route-map doesn't set a tag explicitly, the tag defaults to the latest AS in
+      // the AS-path. Use intermediate BGP attributes to ensure the default tag is determined using
+      // the AS-path after the inbound route-map has been applied.
+      ret.addStatement(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
+      ret.addStatement(
+          new If(
+              new CallExpr(routeMapOrRejectAll(af.getInboundRouteMap(), c)),
+              ImmutableList.of(
+                  Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+                  new SetDefaultTag(AsnValue.of(AutoAs.instance())),
+                  Statements.ExitAccept.toStaticStatement())));
+      ret.addStatement(Statements.ExitReject.toStaticStatement());
     } else {
-      // Accept everything if not.
+      // Set tag and accept everything if not.
+      ret.addStatement(new SetTag(AsnValue.of(AutoAs.instance())));
       ret.addStatement(Statements.ExitAccept.toStaticStatement());
     }
 

@@ -13,6 +13,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetIsisLevel;
 import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
@@ -128,6 +129,11 @@ public class RoutePolicyStatementVarCollector
 
   @Override
   public Set<CommunityVar> visitSetTag(SetTag setTag, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitSetDefaultTag(SetDefaultTag setDefaultTag, Configuration arg) {
     return ImmutableSet.of();
   }
 

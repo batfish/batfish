@@ -87,10 +87,21 @@ public class AutoAsTest {
 
   @Test
   public void testEvaluateDirectionIn_emptyAsPath() {
+    // In the absence of an AS path, evaluates to remote AS. TODO Untested.
+    BgpSessionProperties sessionProps =
+        BgpSessionProperties.builder()
+            .setHeadAs(11111L)
+            .setTailAs(22222L)
+            .setHeadIp(Ip.parse("1.1.1.1"))
+            .setTailIp(Ip.parse("2.2.2.2"))
+            .build();
     Environment env =
-        Environment.builder(C).setDirection(Direction.IN).setOriginalRoute(BGP_ROUTE).build();
-    _thrown.expect(AssertionError.class);
-    INSTANCE.evaluate(env);
+        Environment.builder(C)
+            .setDirection(Direction.IN)
+            .setBgpSessionProperties(sessionProps)
+            .setOriginalRoute(BGP_ROUTE)
+            .build();
+    assertThat(INSTANCE.evaluate(env), equalTo(11111L));
   }
 
   @Test
