@@ -1336,7 +1336,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _asPathBooleansByCtx = new IdentityHashMap<>();
     _statementCollectors = new Stack<>();
     _ifs = new Stack<>();
-    _elseIfs = new Stack();
+    _elseIfs = new Stack<>();
   }
 
   private void addStatement(RoutePolicyStatement statement) {
