@@ -230,6 +230,17 @@ public class NxosBgpTest {
       assertTrue(importPolicy2.process(route, outputRoute, Environment.Direction.IN));
       assertThat(outputRoute.build(), hasTag(65100L));
     }
+
+    // Third neighbor has inbound prefix-list. Should permit 1.1.1.1/32 route, set tag to latest AS
+    BgpActivePeerConfig neighbor3 = neighbors.get(Prefix.parse("10.10.10.3/32"));
+    RoutingPolicy importPolicy3 =
+        c.getRoutingPolicies().get(neighbor3.getIpv4UnicastAddressFamily().getImportPolicy());
+    {
+      Bgpv4Route route = rb.setNetwork(Prefix.parse("1.1.1.1/32")).build();
+      Bgpv4Route.Builder outputRoute = route.toBuilder();
+      assertTrue(importPolicy3.process(route, outputRoute, Environment.Direction.IN));
+      assertThat(outputRoute.build(), hasTag(65100L));
+    }
   }
 
   @Test
