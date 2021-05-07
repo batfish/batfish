@@ -3360,9 +3360,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public BooleanExpr visitRouteMapMatchIpAddressPrefixList(
               RouteMapMatchIpAddressPrefixList routeMapMatchIpAddressPrefixList) {
+            if (!_ipPrefixLists.keySet().containsAll(routeMapMatchIpAddressPrefixList.getNames())) {
+              // Lab tests show that this permits all routes:
+              //   route-map RM permit 10
+              //    match ip address prefix-list UNDEFINED
+              // TODO: Explore behavior with multiple prefix-lists configured
+              // TODO: Check that match behavior is the same if the term denies
+              return BooleanExprs.TRUE;
+            }
             return new Disjunction(
                 routeMapMatchIpAddressPrefixList.getNames().stream()
-                    .filter(_ipPrefixLists::containsKey)
                     .map(
                         name ->
                             new MatchPrefixSet(

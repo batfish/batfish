@@ -1798,6 +1798,7 @@ public class CiscoConversions {
     for (Vrf importingVrf : vrfsWithIpv4Af) {
       VrfAddressFamily ipv4uaf = importingVrf.getIpv4UnicastAddressFamily();
       assert ipv4uaf != null;
+      // TODO: should instead attach all export RTs in single config per compatible exporter
       for (ExtendedCommunity importRt : ipv4uaf.getRouteTargetImport()) {
         org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(importingVrf.getName());
         assert viVrf != null;
@@ -1810,7 +1811,7 @@ public class CiscoConversions {
           }
           viVrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(importRt))
+                  .setBgpLeakConfig(bgpLeakConfig(importRt))
                   .setImportFromVrf(exportingVrf)
                   .setImportPolicy(routeMapOrRejectAll(ipv4uaf.getImportMap(), c))
                   .build());
@@ -1824,7 +1825,7 @@ public class CiscoConversions {
           }
           viVrf.addVrfLeakingConfig(
               VrfLeakingConfig.builder()
-                  .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(importRt))
+                  .setBgpLeakConfig(bgpLeakConfig(importRt))
                   .setImportFromVrf(mapExportingVrf.getName())
                   .setImportPolicy(
                       vrfExportImportPolicy(
@@ -1841,6 +1842,18 @@ public class CiscoConversions {
       }
     }
   }
+
+  private static BgpLeakConfig bgpLeakConfig(ExtendedCommunity importRt) {
+    // TODO: this should take export RTs, not single import RT
+    return BgpLeakConfig.builder()
+        // TODO: input and honor result of 'bgp distance' command argument 1 (eBGP admin)
+        .setAdmin(RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS))
+        .setAttachRouteTargets(importRt)
+        .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
+        .build();
+  }
+
+  @VisibleForTesting public static final int BGP_VRF_LEAK_IGP_WEIGHT = 32768;
 
   /** Create a policy for exporting from one vrf to another in the presence of an export map. */
   private static @Nonnull String vrfExportImportPolicy(

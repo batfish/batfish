@@ -78,6 +78,7 @@ public class Environment {
   private final Map<String, IpAccessList> _ipAccessLists;
   private final Map<String, Ip6AccessList> _ip6AccessLists;
   private boolean _localDefaultAction;
+  private boolean _tagExplicitlySet;
 
   @Nullable
   private final BiFunction<RibExpr, PrefixSpace, Boolean> _ribIntersectsPrefixSpaceEvaluator;
@@ -235,6 +236,11 @@ public class Environment {
     return _localDefaultAction;
   }
 
+  /** Whether the output route's tag has been explicitly set in the current routing policy */
+  public boolean getTagExplicitlySet() {
+    return _tagExplicitlySet;
+  }
+
   public Map<String, RoutingPolicy> getRoutingPolicies() {
     return _routingPolicies;
   }
@@ -316,6 +322,10 @@ public class Environment {
 
   public void setLocalDefaultAction(boolean localDefaultAction) {
     _localDefaultAction = localDefaultAction;
+  }
+
+  public void setTagExplicitlySet(boolean tagExplicitlySet) {
+    _tagExplicitlySet = tagExplicitlySet;
   }
 
   public void setReadFromIntermediateBgpAttributes(boolean readFromIntermediateBgpAttributes) {

@@ -168,6 +168,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeService
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborImportPolicyName;
+import static org.batfish.representation.cisco.CiscoConversions.BGP_VRF_LEAK_IGP_WEIGHT;
 import static org.batfish.representation.cisco.CiscoConversions.computeVrfExportImportPolicyName;
 import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
@@ -5703,7 +5704,14 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     VrfLeakingConfig.Builder builder =
         VrfLeakingConfig.builder()
-            .setBgpLeakConfig(BgpLeakConfig.forRouteTargets(ExtendedCommunity.target(65003, 11)));
+            .setBgpLeakConfig(
+                BgpLeakConfig.builder()
+                    .setAdmin(
+                        RoutingProtocol.BGP.getDefaultAdministrativeCost(
+                            ConfigurationFormat.CISCO_IOS))
+                    .setAttachRouteTargets(ExtendedCommunity.target(65003, 11))
+                    .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
+                    .build());
     assertThat(
         c.getVrfs().get("DST_VRF").getVrfLeakConfigs(),
         containsInAnyOrder(

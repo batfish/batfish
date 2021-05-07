@@ -15,7 +15,6 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
@@ -34,7 +33,6 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for https://github.com/batfish/batfish/issues/6018. */
-@ParametersAreNonnullByDefault
 public final class GitHub6018Test {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_xr/testconfigs/";

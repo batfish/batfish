@@ -56,6 +56,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsnValue;
+import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -66,10 +67,9 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.RemoteAs;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
@@ -87,11 +87,7 @@ import org.batfish.representation.cisco_nxos.BgpVrfL2VpnEvpnAddressFamilyConfigu
 final class Conversions {
 
   /** Matches anything but the IPv4 default route. */
-  static final Not NOT_DEFAULT_ROUTE;
-
-  static {
-    NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
-  }
+  static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
 
   private static final int MAX_ADMINISTRATIVE_COST = 32767;
 
@@ -711,15 +707,20 @@ final class Conversions {
       Configuration c, String policyName, BgpVrfNeighborAddressFamilyConfiguration af, Warnings w) {
     RoutingPolicy.Builder ret = RoutingPolicy.builder().setOwner(c).setName(policyName);
 
-    // NX-OS applies peer tag at import.
-    ret.addStatement(new SetTag(AsnValue.of(RemoteAs.instance())));
-
     String routeMap = af.getInboundRouteMap();
     String prefixList = af.getInboundPrefixList();
 
     // Use inbound route-map or prefix-list if set, preferring route-map for now
     if (routeMap != null) {
-      ret.addStatement(new CallStatement(routeMapOrRejectAll(routeMap, c)));
+      ret.addStatement(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement());
+      ret.addStatement(
+          new If(
+              new CallExpr(routeMapOrRejectAll(af.getInboundRouteMap(), c)),
+              ImmutableList.of(
+                  Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
+                  new SetDefaultTag(AsnValue.of(AutoAs.instance())),
+                  Statements.ExitAccept.toStaticStatement())));
+      ret.addStatement(Statements.ExitReject.toStaticStatement());
 
       // TODO Support using multiple filters in import policies
       if (prefixList != null) {
@@ -730,9 +731,11 @@ final class Conversions {
                 + " configured.");
       }
     } else if (prefixList != null) {
+      ret.addStatement(new SetTag(AsnValue.of(AutoAs.instance())));
       ret.addStatement(getPrefixListStatement(c, prefixList));
     } else {
       // Accept everything if neither is set
+      ret.addStatement(new SetTag(AsnValue.of(AutoAs.instance())));
       ret.addStatement(Statements.ExitAccept.toStaticStatement());
     }
 

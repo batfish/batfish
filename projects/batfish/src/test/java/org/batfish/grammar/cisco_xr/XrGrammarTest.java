@@ -119,7 +119,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
@@ -217,10 +216,9 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link CiscoXrParser} and {@link CiscoXrControlPlaneExtractor}. */
-@ParametersAreNonnullByDefault
 public final class XrGrammarTest {
 
-  private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_xr/testconfigs/";
+  static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/cisco_xr/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -2231,6 +2229,20 @@ public final class XrGrammarTest {
   @Test
   public void testConflictPolicyStaticParsing() {
     String hostname = "xr-conflict-policy-static";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testAsPathSetParsing() {
+    String hostname = "xr-as-path-set";
+    // Do not crash
+    assertNotNull(parseVendorConfig(hostname));
+  }
+
+  @Test
+  public void testAsPathBooleanParsing() {
+    String hostname = "xr-as-path-boolean";
     // Do not crash
     assertNotNull(parseVendorConfig(hostname));
   }

@@ -93,6 +93,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetIsisLevel;
 import org.batfish.datamodel.routing_policy.statement.SetIsisMetricType;
@@ -742,6 +743,12 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitSetTag(SetTag setTag, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitSetDefaultTag(
+        SetDefaultTag setDefaultTag, CommunityStructuresVerifierContext arg) {
       return null;
     }
 

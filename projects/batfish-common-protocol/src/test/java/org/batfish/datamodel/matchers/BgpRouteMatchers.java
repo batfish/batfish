@@ -83,6 +83,14 @@ public final class BgpRouteMatchers {
   }
 
   /**
+   * Provides a matcher that matches when the {@link AbstractRoute}'s weight is matched by the
+   * provided {@code subMatcher}..
+   */
+  public static @Nonnull Matcher<HasReadableWeight> hasWeight(Matcher<? super Integer> subMatcher) {
+    return new HasWeight(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches when the {@link AbstractRoute} is a {@link Bgpv4Route} matched
    * by the provided {@code subMatcher}.
    */

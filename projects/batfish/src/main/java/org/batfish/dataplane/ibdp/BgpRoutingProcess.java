@@ -542,11 +542,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           .getActions()
           .map(a -> redistributeRouteToLocalRib(a, policy.get()))
           .forEach(_localDeltaBuilder::from);
-      LOGGER.debug(
-          "Redistributed into local BGP RIB node {}, VRF {}: {}",
-          _hostname,
-          _vrfName,
-          _localDeltaBuilder.build());
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(
+            "Redistributed into local BGP RIB node {}, VRF {}: {}",
+            _hostname,
+            _vrfName,
+            _localDeltaBuilder.build());
+      }
     }
   }
 
@@ -1713,6 +1715,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                   .setNonRouting(false)
                   .setNextHop(NextHopVrf.of(importFromVrf))
                   .addCommunities(bgpConfig.getAttachRouteTargets());
+          switch (route.getSrcProtocol()) {
+            case AGGREGATE: // local BGP route
+            case BGP:
+            case IBGP:
+              break;
+            default:
+              builder.setAdmin(bgpConfig.getAdmin()).setWeight(bgpConfig.getWeight());
+              break;
+          }
 
           // Process route through import policy, if one exists
           boolean accept = true;

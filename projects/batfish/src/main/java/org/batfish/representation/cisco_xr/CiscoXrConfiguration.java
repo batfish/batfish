@@ -15,6 +15,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseS
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertMatchesAnyToCommunitySetMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertMatchesEveryToCommunitySetMatchExpr;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertVrfLeakingConfig;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.eigrpRedistributionPoliciesToStatements;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpImportPolicy;
@@ -1048,10 +1049,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportStaticConditions.setComment("Redistribute static routes into BGP");
       exportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
       String mapName = redistributeStaticPolicy.getRouteMap();
+      redistributeConditions.add(exportStaticConditions);
       if (mapName != null) {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
-          redistributeConditions.add(exportStaticConditions);
         } else {
           _w.redFlag(
               String.format(
@@ -1072,10 +1073,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       exportConnectedConditions.setComment("Redistribute connected routes into BGP");
       exportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
       String mapName = redistributeConnectedPolicy.getRouteMap();
+      redistributeConditions.add(exportConnectedConditions);
       if (mapName != null) {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportConnectedConditions.getConjuncts().add(new CallExpr(mapName));
-          redistributeConditions.add(exportConnectedConditions);
         } else {
           _w.redFlag(
               String.format(
@@ -2270,6 +2271,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             }
           }
         });
+
+    convertVrfLeakingConfig(_vrfs.values(), c);
 
     // copy tracking groups
     c.getTrackingGroups().putAll(_trackingGroups);
