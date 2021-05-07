@@ -1004,7 +1004,6 @@ import org.batfish.representation.cisco_xr.RoutePolicySetNextHop;
 import org.batfish.representation.cisco_xr.RoutePolicySetOrigin;
 import org.batfish.representation.cisco_xr.RoutePolicySetOspfMetricType;
 import org.batfish.representation.cisco_xr.RoutePolicySetTag;
-import org.batfish.representation.cisco_xr.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco_xr.RoutePolicySetWeight;
 import org.batfish.representation.cisco_xr.RoutePolicyStatement;
 import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
@@ -2588,12 +2587,14 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     RoutePolicy currentRoutePolicy = new RoutePolicy(name);
     _configuration.getRoutePolicies().put(name, currentRoutePolicy);
     _configuration.defineStructure(ROUTE_POLICY, name, ctx);
+    assert _statementCollectors.empty();
     _statementCollectors.push(currentRoutePolicy::addStatement);
   }
 
   @Override
   public void exitRoute_policy_stanza(Route_policy_stanzaContext ctx) {
     _statementCollectors.pop();
+    assert _statementCollectors.empty();
   }
 
   @Override
@@ -8634,9 +8635,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       addStatement(new RoutePolicySetOspfMetricType(toOspfMetricType(t.rp_ospf_metric_type())));
     } else if (t.rp_isis_metric_type() != null) {
       addStatement(new RoutePolicySetIsisMetricType(toIsisMetricType(t.rp_isis_metric_type())));
-    } else if (t.RP_VARIABLE() != null) {
-      addStatement(new RoutePolicySetVarMetricType(t.RP_VARIABLE().getText()));
     } else {
+      assert t.RP_VARIABLE() != null;
       todo(ctx);
     }
   }
