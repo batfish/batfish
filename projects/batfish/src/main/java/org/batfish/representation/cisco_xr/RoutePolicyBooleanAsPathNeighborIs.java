@@ -2,7 +2,6 @@ package org.batfish.representation.cisco_xr;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -21,8 +20,9 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 public final class RoutePolicyBooleanAsPathNeighborIs extends RoutePolicyBoolean {
 
   @SafeVarargs
+  @SuppressWarnings("varargs")
   public RoutePolicyBooleanAsPathNeighborIs(boolean exact, Range<Long>... ranges) {
-    this(exact, Arrays.asList(ranges));
+    this(exact, ImmutableList.copyOf(ranges));
   }
 
   public RoutePolicyBooleanAsPathNeighborIs(boolean exact, Iterable<Range<Long>> ranges) {

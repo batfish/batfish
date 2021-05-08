@@ -2,7 +2,6 @@ package org.batfish.representation.cisco_xr;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -16,8 +15,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class PassesThroughAsPathSetElem implements AsPathSetElem {
 
   @SafeVarargs
+  @SuppressWarnings("varargs")
   public PassesThroughAsPathSetElem(boolean exact, Range<Long>... asRanges) {
-    this(exact, Arrays.asList(asRanges));
+    this(exact, ImmutableList.copyOf(asRanges));
   }
 
   public PassesThroughAsPathSetElem(boolean exact, Iterable<Range<Long>> asRanges) {
