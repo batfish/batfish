@@ -20,5 +20,16 @@ public final class UnimplementedBoolean extends RoutePolicyBoolean {
     return BooleanExprs.FALSE;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj || obj instanceof UnimplementedBoolean;
+  }
+
+  @Override
+  public int hashCode() {
+    // randomly generated
+    return 0x1D6E93B2;
+  }
+
   private static @Nonnull UnimplementedBoolean INSTANCE = new UnimplementedBoolean();
 }

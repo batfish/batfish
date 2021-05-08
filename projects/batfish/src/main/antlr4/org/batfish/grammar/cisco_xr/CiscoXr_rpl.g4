@@ -86,6 +86,7 @@ boolean_as_path
     | boolean_as_path_neighbor_is
     | boolean_as_path_originates_from
     | boolean_as_path_passes_through
+    | boolean_as_path_unique_length
   )
 ;
 

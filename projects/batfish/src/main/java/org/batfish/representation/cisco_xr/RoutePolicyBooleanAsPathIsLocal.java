@@ -27,6 +27,17 @@ public class RoutePolicyBooleanAsPathIsLocal extends RoutePolicyBoolean {
     return match;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj || obj instanceof RoutePolicyBooleanAsPathIsLocal;
+  }
+
+  @Override
+  public int hashCode() {
+    // randomly generated
+    return 0xDA3A91D1;
+  }
+
   private static final @Nonnull RoutePolicyBooleanAsPathIsLocal INSTANCE =
       new RoutePolicyBooleanAsPathIsLocal();
 

@@ -15,6 +15,9 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
+import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
+import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
@@ -114,6 +117,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Range;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -167,19 +171,31 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.AddressFamilyType;
+import org.batfish.representation.cisco_xr.AsPathSet;
+import org.batfish.representation.cisco_xr.AsPathSetElem;
+import org.batfish.representation.cisco_xr.AsPathSetExpr;
+import org.batfish.representation.cisco_xr.AsPathSetReference;
+import org.batfish.representation.cisco_xr.AsPathSetVariable;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
+import org.batfish.representation.cisco_xr.DfaRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.DistributeList;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
+import org.batfish.representation.cisco_xr.InlineAsPathSet;
+import org.batfish.representation.cisco_xr.IosRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.Ipv4AccessList;
 import org.batfish.representation.cisco_xr.Ipv4AccessListLine;
 import org.batfish.representation.cisco_xr.Ipv6AccessList;
+import org.batfish.representation.cisco_xr.LengthAsPathSetElem;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint16Range;
 import org.batfish.representation.cisco_xr.LiteralUint32;
+import org.batfish.representation.cisco_xr.NeighborIsAsPathSetElem;
+import org.batfish.representation.cisco_xr.OriginatesFromAsPathSetElem;
 import org.batfish.representation.cisco_xr.OspfProcess;
+import org.batfish.representation.cisco_xr.PassesThroughAsPathSetElem;
 import org.batfish.representation.cisco_xr.PeerAs;
 import org.batfish.representation.cisco_xr.PrivateAs;
 import org.batfish.representation.cisco_xr.RdSet;
@@ -191,12 +207,23 @@ import org.batfish.representation.cisco_xr.RdSetIosRegex;
 import org.batfish.representation.cisco_xr.RdSetIpAddress;
 import org.batfish.representation.cisco_xr.RdSetIpPrefix;
 import org.batfish.representation.cisco_xr.RoutePolicy;
+import org.batfish.representation.cisco_xr.RoutePolicyBoolean;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathIn;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathIsLocal;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathLength;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathNeighborIs;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathOriginatesFrom;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathPassesThrough;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathUniqueLength;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanValidationStateIs;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyDispositionType;
 import org.batfish.representation.cisco_xr.RoutePolicyElseIfBlock;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
+import org.batfish.representation.cisco_xr.RoutePolicyStatement;
 import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
+import org.batfish.representation.cisco_xr.UnimplementedBoolean;
+import org.batfish.representation.cisco_xr.UniqueLengthAsPathSetElem;
 import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.WildcardUint16RangeExpr;
 import org.batfish.representation.cisco_xr.WildcardUint32RangeExpr;
@@ -2234,16 +2261,283 @@ public final class XrGrammarTest {
   }
 
   @Test
-  public void testAsPathSetParsing() {
+  public void testAsPathSetExtraction() {
     String hostname = "xr-as-path-set";
-    // Do not crash
-    assertNotNull(parseVendorConfig(hostname));
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getAsPathSets(), hasKeys("mixed"));
+    {
+      AsPathSet set = vc.getAsPathSets().get("mixed");
+      Iterator<AsPathSetElem> i = set.getElements().iterator();
+      AsPathSetElem elem;
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new DfaRegexAsPathSetElem("^1_")));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new IosRegexAsPathSetElem("^2_")));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 1, false)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 2, true)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(GE, 3, false)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(GE, 4, true)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 5, false)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 6, true)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(LE, 7, false)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(LE, 8, true)));
+      }
+      {
+        elem = i.next();
+        assertThat(
+            elem,
+            equalTo(new NeighborIsAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L))));
+      }
+      {
+        elem = i.next();
+        assertThat(
+            elem,
+            equalTo(new NeighborIsAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L))));
+      }
+      {
+        elem = i.next();
+        assertThat(
+            elem,
+            equalTo(
+                new OriginatesFromAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L))));
+      }
+      {
+        elem = i.next();
+        assertThat(
+            elem,
+            equalTo(
+                new OriginatesFromAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L))));
+      }
+      {
+        elem = i.next();
+        assertThat(
+            elem,
+            equalTo(
+                new PassesThroughAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L))));
+      }
+      {
+        elem = i.next();
+        assertThat(
+            elem,
+            equalTo(
+                new PassesThroughAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L))));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 1, false)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 2, true)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(GE, 3, false)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(GE, 4, true)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 5, false)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 6, true)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(LE, 7, false)));
+      }
+      {
+        elem = i.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(LE, 8, true)));
+      }
+      assertFalse(i.hasNext());
+    }
   }
 
   @Test
-  public void testAsPathBooleanParsing() {
+  public void testAsPathBooleanExtraction() {
     String hostname = "xr-as-path-boolean";
-    // Do not crash
-    assertNotNull(parseVendorConfig(hostname));
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getRoutePolicies(), hasKeys("rp1"));
+    RoutePolicy rp = vc.getRoutePolicies().get("rp1");
+    Iterator<RoutePolicyStatement> i = rp.getStatements().iterator();
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(guard, instanceOf(RoutePolicyBooleanAsPathIn.class));
+      AsPathSetExpr expr = ((RoutePolicyBooleanAsPathIn) guard).getAsPathSetExpr();
+      assertThat(expr, instanceOf(InlineAsPathSet.class));
+      Iterator<AsPathSetElem> ei = ((InlineAsPathSet) expr).getAsPathSet().getElements().iterator();
+      AsPathSetElem elem;
+      {
+        elem = ei.next();
+        assertThat(elem, equalTo(new DfaRegexAsPathSetElem("^1_")));
+      }
+      {
+        elem = ei.next();
+        assertThat(elem, equalTo(new IosRegexAsPathSetElem("^2_")));
+      }
+      {
+        elem = ei.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 1, false)));
+      }
+      {
+        elem = ei.next();
+        assertThat(elem, equalTo(new LengthAsPathSetElem(GE, 2, true)));
+      }
+      {
+        elem = ei.next();
+        assertThat(
+            elem,
+            equalTo(new NeighborIsAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L))));
+      }
+      {
+        elem = ei.next();
+        assertThat(
+            elem,
+            equalTo(
+                new OriginatesFromAsPathSetElem(false, Range.singleton(4L), Range.closed(5L, 6L))));
+      }
+      {
+        elem = ei.next();
+        assertThat(
+            elem,
+            equalTo(
+                new PassesThroughAsPathSetElem(false, Range.singleton(7L), Range.closed(8L, 9L))));
+      }
+      {
+        elem = ei.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 1, false)));
+      }
+      {
+        elem = ei.next();
+        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 2, true)));
+      }
+      assertFalse(ei.hasNext());
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(guard, instanceOf(RoutePolicyBooleanAsPathIn.class));
+      AsPathSetExpr expr = ((RoutePolicyBooleanAsPathIn) guard).getAsPathSetExpr();
+      assertThat(expr, instanceOf(InlineAsPathSet.class));
+      Iterator<AsPathSetElem> ei = ((InlineAsPathSet) expr).getAsPathSet().getElements().iterator();
+      // TODO: record expressions using parameters
+      assertFalse(ei.hasNext());
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(guard, instanceOf(RoutePolicyBooleanAsPathIn.class));
+      AsPathSetExpr expr = ((RoutePolicyBooleanAsPathIn) guard).getAsPathSetExpr();
+      assertThat(expr, equalTo(new AsPathSetReference("set1")));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(guard, instanceOf(RoutePolicyBooleanAsPathIn.class));
+      AsPathSetExpr expr = ((RoutePolicyBooleanAsPathIn) guard).getAsPathSetExpr();
+      assertThat(expr, equalTo(new AsPathSetVariable("$setname")));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(guard, equalTo(RoutePolicyBooleanAsPathIsLocal.instance()));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(guard, equalTo(new RoutePolicyBooleanAsPathLength(EQ, 1, false)));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      // TODO: record length with var
+      assertThat(guard, equalTo(UnimplementedBoolean.instance()));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(
+          guard,
+          equalTo(
+              new RoutePolicyBooleanAsPathNeighborIs(
+                  false, Range.singleton(1L), Range.closed(2L, 3L))));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      // TODO: record boolean neighbor-is with var
+      assertThat(guard, equalTo(UnimplementedBoolean.instance()));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(
+          guard,
+          equalTo(
+              new RoutePolicyBooleanAsPathOriginatesFrom(
+                  true, Range.singleton(1L), Range.closed(2L, 3L))));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      // TODO: record boolean originates-from with var
+      assertThat(guard, equalTo(UnimplementedBoolean.instance()));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(
+          guard,
+          equalTo(
+              new RoutePolicyBooleanAsPathPassesThrough(
+                  true, Range.singleton(1L), Range.closed(2L, 3L))));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      // TODO: record boolean passes-through with var
+      assertThat(guard, equalTo(UnimplementedBoolean.instance()));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      assertThat(guard, equalTo(new RoutePolicyBooleanAsPathUniqueLength(EQ, 1, true)));
+    }
+    {
+      RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());
+      // TODO: record unique-length with var
+      assertThat(guard, equalTo(UnimplementedBoolean.instance()));
+    }
+    assertFalse(i.hasNext());
+  }
+
+  private static RoutePolicyBoolean asPathBooleanExtractionTestHelper(
+      RoutePolicyStatement statement) {
+    assertThat(statement, instanceOf(RoutePolicyIfStatement.class));
+    RoutePolicyIfStatement ifStatement = (RoutePolicyIfStatement) statement;
+    RoutePolicyBoolean guard = ifStatement.getGuard();
+    assertNotNull(guard);
+    return guard;
   }
 }

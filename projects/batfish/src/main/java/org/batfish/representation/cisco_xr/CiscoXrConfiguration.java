@@ -24,6 +24,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.getRsaPubKe
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveTunnelIfaceNames;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.toAsPathAccessList;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunitySetExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Key;
@@ -2112,10 +2113,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
 
     // convert as-path-sets to vendor independent format
-    for (AsPathSet asPathSet : _asPathSets.values()) {
-      AsPathAccessList apList = CiscoXrConversions.toAsPathAccessList(asPathSet);
-      c.getAsPathAccessLists().put(apList.getName(), apList);
-    }
+    _asPathSets.forEach(
+        (name, asPathSet) -> {
+          // TODO: add VI support for AsPathSet references instead of relying on AsPathAccessList
+          AsPathAccessList apList = toAsPathAccessList(name, asPathSet);
+          c.getAsPathAccessLists().put(name, apList);
+        });
 
     convertCommunitySets(c);
     convertExtcommunitySetRts(c);
