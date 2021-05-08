@@ -34,7 +34,6 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -430,9 +429,8 @@ public class FortiosConfigurationTest {
   public void testConvertAccessList_source() {
     AccessList acl = new AccessList("name");
     RouteFilterList rfl = convertAccessList(acl);
-    Assert.assertThat(rfl.getSourceName(), equalTo("name"));
-    Assert.assertThat(
-        rfl.getSourceType(), equalTo(FortiosStructureType.ACCESS_LIST.getDescription()));
+    assertThat(rfl.getSourceName(), equalTo("name"));
+    assertThat(rfl.getSourceType(), equalTo(FortiosStructureType.ACCESS_LIST.getDescription()));
   }
 
   private static void assertConvertsWithoutWarnings(Address address, IpSpace expected) {
