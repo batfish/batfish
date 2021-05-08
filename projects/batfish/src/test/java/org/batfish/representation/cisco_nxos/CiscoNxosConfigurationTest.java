@@ -10,7 +10,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.RouteFilterList;
-import org.junit.Assert;
 import org.junit.Test;
 
 /** Tests for {@link CiscoNxosConfiguration} class */
@@ -61,8 +60,8 @@ public class CiscoNxosConfigurationTest {
   public void testToRouterFilterList_prefixList_source() {
     IpPrefixList plist = new IpPrefixList("name");
     RouteFilterList rfl = toRouteFilterList(plist);
-    Assert.assertThat(rfl.getSourceName(), equalTo("name"));
-    Assert.assertThat(
+    assertThat(rfl.getSourceName(), equalTo("name"));
+    assertThat(
         rfl.getSourceType(), equalTo(CiscoNxosStructureType.IP_PREFIX_LIST.getDescription()));
   }
 }

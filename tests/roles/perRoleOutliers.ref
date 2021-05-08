@@ -213,7 +213,9 @@
               "lengthRange" : "16-16"
             }
           ],
-          "name" : "102"
+          "name" : "102",
+          "sourceName" : "102",
+          "sourceType" : "extended ipv4 access-list"
         },
         "structType" : "RouteFilterList",
         "role" : "border"

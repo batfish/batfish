@@ -235,7 +235,9 @@
               "lengthRange" : "24-24"
             }
           ],
-          "name" : "101"
+          "name" : "101",
+          "sourceName" : "101",
+          "sourceType" : "extended ipv4 access-list"
         },
         "structType" : "RouteFilterList"
       },
@@ -690,7 +692,9 @@
               "lengthRange" : "24-24"
             }
           ],
-          "name" : "105"
+          "name" : "105",
+          "sourceName" : "105",
+          "sourceType" : "extended ipv4 access-list"
         },
         "structType" : "RouteFilterList"
       },
@@ -709,7 +713,9 @@
               "lengthRange" : "0-0"
             }
           ],
-          "name" : "default_list"
+          "name" : "default_list",
+          "sourceName" : "default_list",
+          "sourceType" : "ipv4 prefix-list"
         },
         "structType" : "RouteFilterList"
       },
@@ -728,7 +734,9 @@
               "lengthRange" : "16-32"
             }
           ],
-          "name" : "outbound_routes"
+          "name" : "outbound_routes",
+          "sourceName" : "outbound_routes",
+          "sourceType" : "ipv4 prefix-list"
         },
         "structType" : "RouteFilterList"
       },
@@ -945,7 +953,9 @@
               "lengthRange" : "24-24"
             }
           ],
-          "name" : "103"
+          "name" : "103",
+          "sourceName" : "103",
+          "sourceType" : "extended ipv4 access-list"
         },
         "structType" : "RouteFilterList"
       },
@@ -1450,7 +1460,9 @@
               "lengthRange" : "8-32"
             }
           ],
-          "name" : "as4-prefixes"
+          "name" : "as4-prefixes",
+          "sourceName" : "as4-prefixes",
+          "sourceType" : "ipv4 prefix-list"
         },
         "structType" : "RouteFilterList"
       },
@@ -1690,7 +1702,9 @@
               "lengthRange" : "16-16"
             }
           ],
-          "name" : "102"
+          "name" : "102",
+          "sourceName" : "102",
+          "sourceType" : "extended ipv4 access-list"
         },
         "structType" : "RouteFilterList"
       },
@@ -2516,7 +2530,9 @@
               "lengthRange" : "0-32"
             }
           ],
-          "name" : "inbound_route_filter"
+          "name" : "inbound_route_filter",
+          "sourceName" : "inbound_route_filter",
+          "sourceType" : "ipv4 prefix-list"
         },
         "structType" : "RouteFilterList"
       },

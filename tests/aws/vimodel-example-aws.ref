@@ -44273,7 +44273,9 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "MATCH_ALL_BGP"
+            "name" : "MATCH_ALL_BGP",
+            "sourceName" : "MATCH_ALL_BGP",
+            "sourceType" : "extended ipv4 access-list"
           },
           "PROTECT_LOOPBACK" : {
             "lines" : [
@@ -44288,7 +44290,9 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "PROTECT_LOOPBACK"
+            "name" : "PROTECT_LOOPBACK",
+            "sourceName" : "PROTECT_LOOPBACK",
+            "sourceType" : "ipv4 prefix-list"
           }
         },
         "routingPolicies" : {
