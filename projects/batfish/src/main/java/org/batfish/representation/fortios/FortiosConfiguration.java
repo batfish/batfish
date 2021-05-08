@@ -381,7 +381,8 @@ public class FortiosConfiguration extends VendorConfiguration {
     }
   }
 
-  private static @Nonnull RouteFilterList convertAccessList(AccessList accessList) {
+  @VisibleForTesting
+  static @Nonnull RouteFilterList convertAccessList(AccessList accessList) {
     List<RouteFilterLine> lines =
         accessList.getRules().values().stream()
             .map(

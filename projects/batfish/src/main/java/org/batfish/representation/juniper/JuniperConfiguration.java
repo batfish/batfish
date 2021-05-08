@@ -3019,6 +3019,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return viStaticRoutes.build();
   }
 
+  @VisibleForTesting
+  static RouteFilterList toRouteFilterList(PrefixList prefixList) {
+    List<org.batfish.datamodel.RouteFilterLine> lines =
+        prefixList.getPrefixes().stream()
+            .map(
+                prefix ->
+                    new org.batfish.datamodel.RouteFilterLine(
+                        LineAction.PERMIT, prefix, SubRange.singleton(prefix.getPrefixLength())))
+            .collect(ImmutableList.toImmutableList());
+    return new RouteFilterList(
+        prefixList.getName(),
+        lines,
+        prefixList.getName(),
+        JuniperStructureType.PREFIX_LIST.getDescription());
+  }
+
   @Override
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     ImmutableList.Builder<Configuration> outputConfigurations = ImmutableList.builder();
@@ -3164,18 +3180,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // convert prefix lists to route filter lists
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
-      String name = e.getKey();
-      PrefixList pl = e.getValue();
-      List<org.batfish.datamodel.RouteFilterLine> lines =
-          pl.getPrefixes().stream()
-              .map(
-                  prefix ->
-                      new org.batfish.datamodel.RouteFilterLine(
-                          LineAction.PERMIT, prefix, SubRange.singleton(prefix.getPrefixLength())))
-              .collect(ImmutableList.toImmutableList());
-      RouteFilterList rfl =
-          new RouteFilterList(name, lines, name, JuniperStructureType.PREFIX_LIST.getDescription());
-      _c.getRouteFilterLists().put(name, rfl);
+      _c.getRouteFilterLists().put(e.getKey(), toRouteFilterList(e.getValue()));
     }
 
     // Convert AddressBooks to IpSpaces
