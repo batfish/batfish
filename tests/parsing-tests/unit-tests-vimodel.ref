@@ -18456,7 +18456,9 @@
                 "lengthRange" : "24-32"
               }
             ],
-            "name" : "ScienceDMZ-networks"
+            "name" : "ScienceDMZ-networks",
+            "sourceName" : "ScienceDMZ-networks",
+            "sourceType" : "ipv4 prefix-list"
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
             "lines" : [
@@ -19311,7 +19313,9 @@
                 "lengthRange" : "15-32"
               }
             ],
-            "name" : "PFX_LIST"
+            "name" : "PFX_LIST",
+            "sourceName" : "PFX_LIST",
+            "sourceType" : "ipv4 prefix-list"
           }
         },
         "routingPolicies" : {
@@ -24906,7 +24910,9 @@
                 "lengthRange" : "24-32"
               }
             ],
-            "name" : "allowprefix"
+            "name" : "allowprefix",
+            "sourceName" : "allowprefix",
+            "sourceType" : "ipv4 prefix-list"
           },
           "allowprefix-asa" : {
             "lines" : [
@@ -24921,7 +24927,9 @@
                 "lengthRange" : "24-32"
               }
             ],
-            "name" : "allowprefix-asa"
+            "name" : "allowprefix-asa",
+            "sourceName" : "allowprefix-asa",
+            "sourceType" : "ipv4 prefix-list"
           }
         },
         "vendorFamily" : {
@@ -36404,7 +36412,9 @@
                 "lengthRange" : "24-32"
               }
             ],
-            "name" : "pl1"
+            "name" : "pl1",
+            "sourceName" : "pl1",
+            "sourceType" : "prefix-list"
           }
         },
         "routingPolicies" : {
@@ -36984,7 +36994,9 @@
                 "lengthRange" : "1-31"
               }
             ],
-            "name" : "/Common/MY_IPV4_PREFIX_LIST"
+            "name" : "/Common/MY_IPV4_PREFIX_LIST",
+            "sourceName" : "/Common/MY_IPV4_PREFIX_LIST",
+            "sourceType" : "prefix-list"
           }
         },
         "vendorFamily" : { },
@@ -37170,7 +37182,9 @@
                 "lengthRange" : "26-28"
               }
             ],
-            "name" : "pl1"
+            "name" : "pl1",
+            "sourceName" : "pl1",
+            "sourceType" : "prefix-list"
           },
           "~access-list~acl1~" : {
             "lines" : [
@@ -37180,7 +37194,9 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "~access-list~acl1~"
+            "name" : "~access-list~acl1~",
+            "sourceName" : "acl1",
+            "sourceType" : "access-list"
           }
         },
         "routingPolicies" : {
@@ -41291,7 +41307,9 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "DENY-IPV4-ANY-IN"
+            "name" : "DENY-IPV4-ANY-IN",
+            "sourceName" : "DENY-IPV4-ANY-IN",
+            "sourceType" : "ipv4 prefix-list"
           }
         },
         "vendorFamily" : {
@@ -78050,7 +78068,9 @@
                 "lengthRange" : "0-0"
               }
             ],
-            "name" : "default"
+            "name" : "default",
+            "sourceName" : "default",
+            "sourceType" : "ipv4 prefix-list"
           },
           "test" : {
             "lines" : [
@@ -78060,7 +78080,9 @@
                 "lengthRange" : "31-31"
               }
             ],
-            "name" : "test"
+            "name" : "test",
+            "sourceName" : "test",
+            "sourceType" : "ipv4 prefix-list"
           }
         },
         "routingPolicies" : {
@@ -78126,7 +78148,9 @@
                 "lengthRange" : "32-32"
               }
             ],
-            "name" : "default_route"
+            "name" : "default_route",
+            "sourceName" : "default_route",
+            "sourceType" : "ipv4 prefix-list"
           },
           "ucla_networks" : {
             "lines" : [
@@ -78171,7 +78195,9 @@
                 "lengthRange" : "24-32"
               }
             ],
-            "name" : "ucla_networks"
+            "name" : "ucla_networks",
+            "sourceName" : "ucla_networks",
+            "sourceType" : "ipv4 prefix-list"
           }
         },
         "vendorFamily" : { },
