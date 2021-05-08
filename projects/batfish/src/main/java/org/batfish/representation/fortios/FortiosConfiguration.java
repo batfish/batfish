@@ -382,8 +382,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull RouteFilterList convertAccessList(AccessList accessList) {
-    RouteFilterList rfl = new RouteFilterList(accessList.getName());
-    rfl.setLines(
+    List<RouteFilterLine> lines =
         accessList.getRules().values().stream()
             .map(
                 rule -> {
@@ -405,8 +404,12 @@ public class FortiosConfiguration extends VendorConfiguration {
                         action, rule.getWildcard(), new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
                   }
                 })
-            .collect(ImmutableList.toImmutableList()));
-    return rfl;
+            .collect(ImmutableList.toImmutableList());
+    return new RouteFilterList(
+        accessList.getName(),
+        lines,
+        accessList.getName(),
+        FortiosStructureType.ACCESS_LIST.getDescription());
   }
 
   private static @Nonnull org.batfish.datamodel.Zone convertZone(Zone zone) {

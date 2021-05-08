@@ -26,12 +26,18 @@ import org.batfish.common.BatfishException;
 public class RouteFilterList implements Serializable {
   private static final String PROP_LINES = "lines";
   private static final String PROP_NAME = "name";
+  private static final String PROP_SOURCE_NAME = "sourceName";
+  private static final String PROP_SOURCE_TYPE = "sourceType";
 
   private final Supplier<Set<Prefix>> _deniedCache;
 
   @Nonnull private List<RouteFilterLine> _lines;
 
   @Nullable private final String _name;
+
+  @Nullable private final String _sourceName;
+
+  @Nullable private final String _sourceType;
 
   private final Supplier<Set<Prefix>> _permittedCache;
 
@@ -46,8 +52,11 @@ public class RouteFilterList implements Serializable {
   @JsonCreator
   private static RouteFilterList create(
       @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_LINES) @Nullable List<RouteFilterLine> lines) {
-    return new RouteFilterList(name, firstNonNull(lines, ImmutableList.of()));
+      @JsonProperty(PROP_LINES) @Nullable List<RouteFilterLine> lines,
+      @JsonProperty(PROP_SOURCE_NAME) @Nullable String sourceName,
+      @JsonProperty(PROP_SOURCE_TYPE) @Nullable String sourceType) {
+    return new RouteFilterList(
+        name, firstNonNull(lines, ImmutableList.of()), sourceName, sourceType);
   }
 
   /** Create and empty route filter list (with no lines) */
@@ -56,10 +65,20 @@ public class RouteFilterList implements Serializable {
   }
 
   public RouteFilterList(@Nullable String name, @Nonnull List<RouteFilterLine> lines) {
+    this(name, lines, null, null);
+  }
+
+  public RouteFilterList(
+      @Nullable String name,
+      @Nonnull List<RouteFilterLine> lines,
+      @Nullable String sourceName,
+      @Nullable String sourceType) {
     _name = name;
     _deniedCache = Suppliers.memoize(new CacheSupplier());
     _permittedCache = Suppliers.memoize(new CacheSupplier());
     _lines = lines;
+    _sourceName = sourceName;
+    _sourceType = sourceType;
   }
 
   public void addLine(RouteFilterLine r) {
@@ -93,6 +112,18 @@ public class RouteFilterList implements Serializable {
   @JsonProperty(PROP_LINES)
   public List<RouteFilterLine> getLines() {
     return _lines;
+  }
+
+  @Nullable
+  @JsonProperty(PROP_SOURCE_NAME)
+  public String getSourceName() {
+    return _sourceName;
+  }
+
+  @Nullable
+  @JsonProperty(PROP_SOURCE_TYPE)
+  public String getSourceType() {
+    return _sourceType;
   }
 
   private boolean evaluatePrefix(Prefix prefix) {

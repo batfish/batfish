@@ -1675,13 +1675,15 @@ public final class CumulusConversions {
 
   @VisibleForTesting
   static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
-    String name = ipPrefixList.getName();
-    RouteFilterList rfl = new RouteFilterList(name);
-    rfl.setLines(
+    List<RouteFilterLine> lines =
         ipPrefixList.getLines().values().stream()
             .map(CumulusConversions::toRouteFilterLine)
-            .collect(ImmutableList.toImmutableList()));
-    return rfl;
+            .collect(ImmutableList.toImmutableList());
+    return new RouteFilterList(
+        ipPrefixList.getName(),
+        lines,
+        ipPrefixList.getName(),
+        CumulusStructureType.IP_PREFIX_LIST.getDescription());
   }
 
   @VisibleForTesting

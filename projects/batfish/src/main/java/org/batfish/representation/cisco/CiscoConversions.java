@@ -1363,7 +1363,11 @@ public class CiscoConversions {
         eaList.getLines().stream()
             .map(CiscoConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
-    return new RouteFilterList(eaList.getName(), lines);
+    return new RouteFilterList(
+        eaList.getName(),
+        lines,
+        eaList.getName(),
+        CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription());
   }
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList) {
@@ -1371,11 +1375,14 @@ public class CiscoConversions {
         saList.getLines().stream()
             .map(CiscoConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
-    return new RouteFilterList(saList.getName(), lines);
+    return new RouteFilterList(
+        saList.getName(),
+        lines,
+        saList.getName(),
+        CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription());
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list) {
-    RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
     List<RouteFilterLine> newLines =
         list.getLines().values().stream()
             .map(
@@ -1383,8 +1390,8 @@ public class CiscoConversions {
                     new RouteFilterLine(
                         l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
-    newRouteFilterList.setLines(newLines);
-    return newRouteFilterList;
+    return new RouteFilterList(
+        list.getName(), newLines, list.getName(), CiscoStructureType.PREFIX_LIST.getDescription());
   }
 
   @VisibleForTesting

@@ -377,14 +377,15 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         ipv6PrefixListLine.getLengthRange());
   }
 
-  private static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
+  @VisibleForTesting
+  static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
     String name = ipPrefixList.getName();
-    RouteFilterList rfl = new RouteFilterList(name);
-    rfl.setLines(
+    List<RouteFilterLine> lines =
         ipPrefixList.getLines().values().stream()
             .map(CiscoNxosConfiguration::toRouteFilterLine)
-            .collect(ImmutableList.toImmutableList()));
-    return rfl;
+            .collect(ImmutableList.toImmutableList());
+    return new RouteFilterList(
+        name, lines, name, CiscoNxosStructureType.IP_PREFIX_LIST.getDescription());
   }
 
   private static @Nonnull Route6FilterList toRoute6FilterList(Ipv6PrefixList ipv6PrefixList) {

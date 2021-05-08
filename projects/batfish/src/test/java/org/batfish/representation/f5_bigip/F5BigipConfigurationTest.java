@@ -1,6 +1,7 @@
 package org.batfish.representation.f5_bigip;
 
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.toAddressGroup;
+import static org.batfish.representation.f5_bigip.F5BigipConfiguration.toRouteFilterList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -9,14 +10,17 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 /** Tests for {@link F5BigipConfiguration} */
@@ -157,5 +161,25 @@ public class F5BigipConfigurationTest {
     org.batfish.datamodel.Interface iface = configuration.getAllInterfaces().get(vlanName);
 
     assertThat(iface.getAllAddresses(), equalTo(ImmutableSet.of(a1, a2)));
+  }
+
+  /** Check that source name and type is set when ACL is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_AccessList_source() {
+    AccessList acl = new AccessList("name");
+    RouteFilterList rfl = toRouteFilterList(acl);
+    assertThat(rfl.getSourceName(), Matchers.equalTo("name"));
+    assertThat(
+        rfl.getSourceType(), Matchers.equalTo(F5BigipStructureType.ACCESS_LIST.getDescription()));
+  }
+
+  /** Check that source name and type is set when prefix list is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_prefixList_source() {
+    PrefixList plist = new PrefixList("name");
+    RouteFilterList rfl = toRouteFilterList(plist, new Warnings());
+    assertThat(rfl.getSourceName(), Matchers.equalTo("name"));
+    assertThat(
+        rfl.getSourceType(), Matchers.equalTo(F5BigipStructureType.PREFIX_LIST.getDescription()));
   }
 }

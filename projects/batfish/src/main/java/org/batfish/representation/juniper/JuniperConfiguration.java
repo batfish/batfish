@@ -3166,14 +3166,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
       String name = e.getKey();
       PrefixList pl = e.getValue();
-      RouteFilterList rfl = new RouteFilterList(name);
-      for (Prefix prefix : pl.getPrefixes()) {
-        int prefixLength = prefix.getPrefixLength();
-        org.batfish.datamodel.RouteFilterLine line =
-            new org.batfish.datamodel.RouteFilterLine(
-                LineAction.PERMIT, prefix, SubRange.singleton(prefixLength));
-        rfl.addLine(line);
-      }
+      List<org.batfish.datamodel.RouteFilterLine> lines =
+          pl.getPrefixes().stream()
+              .map(
+                  prefix ->
+                      new org.batfish.datamodel.RouteFilterLine(
+                          LineAction.PERMIT, prefix, SubRange.singleton(prefix.getPrefixLength())))
+              .collect(ImmutableList.toImmutableList());
+      RouteFilterList rfl =
+          new RouteFilterList(name, lines, name, JuniperStructureType.PREFIX_LIST.getDescription());
       _c.getRouteFilterLists().put(name, rfl);
     }
 

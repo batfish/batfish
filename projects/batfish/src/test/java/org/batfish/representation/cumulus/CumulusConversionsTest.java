@@ -325,6 +325,9 @@ public final class CumulusConversionsTest {
                         LineAction.DENY, Prefix.parse("10.0.0.1/24"), new SubRange(27, 30)),
                     new RouteFilterLine(
                         LineAction.PERMIT, Prefix.parse("10.0.2.1/24"), new SubRange(28, 31))))));
+
+    assertThat(rfl.getSourceName(), equalTo("name"));
+    assertThat(rfl.getSourceType(), equalTo(CumulusStructureType.IP_PREFIX_LIST.getDescription()));
   }
 
   @Test

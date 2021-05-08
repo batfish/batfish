@@ -1524,37 +1524,42 @@ public class F5BigipConfiguration extends VendorConfiguration {
     return output;
   }
 
-  private @Nonnull RouteFilterLine toRouteFilterLine(AccessListLine line) {
+  private static @Nonnull RouteFilterLine toRouteFilterLine(AccessListLine line) {
     Prefix prefix = line.getPrefix();
     return new RouteFilterLine(
         line.getAction(), prefix, new SubRange(prefix.getPrefixLength(), Prefix.MAX_PREFIX_LENGTH));
   }
 
-  private @Nonnull RouteFilterList toRouteFilterList(AccessList accessList) {
+  @VisibleForTesting
+  static @Nonnull RouteFilterList toRouteFilterList(AccessList accessList) {
     String name = accessList.getName();
     return new RouteFilterList(
         computeAccessListRouteFilterName(name),
         accessList.getLines().stream()
-            .map(this::toRouteFilterLine)
-            .collect(ImmutableList.toImmutableList()));
+            .map(F5BigipConfiguration::toRouteFilterLine)
+            .collect(ImmutableList.toImmutableList()),
+        name,
+        F5BigipStructureType.ACCESS_LIST.getDescription());
   }
 
   /**
    * Converts {@code prefixList} to {@link RouteFilterList}. If {@code prefixList} contains IPv6
    * information, returns {@code null}.
    */
-  private @Nullable RouteFilterList toRouteFilterList(PrefixList prefixList) {
+  @VisibleForTesting
+  static @Nullable RouteFilterList toRouteFilterList(PrefixList prefixList, Warnings w) {
     Collection<PrefixListEntry> entries = prefixList.getEntries().values();
     if (entries.stream().map(PrefixListEntry::getPrefix6).anyMatch(Objects::nonNull)) {
       return null;
     }
     String name = prefixList.getName();
-    RouteFilterList output = new RouteFilterList(name);
-    entries.stream()
-        .map(entry -> entry.toRouteFilterLine(_w, name))
-        .filter(Objects::nonNull)
-        .forEach(output::addLine);
-    return output;
+    List<RouteFilterLine> lines =
+        entries.stream()
+            .map(entry -> entry.toRouteFilterLine(w, name))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList());
+    return new RouteFilterList(
+        name, lines, name, F5BigipStructureType.PREFIX_LIST.getDescription());
   }
 
   private @Nonnull RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
@@ -1839,7 +1844,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // Convert valid IPv4 prefix-lists to RouteFilterLists
     _prefixLists.forEach(
         (name, prefixList) -> {
-          RouteFilterList converted = toRouteFilterList(prefixList);
+          RouteFilterList converted = toRouteFilterList(prefixList, _w);
           if (converted != null) {
             _c.getRouteFilterLists().put(name, converted);
           }

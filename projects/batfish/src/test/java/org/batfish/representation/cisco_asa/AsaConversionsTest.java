@@ -12,6 +12,7 @@ import static org.batfish.representation.cisco_asa.AsaConversions.sanityCheckDis
 import static org.batfish.representation.cisco_asa.AsaConversions.sanityCheckEigrpDistributeList;
 import static org.batfish.representation.cisco_asa.AsaConversions.toOspfDeadInterval;
 import static org.batfish.representation.cisco_asa.AsaConversions.toOspfHelloInterval;
+import static org.batfish.representation.cisco_asa.AsaConversions.toRouteFilterList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -31,6 +32,7 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.representation.cisco_asa.DistributeList.DistributeListFilterType;
@@ -346,5 +348,34 @@ public class AsaConversionsTest {
     assertThat(
         AsaConversions.toOspfNetworkType(null, new Warnings()),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
+  }
+
+  /** Check that source name and type is set when extended ACL is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_extendedAccessList_source() {
+    ExtendedAccessList acl = new ExtendedAccessList("name");
+    RouteFilterList rfl = toRouteFilterList(acl);
+    assertThat(rfl.getSourceName(), equalTo("name"));
+    assertThat(
+        rfl.getSourceType(), equalTo(AsaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription()));
+  }
+
+  /** Check that source name and type is set when standard ACL is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_standardAccessList_source() {
+    StandardAccessList acl = new StandardAccessList("name");
+    RouteFilterList rfl = toRouteFilterList(acl);
+    assertThat(rfl.getSourceName(), equalTo("name"));
+    assertThat(
+        rfl.getSourceType(), equalTo(AsaStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()));
+  }
+
+  /** Check that source name and type is set when prefix list is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_prefixList_source() {
+    PrefixList plist = new PrefixList("name");
+    RouteFilterList rfl = toRouteFilterList(plist);
+    assertThat(rfl.getSourceName(), equalTo("name"));
+    assertThat(rfl.getSourceType(), equalTo(AsaStructureType.PREFIX_LIST.getDescription()));
   }
 }
