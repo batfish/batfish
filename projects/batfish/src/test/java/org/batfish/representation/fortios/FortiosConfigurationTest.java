@@ -34,6 +34,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -424,13 +425,16 @@ public class FortiosConfigurationTest {
             .build());
   }
 
-  /** Check that source name and type is set when access list is converted to route filter list */
+  /** Check that vendor structure id is set when access list is converted to route filter list */
   @Test
-  public void testConvertAccessList_source() {
+  public void testConvertAccessList_vendorStructureId() {
     AccessList acl = new AccessList("name");
-    RouteFilterList rfl = convertAccessList(acl);
-    assertThat(rfl.getSourceName(), equalTo("name"));
-    assertThat(rfl.getSourceType(), equalTo(FortiosStructureType.ACCESS_LIST.getDescription()));
+    RouteFilterList rfl = convertAccessList(acl, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", FortiosStructureType.ACCESS_LIST.getDescription())));
   }
 
   private static void assertConvertsWithoutWarnings(Address address, IpSpace expected) {

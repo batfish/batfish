@@ -153,6 +153,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
+import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert CiscoXr-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -1623,16 +1624,19 @@ public class CiscoXrConversions {
     return new Route6FilterList(list.getName(), lines);
   }
 
-  static RouteFilterList toRouteFilterList(Ipv4AccessList eaList) {
+  static RouteFilterList toRouteFilterList(Ipv4AccessList eaList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
         eaList.getLines().stream()
             .map(CiscoXrConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
-        eaList.getName(), lines, eaList.getName(), IPV4_ACCESS_LIST.getDescription());
+        eaList.getName(),
+        lines,
+        new VendorStructureId(
+            vendorConfigFilename, eaList.getName(), IPV4_ACCESS_LIST.getDescription()));
   }
 
-  static RouteFilterList toRouteFilterList(PrefixList list) {
+  static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
     List<RouteFilterLine> newLines =
         list.getLines().stream()
             .map(
@@ -1641,7 +1645,9 @@ public class CiscoXrConversions {
                         l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
-        list.getName(), newLines, list.getName(), PREFIX_LIST.getDescription());
+        list.getName(),
+        newLines,
+        new VendorStructureId(vendorConfigFilename, list.getName(), PREFIX_LIST.getDescription()));
   }
 
   /**

@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 /** Tests for {@link CiscoNxosConfiguration} class */
@@ -55,13 +56,15 @@ public class CiscoNxosConfigurationTest {
     assertThat(toOspfHelloInterval(ospf), equalTo(DEFAULT_HELLO_INTERVAL_S));
   }
 
-  /** Check that source name and type is set when prefix list is converted to route filter list */
+  /** Check that vendorStructureId is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_source() {
+  public void testToRouterFilterList_prefixList_vendorStructureId() {
     IpPrefixList plist = new IpPrefixList("name");
-    RouteFilterList rfl = toRouteFilterList(plist);
-    assertThat(rfl.getSourceName(), equalTo("name"));
+    RouteFilterList rfl = toRouteFilterList(plist, "file");
     assertThat(
-        rfl.getSourceType(), equalTo(CiscoNxosStructureType.IP_PREFIX_LIST.getDescription()));
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", CiscoNxosStructureType.IP_PREFIX_LIST.getDescription())));
   }
 }

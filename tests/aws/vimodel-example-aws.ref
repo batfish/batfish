@@ -44274,8 +44274,11 @@
               }
             ],
             "name" : "MATCH_ALL_BGP",
-            "sourceName" : "MATCH_ALL_BGP",
-            "sourceType" : "extended ipv4 access-list"
+            "vendorStructureId" : {
+              "filename" : "configs/lhr-border-02.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "MATCH_ALL_BGP"
+            }
           },
           "PROTECT_LOOPBACK" : {
             "lines" : [
@@ -44291,8 +44294,11 @@
               }
             ],
             "name" : "PROTECT_LOOPBACK",
-            "sourceName" : "PROTECT_LOOPBACK",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/lhr-border-02.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "PROTECT_LOOPBACK"
+            }
           }
         },
         "routingPolicies" : {

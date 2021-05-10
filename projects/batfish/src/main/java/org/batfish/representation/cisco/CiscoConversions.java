@@ -130,6 +130,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
+import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -1358,7 +1359,7 @@ public class CiscoConversions {
     return new Route6FilterList(list.getName(), lines);
   }
 
-  static RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
+  static RouteFilterList toRouteFilterList(ExtendedAccessList eaList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
         eaList.getLines().stream()
             .map(CiscoConversions::toRouteFilterLine)
@@ -1366,11 +1367,13 @@ public class CiscoConversions {
     return new RouteFilterList(
         eaList.getName(),
         lines,
-        eaList.getName(),
-        CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription());
+        new VendorStructureId(
+            vendorConfigFilename,
+            eaList.getName(),
+            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription()));
   }
 
-  static RouteFilterList toRouteFilterList(StandardAccessList saList) {
+  static RouteFilterList toRouteFilterList(StandardAccessList saList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
         saList.getLines().stream()
             .map(CiscoConversions::toRouteFilterLine)
@@ -1378,11 +1381,13 @@ public class CiscoConversions {
     return new RouteFilterList(
         saList.getName(),
         lines,
-        saList.getName(),
-        CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription());
+        new VendorStructureId(
+            vendorConfigFilename,
+            saList.getName(),
+            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()));
   }
 
-  static RouteFilterList toRouteFilterList(PrefixList list) {
+  static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
     List<RouteFilterLine> newLines =
         list.getLines().values().stream()
             .map(
@@ -1391,7 +1396,10 @@ public class CiscoConversions {
                         l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
-        list.getName(), newLines, list.getName(), CiscoStructureType.PREFIX_LIST.getDescription());
+        list.getName(),
+        newLines,
+        new VendorStructureId(
+            vendorConfigFilename, list.getName(), CiscoStructureType.PREFIX_LIST.getDescription()));
   }
 
   @VisibleForTesting

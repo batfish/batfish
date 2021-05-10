@@ -119,6 +119,7 @@ import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 /** Vendor-specific configuration for F5 BIG-IP device */
 @ParametersAreNonnullByDefault
@@ -1531,15 +1532,16 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  static @Nonnull RouteFilterList toRouteFilterList(AccessList accessList) {
+  static @Nonnull RouteFilterList toRouteFilterList(
+      AccessList accessList, String vendorConfigFilename) {
     String name = accessList.getName();
     return new RouteFilterList(
         computeAccessListRouteFilterName(name),
         accessList.getLines().stream()
             .map(F5BigipConfiguration::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList()),
-        name,
-        F5BigipStructureType.ACCESS_LIST.getDescription());
+        new VendorStructureId(
+            vendorConfigFilename, name, F5BigipStructureType.ACCESS_LIST.getDescription()));
   }
 
   /**
@@ -1547,7 +1549,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
    * information, returns {@code null}.
    */
   @VisibleForTesting
-  static @Nullable RouteFilterList toRouteFilterList(PrefixList prefixList, Warnings w) {
+  static @Nullable RouteFilterList toRouteFilterList(
+      PrefixList prefixList, Warnings w, String vendorConfigFilename) {
     Collection<PrefixListEntry> entries = prefixList.getEntries().values();
     if (entries.stream().map(PrefixListEntry::getPrefix6).anyMatch(Objects::nonNull)) {
       return null;
@@ -1559,7 +1562,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
-        name, lines, name, F5BigipStructureType.PREFIX_LIST.getDescription());
+        name,
+        lines,
+        new VendorStructureId(
+            vendorConfigFilename, name, F5BigipStructureType.PREFIX_LIST.getDescription()));
   }
 
   private @Nonnull RoutingPolicy toRoutingPolicy(RouteMap routeMap) {
@@ -1811,7 +1817,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
           if (!isReferencedByRouteMap(name)) {
             return;
           }
-          RouteFilterList rfl = toRouteFilterList(acl);
+          RouteFilterList rfl = toRouteFilterList(acl, _filename);
           _c.getRouteFilterLists().put(rfl.getName(), rfl);
         });
 
@@ -1844,7 +1850,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // Convert valid IPv4 prefix-lists to RouteFilterLists
     _prefixLists.forEach(
         (name, prefixList) -> {
-          RouteFilterList converted = toRouteFilterList(prefixList, _w);
+          RouteFilterList converted = toRouteFilterList(prefixList, _w, _filename);
           if (converted != null) {
             _c.getRouteFilterLists().put(name, converted);
           }

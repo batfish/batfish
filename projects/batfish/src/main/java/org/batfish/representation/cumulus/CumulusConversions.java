@@ -130,6 +130,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.datamodel.vxlan.Vni;
+import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -1668,13 +1669,17 @@ public final class CumulusConversions {
     return new AsPathAccessList(name, lines);
   }
 
-  static void convertIpPrefixLists(Configuration c, Map<String, IpPrefixList> ipPrefixLists) {
+  static void convertIpPrefixLists(
+      Configuration c, Map<String, IpPrefixList> ipPrefixLists, String vendorConfigFilename) {
     ipPrefixLists.forEach(
-        (name, ipPrefixList) -> c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
+        (name, ipPrefixList) ->
+            c.getRouteFilterLists()
+                .put(name, toRouteFilterList(ipPrefixList, vendorConfigFilename)));
   }
 
   @VisibleForTesting
-  static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
+  static @Nonnull RouteFilterList toRouteFilterList(
+      IpPrefixList ipPrefixList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
         ipPrefixList.getLines().values().stream()
             .map(CumulusConversions::toRouteFilterLine)
@@ -1682,8 +1687,10 @@ public final class CumulusConversions {
     return new RouteFilterList(
         ipPrefixList.getName(),
         lines,
-        ipPrefixList.getName(),
-        CumulusStructureType.IP_PREFIX_LIST.getDescription());
+        new VendorStructureId(
+            vendorConfigFilename,
+            ipPrefixList.getName(),
+            CumulusStructureType.IP_PREFIX_LIST.getDescription()));
   }
 
   @VisibleForTesting

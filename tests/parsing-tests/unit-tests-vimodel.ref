@@ -18457,8 +18457,11 @@
               }
             ],
             "name" : "ScienceDMZ-networks",
-            "sourceName" : "ScienceDMZ-networks",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/ios_bgp_aggregate_address",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "ScienceDMZ-networks"
+            }
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
             "lines" : [
@@ -19314,8 +19317,11 @@
               }
             ],
             "name" : "PFX_LIST",
-            "sourceName" : "PFX_LIST",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/arista_community_list_named",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "PFX_LIST"
+            }
           }
         },
         "routingPolicies" : {
@@ -24911,8 +24917,11 @@
               }
             ],
             "name" : "allowprefix",
-            "sourceName" : "allowprefix",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/cisco_acl",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "allowprefix"
+            }
           },
           "allowprefix-asa" : {
             "lines" : [
@@ -24928,8 +24937,11 @@
               }
             ],
             "name" : "allowprefix-asa",
-            "sourceName" : "allowprefix-asa",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/cisco_acl",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "allowprefix-asa"
+            }
           }
         },
         "vendorFamily" : {
@@ -36413,8 +36425,11 @@
               }
             ],
             "name" : "pl1",
-            "sourceName" : "pl1",
-            "sourceType" : "prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/f5_bigip/f5_bigip_imish_malformed",
+              "structureName" : "prefix-list",
+              "structureType" : "pl1"
+            }
           }
         },
         "routingPolicies" : {
@@ -36995,8 +37010,11 @@
               }
             ],
             "name" : "/Common/MY_IPV4_PREFIX_LIST",
-            "sourceName" : "/Common/MY_IPV4_PREFIX_LIST",
-            "sourceType" : "prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/f5_bigip/f5_bigip_structured_net_routing_prefix_list",
+              "structureName" : "prefix-list",
+              "structureType" : "/Common/MY_IPV4_PREFIX_LIST"
+            }
           }
         },
         "vendorFamily" : { },
@@ -37183,8 +37201,11 @@
               }
             ],
             "name" : "pl1",
-            "sourceName" : "pl1",
-            "sourceType" : "prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/f5_bigip/f5_bigip_structured_with_imish",
+              "structureName" : "prefix-list",
+              "structureType" : "pl1"
+            }
           },
           "~access-list~acl1~" : {
             "lines" : [
@@ -37195,8 +37216,11 @@
               }
             ],
             "name" : "~access-list~acl1~",
-            "sourceName" : "acl1",
-            "sourceType" : "access-list"
+            "vendorStructureId" : {
+              "filename" : "configs/f5_bigip/f5_bigip_structured_with_imish",
+              "structureName" : "access-list",
+              "structureType" : "acl1"
+            }
           }
         },
         "routingPolicies" : {
@@ -41308,8 +41332,11 @@
               }
             ],
             "name" : "DENY-IPV4-ANY-IN",
-            "sourceName" : "DENY-IPV4-ANY-IN",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/ip_prefix_list_single_line",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "DENY-IPV4-ANY-IN"
+            }
           }
         },
         "vendorFamily" : {
@@ -78069,8 +78096,11 @@
               }
             ],
             "name" : "default",
-            "sourceName" : "default",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/prefix_list_ipv4",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "default"
+            }
           },
           "test" : {
             "lines" : [
@@ -78081,8 +78111,11 @@
               }
             ],
             "name" : "test",
-            "sourceName" : "test",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/prefix_list_ipv4",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "test"
+            }
           }
         },
         "routingPolicies" : {
@@ -78149,8 +78182,11 @@
               }
             ],
             "name" : "default_route",
-            "sourceName" : "default_route",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/ios_xr_prefix_set",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "default_route"
+            }
           },
           "ucla_networks" : {
             "lines" : [
@@ -78196,8 +78232,11 @@
               }
             ],
             "name" : "ucla_networks",
-            "sourceName" : "ucla_networks",
-            "sourceType" : "ipv4 prefix-list"
+            "vendorStructureId" : {
+              "filename" : "configs/ios_xr_prefix_set",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "ucla_networks"
+            }
           }
         },
         "vendorFamily" : { },

@@ -20,7 +20,7 @@ import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
-import org.hamcrest.Matchers;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 /** Tests for {@link F5BigipConfiguration} */
@@ -163,23 +163,27 @@ public class F5BigipConfigurationTest {
     assertThat(iface.getAllAddresses(), equalTo(ImmutableSet.of(a1, a2)));
   }
 
-  /** Check that source name and type is set when ACL is converted to route filter list */
+  /** Check that vendorStructureId is set when ACL is converted to route filter list */
   @Test
-  public void testToRouterFilterList_AccessList_source() {
+  public void testToRouterFilterList_AccessList_vendorStructureId() {
     AccessList acl = new AccessList("name");
-    RouteFilterList rfl = toRouteFilterList(acl);
-    assertThat(rfl.getSourceName(), Matchers.equalTo("name"));
+    RouteFilterList rfl = toRouteFilterList(acl, "file");
     assertThat(
-        rfl.getSourceType(), Matchers.equalTo(F5BigipStructureType.ACCESS_LIST.getDescription()));
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", F5BigipStructureType.ACCESS_LIST.getDescription())));
   }
 
-  /** Check that source name and type is set when prefix list is converted to route filter list */
+  /** Check that vendorStructureId is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_source() {
+  public void testToRouterFilterList_prefixList_vendorStructureId() {
     PrefixList plist = new PrefixList("name");
-    RouteFilterList rfl = toRouteFilterList(plist, new Warnings());
-    assertThat(rfl.getSourceName(), Matchers.equalTo("name"));
+    RouteFilterList rfl = toRouteFilterList(plist, new Warnings(), "file");
     assertThat(
-        rfl.getSourceType(), Matchers.equalTo(F5BigipStructureType.PREFIX_LIST.getDescription()));
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", F5BigipStructureType.PREFIX_LIST.getDescription())));
   }
 }

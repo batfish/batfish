@@ -830,12 +830,15 @@ public class JuniperConfigurationTest {
     assertThat(getRouterId(ri), equalTo(Ip.ZERO));
   }
 
-  /** Check that source name and type is set when prefix list is converted to route filter list */
+  /** Check that vendor structure id is set when prefix list is converted to route filter list */
   @Test
-  public void testToRouterFilterList_prefixList_source() {
+  public void testToRouterFilterList_prefixList_vendorStructureId() {
     PrefixList plist = new PrefixList("name");
-    RouteFilterList rfl = toRouteFilterList(plist);
-    assertThat(rfl.getSourceName(), equalTo("name"));
-    assertThat(rfl.getSourceType(), equalTo(JuniperStructureType.PREFIX_LIST.getDescription()));
+    RouteFilterList rfl = toRouteFilterList(plist, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", JuniperStructureType.PREFIX_LIST.getDescription())));
   }
 }

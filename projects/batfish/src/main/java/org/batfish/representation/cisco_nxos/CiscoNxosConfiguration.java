@@ -216,6 +216,7 @@ import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguratio
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 /** Vendor-specific representation of a Cisco NX-OS network configuration */
 public final class CiscoNxosConfiguration extends VendorConfiguration {
@@ -378,14 +379,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  static @Nonnull RouteFilterList toRouteFilterList(IpPrefixList ipPrefixList) {
+  static @Nonnull RouteFilterList toRouteFilterList(
+      IpPrefixList ipPrefixList, String vendorConfigFilename) {
     String name = ipPrefixList.getName();
     List<RouteFilterLine> lines =
         ipPrefixList.getLines().values().stream()
             .map(CiscoNxosConfiguration::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
-        name, lines, name, CiscoNxosStructureType.IP_PREFIX_LIST.getDescription());
+        name,
+        lines,
+        new VendorStructureId(
+            vendorConfigFilename, name, CiscoNxosStructureType.IP_PREFIX_LIST.getDescription()));
   }
 
   private static @Nonnull Route6FilterList toRoute6FilterList(Ipv6PrefixList ipv6PrefixList) {
@@ -1192,7 +1197,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
-            _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList)));
+            _c.getRouteFilterLists().put(name, toRouteFilterList(ipPrefixList, _filename)));
   }
 
   private void convertIpv6PrefixLists() {

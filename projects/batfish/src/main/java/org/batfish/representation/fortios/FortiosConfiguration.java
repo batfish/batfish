@@ -48,6 +48,7 @@ import org.batfish.datamodel.collections.InsertOrderedMap;
 import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public class FortiosConfiguration extends VendorConfiguration {
 
@@ -209,7 +210,8 @@ public class FortiosConfiguration extends VendorConfiguration {
 
     // Convert access-lists
     _accessLists.forEach(
-        (name, accessList) -> c.getRouteFilterLists().put(name, convertAccessList(accessList)));
+        (name, accessList) ->
+            c.getRouteFilterLists().put(name, convertAccessList(accessList, _filename)));
 
     // Convert route-maps. Must happen after access-list conversion (and prefix-list conversion once
     // they are supported)
@@ -382,7 +384,8 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  static @Nonnull RouteFilterList convertAccessList(AccessList accessList) {
+  static @Nonnull RouteFilterList convertAccessList(
+      AccessList accessList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
         accessList.getRules().values().stream()
             .map(
@@ -409,8 +412,10 @@ public class FortiosConfiguration extends VendorConfiguration {
     return new RouteFilterList(
         accessList.getName(),
         lines,
-        accessList.getName(),
-        FortiosStructureType.ACCESS_LIST.getDescription());
+        new VendorStructureId(
+            vendorConfigFilename,
+            accessList.getName(),
+            FortiosStructureType.ACCESS_LIST.getDescription()));
   }
 
   private static @Nonnull org.batfish.datamodel.Zone convertZone(Zone zone) {

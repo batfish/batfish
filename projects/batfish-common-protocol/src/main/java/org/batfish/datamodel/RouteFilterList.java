@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.vendor.VendorStructureId;
 
 /**
  * Filter list for IPV4 routes. Performs filtering on IPv4 prefixes with access-list-like behavior
@@ -26,8 +27,7 @@ import org.batfish.common.BatfishException;
 public class RouteFilterList implements Serializable {
   private static final String PROP_LINES = "lines";
   private static final String PROP_NAME = "name";
-  private static final String PROP_SOURCE_NAME = "sourceName";
-  private static final String PROP_SOURCE_TYPE = "sourceType";
+  private static final String PROP_VENDOR_STRUCTURE_ID = "vendorStructureId";
 
   private final Supplier<Set<Prefix>> _deniedCache;
 
@@ -35,9 +35,7 @@ public class RouteFilterList implements Serializable {
 
   @Nullable private final String _name;
 
-  @Nullable private final String _sourceName;
-
-  @Nullable private final String _sourceType;
+  @Nullable private final VendorStructureId _vendorStructureId;
 
   private final Supplier<Set<Prefix>> _permittedCache;
 
@@ -53,10 +51,8 @@ public class RouteFilterList implements Serializable {
   private static RouteFilterList create(
       @JsonProperty(PROP_NAME) @Nullable String name,
       @JsonProperty(PROP_LINES) @Nullable List<RouteFilterLine> lines,
-      @JsonProperty(PROP_SOURCE_NAME) @Nullable String sourceName,
-      @JsonProperty(PROP_SOURCE_TYPE) @Nullable String sourceType) {
-    return new RouteFilterList(
-        name, firstNonNull(lines, ImmutableList.of()), sourceName, sourceType);
+      @JsonProperty(PROP_VENDOR_STRUCTURE_ID) @Nullable VendorStructureId vendorStructureId) {
+    return new RouteFilterList(name, firstNonNull(lines, ImmutableList.of()), vendorStructureId);
   }
 
   /** Create and empty route filter list (with no lines) */
@@ -65,20 +61,18 @@ public class RouteFilterList implements Serializable {
   }
 
   public RouteFilterList(@Nullable String name, @Nonnull List<RouteFilterLine> lines) {
-    this(name, lines, null, null);
+    this(name, lines, null);
   }
 
   public RouteFilterList(
       @Nullable String name,
       @Nonnull List<RouteFilterLine> lines,
-      @Nullable String sourceName,
-      @Nullable String sourceType) {
+      @Nullable VendorStructureId vendorStructureId) {
     _name = name;
     _deniedCache = Suppliers.memoize(new CacheSupplier());
     _permittedCache = Suppliers.memoize(new CacheSupplier());
     _lines = lines;
-    _sourceName = sourceName;
-    _sourceType = sourceType;
+    _vendorStructureId = vendorStructureId;
   }
 
   public void addLine(RouteFilterLine r) {
@@ -115,15 +109,9 @@ public class RouteFilterList implements Serializable {
   }
 
   @Nullable
-  @JsonProperty(PROP_SOURCE_NAME)
-  public String getSourceName() {
-    return _sourceName;
-  }
-
-  @Nullable
-  @JsonProperty(PROP_SOURCE_TYPE)
-  public String getSourceType() {
-    return _sourceType;
+  @JsonProperty(PROP_VENDOR_STRUCTURE_ID)
+  public VendorStructureId getVendorStructureId() {
+    return _vendorStructureId;
   }
 
   private boolean evaluatePrefix(Prefix prefix) {

@@ -130,6 +130,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
+import org.batfish.vendor.VendorStructureId;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -313,7 +314,7 @@ public final class CumulusConversionsTest {
             new IpPrefixListLine(
                 LineAction.PERMIT, 20, Prefix.parse("10.0.2.1/24"), new SubRange(28, 31)));
 
-    RouteFilterList rfl = toRouteFilterList(prefixList);
+    RouteFilterList rfl = toRouteFilterList(prefixList, "file");
 
     assertThat(
         rfl,
@@ -326,8 +327,11 @@ public final class CumulusConversionsTest {
                     new RouteFilterLine(
                         LineAction.PERMIT, Prefix.parse("10.0.2.1/24"), new SubRange(28, 31))))));
 
-    assertThat(rfl.getSourceName(), equalTo("name"));
-    assertThat(rfl.getSourceType(), equalTo(CumulusStructureType.IP_PREFIX_LIST.getDescription()));
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", CumulusStructureType.IP_PREFIX_LIST.getDescription())));
   }
 
   @Test

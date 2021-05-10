@@ -3020,7 +3020,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  static RouteFilterList toRouteFilterList(PrefixList prefixList) {
+  static RouteFilterList toRouteFilterList(PrefixList prefixList, String vendorConfigFilename) {
     List<org.batfish.datamodel.RouteFilterLine> lines =
         prefixList.getPrefixes().stream()
             .map(
@@ -3031,8 +3031,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return new RouteFilterList(
         prefixList.getName(),
         lines,
-        prefixList.getName(),
-        JuniperStructureType.PREFIX_LIST.getDescription());
+        new VendorStructureId(
+            vendorConfigFilename,
+            prefixList.getName(),
+            JuniperStructureType.PREFIX_LIST.getDescription()));
   }
 
   @Override
@@ -3180,7 +3182,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // convert prefix lists to route filter lists
     for (Entry<String, PrefixList> e : _masterLogicalSystem.getPrefixLists().entrySet()) {
-      _c.getRouteFilterLists().put(e.getKey(), toRouteFilterList(e.getValue()));
+      _c.getRouteFilterLists().put(e.getKey(), toRouteFilterList(e.getValue(), _filename));
     }
 
     // Convert AddressBooks to IpSpaces
