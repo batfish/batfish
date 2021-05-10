@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /** Test of {@link InterfacesByVlanRange} */
-public class InterfacesByVlanRangeTest {
+public class NodeInterfacePairsByVlanRangeTest {
   private InterfacesByVlanRange _interfacesByVlanRange;
 
   @Before
