@@ -26,6 +26,7 @@ public final class PassesThroughAsPathSetElemTest {
         .addEqualityGroup(obj, new PassesThroughAsPathSetElem(false, Range.singleton(1L)))
         .addEqualityGroup(
             new PassesThroughAsPathSetElem(false, Range.singleton(1L), Range.singleton(2L)))
+        .addEqualityGroup(new PassesThroughAsPathSetElem(true, Range.singleton(1L)))
         .testEquals();
   }
 }

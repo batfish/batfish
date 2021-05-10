@@ -30,6 +30,7 @@ public final class RoutePolicyBooleanAsPathPassesThroughTest {
         .addEqualityGroup(
             new RoutePolicyBooleanAsPathPassesThrough(
                 false, Range.singleton(1L), Range.singleton(2L)))
+        .addEqualityGroup(new RoutePolicyBooleanAsPathPassesThrough(true, Range.singleton(1L)))
         .testEquals();
   }
 }

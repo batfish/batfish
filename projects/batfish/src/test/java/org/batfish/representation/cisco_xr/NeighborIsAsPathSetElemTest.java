@@ -26,6 +26,7 @@ public final class NeighborIsAsPathSetElemTest {
         .addEqualityGroup(obj, new NeighborIsAsPathSetElem(false, Range.singleton(1L)))
         .addEqualityGroup(
             new NeighborIsAsPathSetElem(false, Range.singleton(1L), Range.singleton(2L)))
+        .addEqualityGroup(new NeighborIsAsPathSetElem(true, Range.singleton(1L)))
         .testEquals();
   }
 }

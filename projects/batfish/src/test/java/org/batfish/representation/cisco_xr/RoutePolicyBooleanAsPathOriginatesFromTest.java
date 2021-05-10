@@ -30,6 +30,7 @@ public final class RoutePolicyBooleanAsPathOriginatesFromTest {
         .addEqualityGroup(
             new RoutePolicyBooleanAsPathOriginatesFrom(
                 false, Range.singleton(1L), Range.singleton(2L)))
+        .addEqualityGroup(new RoutePolicyBooleanAsPathOriginatesFrom(true, Range.singleton(1L)))
         .testEquals();
   }
 }

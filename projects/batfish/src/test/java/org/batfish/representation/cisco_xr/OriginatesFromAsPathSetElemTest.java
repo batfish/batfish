@@ -26,6 +26,7 @@ public final class OriginatesFromAsPathSetElemTest {
         .addEqualityGroup(obj, new OriginatesFromAsPathSetElem(false, Range.singleton(1L)))
         .addEqualityGroup(
             new OriginatesFromAsPathSetElem(false, Range.singleton(1L), Range.singleton(2L)))
+        .addEqualityGroup(new OriginatesFromAsPathSetElem(true, Range.singleton(1L)))
         .testEquals();
   }
 }

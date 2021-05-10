@@ -28,6 +28,7 @@ public final class RoutePolicyBooleanAsPathNeighborIsTest {
         .addEqualityGroup(obj, new RoutePolicyBooleanAsPathNeighborIs(false, Range.singleton(1L)))
         .addEqualityGroup(
             new RoutePolicyBooleanAsPathNeighborIs(false, Range.singleton(1L), Range.singleton(2L)))
+        .addEqualityGroup(new RoutePolicyBooleanAsPathNeighborIs(true, Range.singleton(1L)))
         .testEquals();
   }
 }
