@@ -2,6 +2,7 @@ package org.batfish.grammar.flatjuniper;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.Layer2TopologyMatchers.inSameBroadcastDomain;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
@@ -213,6 +214,7 @@ import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer2Node;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
@@ -843,6 +845,100 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testClassOfServiceParsing() {
     parseJuniperConfig("juniper-class-of-service");
+  }
+
+  @Test
+  public void testL2Topology() throws IOException {
+    /*
+    L1:
+      - r1, r2, and fw are all connected to the central switch sw as shown below
+      - fw has self-adjacencies xe-0/0/10 <-> xe-0/0/20 and xe-0/0/11 <-> xe-0/0/21
+    L2:
+      - sw[xe-0/0/0] has allowed VLANs 10 and 11; r1[xe-0/0/0] has subunits 10 and 11
+      - sw[xe-0/0/1] has allowed VLANs 20 and 21; r2[xe-0/0/1] has subunits 20 and 21
+      - sw[xe-0/0/3] and fw[xe-0/0/3] both have allowed VLANs 10, 11, 20, and 21
+      - fw's other interfaces are in access mode with VLAN ID corresponding to iface number;
+        so its L1 self-adjacencies connect VLAN 10 to 20 and VLAN 11 to 21
+      - This should create two broadcast domains, one for VLANS 10 and 20 and one for VLANS 11 and 21.
+    L3:
+      - Only r1 and r2's interfaces have IP addresses. Thanks to L2 setup, should see L3 edges:
+        - r1[xe-0/0/0.10] <-> r2[xe-0/0/1.20]
+        - r1[xe-0/0/0.11] <-> r2[xe-0/0/1.21]
+
+               fw
+            [xe-0/0/3]
+                |
+                |
+            [xe-0/0/3]
+               sw
+      [xe-0/0/0] [xe-0/0/1]
+          /             \
+         /               \
+    [xe-0/0/0]         [xe-0/0/1]
+       r1                  r2
+    */
+    String snapshotName = "l2-topology";
+    String fw = "fw";
+    String r1 = "r1";
+    String r2 = "r2";
+    String sw = "sw";
+    String resourcePrefix = TESTRIGS_PREFIX + snapshotName;
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setLayer1TopologyPrefix(resourcePrefix)
+                .setConfigurationFiles(resourcePrefix, fw, r1, r2, sw)
+                .build(),
+            _folder);
+
+    // check layer-2 adjacencies
+    Layer2Topology layer2Topology =
+        batfish.getTopologyProvider().getInitialLayer2Topology(batfish.getSnapshot()).get();
+    {
+      // Broadcast domain containing VLANs 10 and 20. Arbitrarily choose r1[xe-0/0/0.10] as
+      // representative and test that all other members are in its broadcast domain.
+      Layer2Node repNode = new Layer2Node(r1, "xe-0/0/0.10", null);
+      Set<Layer2Node> otherMembers =
+          ImmutableSet.of(
+              new Layer2Node(r2, "xe-0/0/1.20", null),
+              new Layer2Node(sw, "xe-0/0/0.0", 10),
+              new Layer2Node(sw, "xe-0/0/1.0", 20),
+              new Layer2Node(sw, "xe-0/0/3.0", 10),
+              new Layer2Node(sw, "xe-0/0/3.0", 20),
+              new Layer2Node(fw, "xe-0/0/3.0", 10),
+              new Layer2Node(fw, "xe-0/0/3.0", 20),
+              new Layer2Node(fw, "xe-0/0/10.0", 10),
+              new Layer2Node(fw, "xe-0/0/20.0", 20));
+      otherMembers.forEach(
+          other -> assertThat(layer2Topology, inSameBroadcastDomain(repNode, other)));
+    }
+    {
+      // Broadcast domain containing VLANs 11 and 21. Arbitrarily choose r1[xe-0/0/0.11] as
+      // representative and test that all other members are in its broadcast domain.
+      Layer2Node repNode = new Layer2Node(r1, "xe-0/0/0.11", null);
+      Set<Layer2Node> otherMembers =
+          ImmutableSet.of(
+              new Layer2Node(r2, "xe-0/0/1.21", null),
+              new Layer2Node(sw, "xe-0/0/0.0", 11),
+              new Layer2Node(sw, "xe-0/0/1.0", 21),
+              new Layer2Node(sw, "xe-0/0/3.0", 11),
+              new Layer2Node(sw, "xe-0/0/3.0", 21),
+              new Layer2Node(fw, "xe-0/0/3.0", 11),
+              new Layer2Node(fw, "xe-0/0/3.0", 21),
+              new Layer2Node(fw, "xe-0/0/11.0", 11),
+              new Layer2Node(fw, "xe-0/0/21.0", 21));
+      otherMembers.forEach(
+          other -> assertThat(layer2Topology, inSameBroadcastDomain(repNode, other)));
+    }
+
+    // check layer-3 adjacencies
+    Topology layer3Topology =
+        batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
+    Edge edge1 = Edge.of(r1, "xe-0/0/0.10", r2, "xe-0/0/1.20");
+    Edge edge2 = Edge.of(r1, "xe-0/0/0.11", r2, "xe-0/0/1.21");
+    assertThat(
+        layer3Topology.getEdges(),
+        containsInAnyOrder(edge1, edge1.reverse(), edge2, edge2.reverse()));
   }
 
   @Test

@@ -1,0 +1,21 @@
+system {
+    host-name r2;
+}
+interfaces {
+    xe-0/0/1 {
+        vlan-tagging;
+        description "To r1";
+        unit 20 {
+            vlan-id 20;
+            family inet {
+                address 10.0.0.2/24;
+            }
+        }
+        unit 21 {
+            vlan-id 21;
+            family inet {
+                address 11.0.0.2/24;
+            }
+        }
+    }
+}

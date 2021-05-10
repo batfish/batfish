@@ -1,0 +1,54 @@
+{
+  "edges": [
+    {
+      "node1": {
+        "hostname": "r1",
+        "interfaceName": "xe-0/0/0"
+      },
+      "node2": {
+        "hostname": "sw",
+        "interfaceName": "xe-0/0/0"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "r2",
+        "interfaceName": "xe-0/0/1"
+      },
+      "node2": {
+        "hostname": "sw",
+        "interfaceName": "xe-0/0/1"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "sw",
+        "interfaceName": "xe-0/0/3"
+      },
+      "node2": {
+        "hostname": "fw",
+        "interfaceName": "xe-0/0/3"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "fw",
+        "interfaceName": "xe-0/0/10"
+      },
+      "node2": {
+        "hostname": "fw",
+        "interfaceName": "xe-0/0/20"
+      }
+    },
+    {
+      "node1": {
+        "hostname": "fw",
+        "interfaceName": "xe-0/0/11"
+      },
+      "node2": {
+        "hostname": "fw",
+        "interfaceName": "xe-0/0/21"
+      }
+    }
+  ]
+}
