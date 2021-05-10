@@ -2387,6 +2387,13 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testAsPathSetConversion() {
+    String hostname = "xr-as-path-set";
+    // Do not crash
+    assertNotNull(parseConfig(hostname));
+  }
+
+  @Test
   public void testAsPathBooleanExtraction() {
     String hostname = "xr-as-path-boolean";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
@@ -2539,5 +2546,12 @@ public final class XrGrammarTest {
     RoutePolicyBoolean guard = ifStatement.getGuard();
     assertNotNull(guard);
     return guard;
+  }
+
+  @Test
+  public void testAsPathBooleanConversion() {
+    String hostname = "xr-as-path-boolean";
+    // Do not crash
+    assertNotNull(parseConfig(hostname));
   }
 }
