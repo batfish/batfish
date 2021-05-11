@@ -18,6 +18,7 @@ import com.google.common.graph.EndpointPair;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -84,13 +85,12 @@ public final class TopologyUtil {
         && i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       /*
         Both sides are trunks, so add edges from n1,vlan_range to n2,vlan_range for all shared VLANs.
-
-        While singleton VLAN ranges are guaranteed to have been correctly pre-computed per node
-        in the previous steps, additional logic is needed to correctly intersect two
-        cross-node VLAN ranges (otherwise we will create edges between non-existent vertices)
+        VLAN ranges have been determined globally, so none of the keys in node1Ranges and node2Ranges
+        can overlap.
       */
-
-      for (Range<Integer> sharedRange : node1Ranges.intersect(i1.getName(), i2.getAllowedVlans())) {
+      Set<Range<Integer>> sharedRanges =
+          Sets.intersection(node1Ranges.getMap().keySet(), node2Ranges.getMap().keySet());
+      for (Range<Integer> sharedRange : sharedRanges) {
         // This frame will be tagged by i1 and we can directly check whether i2 allows.
         edges.accept(new Layer2Edge(node1, sharedRange, node2, sharedRange));
       }
@@ -272,7 +272,7 @@ public final class TopologyUtil {
     // than all O(N^2) edges to get complete connectivity for all interfaces on the same switchport.
     // Additionally, edges need not be added symmetrically.
     switchportsByVlan
-        .asMap()
+        .getMap()
         .forEach(
             (vlanRange, interfaceNames) -> {
               Range<Integer> canonicalRange = vlanRange.canonical(DiscreteDomain.integers());
@@ -322,31 +322,56 @@ public final class TopologyUtil {
   }
 
   @Nonnull
-  private static InterfacesByVlanRange computeInterfacesByVlan(@Nonnull Configuration config) {
-    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
-    for (Interface i : config.getActiveInterfaces().values()) {
-      if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
-        IntegerSpace allowedVlansNoNative =
-            i.getAllowedVlans()
-                .difference(
-                    i.getNativeVlan() != null
-                        ? IntegerSpace.of(i.getNativeVlan())
-                        : IntegerSpace.EMPTY);
-        allowedVlansNoNative
-            .getRanges()
-            .forEach(vlanRange -> ifacesByVlan.add(vlanRange, i.getName()));
-        // special handling for native VLAN to avoid conflating edges for tagged and non-tagged
-        // packets
-        if (i.getNativeVlan() != null) {
-          ifacesByVlan.add(i.getNativeVlan(), i.getName());
+  private static NodeInterfacePairsByVlanRange computeInterfacesByVlan(
+      @Nonnull Map<String, Configuration> configs, Set<String> hostnames) {
+    NodeInterfacePairsByVlanRange nisByVlanRange = NodeInterfacePairsByVlanRange.create();
+    for (String hostname : hostnames) {
+      Configuration c = configs.get(hostname);
+      for (Interface i : c.getActiveInterfaces().values()) {
+        NodeInterfacePair ni = NodeInterfacePair.of(i);
+        if (i.getSwitchportMode() == SwitchportMode.TRUNK) {
+          IntegerSpace allowedVlansNoNative =
+              i.getAllowedVlans()
+                  .difference(
+                      i.getNativeVlan() != null
+                          ? IntegerSpace.of(i.getNativeVlan())
+                          : IntegerSpace.EMPTY);
+          allowedVlansNoNative.getRanges().forEach(vlanRange -> nisByVlanRange.add(vlanRange, ni));
+          // special handling for native VLAN to avoid conflating edges for tagged and non-tagged
+          // packets
+          if (i.getNativeVlan() != null) {
+            nisByVlanRange.add(i.getNativeVlan(), ni);
+          }
+        } else if (i.getSwitchportMode() == SwitchportMode.ACCESS && i.getAccessVlan() != null) {
+          nisByVlanRange.add(i.getAccessVlan(), ni);
+        } else if (i.getSwitchportMode() == SwitchportMode.NONE && i.getVlan() != null) {
+          assert i.getInterfaceType() == InterfaceType.VLAN;
+          nisByVlanRange.add(i.getVlan(), ni);
         }
-      } else if (i.getSwitchportMode() == SwitchportMode.ACCESS && i.getAccessVlan() != null) {
-        ifacesByVlan.add(i.getAccessVlan(), i.getName());
-      } else if (i.getSwitchportMode() == SwitchportMode.NONE && i.getVlan() != null) {
-        ifacesByVlan.add(i.getVlan(), i.getName());
+        // TODO Handle VNIs
       }
     }
-    return ifacesByVlan;
+    return nisByVlanRange;
+  }
+
+  @Nonnull
+  private static Map<String, InterfacesByVlanRange> splitByNode(
+      NodeInterfacePairsByVlanRange nisByVlanRange) {
+    Map<String, Map<Range<Integer>, Set<String>>> ret = new HashMap<>();
+    nisByVlanRange
+        .asMap()
+        .forEach(
+            (vlanRange, nis) -> {
+              for (NodeInterfacePair ni : nis) {
+                ret.computeIfAbsent(ni.getHostname(), k -> new HashMap<>())
+                    .computeIfAbsent(vlanRange, k -> new HashSet<>())
+                    .add(ni.getInterface());
+              }
+            });
+    return ret.entrySet().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey, e -> new InterfacesByVlanRange(e.getValue())));
   }
 
   /**
@@ -400,13 +425,9 @@ public final class TopologyUtil {
             .collect(ImmutableSet.toImmutableSet());
 
     // Break up each (useful) node into VLAN ranges based on interface configuration
-    Map<String, InterfacesByVlanRange> nodesWithUsefulL2SelfEdges =
-        Stream.concat(nodesWithL1Edge.stream(), nodesWithVxlan.stream())
-            .distinct()
-            .collect(
-                ImmutableMap.toImmutableMap(
-                    Function.identity(),
-                    hostname -> computeInterfacesByVlan(configurations.get(hostname))));
+    NodeInterfacePairsByVlanRange nipsByVlanRange =
+        computeInterfacesByVlan(configurations, Sets.union(nodesWithL1Edge, nodesWithVxlan));
+    Map<String, InterfacesByVlanRange> nodesWithUsefulL2SelfEdges = splitByNode(nipsByVlanRange);
 
     // Then add edges within each node to connect switchports and VNIs on the same VLAN(s).
     configurations.values().stream()
