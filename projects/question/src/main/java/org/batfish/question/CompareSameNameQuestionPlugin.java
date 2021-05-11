@@ -106,7 +106,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     private <T> void add(
         Class<T> structureClass,
         Function<Configuration, Map<String, T>> structureMapRetriever,
-        Function<T, String> definitionStringifier) {
+        Function<T, String> definitionJsonifier) {
       String structType = structureClass.getSimpleName().toLowerCase();
       if ((_csnQuestion.getNamedStructTypes().isEmpty()
               && !(_csnQuestion.getExcludedNamedStructTypes().contains(structType)))
@@ -118,7 +118,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
                 _nodes,
                 _configurations,
                 structureMapRetriever,
-                definitionStringifier));
+                definitionJsonifier));
       }
     }
 
@@ -163,7 +163,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         Set<String> hostnames,
         Map<String, Configuration> configurations,
         Function<Configuration, Map<String, T>> structureMapRetriever,
-        Function<T, String> definitionStringifier) {
+        Function<T, String> definitionJsonifier) {
       String structureClassName = structureClass.getSimpleName();
       // collect the set of all names for structures of type T, across all nodes
       Set<String> allNames =
@@ -181,7 +181,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         for (String structName : allNames) {
           T struct = structureMap.get(structName);
           if (struct != null || _csnQuestion.getMissing()) {
-            builder.addEntry(structName, hostname, struct, _assumeAllUnique, definitionStringifier);
+            builder.addEntry(structName, hostname, struct, _assumeAllUnique, definitionJsonifier);
           }
         }
       }

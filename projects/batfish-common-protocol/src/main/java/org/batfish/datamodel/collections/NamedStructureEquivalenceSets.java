@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -56,10 +57,10 @@ public class NamedStructureEquivalenceSets<T> {
         String hostname,
         T structure,
         boolean assumeAllUnique,
-        @Nullable Function<T, String> definitionStringifier) {
+        @Nullable Function<T, String> definitionJsonifier) {
       Map<Integer, Set<NamedStructureEquivalenceSet<T>>> sameNamedStructuresByHash =
           _sameNamedStructuresByNameAndHash.computeIfAbsent(structureName, s -> new HashMap<>());
-      String structureJson = writeObject(structure, definitionStringifier);
+      String structureJson = writeObject(structure, definitionJsonifier);
       int hash = structureJson.hashCode();
       Set<NamedStructureEquivalenceSet<T>> eqSetsWithSameHash =
           sameNamedStructuresByHash.computeIfAbsent(hash, h -> new HashSet<>());
@@ -71,8 +72,7 @@ public class NamedStructureEquivalenceSets<T> {
                 .filter(
                     s ->
                         checkJsonStringEquals(
-                            structureJson,
-                            writeObject(s.getNamedStructure(), definitionStringifier)))
+                            structureJson, writeObject(s.getNamedStructure(), definitionJsonifier)))
                 .findAny();
         if (potentialMatchingSet.isPresent()) {
           NamedStructureEquivalenceSet<T> matchingSet = potentialMatchingSet.get();
@@ -106,11 +106,12 @@ public class NamedStructureEquivalenceSets<T> {
       return eqSets;
     }
 
-    private String writeObject(T t, @Nullable Function<T, String> definitionStringifier) {
+    @VisibleForTesting
+    String writeObject(T t, @Nullable Function<T, String> definitionJsonifier) {
       try {
-        return definitionStringifier == null
+        return definitionJsonifier == null
             ? BatfishObjectMapper.writePrettyString(t)
-            : definitionStringifier.apply(t);
+            : definitionJsonifier.apply(t);
       } catch (JsonProcessingException e) {
         throw new BatfishException("Could not write named structure as String", e);
       }
