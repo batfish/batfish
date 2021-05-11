@@ -1,11 +1,14 @@
 package org.batfish.common.topology;
 
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -57,6 +60,34 @@ class NodeInterfacePairsByVlanRange {
   @Nonnull
   public Map<Range<Integer>, Set<NodeInterfacePair>> asMap() {
     return _ranges.asMapOfRanges();
+  }
+
+  /**
+   * Splits the current VLAN range to {@link NodeInterfacePair} mapping into a map of hostname to
+   * {@link InterfacesByVlanRange}. Uses the current set of VLAN ranges without any per-node
+   * modifications; all keys in each mapping of VLAN ranges to interfaces (in {@link
+   * InterfacesByVlanRange}) are also present in {@link #asMap()}.
+   */
+  @Nonnull
+  public Map<String, InterfacesByVlanRange> splitByNode() {
+    // hostname -> VLAN range -> interfaces on hostname in VLAN range
+    Map<String, Map<Range<Integer>, ImmutableSet.Builder<String>>> byNode = new HashMap<>();
+    asMap()
+        .forEach(
+            (vlanRange, nis) -> {
+              for (NodeInterfacePair ni : nis) {
+                byNode
+                    .computeIfAbsent(ni.getHostname(), k -> new HashMap<>())
+                    .computeIfAbsent(vlanRange, k -> ImmutableSet.builder())
+                    .add(ni.getInterface());
+              }
+            });
+    return toImmutableMap(
+        byNode,
+        Map.Entry::getKey,
+        e ->
+            new InterfacesByVlanRange(
+                toImmutableMap(e.getValue(), Map.Entry::getKey, e2 -> e2.getValue().build())));
   }
 
   private final RangeMap<Integer, Set<NodeInterfacePair>> _ranges;
