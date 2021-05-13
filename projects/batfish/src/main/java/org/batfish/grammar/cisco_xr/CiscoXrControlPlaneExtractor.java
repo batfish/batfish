@@ -6985,8 +6985,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       long hi = toInteger(ctx.hi);
       long lo = toInteger(ctx.lo);
       long val = (hi << 16) | lo;
-      if (val == 0) {
-        warn(messageCtx, "0 is not a valid AS");
+      if (!AS_NUMBER_RANGE.contains(val)) {
+        warn(
+            messageCtx,
+            String.format(
+                "%s expressed as a single number is %s, which is not in the range of valid ASes:"
+                    + " %s",
+                val, ctx.getText(), AS_NUMBER_RANGE));
         return Optional.empty();
       }
       return Optional.of(val);
