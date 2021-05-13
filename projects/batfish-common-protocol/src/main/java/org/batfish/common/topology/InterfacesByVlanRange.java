@@ -32,11 +32,14 @@ class InterfacesByVlanRange {
    * non-overlapping.
    */
   public InterfacesByVlanRange(Map<Range<Integer>, Set<String>> ranges) {
-    Optional<Range<Integer>> invalidRange =
-        ranges.keySet().stream().filter(InterfacesByVlanRange::isInvalidRange).findAny();
+    Range<Integer> invalidRange =
+        ranges.keySet().stream()
+            .filter(InterfacesByVlanRange::isInvalidRange)
+            .findAny()
+            .orElse(null);
     checkArgument(
-        !invalidRange.isPresent(),
-        String.format("Range %s cannot be used in InterfacesByVlanRange", invalidRange.get()));
+        invalidRange == null,
+        String.format("Range %s cannot be used in InterfacesByVlanRange", invalidRange));
     checkArgument(
         rangesDoNotOverlap(ranges.keySet()), "Ranges in InterfacesByVlanRange cannot overlap");
     _ranges = ImmutableMap.copyOf(ranges);
@@ -47,6 +50,10 @@ class InterfacesByVlanRange {
     return range.isEmpty() || !range.equals(range.canonical(DiscreteDomain.integers()));
   }
 
+  /**
+   * Checks that the given ranges do not overlap. Assumes they are valid canonical ranges (see
+   * {@link #isInvalidRange(Range)}).
+   */
   @VisibleForTesting
   static boolean rangesDoNotOverlap(Set<Range<Integer>> ranges) {
     List<Range<Integer>> rangeList =
