@@ -125,7 +125,7 @@ public class ParserUtilsTest {
   }
 
   @Test
-  public void testGetErrorStringHasUrl() {
+  public void testGetErrorStringHasUrls() {
     String input = new String(Character.toChars(0x26bd)); // invalid input
 
     ParsingResult<AstNode> result =
@@ -141,6 +141,7 @@ public class ParserUtilsTest {
             Parser.ANCHORS);
 
     assertThat(errorString, containsString(Grammar.IP_SPACE_SPECIFIER.getFullUrl()));
+    assertThat(errorString, containsString(Grammar.GENERAL_NOTE));
   }
 
   // The tests below for getPotentialMatches compare a simplified form of PotentialMatch from which
