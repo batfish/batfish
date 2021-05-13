@@ -1,6 +1,7 @@
 package org.batfish.representation.fortios;
 
 import static org.batfish.common.matchers.WarningMatchers.hasText;
+import static org.batfish.representation.fortios.FortiosConfiguration.convertAccessList;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toIpSpace;
 import static org.batfish.representation.fortios.FortiosPolicyConversions.toMatchExpr;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchServiceGroupTraceElement;
@@ -32,6 +33,8 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -420,6 +423,18 @@ public class FortiosConfigurationTest {
             .thenRejecting(new IpSpaceReference("exclude1"))
             .thenPermitting(new IpSpaceReference("include1"), new IpSpaceReference("include2"))
             .build());
+  }
+
+  /** Check that vendor structure id is set when access list is converted to route filter list */
+  @Test
+  public void testConvertAccessList_vendorStructureId() {
+    AccessList acl = new AccessList("name");
+    RouteFilterList rfl = convertAccessList(acl, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", FortiosStructureType.ACCESS_LIST.getDescription())));
   }
 
   private static void assertConvertsWithoutWarnings(Address address, IpSpace expected) {

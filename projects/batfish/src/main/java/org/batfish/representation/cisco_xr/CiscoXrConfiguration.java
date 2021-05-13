@@ -2122,7 +2122,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
-      RouteFilterList newRouteFilterList = CiscoXrConversions.toRouteFilterList(prefixList);
+      RouteFilterList newRouteFilterList =
+          CiscoXrConversions.toRouteFilterList(prefixList, _filename);
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
@@ -2135,7 +2136,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // convert access lists to access lists or route filter
     for (Ipv4AccessList eaList : _ipv4Acls.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
-        RouteFilterList rfList = CiscoXrConversions.toRouteFilterList(eaList);
+        RouteFilterList rfList = CiscoXrConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);

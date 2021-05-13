@@ -15,6 +15,7 @@ import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LIST;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
@@ -152,6 +153,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
+import org.batfish.vendor.VendorStructureId;
 
 /** Utilities that convert CiscoXr-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -1622,16 +1624,19 @@ public class CiscoXrConversions {
     return new Route6FilterList(list.getName(), lines);
   }
 
-  static RouteFilterList toRouteFilterList(Ipv4AccessList eaList) {
+  static RouteFilterList toRouteFilterList(Ipv4AccessList eaList, String vendorConfigFilename) {
     List<RouteFilterLine> lines =
         eaList.getLines().stream()
             .map(CiscoXrConversions::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList());
-    return new RouteFilterList(eaList.getName(), lines);
+    return new RouteFilterList(
+        eaList.getName(),
+        lines,
+        new VendorStructureId(
+            vendorConfigFilename, eaList.getName(), IPV4_ACCESS_LIST.getDescription()));
   }
 
-  static RouteFilterList toRouteFilterList(PrefixList list) {
-    RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
+  static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
     List<RouteFilterLine> newLines =
         list.getLines().stream()
             .map(
@@ -1639,8 +1644,10 @@ public class CiscoXrConversions {
                     new RouteFilterLine(
                         l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
-    newRouteFilterList.setLines(newLines);
-    return newRouteFilterList;
+    return new RouteFilterList(
+        list.getName(),
+        newLines,
+        new VendorStructureId(vendorConfigFilename, list.getName(), PREFIX_LIST.getDescription()));
   }
 
   /**

@@ -1,6 +1,7 @@
 package org.batfish.representation.f5_bigip;
 
 import static org.batfish.representation.f5_bigip.F5BigipConfiguration.toAddressGroup;
+import static org.batfish.representation.f5_bigip.F5BigipConfiguration.toRouteFilterList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -9,14 +10,17 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
 import org.batfish.referencelibrary.GeneratedRefBookUtils.BookType;
 import org.batfish.referencelibrary.ReferenceBook;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 /** Tests for {@link F5BigipConfiguration} */
@@ -157,5 +161,29 @@ public class F5BigipConfigurationTest {
     org.batfish.datamodel.Interface iface = configuration.getAllInterfaces().get(vlanName);
 
     assertThat(iface.getAllAddresses(), equalTo(ImmutableSet.of(a1, a2)));
+  }
+
+  /** Check that vendorStructureId is set when ACL is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_AccessList_vendorStructureId() {
+    AccessList acl = new AccessList("name");
+    RouteFilterList rfl = toRouteFilterList(acl, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", F5BigipStructureType.ACCESS_LIST.getDescription())));
+  }
+
+  /** Check that vendorStructureId is set when prefix list is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_prefixList_vendorStructureId() {
+    PrefixList plist = new PrefixList("name");
+    RouteFilterList rfl = toRouteFilterList(plist, new Warnings(), "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", F5BigipStructureType.PREFIX_LIST.getDescription())));
   }
 }

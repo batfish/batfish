@@ -2119,7 +2119,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
-      RouteFilterList newRouteFilterList = Conversions.toRouteFilterList(prefixList);
+      RouteFilterList newRouteFilterList = Conversions.toRouteFilterList(prefixList, _filename);
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
@@ -2133,14 +2133,14 @@ public final class AristaConfiguration extends VendorConfiguration {
     // lists
     for (StandardAccessList saList : _standardAccessLists.values()) {
       if (isAclUsedForRouting(saList.getName())) {
-        RouteFilterList rfList = Conversions.toRouteFilterList(saList);
+        RouteFilterList rfList = Conversions.toRouteFilterList(saList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists().put(saList.getName(), toIpAccessList(saList.toExtendedAccessList()));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
-        RouteFilterList rfList = Conversions.toRouteFilterList(eaList);
+        RouteFilterList rfList = Conversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       IpAccessList ipaList = toIpAccessList(eaList);

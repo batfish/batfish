@@ -443,7 +443,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "101"
+            "name" : "101",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "101"
+            }
           },
           "102" : {
             "lines" : [
@@ -458,7 +463,12 @@
                 "lengthRange" : "16-16"
               }
             ],
-            "name" : "102"
+            "name" : "102",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "102"
+            }
           },
           "103" : {
             "lines" : [
@@ -473,7 +483,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "103"
+            "name" : "103",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "103"
+            }
           },
           "default_list" : {
             "lines" : [
@@ -483,7 +498,12 @@
                 "lengthRange" : "0-0"
               }
             ],
-            "name" : "default_list"
+            "name" : "default_list",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border1.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "default_list"
+            }
           },
           "inbound_route_filter" : {
             "lines" : [
@@ -498,7 +518,12 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "inbound_route_filter"
+            "name" : "inbound_route_filter",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border1.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "inbound_route_filter"
+            }
           }
         },
         "routingPolicies" : {
@@ -2013,7 +2038,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "101"
+            "name" : "101",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "101"
+            }
           },
           "102" : {
             "lines" : [
@@ -2028,7 +2058,12 @@
                 "lengthRange" : "16-16"
               }
             ],
-            "name" : "102"
+            "name" : "102",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "102"
+            }
           },
           "103" : {
             "lines" : [
@@ -2038,7 +2073,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "103"
+            "name" : "103",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "103"
+            }
           },
           "as4-prefixes" : {
             "lines" : [
@@ -2048,7 +2088,12 @@
                 "lengthRange" : "8-32"
               }
             ],
-            "name" : "as4-prefixes"
+            "name" : "as4-prefixes",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border2.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "as4-prefixes"
+            }
           },
           "inbound_route_filter" : {
             "lines" : [
@@ -2063,7 +2108,12 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "inbound_route_filter"
+            "name" : "inbound_route_filter",
+            "vendorStructureId" : {
+              "filename" : "configs/as1border2.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "inbound_route_filter"
+            }
           }
         },
         "routingPolicies" : {
@@ -4158,7 +4208,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "101"
+            "name" : "101",
+            "vendorStructureId" : {
+              "filename" : "configs/as2border1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "101"
+            }
           },
           "103" : {
             "lines" : [
@@ -4173,7 +4228,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "103"
+            "name" : "103",
+            "vendorStructureId" : {
+              "filename" : "configs/as2border1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "103"
+            }
           },
           "inbound_route_filter" : {
             "lines" : [
@@ -4188,7 +4248,12 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "inbound_route_filter"
+            "name" : "inbound_route_filter",
+            "vendorStructureId" : {
+              "filename" : "configs/as2border1.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "inbound_route_filter"
+            }
           },
           "outbound_routes" : {
             "lines" : [
@@ -4198,7 +4263,12 @@
                 "lengthRange" : "16-32"
               }
             ],
-            "name" : "outbound_routes"
+            "name" : "outbound_routes",
+            "vendorStructureId" : {
+              "filename" : "configs/as2border1.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "outbound_routes"
+            }
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
             "lines" : [
@@ -5663,7 +5733,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "101"
+            "name" : "101",
+            "vendorStructureId" : {
+              "filename" : "configs/as2border2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "101"
+            }
           },
           "103" : {
             "lines" : [
@@ -5678,7 +5753,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "103"
+            "name" : "103",
+            "vendorStructureId" : {
+              "filename" : "configs/as2border2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "103"
+            }
           },
           "inbound_route_filter" : {
             "lines" : [
@@ -5693,7 +5773,12 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "inbound_route_filter"
+            "name" : "inbound_route_filter",
+            "vendorStructureId" : {
+              "filename" : "configs/as2border2.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "inbound_route_filter"
+            }
           },
           "outbound_routes" : {
             "lines" : [
@@ -5703,7 +5788,12 @@
                 "lengthRange" : "16-32"
               }
             ],
-            "name" : "outbound_routes"
+            "name" : "outbound_routes",
+            "vendorStructureId" : {
+              "filename" : "configs/as2border2.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "outbound_routes"
+            }
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
             "lines" : [
@@ -8463,7 +8553,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "102"
+            "name" : "102",
+            "vendorStructureId" : {
+              "filename" : "configs/as2dept1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "102"
+            }
           }
         },
         "routingPolicies" : {
@@ -9490,7 +9585,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "105"
+            "name" : "105",
+            "vendorStructureId" : {
+              "filename" : "configs/as2dist1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "105"
+            }
           }
         },
         "routingPolicies" : {
@@ -10374,7 +10474,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "105"
+            "name" : "105",
+            "vendorStructureId" : {
+              "filename" : "configs/as2dist2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "105"
+            }
           }
         },
         "routingPolicies" : {
@@ -11313,7 +11418,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "101"
+            "name" : "101",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "101"
+            }
           },
           "102" : {
             "lines" : [
@@ -11328,7 +11438,12 @@
                 "lengthRange" : "16-16"
               }
             ],
-            "name" : "102"
+            "name" : "102",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "102"
+            }
           },
           "103" : {
             "lines" : [
@@ -11343,7 +11458,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "103"
+            "name" : "103",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border1.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "103"
+            }
           },
           "default_list" : {
             "lines" : [
@@ -11353,7 +11473,12 @@
                 "lengthRange" : "0-0"
               }
             ],
-            "name" : "default_list"
+            "name" : "default_list",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border1.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "default_list"
+            }
           },
           "inbound_route_filter" : {
             "lines" : [
@@ -11368,7 +11493,12 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "inbound_route_filter"
+            "name" : "inbound_route_filter",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border1.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "inbound_route_filter"
+            }
           }
         },
         "routingPolicies" : {
@@ -12757,7 +12887,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "101"
+            "name" : "101",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "101"
+            }
           },
           "102" : {
             "lines" : [
@@ -12772,7 +12907,12 @@
                 "lengthRange" : "16-16"
               }
             ],
-            "name" : "102"
+            "name" : "102",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "102"
+            }
           },
           "103" : {
             "lines" : [
@@ -12787,7 +12927,12 @@
                 "lengthRange" : "24-24"
               }
             ],
-            "name" : "103"
+            "name" : "103",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border2.cfg",
+              "structureName" : "extended ipv4 access-list",
+              "structureType" : "103"
+            }
           },
           "inbound_route_filter" : {
             "lines" : [
@@ -12802,7 +12947,12 @@
                 "lengthRange" : "0-32"
               }
             ],
-            "name" : "inbound_route_filter"
+            "name" : "inbound_route_filter",
+            "vendorStructureId" : {
+              "filename" : "configs/as3border2.cfg",
+              "structureName" : "ipv4 prefix-list",
+              "structureType" : "inbound_route_filter"
+            }
           }
         },
         "routingPolicies" : {
