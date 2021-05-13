@@ -2323,7 +2323,7 @@ public final class XrGrammarTest {
                   new IosRegexAsPathSetElem("^2_"),
                   new LengthAsPathSetElem(EQ, 1, false),
                   new LengthAsPathSetElem(GE, 2, true),
-                  new NeighborIsAsPathSetElem(false, Range.singleton(65537L), Range.closed(2L, 3L)),
+                  new NeighborIsAsPathSetElem(true, Range.singleton(65537L), Range.closed(2L, 3L)),
                   new OriginatesFromAsPathSetElem(false, Range.singleton(4L), Range.closed(5L, 6L)),
                   new PassesThroughAsPathSetElem(false, Range.singleton(7L), Range.closed(8L, 9L)),
                   new UniqueLengthAsPathSetElem(EQ, 1, false),

@@ -2088,6 +2088,7 @@ public class CiscoXrConversions {
   private static final class AsPathSetElemConverter implements AsPathSetElemVisitor<AsPathSetElem> {
     @Override
     public AsPathSetElem visitDfaRegexAsPathSetElem(DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
+      // TODO: figure out how this is different from ios-regex
       return new RegexAsPathSetElem(toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
     }
 
@@ -2139,6 +2140,7 @@ public class CiscoXrConversions {
     @Override
     public org.batfish.datamodel.AsPathAccessListLine visitDfaRegexAsPathSetElem(
         DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
+      // TODO: figure out how this is different from ios-regex
       return new AsPathAccessListLine(
           LineAction.PERMIT, toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
     }
