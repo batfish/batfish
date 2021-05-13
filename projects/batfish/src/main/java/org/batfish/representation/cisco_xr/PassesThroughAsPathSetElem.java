@@ -5,6 +5,7 @@ import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -26,12 +27,12 @@ public final class PassesThroughAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
-    return visitor.visitPassesThroughAsPathSetElem(this, arg);
+  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
+    return visitor.visitPassesThroughAsPathSetElem(this);
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

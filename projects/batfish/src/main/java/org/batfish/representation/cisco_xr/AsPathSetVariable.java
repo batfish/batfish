@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A route-policy variable whose value is the name of an as-path-set. */
@@ -16,7 +17,7 @@ public final class AsPathSetVariable implements AsPathSetExpr {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

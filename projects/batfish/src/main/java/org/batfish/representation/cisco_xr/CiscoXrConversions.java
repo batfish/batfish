@@ -2079,58 +2079,53 @@ public class CiscoXrConversions {
     return new AsPathAccessList(
         name,
         asPathSet.getElements().stream()
-            .map(elem -> elem.accept(AS_PATH_SET_ELEM_TO_AS_PATH_ACCESS_LIST_LINE, null))
+            .map(elem -> elem.accept(AS_PATH_SET_ELEM_TO_AS_PATH_ACCESS_LIST_LINE))
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList()));
   }
 
   // Returns null for unsupported elems
-  private static final class AsPathSetElemConverter
-      implements AsPathSetElemVisitor<
-          org.batfish.datamodel.routing_policy.expr.AsPathSetElem, Void> {
+  private static final class AsPathSetElemConverter implements AsPathSetElemVisitor<AsPathSetElem> {
     @Override
-    public AsPathSetElem visitDfaRegexAsPathSetElem(
-        DfaRegexAsPathSetElem dfaRegexAsPathSetElem, Void arg) {
+    public AsPathSetElem visitDfaRegexAsPathSetElem(DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
       return new RegexAsPathSetElem(toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
     }
 
     @Override
-    public AsPathSetElem visitIosRegexAsPathSetElem(
-        IosRegexAsPathSetElem iosRegexAsPathSetElem, Void arg) {
+    public AsPathSetElem visitIosRegexAsPathSetElem(IosRegexAsPathSetElem iosRegexAsPathSetElem) {
       return new RegexAsPathSetElem(toJavaRegex(iosRegexAsPathSetElem.getRegex()));
     }
 
     @Override
-    public AsPathSetElem visitLengthAsPathSetElem(
-        LengthAsPathSetElem lengthAsPathSetElem, Void arg) {
+    public AsPathSetElem visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem) {
       // TODO: implement
       return null;
     }
 
     @Override
     public AsPathSetElem visitNeighborIsAsPathSetElem(
-        NeighborIsAsPathSetElem neighborIsAsPathSetElem, Void arg) {
+        NeighborIsAsPathSetElem neighborIsAsPathSetElem) {
       // TODO: implement
       return null;
     }
 
     @Override
     public AsPathSetElem visitOriginatesFromAsPathSetElem(
-        OriginatesFromAsPathSetElem originatesFromAsPathSetElem, Void arg) {
+        OriginatesFromAsPathSetElem originatesFromAsPathSetElem) {
       // TODO: implement
       return null;
     }
 
     @Override
     public AsPathSetElem visitPassesThroughAsPathSetElem(
-        PassesThroughAsPathSetElem passesThroughAsPathSetElem, Void arg) {
+        PassesThroughAsPathSetElem passesThroughAsPathSetElem) {
       // TODO: implement
       return null;
     }
 
     @Override
     public AsPathSetElem visitUniqueLengthAsPathSetElem(
-        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem, Void arg) {
+        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem) {
       // TODO: implement
       return null;
     }
@@ -2140,52 +2135,51 @@ public class CiscoXrConversions {
 
   // Returns null for unsupported elems
   private static final class AsPathSetElemToAsPathAccessListLine
-      implements AsPathSetElemVisitor<org.batfish.datamodel.AsPathAccessListLine, Void> {
+      implements AsPathSetElemVisitor<AsPathAccessListLine> {
     @Override
     public org.batfish.datamodel.AsPathAccessListLine visitDfaRegexAsPathSetElem(
-        DfaRegexAsPathSetElem dfaRegexAsPathSetElem, Void arg) {
+        DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
       return new AsPathAccessListLine(
           LineAction.PERMIT, toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
     }
 
     @Override
     public org.batfish.datamodel.AsPathAccessListLine visitIosRegexAsPathSetElem(
-        IosRegexAsPathSetElem iosRegexAsPathSetElem, Void arg) {
+        IosRegexAsPathSetElem iosRegexAsPathSetElem) {
       return new AsPathAccessListLine(
           LineAction.PERMIT, toJavaRegex(iosRegexAsPathSetElem.getRegex()));
     }
 
     @Override
-    public AsPathAccessListLine visitLengthAsPathSetElem(
-        LengthAsPathSetElem lengthAsPathSetElem, Void arg) {
+    public AsPathAccessListLine visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem) {
       // TODO: implement
       return null;
     }
 
     @Override
     public AsPathAccessListLine visitNeighborIsAsPathSetElem(
-        NeighborIsAsPathSetElem neighborIsAsPathSetElem, Void arg) {
+        NeighborIsAsPathSetElem neighborIsAsPathSetElem) {
       // TODO: implement
       return null;
     }
 
     @Override
     public AsPathAccessListLine visitOriginatesFromAsPathSetElem(
-        OriginatesFromAsPathSetElem originatesFromAsPathSetElem, Void arg) {
+        OriginatesFromAsPathSetElem originatesFromAsPathSetElem) {
       // TODO: implement
       return null;
     }
 
     @Override
     public AsPathAccessListLine visitPassesThroughAsPathSetElem(
-        PassesThroughAsPathSetElem passesThroughAsPathSetElem, Void arg) {
+        PassesThroughAsPathSetElem passesThroughAsPathSetElem) {
       // TODO: implement
       return null;
     }
 
     @Override
     public AsPathAccessListLine visitUniqueLengthAsPathSetElem(
-        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem, Void arg) {
+        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem) {
       // TODO: implement
       return null;
     }

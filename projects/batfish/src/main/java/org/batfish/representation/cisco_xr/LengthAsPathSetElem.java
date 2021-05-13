@@ -2,6 +2,7 @@ package org.batfish.representation.cisco_xr;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 
@@ -16,12 +17,12 @@ public final class LengthAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
-    return visitor.visitLengthAsPathSetElem(this, arg);
+  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
+    return visitor.visitLengthAsPathSetElem(this);
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

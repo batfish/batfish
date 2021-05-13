@@ -7,5 +7,5 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public interface AsPathSetElem extends Serializable {
 
-  <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg);
+  <T> T accept(AsPathSetElemVisitor<T> visitor);
 }

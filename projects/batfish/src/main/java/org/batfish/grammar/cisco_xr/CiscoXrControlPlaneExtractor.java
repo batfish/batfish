@@ -6978,7 +6978,19 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, As_numberContext ctx) {
-    return toLongInSpace(messageCtx, ctx, AS_NUMBER_RANGE, "AS number");
+    if (ctx.uint32() != null) {
+      return toLongInSpace(messageCtx, ctx, AS_NUMBER_RANGE, "AS number");
+    } else {
+      assert ctx.hi != null && ctx.lo != null;
+      long hi = toInteger(ctx.hi);
+      long lo = toInteger(ctx.lo);
+      long val = (hi << 16) | lo;
+      if (val == 0) {
+        warn(messageCtx, "0 is not a valid AS");
+        return Optional.empty();
+      }
+      return Optional.of(val);
+    }
   }
 
   @Override
@@ -6993,6 +7005,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private @Nonnull Optional<List<Range<Long>>> toRanges(
       ParserRuleContext messageCtx, As_range_expr_listContext ctx) {
+    // TODO: change return type to accomodate params
     ImmutableList.Builder<Range<Long>> builder = ImmutableList.builder();
     for (As_range_exprContext rangeCtx : ctx.as_range_expr()) {
       Optional<Range<Long>> maybeRange = toRange(messageCtx, rangeCtx);
@@ -8300,7 +8313,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void enterBoolean_as_path_in(Boolean_as_path_inContext ctx) {
     if (ctx.PAREN_LEFT() != null) {
-      // TODO: create and use VS InlineAsPathSet
+      // TODO: use structure that supports route-policy params
       _currentInlineAsPathSet = new AsPathSet();
     }
   }

@@ -25,27 +25,25 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
 
   @Override
   public BooleanExpr toBooleanExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    org.batfish.datamodel.routing_policy.expr.AsPathSetExpr expr;
     if (_asExpr instanceof AsPathSetReference) {
       String name = ((AsPathSetReference) _asExpr).getName();
       if (!c.getAsPathAccessLists().containsKey(name)) {
         // Undefined, return false.
         return BooleanExprs.FALSE;
       }
-      expr = new org.batfish.datamodel.routing_policy.expr.NamedAsPathSet(name);
+      return new MatchAsPath(new org.batfish.datamodel.routing_policy.expr.NamedAsPathSet(name));
     } else if (_asExpr instanceof InlineAsPathSet) {
-      expr =
+      return new MatchAsPath(
           new ExplicitAsPathSet(
               ((InlineAsPathSet) _asExpr)
                   .getAsPathSet().getElements().stream()
-                      .map(elem -> elem.accept(AS_PATH_SET_ELEM_CONVERTER, null))
+                      .map(elem -> elem.accept(AS_PATH_SET_ELEM_CONVERTER))
                       .filter(Objects::nonNull)
-                      .collect(ImmutableList.toImmutableList()));
+                      .collect(ImmutableList.toImmutableList())));
     } else {
       assert _asExpr instanceof AsPathSetVariable;
       // TODO: implement route-policy variables
       return BooleanExprs.FALSE;
     }
-    return new MatchAsPath(expr);
   }
 }

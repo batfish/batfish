@@ -4,7 +4,7 @@ hostname xr-as-path-boolean
 !
 route-policy rp1
  # in inline
- if as-path in (dfa-regex '^1_', ios-regex '^2_', length eq 1, length ge 2 all, neighbor-is '1 [2..3]', originates-from '4 [5..6]', passes-through '7 [8..9]', unique-length eq 1, unique-length eq 2 all) then
+ if as-path in (dfa-regex '^1_', ios-regex '^2_', length eq 1, length ge 2 all, neighbor-is '1.1 [2..3]', originates-from '4 [5..6]', passes-through '7 [8..9]', unique-length eq 1, unique-length eq 2 all) then
   pass
  endif
 

@@ -171,7 +171,6 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.cisco_xr.AddressFamilyType;
-import org.batfish.representation.cisco_xr.AsPathSet;
 import org.batfish.representation.cisco_xr.AsPathSetElem;
 import org.batfish.representation.cisco_xr.AsPathSetExpr;
 import org.batfish.representation.cisco_xr.AsPathSetReference;
@@ -2266,124 +2265,34 @@ public final class XrGrammarTest {
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getAsPathSets(), hasKeys("mixed"));
-    {
-      AsPathSet set = vc.getAsPathSets().get("mixed");
-      Iterator<AsPathSetElem> i = set.getElements().iterator();
-      AsPathSetElem elem;
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new DfaRegexAsPathSetElem("^1_")));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new IosRegexAsPathSetElem("^2_")));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 1, false)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 2, true)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(GE, 3, false)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(GE, 4, true)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 5, false)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 6, true)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(LE, 7, false)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(LE, 8, true)));
-      }
-      {
-        elem = i.next();
-        assertThat(
-            elem,
-            equalTo(new NeighborIsAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L))));
-      }
-      {
-        elem = i.next();
-        assertThat(
-            elem,
-            equalTo(new NeighborIsAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L))));
-      }
-      {
-        elem = i.next();
-        assertThat(
-            elem,
-            equalTo(
-                new OriginatesFromAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L))));
-      }
-      {
-        elem = i.next();
-        assertThat(
-            elem,
-            equalTo(
-                new OriginatesFromAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L))));
-      }
-      {
-        elem = i.next();
-        assertThat(
-            elem,
-            equalTo(
-                new PassesThroughAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L))));
-      }
-      {
-        elem = i.next();
-        assertThat(
-            elem,
-            equalTo(
-                new PassesThroughAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L))));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 1, false)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 2, true)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(GE, 3, false)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(GE, 4, true)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 5, false)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 6, true)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(LE, 7, false)));
-      }
-      {
-        elem = i.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(LE, 8, true)));
-      }
-      assertFalse(i.hasNext());
-    }
+    assertThat(
+        vc.getAsPathSets().get("mixed").getElements(),
+        equalTo(
+            ImmutableList.of(
+                new DfaRegexAsPathSetElem("^1_"),
+                new IosRegexAsPathSetElem("^2_"),
+                new LengthAsPathSetElem(EQ, 1, false),
+                new LengthAsPathSetElem(EQ, 2, true),
+                new LengthAsPathSetElem(GE, 3, false),
+                new LengthAsPathSetElem(GE, 4, true),
+                new LengthAsPathSetElem(EQ, 5, false),
+                new LengthAsPathSetElem(EQ, 6, true),
+                new LengthAsPathSetElem(LE, 7, false),
+                new LengthAsPathSetElem(LE, 8, true),
+                new NeighborIsAsPathSetElem(false, Range.singleton(65537L), Range.closed(2L, 3L)),
+                new NeighborIsAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L)),
+                new OriginatesFromAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L)),
+                new OriginatesFromAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L)),
+                new PassesThroughAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L)),
+                new PassesThroughAsPathSetElem(true, Range.singleton(4L), Range.closed(5L, 6L)),
+                new UniqueLengthAsPathSetElem(EQ, 1, false),
+                new UniqueLengthAsPathSetElem(EQ, 2, true),
+                new UniqueLengthAsPathSetElem(GE, 3, false),
+                new UniqueLengthAsPathSetElem(GE, 4, true),
+                new UniqueLengthAsPathSetElem(EQ, 5, false),
+                new UniqueLengthAsPathSetElem(EQ, 6, true),
+                new UniqueLengthAsPathSetElem(LE, 7, false),
+                new UniqueLengthAsPathSetElem(LE, 8, true))));
   }
 
   @Test
@@ -2406,53 +2315,19 @@ public final class XrGrammarTest {
       assertThat(guard, instanceOf(RoutePolicyBooleanAsPathIn.class));
       AsPathSetExpr expr = ((RoutePolicyBooleanAsPathIn) guard).getAsPathSetExpr();
       assertThat(expr, instanceOf(InlineAsPathSet.class));
-      Iterator<AsPathSetElem> ei = ((InlineAsPathSet) expr).getAsPathSet().getElements().iterator();
-      AsPathSetElem elem;
-      {
-        elem = ei.next();
-        assertThat(elem, equalTo(new DfaRegexAsPathSetElem("^1_")));
-      }
-      {
-        elem = ei.next();
-        assertThat(elem, equalTo(new IosRegexAsPathSetElem("^2_")));
-      }
-      {
-        elem = ei.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(EQ, 1, false)));
-      }
-      {
-        elem = ei.next();
-        assertThat(elem, equalTo(new LengthAsPathSetElem(GE, 2, true)));
-      }
-      {
-        elem = ei.next();
-        assertThat(
-            elem,
-            equalTo(new NeighborIsAsPathSetElem(false, Range.singleton(1L), Range.closed(2L, 3L))));
-      }
-      {
-        elem = ei.next();
-        assertThat(
-            elem,
-            equalTo(
-                new OriginatesFromAsPathSetElem(false, Range.singleton(4L), Range.closed(5L, 6L))));
-      }
-      {
-        elem = ei.next();
-        assertThat(
-            elem,
-            equalTo(
-                new PassesThroughAsPathSetElem(false, Range.singleton(7L), Range.closed(8L, 9L))));
-      }
-      {
-        elem = ei.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 1, false)));
-      }
-      {
-        elem = ei.next();
-        assertThat(elem, equalTo(new UniqueLengthAsPathSetElem(EQ, 2, true)));
-      }
-      assertFalse(ei.hasNext());
+      assertThat(
+          ((InlineAsPathSet) expr).getAsPathSet().getElements(),
+          equalTo(
+              ImmutableList.of(
+                  new DfaRegexAsPathSetElem("^1_"),
+                  new IosRegexAsPathSetElem("^2_"),
+                  new LengthAsPathSetElem(EQ, 1, false),
+                  new LengthAsPathSetElem(GE, 2, true),
+                  new NeighborIsAsPathSetElem(false, Range.singleton(65537L), Range.closed(2L, 3L)),
+                  new OriginatesFromAsPathSetElem(false, Range.singleton(4L), Range.closed(5L, 6L)),
+                  new PassesThroughAsPathSetElem(false, Range.singleton(7L), Range.closed(8L, 9L)),
+                  new UniqueLengthAsPathSetElem(EQ, 1, false),
+                  new UniqueLengthAsPathSetElem(EQ, 2, true))));
     }
     {
       RoutePolicyBoolean guard = asPathBooleanExtractionTestHelper(i.next());

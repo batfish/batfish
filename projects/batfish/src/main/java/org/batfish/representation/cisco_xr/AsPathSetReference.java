@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A reference to an as-path-set. */
@@ -16,7 +17,7 @@ public class AsPathSetReference implements AsPathSetExpr {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }

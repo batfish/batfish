@@ -15,7 +15,7 @@ as-path-set mixed
  length le 7,
  length le 8 all,
  # Another remark in the middle
- neighbor-is '1 [2..3]',
+ neighbor-is '1.1 [2..3]',
  neighbor-is '4 [5..6]' exact,
  originates-from '1 [2..3]',
  originates-from '4 [5..6]' exact,

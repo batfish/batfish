@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
@@ -15,8 +16,8 @@ public final class IosRegexAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
-    return visitor.visitIosRegexAsPathSetElem(this, arg);
+  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
+    return visitor.visitIosRegexAsPathSetElem(this);
   }
 
   public @Nonnull String getRegex() {
@@ -24,7 +25,7 @@ public final class IosRegexAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
     }
