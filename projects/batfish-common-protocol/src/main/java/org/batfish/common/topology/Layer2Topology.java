@@ -186,6 +186,12 @@ public final class Layer2Topology {
     return _representativeByNode.isEmpty();
   }
 
+  @VisibleForTesting
+  @JsonIgnore
+  Set<Layer2Node> getNodes() {
+    return _representativeByNode.keySet();
+  }
+
   @JsonProperty(PROP_REPRESENTATIVE_BY_NODE)
   private @Nonnull List<Layer2RepresentativeEntry> getRepresentativeByNode() {
     return _representativeByNode.entrySet().stream()
