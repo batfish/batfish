@@ -6991,7 +6991,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             String.format(
                 "%s expressed as a single number is %s, which is not in the range of valid ASes:"
                     + " %s",
-                ctx.getText(), val, AS_NUMBER_RANGE));
+                getFullText(ctx), val, AS_NUMBER_RANGE));
         return Optional.empty();
       }
       return Optional.of(val);
