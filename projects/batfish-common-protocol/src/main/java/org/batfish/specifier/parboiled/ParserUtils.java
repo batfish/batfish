@@ -43,13 +43,14 @@ final class ParserUtils {
       InvalidInputError error,
       Map<String, Anchor.Type> anchorTypes) {
     return String.format(
-        "%s. See %s for valid grammar.",
+        "%s. See %s for valid grammar. %s",
         getErrorString(
             input,
             grammar.getFriendlyName(),
             error.getStartIndex(),
             getPotentialMatches(error, anchorTypes, true)),
-        grammar.getFullUrl());
+        grammar.getFullUrl(),
+        Grammar.GENERAL_NOTE);
   }
 
   /** Generates a friendly message to explain what might be wrong with parser input */
