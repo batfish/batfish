@@ -100,13 +100,25 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private <T> void add(
         Class<T> structureClass, Function<Configuration, Map<String, T>> structureMapRetriever) {
+      add(structureClass, structureMapRetriever, null);
+    }
+
+    private <T> void add(
+        Class<T> structureClass,
+        Function<Configuration, Map<String, T>> structureMapRetriever,
+        Function<T, String> definitionJsonifier) {
       String structType = structureClass.getSimpleName().toLowerCase();
       if ((_csnQuestion.getNamedStructTypes().isEmpty()
               && !(_csnQuestion.getExcludedNamedStructTypes().contains(structType)))
           || _csnQuestion.getNamedStructTypes().contains(structType)) {
         _answerElement.add(
             structureClass.getSimpleName(),
-            processStructures(structureClass, _nodes, _configurations, structureMapRetriever));
+            processStructures(
+                structureClass,
+                _nodes,
+                _configurations,
+                structureMapRetriever,
+                definitionJsonifier));
       }
     }
 
@@ -131,7 +143,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       add(IpsecPhase2Proposal.class, Configuration::getIpsecPhase2Proposals);
       add(IpsecPeerConfig.class, Configuration::getIpsecPeerConfigs);
       add(Route6FilterList.class, Configuration::getRoute6FilterLists);
-      add(RouteFilterList.class, Configuration::getRouteFilterLists);
+      add(
+          RouteFilterList.class,
+          Configuration::getRouteFilterLists,
+          RouteFilterList::definitionJson);
       add(RoutingPolicy.class, Configuration::getRoutingPolicies);
       add(Vrf.class, Configuration::getVrfs);
       add(Zone.class, Configuration::getZones);
@@ -147,7 +162,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         Class<T> structureClass,
         Set<String> hostnames,
         Map<String, Configuration> configurations,
-        Function<Configuration, Map<String, T>> structureMapRetriever) {
+        Function<Configuration, Map<String, T>> structureMapRetriever,
+        Function<T, String> definitionJsonifier) {
       String structureClassName = structureClass.getSimpleName();
       // collect the set of all names for structures of type T, across all nodes
       Set<String> allNames =
@@ -165,7 +181,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         for (String structName : allNames) {
           T struct = structureMap.get(structName);
           if (struct != null || _csnQuestion.getMissing()) {
-            builder.addEntry(structName, hostname, struct, _assumeAllUnique);
+            builder.addEntry(structName, hostname, struct, _assumeAllUnique, definitionJsonifier);
           }
         }
       }
