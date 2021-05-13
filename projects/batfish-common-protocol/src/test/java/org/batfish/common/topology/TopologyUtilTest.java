@@ -638,9 +638,9 @@ public final class TopologyUtilTest {
     i2.setSwitchportMode(SwitchportMode.ACCESS);
     i2.setAccessVlan(2);
 
-    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
-    ifacesByVlan.add(2, i1.getName());
-    ifacesByVlan.add(2, i2.getName());
+    InterfacesByVlanRange ifacesByVlan =
+        new InterfacesByVlanRange(
+            ImmutableMap.of(canonicalRange(2), ImmutableSet.of(i1.getName(), i2.getName())));
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
     computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
 
@@ -676,7 +676,7 @@ public final class TopologyUtilTest {
             .setVlan(vlanId)
             .build());
 
-    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
+    InterfacesByVlanRange ifacesByVlan = new InterfacesByVlanRange(ImmutableMap.of());
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
     computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
 
@@ -714,8 +714,9 @@ public final class TopologyUtilTest {
             .setVlan(vlanId)
             .build());
 
-    InterfacesByVlanRange ifacesByVlan = InterfacesByVlanRange.create();
-    ifacesByVlan.add(vlanId, switchportName);
+    InterfacesByVlanRange ifacesByVlan =
+        new InterfacesByVlanRange(
+            ImmutableMap.of(canonicalRange(vlanId), ImmutableSet.of(switchportName)));
 
     ImmutableSet.Builder<Layer2Edge> builder = ImmutableSet.builder();
     computeLayer2SelfEdges(c1, ifacesByVlan, builder::add);
@@ -725,6 +726,10 @@ public final class TopologyUtilTest {
         equalTo(
             ImmutableSet.of(
                 new Layer2Edge(c1Name, vniName, null, c1Name, switchportName, vlanId))));
+  }
+
+  private static Range<Integer> canonicalRange(int vlanId) {
+    return Range.closedOpen(vlanId, vlanId + 1);
   }
 
   @Test
