@@ -35,6 +35,7 @@ as_number
 :
   // 1-4294967295
   uint32
+  | hi = uint16 PERIOD lo = uint16
 ;
 
 as_path_length
