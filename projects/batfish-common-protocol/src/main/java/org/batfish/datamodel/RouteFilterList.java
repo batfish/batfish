@@ -5,6 +5,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -18,6 +20,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.vendor.VendorStructureId;
 
 /**
@@ -168,5 +171,19 @@ public class RouteFilterList implements Serializable {
   /** Set the list of lines against which to match a route's prefix. */
   public void setLines(@Nonnull List<RouteFilterLine> lines) {
     _lines = lines;
+  }
+
+  /**
+   * Returns a JSON string that represents the definition of this object, ignoring any irrelevant
+   * fields.
+   *
+   * <p>Can be used for JSON-based comparison in questions line compareSameName.
+   */
+  public String definitionJson() {
+    try {
+      return BatfishObjectMapper.writePrettyString(_lines);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeJsonMappingException("Could not map lines to JSON");
+    }
   }
 }

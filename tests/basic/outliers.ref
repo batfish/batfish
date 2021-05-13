@@ -77,6 +77,75 @@
           "sourceType" : "extended ipv4 access-list"
         },
         "structType" : "IpAccessList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as2border1",
+          "as2border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "103",
+        "outliers" : [
+          "as1border2"
+        ],
+        "structDefinition" : {
+          "lines" : [
+            {
+              "action" : "PERMIT",
+              "ipWildcard" : "3.0.1.0/24",
+              "lengthRange" : "24-24"
+            },
+            {
+              "action" : "PERMIT",
+              "ipWildcard" : "3.0.2.0/24",
+              "lengthRange" : "24-24"
+            }
+          ],
+          "name" : "103",
+          "vendorStructureId" : {
+            "filename" : "configs/as1border1.cfg",
+            "structureName" : "extended ipv4 access-list",
+            "structureType" : "103"
+          }
+        },
+        "structType" : "RouteFilterList"
+      },
+      {
+        "conformers" : [
+          "as1border1",
+          "as1border2",
+          "as3border1",
+          "as3border2"
+        ],
+        "hypothesis" : "sameDefinition",
+        "name" : "102",
+        "outliers" : [
+          "as2dept1"
+        ],
+        "structDefinition" : {
+          "lines" : [
+            {
+              "action" : "PERMIT",
+              "ipWildcard" : "2.0.0.0/8",
+              "lengthRange" : "8-8"
+            },
+            {
+              "action" : "PERMIT",
+              "ipWildcard" : "2.128.0.0/16",
+              "lengthRange" : "16-16"
+            }
+          ],
+          "name" : "102",
+          "vendorStructureId" : {
+            "filename" : "configs/as1border1.cfg",
+            "structureName" : "extended ipv4 access-list",
+            "structureType" : "102"
+          }
+        },
+        "structType" : "RouteFilterList"
       }
     ]
   }

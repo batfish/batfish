@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -19,6 +20,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.function.Function;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CollectionUtil;
@@ -50,10 +53,14 @@ public class NamedStructureEquivalenceSets<T> {
     }
 
     public void addEntry(
-        String structureName, String hostname, T structure, boolean assumeAllUnique) {
+        String structureName,
+        String hostname,
+        T structure,
+        boolean assumeAllUnique,
+        @Nullable Function<T, String> definitionJsonifier) {
       Map<Integer, Set<NamedStructureEquivalenceSet<T>>> sameNamedStructuresByHash =
           _sameNamedStructuresByNameAndHash.computeIfAbsent(structureName, s -> new HashMap<>());
-      String structureJson = writeObject(structure);
+      String structureJson = writeObject(structure, definitionJsonifier);
       int hash = structureJson.hashCode();
       Set<NamedStructureEquivalenceSet<T>> eqSetsWithSameHash =
           sameNamedStructuresByHash.computeIfAbsent(hash, h -> new HashSet<>());
@@ -63,7 +70,9 @@ public class NamedStructureEquivalenceSets<T> {
         Optional<NamedStructureEquivalenceSet<T>> potentialMatchingSet =
             eqSetsWithSameHash.stream()
                 .filter(
-                    s -> checkJsonStringEquals(structureJson, writeObject(s.getNamedStructure())))
+                    s ->
+                        checkJsonStringEquals(
+                            structureJson, writeObject(s.getNamedStructure(), definitionJsonifier)))
                 .findAny();
         if (potentialMatchingSet.isPresent()) {
           NamedStructureEquivalenceSet<T> matchingSet = potentialMatchingSet.get();
@@ -97,12 +106,14 @@ public class NamedStructureEquivalenceSets<T> {
       return eqSets;
     }
 
-    private String writeObject(T t) {
+    @VisibleForTesting
+    String writeObject(T t, @Nullable Function<T, String> definitionJsonifier) {
       try {
-        String structureJson = BatfishObjectMapper.writePrettyString(t);
-        return structureJson;
+        return definitionJsonifier == null
+            ? BatfishObjectMapper.writePrettyString(t)
+            : definitionJsonifier.apply(t);
       } catch (JsonProcessingException e) {
-        throw new BatfishException("Could not write named structure as JSON", e);
+        throw new BatfishException("Could not write named structure as String", e);
       }
     }
   }
