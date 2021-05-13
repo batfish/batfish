@@ -38,8 +38,7 @@ class InterfacesByVlanRange {
             .findAny()
             .orElse(null);
     checkArgument(
-        invalidRange == null,
-        String.format("Range %s cannot be used in InterfacesByVlanRange", invalidRange));
+        invalidRange == null, "Range %s cannot be used in InterfacesByVlanRange", invalidRange);
     checkArgument(
         rangesDoNotOverlap(ranges.keySet()), "Ranges in InterfacesByVlanRange cannot overlap");
     _ranges = ImmutableMap.copyOf(ranges);
