@@ -2,6 +2,7 @@ package org.batfish.common.topology;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableSortedSet.of;
+import static org.batfish.common.matchers.Layer2TopologyMatchers.inSameBroadcastDomain;
 import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.cleanLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeInitialTunnelTopology;
@@ -36,6 +37,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
+import com.google.common.collect.Sets;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 import java.util.Collections;
@@ -616,6 +618,95 @@ public final class TopologyUtilTest {
           "c1:i1 and c2:i1 are not in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
+  }
+
+  @Test
+  public void testComputeLayer2Topology_multipleTrunks() {
+    /* Setup:
+     Two devices c1 and c2, each with four interfaces i1-i4.
+     L1 topology connects c1[i1] to c2[i1] and c1[i2] to c2[i2].
+     i1 interfaces are both in trunk mode with allowed VLAN 1.
+     i2 interfaces are both in trunk mode with allowed VLAN 2.
+     i3 interfaces are both L3 VLAN interfaces with VLAN 1.
+     i4 interfaces are both L3 VLAN interfaces with VLAN 2.
+     All L3 interfaces have compatible addresses, but the only L3 edges should be:
+       - c1[i3] <-> c2[i3]
+       - c1[i4] <-> c2[i4]
+      because the i3 and i4 interfaces are in separate broadcast domains.
+    */
+    String c1 = "c1";
+    String c2 = "c2";
+    String i1 = "i1";
+    String i2 = "i2";
+    String i3 = "i3";
+    String i4 = "i4";
+    Range<Integer> range1 = Range.closedOpen(1, 2);
+    Range<Integer> range2 = Range.closedOpen(2, 3);
+    IntegerSpace i1Vlans = IntegerSpace.of(range1);
+    IntegerSpace i2Vlans = IntegerSpace.of(range2);
+
+    Configuration config1 = _cb.setHostname(c1).build();
+    Configuration config2 = _cb.setHostname(c2).build();
+    Vrf v1 = _vb.setOwner(config1).build();
+    Vrf v2 = _vb.setOwner(config2).build();
+    // L2 interfaces
+    _ib.setActive(true).setSwitchportMode(SwitchportMode.TRUNK);
+    _ib.setOwner(config1).setVrf(v1).setName(i1).setAllowedVlans(i1Vlans).build();
+    _ib.setName(i2).setAllowedVlans(i2Vlans).build();
+    _ib.setOwner(config2).setVrf(v2).setName(i1).setAllowedVlans(i1Vlans).build();
+    _ib.setName(i2).setAllowedVlans(i2Vlans).build();
+    // L3 interfaces
+    _ib.setSwitchportMode(SwitchportMode.NONE).setAllowedVlans(null).setType(InterfaceType.VLAN);
+    _ib.setOwner(config1).setVrf(v1);
+    _ib.setName(i3).setVlan(1).setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24")).build();
+    _ib.setName(i4).setVlan(2).setAddress(ConcreteInterfaceAddress.parse("10.0.0.2/24")).build();
+    _ib.setOwner(config2).setVrf(v2);
+    _ib.setName(i3).setVlan(1).setAddress(ConcreteInterfaceAddress.parse("10.0.0.3/24")).build();
+    _ib.setName(i4).setVlan(2).setAddress(ConcreteInterfaceAddress.parse("10.0.0.4/24")).build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(c1, config1, c2, config2);
+
+    Layer1Topology layer1Topology =
+        layer1Topology(
+            c1, i1, c2, i1, //
+            c1, i2, c2, i2);
+    Layer2Topology layer2Topology =
+        computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
+    Topology layer3Topology =
+        computeRawLayer3Topology(layer1Topology, Layer1Topology.EMPTY, layer2Topology, configs);
+
+    // Pin down L2 topology: should have broadcast domains for VLANs 1 and 2.
+    // TODO: Why do L3 ifaces have entries both with and without a VLAN range? Is that necessary?
+    Set<Layer2Node> vlan1Nodes =
+        ImmutableSet.of(
+            new Layer2Node(c1, i1, range1),
+            new Layer2Node(c1, i3, range1),
+            new Layer2Node(c1, i3, null),
+            new Layer2Node(c2, i1, range1),
+            new Layer2Node(c2, i3, range1),
+            new Layer2Node(c2, i3, null));
+    Set<Layer2Node> vlan2Nodes =
+        ImmutableSet.of(
+            new Layer2Node(c1, i2, range2),
+            new Layer2Node(c1, i4, range2),
+            new Layer2Node(c1, i4, null),
+            new Layer2Node(c2, i2, range2),
+            new Layer2Node(c2, i4, range2),
+            new Layer2Node(c2, i4, null));
+    assertThat(layer2Topology.getNodes(), equalTo(Sets.union(vlan1Nodes, vlan2Nodes)));
+    // arbitrarily choose representatives for each broadcast domain
+    Layer2Node vlan1Repr = vlan1Nodes.iterator().next();
+    Layer2Node vlan2Repr = vlan2Nodes.iterator().next();
+    vlan1Nodes.forEach(n -> assertThat(layer2Topology, inSameBroadcastDomain(vlan1Repr, n)));
+    vlan2Nodes.forEach(n -> assertThat(layer2Topology, inSameBroadcastDomain(vlan2Repr, n)));
+    assertThat(layer2Topology, not(inSameBroadcastDomain(vlan1Repr, vlan2Repr)));
+
+    // Layer 3 interfaces should only be able to connect to each other if in same broadcast domain
+    Edge i3Edge = Edge.of(c1, i3, c2, i3);
+    Edge i4Edge = Edge.of(c1, i4, c2, i4);
+    assertThat(
+        layer3Topology.getEdges(),
+        containsInAnyOrder(i3Edge, i3Edge.reverse(), i4Edge, i4Edge.reverse()));
   }
 
   @Test

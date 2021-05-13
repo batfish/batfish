@@ -73,13 +73,13 @@ public final class TopologyUtil {
       Interface i1,
       Interface i2,
       Consumer<Layer2Edge> edges,
-      Layer1Node node1,
-      Layer1Node node2,
+      Layer1Node l1Node1,
+      Layer1Node l1Node2,
       Map<String, InterfacesByVlanRange> vlanRangesPerNode) {
     Integer i1Tag = i1.getEncapsulationVlan();
     Integer i2Tag = i2.getEncapsulationVlan();
-    InterfacesByVlanRange node1Ranges = vlanRangesPerNode.get(node1.getHostname());
-    InterfacesByVlanRange node2Ranges = vlanRangesPerNode.get(node2.getHostname());
+    InterfacesByVlanRange node1Ranges = vlanRangesPerNode.get(l1Node1.getHostname());
+    InterfacesByVlanRange node2Ranges = vlanRangesPerNode.get(l1Node2.getHostname());
     if (i1.getSwitchportMode() == SwitchportMode.TRUNK
         && i2.getSwitchportMode() == SwitchportMode.TRUNK) {
       /*
@@ -88,35 +88,37 @@ public final class TopologyUtil {
         overlap with any key in node2Ranges unless they're the same range.
       */
       Set<Range<Integer>> sharedRanges =
-          Sets.intersection(node1Ranges.getMap().keySet(), node2Ranges.getMap().keySet());
+          Sets.intersection(node1Ranges.getMap().keySet(), node2Ranges.getMap().keySet()).stream()
+              .filter(
+                  r ->
+                      node1Ranges.getMap().get(r).contains(l1Node1.getInterfaceName())
+                          && node2Ranges.getMap().get(r).contains(l1Node2.getInterfaceName()))
+              .collect(ImmutableSet.toImmutableSet());
       for (Range<Integer> sharedRange : sharedRanges) {
         // This frame will be tagged by i1 and we can directly check whether i2 allows.
-        // TODO: Likely wrong; needs to check the individual interfaces' VLANs.
-        //  Currently this creates an edge for every shared range on node1 and node2's devices,
-        //  which could include ranges that belong to other interfaces.
-        edges.accept(new Layer2Edge(node1, sharedRange, node2, sharedRange));
+        edges.accept(new Layer2Edge(l1Node1, sharedRange, l1Node2, sharedRange));
       }
       if (i1.getNativeVlan() != null && trunkWithNativeVlanAllowed(i2)) {
         // This frame will not be tagged by i1, and i2 accepts untagged frames.
         assert i2.getNativeVlan() != null; // invariant of trunkWithNativeVlanAllowed
         edges.accept(
             new Layer2Edge(
-                node1,
+                l1Node1,
                 Range.singleton(i1.getNativeVlan()),
-                node2,
+                l1Node2,
                 Range.singleton(i2.getNativeVlan())));
       }
     } else if (i1Tag != null) {
       // i1 is a tagged layer-3 interface, and the other side is a trunk. The only possible edge is
       // i2 receiving frames for a non-native allowed vlan.
       if (!i1Tag.equals(i2.getNativeVlan()) && i2.getAllowedVlans().contains(i1Tag)) {
-        edges.accept(new Layer2Edge(node1, null, node2, node2Ranges.getRange(i1Tag)));
+        edges.accept(new Layer2Edge(l1Node1, null, l1Node2, node2Ranges.getRange(i1Tag)));
       }
     } else if (i2Tag != null) {
       // i1 is a trunk, and the other side is a tagged layer-3 interface. The only possible edge is
       // i2 receiving frames for from a non-native allowed vlan of i1.
       if (!i2Tag.equals(i1.getNativeVlan()) && i1.getAllowedVlans().contains(i2Tag)) {
-        edges.accept(new Layer2Edge(node1, node1Ranges.getRange(i2Tag), node2, null));
+        edges.accept(new Layer2Edge(l1Node1, node1Ranges.getRange(i2Tag), l1Node2, null));
       }
     } else if (trunkWithNativeVlanAllowed(i1)) {
       // i1 is a trunk, but the other side is not and does not use tags. The only edge that will
@@ -126,9 +128,9 @@ public final class TopologyUtil {
       assert i1.getNativeVlan() != null; // invariant of trunkWithNativeVlanAllowed
       edges.accept(
           new Layer2Edge(
-              node1,
+              l1Node1,
               node1Ranges.getRange(i1.getNativeVlan()),
-              node2,
+              l1Node2,
               node2VlanId == null ? null : node2Ranges.getRange(node2VlanId)));
     } else if (trunkWithNativeVlanAllowed(i2)) {
       // i1 is not a trunk and does not use tags, but the other side is a trunk. The only edge that
@@ -138,9 +140,9 @@ public final class TopologyUtil {
       assert i2.getNativeVlan() != null; // invariant of trunkWithNativeVlanAllowed
       edges.accept(
           new Layer2Edge(
-              node1,
+              l1Node1,
               node1VlanId == null ? null : node1Ranges.getRange(node1VlanId),
-              node2,
+              l1Node2,
               node2Ranges.getRange(i2.getNativeVlan())));
     }
   }
