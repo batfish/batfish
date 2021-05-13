@@ -26,17 +26,30 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 class InterfacesByVlanRange {
 
+  /**
+   * Constructs an {@link InterfacesByVlanRange} with the given mapping of VLAN ranges to interface
+   * names in that VLAN range. The keys in {@code ranges} must be non-empty, canonical, and
+   * non-overlapping.
+   */
   public InterfacesByVlanRange(Map<Range<Integer>, Set<String>> ranges) {
-    checkArgument(rangesAreCanonicalAndDoNotOverlap(ranges.keySet()));
+    Optional<Range<Integer>> invalidRange =
+        ranges.keySet().stream().filter(InterfacesByVlanRange::isInvalidRange).findAny();
+    if (invalidRange.isPresent()) {
+      throw new IllegalArgumentException(
+          String.format("Range %s cannot be used in InterfacesByVlanRange", invalidRange.get()));
+    }
+    checkArgument(
+        rangesDoNotOverlap(ranges.keySet()), "Ranges in InterfacesByVlanRange cannot overlap");
     _ranges = ImmutableMap.copyOf(ranges);
   }
 
   @VisibleForTesting
-  static boolean rangesAreCanonicalAndDoNotOverlap(Set<Range<Integer>> ranges) {
-    if (!ranges.stream()
-        .allMatch(r -> !r.isEmpty() && r.equals(r.canonical(DiscreteDomain.integers())))) {
-      return false;
-    }
+  static boolean isInvalidRange(Range<Integer> range) {
+    return range.isEmpty() || !range.equals(range.canonical(DiscreteDomain.integers()));
+  }
+
+  @VisibleForTesting
+  static boolean rangesDoNotOverlap(Set<Range<Integer>> ranges) {
     List<Range<Integer>> rangeList =
         ranges.stream()
             .sorted(Comparator.comparing(Range::lowerEndpoint))

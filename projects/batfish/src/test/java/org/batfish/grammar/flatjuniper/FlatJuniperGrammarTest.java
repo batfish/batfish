@@ -854,9 +854,11 @@ public final class FlatJuniperGrammarTest {
       - r1, r2, and fw are all connected to the central switch sw as shown below
       - fw has self-adjacencies xe-0/0/10 <-> xe-0/0/20 and xe-0/0/11 <-> xe-0/0/21
     L2:
-      - sw[xe-0/0/0] has allowed VLANs 10 and 11; r1[xe-0/0/0] has subunits 10 and 11
-      - sw[xe-0/0/1] has allowed VLANs 20 and 21; r2[xe-0/0/1] has subunits 20 and 21
-      - sw[xe-0/0/3] and fw[xe-0/0/3] both have allowed VLANs 10, 11, 20, and 21
+      - sw[xe-0/0/0] is in trunk mode with allowed VLANs 10 and 11
+      - sw[xe-0/0/1] is in trunk mode with allowed VLANs 20 and 21
+      - r1[xe-0/0/0] has subunits 10 and 11 using 802.1q encapsulation
+      - r2[xe-0/0/1] has subunits 20 and 21 using 802.1q encapsulation
+      - sw[xe-0/0/3] and fw[xe-0/0/3] are both in trunk mode with allowed VLANs 10, 11, 20, and 21
       - fw's other interfaces are in access mode with VLAN ID corresponding to iface number;
         so its L1 self-adjacencies connect VLAN 10 to 20 and VLAN 11 to 21
       - This should create two broadcast domains, one for VLANS 10 and 20 and one for VLANS 11 and 21.

@@ -1,6 +1,7 @@
 package org.batfish.common.topology;
 
-import static org.batfish.common.topology.InterfacesByVlanRange.rangesAreCanonicalAndDoNotOverlap;
+import static org.batfish.common.topology.InterfacesByVlanRange.isInvalidRange;
+import static org.batfish.common.topology.InterfacesByVlanRange.rangesDoNotOverlap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -18,33 +19,31 @@ import org.junit.Test;
 public class InterfacesByVlanRangeTest {
 
   @Test
-  public void testRangesAreCanonicalAndDoNotOverlap_emptyRange() {
-    assertFalse(rangesAreCanonicalAndDoNotOverlap(ImmutableSet.of(Range.closedOpen(1, 1))));
+  public void testIsInvalidRange() {
+    // Canonical but empty
+    assertTrue(isInvalidRange(Range.closedOpen(1, 1)));
+    // Not empty but non-canonical
+    assertTrue(isInvalidRange(Range.closed(1, 10)));
+    assertTrue(isInvalidRange(Range.openClosed(1, 10)));
+    assertTrue(isInvalidRange(Range.open(1, 10)));
+    // Not empty and canonical
+    assertFalse(isInvalidRange(Range.closedOpen(1, 10)));
   }
 
   @Test
-  public void testRangesAreCanonicalAndDoNotOverlap_noncanonical() {
-    assertFalse(rangesAreCanonicalAndDoNotOverlap(ImmutableSet.of(Range.closed(1, 10))));
-    assertFalse(rangesAreCanonicalAndDoNotOverlap(ImmutableSet.of(Range.openClosed(1, 10))));
-    assertFalse(rangesAreCanonicalAndDoNotOverlap(ImmutableSet.of(Range.open(1, 10))));
-  }
-
-  @Test
-  public void testRangesAreCanonicalAndDoNotOverlap_overlapping() {
+  public void testRangesDoNotOverlap_overlapping() {
     assertFalse(
-        rangesAreCanonicalAndDoNotOverlap(
-            ImmutableSet.of(Range.closedOpen(0, 3), Range.closedOpen(2, 6))));
+        rangesDoNotOverlap(ImmutableSet.of(Range.closedOpen(0, 3), Range.closedOpen(2, 6))));
     assertFalse(
-        rangesAreCanonicalAndDoNotOverlap(
-            ImmutableSet.of(Range.closedOpen(3, 4), Range.closedOpen(0, 8))));
+        rangesDoNotOverlap(ImmutableSet.of(Range.closedOpen(3, 4), Range.closedOpen(0, 8))));
   }
 
   @Test
-  public void testRangesAreCanonicalAndDoNotOverlap() {
-    assertTrue(rangesAreCanonicalAndDoNotOverlap(ImmutableSet.of()));
-    assertTrue(rangesAreCanonicalAndDoNotOverlap(ImmutableSet.of(Range.closedOpen(1, 10))));
+  public void testRangesDoNotOverlap() {
+    assertTrue(rangesDoNotOverlap(ImmutableSet.of()));
+    assertTrue(rangesDoNotOverlap(ImmutableSet.of(Range.closedOpen(1, 10))));
     assertTrue(
-        rangesAreCanonicalAndDoNotOverlap(
+        rangesDoNotOverlap(
             ImmutableSet.of(
                 Range.closedOpen(10, 15), Range.closedOpen(0, 3), Range.closedOpen(3, 4))));
   }
