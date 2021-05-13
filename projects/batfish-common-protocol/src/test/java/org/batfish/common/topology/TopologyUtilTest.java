@@ -2,6 +2,7 @@ package org.batfish.common.topology;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.ImmutableSortedSet.of;
+import static org.batfish.common.matchers.Layer2TopologyMatchers.inSameBroadcastDomain;
 import static org.batfish.common.topology.IpOwners.computeIpInterfaceOwners;
 import static org.batfish.common.topology.TopologyUtil.cleanLayer1PhysicalTopology;
 import static org.batfish.common.topology.TopologyUtil.computeInitialTunnelTopology;
@@ -616,6 +617,49 @@ public final class TopologyUtilTest {
           "c1:i1 and c2:i1 are not in the same broadcast domain",
           layer2Topology.inSameBroadcastDomain(c1Name, c1i1Name, c2Name, c2i1Name));
     }
+  }
+
+  @Test
+  public void testComputeLayer2Topology_multipleTrunks() {
+    // Build two configs c1 and c2, each with two trunk interfaces i1 and i2.
+    // Both i1 interfaces have allowed VLANs 1-5; both i2 interfaces have allowed VLANS 6-10.
+    String c1Name = "c1";
+    String c2Name = "c2";
+    String i1Name = "i1";
+    String i2Name = "i2";
+    Range<Integer> range1 = Range.closedOpen(1, 6);
+    Range<Integer> range2 = Range.closedOpen(6, 11);
+    IntegerSpace i1Vlans = IntegerSpace.of(range1);
+    IntegerSpace i2Vlans = IntegerSpace.of(range2);
+
+    Configuration c1 = _cb.setHostname(c1Name).build();
+    Configuration c2 = _cb.setHostname(c2Name).build();
+    Vrf v1 = _vb.setOwner(c1).build();
+    Vrf v2 = _vb.setOwner(c2).build();
+    _ib.setActive(true).setSwitchportMode(SwitchportMode.TRUNK);
+    _ib.setOwner(c1).setVrf(v1).setName(i1Name).setAllowedVlans(i1Vlans).build();
+    _ib.setName(i2Name).setAllowedVlans(i2Vlans).build();
+    _ib.setOwner(c2).setVrf(v2).setName(i1Name).setAllowedVlans(i1Vlans).build();
+    _ib.setName(i2Name).setAllowedVlans(i2Vlans).build();
+    Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
+
+    // Set up L1 topology connecting c1[i1] to c2[i1] and c1[i2] to c2[i2]
+    Layer1Topology layer1Topology =
+        layer1Topology(
+            c1Name, i1Name, c2Name, i1Name, //
+            c1Name, i2Name, c2Name, i2Name);
+
+    // L2 topology should have separate broadcast domains for VLAN ranges 1-5, 6-10
+    Layer2Topology layer2Topology =
+        computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
+    Layer2Node c1i1 = new Layer2Node(c1Name, i1Name, range1);
+    Layer2Node c1i2 = new Layer2Node(c1Name, i2Name, range2);
+    Layer2Node c2i1 = new Layer2Node(c2Name, i1Name, range1);
+    Layer2Node c2i2 = new Layer2Node(c2Name, i2Name, range2);
+    assertThat(layer2Topology.getNodes(), containsInAnyOrder(c1i1, c1i2, c2i1, c2i2));
+    assertThat(layer2Topology, inSameBroadcastDomain(c1i1, c2i1));
+    assertThat(layer2Topology, inSameBroadcastDomain(c1i2, c2i2));
+    assertThat(layer2Topology, not(inSameBroadcastDomain(c1i1, c1i2)));
   }
 
   @Test
