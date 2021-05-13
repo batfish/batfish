@@ -34,10 +34,9 @@ class InterfacesByVlanRange {
   public InterfacesByVlanRange(Map<Range<Integer>, Set<String>> ranges) {
     Optional<Range<Integer>> invalidRange =
         ranges.keySet().stream().filter(InterfacesByVlanRange::isInvalidRange).findAny();
-    if (invalidRange.isPresent()) {
-      throw new IllegalArgumentException(
-          String.format("Range %s cannot be used in InterfacesByVlanRange", invalidRange.get()));
-    }
+    checkArgument(
+        !invalidRange.isPresent(),
+        String.format("Range %s cannot be used in InterfacesByVlanRange", invalidRange.get()));
     checkArgument(
         rangesDoNotOverlap(ranges.keySet()), "Ranges in InterfacesByVlanRange cannot overlap");
     _ranges = ImmutableMap.copyOf(ranges);

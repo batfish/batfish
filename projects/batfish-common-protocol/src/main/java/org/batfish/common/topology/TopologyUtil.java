@@ -91,6 +91,9 @@ public final class TopologyUtil {
           Sets.intersection(node1Ranges.getMap().keySet(), node2Ranges.getMap().keySet());
       for (Range<Integer> sharedRange : sharedRanges) {
         // This frame will be tagged by i1 and we can directly check whether i2 allows.
+        // TODO: Likely wrong; needs to check the individual interfaces' VLANs.
+        //  Currently this creates an edge for every shared range on node1 and node2's devices,
+        //  which could include ranges that belong to other interfaces.
         edges.accept(new Layer2Edge(node1, sharedRange, node2, sharedRange));
       }
       if (i1.getNativeVlan() != null && trunkWithNativeVlanAllowed(i2)) {
