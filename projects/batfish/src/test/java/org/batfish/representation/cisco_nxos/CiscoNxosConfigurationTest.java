@@ -2,12 +2,15 @@ package org.batfish.representation.cisco_nxos;
 
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toOspfHelloInterval;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toRouteFilterList;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import org.batfish.datamodel.RouteFilterList;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 /** Tests for {@link CiscoNxosConfiguration} class */
@@ -51,5 +54,17 @@ public class CiscoNxosConfigurationTest {
     OspfInterface ospf = new OspfInterface();
     // Since the hello interval is not set, it should be the default value
     assertThat(toOspfHelloInterval(ospf), equalTo(DEFAULT_HELLO_INTERVAL_S));
+  }
+
+  /** Check that vendorStructureId is set when prefix list is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_prefixList_vendorStructureId() {
+    IpPrefixList plist = new IpPrefixList("name");
+    RouteFilterList rfl = toRouteFilterList(plist, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", CiscoNxosStructureType.IP_PREFIX_LIST.getDescription())));
   }
 }

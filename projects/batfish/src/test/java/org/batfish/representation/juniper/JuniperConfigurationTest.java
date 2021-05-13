@@ -20,6 +20,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.mergeIpAcc
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
+import static org.batfish.representation.juniper.JuniperConfiguration.toRouteFilterList;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
@@ -58,6 +59,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -826,5 +828,17 @@ public class JuniperConfigurationTest {
     ri.getInterfaces().clear();
     // Zero is returned
     assertThat(getRouterId(ri), equalTo(Ip.ZERO));
+  }
+
+  /** Check that vendor structure id is set when prefix list is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_prefixList_vendorStructureId() {
+    PrefixList plist = new PrefixList("name");
+    RouteFilterList rfl = toRouteFilterList(plist, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", JuniperStructureType.PREFIX_LIST.getDescription())));
   }
 }

@@ -2547,7 +2547,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
-      RouteFilterList newRouteFilterList = CiscoConversions.toRouteFilterList(prefixList);
+      RouteFilterList newRouteFilterList =
+          CiscoConversions.toRouteFilterList(prefixList, _filename);
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
@@ -2561,7 +2562,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // lists
     for (StandardAccessList saList : _standardAccessLists.values()) {
       if (isAclUsedForRouting(saList.getName())) {
-        RouteFilterList rfList = CiscoConversions.toRouteFilterList(saList);
+        RouteFilterList rfList = CiscoConversions.toRouteFilterList(saList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
@@ -2569,7 +2570,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
-        RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
+        RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);

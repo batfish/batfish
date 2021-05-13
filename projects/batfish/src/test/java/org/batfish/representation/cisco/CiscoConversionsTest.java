@@ -15,6 +15,7 @@ import static org.batfish.representation.cisco.CiscoConversions.toCommunitySetAc
 import static org.batfish.representation.cisco.CiscoConversions.toCommunitySetAclLineUnoptimized;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfDeadInterval;
 import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInterval;
+import static org.batfish.representation.cisco.CiscoConversions.toRouteFilterList;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -35,9 +36,11 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.matchers.IkePhase1KeyMatchers;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -398,5 +401,41 @@ public class CiscoConversionsTest {
     assertThat(
         CiscoConversions.toOspfNetworkType(null, new Warnings()),
         equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
+  }
+
+  /** Check that vendorStructureId is set when extended ACL is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_extendedAccessList_vendorStructureId() {
+    ExtendedAccessList acl = new ExtendedAccessList("name");
+    RouteFilterList rfl = toRouteFilterList(acl, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription())));
+  }
+
+  /** Check that vendorStructureId is set when standard ACL is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_standardAccessList_vendorStructureId() {
+    StandardAccessList acl = new StandardAccessList("name");
+    RouteFilterList rfl = toRouteFilterList(acl, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription())));
+  }
+
+  /** Check that vendorStructureId is set when prefix list is converted to route filter list */
+  @Test
+  public void testToRouterFilterList_prefixList_vendorStructureId() {
+    PrefixList plist = new PrefixList("name");
+    RouteFilterList rfl = toRouteFilterList(plist, "file");
+    assertThat(
+        rfl.getVendorStructureId(),
+        equalTo(
+            new VendorStructureId(
+                "file", "name", CiscoStructureType.PREFIX_LIST.getDescription())));
   }
 }

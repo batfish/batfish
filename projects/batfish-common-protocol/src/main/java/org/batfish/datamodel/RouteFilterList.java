@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.vendor.VendorStructureId;
 
 /**
  * Filter list for IPV4 routes. Performs filtering on IPv4 prefixes with access-list-like behavior
@@ -29,12 +30,15 @@ import org.batfish.common.util.BatfishObjectMapper;
 public class RouteFilterList implements Serializable {
   private static final String PROP_LINES = "lines";
   private static final String PROP_NAME = "name";
+  private static final String PROP_VENDOR_STRUCTURE_ID = "vendorStructureId";
 
   private final Supplier<Set<Prefix>> _deniedCache;
 
   @Nonnull private List<RouteFilterLine> _lines;
 
   @Nullable private final String _name;
+
+  @Nullable private final VendorStructureId _vendorStructureId;
 
   private final Supplier<Set<Prefix>> _permittedCache;
 
@@ -49,8 +53,9 @@ public class RouteFilterList implements Serializable {
   @JsonCreator
   private static RouteFilterList create(
       @JsonProperty(PROP_NAME) @Nullable String name,
-      @JsonProperty(PROP_LINES) @Nullable List<RouteFilterLine> lines) {
-    return new RouteFilterList(name, firstNonNull(lines, ImmutableList.of()));
+      @JsonProperty(PROP_LINES) @Nullable List<RouteFilterLine> lines,
+      @JsonProperty(PROP_VENDOR_STRUCTURE_ID) @Nullable VendorStructureId vendorStructureId) {
+    return new RouteFilterList(name, firstNonNull(lines, ImmutableList.of()), vendorStructureId);
   }
 
   /** Create and empty route filter list (with no lines) */
@@ -59,10 +64,18 @@ public class RouteFilterList implements Serializable {
   }
 
   public RouteFilterList(@Nullable String name, @Nonnull List<RouteFilterLine> lines) {
+    this(name, lines, null);
+  }
+
+  public RouteFilterList(
+      @Nullable String name,
+      @Nonnull List<RouteFilterLine> lines,
+      @Nullable VendorStructureId vendorStructureId) {
     _name = name;
     _deniedCache = Suppliers.memoize(new CacheSupplier());
     _permittedCache = Suppliers.memoize(new CacheSupplier());
     _lines = lines;
+    _vendorStructureId = vendorStructureId;
   }
 
   public void addLine(RouteFilterLine r) {
@@ -96,6 +109,12 @@ public class RouteFilterList implements Serializable {
   @JsonProperty(PROP_LINES)
   public List<RouteFilterLine> getLines() {
     return _lines;
+  }
+
+  @Nullable
+  @JsonProperty(PROP_VENDOR_STRUCTURE_ID)
+  public VendorStructureId getVendorStructureId() {
+    return _vendorStructureId;
   }
 
   private boolean evaluatePrefix(Prefix prefix) {
