@@ -55,6 +55,12 @@ public enum Grammar {
 
   static final String BASE_URL = "https://pybatfish.readthedocs.io/en/latest/specifiers.html#";
 
+  static final String GENERAL_NOTE =
+      String.format(
+          "Be sure to read the notes (%sgeneral-notes-on-the-grammar) on set operations, escaping"
+              + " names, and regular expressions.",
+          BASE_URL);
+
   /** What we call the grammar in user-facing documentation */
   private final String _friendlyName;
 
