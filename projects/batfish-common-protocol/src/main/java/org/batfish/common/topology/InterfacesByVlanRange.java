@@ -1,125 +1,95 @@
 package org.batfish.common.topology;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
-import com.google.common.collect.RangeMap;
-import com.google.common.collect.TreeRangeMap;
-import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.IntegerSpace;
 
 /**
- * Internal implementation detail of Layer2 topology computation, performed in {@link TopologyUtil}.
- * Keeps track of a mapping between VLAN ranges to a set of interfaces which allow those VLANs.
- *
- * <p>This implementation
- *
- * <ul>
- *   <li>Assumes all interfaces are on the same node (only tracks interface names)
- *   <li>Does not care about switchport modes, only overlapping VLANs
- * </ul>
+ * Internal implementation detail of Layer2 topology computation within one node, performed in
+ * {@link TopologyUtil}. Contains an unmodifiable mapping of VLAN ranges to a set of interfaces
+ * which allow those VLANs. VLAN ranges are determined based on a global breakdown of
+ * uniquely-treated VLANs (see {@link NodeInterfacePairsByVlanRange}).
  */
 @ParametersAreNonnullByDefault
 class InterfacesByVlanRange {
 
-  /** Create a new mapping of VLAN ranges to interfaces */
-  static InterfacesByVlanRange create() {
-    return new InterfacesByVlanRange();
+  /**
+   * Constructs an {@link InterfacesByVlanRange} with the given mapping of VLAN ranges to interface
+   * names in that VLAN range. The keys in {@code ranges} must be non-empty, canonical, and
+   * non-overlapping.
+   */
+  public InterfacesByVlanRange(Map<Range<Integer>, Set<String>> ranges) {
+    Range<Integer> invalidRange =
+        ranges.keySet().stream()
+            .filter(InterfacesByVlanRange::isInvalidRange)
+            .findAny()
+            .orElse(null);
+    checkArgument(
+        invalidRange == null, "Range %s cannot be used in InterfacesByVlanRange", invalidRange);
+    checkArgument(
+        rangesDoNotOverlap(ranges.keySet()), "Ranges in InterfacesByVlanRange cannot overlap");
+    _ranges = ImmutableMap.copyOf(ranges);
   }
 
-  /** See {@link #add(Range, Collection) } */
-  public void add(int vlan, String iface) {
-    add(Range.singleton(vlan), iface);
-  }
-
-  /** See {@link #add(Range, Collection)} */
-  public void add(Range<Integer> vlans, String iface) {
-    add(vlans, ImmutableSet.of(iface));
+  @VisibleForTesting
+  static boolean isInvalidRange(Range<Integer> range) {
+    return range.isEmpty() || !range.equals(range.canonical(DiscreteDomain.integers()));
   }
 
   /**
-   * Add a new range with the given collection of interfaces. If the given range intersects with
-   * existing ranges, new ranges will be created, with the intersection(s) being mapped to the union
-   * of existing and provided interfaces.
+   * Checks that the given ranges do not overlap. Assumes they are valid canonical ranges (see
+   * {@link #isInvalidRange(Range)}).
    */
-  public void add(Range<Integer> vlans, Collection<String> interfaces) {
-    Range<Integer> canonical = vlans.canonical(DiscreteDomain.integers());
-    if (canonical.isEmpty() || interfaces.isEmpty()) {
-      return;
+  @VisibleForTesting
+  static boolean rangesDoNotOverlap(Set<Range<Integer>> ranges) {
+    List<Range<Integer>> rangeList =
+        ranges.stream()
+            .sorted(Comparator.comparing(Range::lowerEndpoint))
+            .collect(ImmutableList.toImmutableList());
+    int lastUpper = 0;
+    for (Range<Integer> range : rangeList) {
+      // Check for overlap. Canonical ranges have a closed lower bound and an open upper bound, so
+      // this range's lower bound must be lower than the last range's upper bound for it to overlap.
+      if (range.lowerEndpoint() < lastUpper) {
+        return false;
+      }
+      lastUpper = range.upperEndpoint();
     }
-    _ranges.merge(
-        canonical,
-        ImmutableSet.copyOf(interfaces),
-        (a, b) -> ImmutableSet.<String>builder().addAll(a).addAll(b).build());
+    return true;
   }
 
   /** Return the mapping of all ranges to sets of interfaces as an unmodifiable map */
   @Nonnull
-  public Map<Range<Integer>, Set<String>> asMap() {
-    return _ranges.asMapOfRanges();
+  public Map<Range<Integer>, Set<String>> getMap() {
+    return _ranges;
   }
 
   /** Return the set of interfaces for a given VLAN, or an empty set. */
   @Nonnull
   public Set<String> get(int vlan) {
-    return firstNonNull(_ranges.get(vlan), ImmutableSet.of());
+    return Optional.ofNullable(getRange(vlan)).map(_ranges::get).orElse(ImmutableSet.of());
   }
 
   /** Return the range matching given VLAN, or {@code null} if no match is present. */
   @Nullable
   public Range<Integer> getRange(int vlan) {
-    Entry<Range<Integer>, Set<String>> entry = _ranges.getEntry(vlan);
-    return entry == null ? null : entry.getKey();
-  }
-
-  /**
-   * Intersect the VLAN ranges given an interface on this node with the allowed VLAN space of some
-   * other interface on a (potentially different) node.
-   *
-   * <p>Example: Ranges 10-20 and 30-40 exist, mapped to Eth1.
-   *
-   * <ul>
-   *   <li>Calling intersect with Eth2 as interface name will produce empty set
-   *   <li>Calling intersect with Eth1 and VLAN range 50-60 will produce empty set
-   *   <li>Calling intersect with Eth1 and VLAN range 15-35 will produce a set containing ranges
-   *       10-15 and 30-35
-   * </ul>
-   *
-   * @param interfaceName the name of the interface <b>that is assumed to already be in this map</b>
-   * @param otherVlanSpace the VLAN range of some other, foreign interface (whose name does not
-   *     matter)
-   */
-  @Nonnull
-  public Set<Range<Integer>> intersect(String interfaceName, IntegerSpace otherVlanSpace) {
-    ImmutableSet.Builder<Range<Integer>> builder = ImmutableSet.builder();
-    for (Range<Integer> otherRange : otherVlanSpace.getRanges()) {
-      _ranges
-          .subRangeMap(otherRange)
-          .asMapOfRanges()
-          .forEach(
-              (intersectedRange, interfaceSet) -> {
-                Range<Integer> canonical = intersectedRange.canonical(DiscreteDomain.integers());
-                if (!canonical.isEmpty() && interfaceSet.contains(interfaceName)) {
-                  builder.add(canonical);
-                }
-              });
-    }
-    return builder.build();
+    return _ranges.keySet().stream().filter(r -> r.contains(vlan)).findFirst().orElse(null);
   }
 
   // Private implementation
 
-  private final RangeMap<Integer, Set<String>> _ranges;
-
-  private InterfacesByVlanRange() {
-    _ranges = TreeRangeMap.create();
-  }
+  private final Map<Range<Integer>, Set<String>> _ranges;
 }

@@ -1,0 +1,85 @@
+system {
+    host-name fw;
+}
+vlans {
+    vlan10 {
+      vlan-id 10;
+    }
+    vlan20 {
+      vlan-id 20;
+    }
+
+    vlan11 {
+      vlan-id 11;
+    }
+    vlan21 {
+      vlan-id 21;
+    }
+}
+interfaces {
+    xe-0/0/3 {
+        description "TO sw";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members vlan10;
+                    members vlan20;
+
+                    members vlan11;
+                    members vlan21;
+
+                }
+            }
+        }
+    }
+
+    xe-0/0/10 {
+        description "TO loop-vlan10";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode access;
+                vlan {
+                    members vlan10;
+                }
+            }
+        }
+    }
+
+    xe-0/0/20 {
+        description "TO loop-vlan20";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode access;
+                vlan {
+                    members vlan20;
+                }
+            }
+        }
+    }
+
+
+    xe-0/0/11 {
+        description "TO loop-vlan11";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode access;
+                vlan {
+                    members vlan11;
+                }
+            }
+        }
+    }
+
+    xe-0/0/21 {
+        description "TO loop-vlan21";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode access;
+                vlan {
+                    members vlan21;
+                }
+            }
+        }
+    }
+}

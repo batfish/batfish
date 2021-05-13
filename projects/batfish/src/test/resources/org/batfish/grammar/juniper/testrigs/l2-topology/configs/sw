@@ -1,0 +1,61 @@
+system {
+    host-name sw;
+}
+vlans {
+    vlan10 {
+      vlan-id 10;
+    }
+    vlan20 {
+      vlan-id 20;
+    }
+    vlan11 {
+      vlan-id 11;
+    }
+    vlan21 {
+      vlan-id 21;
+    }
+}
+interfaces {
+    xe-0/0/0 {
+        description "TO r1";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members vlan10;
+                    members vlan11;
+                }
+            }
+        }
+    }
+    xe-0/0/1 {
+        description "TO r2";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members vlan20;
+                    members vlan21;
+                }
+            }
+        }
+    }
+
+    xe-0/0/3 {
+        description "TO fw";
+        unit 0 {
+            family ethernet-switching {
+                interface-mode trunk;
+                vlan {
+                    members vlan10;
+                    members vlan20;
+
+                    members vlan11;
+                    members vlan21;
+
+                }
+            }
+        }
+    }
+
+}
