@@ -51,6 +51,6 @@ as_range_list: SINGLE_QUOTE as_range+ SINGLE_QUOTE;
 
 as_range
 :
-  singleton = as_number
+  lo = as_number
   | BRACKET_LEFT lo = as_number DOTDOT hi = as_number BRACKET_RIGHT
 ;

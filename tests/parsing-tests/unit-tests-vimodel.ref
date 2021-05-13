@@ -79238,51 +79238,18 @@
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitReject"
-                      }
-                    ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnFalse"
-                      }
-                    ]
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
-                      "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.VarAsPathSet",
-                        "var" : "$cust_v4_as_path"
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                        "name" : "$cust_v4_pfx"
-                      }
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
-                    "calledPolicyName" : "global_cust_v4"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
                   }
                 ]
               },
@@ -80902,23 +80869,23 @@
                                         "elems" : [
                                           {
                                             "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
-                                            "regex" : "_14041$"
+                                            "regex" : "(,|\\{|\\}|^|$| )14041$"
                                           },
                                           {
                                             "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
-                                            "regex" : "_104$"
+                                            "regex" : "(,|\\{|\\}|^|$| )104$"
                                           },
                                           {
                                             "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
-                                            "regex" : "_2902$"
+                                            "regex" : "(,|\\{|\\}|^|$| )2902$"
                                           },
                                           {
                                             "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
-                                            "regex" : "_13555$"
+                                            "regex" : "(,|\\{|\\}|^|$| )13555$"
                                           },
                                           {
                                             "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
-                                            "regex" : "_14041_"
+                                            "regex" : "(,|\\{|\\}|^|$| )14041(,|\\{|\\}|^|$| )"
                                           }
                                         ]
                                       }
@@ -81052,7 +81019,7 @@
                                         "elems" : [
                                           {
                                             "class" : "org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem",
-                                            "regex" : "_6360$"
+                                            "regex" : "(,|\\{|\\}|^|$| )6360$"
                                           }
                                         ]
                                       }

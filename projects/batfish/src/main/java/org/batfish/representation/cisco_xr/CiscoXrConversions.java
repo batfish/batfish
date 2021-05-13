@@ -142,6 +142,7 @@ import org.batfish.datamodel.routing_policy.expr.LongMatchAll;
 import org.batfish.datamodel.routing_policy.expr.LongMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.Uint32HighLowExpr;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
@@ -931,14 +932,6 @@ public class CiscoXrConversions {
             firstNonNull(iptoIfaceName.get(tunnel.getSourceAddress()), INVALID_LOCAL_INTERFACE));
       }
     }
-  }
-
-  static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
-    List<AsPathAccessListLine> lines =
-        asPathSet.getElements().stream()
-            .map(CiscoXrConversions::toAsPathAccessListLine)
-            .collect(ImmutableList.toImmutableList());
-    return new AsPathAccessList(asPathSet.getName(), lines);
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
@@ -2088,6 +2081,121 @@ public class CiscoXrConversions {
       String exportingVrf, String importingVrf) {
     return String.format("~vrfExportImport~%s~%s", exportingVrf, importingVrf);
   }
+
+  static @Nonnull AsPathAccessList toAsPathAccessList(String name, AsPathSet asPathSet) {
+    return new AsPathAccessList(
+        name,
+        asPathSet.getElements().stream()
+            .map(elem -> elem.accept(AS_PATH_SET_ELEM_TO_AS_PATH_ACCESS_LIST_LINE))
+            .filter(Objects::nonNull)
+            .collect(ImmutableList.toImmutableList()));
+  }
+
+  // Returns null for unsupported elems
+  private static final class AsPathSetElemConverter implements AsPathSetElemVisitor<AsPathSetElem> {
+    @Override
+    public AsPathSetElem visitDfaRegexAsPathSetElem(DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
+      // TODO: figure out how this is different from ios-regex
+      return new RegexAsPathSetElem(toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
+    }
+
+    @Override
+    public AsPathSetElem visitIosRegexAsPathSetElem(IosRegexAsPathSetElem iosRegexAsPathSetElem) {
+      return new RegexAsPathSetElem(toJavaRegex(iosRegexAsPathSetElem.getRegex()));
+    }
+
+    @Override
+    public AsPathSetElem visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+
+    @Override
+    public AsPathSetElem visitNeighborIsAsPathSetElem(
+        NeighborIsAsPathSetElem neighborIsAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+
+    @Override
+    public AsPathSetElem visitOriginatesFromAsPathSetElem(
+        OriginatesFromAsPathSetElem originatesFromAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+
+    @Override
+    public AsPathSetElem visitPassesThroughAsPathSetElem(
+        PassesThroughAsPathSetElem passesThroughAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+
+    @Override
+    public AsPathSetElem visitUniqueLengthAsPathSetElem(
+        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+  }
+
+  static final AsPathSetElemConverter AS_PATH_SET_ELEM_CONVERTER = new AsPathSetElemConverter();
+
+  // Returns null for unsupported elems
+  private static final class AsPathSetElemToAsPathAccessListLine
+      implements AsPathSetElemVisitor<AsPathAccessListLine> {
+    @Override
+    public org.batfish.datamodel.AsPathAccessListLine visitDfaRegexAsPathSetElem(
+        DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
+      // TODO: figure out how this is different from ios-regex
+      return new AsPathAccessListLine(
+          LineAction.PERMIT, toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
+    }
+
+    @Override
+    public org.batfish.datamodel.AsPathAccessListLine visitIosRegexAsPathSetElem(
+        IosRegexAsPathSetElem iosRegexAsPathSetElem) {
+      return new AsPathAccessListLine(
+          LineAction.PERMIT, toJavaRegex(iosRegexAsPathSetElem.getRegex()));
+    }
+
+    @Override
+    public AsPathAccessListLine visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+
+    @Override
+    public AsPathAccessListLine visitNeighborIsAsPathSetElem(
+        NeighborIsAsPathSetElem neighborIsAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+
+    @Override
+    public AsPathAccessListLine visitOriginatesFromAsPathSetElem(
+        OriginatesFromAsPathSetElem originatesFromAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+
+    @Override
+    public AsPathAccessListLine visitPassesThroughAsPathSetElem(
+        PassesThroughAsPathSetElem passesThroughAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+
+    @Override
+    public AsPathAccessListLine visitUniqueLengthAsPathSetElem(
+        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem) {
+      // TODO: implement
+      return null;
+    }
+  }
+
+  static final AsPathSetElemToAsPathAccessListLine AS_PATH_SET_ELEM_TO_AS_PATH_ACCESS_LIST_LINE =
+      new AsPathSetElemToAsPathAccessListLine();
 
   /**
    * Implements best-effort behavior for undefined route-policy.

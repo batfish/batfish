@@ -4,12 +4,12 @@ hostname xr-as-path-boolean
 !
 route-policy rp1
  # in inline
- if as-path in (dfa-regex '^1_', ios-regex '^2_', length eq 1, length ge 2 all, neighbor-is '1 [2..3]', originates-from '4 [5..6]', passes-through '7 [8..9]', unique-length eq 1, unique-length eq 2 all) then
+ if as-path in (dfa-regex '^1_', ios-regex '^2_', length eq 1, length ge 2 all, neighbor-is '1.1 [2..3]' exact, originates-from '4 [5..6]', passes-through '7 [8..9]', unique-length eq 1, unique-length eq 2 all) then
   pass
  endif
 
  # in inline with params
- if as-path in (length eq $l1, length ge $l2 all, neighbor-is '$n1 [$n2..3]', originates-from '$o1 [$o2..6]', passes-through '$p1 [$p2..9]', unique-length eq $u1, unique-length eq $u2 all) then
+ if as-path in (length eq $l1, length ge $l2 all, neighbor-is '$n1 [$n2..3]' exact, originates-from '$o1 [$o2..6]' exact, passes-through '$p1 [$p2..9]' exact, unique-length eq $u1, unique-length eq $u2 all) then
   pass
  endif
 
@@ -29,27 +29,52 @@ route-policy rp1
  endif
 
  # length
- if as-path length eq 1 or as-path length eq $l all then
+ if as-path length eq 1 then
   pass
  endif
  
+ # length with var
+ if as-path length eq $l all then
+  pass
+ endif
+
  # neighbor-is
- if as-path neighbor-is '1 [2..3] $n1 [$n2..$n3]' then
+ if as-path neighbor-is '1 [2..3]' then
   pass
  endif
  
+ # neighbor-is with var
+ if as-path neighbor-is '$n1 [$n2..$n3]' exact then
+  pass
+ endif
+
  # originates-from
- if as-path originates-from '1 [2..3] $o1 [$o2..$o3]' then
+ if as-path originates-from '1 [2..3]' exact then
   pass
  endif
  
+ # originates-from with var
+ if as-path originates-from '$o1 [$o2..$o3]' exact then
+  pass
+ endif
+
  # passes-through
- if as-path passes-through '1 [2..3] $p1 [$p2..$p3]' then
+ if as-path passes-through '1 [2..3]' exact then
   pass
  endif
  
+ # passes-through with var
+ if as-path passes-through '$p1 [$p2..$p3]' then
+  pass
+ endif
+
  # unique-length
- if as-path unique-length eq 1 or as-path unique-length eq $l all then
+ if as-path unique-length eq 1 all then
+  pass
+ endif
+
+ # unique-length with var
+ if as-path unique-length eq $l then
   pass
  endif
 end-policy

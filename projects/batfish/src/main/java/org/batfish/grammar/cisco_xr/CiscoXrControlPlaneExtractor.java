@@ -259,6 +259,7 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LineType;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -292,12 +293,10 @@ import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.IgpCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
@@ -310,13 +309,10 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LiteralRouteType;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
-import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
-import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.RouteType;
 import org.batfish.datamodel.routing_policy.expr.RouteTypeExpr;
 import org.batfish.datamodel.routing_policy.expr.VarAs;
-import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.expr.VarIsisLevel;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
@@ -370,9 +366,17 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Allowas_in_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Always_compare_med_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Apply_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_numberContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_number_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_lengthContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_length_exprContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_multipath_relax_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_regexContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.As_path_set_nameContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_rangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_range_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_range_expr_listContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.As_range_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_dfa_regexContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_ios_regexContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Aspse_lengthContext;
@@ -464,6 +468,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_match_exprContex
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_match_expr_elemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_match_expr_elem_halfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Community_set_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.ComparatorContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Compare_routerid_rb_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cp_service_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Crypto_dynamic_mapContext;
@@ -884,6 +889,9 @@ import org.batfish.representation.cisco_xr.AccessListAddressSpecifier;
 import org.batfish.representation.cisco_xr.AccessListServiceSpecifier;
 import org.batfish.representation.cisco_xr.AddressFamilyType;
 import org.batfish.representation.cisco_xr.AsPathSet;
+import org.batfish.representation.cisco_xr.AsPathSetExpr;
+import org.batfish.representation.cisco_xr.AsPathSetReference;
+import org.batfish.representation.cisco_xr.AsPathSetVariable;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv6Network;
 import org.batfish.representation.cisco_xr.BgpNetwork;
@@ -896,6 +904,7 @@ import org.batfish.representation.cisco_xr.CiscoXrStructureType;
 import org.batfish.representation.cisco_xr.CiscoXrStructureUsage;
 import org.batfish.representation.cisco_xr.CryptoMapEntry;
 import org.batfish.representation.cisco_xr.CryptoMapSet;
+import org.batfish.representation.cisco_xr.DfaRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.DistributeList;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_xr.DynamicIpBgpPeerGroup;
@@ -909,9 +918,11 @@ import org.batfish.representation.cisco_xr.ExtcommunitySetRtElemAsDotColon;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtExpr;
 import org.batfish.representation.cisco_xr.ExtcommunitySetRtReference;
 import org.batfish.representation.cisco_xr.HsrpGroup;
+import org.batfish.representation.cisco_xr.InlineAsPathSet;
 import org.batfish.representation.cisco_xr.InlineExtcommunitySetRt;
 import org.batfish.representation.cisco_xr.InspectClassMapProtocol;
 import org.batfish.representation.cisco_xr.Interface;
+import org.batfish.representation.cisco_xr.IosRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.IpBgpPeerGroup;
 import org.batfish.representation.cisco_xr.IpsecProfile;
 import org.batfish.representation.cisco_xr.IpsecTransformSet;
@@ -926,6 +937,7 @@ import org.batfish.representation.cisco_xr.IsakmpProfile;
 import org.batfish.representation.cisco_xr.IsisProcess;
 import org.batfish.representation.cisco_xr.IsisRedistributionPolicy;
 import org.batfish.representation.cisco_xr.Keyring;
+import org.batfish.representation.cisco_xr.LengthAsPathSetElem;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint16Range;
 import org.batfish.representation.cisco_xr.LiteralUint32;
@@ -934,12 +946,15 @@ import org.batfish.representation.cisco_xr.MasterBgpPeerGroup;
 import org.batfish.representation.cisco_xr.MatchSemantics;
 import org.batfish.representation.cisco_xr.NamedBgpPeerGroup;
 import org.batfish.representation.cisco_xr.NamedRsaPubKey;
+import org.batfish.representation.cisco_xr.NeighborIsAsPathSetElem;
 import org.batfish.representation.cisco_xr.NetworkObjectGroup;
 import org.batfish.representation.cisco_xr.NssaSettings;
+import org.batfish.representation.cisco_xr.OriginatesFromAsPathSetElem;
 import org.batfish.representation.cisco_xr.OspfNetwork;
 import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.OspfRedistributionPolicy;
+import org.batfish.representation.cisco_xr.PassesThroughAsPathSetElem;
 import org.batfish.representation.cisco_xr.PeerAs;
 import org.batfish.representation.cisco_xr.Prefix6List;
 import org.batfish.representation.cisco_xr.Prefix6ListLine;
@@ -966,6 +981,11 @@ import org.batfish.representation.cisco_xr.RoutePolicyBooleanAnd;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanApply;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathIn;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathIsLocal;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathLength;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathNeighborIs;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathOriginatesFrom;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathPassesThrough;
+import org.batfish.representation.cisco_xr.RoutePolicyBooleanAsPathUniqueLength;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanDestination;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanLocalPreference;
 import org.batfish.representation.cisco_xr.RoutePolicyBooleanMed;
@@ -1016,6 +1036,7 @@ import org.batfish.representation.cisco_xr.Uint16Reference;
 import org.batfish.representation.cisco_xr.Uint32RangeExpr;
 import org.batfish.representation.cisco_xr.UnimplementedAccessListServiceSpecifier;
 import org.batfish.representation.cisco_xr.UnimplementedBoolean;
+import org.batfish.representation.cisco_xr.UniqueLengthAsPathSetElem;
 import org.batfish.representation.cisco_xr.Vrf;
 import org.batfish.representation.cisco_xr.VrfAddressFamily;
 import org.batfish.representation.cisco_xr.VrrpGroup;
@@ -1045,6 +1066,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   public static final IntegerSpace VLAN_RANGE = IntegerSpace.of(Range.closed(1, 4094));
 
+  private static final LongSpace AS_NUMBER_RANGE = LongSpace.of(Range.closed(1L, 0xFFFFFFFFL));
+  private static final IntegerSpace AS_PATH_LENGTH_RANGE = IntegerSpace.of(Range.closed(0, 2047));
   private static final IntegerSpace DSCP_RANGE = IntegerSpace.of(Range.closed(0, 63));
   private static final IntegerSpace LOGGING_BUFFER_SIZE_RANGE =
       IntegerSpace.of(Range.closed(2097152, 125000000));
@@ -3179,7 +3202,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (_configuration.getAsPathSets().containsKey(name)) {
       warn(ctx, "Redeclaration of as-path-set: '" + name + "'.");
     }
-    _currentAsPathSet = new AsPathSet(name);
+    _currentAsPathSet = new AsPathSet();
     _configuration.defineStructure(AS_PATH_SET, name, ctx);
     _configuration.getAsPathSets().put(name, _currentAsPathSet);
   }
@@ -6872,86 +6895,243 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitAspse_dfa_regex(Aspse_dfa_regexContext ctx) {
     todo(ctx);
     // For now, just treat like ios-regex
-    String vendorRegex = toString(ctx.as_path_regex());
-    String regex = toJavaRegex(vendorRegex);
-    // TODO: VS model for elements
-    _currentAsPathSet.addElement(new RegexAsPathSetElem(regex));
+    String regex = toString(ctx.as_path_regex());
+    _currentAsPathSet.addElement(new DfaRegexAsPathSetElem(regex));
   }
 
   @Override
   public void exitAspsee_dfa_regex(Aspsee_dfa_regexContext ctx) {
     todo(ctx);
     // For now, just treat like ios-regex
-    String vendorRegex = toString(ctx.as_path_regex());
-    String regex = toJavaRegex(vendorRegex);
-    // TODO: VS model for elements
-    _currentInlineAsPathSet.addElement(new RegexAsPathSetElem(regex));
+    String regex = toString(ctx.as_path_regex());
+    _currentInlineAsPathSet.addElement(new DfaRegexAsPathSetElem(regex));
   }
 
   @Override
   public void exitAspse_ios_regex(Aspse_ios_regexContext ctx) {
-    String vendorRegex = toString(ctx.as_path_regex());
-    String regex = toJavaRegex(vendorRegex);
-    // TODO: VS model for elements
-    _currentAsPathSet.addElement(new RegexAsPathSetElem(regex));
+    String regex = toString(ctx.as_path_regex());
+    _currentAsPathSet.addElement(new IosRegexAsPathSetElem(regex));
   }
 
   @Override
   public void exitAspsee_ios_regex(Aspsee_ios_regexContext ctx) {
-    String vendorRegex = toString(ctx.as_path_regex());
-    String regex = toJavaRegex(vendorRegex);
-    // TODO: VS model for elements
-    _currentInlineAsPathSet.addElement(new RegexAsPathSetElem(regex));
+    String regex = toString(ctx.as_path_regex());
+    _currentInlineAsPathSet.addElement(new IosRegexAsPathSetElem(regex));
   }
 
   @Override
   public void exitAspse_length(Aspse_lengthContext ctx) {
     todo(ctx);
+    toInteger(ctx, ctx.as_path_length())
+        .ifPresent(
+            length ->
+                _currentAsPathSet.addElement(
+                    new LengthAsPathSetElem(
+                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
   }
 
   @Override
   public void exitAspsee_length(Aspsee_lengthContext ctx) {
     todo(ctx);
+    toInteger(ctx, ctx.as_path_length_expr())
+        .ifPresent(
+            length ->
+                _currentInlineAsPathSet.addElement(
+                    new LengthAsPathSetElem(
+                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
   }
 
   @Override
   public void exitAspse_neighbor_is(Aspse_neighbor_isContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_list())
+        .ifPresent(
+            ranges ->
+                _currentAsPathSet.addElement(
+                    new NeighborIsAsPathSetElem(ctx.EXACT() != null, ranges)));
+  }
+
+  private @Nonnull Optional<List<Range<Long>>> toRanges(
+      ParserRuleContext messageCtx, As_range_listContext ctx) {
+    ImmutableList.Builder<Range<Long>> builder = ImmutableList.builder();
+    for (As_rangeContext rangeCtx : ctx.as_range()) {
+      Optional<Range<Long>> maybeRange = toRange(messageCtx, rangeCtx);
+      if (!maybeRange.isPresent()) {
+        return Optional.empty();
+      }
+      builder.add(maybeRange.get());
+    }
+    return Optional.of(builder.build());
+  }
+
+  private @Nonnull Optional<Range<Long>> toRange(
+      ParserRuleContext messageCtx, As_rangeContext ctx) {
+    Optional<Long> maybeLo = toLong(messageCtx, ctx.lo);
+    if (!maybeLo.isPresent()) {
+      return Optional.empty();
+    }
+    if (ctx.hi != null) {
+      return toLong(messageCtx, ctx.hi).map(hi -> Range.closed(maybeLo.get(), hi));
+    } else {
+      return Optional.of(Range.singleton(maybeLo.get()));
+    }
+  }
+
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, As_numberContext ctx) {
+    if (ctx.uint32() != null) {
+      return toLongInSpace(messageCtx, ctx, AS_NUMBER_RANGE, "AS number");
+    } else {
+      assert ctx.hi != null && ctx.lo != null;
+      long hi = toInteger(ctx.hi);
+      long lo = toInteger(ctx.lo);
+      long val = (hi << 16) | lo;
+      if (!AS_NUMBER_RANGE.contains(val)) {
+        warn(
+            messageCtx,
+            String.format(
+                "%s expressed as a single number is %s, which is not in the range of valid ASes:"
+                    + " %s",
+                getFullText(ctx), val, AS_NUMBER_RANGE));
+        return Optional.empty();
+      }
+      return Optional.of(val);
+    }
   }
 
   @Override
   public void exitAspsee_neighbor_is(Aspsee_neighbor_isContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_expr_list())
+        .ifPresent(
+            ranges ->
+                _currentInlineAsPathSet.addElement(
+                    new NeighborIsAsPathSetElem(ctx.EXACT() != null, ranges)));
+  }
+
+  private @Nonnull Optional<List<Range<Long>>> toRanges(
+      ParserRuleContext messageCtx, As_range_expr_listContext ctx) {
+    // TODO: change return type to accomodate params
+    ImmutableList.Builder<Range<Long>> builder = ImmutableList.builder();
+    for (As_range_exprContext rangeCtx : ctx.as_range_expr()) {
+      Optional<Range<Long>> maybeRange = toRange(messageCtx, rangeCtx);
+      if (!maybeRange.isPresent()) {
+        return Optional.empty();
+      }
+      builder.add(maybeRange.get());
+    }
+    return Optional.of(builder.build());
+  }
+
+  private @Nonnull Optional<Range<Long>> toRange(
+      ParserRuleContext messageCtx, As_range_exprContext ctx) {
+    Optional<Long> maybeLo = toLong(messageCtx, ctx.lo);
+    if (!maybeLo.isPresent()) {
+      return Optional.empty();
+    }
+    if (ctx.hi != null) {
+      return toLong(messageCtx, ctx.hi).map(hi -> Range.closed(maybeLo.get(), hi));
+    } else {
+      return Optional.of(Range.singleton(maybeLo.get()));
+    }
+  }
+
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, As_number_exprContext ctx) {
+    if (ctx.param != null) {
+      todo(ctx);
+      return Optional.empty();
+    }
+    assert ctx.num != null;
+    return toLong(messageCtx, ctx.num);
   }
 
   @Override
   public void exitAspse_originates_from(Aspse_originates_fromContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_list())
+        .ifPresent(
+            ranges ->
+                _currentAsPathSet.addElement(
+                    new OriginatesFromAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   @Override
   public void exitAspsee_originates_from(Aspsee_originates_fromContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_expr_list())
+        .ifPresent(
+            ranges ->
+                _currentInlineAsPathSet.addElement(
+                    new OriginatesFromAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   @Override
   public void exitAspse_passes_through(Aspse_passes_throughContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_list())
+        .ifPresent(
+            ranges ->
+                _currentAsPathSet.addElement(
+                    new PassesThroughAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   @Override
   public void exitAspsee_passes_through(Aspsee_passes_throughContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_expr_list())
+        .ifPresent(
+            ranges ->
+                _currentInlineAsPathSet.addElement(
+                    new PassesThroughAsPathSetElem(ctx.EXACT() != null, ranges)));
   }
 
   @Override
   public void exitAspse_unique_length(Aspse_unique_lengthContext ctx) {
     todo(ctx);
+    toInteger(ctx, ctx.as_path_length())
+        .ifPresent(
+            length ->
+                _currentAsPathSet.addElement(
+                    new UniqueLengthAsPathSetElem(
+                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
   }
 
   @Override
   public void exitAspsee_unique_length(Aspsee_unique_lengthContext ctx) {
     todo(ctx);
+    toInteger(ctx, ctx.as_path_length_expr())
+        .ifPresent(
+            length ->
+                _currentInlineAsPathSet.addElement(
+                    new UniqueLengthAsPathSetElem(
+                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, As_path_lengthContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, AS_PATH_LENGTH_RANGE, "as-path length");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, As_path_length_exprContext ctx) {
+    if (ctx.parameter() != null) {
+      todo(ctx);
+      return Optional.empty();
+    } else {
+      return toInteger(messageCtx, ctx.as_path_length());
+    }
+  }
+
+  private static @Nonnull IntComparator toIntComparator(ComparatorContext ctx) {
+    if (ctx.EQ() != null) {
+      return IntComparator.EQ;
+    } else if (ctx.GE() != null) {
+      return IntComparator.GE;
+    } else if (ctx.IS() != null) {
+      return IntComparator.EQ;
+    } else {
+      assert ctx.LE() != null;
+      return IntComparator.LE;
+    }
   }
 
   private static @Nonnull String toString(As_path_regexContext ctx) {
@@ -7461,11 +7641,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       throw convError(IsisMetricType.class, ctx);
     }
-  }
-
-  private String toJavaRegex(String rawRegex) {
-    // TODO: fix so it actually works
-    return rawRegex;
   }
 
   private LineAction toLineAction(Access_list_actionContext ctx) {
@@ -8143,8 +8318,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void enterBoolean_as_path_in(Boolean_as_path_inContext ctx) {
     if (ctx.PAREN_LEFT() != null) {
-      // TODO: create and use VS InlineAsPathSet
-      _currentInlineAsPathSet = new AsPathSet("dummy");
+      // TODO: use structure that supports route-policy params
+      _currentInlineAsPathSet = new AsPathSet();
     }
   }
 
@@ -8153,19 +8328,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     AsPathSetExpr asPathSetExpr;
     if (ctx.name != null) {
       String name = toString(ctx.name);
-      asPathSetExpr = new NamedAsPathSet(name);
+      asPathSetExpr = new AsPathSetReference(name);
       _configuration.referenceStructure(
           AS_PATH_SET, name, ROUTE_POLICY_AS_PATH_IN, ctx.name.getStart().getLine());
     } else if (ctx.param != null) {
       todo(ctx);
-      asPathSetExpr = new VarAsPathSet(toString(ctx.param));
+      asPathSetExpr = new AsPathSetVariable(toString(ctx.param));
     } else {
       assert _currentInlineAsPathSet != null;
-      // TODO: move VI structure creation to conversion
-      asPathSetExpr = new ExplicitAsPathSet(_currentInlineAsPathSet.getElements());
+      asPathSetExpr = new InlineAsPathSet(_currentInlineAsPathSet);
+      _currentInlineAsPathSet = null;
     }
     _currentAsPathBoolean = new RoutePolicyBooleanAsPathIn(asPathSetExpr);
-    _currentInlineAsPathSet = null;
   }
 
   @Override
@@ -8176,26 +8350,53 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitBoolean_as_path_length(Boolean_as_path_lengthContext ctx) {
     todo(ctx);
+    toInteger(ctx, ctx.as_path_length_expr())
+        .ifPresent(
+            length ->
+                _currentAsPathBoolean =
+                    new RoutePolicyBooleanAsPathLength(
+                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null));
   }
 
   @Override
   public void exitBoolean_as_path_neighbor_is(Boolean_as_path_neighbor_isContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_expr_list())
+        .ifPresent(
+            ranges ->
+                _currentAsPathBoolean =
+                    new RoutePolicyBooleanAsPathNeighborIs(ctx.EXACT() != null, ranges));
   }
 
   @Override
   public void exitBoolean_as_path_originates_from(Boolean_as_path_originates_fromContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_expr_list())
+        .ifPresent(
+            ranges ->
+                _currentAsPathBoolean =
+                    new RoutePolicyBooleanAsPathOriginatesFrom(ctx.EXACT() != null, ranges));
   }
 
   @Override
   public void exitBoolean_as_path_passes_through(Boolean_as_path_passes_throughContext ctx) {
     todo(ctx);
+    toRanges(ctx, ctx.as_range_expr_list())
+        .ifPresent(
+            ranges ->
+                _currentAsPathBoolean =
+                    new RoutePolicyBooleanAsPathPassesThrough(ctx.EXACT() != null, ranges));
   }
 
   @Override
   public void exitBoolean_as_path_unique_length(Boolean_as_path_unique_lengthContext ctx) {
     todo(ctx);
+    toInteger(ctx, ctx.as_path_length_expr())
+        .ifPresent(
+            length ->
+                _currentAsPathBoolean =
+                    new RoutePolicyBooleanAsPathUniqueLength(
+                        toIntComparator(ctx.comparator()), length, ctx.ALL() != null));
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(
@@ -8812,6 +9013,21 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private @Nonnull Optional<Integer> toIntegerInSpace(
       ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
     int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal long to a {@link Long} if it is contained in the provided {@code space}, or else {@link
+   * Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+    long num = Long.parseLong(ctx.getText());
     if (!space.contains(num)) {
       warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
