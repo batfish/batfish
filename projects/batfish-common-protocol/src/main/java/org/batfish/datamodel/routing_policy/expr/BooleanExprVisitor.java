@@ -24,7 +24,7 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitHasRoute6(HasRoute6 hasRoute6, U arg);
 
-  T visitMatchAsPath(MatchAsPath matchAsPath, U arg);
+  T visitMatchLegacyAsPath(LegacyMatchAsPath legacyMatchAsPath, U arg);
 
   T visitMatchColor(MatchColor matchColor, U arg);
 

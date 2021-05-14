@@ -5,7 +5,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 
 /** A {@link RouteMapMatch} that matches routes based on the route's AS path. */
@@ -25,7 +25,7 @@ public final class RouteMapMatchAsPath implements RouteMapMatch {
       // Don't match anything. Rely on undefined references to surface this problem.
       return BooleanExprs.FALSE;
     }
-    return new MatchAsPath(new NamedAsPathSet(_name));
+    return new LegacyMatchAsPath(new NamedAsPathSet(_name));
   }
 
   public @Nonnull String getName() {

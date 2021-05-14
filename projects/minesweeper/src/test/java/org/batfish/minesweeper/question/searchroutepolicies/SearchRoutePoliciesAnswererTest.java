@@ -67,8 +67,8 @@ import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -545,7 +545,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testMatchNamedAsPath() {
     _policyBuilder.addStatement(
         new If(
-            new MatchAsPath(new NamedAsPathSet(AS_PATH_1)),
+            new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -583,10 +583,10 @@ public class SearchRoutePoliciesAnswererTest {
   public void testIncompatibleAsPathMatches() {
     _policyBuilder.addStatement(
         new If(
-            new MatchAsPath(new NamedAsPathSet(AS_PATH_1)),
+            new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_1)),
             ImmutableList.of(
                 new If(
-                    new MatchAsPath(new NamedAsPathSet(AS_PATH_2)),
+                    new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_2)),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))));
     RoutingPolicy policy = _policyBuilder.build();
 
