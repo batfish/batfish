@@ -9,7 +9,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 
 public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
 
@@ -31,9 +31,10 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
         // Undefined, return false.
         return BooleanExprs.FALSE;
       }
-      return new MatchAsPath(new org.batfish.datamodel.routing_policy.expr.NamedAsPathSet(name));
+      return new LegacyMatchAsPath(
+          new org.batfish.datamodel.routing_policy.expr.NamedAsPathSet(name));
     } else if (_asExpr instanceof InlineAsPathSet) {
-      return new MatchAsPath(
+      return new LegacyMatchAsPath(
           new ExplicitAsPathSet(
               ((InlineAsPathSet) _asExpr)
                   .getAsPathSet().getElements().stream()
