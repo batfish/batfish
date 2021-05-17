@@ -33,6 +33,8 @@ import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.as_path.AsPathExpr;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
@@ -133,6 +135,8 @@ public final class Configuration implements Serializable {
   public static final String DEFAULT_VRF_NAME = "default";
 
   private static final String PROP_AS_PATH_ACCESS_LISTS = "asPathAccessLists";
+  private static final String PROP_AS_PATH_EXPRS = "asPathExprs";
+  private static final String PROP_AS_PATH_MATCH_EXPRS = "asPathMatchExprs";
   private static final String PROP_AUTHENTICATION_KEY_CHAINS = "authenticationKeyChains";
   private static final String PROP_COMMUNITY_MATCH_EXPRS = "communityMatchExprs";
   private static final String PROP_COMMUNITY_SET_EXPRS = "communitySetExprs";
@@ -186,6 +190,8 @@ public final class Configuration implements Serializable {
 
   private Map<String, AuthenticationKeyChain> _authenticationKeyChains;
 
+  private Map<String, AsPathExpr> _asPathExprs;
+  private Map<String, AsPathMatchExpr> _asPathMatchExprs;
   private Map<String, CommunityMatchExpr> _communityMatchExprs;
   private Map<String, CommunitySetExpr> _communitySetExprs;
   private Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
@@ -284,6 +290,8 @@ public final class Configuration implements Serializable {
   public Configuration(@Nonnull String hostname, @Nonnull ConfigurationFormat configurationFormat) {
     _name = hostname.toLowerCase();
     _asPathAccessLists = new TreeMap<>();
+    _asPathExprs = new HashMap<>();
+    _asPathMatchExprs = new HashMap<>();
     _authenticationKeyChains = new TreeMap<>();
     _communityMatchExprs = new HashMap<>();
     _communitySetExprs = new HashMap<>();
@@ -373,6 +381,26 @@ public final class Configuration implements Serializable {
 
   public @Nonnull Stream<Interface> activeInterfaces() {
     return _interfaces.values().stream().filter(Interface::getActive);
+  }
+
+  @JsonIgnore
+  public @Nonnull Map<String, AsPathExpr> getAsPathExprs() {
+    return _asPathExprs;
+  }
+
+  @JsonProperty(PROP_AS_PATH_EXPRS)
+  private @Nonnull NavigableMap<String, AsPathExpr> getAsPathExprsSorted() {
+    return ImmutableSortedMap.copyOf(_asPathExprs, Comparator.naturalOrder());
+  }
+
+  @JsonIgnore
+  public @Nonnull Map<String, AsPathMatchExpr> getAsPathMatchExprs() {
+    return _asPathMatchExprs;
+  }
+
+  @JsonProperty(PROP_AS_PATH_MATCH_EXPRS)
+  private @Nonnull NavigableMap<String, AsPathMatchExpr> getAsPathMatchExprsSorted() {
+    return ImmutableSortedMap.copyOf(_asPathMatchExprs, Comparator.naturalOrder());
   }
 
   @JsonIgnore
@@ -735,6 +763,16 @@ public final class Configuration implements Serializable {
   public void setAuthenticationKeyChains(
       Map<String, AuthenticationKeyChain> authenticationKeyChains) {
     _authenticationKeyChains = authenticationKeyChains;
+  }
+
+  @JsonProperty(PROP_AS_PATH_EXPRS)
+  public void setAsPathExprs(@Nonnull Map<String, AsPathExpr> asPathExprs) {
+    _asPathExprs = asPathExprs;
+  }
+
+  @JsonProperty(PROP_AS_PATH_MATCH_EXPRS)
+  public void setAsPathMatchExprs(@Nonnull Map<String, AsPathMatchExpr> asPathMatchExprs) {
+    _asPathMatchExprs = asPathMatchExprs;
   }
 
   @JsonProperty(PROP_COMMUNITY_MATCH_EXPRS)
