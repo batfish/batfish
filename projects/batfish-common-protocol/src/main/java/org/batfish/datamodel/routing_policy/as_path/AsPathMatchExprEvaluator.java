@@ -67,11 +67,11 @@ public final class AsPathMatchExprEvaluator implements AsPathMatchExprVisitor<Bo
     }
   }
 
-  private boolean tryMatchRanges(List<Range<Long>> asRanges, List<AsSet> subList) {
-    assert asRanges.size() == subList.size();
+  private boolean tryMatchRanges(List<Range<Long>> asRanges, List<AsSet> asSets) {
+    assert asRanges.size() == asSets.size();
     for (int i = 0; i < asRanges.size(); i++) {
       Range<Long> currentRange = asRanges.get(i);
-      if (!subList.get(i).getAsns().stream().anyMatch(currentRange::contains)) {
+      if (asSets.get(i).getAsns().stream().noneMatch(currentRange::contains)) {
         return false;
       }
     }
