@@ -34,6 +34,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
@@ -168,8 +169,14 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setTrackingGroups(toImmutableMap(c.getTrackingGroups()));
     c.setVrfs(verifyAndToImmutableMap(c.getVrfs(), Vrf::getName, w));
     c.setZones(toImmutableMap(c.getZones()));
+    verifyAsPathStructures(c);
     verifyCommunityStructures(c);
     removeInvalidAcls(c, w);
+  }
+
+  private static void verifyAsPathStructures(Configuration c) {
+    // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
+    AsPathStructuresVerifier.verify(c);
   }
 
   private static void verifyCommunityStructures(Configuration c) {
