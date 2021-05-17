@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.difflib.DiffUtils;
 import com.github.difflib.UnifiedDiffUtils;
-import com.github.difflib.algorithm.DiffException;
 import com.github.difflib.patch.Patch;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
@@ -2135,8 +2134,7 @@ public class Client extends AbstractClient implements IClient {
   @Nonnull
   @VisibleForTesting
   static String getPatch(
-      String expected, String actual, String expectedFileName, String actualFileName)
-      throws DiffException {
+      String expected, String actual, String expectedFileName, String actualFileName) {
     List<String> referenceLines = Arrays.asList(expected.split("\n"));
     List<String> testLines = Arrays.asList(actual.split("\n"));
     Patch<String> patch = DiffUtils.diff(referenceLines, testLines);

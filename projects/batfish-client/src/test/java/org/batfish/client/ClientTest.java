@@ -74,7 +74,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.difflib.algorithm.DiffException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -1714,7 +1713,7 @@ public final class ClientTest {
   }
 
   @Test
-  public void getPatch() throws DiffException {
+  public void getPatch() {
     String expected = "1\n2\n3";
     String actual = "1\n2";
 
