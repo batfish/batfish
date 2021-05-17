@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -186,6 +187,11 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitHasRoute6(HasRoute6 hasRoute6, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchAsPath(MatchAsPath matchAsPath, CommunityStructuresVerifierContext arg) {
       return null;
     }
 
