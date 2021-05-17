@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
 
@@ -23,6 +24,8 @@ public interface BooleanExprVisitor<T, U> {
   T visitHasRoute(HasRoute hasRoute, U arg);
 
   T visitHasRoute6(HasRoute6 hasRoute6, U arg);
+
+  T visitMatchAsPath(MatchAsPath matchAsPath, U arg);
 
   T visitMatchLegacyAsPath(LegacyMatchAsPath legacyMatchAsPath, U arg);
 
