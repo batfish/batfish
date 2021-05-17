@@ -46,7 +46,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.thrift:libthrift:0.14.0",  # managed up: CVE-2020-13949
     "org.apache.tomcat.embed:tomcat-embed-core:8.5.63",  # managed up: CVE-2020-11996
     "org.codehaus.jettison:jettison:1.4.0",
-    "io.github.java-diff-utils:java-diff-utils:4.0",
+    "io.github.java-diff-utils:java-diff-utils:4.10",
     "org.glassfish.grizzly:grizzly-http-server:2.4.3",
     "org.glassfish.grizzly:grizzly-framework:2.4.3",
     "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.27",
