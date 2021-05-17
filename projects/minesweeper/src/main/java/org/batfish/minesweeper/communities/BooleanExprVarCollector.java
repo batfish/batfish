@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
@@ -92,6 +93,11 @@ public class BooleanExprVarCollector
 
   @Override
   public Set<CommunityVar> visitHasRoute6(HasRoute6 hasRoute6, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitMatchAsPath(MatchAsPath matchAsPath, Configuration arg) {
     return ImmutableSet.of();
   }
 
