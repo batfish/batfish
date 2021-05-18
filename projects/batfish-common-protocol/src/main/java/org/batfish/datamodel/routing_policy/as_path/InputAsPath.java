@@ -31,4 +31,6 @@ public final class InputAsPath extends AsPathExpr {
   }
 
   private static final InputAsPath INSTANCE = new InputAsPath();
+
+  private InputAsPath() {}
 }

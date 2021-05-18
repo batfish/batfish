@@ -70,7 +70,8 @@ public final class AsPathContext {
     if (inputAsPath == null) {
       return Optional.empty();
     }
-    // TOOD: store information necessary to evaluate dynamic expressions
+    // TOOD: store information necessary to evaluate dynamic (stateful) expressions
+    //       e.g. remote-as, local-as, variable values, etc.
     return Optional.of(
         new AsPathContext(
             environment.getAsPathExprs(), environment.getAsPathMatchExprs(), inputAsPath));

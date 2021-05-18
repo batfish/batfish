@@ -44,7 +44,7 @@ public final class HasAsPathLength extends AsPathMatchExpr {
     return _comparison.hashCode();
   }
 
-  private static final String PROP_COMPARISON = "comparator";
+  private static final String PROP_COMPARISON = "comparison";
 
   @JsonCreator
   private static @Nonnull HasAsPathLength create(

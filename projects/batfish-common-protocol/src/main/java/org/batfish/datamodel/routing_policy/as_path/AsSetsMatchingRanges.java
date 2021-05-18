@@ -29,16 +29,30 @@ public final class AsSetsMatchingRanges extends AsPathMatchExpr {
     return visitor.visitAsSetsMatchingRanges(this, arg);
   }
 
+  /**
+   * Returns {@code true} iff a match must terminate at the last element of the input {@link
+   * org.batfish.datamodel.AsPath}.
+   */
   @JsonProperty(PROP_ANCHOR_END)
   public boolean getAnchorEnd() {
     return _anchorEnd;
   }
 
+  /**
+   * Returns {@code true} iff a match must begin at the first element of the input {@link
+   * org.batfish.datamodel.AsPath}.
+   */
   @JsonProperty(PROP_ANCHOR_START)
   public boolean getAnchorStart() {
     return _anchorStart;
   }
 
+  /**
+   * Returns the list of ranges to be matched against a subsequence of the {@link
+   * org.batfish.datamodel.AsSet}s of the input {@link org.batfish.datamodel.AsPath}. A range
+   * matches an {@link org.batfish.datamodel.AsSet} if any element of the {@link
+   * org.batfish.datamodel.AsSet} is within the range.
+   */
   @JsonProperty(PROP_AS_RANGES)
   public @Nonnull List<Range<Long>> getAsRanges() {
     return _asRanges;
