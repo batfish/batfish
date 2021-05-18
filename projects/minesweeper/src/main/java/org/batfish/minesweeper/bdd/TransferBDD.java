@@ -127,8 +127,7 @@ public class TransferBDD {
 
   /*
    * Convert a Batfish AST boolean expression to a BDD.
-   * TODO: Should we also be producing an updated TransferParam, in case an expression does things like update the local
-   *  default action?
+   * TODO: Any updates to the TransferParam in expr are lost currently
    */
   private TransferResult compute(BooleanExpr expr, TransferBDDState state) {
 
@@ -466,9 +465,8 @@ public class TransferBDD {
       BDD returnedBeforeIf = unreachable(result);
       BDD returnedInIfGuard = unreachable(guardResult);
       // combine the results of analyzing the two branches, but take into account the possibility
-      // that
-      // the "if" statement is never reached or that it returns from within its guard (unlikely but
-      // seems possible)
+      // that the "if" statement is never reached or that it returns from within its guard (unlikely
+      // but seems possible)
       result =
           ite(
               returnedBeforeIf,
@@ -645,16 +643,8 @@ public class TransferBDD {
     return r.setFallthroughValue(fall).setReturnAssignedValue(retAsgn);
   }
 
-  /*
-   * Wrap a simple boolean expression return value in a transfer function result
-   */
-  private TransferResult fromExpr(TransferReturn ret) {
-    return new TransferResult(ret, factory.zero());
-  }
-
   // Create a TransferBDDState, using the BDDRoute in the given TransferResult and throwing away the
-  // one
-  // that is in the given TransferParam.
+  // one that is in the given TransferParam.
   private TransferBDDState toTransferBDDState(TransferParam<BDDRoute> curP, TransferResult result) {
     return new TransferBDDState(curP.setData(result.getReturnValue().getFirst()), result);
   }
