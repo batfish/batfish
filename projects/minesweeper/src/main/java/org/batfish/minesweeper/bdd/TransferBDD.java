@@ -297,13 +297,7 @@ public class TransferBDD {
       }
       RoutingProtocol rp = Iterables.getOnlyElement(rps);
       Protocol proto = Protocol.fromRoutingProtocol(rp);
-      BDD protBDD;
-      if (proto == null) {
-        protBDD = factory.zero();
-      } else {
-        protBDD = p.getData().getProtocolHistory().value(proto);
-      }
-      p.debug("MatchProtocol(" + rp.protocolName() + "): " + protBDD);
+      BDD protBDD = proto == null ? factory.zero() : p.getData().getProtocolHistory().value(proto);
       return result.setReturnValueBDD(protBDD);
 
     } else if (expr instanceof MatchPrefixSet) {
