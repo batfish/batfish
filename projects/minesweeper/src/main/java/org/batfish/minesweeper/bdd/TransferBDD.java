@@ -3,95 +3,33 @@ package org.batfish.minesweeper.bdd;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
-import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.AsPathAccessListLine;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.RouteFilterLine;
-import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.*;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
-import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
-import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
-import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
-import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.LongExpr;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
-import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
-import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
-import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
-import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
-import org.batfish.datamodel.routing_policy.statement.SetMetric;
-import org.batfish.datamodel.routing_policy.statement.SetNextHop;
-import org.batfish.datamodel.routing_policy.statement.SetOrigin;
-import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
-import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.expr.*;
+import org.batfish.datamodel.routing_policy.statement.*;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.Graph;
-import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.Protocol;
-import org.batfish.minesweeper.SymbolicAsPathRegex;
-import org.batfish.minesweeper.SymbolicRegex;
-import org.batfish.minesweeper.TransferParam;
+import org.batfish.minesweeper.*;
 import org.batfish.minesweeper.TransferParam.CallContext;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
-import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.utils.PrefixUtils;
+
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /** @author Ryan Beckett */
 public class TransferBDD {
 
   private static BDDFactory factory = BDDRoute.factory;
-
-  private static Table2<String, String, TransferResult> CACHE = new Table2<>();
 
   /**
    * We track community and AS-path regexes by computing a set of atomic predicates for them. See
@@ -189,57 +127,46 @@ public class TransferBDD {
 
   /*
    * Convert a Batfish AST boolean expression to a BDD.
-   * TODO: Currently we assume that the boolean expression has no side effects.  For example,
-   *  any route announcement updates in the expression will not be accounted for.  Instead,
-   *  the returned BDDRoute will be identical to the one passed in as part of the TransferParam
-   *  object.  More generally we should also handle other side effects that could occur, for example
-   *  early returns/exits and changes to the default action but are not currently doing so.
-   *  Hence the only part of the returned TransferResult o that should be used currently is
-   *  o.getReturnValue().getSecond(), which represents this Boolean expression as a BDD.
+   * TODO: Should we also be producing an updated TransferParam, in case an expression does things like update the local
+   *  default action?
    */
-  private TransferResult compute(BooleanExpr expr, TransferParam<BDDRoute> p) {
+  private TransferResult compute(BooleanExpr expr, TransferBDDState state) {
+
+    TransferParam<BDDRoute> p = state.getTransferParam();
+    TransferResult result = state.getTransferResult();
 
     // TODO: right now everything is IPV4
     if (expr instanceof MatchIpv4) {
-      p.debug("MatchIpv4");
-      TransferReturn ret = new TransferReturn(p.getData(), factory.one());
-      p.debug("MatchIpv4 Result: " + ret);
-      return fromExpr(ret);
-    }
-    if (expr instanceof MatchIpv6) {
-      p.debug("MatchIpv6");
-      TransferReturn ret = new TransferReturn(p.getData(), factory.zero());
-      return fromExpr(ret);
-    }
+      p.debug("MatchIpv4 Result: true");
+      return result.setReturnValueBDD(factory.one());
 
-    if (expr instanceof Conjunction) {
+    } else if (expr instanceof MatchIpv6) {
+      p.debug("MatchIpv6 Result: false");
+      return result.setReturnValueBDD(factory.zero());
+
+    } else if (expr instanceof Conjunction) {
       p.debug("Conjunction");
       Conjunction c = (Conjunction) expr;
       BDD acc = factory.one();
       for (BooleanExpr be : c.getConjuncts()) {
-        TransferResult r = compute(be, p.indent());
-        acc = acc.and(r.getReturnValue().getSecond());
+        result = compute(be, toTransferBDDState(p.indent(), result));
+        acc = acc.and(result.getReturnValue().getSecond());
       }
-      TransferReturn ret = new TransferReturn(p.getData(), acc);
       p.debug("Conjunction return: " + acc);
-      return new TransferResult(ret, factory.zero());
-    }
+      return result.setReturnValueBDD(acc);
 
-    if (expr instanceof Disjunction) {
+    } else if (expr instanceof Disjunction) {
       p.debug("Disjunction");
       Disjunction d = (Disjunction) expr;
       BDD acc = factory.zero();
       for (BooleanExpr be : d.getDisjuncts()) {
-        TransferResult r = compute(be, p.indent());
-        acc = acc.or(r.getReturnValue().getSecond());
+        result = compute(be, toTransferBDDState(p.indent(), result));
+        acc = acc.or(result.getReturnValue().getSecond());
       }
-      TransferReturn ret = new TransferReturn(p.getData(), acc);
       p.debug("Disjunction return: " + acc);
-      return new TransferResult(ret, factory.zero());
-    }
+      return result.setReturnValueBDD(acc);
 
-    // TODO: thread the BDDRecord through calls
-    if (expr instanceof ConjunctionChain) {
+    } else if (expr instanceof ConjunctionChain) {
       p.debug("ConjunctionChain");
       ConjunctionChain d = (ConjunctionChain) expr;
       List<BooleanExpr> conjuncts = new ArrayList<>(d.getSubroutines());
@@ -248,10 +175,8 @@ public class TransferBDD {
         conjuncts.add(be);
       }
       if (conjuncts.isEmpty()) {
-        TransferReturn ret = new TransferReturn(p.getData(), factory.one());
-        return fromExpr(ret);
+        return result.setReturnValueBDD(factory.one());
       } else {
-        TransferResult result = new TransferResult(p.getData());
         TransferParam<BDDRoute> record = p;
         BDD acc = factory.zero();
         for (int i = conjuncts.size() - 1; i >= 0; i--) {
@@ -261,16 +186,15 @@ public class TransferBDD {
                   .setDefaultPolicy(null)
                   .setChainContext(TransferParam.ChainContext.CONJUNCTION)
                   .indent();
-          TransferResult r = compute(conjunct, param);
-          record = record.setData(r.getReturnValue().getFirst());
-          acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
+          result = compute(conjunct, toTransferBDDState(param, result));
+          record = record.setData(result.getReturnValue().getFirst());
+          acc = ite(result.getFallthroughValue(), acc, result.getReturnValue().getSecond());
         }
         TransferReturn ret = new TransferReturn(record.getData(), acc);
         return result.setReturnValue(ret);
       }
-    }
 
-    if (expr instanceof FirstMatchChain) {
+    } else if (expr instanceof FirstMatchChain) {
       p.debug("FirstMatchChain");
       FirstMatchChain chain = (FirstMatchChain) expr;
       List<BooleanExpr> chainPolicies = new ArrayList<>(chain.getSubroutines());
@@ -282,7 +206,6 @@ public class TransferBDD {
         // No identity for an empty FirstMatchChain; default policy should always be set.
         throw new BatfishException("Default policy is not set");
       }
-      TransferResult result = new TransferResult(p.getData());
       TransferParam<BDDRoute> record = p;
       BDD acc = factory.zero();
       for (int i = chainPolicies.size() - 1; i >= 0; i--) {
@@ -292,81 +215,77 @@ public class TransferBDD {
                 .setDefaultPolicy(null)
                 .setChainContext(TransferParam.ChainContext.CONJUNCTION)
                 .indent();
-        TransferResult r = compute(policyMatcher, param);
-        record = record.setData(r.getReturnValue().getFirst());
-        acc = ite(r.getFallthroughValue(), acc, r.getReturnValue().getSecond());
+        result = compute(policyMatcher, toTransferBDDState(param, result));
+        record = record.setData(result.getReturnValue().getFirst());
+        acc = ite(result.getFallthroughValue(), acc, result.getReturnValue().getSecond());
       }
       TransferReturn ret = new TransferReturn(record.getData(), acc);
       return result.setReturnValue(ret);
-    }
 
-    if (expr instanceof Not) {
+    } else if (expr instanceof Not) {
       p.debug("mkNot");
       Not n = (Not) expr;
-      TransferResult result = compute(n.getExpr(), p);
-      TransferReturn r = result.getReturnValue();
-      TransferReturn ret = new TransferReturn(p.getData(), r.getSecond().not());
-      return new TransferResult(ret, factory.zero());
-    }
+      result = compute(n.getExpr(), state);
+      BDD returnedBDD = result.getReturnValue().getSecond();
+      return result.setReturnValueBDD(returnedBDD.not());
 
-    if (expr instanceof MatchProtocol) {
+    } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
       Set<RoutingProtocol> rps = mp.getProtocols();
       if (rps.size() > 1) {
         // Hack: Minesweeper doesn't support MatchProtocol with multiple arguments.
         List<BooleanExpr> mps = rps.stream().map(MatchProtocol::new).collect(Collectors.toList());
-        return compute(new Disjunction(mps), p);
+        return compute(new Disjunction(mps), state);
       }
       RoutingProtocol rp = Iterables.getOnlyElement(rps);
       Protocol proto = Protocol.fromRoutingProtocol(rp);
+      BDD protBDD;
       if (proto == null) {
-        p.debug("MatchProtocol(" + rp.protocolName() + "): false");
-        TransferReturn ret = new TransferReturn(p.getData(), factory.zero());
-        return fromExpr(ret);
+        protBDD = factory.zero();
+      } else {
+        protBDD = p.getData().getProtocolHistory().value(proto);
       }
-      BDD protoMatch = p.getData().getProtocolHistory().value(proto);
-      p.debug("MatchProtocol(" + rp.protocolName() + "): " + protoMatch);
-      TransferReturn ret = new TransferReturn(p.getData(), protoMatch);
-      return fromExpr(ret);
-    }
+      p.debug("MatchProtocol(" + rp.protocolName() + "): " + protBDD);
+      return result.setReturnValueBDD(protBDD);
 
-    if (expr instanceof MatchPrefixSet) {
+    } else if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
 
-      BDD r = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), p.getData());
-      TransferReturn ret = new TransferReturn(p.getData(), r);
-      return fromExpr(ret);
+      BDD prefixSet = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), p.getData());
+      return result.setReturnValueBDD(prefixSet);
 
       // TODO: implement me
     } else if (expr instanceof MatchPrefix6Set) {
       p.debug("MatchPrefix6Set");
-      TransferReturn ret = new TransferReturn(p.getData(), factory.zero());
-      return fromExpr(ret);
+      return result.setReturnValueBDD(factory.zero());
 
     } else if (expr instanceof CallExpr) {
       p.debug("CallExpr");
       CallExpr c = (CallExpr) expr;
-      String router = _conf.getHostname();
       String name = c.getCalledPolicyName();
-      TransferResult r = CACHE.get(router, name);
-      if (r != null) {
-        return r;
-      }
       RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
-      r =
+
+      // save callee state
+      BDD oldReturnAssigned = result.getReturnAssignedValue();
+
+      TransferParam<BDDRoute> newParam =
+          p.setCallContext(CallContext.EXPR_CALL).indent().enterScope(name);
+      TransferResult callResult =
           compute(
-              pol.getStatements(),
-              p.setCallContext(TransferParam.CallContext.EXPR_CALL).indent().enterScope(name));
-      CACHE.put(router, name, r);
-      return r;
+                  pol.getStatements(),
+                  new TransferBDDState(newParam, result.setReturnAssignedValue(factory.zero())))
+              .getTransferResult();
+
+      // restore the original returnAssigned value
+      return callResult.setReturnAssignedValue(oldReturnAssigned);
 
     } else if (expr instanceof WithEnvironmentExpr) {
       p.debug("WithEnvironmentExpr");
       // TODO: this is not correct
       WithEnvironmentExpr we = (WithEnvironmentExpr) expr;
       // TODO: postStatements() and preStatements()
-      return compute(we.getExpr(), p.deepCopy());
+      return compute(we.getExpr(), state);
 
     } else if (expr instanceof MatchCommunities) {
       p.debug("MatchCommunities");
@@ -382,31 +301,25 @@ public class TransferBDD {
       BDD mcPredicate =
           mc.getCommunitySetMatchExpr()
               .accept(new CommunitySetMatchExprToBDD(), new Arg(this, _initialRoute));
-      TransferReturn ret = new TransferReturn(p.getData(), mcPredicate);
-      return fromExpr(ret);
+      return result.setReturnValueBDD(mcPredicate);
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
-      TransferReturn ret;
       switch (b.getType()) {
         case CallExprContext:
           p.debug("CallExprContext");
           BDD x1 = mkBDD(p.getCallContext() == TransferParam.CallContext.EXPR_CALL);
-          ret = new TransferReturn(p.getData(), x1);
-          return fromExpr(ret);
+          return result.setReturnValueBDD(x1);
         case CallStatementContext:
           p.debug("CallStmtContext");
           BDD x2 = mkBDD(p.getCallContext() == TransferParam.CallContext.STMT_CALL);
-          ret = new TransferReturn(p.getData(), x2);
-          return fromExpr(ret);
+          return result.setReturnValueBDD(x2);
         case True:
           p.debug("True");
-          ret = new TransferReturn(p.getData(), factory.one());
-          return fromExpr(ret);
+          return result.setReturnValueBDD(factory.one());
         case False:
           p.debug("False");
-          ret = new TransferReturn(p.getData(), factory.zero());
-          return fromExpr(ret);
+          return result.setReturnValueBDD(factory.zero());
         default:
           throw new BatfishException(
               "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
@@ -416,11 +329,11 @@ public class TransferBDD {
       p.debug("MatchAsPath");
       MatchAsPath matchAsPathNode = (MatchAsPath) expr;
       BDD asPathPredicate = matchAsPath(p.indent(), _conf, matchAsPathNode.getExpr(), p.getData());
-      TransferReturn ret = new TransferReturn(p.getData(), asPathPredicate);
-      return fromExpr(ret);
-    }
+      return result.setReturnValueBDD(asPathPredicate);
 
-    throw new BatfishException("TODO: compute expr transfer function: " + expr);
+    } else {
+      throw new BatfishException("TODO: compute expr transfer function: " + expr);
+    }
   }
 
   /*
@@ -514,12 +427,11 @@ public class TransferBDD {
     } else if (stmt instanceof If) {
       curP.debug("If");
       If i = (If) stmt;
-      /** TODO: Currently we are assuming that the guard is side-effect free. */
-      TransferResult r = compute(i.getGuard(), curP.indent());
-      BDD guard = r.getReturnValue().getSecond();
+      TransferResult guardResult =
+          compute(i.getGuard(), new TransferBDDState(curP.indent(), result));
+      BDD guard = guardResult.getReturnValue().getSecond();
+      BDDRoute current = guardResult.getReturnValue().getFirst();
       curP.debug("guard: ");
-
-      BDDRoute current = result.getReturnValue().getFirst();
 
       // copy the current BDDRoute so we can separately track any updates on the two branches
       TransferParam<BDDRoute> pTrue = curP.indent().setData(current.deepCopy());
@@ -551,9 +463,17 @@ public class TransferBDD {
 
       // update return values
 
-      BDD alreadyReturned = unreachable(result);
-
-      result = ite(alreadyReturned, result, ite(guard, trueBranch, falseBranch));
+      BDD returnedBeforeIf = unreachable(result);
+      BDD returnedInIfGuard = unreachable(guardResult);
+      // combine the results of analyzing the two branches, but take into account the possibility
+      // that
+      // the "if" statement is never reached or that it returns from within its guard (unlikely but
+      // seems possible)
+      result =
+          ite(
+              returnedBeforeIf,
+              result,
+              ite(returnedInIfGuard, guardResult, ite(guard, trueBranch, falseBranch)));
 
       curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
 
@@ -617,7 +537,6 @@ public class TransferBDD {
           setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _initialRoute));
       updateCommunities(dispositions, curP, result);
     } else if (stmt instanceof CallStatement) {
-
       /*
        this code is based on the concrete semantics defined by CallStatement::execute, which also
        relies on RoutingPolicy::call
@@ -633,16 +552,13 @@ public class TransferBDD {
       // save callee state
       BDD oldReturnAssigned = result.getReturnAssignedValue();
 
-      TransferParam<BDDRoute> newParam = curP.indent().setCallContext(CallContext.STMT_CALL);
+      TransferParam<BDDRoute> newParam =
+          curP.indent().setCallContext(CallContext.STMT_CALL).enterScope(name);
       // TODO: Currently dropping the returned TransferParam on the floor
       TransferResult callResult =
           compute(
                   pol.getStatements(),
-                  new TransferBDDState(
-                      newParam,
-                      result
-                          .setReturnValue(new TransferReturn(newParam.getData(), factory.zero()))
-                          .setReturnAssignedValue(factory.zero())))
+                  new TransferBDDState(newParam, result.setReturnAssignedValue(factory.zero())))
               .getTransferResult();
 
       // restore the original returnAssigned value
@@ -680,9 +596,7 @@ public class TransferBDD {
     } else {
       throw new BatfishException("TODO: statement transfer function: " + stmt);
     }
-    // make sure that the TransferParam is updated with the current BDDRoute
-    curP = curP.setData(result.getReturnValue().getFirst());
-    return new TransferBDDState(curP, result);
+    return toTransferBDDState(curP, result);
   }
 
   private TransferBDDState compute(List<Statement> statements, TransferBDDState state) {
@@ -736,6 +650,13 @@ public class TransferBDD {
    */
   private TransferResult fromExpr(TransferReturn ret) {
     return new TransferResult(ret, factory.zero());
+  }
+
+  // Create a TransferBDDState, using the BDDRoute in the given TransferResult and throwing away the
+  // one
+  // that is in the given TransferParam.
+  private TransferBDDState toTransferBDDState(TransferParam<BDDRoute> curP, TransferResult result) {
+    return new TransferBDDState(curP.setData(result.getReturnValue().getFirst()), result);
   }
 
   /*

@@ -1,19 +1,9 @@
 package org.batfish.minesweeper.bdd;
 
-import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
@@ -21,65 +11,28 @@ import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.AsPathAccessListLine;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixRange;
-import org.batfish.datamodel.PrefixSpace;
-import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.*;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
-import org.batfish.datamodel.routing_policy.communities.CommunityIs;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
-import org.batfish.datamodel.routing_policy.communities.HasCommunity;
-import org.batfish.datamodel.routing_policy.communities.InputCommunities;
-import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
-import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
-import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
-import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
-import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.IntComparison;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
-import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
-import org.batfish.datamodel.routing_policy.statement.SetMetric;
-import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.communities.*;
+import org.batfish.datamodel.routing_policy.expr.*;
+import org.batfish.datamodel.routing_policy.statement.*;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
-import org.batfish.minesweeper.SymbolicAsPathRegex;
-import org.batfish.minesweeper.TransferParam;
+import org.batfish.minesweeper.*;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /** Tests for {@link TransferBDD}. */
 public class TransferBDDTest {
@@ -559,6 +512,47 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testStatefulConjunction() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    BooleanExprs.TRUE,
+                    ImmutableList.of(new SetLocalPreference(new LiteralLong(300L)))))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(new CallExpr(calledPolicyName), BooleanExprs.TRUE)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(outAnnouncements, expectedOut);
   }
 
   @Test
@@ -1113,6 +1107,43 @@ public class TransferBDDTest {
         _policyBuilder
             .addStatement(new CallStatement(calledPolicyName))
             .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(outAnnouncements, expectedOut);
+  }
+
+  @Test
+  public void testCallExpr() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new CallExpr(calledPolicyName),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
 
     _baseConfig.setRoutingPolicies(
