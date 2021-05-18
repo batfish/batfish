@@ -79,4 +79,85 @@ route-policy rp1
  endif
 end-policy
 !
+
+!!! behavior-test policies
+
+!! neighbor-is
+route-policy rp-neighbor-is
+ if as-path neighbor-is '1 [2..3] 4' or
+    as-path neighbor-is '6 7 8' exact or
+    as-path in (neighbor-is '11 [22..33] 44') or
+    as-path in (neighbor-is '66 77 88' exact) or
+    as-path in aps-neighbor-is then
+   pass
+ endif
+end-policy
+as-path-set aps-neighbor-is
+ neighbor-is '111 [222..333] 444',
+ neighbor-is '666 777 888' exact
+end-set
+
+!! originates-from
+route-policy rp-originates-from
+ if as-path originates-from '1 [2..3] 4' or
+    as-path originates-from '6 7 8' exact or
+    as-path in (originates-from '11 [22..33] 44') or
+    as-path in (originates-from '66 77 88' exact) or
+    as-path in aps-originates-from then
+   pass
+ endif
+end-policy
+as-path-set aps-originates-from
+ originates-from '111 [222..333] 444',
+ originates-from '666 777 888' exact
+end-set
+
+!! passes-through
+route-policy rp-passes-through
+ if as-path passes-through '1 [2..3] 4' or
+    as-path passes-through '6 7 8' exact or
+    as-path in (passes-through '11 [22..33] 44') or
+    as-path in (passes-through '66 77 88' exact) or
+    as-path in aps-passes-through then
+   pass
+ endif
+end-policy
+as-path-set aps-passes-through
+ passes-through '111 [222..333] 444',
+ passes-through '666 777 888' exact
+end-set
+
+!! length
+!! TODO: something with 'all'
+route-policy rp-length
+ if as-path length eq 2 or
+    as-path in (length eq 4) or
+    as-path in aps-length then
+   pass
+ endif
+end-policy
+as-path-set aps-length
+ length eq 6
+end-set
+
+!! unique-length
+!! TODO: something with 'all'
+route-policy rp-unique-length
+ if as-path unique-length eq 2 or
+    as-path in (unique-length eq 4) or
+    as-path in aps-unique-length then
+   pass
+ endif
+end-policy
+as-path-set aps-unique-length
+ unique-length eq 6
+end-set
+!
+
+!! is-local
+route-policy rp-is-local
+ if as-path is-local then
+   pass
+ endif
+end-policy
 end
