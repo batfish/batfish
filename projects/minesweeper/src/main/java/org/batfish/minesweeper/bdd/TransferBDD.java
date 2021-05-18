@@ -3,6 +3,9 @@ package org.batfish.minesweeper.bdd;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import java.util.*;
+import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
@@ -16,15 +19,11 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.*;
 import org.batfish.datamodel.routing_policy.statement.*;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.*;
+import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.TransferParam.CallContext;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.utils.PrefixUtils;
-
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /** @author Ryan Beckett */
 public class TransferBDD {

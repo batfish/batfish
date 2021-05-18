@@ -1,9 +1,15 @@
 package org.batfish.minesweeper.bdd;
 
+import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.*;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
@@ -20,19 +26,12 @@ import org.batfish.datamodel.routing_policy.communities.*;
 import org.batfish.datamodel.routing_policy.expr.*;
 import org.batfish.datamodel.routing_policy.statement.*;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.*;
+import org.batfish.minesweeper.Protocol;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /** Tests for {@link TransferBDD}. */
 public class TransferBDDTest {
