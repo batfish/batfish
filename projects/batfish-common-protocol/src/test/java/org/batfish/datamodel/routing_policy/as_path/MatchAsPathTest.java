@@ -33,7 +33,7 @@ public final class MatchAsPathTest {
         MatchAsPath.of(
             InputAsPath.instance(), HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(1))));
 
-    // expect Result(true) when route has AsPath and match evalutes to true
+    // expect Result(true) when route has AsPath and match evaluates to true
     assertTrue(
         expr.evaluate(
                 Environment.builder(c)
@@ -43,6 +43,18 @@ public final class MatchAsPathTest {
                             .setNetwork(Prefix.ZERO)
                             .build())
                     .build())
+            .getBooleanValue());
+
+    // expect Result(false) when route has AsPath and match evaluates to false
+    assertFalse(
+        expr.evaluate(
+            Environment.builder(c)
+                .setOriginalRoute(
+                    testBuilder()
+                        .setAsPath(AsPath.ofSingletonAsSets(5L,6L))
+                        .setNetwork(Prefix.ZERO)
+                        .build())
+                .build())
             .getBooleanValue());
 
     // expect Result(false) when route has no AsPath

@@ -71,9 +71,6 @@ public final class AsPathContextTest {
                         Bgpv4Route.testBuilder()
                             .setAsPath(inputRouteAsPath)
                             .setNetwork(Prefix.ZERO)
-                            .setOriginatorIp(Ip.ZERO)
-                            .setOriginType(OriginType.INCOMPLETE)
-                            .setProtocol(RoutingProtocol.BGP)
                             .build())
                     .build())
             .get();

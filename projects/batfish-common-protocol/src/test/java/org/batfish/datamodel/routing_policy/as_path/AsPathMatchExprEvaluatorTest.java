@@ -91,6 +91,38 @@ public final class AsPathMatchExprEvaluatorTest {
                 false,
                 ImmutableList.of(Range.singleton(2L), Range.singleton(3L), Range.singleton(4L))),
             AsPath.ofSingletonAsSets(2L, 3L, 4L, 5L)));
+    assertTrue(
+        eval(
+            AsSetsMatchingRanges.of(
+                false,
+                false,
+                ImmutableList.of(Range.singleton(2L), Range.closed(1L,100L), Range.singleton(4L))),
+            AsPath.ofSingletonAsSets(2L, 3L, 4L, 5L)));
+
+    // non-singleton as-sets
+    assertTrue(
+        eval(
+            AsSetsMatchingRanges.of(
+                false,
+                false,
+                ImmutableList.of(Range.singleton(2L), Range.closed(1L,100L), Range.singleton(4L))),
+            AsPath.of(ImmutableList.of(AsSet.of(2L), AsSet.of(1000L, 50L), AsSet.of(4L)))));
+    assertFalse(
+        eval(
+            AsSetsMatchingRanges.of(
+                false,
+                false,
+                ImmutableList.of(Range.singleton(2L), Range.closed(1L,100L), Range.singleton(4L))),
+            AsPath.of(ImmutableList.of(AsSet.of(2L), AsSet.of(1000L, 2000L), AsSet.of(4L)))));
+
+    // too many ranges
+    assertFalse(
+        eval(
+            AsSetsMatchingRanges.of(
+                false,
+                false,
+                ImmutableList.of(Range.singleton(2L), Range.singleton(3L), Range.singleton(4L))),
+            AsPath.ofSingletonAsSets(2L, 3L)));
   }
 
   @Test
@@ -166,6 +198,13 @@ public final class AsPathMatchExprEvaluatorTest {
                 true,
                 ImmutableList.of(Range.singleton(2L), Range.singleton(3L), Range.singleton(4L))),
             AsPath.ofSingletonAsSets(2L, 3L, 4L, 5L)));
+    assertFalse(
+        eval(
+            AsSetsMatchingRanges.of(
+                true,
+                true,
+                ImmutableList.of(Range.singleton(2L), Range.singleton(3L), Range.singleton(5L))),
+            AsPath.ofSingletonAsSets(2L, 3L, 4L)));
   }
 
   @Test
