@@ -2308,7 +2308,17 @@ public final class XrGrammarTest {
     String hostname = "xr-as-path-boolean";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getRoutePolicies(), hasKeys("rp1"));
+    assertThat(
+        vc.getRoutePolicies(),
+        hasKeys(
+            "rp1",
+            "rp-neighbor-is",
+            "rp-originates-from",
+            "rp-passes-through",
+            "rp-length",
+            "rp-unique-length",
+            "rp-is-local"));
+
     RoutePolicy rp = vc.getRoutePolicies().get("rp1");
     Iterator<RoutePolicyStatement> i = rp.getStatements().iterator();
     {
