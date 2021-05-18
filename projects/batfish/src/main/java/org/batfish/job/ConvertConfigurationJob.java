@@ -175,7 +175,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   }
 
   private static void verifyAsPathStructures(Configuration c) {
-    // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
     AsPathStructuresVerifier.verify(c);
   }
 

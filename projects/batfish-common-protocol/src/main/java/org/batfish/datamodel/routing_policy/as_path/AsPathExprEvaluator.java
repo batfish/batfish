@@ -31,7 +31,7 @@ public final class AsPathExprEvaluator implements AsPathExprVisitor<AsPath, AsPa
     AsSet lastAsSet = null;
     ImmutableList.Builder<AsSet> builder = ImmutableList.builder();
     for (AsSet asSet : input.getAsSets()) {
-      if (asSet == lastAsSet) {
+      if (asSet.equals(lastAsSet)) {
         continue;
       }
       lastAsSet = asSet;

@@ -11,6 +11,9 @@ import org.batfish.datamodel.routing_policy.Result;
 /**
  * Boolean expression that tests whether an {@link Environment} contains a BGP route with an AS path
  * that matches a given {@link AsPathSetExpr}.
+ *
+ * <p>Deprecated in favor of {@link org.batfish.datamodel.routing_policy.as_path.MatchAsPath}, which
+ * is more expressive.
  */
 public final class LegacyMatchAsPath extends BooleanExpr {
 
