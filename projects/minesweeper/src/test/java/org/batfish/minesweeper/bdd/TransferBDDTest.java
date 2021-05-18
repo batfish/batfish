@@ -536,6 +536,26 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testIfFalse() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    BooleanExprs.FALSE,
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isZero());
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
+  }
+
+  @Test
   public void testConjunction() {
     _policyBuilder.addStatement(
         new If(
@@ -1149,7 +1169,10 @@ public class TransferBDDTest {
         _nf.routingPolicyBuilder()
             .setName(calledPolicyName)
             .setOwner(_baseConfig)
-            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_STATEMENT_CONTEXT,
+                    ImmutableList.of(new SetLocalPreference(new LiteralLong(300L)))))
             .build();
 
     RoutingPolicy policy =
@@ -1183,8 +1206,12 @@ public class TransferBDDTest {
         _nf.routingPolicyBuilder()
             .setName(calledPolicyName)
             .setOwner(_baseConfig)
-            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
-            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_EXPR_CONTEXT,
+                    ImmutableList.of(
+                        new SetLocalPreference(new LiteralLong(300L)),
+                        new StaticStatement(Statements.ReturnTrue))))
             .build();
 
     RoutingPolicy policy =
