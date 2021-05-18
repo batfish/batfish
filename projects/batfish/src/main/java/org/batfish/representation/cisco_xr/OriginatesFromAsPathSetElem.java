@@ -31,6 +31,14 @@ public final class OriginatesFromAsPathSetElem implements AsPathSetElem {
     return visitor.visitOriginatesFromAsPathSetElem(this);
   }
 
+  public @Nonnull List<Range<Long>> getAsRanges() {
+    return _asRanges;
+  }
+
+  public boolean getExact() {
+    return _exact;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {

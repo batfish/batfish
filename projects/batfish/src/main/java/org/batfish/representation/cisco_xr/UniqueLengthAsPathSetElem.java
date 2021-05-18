@@ -24,6 +24,14 @@ public final class UniqueLengthAsPathSetElem implements AsPathSetElem {
     return visitor.visitUniqueLengthAsPathSetElem(this);
   }
 
+  public @Nonnull IntComparator getComparator() {
+    return _comparator;
+  }
+
+  public int getLength() {
+    return _length;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {

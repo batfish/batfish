@@ -6,9 +6,13 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 
 /**
  * An route-policy boolean expression that evaluates to true iff the length of the route's as-path
@@ -17,7 +21,7 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 @ParametersAreNonnullByDefault
 public final class RoutePolicyBooleanAsPathLength extends RoutePolicyBoolean {
 
-  public RoutePolicyBooleanAsPathLength(IntComparator comparator, Integer length, boolean all) {
+  public RoutePolicyBooleanAsPathLength(IntComparator comparator, int length, boolean all) {
     _comparator = comparator;
     _length = length;
     _all = all;
@@ -42,8 +46,9 @@ public final class RoutePolicyBooleanAsPathLength extends RoutePolicyBoolean {
 
   @Override
   public BooleanExpr toBooleanExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    // TODO: implement
-    return BooleanExprs.FALSE;
+    return MatchAsPath.of(
+        InputAsPath.instance(),
+        HasAsPathLength.of(new IntComparison(_comparator, new LiteralInt(_length))));
   }
 
   private final @Nonnull IntComparator _comparator;

@@ -31,6 +31,14 @@ public final class PassesThroughAsPathSetElem implements AsPathSetElem {
     return visitor.visitPassesThroughAsPathSetElem(this);
   }
 
+  public @Nonnull List<Range<Long>> getAsRanges() {
+    return _asRanges;
+  }
+
+  public boolean getExact() {
+    return _exact;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {

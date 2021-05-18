@@ -21,6 +21,14 @@ public final class LengthAsPathSetElem implements AsPathSetElem {
     return visitor.visitLengthAsPathSetElem(this);
   }
 
+  public @Nonnull IntComparator getComparator() {
+    return _comparator;
+  }
+
+  public int getLength() {
+    return _length;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {

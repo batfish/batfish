@@ -31,6 +31,14 @@ public final class NeighborIsAsPathSetElem implements AsPathSetElem {
     return visitor.visitNeighborIsAsPathSetElem(this);
   }
 
+  public @Nonnull List<Range<Long>> getAsRanges() {
+    return _asRanges;
+  }
+
+  public boolean getExact() {
+    return _exact;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
