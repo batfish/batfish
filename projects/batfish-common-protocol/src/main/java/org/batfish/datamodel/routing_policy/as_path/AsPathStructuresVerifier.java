@@ -21,7 +21,6 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.MainRib;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
@@ -64,7 +63,6 @@ import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.datamodel.visitors.RibExprVisitor;
 
 /**
  * Provides functionality to verify absence of undefined/cyclical references in as-path-related
@@ -132,7 +130,6 @@ public final class AsPathStructuresVerifier {
     @Override
     public Void visitRibIntersectsPrefixSpace(
         RibIntersectsPrefixSpace ribIntersectsPrefixSpace, AsPathStructuresVerifierContext arg) {
-      ribIntersectsPrefixSpace.getRibExpr().accept(RIB_EXPR_VERIFIER, arg);
       return null;
     }
 
@@ -302,15 +299,15 @@ public final class AsPathStructuresVerifier {
     public Void visitAsPathMatchExprReference(
         AsPathMatchExprReference asPathMatchExprReference, AsPathStructuresVerifierContext arg) {
       String name = asPathMatchExprReference.getName();
-      if (arg._verifiedAsPathMatchExprs.contains(name)) {
+      if (arg._verifiedAsPathMatchExprReferences.contains(name)) {
         return null;
       }
-      if (arg._visitedAsPathMatchExprs.contains(name)) {
+      if (arg._asPathMatchExprReferenceStack.contains(name)) {
         // circular reference
         throw new VendorConversionException(
             String.format("Circular reference to AsPathMatchExpr: '%s'", name));
       }
-      arg._visitedAsPathMatchExprs.add(name);
+      arg._asPathMatchExprReferenceStack.add(name);
       AsPathMatchExpr resolved = arg._asPathMatchExprs.get(name);
       if (resolved == null) {
         // undefined reference
@@ -318,8 +315,8 @@ public final class AsPathStructuresVerifier {
             String.format("Undefined reference to AsPathMatchExpr: '%s'", name));
       }
       resolved.accept(AS_PATH_MATCH_EXPR_VERIFIER, arg);
-      arg._verifiedAsPathMatchExprs.add(name);
-      arg._visitedAsPathMatchExprs.remove(name);
+      arg._verifiedAsPathMatchExprReferences.add(name);
+      arg._asPathMatchExprReferenceStack.remove(name);
       return null;
     }
 
@@ -349,15 +346,15 @@ public final class AsPathStructuresVerifier {
     public Void visitAsPathExprReference(
         AsPathExprReference asPathExprReference, AsPathStructuresVerifierContext arg) {
       String name = asPathExprReference.getName();
-      if (arg._verifiedAsPathExprs.contains(name)) {
+      if (arg._verifiedAsPathExprReferences.contains(name)) {
         return null;
       }
-      if (arg._visitedAsPathExprs.contains(name)) {
+      if (arg._asPathExprReferenceStack.contains(name)) {
         // circular reference
         throw new VendorConversionException(
             String.format("Circular reference to AsPathExpr: '%s'", name));
       }
-      arg._visitedAsPathExprs.add(name);
+      arg._asPathExprReferenceStack.add(name);
       AsPathExpr resolved = arg._asPathExprs.get(name);
       if (resolved == null) {
         // undefined reference
@@ -365,8 +362,8 @@ public final class AsPathStructuresVerifier {
             String.format("Undefined reference to AsPathExpr: '%s'", name));
       }
       resolved.accept(AS_PATH_EXPR_VERIFIER, arg);
-      arg._verifiedAsPathExprs.add(name);
-      arg._visitedAsPathExprs.remove(name);
+      arg._verifiedAsPathExprReferences.add(name);
+      arg._asPathExprReferenceStack.remove(name);
       return null;
     }
 
@@ -509,15 +506,6 @@ public final class AsPathStructuresVerifier {
     }
   }
 
-  private static final class RibExprVerifier
-      implements RibExprVisitor<Void, AsPathStructuresVerifierContext> {
-
-    @Override
-    public Void visitMainRib(MainRib mainRib, AsPathStructuresVerifierContext arg) {
-      return null;
-    }
-  }
-
   @VisibleForTesting
   static final class AsPathStructuresVerifierContext {
 
@@ -574,19 +562,19 @@ public final class AsPathStructuresVerifier {
       _asPathExprs = asPathExprs;
       _asPathMatchExprs = asPathMatchExprs;
       _routingPolicies = routingPolicies;
-      _verifiedAsPathMatchExprs = new HashSet<>();
-      _verifiedAsPathExprs = new HashSet<>();
-      _visitedAsPathMatchExprs = new HashSet<>();
-      _visitedAsPathExprs = new HashSet<>();
+      _verifiedAsPathMatchExprReferences = new HashSet<>();
+      _verifiedAsPathExprReferences = new HashSet<>();
+      _asPathMatchExprReferenceStack = new HashSet<>();
+      _asPathExprReferenceStack = new HashSet<>();
     }
 
     private final @Nonnull Map<String, AsPathExpr> _asPathExprs;
     private final @Nonnull Map<String, AsPathMatchExpr> _asPathMatchExprs;
     private final @Nonnull Map<String, RoutingPolicy> _routingPolicies;
-    private final @Nonnull Set<String> _verifiedAsPathMatchExprs;
-    private final @Nonnull Set<String> _verifiedAsPathExprs;
-    private final @Nonnull Set<String> _visitedAsPathMatchExprs;
-    private final @Nonnull Set<String> _visitedAsPathExprs;
+    private final @Nonnull Set<String> _verifiedAsPathMatchExprReferences;
+    private final @Nonnull Set<String> _verifiedAsPathExprReferences;
+    private final @Nonnull Set<String> _asPathMatchExprReferenceStack;
+    private final @Nonnull Set<String> _asPathExprReferenceStack;
   }
 
   @VisibleForTesting
@@ -598,8 +586,6 @@ public final class AsPathStructuresVerifier {
 
   @VisibleForTesting
   static final AsPathExprVerifier AS_PATH_EXPR_VERIFIER = new AsPathExprVerifier();
-
-  @VisibleForTesting static final RibExprVerifier RIB_EXPR_VERIFIER = new RibExprVerifier();
 
   @VisibleForTesting
   static final AsPathStructuresStatementVerifier STATEMENT_VERIFIER =
