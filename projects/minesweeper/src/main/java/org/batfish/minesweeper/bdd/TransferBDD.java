@@ -207,8 +207,12 @@ public class TransferBDD {
       Conjunction c = (Conjunction) expr;
       BDD acc = factory.one();
       for (BooleanExpr be : c.getConjuncts()) {
-        result = compute(be, toTransferBDDState(p.indent(), result));
-        acc = acc.and(result.getReturnValue().getSecond());
+        TransferResult resultCopy =
+            result.setReturnValueBDDRoute(result.getReturnValue().getFirst().deepCopy());
+        TransferResult newResult = compute(be, toTransferBDDState(p.indent(), resultCopy));
+        // short-circuiting: only update the result if the prior conjuncts were all true
+        result = ite(acc, newResult, result);
+        acc = acc.and(newResult.getReturnValue().getSecond());
       }
       p.debug("Conjunction return: " + acc);
       return result.setReturnValueBDD(acc);
@@ -218,7 +222,11 @@ public class TransferBDD {
       Disjunction d = (Disjunction) expr;
       BDD acc = factory.zero();
       for (BooleanExpr be : d.getDisjuncts()) {
-        result = compute(be, toTransferBDDState(p.indent(), result));
+        TransferResult resultCopy =
+            result.setReturnValueBDDRoute(result.getReturnValue().getFirst().deepCopy());
+        TransferResult newResult = compute(be, toTransferBDDState(p.indent(), resultCopy));
+        // short-circuiting: only update the result if the prior disjuncts were all false
+        result = ite(acc, result, newResult);
         acc = acc.or(result.getReturnValue().getSecond());
       }
       p.debug("Disjunction return: " + acc);

@@ -668,6 +668,55 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testConjunctionShortCircuit() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            matchPrefixSet(
+                                ImmutableList.of(
+                                    new PrefixRange(
+                                        Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                            new CallExpr(calledPolicyName))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDD firstConjunctBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(
+        BDDInteger.makeFromValue(localPref.getFactory(), 32, 300).ite(firstConjunctBDD, localPref));
+
+    // the updates in the second conjunct should not occur unless the first conjunct is true
+    assertEquals(outAnnouncements, expected);
+  }
+
+  @Test
   public void testEmptyConjunction() {
     _policyBuilder.addStatement(
         new If(
@@ -715,6 +764,56 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testDisjunctionShortCircuit() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Disjunction(
+                        ImmutableList.of(
+                            matchPrefixSet(
+                                ImmutableList.of(
+                                    new PrefixRange(
+                                        Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                            new CallExpr(calledPolicyName))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDD firstDisjunctBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(
+        BDDInteger.makeFromValue(localPref.getFactory(), 32, 300)
+            .ite(firstDisjunctBDD.not(), localPref));
+
+    // the updates in the second conjunct should not occur unless the first conjunct is true
+    assertEquals(outAnnouncements, expected);
   }
 
   @Test
