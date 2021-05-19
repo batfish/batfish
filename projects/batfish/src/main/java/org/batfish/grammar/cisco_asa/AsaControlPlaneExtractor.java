@@ -178,7 +178,6 @@ import static org.batfish.representation.cisco_asa.AsaStructureUsage.IPSEC_PROFI
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.IPV6_LOCAL_POLICY_ROUTE_MAP;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.IP_DOMAIN_LOOKUP_INTERFACE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.IP_LOCAL_POLICY_ROUTE_MAP;
-import static org.batfish.representation.cisco_asa.AsaStructureUsage.IP_ROUTE_NHINT;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.IP_TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ISAKMP_POLICY_SELF_REF;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ISAKMP_PROFILE_KEYRING;
@@ -232,7 +231,6 @@ import static org.batfish.representation.cisco_asa.AsaStructureUsage.PROTOCOL_OB
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
-import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTER_VRRP_INTERFACE;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
@@ -284,6 +282,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -347,7 +346,6 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
@@ -643,8 +641,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Ip_domain_nameContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_hostnameContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_prefix_list_tailContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ip_route_stanzaContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Ip_route_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ip_ssh_versionContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ipl_policyContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Ipsec_authenticationContext;
@@ -764,6 +760,7 @@ import org.batfish.grammar.cisco_asa.AsaParser.PortContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Port_specifierContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Prefix_list_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.ProtocolContext;
+import org.batfish.grammar.cisco_asa.AsaParser.Protocol_distanceContext;
 import org.batfish.grammar.cisco_asa.AsaParser.RangeContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Re_autonomous_systemContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Re_classicContext;
@@ -840,7 +837,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Route_map_bgp_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Route_map_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Route_reflector_client_bgp_tailContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Route_tailContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Route_targetContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Router_id_bgp_tailContext;
@@ -849,8 +845,6 @@ import org.batfish.grammar.cisco_asa.AsaParser.Rr_distribute_listContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Rr_networkContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Rr_passive_interfaceContext;
 import org.batfish.grammar.cisco_asa.AsaParser.Rr_passive_interface_defaultContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Rs_routeContext;
-import org.batfish.grammar.cisco_asa.AsaParser.Rs_vrfContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_aaaContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_access_lineContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_asa_twice_natContext;
@@ -882,6 +876,7 @@ import org.batfish.grammar.cisco_asa.AsaParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_ntpContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_policy_mapContext;
+import org.batfish.grammar.cisco_asa.AsaParser.S_routeContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_router_ospfContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_router_ripContext;
 import org.batfish.grammar.cisco_asa.AsaParser.S_same_security_trafficContext;
@@ -1138,6 +1133,7 @@ import org.batfish.vendor.VendorConfiguration;
 public class AsaControlPlaneExtractor extends AsaParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
+  private static final IntegerSpace PROTOCOL_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
 
@@ -1191,12 +1187,28 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
   }
 
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
   private static int toInteger(DecContext ctx) {
     return Integer.parseInt(ctx.getText());
   }
 
-  private static int toInteger(Token t) {
-    return Integer.parseInt(t.getText());
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Protocol_distanceContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, PROTOCOL_DISTANCE_RANGE, "distance");
   }
 
   private static int toInteger(Vlan_idContext ctx) {
@@ -2308,16 +2320,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void enterIp_route_stanza(Ip_route_stanzaContext ctx) {
-    if (ctx.vrf != null) {
-      _currentVrf = ctx.vrf.getText();
-    }
-    if (ctx.MANAGEMENT() != null) {
-      _currentVrf = AsaConfiguration.MANAGEMENT_VRF_NAME;
-    }
-  }
-
-  @Override
   public void enterIpv6_prefix_list_stanza(Ipv6_prefix_list_stanzaContext ctx) {
     String name = ctx.name.getText();
     _currentPrefix6List = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
@@ -3102,11 +3104,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     isisProcess.setLevel(IsisLevel.LEVEL_1_2);
     currentVrf().setIsisProcess(isisProcess);
     _currentIsisProcess = isisProcess;
-  }
-
-  @Override
-  public void enterRs_vrf(Rs_vrfContext ctx) {
-    _currentVrf = ctx.name.getText();
   }
 
   @Override
@@ -5932,61 +5929,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitIp_route_stanza(Ip_route_stanzaContext ctx) {
-    if (ctx.vrf != null || ctx.MANAGEMENT() != null) {
-      _currentVrf = Configuration.DEFAULT_VRF_NAME;
-    }
-  }
-
-  @Override
-  public void exitIp_route_tail(Ip_route_tailContext ctx) {
-    Prefix prefix;
-    if (ctx.prefix != null) {
-      prefix = Prefix.parse(ctx.prefix.getText());
-    } else {
-      Ip address = toIp(ctx.address);
-      Ip mask = toIp(ctx.mask);
-      int prefixLength = mask.numSubnetBits();
-      prefix = Prefix.create(address, prefixLength);
-    }
-    Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-    String nextHopInterface = null;
-    int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
-    Long tag = null;
-    Integer track = null;
-    boolean permanent = ctx.perm != null;
-    if (ctx.nexthopip != null) {
-      nextHopIp = toIp(ctx.nexthopip);
-    } else if (ctx.nexthopprefix != null) {
-      Prefix nextHopPrefix = Prefix.parse(ctx.nexthopprefix.getText());
-      nextHopIp = nextHopPrefix.getStartIp();
-    }
-    if (ctx.nexthopint != null) {
-      try {
-        nextHopInterface = getCanonicalInterfaceName(ctx.nexthopint.getText());
-        _configuration.referenceStructure(
-            INTERFACE, nextHopInterface, IP_ROUTE_NHINT, ctx.nexthopint.getStart().getLine());
-      } catch (BatfishException e) {
-        warn(ctx, "Error fetching interface name: " + e.getMessage());
-        _currentInterfaces = ImmutableList.of();
-        return;
-      }
-    }
-    if (ctx.distance != null) {
-      distance = toInteger(ctx.distance);
-    }
-    if (ctx.tag != null) {
-      tag = toLong(ctx.tag);
-    }
-    if (ctx.track != null) {
-      track = toInteger(ctx.track);
-    }
-    StaticRoute route =
-        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
-    currentVrf().getStaticRoutes().add(route);
-  }
-
-  @Override
   public void exitIp_ssh_version(Ip_ssh_versionContext ctx) {
     int version = toInteger(ctx.version);
     if (version < 1 || version > 2) {
@@ -8010,14 +7952,18 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   }
 
   @Override
-  public void exitRoute_tail(Route_tailContext ctx) {
+  public void exitS_route(S_routeContext ctx) {
     String nextHopInterface = ctx.iface.getText();
     Prefix prefix = Prefix.create(toIp(ctx.destination), toIp(ctx.mask));
     Ip nextHopIp = toIp(ctx.gateway);
 
     int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
     if (ctx.distance != null) {
-      distance = toInteger(ctx.distance);
+      Optional<Integer> maybeDistance = toInteger(ctx, ctx.distance);
+      if (!maybeDistance.isPresent()) {
+        return;
+      }
+      distance = maybeDistance.get();
     }
 
     Integer track = null;
@@ -8029,8 +7975,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
       warn(ctx, "Interface default tunnel gateway option not yet supported.");
     }
 
-    StaticRoute route =
-        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
+    StaticRoute route = new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, track);
     currentVrf().getStaticRoutes().add(route);
   }
 
@@ -8100,47 +8045,6 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
   public void exitRr_passive_interface_default(Rr_passive_interface_defaultContext ctx) {
     boolean no = ctx.NO() != null;
     _currentRipProcess.setPassiveInterfaceDefault(!no);
-  }
-
-  @Override
-  public void exitRs_route(Rs_routeContext ctx) {
-    if (ctx.prefix != null) {
-      Prefix prefix = Prefix.parse(ctx.prefix.getText());
-      Ip nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
-      String nextHopInterface = null;
-      if (ctx.nhip != null) {
-        nextHopIp = toIp(ctx.nhip);
-      }
-      if (ctx.nhint != null) {
-        nextHopInterface = getCanonicalInterfaceName(ctx.nhint.getText());
-        _configuration.referenceStructure(
-            INTERFACE, nextHopInterface, ROUTER_STATIC_ROUTE, ctx.nhint.getStart().getLine());
-      }
-      int distance = DEFAULT_STATIC_ROUTE_DISTANCE;
-      if (ctx.distance != null) {
-        distance = toInteger(ctx.distance);
-      }
-      Long tag = null;
-      if (ctx.tag != null) {
-        tag = toLong(ctx.tag);
-      }
-
-      boolean permanent = ctx.PERMANENT() != null;
-      Integer track = null;
-      if (ctx.track != null) {
-        // TODO: handle named instead of numbered track
-      }
-      StaticRoute route =
-          new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
-      currentVrf().getStaticRoutes().add(route);
-    } else if (ctx.prefix6 != null) {
-      // TODO: ipv6 static route
-    }
-  }
-
-  @Override
-  public void exitRs_vrf(Rs_vrfContext ctx) {
-    _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
