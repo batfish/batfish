@@ -274,7 +274,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    */
   public static final String DEFAULT_POLICY_MAP_OUT = "default-out-policy";
 
-  /** Name of the generated resolution policy, implementing NX-OS resolution filtering */
+  /**
+   * Name of the generated static route resolution policy, implementing NX-OS resolution filtering
+   */
   public static final String RESOLUTION_POLICY_NAME = "~RESOLUTION_POLICY~";
 
   private int _currentContextVrfId;
@@ -1345,7 +1347,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertVrfs() {
-    // Build resolution policy used by VRFs; prevents resolution w/ default-routes
+    // Build static route resolution policy used by VRFs; prevents resolution w/ default-routes
     RoutingPolicy.builder()
         .setOwner(_c)
         .setName(RESOLUTION_POLICY_NAME)

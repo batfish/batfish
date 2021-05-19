@@ -8577,9 +8577,7 @@ public final class CiscoNxosGrammarTest {
     // Policy should not accept default routes
     assertFalse(
         r.processReadOnly(
-            org.batfish.datamodel.StaticRoute.testBuilder()
-                .setNetwork(Prefix.create(ZERO, 0))
-                .build()));
+            org.batfish.datamodel.StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
   }
 
   @Test
