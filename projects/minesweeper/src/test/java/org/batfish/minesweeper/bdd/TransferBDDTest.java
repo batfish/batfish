@@ -51,6 +51,8 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
@@ -60,6 +62,8 @@ import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
@@ -534,6 +538,67 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testIfFalse() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    BooleanExprs.FALSE,
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isZero());
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
+  }
+
+  @Test
+  public void testMatchIpv4() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    MatchIpv4.instance(),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // currently we assume announcements are IPv4
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(_anyRoute, outAnnouncements);
+  }
+
+  @Test
+  public void testMatchIpv6() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    MatchIpv6.instance(),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isZero());
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
+  }
+
+  @Test
   public void testConjunction() {
     _policyBuilder.addStatement(
         new If(
@@ -559,6 +624,96 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testStatefulConjunction() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    BooleanExprs.TRUE,
+                    ImmutableList.of(new SetLocalPreference(new LiteralLong(300L)))))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(new CallExpr(calledPolicyName), BooleanExprs.TRUE)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(outAnnouncements, expectedOut);
+  }
+
+  @Test
+  public void testConjunctionShortCircuit() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            matchPrefixSet(
+                                ImmutableList.of(
+                                    new PrefixRange(
+                                        Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                            new CallExpr(calledPolicyName))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDD firstConjunctBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(
+        BDDInteger.makeFromValue(localPref.getFactory(), 32, 300).ite(firstConjunctBDD, localPref));
+
+    // the updates in the second conjunct should not occur unless the first conjunct is true
+    assertEquals(outAnnouncements, expected);
   }
 
   @Test
@@ -609,6 +764,56 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testDisjunctionShortCircuit() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Disjunction(
+                        ImmutableList.of(
+                            matchPrefixSet(
+                                ImmutableList.of(
+                                    new PrefixRange(
+                                        Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                            new CallExpr(calledPolicyName))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDD firstDisjunctBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(
+        BDDInteger.makeFromValue(localPref.getFactory(), 32, 300)
+            .ite(firstDisjunctBDD.not(), localPref));
+
+    // the updates in the second disjunct should not occur unless the first disjunct is false
+    assertEquals(outAnnouncements, expected);
   }
 
   @Test
@@ -1106,13 +1311,57 @@ public class TransferBDDTest {
         _nf.routingPolicyBuilder()
             .setName(calledPolicyName)
             .setOwner(_baseConfig)
-            .addStatement(new SetLocalPreference(new LiteralLong(300L)))
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_STATEMENT_CONTEXT,
+                    ImmutableList.of(new SetLocalPreference(new LiteralLong(300L)))))
             .build();
 
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new CallStatement(calledPolicyName))
             .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute expectedOut = new BDDRoute(_anyRoute);
+    expectedOut.setLocalPref(BDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(outAnnouncements, expectedOut);
+  }
+
+  @Test
+  public void testCallExpr() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_EXPR_CONTEXT,
+                    ImmutableList.of(
+                        new SetLocalPreference(new LiteralLong(300L)),
+                        new StaticStatement(Statements.ReturnTrue))))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new CallExpr(calledPolicyName),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
 
     _baseConfig.setRoutingPolicies(

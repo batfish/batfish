@@ -116,6 +116,16 @@ public class TransferResult {
   }
 
   @Nonnull
+  public TransferResult setReturnValueBDD(BDD newBDD) {
+    return setReturnValue(new TransferReturn(_returnValue.getFirst(), newBDD));
+  }
+
+  @Nonnull
+  public TransferResult setReturnValueBDDRoute(BDDRoute newBDDRoute) {
+    return setReturnValue(new TransferReturn(newBDDRoute, _returnValue.getSecond()));
+  }
+
+  @Nonnull
   public TransferResult setSuppressedValue(BDD suppressedValue) {
     return new TransferResult(
         _returnValue, suppressedValue, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
