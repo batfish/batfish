@@ -6311,15 +6311,15 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testOspfMaxMetricOnStartup() {
-    String hostname = "ospf_max_metric_on_startup";
+  public void testOspfMaxMetricTransient() {
+    String hostname = "ospf_max_metric_transient";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    // Max metric setting shouldn't stick if on-startup is specified
-    assertThat(vc.getOspfProcesses().get("65000").getMaxMetricRouterLsa(), nullValue());
+    // Max metric setting should stick if there is no transient option specified
+    assertThat(vc.getOspfProcesses().get("65000").getMaxMetricRouterLsa(), notNullValue());
 
-    // Otherwise, max metric setting should stick
-    assertThat(vc.getOspfProcesses().get("65001").getMaxMetricRouterLsa(), notNullValue());
+    // Max metric setting shouldn't stick if transient option on-startup is specified
+    assertThat(vc.getOspfProcesses().get("65001").getMaxMetricRouterLsa(), nullValue());
   }
 
   @Test

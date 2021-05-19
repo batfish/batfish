@@ -1,6 +1,6 @@
 !RANCID-CONTENT-TYPE: cisco-nx
 !
-hostname ospf_max_metric_on_startup
+hostname ospf_max_metric_transient
 !
 interface loopback0
   ip address 10.0.0.1/32
@@ -8,8 +8,8 @@ interface loopback0
 !
 router ospf 65000
   router-id 10.0.0.1
-  max-metric router-lsa on-startup
+  max-metric router-lsa
 !
 router ospf 65001
   router-id 10.0.0.1
-  max-metric router-lsa
+  max-metric router-lsa on-startup
