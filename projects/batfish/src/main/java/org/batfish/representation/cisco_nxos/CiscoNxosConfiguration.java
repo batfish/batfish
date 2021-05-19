@@ -274,6 +274,11 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    */
   public static final String DEFAULT_POLICY_MAP_OUT = "default-out-policy";
 
+  /**
+   * Name of the generated static route resolution policy, implementing NX-OS resolution filtering
+   */
+  public static final String RESOLUTION_POLICY_NAME = "~RESOLUTION_POLICY~";
+
   private int _currentContextVrfId;
 
   /** Returns canonical prefix of interface name if valid, else {@code null}. */
@@ -1342,6 +1347,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private void convertVrfs() {
+    // Build static route resolution policy used by VRFs; prevents resolution w/ default-routes
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(RESOLUTION_POLICY_NAME)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    matchDefaultRoute(),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
+        .build();
+
     _vrfs.forEach((name, vrf) -> _c.getVrfs().put(name, toVrf(vrf)));
   }
 
@@ -3709,7 +3726,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private @Nonnull org.batfish.datamodel.Vrf toVrf(Vrf vrf) {
     org.batfish.datamodel.Vrf.Builder newVrfBuilder =
-        org.batfish.datamodel.Vrf.builder().setName(vrf.getName());
+        org.batfish.datamodel.Vrf.builder()
+            .setName(vrf.getName())
+            .setResolutionPolicy(RESOLUTION_POLICY_NAME);
     return newVrfBuilder.build();
   }
 }
