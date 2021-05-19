@@ -6441,7 +6441,8 @@ public final class CiscoNxosGrammarTest {
             computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 20),
             "reach_continue_target_without_match",
             computeRoutingPolicyName("reach_continue_target_without_match", 10),
-            computeRoutingPolicyName("reach_continue_target_without_match", 30)));
+            computeRoutingPolicyName("reach_continue_target_without_match", 30),
+            RESOLUTION_POLICY_NAME));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
