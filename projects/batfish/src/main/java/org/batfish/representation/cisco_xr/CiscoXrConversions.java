@@ -844,13 +844,7 @@ public class CiscoXrConversions {
    */
   static void initBgpDefaultRouteExportPolicy(
       String vrfName, String peerName, boolean ipv4, Configuration c) {
-    SetOrigin setOrigin =
-        new SetOrigin(
-            new LiteralOrigin(
-                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
-                    ? OriginType.IGP
-                    : OriginType.INCOMPLETE,
-                null));
+    SetOrigin setOrigin = new SetOrigin(new LiteralOrigin(OriginType.IGP, null));
     List<Statement> defaultRouteExportStatements =
         ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
 
