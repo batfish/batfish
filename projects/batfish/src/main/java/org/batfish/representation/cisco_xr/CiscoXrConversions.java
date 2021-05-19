@@ -8,11 +8,11 @@ import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LIST;
@@ -805,11 +805,11 @@ public class CiscoXrConversions {
     // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
     // TODO Verify that default route can be originated even if no export filter is configured.
     if (lpg.getDefaultOriginate()) {
-      initBgpDefaultRouteExportPolicy(vrfName, lpg.getName(), ipv4, c);
+      initBgpDefaultRouteExportPolicy(ipv4, c);
       exportPolicy.addStatement(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, lpg.getName())),
+              new CallExpr(generatedBgpDefaultRouteExportPolicyName(ipv4)),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
     }
@@ -838,28 +838,30 @@ public class CiscoXrConversions {
 
   /**
    * Initializes export policy for IPv4 or IPv6 default routes if it doesn't already exist. This
-   * policy is the same across BGP processes, so only one is created for each configuration.
+   * policy is the same across BGP processes, so at most two are created for each configuration, for
+   * IPv4 and IPv6.
    *
    * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
    */
-  static void initBgpDefaultRouteExportPolicy(
-      String vrfName, String peerName, boolean ipv4, Configuration c) {
-    SetOrigin setOrigin = new SetOrigin(new LiteralOrigin(OriginType.IGP, null));
-    List<Statement> defaultRouteExportStatements =
-        ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
-
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, peerName))
-        .addStatement(
-            new If(
-                new Conjunction(
-                    ImmutableList.of(
-                        ipv4 ? Common.matchDefaultRoute() : Common.matchDefaultRouteV6(),
-                        new MatchProtocol(RoutingProtocol.AGGREGATE))),
-                defaultRouteExportStatements))
-        .addStatement(Statements.ReturnFalse.toStaticStatement())
-        .build();
+  static void initBgpDefaultRouteExportPolicy(boolean ipv4, Configuration c) {
+    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName(ipv4);
+    if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
+      SetOrigin setOrigin = new SetOrigin(new LiteralOrigin(OriginType.IGP, null));
+      List<Statement> defaultRouteExportStatements =
+          ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
+      RoutingPolicy.builder()
+          .setOwner(c)
+          .setName(defaultRouteExportPolicyName)
+          .addStatement(
+              new If(
+                  new Conjunction(
+                      ImmutableList.of(
+                          ipv4 ? Common.matchDefaultRoute() : Common.matchDefaultRouteV6(),
+                          new MatchProtocol(RoutingProtocol.AGGREGATE))),
+                  defaultRouteExportStatements))
+          .addStatement(Statements.ReturnFalse.toStaticStatement())
+          .build();
+    }
   }
 
   /**
