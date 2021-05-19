@@ -9,6 +9,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
+import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
@@ -92,6 +93,7 @@ import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.RESOLUTION_POLICY_NAME;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborExportPolicyName;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborImportPolicyName;
@@ -119,6 +121,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -144,6 +147,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -174,6 +178,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.ConnectedRouteMetadata;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
@@ -829,7 +834,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHopIp(nextHopIp)
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
@@ -860,7 +865,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
                   .setNextHopIp(nextHopIp)
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP)
@@ -902,7 +907,7 @@ public final class CiscoNxosGrammarTest {
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
                   .setNextHopIp(nextHopIp)
-                  .setReceivedFromIp(Ip.ZERO)
+                  .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
                   .setSrcProtocol(RoutingProtocol.EIGRP_EX)
@@ -6436,12 +6441,13 @@ public final class CiscoNxosGrammarTest {
             computeRoutingPolicyName("continue_from_set_to_match_on_set_field", 20),
             "reach_continue_target_without_match",
             computeRoutingPolicyName("reach_continue_target_without_match", 10),
-            computeRoutingPolicyName("reach_continue_target_without_match", 30)));
+            computeRoutingPolicyName("reach_continue_target_without_match", 30),
+            RESOLUTION_POLICY_NAME));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
             .setAsPath(AsPath.ofSingletonAsSets(2L))
-            .setOriginatorIp(Ip.ZERO)
+            .setOriginatorIp(ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(origNextHopIp)
@@ -6633,7 +6639,7 @@ public final class CiscoNxosGrammarTest {
           org.batfish.datamodel.StaticRoute.testBuilder()
               .setAdmin(1)
               .setNetwork(Prefix.ZERO)
-              .setNextHopIp(Ip.ZERO)
+              .setNextHopIp(ZERO)
               .build());
       assertRoutingPolicyPermitsRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
     }
@@ -6645,7 +6651,7 @@ public final class CiscoNxosGrammarTest {
           org.batfish.datamodel.StaticRoute.testBuilder()
               .setAdmin(1)
               .setNetwork(Prefix.ZERO)
-              .setNextHopIp(Ip.ZERO)
+              .setNextHopIp(ZERO)
               .build());
     }
     {
@@ -6787,7 +6793,7 @@ public final class CiscoNxosGrammarTest {
                   .setAsNumber(1L)
                   .setMode(EigrpProcessMode.CLASSIC)
                   .setMetricVersion(EigrpMetricVersion.V2)
-                  .setRouterId(Ip.ZERO)
+                  .setRouterId(ZERO)
                   .build(),
               Direction.IN));
       EigrpExternalRoute routAfter = builder.build();
@@ -7473,7 +7479,7 @@ public final class CiscoNxosGrammarTest {
             .setSrcProtocol(RoutingProtocol.BGP)
             .setMetric(0L) // 30 match metric 3
             .setAsPath(AsPath.ofSingletonAsSets(2L))
-            .setOriginatorIp(Ip.ZERO)
+            .setOriginatorIp(ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("192.0.2.254"))
@@ -8551,5 +8557,45 @@ public final class CiscoNxosGrammarTest {
               EigrpInternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V2),
               Direction.OUT));
     }
+  }
+
+  @Test
+  public void testResolutionPolicyFiltering() throws IOException {
+    String hostname = "resolution_policy";
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getDefaultVrf().getResolutionPolicy(), equalTo(RESOLUTION_POLICY_NAME));
+    assertThat(c.getRoutingPolicies(), hasKey(RESOLUTION_POLICY_NAME));
+    RoutingPolicy r = c.getRoutingPolicies().get(RESOLUTION_POLICY_NAME);
+
+    // Policy should accept non-default routes
+    assertTrue(
+        r.processReadOnly(
+            org.batfish.datamodel.StaticRoute.testBuilder()
+                .setNetwork(Prefix.create(Ip.parse("10.10.10.10"), 24))
+                .build()));
+
+    // Policy should not accept default routes
+    assertFalse(
+        r.processReadOnly(
+            org.batfish.datamodel.StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
+  }
+
+  @Test
+  public void testResolutionPolicyRibRoutes() throws IOException {
+    String hostname = "resolution_policy";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname).get("default").getRoutes();
+
+    // Rib should have the static route whose NHI is determined from a non-default route
+    assertThat(
+        routes,
+        hasItem(
+            allOf(hasPrefix(Prefix.parse("10.101.1.1/32")), hasNextHopIp(Ip.parse("10.0.1.100")))));
+
+    // Rib should NOT have the static route whose NHI is determined from the default route
+    assertThat(routes, not(hasItem(hasPrefix(Prefix.parse("10.103.3.1/32")))));
   }
 }

@@ -74655,6 +74655,39 @@
                 "type" : "ExitReject"
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -74711,10 +74744,12 @@
               },
               "tieBreaker" : "ROUTER_ID"
             },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -74796,6 +74831,41 @@
             "vrf" : "default"
           }
         },
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "cisco_nxos" : {
             "majorVersion" : "UNKNOWN",
@@ -74805,10 +74875,12 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -74819,6 +74891,41 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "cisco_nxos" : {
             "majorVersion" : "UNKNOWN",
@@ -74828,10 +74935,12 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -74845,6 +74954,41 @@
         "ntpServers" : [
           "10.1.2.3"
         ],
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "cisco_nxos" : {
             "majorVersion" : "UNKNOWN",
@@ -74854,10 +74998,12 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -74912,6 +75058,41 @@
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "OTHER"
+          }
+        },
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -74970,7 +75151,8 @@
                 "summaryAdminCost" : 254,
                 "summaryDiscardMetric" : 0
               }
-            }
+            },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           },
           "default" : {
             "name" : "default",
@@ -75018,6 +75200,7 @@
                 "summaryDiscardMetric" : 0
               }
             },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "foo" : {
@@ -75040,10 +75223,12 @@
                 "summaryAdminCost" : 254,
                 "summaryDiscardMetric" : 0
               }
-            }
+            },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -75104,6 +75289,39 @@
                         "type" : "ReturnTrue"
                       }
                     ]
+                  }
+                ]
+              }
+            ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
                   }
                 ]
               }
@@ -76953,10 +77171,12 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -76967,6 +77187,41 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "cisco_nxos" : {
             "majorVersion" : "UNKNOWN",
@@ -76976,10 +77231,12 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -76990,6 +77247,41 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "cisco_nxos" : {
             "majorVersion" : "UNKNOWN",
@@ -76999,10 +77291,12 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "management" : {
-            "name" : "management"
+            "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -77013,6 +77307,41 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "cisco_nxos" : {
             "majorVersion" : "UNKNOWN",
@@ -77022,10 +77351,12 @@
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "snmpServer" : { }
           },
           "management" : {
             "name" : "management",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -77049,6 +77380,7 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
