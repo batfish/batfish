@@ -812,7 +812,7 @@ public class TransferBDDTest {
         BDDInteger.makeFromValue(localPref.getFactory(), 32, 300)
             .ite(firstDisjunctBDD.not(), localPref));
 
-    // the updates in the second conjunct should not occur unless the first conjunct is true
+    // the updates in the second disjunct should not occur unless the first disjunct is false
     assertEquals(outAnnouncements, expected);
   }
 
