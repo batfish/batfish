@@ -6311,6 +6311,18 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testOspfMaxMetricOnStartup() {
+    String hostname = "ospf_max_metric_on_startup";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    // Max metric setting shouldn't stick if on-startup is specified
+    assertThat(vc.getOspfProcesses().get("65000").getMaxMetricRouterLsa(), nullValue());
+
+    // Otherwise, max metric setting should stick
+    assertThat(vc.getOspfProcesses().get("65001").getMaxMetricRouterLsa(), notNullValue());
+  }
+
+  @Test
   public void testRouteMapConversion() throws IOException {
     String hostname = "nxos_route_map";
     Configuration c = parseConfig(hostname);
