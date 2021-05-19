@@ -1,0 +1,10 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname asa-static-gh-5729
+! test for https://github.com/batfish/batfish/issues/5729
+!
+route management 0.0.0.0 0.0.0.0 10.1.2.3 1
+route iad-xxx 0.0.0.0 0.0.0.0 159.1.2.3 1
+route iad-xxx 10.0.0.0 255.0.0.0 10.1.0.1 1
+route iad-xxxn 10.1.3.4 255.255.255.224 10.1.2.3 1

@@ -536,6 +536,8 @@ protocol
    | VRRP
 ;
 
+protocol_distance: uint8; // 1-255
+
 range
 :
    (
