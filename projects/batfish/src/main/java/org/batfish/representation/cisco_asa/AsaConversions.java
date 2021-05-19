@@ -1570,7 +1570,6 @@ public class AsaConversions {
         .setNetwork(staticRoute.getPrefix())
         .setNextHop(NextHop.legacyConverter(nextHopInterface, staticRoute.getNextHopIp()))
         .setAdministrativeCost(staticRoute.getDistance())
-        .setTag(firstNonNull(staticRoute.getTag(), -1L))
         .build();
   }
 

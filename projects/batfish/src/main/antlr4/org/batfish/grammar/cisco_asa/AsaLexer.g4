@@ -4724,7 +4724,15 @@ ROTARY: 'rotary';
 
 ROUND_ROBIN: 'round-robin';
 
-ROUTE: 'route';
+ROUTE
+:
+   'route'
+   {
+     if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
+       pushMode(M_Alias);
+     }
+   }
+;
 
 ROUTE_CACHE: 'route-cache';
 
