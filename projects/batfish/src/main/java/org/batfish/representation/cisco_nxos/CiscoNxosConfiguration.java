@@ -1352,10 +1352,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setStatements(
             ImmutableList.of(
                 new If(
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(),
-                        new ExplicitPrefixSet(
-                            new PrefixSpace(PrefixRange.fromPrefix(Prefix.parse("0.0.0.0/0"))))),
+                    matchDefaultRoute(),
                     ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
         .build();
