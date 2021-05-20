@@ -42,6 +42,7 @@ public class Vrf extends ComparableStructure<String> {
     @Nullable private String _name;
     @Nullable private Supplier<String> _nameGenerator;
     @Nullable private Configuration _owner;
+    @Nullable private String _resolutionPolicy;
     @Nonnull private Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
 
     @Nonnull
@@ -60,6 +61,7 @@ public class Vrf extends ComparableStructure<String> {
       }
       vrf.setEigrpProcesses(_eigrpProcesses);
       vrf.setVrfLeakConfigs(_vrfLeakingConfigs.build());
+      vrf.setResolutionPolicy(_resolutionPolicy);
       return vrf;
     }
 
@@ -75,6 +77,11 @@ public class Vrf extends ComparableStructure<String> {
 
     public Builder setOwner(@Nullable Configuration owner) {
       _owner = owner;
+      return this;
+    }
+
+    public Builder setResolutionPolicy(@Nullable String resolutionPolicy) {
+      _resolutionPolicy = resolutionPolicy;
       return this;
     }
 

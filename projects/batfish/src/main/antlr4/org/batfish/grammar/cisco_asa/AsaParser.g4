@@ -3,6 +3,7 @@ parser grammar AsaParser;
 import
 Asa_common,
 Asa_community_list,
+Asa_static,
 AsaLegacy_aaa,
 AsaLegacy_acl,
 AsaLegacy_bgp,
@@ -24,7 +25,6 @@ AsaLegacy_qos,
 AsaLegacy_rip,
 AsaLegacy_routemap,
 AsaLegacy_snmp,
-AsaLegacy_static,
 AsaLegacy_zone;
 
 
@@ -1142,58 +1142,6 @@ ip_probe_null
    ) null_rest_of_line
 ;
 
-ip_route_stanza
-:
-   (
-      IP
-      | MANAGEMENT
-   ) ROUTE
-   (
-      VRF vrf = variable
-   )? ip_route_tail
-;
-
-ip_route_tail
-:
-   (
-      (
-         address = IP_ADDRESS mask = IP_ADDRESS
-      )
-      | prefix = IP_PREFIX
-   )
-   (
-      nexthopip = IP_ADDRESS
-      | nexthopprefix = IP_PREFIX
-      | GLOBAL
-      | nexthopint = interface_name_unstructured
-   )*
-   (
-      (
-         (
-            ADMIN_DIST
-            | ADMIN_DISTANCE
-         )? distance = dec
-      )
-      |
-      (
-         METRIC metric = dec
-      )
-      |
-      (
-         TAG tag = dec
-      )
-      | perm = PERMANENT
-      |
-      (
-         TRACK track = dec
-      )
-      |
-      (
-         NAME variable
-      )
-   )* NEWLINE
-;
-
 ip_sla_null
 :
    NO?
@@ -2084,25 +2032,6 @@ role_null
    ) null_rest_of_line
 ;
 
-route_tail
-:
-   iface = variable destination = IP_ADDRESS mask = IP_ADDRESS gateway = IP_ADDRESS
-   (
-      (
-         (
-            distance = dec+
-         )?
-         (
-            TRACK track = dec+
-         )?
-      )
-      |
-      (
-         TUNNELED
-      )
-   ) NEWLINE
-;
-
 router_multicast_stanza
 :
    IPV6? ROUTER
@@ -2974,11 +2903,6 @@ s_role
    )*
 ;
 
-s_route
-:
-   ROUTE route_tail
-;
-
 s_router_vrrp
 :
    NO? ROUTER VRRP NEWLINE
@@ -3560,7 +3484,6 @@ stanza
    | ip_as_path_access_list_stanza
    | ip_as_path_regex_mode_stanza
    | ip_prefix_list_stanza
-   | ip_route_stanza
    | ipv6_prefix_list_stanza
    | ipx_sap_access_list_stanza
    | multicast_routing_stanza
@@ -3708,7 +3631,6 @@ stanza
    | s_router_ospf
    | s_router_ospfv3
    | s_router_rip
-   | s_router_static
    | s_router_vrrp
    | s_same_security_traffic
    | s_sccp
