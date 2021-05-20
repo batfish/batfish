@@ -220,7 +220,7 @@ match_semantics
 
 pm_class
 :
-   CLASS BUILT_IN? (CLASS_DEFAULT | name = class_name) NEWLINE
+   CLASS (CLASS_DEFAULT | BUILT_IN? name = class_name) NEWLINE
    (
       pmc_null
       | pmc_police
