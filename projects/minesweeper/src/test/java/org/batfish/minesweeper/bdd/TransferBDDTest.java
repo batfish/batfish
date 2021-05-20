@@ -59,9 +59,9 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -998,7 +998,7 @@ public class TransferBDDTest {
                     new AsPathAccessListLine(LineAction.DENY, "^$")))));
     _policyBuilder.addStatement(
         new If(
-            new MatchAsPath(new NamedAsPathSet(AS_PATH_NAME)),
+            new LegacyMatchAsPath(new NamedAsPathSet(AS_PATH_NAME)),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _g = new Graph(_batfish, _batfish.getSnapshot());

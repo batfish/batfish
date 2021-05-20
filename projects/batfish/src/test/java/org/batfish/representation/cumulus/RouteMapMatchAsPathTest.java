@@ -7,7 +7,7 @@ import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.junit.Test;
 
@@ -25,6 +25,7 @@ public class RouteMapMatchAsPathTest {
     // Adding the AS path should make it create a MatchAsPath expr instead
     c.getAsPathAccessLists().put(name, new AsPathAccessList(name, null));
     assertThat(
-        matchLine.toBooleanExpr(c, null, null), equalTo(new MatchAsPath(new NamedAsPathSet(name))));
+        matchLine.toBooleanExpr(c, null, null),
+        equalTo(new LegacyMatchAsPath(new NamedAsPathSet(name))));
   }
 }

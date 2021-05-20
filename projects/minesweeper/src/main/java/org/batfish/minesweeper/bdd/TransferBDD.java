@@ -46,11 +46,11 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
@@ -385,10 +385,11 @@ public class TransferBDD {
               "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
       }
 
-    } else if (expr instanceof MatchAsPath) {
+    } else if (expr instanceof LegacyMatchAsPath) {
       p.debug("MatchAsPath");
-      MatchAsPath matchAsPathNode = (MatchAsPath) expr;
-      BDD asPathPredicate = matchAsPath(p.indent(), _conf, matchAsPathNode.getExpr(), p.getData());
+      LegacyMatchAsPath legacyMatchAsPathNode = (LegacyMatchAsPath) expr;
+      BDD asPathPredicate =
+          matchAsPath(p.indent(), _conf, legacyMatchAsPathNode.getExpr(), p.getData());
       return result.setReturnValueBDD(asPathPredicate);
 
     } else {
