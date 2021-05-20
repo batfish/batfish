@@ -165,23 +165,23 @@ public class CommunityMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitStandardCommunityHighMatch(
       StandardCommunityHighMatch standardCommunityHighMatch, Configuration arg) {
-    Optional<Integer> high = intMatchExprToInt(standardCommunityHighMatch.getExpr());
     // If the given integer match expression is not currently supported we return an empty set
     // instead of throwing an exception.  If we end up needing to model this structure, the later
     // code will crash instead.
-    return high.map(i -> ImmutableSet.of(CommunityVar.from("^" + i + ":")))
-        .orElseGet(ImmutableSet::of);
+    return standardCommunityHighMatchToRegex(standardCommunityHighMatch)
+        .map(ImmutableSet::of)
+        .orElse(ImmutableSet.of());
   }
 
   @Override
   public Set<CommunityVar> visitStandardCommunityLowMatch(
       StandardCommunityLowMatch standardCommunityLowMatch, Configuration arg) {
-    Optional<Integer> low = intMatchExprToInt(standardCommunityLowMatch.getExpr());
     // If the given integer match expression is not currently supported we return an empty set
     // instead of throwing an exception.  If we end up needing to model this structure, the later
     // code will crash instead.
-    return low.map(i -> ImmutableSet.of(CommunityVar.from(":" + i + "$")))
-        .orElseGet(ImmutableSet::of);
+    return standardCommunityLowMatchToRegex(standardCommunityLowMatch)
+        .map(ImmutableSet::of)
+        .orElse(ImmutableSet.of());
   }
 
   @Override
@@ -197,10 +197,32 @@ public class CommunityMatchExprVarCollector
   }
 
   /**
+   * Converts a StandardCommunityHighMatch to a {@link CommunityVar} representing it as a community
+   * regex. We currently only handle a subset of StandardCommunityHighMatch expressions, so we use
+   * the Optional type to indicate whether the given one is supported or not.
+   */
+  public static Optional<CommunityVar> standardCommunityHighMatchToRegex(
+      StandardCommunityHighMatch match) {
+    Optional<Integer> val = intMatchEqualityExprToInt(match.getExpr());
+    return val.map(i -> CommunityVar.from("^" + i + ":"));
+  }
+
+  /**
+   * Converts a StandardCommunityLowMatch to a {@link CommunityVar} representing it as a community
+   * regex. We currently only handle a subset of StandardCommunityLowMatch expressions, so we use
+   * the Optional type to indicate whether the given one is supported or not.
+   */
+  public static Optional<CommunityVar> standardCommunityLowMatchToRegex(
+      StandardCommunityLowMatch match) {
+    Optional<Integer> val = intMatchEqualityExprToInt(match.getExpr());
+    return val.map(i -> CommunityVar.from(":" + i + "$"));
+  }
+
+  /**
    * The only integer match expressions currently supported are equality comparisons with an integer
    * constant; this method returns that constant.
    */
-  private Optional<Integer> intMatchExprToInt(IntMatchExpr intMatchExpr) {
+  private static Optional<Integer> intMatchEqualityExprToInt(IntMatchExpr intMatchExpr) {
     if (intMatchExpr instanceof IntComparison) {
       IntComparison intComp = (IntComparison) intMatchExpr;
       IntExpr expr = intComp.getExpr();

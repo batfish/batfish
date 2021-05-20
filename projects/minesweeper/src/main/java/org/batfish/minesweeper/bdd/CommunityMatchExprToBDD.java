@@ -4,10 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -207,31 +204,32 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   @Override
   public BDD visitStandardCommunityHighMatch(
       StandardCommunityHighMatch standardCommunityHighMatch, Arg arg) {
-    Set<CommunityVar> cvars =
-        standardCommunityHighMatch.accept(
-            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration());
-    if (cvars.isEmpty()) {
-      throw new UnsupportedOperationException(
-          "Currently not supporting integer match expression: "
-              + standardCommunityHighMatch.getExpr());
-    } else {
-      return CommunitySetMatchExprToBDD.communityVarsToBDD(cvars, arg);
-    }
+    Optional<CommunityVar> optCVar =
+        CommunityMatchExprVarCollector.standardCommunityHighMatchToRegex(
+            standardCommunityHighMatch);
+    // If the community variable does not exist it means we currently don't support this
+    // StandardCommunityHighMatch, so we throw an exception
+    return optCVar
+        .map(cvar -> CommunitySetMatchExprToBDD.communityVarsToBDD(ImmutableSet.of(cvar), arg))
+        .orElseThrow(
+            () ->
+                new UnsupportedOperationException(
+                    "Currently not supporting match expression: " + standardCommunityHighMatch));
   }
 
   @Override
   public BDD visitStandardCommunityLowMatch(
       StandardCommunityLowMatch standardCommunityLowMatch, Arg arg) {
-    Set<CommunityVar> cvars =
-        standardCommunityLowMatch.accept(
-            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration());
-    if (cvars.isEmpty()) {
-      throw new UnsupportedOperationException(
-          "Currently not supporting integer match expression: "
-              + standardCommunityLowMatch.getExpr());
-    } else {
-      return CommunitySetMatchExprToBDD.communityVarsToBDD(cvars, arg);
-    }
+    Optional<CommunityVar> optCVar =
+        CommunityMatchExprVarCollector.standardCommunityLowMatchToRegex(standardCommunityLowMatch);
+    // If the community variable does not exist it means we currently don't support this
+    // StandardCommunityLowMatch, so we throw an exception
+    return optCVar
+        .map(cvar -> CommunitySetMatchExprToBDD.communityVarsToBDD(ImmutableSet.of(cvar), arg))
+        .orElseThrow(
+            () ->
+                new UnsupportedOperationException(
+                    "Currently not supporting match expression: " + standardCommunityLowMatch));
   }
 
   @Override
