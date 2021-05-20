@@ -2,9 +2,9 @@ package org.batfish.grammar.cisco_xr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
-import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
