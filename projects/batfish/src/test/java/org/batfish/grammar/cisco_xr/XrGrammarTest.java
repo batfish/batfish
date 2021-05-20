@@ -658,7 +658,7 @@ public final class XrGrammarTest {
     OspfExternalRoute.Builder ospfMetricType =
         OspfExternalType1Route.testBuilder().setNetwork(prefixOspfMetricType);
 
-    assertThat(c.getRoutingPolicies(), hasKeys("implicit-actions"));
+    assertThat(c.getRoutingPolicies(), hasKeys("implicit-actions", RESOLUTION_POLICY_NAME));
     RoutingPolicy rp = c.getRoutingPolicies().get("implicit-actions");
 
     // If routes are updated, default-deny doesn't apply
@@ -843,7 +843,8 @@ public final class XrGrammarTest {
             "deleteall",
             "deletein",
             "deleteininline",
-            "deletenotin"));
+            "deletenotin",
+            RESOLUTION_POLICY_NAME));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
@@ -1053,7 +1054,9 @@ public final class XrGrammarTest {
     }
 
     // Test route-policy match and set
-    assertThat(c.getRoutingPolicies(), hasKeys("set-rt1", "set-inline", "set-inline-additive"));
+    assertThat(
+        c.getRoutingPolicies(),
+        hasKeys("set-rt1", "set-inline", "set-inline-additive", RESOLUTION_POLICY_NAME));
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
