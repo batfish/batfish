@@ -3,6 +3,7 @@ package org.batfish.minesweeper.communities;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
@@ -117,67 +118,76 @@ public class CommunityMatchExprVarCollector
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorHighMatch(
       ExtendedCommunityGlobalAdministratorHighMatch extendedCommunityGlobalAdministratorHighMatch,
       Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    // This is not supported, but rather than throw we do nothing. If we end up needing to model
+    // this structure, the later code will crash instead.
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorLowMatch(
       ExtendedCommunityGlobalAdministratorLowMatch extendedCommunityGlobalAdministratorLowMatch,
       Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    // This is not supported, but rather than throw we do nothing. If we end up needing to model
+    // this structure, the later code will crash instead.
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityGlobalAdministratorMatch(
       ExtendedCommunityGlobalAdministratorMatch extendedCommunityGlobalAdministratorMatch,
       Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    // This is not supported, but rather than throw we do nothing. If we end up needing to model
+    // this structure, the later code will crash instead.
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitExtendedCommunityLocalAdministratorMatch(
       ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch,
       Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    // This is not supported, but rather than throw we do nothing. If we end up needing to model
+    // this structure, the later code will crash instead.
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitRouteTargetExtendedCommunities(
       RouteTargetExtendedCommunities routeTargetExtendedCommunities, Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitSiteOfOriginExtendedCommunities(
       SiteOfOriginExtendedCommunities siteOfOriginExtendedCommunities, Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return ImmutableSet.of();
   }
 
   @Override
   public Set<CommunityVar> visitStandardCommunityHighMatch(
       StandardCommunityHighMatch standardCommunityHighMatch, Configuration arg) {
-    int high = intMatchExprToInt(standardCommunityHighMatch.getExpr());
-    return ImmutableSet.of(CommunityVar.from("^" + high + ":"));
+    // If the given integer match expression is not currently supported we return an empty set
+    // instead of throwing an exception.  If we end up needing to model this structure, the later
+    // code will crash instead.
+    return standardCommunityHighMatchToRegex(standardCommunityHighMatch)
+        .map(ImmutableSet::of)
+        .orElse(ImmutableSet.of());
   }
 
   @Override
   public Set<CommunityVar> visitStandardCommunityLowMatch(
       StandardCommunityLowMatch standardCommunityLowMatch, Configuration arg) {
-    int low = intMatchExprToInt(standardCommunityLowMatch.getExpr());
-    return ImmutableSet.of(CommunityVar.from(":" + low + "$"));
+    // If the given integer match expression is not currently supported we return an empty set
+    // instead of throwing an exception.  If we end up needing to model this structure, the later
+    // code will crash instead.
+    return standardCommunityLowMatchToRegex(standardCommunityLowMatch)
+        .map(ImmutableSet::of)
+        .orElse(ImmutableSet.of());
   }
 
   @Override
   public Set<CommunityVar> visitVpnDistinguisherExtendedCommunities(
       VpnDistinguisherExtendedCommunities vpnDistinguisherExtendedCommunities, Configuration arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    return ImmutableSet.of();
   }
 
   private Set<CommunityVar> visitAll(Collection<CommunityMatchExpr> exprs, Configuration arg) {
@@ -187,17 +197,41 @@ public class CommunityMatchExprVarCollector
   }
 
   /**
+   * Converts a {@link StandardCommunityHighMatch} to a {@link CommunityVar} representing it as a
+   * community regex. We currently only handle a subset of {@link StandardCommunityHighMatch}
+   * expressions, so we use the {@link Optional} type to indicate whether the given one is supported
+   * or not.
+   */
+  public static Optional<CommunityVar> standardCommunityHighMatchToRegex(
+      StandardCommunityHighMatch match) {
+    Optional<Integer> val = intMatchEqualityExprToInt(match.getExpr());
+    return val.map(i -> CommunityVar.from("^" + i + ":"));
+  }
+
+  /**
+   * Converts a {@link StandardCommunityLowMatch} to a {@link CommunityVar} representing it as a
+   * community regex. We currently only handle a subset of {@link StandardCommunityLowMatch}
+   * expressions, so we use the {@link Optional} type to indicate whether the given one is supported
+   * or not.
+   */
+  public static Optional<CommunityVar> standardCommunityLowMatchToRegex(
+      StandardCommunityLowMatch match) {
+    Optional<Integer> val = intMatchEqualityExprToInt(match.getExpr());
+    return val.map(i -> CommunityVar.from(":" + i + "$"));
+  }
+
+  /**
    * The only integer match expressions currently supported are equality comparisons with an integer
    * constant; this method returns that constant.
    */
-  private int intMatchExprToInt(IntMatchExpr intMatchExpr) {
+  private static Optional<Integer> intMatchEqualityExprToInt(IntMatchExpr intMatchExpr) {
     if (intMatchExpr instanceof IntComparison) {
       IntComparison intComp = (IntComparison) intMatchExpr;
       IntExpr expr = intComp.getExpr();
       if (intComp.getComparator() == IntComparator.EQ && expr instanceof LiteralInt) {
-        return ((LiteralInt) expr).getValue();
+        return Optional.of(((LiteralInt) expr).getValue());
       }
     }
-    throw new BatfishException("Unsupported integer match expression: " + intMatchExpr);
+    return Optional.empty();
   }
 }

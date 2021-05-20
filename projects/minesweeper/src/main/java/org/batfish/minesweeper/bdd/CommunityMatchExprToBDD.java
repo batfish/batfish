@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -207,19 +208,32 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   @Override
   public BDD visitStandardCommunityHighMatch(
       StandardCommunityHighMatch standardCommunityHighMatch, Arg arg) {
-    return CommunitySetMatchExprToBDD.communityVarsToBDD(
-        standardCommunityHighMatch.accept(
-            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
-        arg);
+    Optional<CommunityVar> optCVar =
+        CommunityMatchExprVarCollector.standardCommunityHighMatchToRegex(
+            standardCommunityHighMatch);
+    // If the community variable does not exist it means we currently don't support this
+    // StandardCommunityHighMatch, so we throw an exception
+    return optCVar
+        .map(cvar -> CommunitySetMatchExprToBDD.communityVarsToBDD(ImmutableSet.of(cvar), arg))
+        .orElseThrow(
+            () ->
+                new UnsupportedOperationException(
+                    "Currently not supporting match expression: " + standardCommunityHighMatch));
   }
 
   @Override
   public BDD visitStandardCommunityLowMatch(
       StandardCommunityLowMatch standardCommunityLowMatch, Arg arg) {
-    return CommunitySetMatchExprToBDD.communityVarsToBDD(
-        standardCommunityLowMatch.accept(
-            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
-        arg);
+    Optional<CommunityVar> optCVar =
+        CommunityMatchExprVarCollector.standardCommunityLowMatchToRegex(standardCommunityLowMatch);
+    // If the community variable does not exist it means we currently don't support this
+    // StandardCommunityLowMatch, so we throw an exception
+    return optCVar
+        .map(cvar -> CommunitySetMatchExprToBDD.communityVarsToBDD(ImmutableSet.of(cvar), arg))
+        .orElseThrow(
+            () ->
+                new UnsupportedOperationException(
+                    "Currently not supporting match expression: " + standardCommunityLowMatch));
   }
 
   @Override
