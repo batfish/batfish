@@ -46,6 +46,7 @@ public final class RoutePolicyBooleanAsPathLength extends RoutePolicyBoolean {
 
   @Override
   public BooleanExpr toBooleanExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
+    // TODO: what does _all do?
     return MatchAsPath.of(
         InputAsPath.instance(),
         HasAsPathLength.of(new IntComparison(_comparator, new LiteralInt(_length))));

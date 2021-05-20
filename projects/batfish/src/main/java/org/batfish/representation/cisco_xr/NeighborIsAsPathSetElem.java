@@ -27,8 +27,8 @@ public final class NeighborIsAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
-    return visitor.visitNeighborIsAsPathSetElem(this);
+  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
+    return visitor.visitNeighborIsAsPathSetElem(this, arg);
   }
 
   public @Nonnull List<Range<Long>> getAsRanges() {

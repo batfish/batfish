@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.routing_policy.RoutingPolicy.isGenerated;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
@@ -141,6 +142,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -330,7 +332,7 @@ public final class XrGrammarTest {
   }
 
   private static @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
-    Bgpv4Route.Builder builder = route.toBuilder();
+    Builder builder = route.toBuilder();
     assertTrue(routingPolicy.process(route, builder, Direction.IN));
     return builder.build();
   }
@@ -651,11 +653,10 @@ public final class XrGrammarTest {
     Prefix prefixLocalPrefThenDrop = Prefix.parse("10.10.10.0/24");
     Prefix prefixAsPath = Prefix.parse("192.168.2.0/24");
     Prefix prefixOspfMetricType = Prefix.parse("192.168.1.0/24");
-    Bgpv4Route.Builder bgpLocalPref = Bgpv4Route.testBuilder().setNetwork(prefixLocalPref);
-    Bgpv4Route.Builder bgpLocalPrefThenDrop =
-        Bgpv4Route.testBuilder().setNetwork(prefixLocalPrefThenDrop);
-    Bgpv4Route.Builder bgpNoMatch = Bgpv4Route.testBuilder().setNetwork(prefixNoMatch);
-    Bgpv4Route.Builder bgpAsPath = Bgpv4Route.testBuilder().setNetwork(prefixAsPath);
+    Builder bgpLocalPref = Bgpv4Route.testBuilder().setNetwork(prefixLocalPref);
+    Builder bgpLocalPrefThenDrop = Bgpv4Route.testBuilder().setNetwork(prefixLocalPrefThenDrop);
+    Builder bgpNoMatch = Bgpv4Route.testBuilder().setNetwork(prefixNoMatch);
+    Builder bgpAsPath = Bgpv4Route.testBuilder().setNetwork(prefixAsPath);
     OspfExternalRoute.Builder ospfMetricType =
         OspfExternalType1Route.testBuilder().setNetwork(prefixOspfMetricType);
 
@@ -2448,10 +2449,12 @@ public final class XrGrammarTest {
     String hostname = "xr-as-path-boolean";
     Configuration c = parseConfig(hostname);
 
-    Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
+    Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
     assertThat(
-        c.getRoutingPolicies(),
-        hasKeys(
+        c.getRoutingPolicies().keySet().stream()
+            .filter(rpName -> !isGenerated(rpName))
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(
             "rp1",
             "rp-neighbor-is",
             "rp-originates-from",
@@ -2682,14 +2685,12 @@ public final class XrGrammarTest {
     // Policy should accept non-default routes
     assertTrue(
         r.processReadOnly(
-            org.batfish.datamodel.StaticRoute.testBuilder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.create(Ip.parse("10.10.10.10"), 24))
                 .build()));
 
     // Policy should not accept default routes
-    assertFalse(
-        r.processReadOnly(
-            org.batfish.datamodel.StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
+    assertFalse(r.processReadOnly(StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
   }
 
   @Test

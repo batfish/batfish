@@ -2089,48 +2089,58 @@ public class CiscoXrConversions {
     return String.format("~ORIGINAL~%s", name);
   }
 
-  static @Nonnull AsPathMatchExpr toDedupedAsPathMatchExpr(AsPathSet asPathSet) {
+  static @Nonnull AsPathMatchExpr toAsPathMatchExpr(AsPathSet asPathSet, boolean usingDeduped) {
     return AsPathMatchAny.of(
         asPathSet.getElements().stream()
-            .map(elem -> elem.accept(AS_PATH_SET_ELEM_TO_DEDUPED_AS_PATH_MATCH_EXPR))
+            .map(elem -> elem.accept(AS_PATH_SET_ELEM_TO_AS_PATH_MATCH_EXPR, usingDeduped))
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList()));
   }
 
-  static @Nonnull AsPathMatchExpr toOriginalAsPathMatchExpr(AsPathSet asPathSet) {
-    return AsPathMatchAny.of(
-        asPathSet.getElements().stream()
-            .map(elem -> elem.accept(AS_PATH_SET_ELEM_TO_ORIGINAL_AS_PATH_MATCH_EXPR))
-            .filter(Objects::nonNull)
-            .collect(ImmutableList.toImmutableList()));
-  }
-
-  // Returns null for unsupported elems
-  private static final class AsPathSetElemToDedupedAsPathMatchExpr
-      implements AsPathSetElemVisitor<AsPathMatchExpr> {
+  // For any given concrete AsPathSetElem, the corresponding visit method should return a non-null
+  // value for exactly one value of usingDeduped.
+  private static final class AsPathSetElemToAsPathMatchExpr
+      implements AsPathSetElemVisitor<AsPathMatchExpr, Boolean> {
     @Override
-    public AsPathMatchExpr visitDfaRegexAsPathSetElem(DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
-      // uses original as-path
-      return null;
+    public AsPathMatchExpr visitDfaRegexAsPathSetElem(
+        DfaRegexAsPathSetElem dfaRegexAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped) {
+        return null;
+      } else {
+        // TODO: figure out how this is different from ios-regex
+        return AsPathMatchRegex.of(toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
+      }
     }
 
     @Override
-    public AsPathMatchExpr visitIosRegexAsPathSetElem(IosRegexAsPathSetElem iosRegexAsPathSetElem) {
-      // uses original as-path
-      return null;
+    public AsPathMatchExpr visitIosRegexAsPathSetElem(
+        IosRegexAsPathSetElem iosRegexAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped) {
+        return null;
+      } else {
+        return AsPathMatchRegex.of(toJavaRegex(iosRegexAsPathSetElem.getRegex()));
+      }
     }
 
     @Override
-    public AsPathMatchExpr visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem) {
-      // uses original as-path
-      return null;
+    public AsPathMatchExpr visitLengthAsPathSetElem(
+        LengthAsPathSetElem lengthAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped) {
+        return null;
+      } else {
+        // TODO: something with getAll()?
+        return HasAsPathLength.of(
+            new IntComparison(
+                lengthAsPathSetElem.getComparator(),
+                new LiteralInt(lengthAsPathSetElem.getLength())));
+      }
     }
 
     @Override
     public AsPathMatchExpr visitNeighborIsAsPathSetElem(
-        NeighborIsAsPathSetElem neighborIsAsPathSetElem) {
-      if (neighborIsAsPathSetElem.getExact()) {
-        // use original as-path
+        NeighborIsAsPathSetElem neighborIsAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped ^ !neighborIsAsPathSetElem.getExact()) {
+        // exact means not deduped
         return null;
       }
       return AsSetsMatchingRanges.of(false, true, neighborIsAsPathSetElem.getAsRanges());
@@ -2138,9 +2148,9 @@ public class CiscoXrConversions {
 
     @Override
     public AsPathMatchExpr visitOriginatesFromAsPathSetElem(
-        OriginatesFromAsPathSetElem originatesFromAsPathSetElem) {
-      if (originatesFromAsPathSetElem.getExact()) {
-        // use original as-path
+        OriginatesFromAsPathSetElem originatesFromAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped ^ !originatesFromAsPathSetElem.getExact()) {
+        // exact means not deduped
         return null;
       }
       return AsSetsMatchingRanges.of(true, false, originatesFromAsPathSetElem.getAsRanges());
@@ -2148,9 +2158,9 @@ public class CiscoXrConversions {
 
     @Override
     public AsPathMatchExpr visitPassesThroughAsPathSetElem(
-        PassesThroughAsPathSetElem passesThroughAsPathSetElem) {
-      if (passesThroughAsPathSetElem.getExact()) {
-        // use original as-path
+        PassesThroughAsPathSetElem passesThroughAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped ^ !passesThroughAsPathSetElem.getExact()) {
+        // exact means not deduped
         return null;
       }
       return AsSetsMatchingRanges.of(false, false, passesThroughAsPathSetElem.getAsRanges());
@@ -2158,7 +2168,10 @@ public class CiscoXrConversions {
 
     @Override
     public AsPathMatchExpr visitUniqueLengthAsPathSetElem(
-        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem) {
+        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem, Boolean usingDeduped) {
+      if (!usingDeduped) {
+        return null;
+      }
       // TODO: something with getAll()?
       return HasAsPathLength.of(
           new IntComparison(
@@ -2167,73 +2180,8 @@ public class CiscoXrConversions {
     }
   }
 
-  static final AsPathSetElemToDedupedAsPathMatchExpr
-      AS_PATH_SET_ELEM_TO_DEDUPED_AS_PATH_MATCH_EXPR = new AsPathSetElemToDedupedAsPathMatchExpr();
-
-  // Returns null for unsupported elems
-  private static final class AsPathSetElemToOriginalAsPathMatchExpr
-      implements AsPathSetElemVisitor<AsPathMatchExpr> {
-    @Override
-    public AsPathMatchExpr visitDfaRegexAsPathSetElem(DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
-      // TODO: figure out how this is different from ios-regex
-      return AsPathMatchRegex.of(toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
-    }
-
-    @Override
-    public AsPathMatchExpr visitIosRegexAsPathSetElem(IosRegexAsPathSetElem iosRegexAsPathSetElem) {
-      return AsPathMatchRegex.of(toJavaRegex(iosRegexAsPathSetElem.getRegex()));
-    }
-
-    @Override
-    public AsPathMatchExpr visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem) {
-      // TODO: something with getAll()?
-      return HasAsPathLength.of(
-          new IntComparison(
-              lengthAsPathSetElem.getComparator(),
-              new LiteralInt(lengthAsPathSetElem.getLength())));
-    }
-
-    @Override
-    public AsPathMatchExpr visitNeighborIsAsPathSetElem(
-        NeighborIsAsPathSetElem neighborIsAsPathSetElem) {
-      if (!neighborIsAsPathSetElem.getExact()) {
-        // use deduped as-path
-        return null;
-      }
-      return AsSetsMatchingRanges.of(false, true, neighborIsAsPathSetElem.getAsRanges());
-    }
-
-    @Override
-    public AsPathMatchExpr visitOriginatesFromAsPathSetElem(
-        OriginatesFromAsPathSetElem originatesFromAsPathSetElem) {
-      if (!originatesFromAsPathSetElem.getExact()) {
-        // use deduped as-path
-        return null;
-      }
-      return AsSetsMatchingRanges.of(true, false, originatesFromAsPathSetElem.getAsRanges());
-    }
-
-    @Override
-    public AsPathMatchExpr visitPassesThroughAsPathSetElem(
-        PassesThroughAsPathSetElem passesThroughAsPathSetElem) {
-      if (!passesThroughAsPathSetElem.getExact()) {
-        // use deduped as-path
-        return null;
-      }
-      return AsSetsMatchingRanges.of(false, false, passesThroughAsPathSetElem.getAsRanges());
-    }
-
-    @Override
-    public AsPathMatchExpr visitUniqueLengthAsPathSetElem(
-        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem) {
-      // use deduped as-path
-      return null;
-    }
-  }
-
-  static final AsPathSetElemToOriginalAsPathMatchExpr
-      AS_PATH_SET_ELEM_TO_ORIGINAL_AS_PATH_MATCH_EXPR =
-          new AsPathSetElemToOriginalAsPathMatchExpr();
+  static final AsPathSetElemToAsPathMatchExpr AS_PATH_SET_ELEM_TO_AS_PATH_MATCH_EXPR =
+      new AsPathSetElemToAsPathMatchExpr();
 
   /**
    * Implements best-effort behavior for undefined route-policy.

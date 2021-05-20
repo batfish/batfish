@@ -27,9 +27,9 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.getRsaPubKe
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveTunnelIfaceNames;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.toAsPathMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunitySetExpr;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.toDedupedAsPathMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Proposal;
@@ -38,7 +38,6 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIpSpace;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIpsecPeerConfig;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIpsecPhase2Policy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIpsecPhase2Proposal;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.toOriginalAsPathMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toOspfDeadInterval;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toOspfHelloInterval;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toOspfNetworkType;
@@ -2132,9 +2131,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _asPathSets.forEach(
         (name, asPathSet) -> {
           c.getAsPathMatchExprs()
-              .put(computeDedupedAsPathMatchExprName(name), toDedupedAsPathMatchExpr(asPathSet));
+              .put(computeDedupedAsPathMatchExprName(name), toAsPathMatchExpr(asPathSet, true));
           c.getAsPathMatchExprs()
-              .put(computeOriginalAsPathMatchExprName(name), toOriginalAsPathMatchExpr(asPathSet));
+              .put(computeOriginalAsPathMatchExprName(name), toAsPathMatchExpr(asPathSet, false));
         });
 
     convertCommunitySets(c);

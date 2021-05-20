@@ -27,8 +27,8 @@ public final class PassesThroughAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
-    return visitor.visitPassesThroughAsPathSetElem(this);
+  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
+    return visitor.visitPassesThroughAsPathSetElem(this, arg);
   }
 
   public @Nonnull List<Range<Long>> getAsRanges() {

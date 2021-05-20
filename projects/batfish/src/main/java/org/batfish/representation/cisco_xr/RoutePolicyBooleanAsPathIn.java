@@ -2,8 +2,7 @@ package org.batfish.representation.cisco_xr;
 
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeDedupedAsPathMatchExprName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeOriginalAsPathMatchExprName;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.toDedupedAsPathMatchExpr;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.toOriginalAsPathMatchExpr;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.toAsPathMatchExpr;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -46,11 +45,11 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
       BooleanExpr dedupedMatches =
           MatchAsPath.of(
               DedupedAsPath.of(InputAsPath.instance()),
-              toDedupedAsPathMatchExpr(((InlineAsPathSet) _asExpr).getAsPathSet()));
+              toAsPathMatchExpr(((InlineAsPathSet) _asExpr).getAsPathSet(), true));
       BooleanExpr originalMatches =
           MatchAsPath.of(
               InputAsPath.instance(),
-              toOriginalAsPathMatchExpr(((InlineAsPathSet) _asExpr).getAsPathSet()));
+              toAsPathMatchExpr(((InlineAsPathSet) _asExpr).getAsPathSet(), false));
       return new Disjunction(dedupedMatches, originalMatches);
     } else {
       assert _asExpr instanceof AsPathSetVariable;
