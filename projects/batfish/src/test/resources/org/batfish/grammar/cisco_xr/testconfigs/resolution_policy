@@ -1,0 +1,15 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname resolution_policy
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.1.1/24
+!
+router static
+  vrf default
+    address-family ipv4 unicast
+      0.0.0.0/0 GigabitEthernet0/0/0/0
+      ! NHI determined from default-route
+      10.103.3.1/32 10.0.3.100
+      ! NHI determined from non-default-route
+      10.101.1.1/32 10.0.1.100

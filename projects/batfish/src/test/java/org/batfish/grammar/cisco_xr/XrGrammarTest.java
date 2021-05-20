@@ -2,6 +2,8 @@ package org.batfish.grammar.cisco_xr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
@@ -20,6 +22,7 @@ import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.RESOLUTION_POLICY_NAME;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
@@ -101,6 +104,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
@@ -122,6 +126,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
@@ -139,6 +144,7 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -2428,5 +2434,45 @@ public final class XrGrammarTest {
     String hostname = "xr-as-path-boolean";
     // Do not crash
     assertNotNull(parseConfig(hostname));
+  }
+
+  @Test
+  public void testResolutionPolicyFiltering() throws IOException {
+    String hostname = "resolution_policy";
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getRoutingPolicies(), hasKey(RESOLUTION_POLICY_NAME));
+    assertThat(c.getDefaultVrf().getResolutionPolicy(), equalTo(RESOLUTION_POLICY_NAME));
+    RoutingPolicy r = c.getRoutingPolicies().get(RESOLUTION_POLICY_NAME);
+
+    // Policy should accept non-default routes
+    assertTrue(
+        r.processReadOnly(
+            org.batfish.datamodel.StaticRoute.testBuilder()
+                .setNetwork(Prefix.create(Ip.parse("10.10.10.10"), 24))
+                .build()));
+
+    // Policy should not accept default routes
+    assertFalse(
+        r.processReadOnly(
+            org.batfish.datamodel.StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
+  }
+
+  @Test
+  public void testResolutionPolicyRibRoutes() throws IOException {
+    String hostname = "resolution_policy";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname).get("default").getRoutes();
+
+    // Rib should have the static route whose NHI is determined from a non-default route
+    assertThat(
+        routes,
+        hasItem(
+            allOf(hasPrefix(Prefix.parse("10.101.1.1/32")), hasNextHopIp(Ip.parse("10.0.1.100")))));
+
+    // Rib should NOT have the static route whose NHI is determined from the default route
+    assertThat(routes, not(hasItem(hasPrefix(Prefix.parse("10.103.3.1/32")))));
   }
 }
