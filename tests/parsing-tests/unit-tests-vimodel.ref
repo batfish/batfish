@@ -75127,8 +75127,6 @@
                     "stubType" : "STUB"
                   }
                 },
-                "maxMetricExternalNetworks" : 65535,
-                "maxMetricTransitLinks" : 65535,
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
@@ -75143,8 +75141,6 @@
                   "ospfIA" : 110,
                   "ospfIS" : 110
                 },
-                "maxMetricExternalNetworks" : 65535,
-                "maxMetricTransitLinks" : 65535,
                 "processId" : "ignored",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "5.6.7.8",
@@ -75214,9 +75210,6 @@
                   "ospfIA" : 110,
                   "ospfIS" : 110
                 },
-                "maxMetricExternalNetworks" : 65535,
-                "maxMetricSummaryNetworks" : 65535,
-                "maxMetricTransitLinks" : 65535,
                 "processId" : "100",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "0.0.0.0",
