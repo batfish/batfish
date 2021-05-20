@@ -290,12 +290,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
-  public static String computeBgpDefaultRouteExportPolicyName(
-      boolean ipv4, String vrf, String peer) {
-    return String.format(
-        "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
-  }
-
   public static @Nonnull String computeCommunitySetMatchAnyName(String name) {
     return String.format("~MATCH_ANY~%s~", name);
   }

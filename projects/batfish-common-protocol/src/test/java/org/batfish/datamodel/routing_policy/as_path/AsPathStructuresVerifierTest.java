@@ -3,7 +3,6 @@ package org.batfish.datamodel.routing_policy.as_path;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.AS_PATH_EXPR_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.AS_PATH_MATCH_EXPR_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.BOOLEAN_EXPR_VERIFIER;
-import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.RIB_EXPR_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.STATEMENT_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.verify;
 import static org.hamcrest.Matchers.containsString;
@@ -178,14 +177,6 @@ public final class AsPathStructuresVerifierTest {
     assertNull(new SetVarMetricType("a").accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetWeight(new LiteralInt(1)).accept(STATEMENT_VERIFIER, ctx));
     assertNull(Statements.ExitAccept.toStaticStatement().accept(STATEMENT_VERIFIER, ctx));
-  }
-
-  @Test
-  public void testRoutesExprVerifierUnrelated() {
-    // no exception should be thrown while verifying non-as-path-related structures
-    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
-
-    assertNull(MainRib.instance().accept(RIB_EXPR_VERIFIER, ctx));
   }
 
   @Test

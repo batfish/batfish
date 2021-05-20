@@ -13,10 +13,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -71,9 +68,6 @@ public final class AsPathContextTest {
                         Bgpv4Route.testBuilder()
                             .setAsPath(inputRouteAsPath)
                             .setNetwork(Prefix.ZERO)
-                            .setOriginatorIp(Ip.ZERO)
-                            .setOriginType(OriginType.INCOMPLETE)
-                            .setProtocol(RoutingProtocol.BGP)
                             .build())
                     .build())
             .get();

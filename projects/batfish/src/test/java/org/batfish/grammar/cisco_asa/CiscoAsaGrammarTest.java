@@ -1524,6 +1524,12 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
+  public void testAsaStaticGh5729() throws IOException {
+    AsaConfiguration c = parseVendorConfig("asa-static-gh-5729");
+    assertThat(c.getDefaultVrf().getStaticRoutes(), hasSize(4));
+  }
+
+  @Test
   public void testAsaStaticRoute() throws IOException {
     Configuration c = parseConfig("asa-static-route");
 

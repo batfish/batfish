@@ -34,6 +34,11 @@ public final class AsPathExprEvaluatorTest {
         DedupedAsPath.of(InputAsPath.instance())
             .accept(AsPathExprEvaluator.instance(), context(asPath)),
         equalTo(AsPath.ofSingletonAsSets(1L, 2L, 3L, 2L, 4L)));
+
+    assertThat(
+        DedupedAsPath.of(InputAsPath.instance())
+            .accept(AsPathExprEvaluator.instance(), context(AsPath.empty())),
+        equalTo(AsPath.empty()));
   }
 
   @Test
