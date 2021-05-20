@@ -2476,6 +2476,8 @@ public final class XrGrammarTest {
             allOf(hasPrefix(Prefix.parse("10.101.1.1/32")), hasNextHopIp(Ip.parse("10.0.1.100")))));
 
     // Rib should NOT have the static route whose NHI is determined from the default route
+    // and the default route should exist
+    assertThat(routes, hasItem(hasPrefix(Prefix.ZERO)));
     assertThat(routes, not(hasItem(hasPrefix(Prefix.parse("10.103.3.1/32")))));
   }
 }
