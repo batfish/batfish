@@ -2796,6 +2796,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRo_max_metric(Ro_max_metricContext ctx) {
+    if (ctx.on_startup != null) {
+      return;
+    }
+
     @Nullable Integer externalLsa = null;
     if (ctx.external_lsa != null) {
       if (ctx.manual_external_lsa != null) {

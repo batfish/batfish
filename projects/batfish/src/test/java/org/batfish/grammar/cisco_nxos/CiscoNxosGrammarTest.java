@@ -6316,6 +6316,18 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testOspfMaxMetricTransient() {
+    String hostname = "ospf_max_metric_transient";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    // Max metric setting should stick if there is no transient option specified
+    assertThat(vc.getOspfProcesses().get("65000").getMaxMetricRouterLsa(), notNullValue());
+
+    // Max metric setting shouldn't stick if transient option on-startup is specified
+    assertThat(vc.getOspfProcesses().get("65001").getMaxMetricRouterLsa(), nullValue());
+  }
+
+  @Test
   public void testRouteMapConversion() throws IOException {
     String hostname = "nxos_route_map";
     Configuration c = parseConfig(hostname);
