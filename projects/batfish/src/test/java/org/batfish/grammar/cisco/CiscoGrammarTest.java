@@ -30,6 +30,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasL
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
@@ -159,6 +160,7 @@ import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
+import static org.batfish.representation.cisco.CiscoConfiguration.RESOLUTION_POLICY_NAME;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
@@ -5892,5 +5894,45 @@ public final class CiscoGrammarTest {
               ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
               ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
+  }
+
+  @Test
+  public void testResolutionPolicyFiltering() throws IOException {
+    String hostname = "resolution_policy";
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getRoutingPolicies(), hasKey(RESOLUTION_POLICY_NAME));
+    assertThat(c.getDefaultVrf().getResolutionPolicy(), equalTo(RESOLUTION_POLICY_NAME));
+    RoutingPolicy r = c.getRoutingPolicies().get(RESOLUTION_POLICY_NAME);
+
+    // Policy should accept non-default routes
+    assertTrue(
+        r.processReadOnly(
+            org.batfish.datamodel.StaticRoute.testBuilder()
+                .setNetwork(Prefix.create(Ip.parse("10.10.10.10"), 24))
+                .build()));
+
+    // Policy should not accept default routes
+    assertFalse(
+        r.processReadOnly(
+            org.batfish.datamodel.StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
+  }
+
+  @Test
+  public void testResolutionPolicyRibRoutes() throws IOException {
+    String hostname = "resolution_policy";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Set<AbstractRoute> routes = dp.getRibs().get(hostname).get("default").getRoutes();
+
+    // Rib should have the static route whose NHI is determined from a non-default route
+    assertThat(
+        routes,
+        hasItem(
+            allOf(hasPrefix(Prefix.parse("10.101.1.1/32")), hasNextHopIp(Ip.parse("10.0.1.100")))));
+
+    // Rib should NOT have the static route whose NHI is determined from the default route
+    assertThat(routes, not(hasItem(hasPrefix(Prefix.parse("10.103.3.1/32")))));
   }
 }

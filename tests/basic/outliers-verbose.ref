@@ -3008,7 +3008,8 @@
               }
             },
             "tieBreaker" : "ARRIVAL_ORDER"
-          }
+          },
+          "resolutionPolicy" : "~RESOLUTION_POLICY~"
         },
         "structType" : "Vrf"
       }
