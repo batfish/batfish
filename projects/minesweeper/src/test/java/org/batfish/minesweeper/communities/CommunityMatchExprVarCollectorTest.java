@@ -12,23 +12,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
-import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
-import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
-import org.batfish.datamodel.routing_policy.communities.CommunityIn;
-import org.batfish.datamodel.routing_policy.communities.CommunityIs;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchAny;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
-import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
-import org.batfish.datamodel.routing_policy.communities.CommunityNot;
-import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
-import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
-import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
-import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.IntComparison;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.communities.*;
+import org.batfish.datamodel.routing_policy.expr.*;
 import org.batfish.minesweeper.CommunityVar;
 import org.junit.Before;
 import org.junit.Test;
@@ -157,6 +142,60 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
+  public void testVisitExtendedCommunityGlobalAdministratorHighMatch() {
+    ExtendedCommunityGlobalAdministratorHighMatch ec =
+        new ExtendedCommunityGlobalAdministratorHighMatch(
+            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+    Set<CommunityVar> result =
+        _varCollector.visitExtendedCommunityGlobalAdministratorHighMatch(ec, _baseConfig);
+    assertEquals(ImmutableSet.of(), result);
+  }
+
+  @Test
+  public void testVisitExtendedCommunityGlobalAdministratorLowMatch() {
+    ExtendedCommunityGlobalAdministratorLowMatch ec =
+        new ExtendedCommunityGlobalAdministratorLowMatch(
+            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+    Set<CommunityVar> result =
+        _varCollector.visitExtendedCommunityGlobalAdministratorLowMatch(ec, _baseConfig);
+    assertEquals(ImmutableSet.of(), result);
+  }
+
+  @Test
+  public void testVisitExtendedCommunityGlobalAdministratorMatch() {
+    ExtendedCommunityGlobalAdministratorMatch ec =
+        new ExtendedCommunityGlobalAdministratorMatch(
+            new LongComparison(IntComparator.EQ, new LiteralLong(3L)));
+    Set<CommunityVar> result =
+        _varCollector.visitExtendedCommunityGlobalAdministratorMatch(ec, _baseConfig);
+    assertEquals(ImmutableSet.of(), result);
+  }
+
+  @Test
+  public void testVisitExtendedCommunityLocalAdministratorMatch() {
+    ExtendedCommunityLocalAdministratorMatch ec =
+        new ExtendedCommunityLocalAdministratorMatch(
+            new IntComparison(IntComparator.EQ, new LiteralInt(3)));
+    Set<CommunityVar> result =
+        _varCollector.visitExtendedCommunityLocalAdministratorMatch(ec, _baseConfig);
+    assertEquals(ImmutableSet.of(), result);
+  }
+
+  @Test
+  public void testVisitRouteTargetExtendedCommunities() {
+    RouteTargetExtendedCommunities ec = RouteTargetExtendedCommunities.instance();
+    Set<CommunityVar> result = _varCollector.visitRouteTargetExtendedCommunities(ec, _baseConfig);
+    assertEquals(ImmutableSet.of(), result);
+  }
+
+  @Test
+  public void testVisitSiteOfOriginExtendedCommunities() {
+    SiteOfOriginExtendedCommunities ec = SiteOfOriginExtendedCommunities.instance();
+    Set<CommunityVar> result = _varCollector.visitSiteOfOriginExtendedCommunities(ec, _baseConfig);
+    assertEquals(ImmutableSet.of(), result);
+  }
+
+  @Test
   public void testVisitStandardCommunityHighMatch() {
     StandardCommunityHighMatch schm =
         new StandardCommunityHighMatch(new IntComparison(IntComparator.EQ, new LiteralInt(20)));
@@ -169,6 +208,16 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
+  public void testVisitStandardCommunityHighMatchUnsupported() {
+    StandardCommunityHighMatch schm =
+        new StandardCommunityHighMatch(new IntComparison(IntComparator.LT, new LiteralInt(20)));
+
+    Set<CommunityVar> result = _varCollector.visitStandardCommunityHighMatch(schm, _baseConfig);
+
+    assertEquals(ImmutableSet.of(), result);
+  }
+
+  @Test
   public void testVisitStandardCommunityLowMatch() {
     StandardCommunityLowMatch sclm =
         new StandardCommunityLowMatch(new IntComparison(IntComparator.EQ, new LiteralInt(30)));
@@ -178,5 +227,23 @@ public class CommunityMatchExprVarCollectorTest {
     CommunityVar cvar = CommunityVar.from(":30$");
 
     assertEquals(ImmutableSet.of(cvar), result);
+  }
+
+  @Test
+  public void testVisitStandardCommunityLowMatchUnsupported() {
+    StandardCommunityLowMatch sclm =
+        new StandardCommunityLowMatch(new IntComparison(IntComparator.LT, new LiteralInt(30)));
+
+    Set<CommunityVar> result = _varCollector.visitStandardCommunityLowMatch(sclm, _baseConfig);
+
+    assertEquals(ImmutableSet.of(), result);
+  }
+
+  @Test
+  public void testVisitVpnDistinguisherExtendedCommunities() {
+    VpnDistinguisherExtendedCommunities ec = VpnDistinguisherExtendedCommunities.instance();
+    Set<CommunityVar> result =
+        _varCollector.visitVpnDistinguisherExtendedCommunities(ec, _baseConfig);
+    assertEquals(ImmutableSet.of(), result);
   }
 }

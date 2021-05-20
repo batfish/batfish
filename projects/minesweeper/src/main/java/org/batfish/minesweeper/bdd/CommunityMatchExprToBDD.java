@@ -207,19 +207,31 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   @Override
   public BDD visitStandardCommunityHighMatch(
       StandardCommunityHighMatch standardCommunityHighMatch, Arg arg) {
-    return CommunitySetMatchExprToBDD.communityVarsToBDD(
+    Set<CommunityVar> cvars =
         standardCommunityHighMatch.accept(
-            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
-        arg);
+            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration());
+    if (cvars.isEmpty()) {
+      throw new UnsupportedOperationException(
+          "Currently not supporting integer match expression: "
+              + standardCommunityHighMatch.getExpr());
+    } else {
+      return CommunitySetMatchExprToBDD.communityVarsToBDD(cvars, arg);
+    }
   }
 
   @Override
   public BDD visitStandardCommunityLowMatch(
       StandardCommunityLowMatch standardCommunityLowMatch, Arg arg) {
-    return CommunitySetMatchExprToBDD.communityVarsToBDD(
+    Set<CommunityVar> cvars =
         standardCommunityLowMatch.accept(
-            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
-        arg);
+            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration());
+    if (cvars.isEmpty()) {
+      throw new UnsupportedOperationException(
+          "Currently not supporting integer match expression: "
+              + standardCommunityLowMatch.getExpr());
+    } else {
+      return CommunitySetMatchExprToBDD.communityVarsToBDD(cvars, arg);
+    }
   }
 
   @Override
