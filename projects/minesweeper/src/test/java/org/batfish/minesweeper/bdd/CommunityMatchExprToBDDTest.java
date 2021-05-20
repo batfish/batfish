@@ -45,7 +45,9 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.Graph;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunityMatchExprToBDD}. */
 public class CommunityMatchExprToBDDTest {
@@ -55,6 +57,8 @@ public class CommunityMatchExprToBDDTest {
   private Graph _g;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunityMatchExprToBDD _communityMatchExprToBDD;
+
+  @Rule public ExpectedException _exception = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -285,6 +289,15 @@ public class CommunityMatchExprToBDDTest {
   }
 
   @Test
+  public void testVisitStandardCommunityHighMatchUnsupported() {
+    StandardCommunityHighMatch schm =
+        new StandardCommunityHighMatch(new IntComparison(IntComparator.LT, new LiteralInt(20)));
+
+    _exception.expect(UnsupportedOperationException.class);
+    _communityMatchExprToBDD.visitStandardCommunityHighMatch(schm, _arg);
+  }
+
+  @Test
   public void testVisitStandardCommunityLowMatch() {
     StandardCommunityLowMatch sclm =
         new StandardCommunityLowMatch(new IntComparison(IntComparator.EQ, new LiteralInt(30)));
@@ -294,6 +307,15 @@ public class CommunityMatchExprToBDDTest {
     CommunityVar cvar = CommunityVar.from(":30$");
 
     assertEquals(cvarToBDD(cvar), result);
+  }
+
+  @Test
+  public void testVisitStandardCommunityLowMatchUnsupported() {
+    StandardCommunityLowMatch sclm =
+        new StandardCommunityLowMatch(new IntComparison(IntComparator.LT, new LiteralInt(20)));
+
+    _exception.expect(UnsupportedOperationException.class);
+    _communityMatchExprToBDD.visitStandardCommunityLowMatch(sclm, _arg);
   }
 
   @Test

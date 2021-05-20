@@ -1,0 +1,35 @@
+! Command: show running-config all
+! device: qos (DCS-7260CX-64, EOS-4.22.3M)
+!
+! boot system flash:/EOS-4.22.3M.swi
+hostname qos
+!
+interface Ethernet1/1
+  no shutdown
+  no switchport
+  service-policy type pdp input my-pdp-policy
+interface Ethernet1/2
+  no shutdown
+  no switchport
+  service-policy type pdp input my-shared-pdp-policy
+!
+policy-map type pdp my-pdp-policy
+   class built-in mlag-control
+      police rate 50000 kbps burst-size 1250 kbytes
+   !
+   class built-in ptp
+      police rate 2560 kbps burst-size 64 kbytes
+   !
+   class class-default
+      count
+!
+policy-map type pdp shared my-shared-pdp-policy
+   class class-default
+      count
+!
+policy-map type copp copp-system-policy
+   class copp-system-bpdu
+      shape pps 5000
+      bandwidth pps 5000
+   !
+!

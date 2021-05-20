@@ -15,8 +15,6 @@ import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LI
 import static org.batfish.representation.arista.AristaStructureType.COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.arista.AristaStructureType.CRYPTO_DYNAMIC_MAP_SET;
 import static org.batfish.representation.arista.AristaStructureType.CRYPTO_MAP_SET;
-import static org.batfish.representation.arista.AristaStructureType.INSPECT_CLASS_MAP;
-import static org.batfish.representation.arista.AristaStructureType.INSPECT_POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.IPSEC_PROFILE;
 import static org.batfish.representation.arista.AristaStructureType.IPSEC_TRANSFORM_SET;
@@ -76,8 +74,6 @@ import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE;
 import static org.batfish.representation.arista.AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET;
 import static org.batfish.representation.arista.AristaStructureUsage.DOMAIN_LOOKUP_SOURCE_INTERFACE;
-import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
-import static org.batfish.representation.arista.AristaStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_BFD_TEMPLATE;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
@@ -332,8 +328,6 @@ import org.batfish.grammar.arista.AristaParser.Ckpn_addressContext;
 import org.batfish.grammar.arista.AristaParser.Ckpn_key_stringContext;
 import org.batfish.grammar.arista.AristaParser.Ckr_local_addressContext;
 import org.batfish.grammar.arista.AristaParser.Ckr_pskContext;
-import org.batfish.grammar.arista.AristaParser.Cm_ios_inspectContext;
-import org.batfish.grammar.arista.AristaParser.Cm_iosi_matchContext;
 import org.batfish.grammar.arista.AristaParser.Cm_matchContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.Cmm_access_listContext;
@@ -640,7 +634,6 @@ import org.batfish.grammar.arista.AristaParser.Ifvrrp_priorityContext;
 import org.batfish.grammar.arista.AristaParser.Ifvrrp_priority_levelContext;
 import org.batfish.grammar.arista.AristaParser.Ike_encryptionContext;
 import org.batfish.grammar.arista.AristaParser.Ike_encryption_arubaContext;
-import org.batfish.grammar.arista.AristaParser.Inspect_protocolContext;
 import org.batfish.grammar.arista.AristaParser.Int_exprContext;
 import org.batfish.grammar.arista.AristaParser.Interface_addressContext;
 import org.batfish.grammar.arista.AristaParser.Interface_is_stanzaContext;
@@ -691,8 +684,6 @@ import org.batfish.grammar.arista.AristaParser.Passive_interface_default_is_stan
 import org.batfish.grammar.arista.AristaParser.Passive_interface_is_stanzaContext;
 import org.batfish.grammar.arista.AristaParser.Peer_filter_lineContext;
 import org.batfish.grammar.arista.AristaParser.Peer_sa_filterContext;
-import org.batfish.grammar.arista.AristaParser.Pi_iosicd_dropContext;
-import org.batfish.grammar.arista.AristaParser.Pi_iosicd_passContext;
 import org.batfish.grammar.arista.AristaParser.Pim_accept_registerContext;
 import org.batfish.grammar.arista.AristaParser.Pim_accept_rpContext;
 import org.batfish.grammar.arista.AristaParser.Pim_rp_addressContext;
@@ -702,11 +693,6 @@ import org.batfish.grammar.arista.AristaParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.arista.AristaParser.Pim_spt_thresholdContext;
 import org.batfish.grammar.arista.AristaParser.Pm_classContext;
 import org.batfish.grammar.arista.AristaParser.Pm_event_classContext;
-import org.batfish.grammar.arista.AristaParser.Pm_ios_inspectContext;
-import org.batfish.grammar.arista.AristaParser.Pm_iosi_class_type_inspectContext;
-import org.batfish.grammar.arista.AristaParser.Pm_iosict_dropContext;
-import org.batfish.grammar.arista.AristaParser.Pm_iosict_inspectContext;
-import org.batfish.grammar.arista.AristaParser.Pm_iosict_passContext;
 import org.batfish.grammar.arista.AristaParser.Pmc_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.PortContext;
 import org.batfish.grammar.arista.AristaParser.Port_specifierContext;
@@ -852,13 +838,6 @@ import org.batfish.representation.arista.ExtendedAccessList;
 import org.batfish.representation.arista.ExtendedAccessListLine;
 import org.batfish.representation.arista.ExtendedIpv6AccessList;
 import org.batfish.representation.arista.ExtendedIpv6AccessListLine;
-import org.batfish.representation.arista.InspectClassMap;
-import org.batfish.representation.arista.InspectClassMapMatch;
-import org.batfish.representation.arista.InspectClassMapMatchAccessGroup;
-import org.batfish.representation.arista.InspectClassMapMatchProtocol;
-import org.batfish.representation.arista.InspectClassMapProtocol;
-import org.batfish.representation.arista.InspectPolicyMap;
-import org.batfish.representation.arista.InspectPolicyMapInspectClass;
 import org.batfish.representation.arista.Interface;
 import org.batfish.representation.arista.IpAsPathAccessList;
 import org.batfish.representation.arista.IpAsPathAccessListLine;
@@ -880,7 +859,6 @@ import org.batfish.representation.arista.OspfNetworkType;
 import org.batfish.representation.arista.OspfProcess;
 import org.batfish.representation.arista.OspfRedistributionPolicy;
 import org.batfish.representation.arista.OspfWildcardNetwork;
-import org.batfish.representation.arista.PolicyMapClassAction;
 import org.batfish.representation.arista.Prefix6List;
 import org.batfish.representation.arista.Prefix6ListLine;
 import org.batfish.representation.arista.PrefixList;
@@ -1196,12 +1174,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   private final Warnings _w;
 
   @Nonnull private final SilentSyntaxCollection _silentSyntax;
-
-  private InspectClassMap _currentInspectClassMap;
-
-  private InspectPolicyMap _currentInspectPolicyMap;
-
-  private InspectPolicyMapInspectClass _currentInspectPolicyMapInspectClass;
 
   private String _currentTrackingGroup;
 
@@ -3724,8 +3696,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void enterS_policy_map(S_policy_mapContext ctx) {
     // TODO: do something with this.
-    if (ctx.variable_policy_map_header() != null) {
-      String name = ctx.variable_policy_map_header().getText();
+    if (ctx.mapname != null) {
+      String name = ctx.mapname.getText();
       _configuration.defineStructure(POLICY_MAP, name, ctx);
     }
   }
@@ -4007,19 +3979,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     _currentIsakmpProfile = null;
   }
 
-  @Override
-  public void enterCm_ios_inspect(Cm_ios_inspectContext ctx) {
-    String name = ctx.name.getText();
-    _currentInspectClassMap =
-        _configuration.getInspectClassMaps().computeIfAbsent(name, InspectClassMap::new);
-    _configuration.defineStructure(INSPECT_CLASS_MAP, name, ctx);
-    MatchSemantics matchSemantics =
-        ctx.match_semantics() != null
-            ? toMatchSemantics(ctx.match_semantics())
-            : MatchSemantics.MATCH_ALL;
-    _currentInspectClassMap.setMatchSemantics(matchSemantics);
-  }
-
   private MatchSemantics toMatchSemantics(Match_semanticsContext ctx) {
     if (ctx.MATCH_ALL() != null) {
       return MatchSemantics.MATCH_ALL;
@@ -4065,53 +4024,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       _currentCryptoMapEntry.getTransforms().add(name);
       _configuration.referenceStructure(
           IPSEC_TRANSFORM_SET, name, CRYPTO_DYNAMIC_MAP_TRANSFORM_SET, line);
-    }
-  }
-
-  @Override
-  public void exitCm_ios_inspect(Cm_ios_inspectContext ctx) {
-    _currentInspectClassMap = null;
-  }
-
-  @Override
-  public void exitCm_iosi_match(Cm_iosi_matchContext ctx) {
-    InspectClassMapMatch match = toInspectClassMapMatch(ctx);
-    if (match != null) {
-      _currentInspectClassMap.getMatches().add(match);
-    }
-  }
-
-  private InspectClassMapMatch toInspectClassMapMatch(Cm_iosi_matchContext ctx) {
-    if (ctx.cm_iosim_access_group() != null) {
-      String name = ctx.cm_iosim_access_group().name.getText();
-      int line = ctx.cm_iosim_access_group().name.getStart().getLine();
-      _configuration.referenceStructure(
-          IP_ACCESS_LIST, name, INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP, line);
-      return new InspectClassMapMatchAccessGroup(name);
-    } else if (ctx.cm_iosim_protocol() != null) {
-      return new InspectClassMapMatchProtocol(
-          toInspectClassMapProtocol(ctx.cm_iosim_protocol().inspect_protocol()));
-    } else {
-      warn(ctx, "Class-map match unsupported");
-      return null;
-    }
-  }
-
-  private InspectClassMapProtocol toInspectClassMapProtocol(Inspect_protocolContext ctx) {
-    if (ctx.HTTP() != null) {
-      return InspectClassMapProtocol.HTTP;
-    } else if (ctx.HTTPS() != null) {
-      return InspectClassMapProtocol.HTTPS;
-    } else if (ctx.ICMP() != null) {
-      return InspectClassMapProtocol.ICMP;
-    } else if (ctx.TCP() != null) {
-      return InspectClassMapProtocol.TCP;
-    } else if (ctx.TFTP() != null) {
-      return InspectClassMapProtocol.TFTP;
-    } else if (ctx.UDP() != null) {
-      return InspectClassMapProtocol.UDP;
-    } else {
-      throw convError(InspectClassMapProtocol.class, ctx);
     }
   }
 
@@ -5924,31 +5836,23 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void enterPm_ios_inspect(Pm_ios_inspectContext ctx) {
-    String name = ctx.name.getText();
-    _currentInspectPolicyMap =
-        _configuration.getInspectPolicyMaps().computeIfAbsent(name, InspectPolicyMap::new);
-    _configuration.defineStructure(INSPECT_POLICY_MAP, name, ctx);
-  }
-
-  @Override
   public void enterPm_class(Pm_classContext ctx) {
     // TODO: do something with this.
-    // should be something like _currentPolicyMapClass = ...
-    String name = ctx.name.getText();
-    _configuration.referenceStructure(CLASS_MAP, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
-    if ("class-default".equals(name)) {
-      // This is a hack because there's an implicit class named "class-default" and we don't want
-      // a false positive undefined reference.
-      _configuration.defineSingleLineStructure(
-          CLASS_MAP, "class-default", ctx.getStart().getLine());
+    if (ctx.BUILT_IN() != null) {
+      // configuration for a built-in class, no need to add ref
+      return;
     }
-  }
-
-  @Override
-  public void exitPm_class(Pm_classContext ctx) {
-    // TODO: do something with this.
-    // should be something like _currentPolicyMapClass = null.
+    if (ctx.CLASS_DEFAULT() != null) {
+      // configuration for the "switch default" class, no need to add ref
+      return;
+    }
+    assert ctx.name != null;
+    String name = ctx.name.getText();
+    if (name.startsWith("copp-system-")) {
+      // built-in control plane policing class, no need to add ref
+      return;
+    }
+    _configuration.referenceStructure(CLASS_MAP, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
   }
 
   @Override
@@ -5964,53 +5868,6 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
           POLICY_MAP_EVENT_CLASS_ACTIVATE,
           ctx.stname.getStart().getLine());
     }
-  }
-
-  @Override
-  public void exitPm_ios_inspect(Pm_ios_inspectContext ctx) {
-    _currentInspectPolicyMap = null;
-  }
-
-  @Override
-  public void enterPm_iosi_class_type_inspect(Pm_iosi_class_type_inspectContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(
-        INSPECT_CLASS_MAP, name, INSPECT_POLICY_MAP_INSPECT_CLASS, line);
-    _currentInspectPolicyMapInspectClass =
-        _currentInspectPolicyMap
-            .getInspectClasses()
-            .computeIfAbsent(name, n -> new InspectPolicyMapInspectClass());
-  }
-
-  @Override
-  public void exitPm_iosi_class_type_inspect(Pm_iosi_class_type_inspectContext ctx) {
-    _currentInspectPolicyMapInspectClass = null;
-  }
-
-  @Override
-  public void exitPi_iosicd_drop(Pi_iosicd_dropContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.DENY);
-  }
-
-  @Override
-  public void exitPi_iosicd_pass(Pi_iosicd_passContext ctx) {
-    _currentInspectPolicyMap.setClassDefaultAction(LineAction.PERMIT);
-  }
-
-  @Override
-  public void exitPm_iosict_inspect(Pm_iosict_inspectContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.INSPECT);
-  }
-
-  @Override
-  public void exitPm_iosict_pass(Pm_iosict_passContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.PASS);
-  }
-
-  @Override
-  public void exitPm_iosict_drop(Pm_iosict_dropContext ctx) {
-    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.DROP);
   }
 
   @Override

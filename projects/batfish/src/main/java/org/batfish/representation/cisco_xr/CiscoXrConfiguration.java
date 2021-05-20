@@ -10,6 +10,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeDedupedAsPathMatchExprName;
@@ -143,7 +144,6 @@ import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.StubType;
-import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -175,7 +175,7 @@ import org.batfish.vendor.VendorConfiguration;
 public final class CiscoXrConfiguration extends VendorConfiguration {
 
   /** Matches anything but the IPv4 default route. */
-  static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
+  static final Not NOT_DEFAULT_ROUTE = new Not(matchDefaultRoute());
 
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
@@ -285,6 +285,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   static final int MAX_ADMINISTRATIVE_COST = 32767;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
+
+  /** Name of the generated static route resolution policy, implementing XR resolution filtering */
+  public static final String RESOLUTION_POLICY_NAME = "~RESOLUTION_POLICY~";
 
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
@@ -1790,7 +1793,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             .setName(defaultRouteGenerationPolicyName)
             .addStatement(
                 new If(
-                    Common.matchDefaultRoute(),
+                    matchDefaultRoute(),
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
             .build();
         route.setGenerationPolicy(defaultRouteGenerationPolicyName);
@@ -1799,8 +1802,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       ospfExportDefaultStatements.add(Statements.ExitAccept.toStaticStatement());
       ospfExportDefault.setGuard(
           new Conjunction(
-              ImmutableList.of(
-                  Common.matchDefaultRoute(), new MatchProtocol(RoutingProtocol.AGGREGATE))));
+              ImmutableList.of(matchDefaultRoute(), new MatchProtocol(RoutingProtocol.AGGREGATE))));
     }
 
     // TODO: distribute lists
@@ -1911,7 +1913,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       ripExportDefault.setComment("RIP export default route");
       Conjunction ripExportDefaultConditions = new Conjunction();
       List<Statement> ripExportDefaultStatements = ripExportDefault.getTrueStatements();
-      ripExportDefaultConditions.getConjuncts().add(Common.matchDefaultRoute());
+      ripExportDefaultConditions.getConjuncts().add(matchDefaultRoute());
       long metric = proc.getDefaultInformationMetric();
       ripExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       // add default export map with metric
@@ -2097,9 +2099,27 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
     }
 
+    // Build static route resolution policy used by VRFs; prevents resolution w/ default-routes
+    RoutingPolicy.builder()
+        .setOwner(c)
+        .setName(RESOLUTION_POLICY_NAME)
+        .setStatements(
+            ImmutableList.of(
+                new If(
+                    matchDefaultRoute(),
+                    ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))))
+        .build();
+
     // initialize vrfs
     for (String vrfName : _vrfs.keySet()) {
-      c.getVrfs().put(vrfName, new org.batfish.datamodel.Vrf(vrfName));
+      c.getVrfs()
+          .put(
+              vrfName,
+              org.batfish.datamodel.Vrf.builder()
+                  .setName(vrfName)
+                  .setResolutionPolicy(RESOLUTION_POLICY_NAME)
+                  .build());
     }
 
     // snmp server
