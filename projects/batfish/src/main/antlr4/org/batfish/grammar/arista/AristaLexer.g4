@@ -596,6 +596,7 @@ BUFFER_SIZE: 'buffer-size';
 BUFFERED: 'buffered';
 
 BUG_ALERT: 'bug-alert';
+BUILT_IN: 'built-in';
 
 BURST: 'burst';
 BURST_SIZE: 'burst-size';
@@ -707,7 +708,14 @@ CITADEL: 'citadel';
 
 CITRIX_ICA: 'citrix-ica';
 
-CLASS: 'class';
+CLASS:
+  'class'
+   {
+     if (lastTokenType() == NEWLINE || lastTokenType() == -1) {
+       pushMode(M_Class);
+     }
+   }
+;
 
 CLASS_DEFAULT: 'class-default';
 
@@ -867,7 +875,7 @@ CONVERGENCE: 'convergence';
 CONVERSION_ERROR: 'conversion-error';
 
 COOKIE: 'cookie';
-
+COPP: 'copp';
 COPS: 'cops';
 
 COS: 'cos';
@@ -3495,7 +3503,7 @@ QOS_GROUP: 'qos-group';
 QOS_MAPPING: 'qos-mapping';
 
 QOTD: 'qotd';
-
+QUALITY_OF_SERVICE: 'quality-of-service';
 QUERY_COUNT: 'query-count';
 
 QUERY_INTERVAL: 'query-interval';
@@ -4057,7 +4065,7 @@ SHA512_PASSWORD
 ;
 
 SHAPE: 'shape';
-
+SHARED: 'shared';
 SHARED_SECONDARY_SECRET: 'shared-secondary-secret';
 
 SHARED_SECRET: 'shared-secret';
@@ -6090,6 +6098,25 @@ M_CertificateText_WS
       F_Whitespace
       | F_Newline
    )+ -> channel ( HIDDEN )
+;
+
+mode M_Class;
+
+M_Class_BUILT_IN: 'built-in' -> type(BUILT_IN), mode(M_Word);
+
+M_Class_CLASS_DEFAULT: 'class-default' -> type(CLASS_DEFAULT), popMode;
+
+M_Class_WORD: F_NonWhitespace+ -> type(WORD), popMode;
+
+M_Class_NEWLINE
+:
+  // bail in case of short line
+  F_Newline -> type(NEWLINE), popMode
+;
+
+M_Class_WS
+:
+  F_Whitespace+ -> channel(HIDDEN)
 ;
 
 mode M_Command;
