@@ -6,53 +6,7 @@ options {
    tokenVocab = AristaLexer;
 }
 
-cm_end_class_map
-:
-   END_CLASS_MAP NEWLINE
-;
-
-cm_ios_inspect
-:
-   INSPECT HTTP? match_semantics? name = variable_permissive NEWLINE
-   cm_iosi_match*
-;
-
-cm_iosi_match
-:
-   MATCH
-   (
-      cm_iosim_access_group
-      | cm_iosim_protocol
-      | cm_iosim_req_resp
-      | cm_iosim_request
-      | cm_iosim_response
-   )
-;
-
-cm_iosim_access_group
-:
-   ACCESS_GROUP NAME name = variable_permissive NEWLINE
-;
-
-cm_iosim_protocol
-:
-   PROTOCOL inspect_protocol NEWLINE
-;
-
-cm_iosim_req_resp
-:
-   NOT? REQ_RESP CONTENT_TYPE MISMATCH
-;
-
-cm_iosim_request
-:
-   NOT? REQUEST null_rest_of_line
-;
-
-cm_iosim_response
-:
-   NOT? RESPONSE null_rest_of_line
-;
+class_name: WORD;
 
 cm_match
 :
@@ -266,28 +220,12 @@ match_semantics
 
 pm_class
 :
-   num = dec? CLASS
-   (
-      TYPE
-      (
-         CONTROL_PLANE
-         | NETWORK_QOS
-         | PBR
-         | QOS
-         | QUEUING
-      ) name = variable_permissive
-      | name = variable_permissive
-   ) NEWLINE
+   CLASS (CLASS_DEFAULT | BUILT_IN? name = class_name) NEWLINE
    (
       pmc_null
       | pmc_police
       | pmc_service_policy
    )*
-;
-
-pm_end_policy_map
-:
-   END_POLICY_MAP NEWLINE
 ;
 
 pm_event
@@ -321,64 +259,12 @@ pm_event_class
    )*
 ;
 
-pm_ios_inspect
-:
-   INSPECT name = variable_permissive NEWLINE
-   (
-      pm_iosi_class_default
-      | pm_iosi_class_type_inspect
-   )*
-;
-
-pm_iosi_class_default
-:
-   CLASS CLASS_DEFAULT NEWLINE
-   (
-      pi_iosicd_drop
-      | pi_iosicd_pass
-   )*
-;
-
-pm_iosi_class_type_inspect
-:
-   CLASS TYPE INSPECT name = variable NEWLINE
-   (
-      pm_iosict_drop
-      | pm_iosict_inspect
-      | pm_iosict_pass
-   )*
-;
-
-pi_iosicd_drop
-:
-   DROP LOG? NEWLINE
-;
-
-pi_iosicd_pass
-:
-   PASS NEWLINE
-;
-
-pm_iosict_drop
-:
-   DROP LOG? NEWLINE
-;
-
-pm_iosict_inspect
-:
-   INSPECT NEWLINE
-;
-
-pm_iosict_pass
-:
-   PASS NEWLINE
-;
-
 pm_null
 :
    NO?
    (
       CIR
+      | COUNT
       | DESCRIPTION
    ) null_rest_of_line
 ;
@@ -484,53 +370,33 @@ s_class_map
       DESCRIPTION ~NEWLINE+ NEWLINE
    )?
    (
-      cm_end_class_map
-      | cm_match
+      cm_match
    )*
-;
-
-s_class_map_ios
-:
-   CLASS_MAP TYPE cm_ios_inspect
 ;
 
 s_policy_map
 :
    POLICY_MAP
    (
-      variable_policy_map_header
-      |
-      (
-         TYPE variable variable variable
-      )
-      |
-      (
-         TYPE
-         (
-            CONTROL_PLANE
-            | NETWORK_QOS
-            | PBR
-            | QUEUEING
-            | QUEUING
-            | QOS
-         ) mapname = variable
-         (
-            TEMPLATE template = variable
-         )?
-      )
+     (
+       TYPE
+       (
+         CONTROL_PLANE           // < (in 4.18, not in 4.22)
+         | COPP                  // > (in 4.22, not in 4.18)
+         | PBR                   // in both 4.18 and 4.25
+         | PDP SHARED?           // > (not in 4.18, in 4.25)
+         | QOS                   // < (in 4.18, not in 4.25)
+         | QUALITY_OF_SERVICE    // > (not in 4.18, in 4.25)
+       )
+     )? // implicit type is QOS
+     mapname = variable
    ) NEWLINE
    (
       pm_class
-      | pm_end_policy_map
       | pm_event
       | pm_null
       | pm_parameters
    )*
-;
-
-s_policy_map_ios
-:
-   POLICY_MAP TYPE pm_ios_inspect
 ;
 
 s_qos_mapping

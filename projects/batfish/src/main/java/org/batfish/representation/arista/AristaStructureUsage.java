@@ -43,8 +43,6 @@ public enum AristaStructureUsage implements StructureUsage {
   CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE("crypto map ipsec-isakmp isakmp-profile"),
   CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET("crypto map ipsec-isakmp transform-set"),
   DOMAIN_LOOKUP_SOURCE_INTERFACE("domain lookup source-interface"),
-  INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP("class-map type inspect match access-group"),
-  INSPECT_POLICY_MAP_INSPECT_CLASS("policy-map type inspect class type inspect"),
   INTERFACE_BFD_TEMPLATE("interface bfd template"),
   INTERFACE_IGMP_ACCESS_GROUP_ACL("interface igmp access-group acl"),
   INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST("interface igmp host-proxy access-list"),

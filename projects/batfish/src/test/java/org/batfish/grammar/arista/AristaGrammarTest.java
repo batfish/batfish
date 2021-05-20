@@ -29,6 +29,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasMlagConfig;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -60,6 +61,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
+import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
 import static org.batfish.representation.arista.OspfProcess.getReferenceOspfBandwidth;
 import static org.batfish.representation.arista.eos.AristaBgpProcess.DEFAULT_VRF;
@@ -2678,6 +2680,24 @@ public class AristaGrammarTest {
   public void testIpv6RouteParsing() {
     // Don't crash
     parseConfig("ipv6_route");
+  }
+
+  @Test
+  public void testQos() throws IOException {
+    String hostname = "qos";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        allOf(
+            hasNumReferrers(filename, POLICY_MAP, "my-pdp-policy", 1),
+            hasNumReferrers(filename, POLICY_MAP, "my-shared-pdp-policy", 1),
+            hasNumReferrers(filename, POLICY_MAP, "copp-system-policy", 0),
+            hasNoUndefinedReferences()));
   }
 
   @Test

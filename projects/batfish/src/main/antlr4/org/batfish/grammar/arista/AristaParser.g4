@@ -3343,7 +3343,6 @@ stanza
    | s_boot
    | s_call_manager_fallback
    | s_class_map
-   | s_class_map_ios
    | s_cluster
    | s_configure
    | s_control_plane
@@ -3431,7 +3430,6 @@ stanza
    | s_peer_filter
    | s_phone_proxy
    | s_policy_map
-   | s_policy_map_ios
    | s_privilege
    | s_process_max_time
    | s_qos_mapping

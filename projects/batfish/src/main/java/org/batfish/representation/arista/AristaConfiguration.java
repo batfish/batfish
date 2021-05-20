@@ -81,7 +81,6 @@ import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.MemoizedIpAccessListToBdd;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -92,7 +91,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
@@ -132,10 +130,6 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.isis.IsisInterfaceLevelSettings;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
@@ -361,10 +355,6 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
-  private final Map<String, InspectClassMap> _inspectClassMaps;
-
-  private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
-
   private final Map<String, Interface> _interfaces;
 
   private final Map<String, IpsecProfile> _ipsecProfiles;
@@ -433,8 +423,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     _isakmpKeys = new ArrayList<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
-    _inspectClassMaps = new TreeMap<>();
-    _inspectPolicyMaps = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipsecTransformSets = new TreeMap<>();
     _ipsecProfiles = new TreeMap<>();
@@ -2172,11 +2160,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     // convert route maps to RoutingPolicy objects, and install them in the Configuration.
     _routeMaps.values().forEach(map -> convertRouteMap(c, map));
 
-    createInspectClassMapAcls(c);
-
-    // create inspect policy-map ACLs
-    createInspectPolicyMapAcls(c);
-
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
@@ -2568,7 +2551,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     markAcls(
         AristaStructureUsage.COPS_LISTENER_ACCESS_LIST,
         AristaStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
-        AristaStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         AristaStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         AristaStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST,
         AristaStructureUsage.INTERFACE_IP_ACCESS_GROUP_IN,
@@ -2611,11 +2593,9 @@ public final class AristaConfiguration extends VendorConfiguration {
     markConcreteStructure(AristaStructureType.NAMED_RSA_PUB_KEY);
 
     // class-map
-    markConcreteStructure(AristaStructureType.INSPECT_CLASS_MAP);
     markConcreteStructure(AristaStructureType.CLASS_MAP);
 
     // policy-map
-    markConcreteStructure(AristaStructureType.INSPECT_POLICY_MAP);
     markConcreteStructure(AristaStructureType.POLICY_MAP);
 
     // service template
@@ -2691,122 +2671,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         .setVni(vni)
         .setSrcVrf(Configuration.DEFAULT_VRF_NAME)
         .build();
-  }
-
-  private void createInspectClassMapAcls(Configuration c) {
-    _inspectClassMaps.forEach(
-        (inspectClassMapName, inspectClassMap) -> {
-          String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassMapName);
-          MatchSemantics matchSemantics = inspectClassMap.getMatchSemantics();
-          List<AclLineMatchExpr> matchConditions =
-              inspectClassMap.getMatches().stream()
-                  .map(
-                      inspectClassMapMatch ->
-                          inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
-                  .collect(ImmutableList.toImmutableList());
-          AclLineMatchExpr matchClassMap;
-          switch (matchSemantics) {
-            case MATCH_ALL:
-              matchClassMap = new AndMatchExpr(matchConditions);
-              break;
-            case MATCH_ANY:
-              matchClassMap = new OrMatchExpr(matchConditions);
-              break;
-            default:
-              throw new BatfishException(
-                  String.format(
-                      "Unsupported %s: %s", MatchSemantics.class.getSimpleName(), matchSemantics));
-          }
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(inspectClassMapAclName)
-              .setLines(
-                  ImmutableList.of(
-                      ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
-              .setSourceName(inspectClassMapName)
-              .setSourceType(AristaStructureType.INSPECT_CLASS_MAP.getDescription())
-              .build();
-        });
-  }
-
-  private void createInspectPolicyMapAcls(Configuration c) {
-    _inspectPolicyMaps.forEach(
-        (inspectPolicyMapName, inspectPolicyMap) -> {
-          String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<AclLine> policyMapAclLines = ImmutableList.builder();
-          inspectPolicyMap
-              .getInspectClasses()
-              .forEach(
-                  (inspectClassName, inspectPolicyMapInspectClass) -> {
-                    PolicyMapClassAction action = inspectPolicyMapInspectClass.getAction();
-                    if (action == null) {
-                      return;
-                    }
-                    String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassName);
-                    if (!c.getIpAccessLists().containsKey(inspectClassMapAclName)) {
-                      return;
-                    }
-                    AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
-                    switch (action) {
-                      case DROP:
-                        policyMapAclLines.add(
-                            ExprAclLine.rejecting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Drop if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      case INSPECT:
-                        policyMapAclLines.add(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Inspect if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      case PASS:
-                        policyMapAclLines.add(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Pass if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      default:
-                        _w.unimplemented("Unimplemented policy-map class action: " + action);
-                        return;
-                    }
-                  });
-          policyMapAclLines.add(
-              ExprAclLine.builder()
-                  .setAction(inspectPolicyMap.getClassDefaultAction())
-                  .setMatchCondition(TrueExpr.INSTANCE)
-                  .setName(
-                      String.format(
-                          "class-default action: %s", inspectPolicyMap.getClassDefaultAction()))
-                  .build());
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(inspectPolicyMapAclName)
-              .setLines(policyMapAclLines.build())
-              .setSourceName(inspectPolicyMapName)
-              .setSourceType(AristaStructureType.INSPECT_POLICY_MAP.getDescription())
-              .build();
-        });
-  }
-
-  public static String computeInspectPolicyMapAclName(@Nonnull String inspectPolicyMapName) {
-    return String.format("~INSPECT_POLICY_MAP_ACL~%s~", inspectPolicyMapName);
-  }
-
-  public static String computeInspectClassMapAclName(@Nonnull String inspectClassMapName) {
-    return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
   }
 
   private boolean isAclUsedForRouting(@Nonnull String aclName) {
@@ -2916,14 +2780,6 @@ public final class AristaConfiguration extends VendorConfiguration {
         tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
       }
     }
-  }
-
-  public Map<String, InspectClassMap> getInspectClassMaps() {
-    return _inspectClassMaps;
-  }
-
-  public Map<String, InspectPolicyMap> getInspectPolicyMaps() {
-    return _inspectPolicyMaps;
   }
 
   public Map<String, TrackMethod> getTrackingGroups() {
