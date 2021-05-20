@@ -197,9 +197,10 @@ public class CommunityMatchExprVarCollector
   }
 
   /**
-   * Converts a StandardCommunityHighMatch to a {@link CommunityVar} representing it as a community
-   * regex. We currently only handle a subset of StandardCommunityHighMatch expressions, so we use
-   * the Optional type to indicate whether the given one is supported or not.
+   * Converts a {@link StandardCommunityHighMatch} to a {@link CommunityVar} representing it as a
+   * community regex. We currently only handle a subset of {@link StandardCommunityHighMatch}
+   * expressions, so we use the {@link Optional} type to indicate whether the given one is supported
+   * or not.
    */
   public static Optional<CommunityVar> standardCommunityHighMatchToRegex(
       StandardCommunityHighMatch match) {
@@ -208,9 +209,10 @@ public class CommunityMatchExprVarCollector
   }
 
   /**
-   * Converts a StandardCommunityLowMatch to a {@link CommunityVar} representing it as a community
-   * regex. We currently only handle a subset of StandardCommunityLowMatch expressions, so we use
-   * the Optional type to indicate whether the given one is supported or not.
+   * Converts a {@link StandardCommunityLowMatch} to a {@link CommunityVar} representing it as a
+   * community regex. We currently only handle a subset of {@link StandardCommunityLowMatch}
+   * expressions, so we use the {@link Optional} type to indicate whether the given one is supported
+   * or not.
    */
   public static Optional<CommunityVar> standardCommunityLowMatchToRegex(
       StandardCommunityLowMatch match) {
