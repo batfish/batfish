@@ -176,12 +176,12 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -3344,7 +3344,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             return new Disjunction(
                 routeMapMatchAsPath.getNames().stream()
                     .filter(_ipAsPathAccessLists::containsKey)
-                    .map(name -> new MatchAsPath(new NamedAsPathSet(name)))
+                    .map(name -> new LegacyMatchAsPath(new NamedAsPathSet(name)))
                     .collect(ImmutableList.toImmutableList()));
           }
 

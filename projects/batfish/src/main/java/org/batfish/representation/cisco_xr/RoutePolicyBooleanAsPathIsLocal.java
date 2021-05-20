@@ -6,7 +6,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 
 /**
  * Checks whether the AS Path is local to this AS. Per the below documentation, this is when an AS
@@ -23,7 +23,7 @@ public class RoutePolicyBooleanAsPathIsLocal extends RoutePolicyBoolean {
 
   @Override
   public BooleanExpr toBooleanExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    MatchAsPath match = new MatchAsPath(new ExplicitAsPathSet(Collections.emptyList()));
+    LegacyMatchAsPath match = new LegacyMatchAsPath(new ExplicitAsPathSet(Collections.emptyList()));
     return match;
   }
 

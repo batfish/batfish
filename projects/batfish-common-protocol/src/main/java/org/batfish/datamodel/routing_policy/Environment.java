@@ -25,6 +25,8 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.eigrp.EigrpProcess;
+import org.batfish.datamodel.routing_policy.as_path.AsPathExpr;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
@@ -40,6 +42,8 @@ public class Environment {
     ConfigurationFormat format = c.getConfigurationFormat();
     return new Builder()
         .setAsPathAccessLists(c.getAsPathAccessLists())
+        .setAsPathExprs(c.getAsPathExprs())
+        .setAsPathMatchExprs(c.getAsPathMatchExprs())
         .setCommunityMatchExprs(c.getCommunityMatchExprs())
         .setCommunitySetExprs(c.getCommunitySetExprs())
         .setCommunitySetMatchExprs(c.getCommunitySetMatchExprs())
@@ -61,6 +65,8 @@ public class Environment {
   }
 
   private final Map<String, AsPathAccessList> _asPathAccessLists;
+  private final @Nonnull Map<String, AsPathExpr> _asPathExprs;
+  private final @Nonnull Map<String, AsPathMatchExpr> _asPathMatchExprs;
   @Nullable private final BgpSessionProperties _bgpSessionProperties;
   private boolean _buffered;
   private boolean _callExprContext;
@@ -97,6 +103,8 @@ public class Environment {
 
   private Environment(
       Map<String, AsPathAccessList> asPathAccessLists,
+      Map<String, AsPathExpr> asPathExprs,
+      Map<String, AsPathMatchExpr> asPathMatchExprs,
       @Nullable BgpSessionProperties bgpSessionProperties,
       boolean buffered,
       boolean callExprContext,
@@ -125,6 +133,8 @@ public class Environment {
       boolean useOutputAttributes,
       boolean writeToIntermediateBgpAttributes) {
     _asPathAccessLists = asPathAccessLists;
+    _asPathExprs = asPathExprs;
+    _asPathMatchExprs = asPathMatchExprs;
     _bgpSessionProperties = bgpSessionProperties;
     _buffered = buffered;
     _callExprContext = callExprContext;
@@ -169,6 +179,14 @@ public class Environment {
   @Nullable
   public BgpSessionProperties getBgpSessionProperties() {
     return _bgpSessionProperties;
+  }
+
+  public @Nonnull Map<String, AsPathExpr> getAsPathExprs() {
+    return _asPathExprs;
+  }
+
+  public @Nonnull Map<String, AsPathMatchExpr> getAsPathMatchExprs() {
+    return _asPathMatchExprs;
   }
 
   public boolean getBuffered() {
@@ -338,6 +356,8 @@ public class Environment {
 
   public static final class Builder {
     private Map<String, AsPathAccessList> _asPathAccessLists;
+    private Map<String, AsPathExpr> _asPathExprs;
+    private Map<String, AsPathMatchExpr> _asPathMatchExprs;
     @Nullable private BgpSessionProperties _bgpSessionProperties;
     private boolean _buffered;
     private boolean _callExprContext;
@@ -370,6 +390,16 @@ public class Environment {
 
     public Builder setAsPathAccessLists(Map<String, AsPathAccessList> asPathAccessLists) {
       _asPathAccessLists = toImmutableMap(asPathAccessLists);
+      return this;
+    }
+
+    public @Nonnull Builder setAsPathExprs(Map<String, AsPathExpr> asPathExprs) {
+      _asPathExprs = toImmutableMap(asPathExprs);
+      return this;
+    }
+
+    public @Nonnull Builder setAsPathMatchExprs(Map<String, AsPathMatchExpr> asPathMatchExprs) {
+      _asPathMatchExprs = toImmutableMap(asPathMatchExprs);
       return this;
     }
 
@@ -504,6 +534,8 @@ public class Environment {
       }
       return new Environment(
           firstNonNull(_asPathAccessLists, ImmutableMap.of()),
+          firstNonNull(_asPathExprs, ImmutableMap.of()),
+          firstNonNull(_asPathMatchExprs, ImmutableMap.of()),
           _bgpSessionProperties,
           _buffered,
           _callExprContext,

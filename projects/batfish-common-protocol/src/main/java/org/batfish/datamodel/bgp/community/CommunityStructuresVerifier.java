@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -63,8 +64,8 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.HasRoute6;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MainRib;
-import org.batfish.datamodel.routing_policy.expr.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchIp6AccessList;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
@@ -191,6 +192,12 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitMatchAsPath(MatchAsPath matchAsPath, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchLegacyAsPath(
+        LegacyMatchAsPath legacyMatchAsPath, CommunityStructuresVerifierContext arg) {
       return null;
     }
 
