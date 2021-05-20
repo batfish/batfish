@@ -23160,6 +23160,39 @@
                 "type" : "ExitReject"
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -23176,7 +23209,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -23483,6 +23517,39 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -23529,7 +23596,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -31435,10 +31503,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -36207,10 +36311,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -36788,10 +36928,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -41540,12 +41716,46 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -41975,10 +42185,46 @@
             "vrf" : "default"
           }
         },
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -43637,10 +43883,46 @@
             "sourceType" : "ipv4 access-list"
           }
         },
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -43903,6 +44185,39 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -43937,7 +44252,8 @@
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
               "multipathIbgp" : false,
               "tieBreaker" : "ROUTER_ID"
-            }
+            },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44057,6 +44373,39 @@
                 "type" : "ExitReject"
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -44156,7 +44505,8 @@
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
-            }
+            },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44167,10 +44517,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44216,10 +44602,46 @@
             "vrf" : "default"
           }
         },
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44230,10 +44652,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44244,10 +44702,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44258,10 +44752,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44275,10 +44805,46 @@
         "ntpServers" : [
           "1.2.3.4"
         ],
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44692,6 +45258,39 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
@@ -44765,7 +45364,8 @@
                 "summaryAdminCost" : 254,
                 "summaryDiscardMetric" : 0
               }
-            }
+            },
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44776,10 +45376,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~",
             "staticRoutes" : [
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
@@ -44882,10 +45518,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44896,10 +45568,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -44910,10 +45618,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -76752,10 +77496,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -76925,10 +77705,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -82652,10 +83468,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -82910,10 +83762,46 @@
             }
           }
         },
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -83634,12 +84522,46 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -83708,12 +84630,46 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -83885,12 +84841,46 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -84072,12 +85062,46 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -86071,12 +87095,46 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -86186,12 +87244,46 @@
                 ]
               }
             ]
+          },
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -86400,10 +87492,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -88943,10 +90071,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       },
@@ -88957,10 +90121,46 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "~RESOLUTION_POLICY~" : {
+            "name" : "~RESOLUTION_POLICY~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                    "prefixSpace" : [
+                      "0.0.0.0/0"
+                    ]
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnFalse"
+                  }
+                ]
+              }
+            ]
+          }
+        },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
-            "name" : "default"
+            "name" : "default",
+            "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
       }
