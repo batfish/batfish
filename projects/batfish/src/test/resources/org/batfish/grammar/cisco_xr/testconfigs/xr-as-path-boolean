@@ -131,26 +131,26 @@ end-set
 !! TODO: something with 'all'
 route-policy rp-length
  if as-path length eq 2 or
-    as-path in (length eq 4) or
+    as-path in (length eq 5) or
     as-path in aps-length then
    pass
  endif
 end-policy
 as-path-set aps-length
- length eq 6
+ length eq 8
 end-set
 
 !! unique-length
 !! TODO: something with 'all'
 route-policy rp-unique-length
  if as-path unique-length eq 2 or
-    as-path in (unique-length eq 4) or
+    as-path in (unique-length eq 5) or
     as-path in aps-unique-length then
    pass
  endif
 end-policy
 as-path-set aps-unique-length
- unique-length eq 6
+ unique-length eq 8
 end-set
 !
 
