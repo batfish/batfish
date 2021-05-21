@@ -44942,7 +44942,7 @@
               "enabled" : true,
               "helloInterval" : 10,
               "helloMultiplier" : 0,
-              "networkType" : "BROADCAST",
+              "networkType" : "POINT_TO_POINT",
               "passive" : true,
               "process" : "2"
             },

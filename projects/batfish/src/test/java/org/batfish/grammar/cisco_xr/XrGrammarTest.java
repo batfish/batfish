@@ -202,6 +202,7 @@ import org.batfish.representation.cisco_xr.LiteralUint16Range;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.NeighborIsAsPathSetElem;
 import org.batfish.representation.cisco_xr.OriginatesFromAsPathSetElem;
+import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.PassesThroughAsPathSetElem;
 import org.batfish.representation.cisco_xr.PeerAs;
@@ -2716,5 +2717,59 @@ public final class XrGrammarTest {
     // and the default route should exist
     assertThat(routes, hasItem(hasPrefix(Prefix.ZERO)));
     assertThat(routes, not(hasItem(hasPrefix(Prefix.parse("10.103.3.1/32")))));
+  }
+
+  @Test
+  public void testOspfNetworkType() {
+    String hostname = "ospf-network-type";
+    CiscoXrConfiguration c = parseVendorConfig(hostname);
+
+    assertThat(
+        c.getInterfaces().keySet(),
+        containsInAnyOrder(
+            "GigabitEthernet0/0/0/1",
+            "GigabitEthernet0/0/0/2",
+            "GigabitEthernet0/0/0/3",
+            "GigabitEthernet0/0/0/4",
+            "GigabitEthernet0/0/0/5",
+            "GigabitEthernet0/0/0/6",
+            "GigabitEthernet0/0/0/7",
+            "GigabitEthernet0/0/0/8",
+            "GigabitEthernet0/0/0/9",
+            "GigabitEthernet0/0/0/10"));
+
+    // Configured in OSPF router
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/1").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_POINT));
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/2").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/3").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.NON_BROADCAST));
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/4").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_MULTIPOINT));
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/5").getOspfNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
+
+    // Configured in interface directly
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/6").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_POINT));
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/7").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/8").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.NON_BROADCAST));
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/9").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_MULTIPOINT));
+    assertThat(
+        c.getInterfaces().get("GigabitEthernet0/0/0/10").getOspfNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
   }
 }
