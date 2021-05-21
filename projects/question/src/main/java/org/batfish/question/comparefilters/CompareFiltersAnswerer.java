@@ -2,6 +2,7 @@ package org.batfish.question.comparefilters;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.PermitAndDenyBdds.takeDifferentActions;
+import static org.batfish.question.FilterQuestionUtils.differentialBDDSourceManager;
 import static org.batfish.question.FilterQuestionUtils.getSpecifiedFilters;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -37,6 +38,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.SpecifierContext;
 
 /** An answerer for {@link CompareFiltersQuestion}. */
@@ -161,23 +163,28 @@ public class CompareFiltersAnswerer extends Answerer {
       SpecifierContext currentContext,
       SpecifierContext referenceContext) {
     Configuration currentConfig = currentContext.getConfigs().get(hostname);
+    Configuration referenceConfig = referenceContext.getConfigs().get(hostname);
     Map<String, IpAccessList> currentAcls = currentConfig.getIpAccessLists();
     Map<String, IpSpace> currentIpSpaces = currentConfig.getIpSpaces();
     IpAccessList currentAcl = currentAcls.get(filtername);
-    BDDSourceManager currentSrcMgr =
-        BDDSourceManager.forIpAccessList(bddPacket, currentConfig, currentAcl);
+    BDDSourceManager srcMgr =
+        differentialBDDSourceManager(
+            bddPacket,
+            currentContext,
+            referenceContext,
+            currentConfig,
+            referenceConfig,
+            currentAcls.keySet(),
+            LocationSpecifier.ALL_LOCATIONS);
     IpAccessListToBdd currentToBdd =
-        new IpAccessListToBddImpl(bddPacket, currentSrcMgr, currentAcls, currentIpSpaces);
+        new IpAccessListToBddImpl(bddPacket, srcMgr, currentAcls, currentIpSpaces);
     List<PermitAndDenyBdds> currentBdds = currentToBdd.reachAndMatchLines(currentAcl);
 
-    Configuration referenceConfig = referenceContext.getConfigs().get(hostname);
     Map<String, IpAccessList> referenceAcls = referenceConfig.getIpAccessLists();
     Map<String, IpSpace> referenceIpSpaces = referenceConfig.getIpSpaces();
     IpAccessList referenceAcl = referenceAcls.get(filtername);
-    BDDSourceManager referenceSrcMgr =
-        BDDSourceManager.forIpAccessList(bddPacket, referenceConfig, referenceAcl);
     List<PermitAndDenyBdds> referenceBdds =
-        new IpAccessListToBddImpl(bddPacket, referenceSrcMgr, referenceAcls, referenceIpSpaces)
+        new IpAccessListToBddImpl(bddPacket, srcMgr, referenceAcls, referenceIpSpaces)
             .reachAndMatchLines(referenceAcl);
     return compareFilters(hostname, filtername, currentBdds, referenceBdds, bddPacket);
   }
