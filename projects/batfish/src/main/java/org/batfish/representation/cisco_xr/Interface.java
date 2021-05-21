@@ -357,7 +357,7 @@ public class Interface implements Serializable {
     return _ospfHelloMultiplier;
   }
 
-  public OspfNetworkType getOspfNetworkType() {
+  public @Nullable OspfNetworkType getOspfNetworkType() {
     return _ospfNetworkType;
   }
 
@@ -523,7 +523,7 @@ public class Interface implements Serializable {
     _ospfHelloMultiplier = multiplier;
   }
 
-  public void setOspfNetworkType(OspfNetworkType ospfNetworkType) {
+  public void setOspfNetworkType(@Nullable OspfNetworkType ospfNetworkType) {
     _ospfNetworkType = ospfNetworkType;
   }
 

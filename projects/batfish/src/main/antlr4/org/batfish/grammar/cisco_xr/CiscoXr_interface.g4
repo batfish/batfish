@@ -356,19 +356,7 @@ if_ip_ospf_hello_interval
    IP OSPF HELLO_INTERVAL seconds = uint_legacy NEWLINE
 ;
 
-if_ip_ospf_network
-:
-   IP OSPF NETWORK
-   (
-      BROADCAST
-      | NON_BROADCAST
-      |
-      (
-         POINT_TO_MULTIPOINT NON_BROADCAST?
-      )
-      | POINT_TO_POINT
-   ) NEWLINE
-;
+if_ip_ospf_network: IP OSPF NETWORK ospf_network_type NEWLINE;
 
 if_ip_ospf_passive_interface
 :
