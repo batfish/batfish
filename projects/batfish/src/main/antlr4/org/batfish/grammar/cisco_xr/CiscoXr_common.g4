@@ -281,10 +281,7 @@ ospf_network_type
 :
    BROADCAST
    | NON_BROADCAST
-   |
-   (
-      POINT_TO_MULTIPOINT NON_BROADCAST?
-   )
+   | POINT_TO_MULTIPOINT NON_BROADCAST?
    | POINT_TO_POINT
 ;
 
