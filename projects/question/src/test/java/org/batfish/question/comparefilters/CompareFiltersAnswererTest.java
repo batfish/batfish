@@ -20,6 +20,7 @@ import org.batfish.datamodel.LineAction;
 import org.junit.Test;
 
 public final class CompareFiltersAnswererTest {
+
   private static final String HOSTNAME = "hostname";
   private static final String FILTER = "filter";
   private final BDDPacket _pkt = new BDDPacket();

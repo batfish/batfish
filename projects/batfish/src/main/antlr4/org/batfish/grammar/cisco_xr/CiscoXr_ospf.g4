@@ -437,19 +437,7 @@ roi_cost
    COST cost = uint_legacy NEWLINE
 ;
 
-roi_network
-:
-   NETWORK
-   (
-      BROADCAST
-      | NON_BROADCAST
-      |
-      (
-         POINT_TO_MULTIPOINT NON_BROADCAST?
-      )
-      | POINT_TO_POINT
-   ) NEWLINE
-;
+roi_network: NETWORK ospf_network_type NEWLINE;
 
 roi_passive
 :
