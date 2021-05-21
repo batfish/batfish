@@ -16,8 +16,8 @@ public final class IosRegexAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
-    return visitor.visitIosRegexAsPathSetElem(this);
+  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
+    return visitor.visitIosRegexAsPathSetElem(this, arg);
   }
 
   public @Nonnull String getRegex() {

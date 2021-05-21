@@ -27,8 +27,16 @@ public final class OriginatesFromAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
-    return visitor.visitOriginatesFromAsPathSetElem(this);
+  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
+    return visitor.visitOriginatesFromAsPathSetElem(this, arg);
+  }
+
+  public @Nonnull List<Range<Long>> getAsRanges() {
+    return _asRanges;
+  }
+
+  public boolean getExact() {
+    return _exact;
   }
 
   @Override

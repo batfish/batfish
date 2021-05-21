@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco_xr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -17,6 +18,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.routing_policy.RoutingPolicy.isGenerated;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
@@ -140,6 +142,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -329,7 +332,7 @@ public final class XrGrammarTest {
   }
 
   private static @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
-    Bgpv4Route.Builder builder = route.toBuilder();
+    Builder builder = route.toBuilder();
     assertTrue(routingPolicy.process(route, builder, Direction.IN));
     return builder.build();
   }
@@ -650,11 +653,10 @@ public final class XrGrammarTest {
     Prefix prefixLocalPrefThenDrop = Prefix.parse("10.10.10.0/24");
     Prefix prefixAsPath = Prefix.parse("192.168.2.0/24");
     Prefix prefixOspfMetricType = Prefix.parse("192.168.1.0/24");
-    Bgpv4Route.Builder bgpLocalPref = Bgpv4Route.testBuilder().setNetwork(prefixLocalPref);
-    Bgpv4Route.Builder bgpLocalPrefThenDrop =
-        Bgpv4Route.testBuilder().setNetwork(prefixLocalPrefThenDrop);
-    Bgpv4Route.Builder bgpNoMatch = Bgpv4Route.testBuilder().setNetwork(prefixNoMatch);
-    Bgpv4Route.Builder bgpAsPath = Bgpv4Route.testBuilder().setNetwork(prefixAsPath);
+    Builder bgpLocalPref = Bgpv4Route.testBuilder().setNetwork(prefixLocalPref);
+    Builder bgpLocalPrefThenDrop = Bgpv4Route.testBuilder().setNetwork(prefixLocalPrefThenDrop);
+    Builder bgpNoMatch = Bgpv4Route.testBuilder().setNetwork(prefixNoMatch);
+    Builder bgpAsPath = Bgpv4Route.testBuilder().setNetwork(prefixAsPath);
     OspfExternalRoute.Builder ospfMetricType =
         OspfExternalType1Route.testBuilder().setNetwork(prefixOspfMetricType);
 
@@ -667,7 +669,7 @@ public final class XrGrammarTest {
     assertThat(bgpLocalPref.build().getLocalPreference(), equalTo(100L));
     // Confirm default is pass when as-path is updated
     assertRoutingPolicyPermitsRoute(rp, bgpAsPath.build(), bgpAsPath);
-    assertThat(bgpAsPath.build().getAsPath(), equalTo(AsPath.ofSingletonAsSets(65432L)));
+    assertThat(bgpAsPath.build().getAsPath(), equalTo(ofSingletonAsSets(65432L)));
     // Confirm default is pass when OSPF metric type is updated
     assertRoutingPolicyPermitsRoute(rp, ospfMetricType.build(), ospfMetricType);
     assertThat(ospfMetricType.build().getOspfMetricType(), equalTo(OspfMetricType.E2));
@@ -848,7 +850,7 @@ public final class XrGrammarTest {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
-            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setAsPath(ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
@@ -1060,7 +1062,7 @@ public final class XrGrammarTest {
     Ip origNextHopIp = Ip.parse("192.0.2.254");
     Bgpv4Route base =
         Bgpv4Route.testBuilder()
-            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setAsPath(ofSingletonAsSets(2L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
@@ -2316,7 +2318,17 @@ public final class XrGrammarTest {
     String hostname = "xr-as-path-boolean";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getRoutePolicies(), hasKeys("rp1"));
+    assertThat(
+        vc.getRoutePolicies(),
+        hasKeys(
+            "rp1",
+            "rp-neighbor-is",
+            "rp-originates-from",
+            "rp-passes-through",
+            "rp-length",
+            "rp-unique-length",
+            "rp-is-local"));
+
     RoutePolicy rp = vc.getRoutePolicies().get("rp1");
     Iterator<RoutePolicyStatement> i = rp.getStatements().iterator();
     {
@@ -2435,8 +2447,235 @@ public final class XrGrammarTest {
   @Test
   public void testAsPathBooleanConversion() {
     String hostname = "xr-as-path-boolean";
-    // Do not crash
-    assertNotNull(parseConfig(hostname));
+    Configuration c = parseConfig(hostname);
+
+    Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
+    assertThat(
+        c.getRoutingPolicies().keySet().stream()
+            .filter(rpName -> !isGenerated(rpName))
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(
+            "rp1",
+            "rp-neighbor-is",
+            "rp-originates-from",
+            "rp-passes-through",
+            "rp-length",
+            "rp-unique-length",
+            "rp-is-local"));
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("rp-neighbor-is");
+      // as-path neighbor-is
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 3L, 3L, 4L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(5L, 1L, 2L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 4L, 5L)).build());
+      // as-path neighbor-is exact
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 8L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 7L, 8L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(5L, 6L, 7L, 8L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 8L, 5L)).build());
+      // as-path in (neighbor-is)
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(11L, 22L, 44L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(11L, 33L, 33L, 44L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 11L, 22L, 44L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(11L, 22L, 44L, 5L)).build());
+      // as-path in (neighbor-is exact)
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 88L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 77L, 88L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 66L, 77L, 88L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 88L, 5L)).build());
+      // as-path in <as-path-set-name>
+      //   neighbor-is
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 222L, 444L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 333L, 333L, 444L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 111L, 222L, 444L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 222L, 444L, 5L)).build());
+      //   neighbor-is exact
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 888L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 777L, 888L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 666L, 777L, 888L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 888L, 5L)).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("rp-originates-from");
+      // as-path originates-from
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 3L, 3L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(5L, 1L, 2L, 4L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 4L, 5L)).build());
+      // as-path originates-from exact
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 8L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 7L, 8L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(5L, 6L, 7L, 8L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 8L, 5L)).build());
+      // as-path in (originates-from)
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(11L, 22L, 44L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(11L, 33L, 33L, 44L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 11L, 22L, 44L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(11L, 22L, 44L, 5L)).build());
+      // as-path in (originates-from exact)
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 88L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 77L, 88L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 66L, 77L, 88L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 88L, 5L)).build());
+      // as-path in <as-path-set-name>
+      //   originates-from
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 222L, 444L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 333L, 333L, 444L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 111L, 222L, 444L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 222L, 444L, 5L)).build());
+      //   originates-from exact
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 888L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 777L, 888L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 666L, 777L, 888L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 888L, 5L)).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("rp-passes-through");
+      // as-path passes-through
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 3L, 3L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(5L, 1L, 2L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 4L, 5L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 5L, 4L)).build());
+      // as-path passes-through exact
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 8L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 7L, 8L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(5L, 6L, 7L, 8L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(6L, 7L, 8L, 5L)).build());
+      // as-path in (passes-through)
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(11L, 22L, 44L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(11L, 33L, 33L, 44L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 11L, 22L, 44L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(11L, 22L, 44L, 5L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(11L, 22L, 5L, 44L)).build());
+      // as-path in (passes-through exact)
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 88L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 77L, 88L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 66L, 77L, 88L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(66L, 77L, 88L, 5L)).build());
+      // as-path in <as-path-set-name>
+      //   passes-through
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 222L, 444L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 333L, 333L, 444L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 111L, 222L, 444L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 222L, 444L, 5L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(111L, 222L, 5L, 444L)).build());
+      //   passes-through exact
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 888L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 777L, 888L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(5L, 666L, 777L, 888L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(666L, 777L, 888L, 5L)).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("rp-length");
+      // length 2
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 1L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 2L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L)).build());
+      // in (length 5)
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 5L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L)).build());
+      // as-path in <as-path-set-name): length 8
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L, 7L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 8L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L)).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("rp-unique-length");
+      // unique-length 2
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 1L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L)).build());
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 2L)).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L)).build());
+      // in (unique-length 5)
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 4L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 5L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L)).build());
+      // as-path in <as-path-set-name): unique-length 8
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L, 7L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L)).build());
+      assertRoutingPolicyPermitsRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 8L)).build());
+      assertRoutingPolicyDeniesRoute(
+          rp, rb.setAsPath(ofSingletonAsSets(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L)).build());
+    }
+    {
+      RoutingPolicy rp = c.getRoutingPolicies().get("rp-is-local");
+      assertRoutingPolicyPermitsRoute(rp, rb.setAsPath(AsPath.empty()).build());
+      assertRoutingPolicyDeniesRoute(rp, rb.setAsPath(ofSingletonAsSets(1L)).build());
+    }
   }
 
   @Test
@@ -2450,14 +2689,12 @@ public final class XrGrammarTest {
     // Policy should accept non-default routes
     assertTrue(
         r.processReadOnly(
-            org.batfish.datamodel.StaticRoute.testBuilder()
+            StaticRoute.testBuilder()
                 .setNetwork(Prefix.create(Ip.parse("10.10.10.10"), 24))
                 .build()));
 
     // Policy should not accept default routes
-    assertFalse(
-        r.processReadOnly(
-            org.batfish.datamodel.StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
+    assertFalse(r.processReadOnly(StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
   }
 
   @Test

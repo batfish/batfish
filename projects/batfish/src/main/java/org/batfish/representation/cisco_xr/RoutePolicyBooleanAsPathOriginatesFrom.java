@@ -9,8 +9,11 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.DedupedAsPath;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 
 /**
  * A route-policy boolean expression that is true iff the route has an as-path whose last ASes are
@@ -49,8 +52,9 @@ public final class RoutePolicyBooleanAsPathOriginatesFrom extends RoutePolicyBoo
 
   @Override
   public BooleanExpr toBooleanExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    // TODO: implement
-    return BooleanExprs.FALSE;
+    return MatchAsPath.of(
+        _exact ? InputAsPath.instance() : DedupedAsPath.of(InputAsPath.instance()),
+        AsSetsMatchingRanges.of(true, false, _ranges));
   }
 
   private final boolean _exact;
