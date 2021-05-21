@@ -65,7 +65,7 @@ as_path_length_expr: as_path_length | parameter;
 boolean_and_rp_stanza
 :
    boolean_not_rp_stanza
-   | boolean_and_rp_stanza AND boolean_not_rp_stanza
+   | boolean_and_rp_stanza AND NEWLINE* boolean_not_rp_stanza
 ;
 
 boolean_apply_rp_stanza
@@ -163,7 +163,7 @@ boolean_route_type_is_rp_stanza
 boolean_rp_stanza
 :
    boolean_and_rp_stanza
-   | boolean_rp_stanza OR boolean_and_rp_stanza
+   | boolean_rp_stanza OR NEWLINE* boolean_and_rp_stanza
 ;
 
 boolean_simple_rp_stanza

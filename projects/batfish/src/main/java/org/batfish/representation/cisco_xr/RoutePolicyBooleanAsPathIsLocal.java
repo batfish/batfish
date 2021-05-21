@@ -1,12 +1,16 @@
 package org.batfish.representation.cisco_xr;
 
-import java.util.Collections;
+import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
+
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 
 /**
  * Checks whether the AS Path is local to this AS. Per the below documentation, this is when an AS
@@ -23,8 +27,8 @@ public class RoutePolicyBooleanAsPathIsLocal extends RoutePolicyBoolean {
 
   @Override
   public BooleanExpr toBooleanExpr(CiscoXrConfiguration cc, Configuration c, Warnings w) {
-    LegacyMatchAsPath match = new LegacyMatchAsPath(new ExplicitAsPathSet(Collections.emptyList()));
-    return match;
+    return MatchAsPath.of(
+        InputAsPath.instance(), HasAsPathLength.of(new IntComparison(EQ, new LiteralInt(0))));
   }
 
   @Override

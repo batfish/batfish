@@ -16,8 +16,8 @@ public final class DfaRegexAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
-    return visitor.visitDfaRegexAsPathSetElem(this);
+  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
+    return visitor.visitDfaRegexAsPathSetElem(this, arg);
   }
 
   public @Nonnull String getRegex() {

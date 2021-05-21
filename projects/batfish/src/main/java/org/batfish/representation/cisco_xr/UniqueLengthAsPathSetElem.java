@@ -20,8 +20,16 @@ public final class UniqueLengthAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
-    return visitor.visitUniqueLengthAsPathSetElem(this);
+  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
+    return visitor.visitUniqueLengthAsPathSetElem(this, arg);
+  }
+
+  public @Nonnull IntComparator getComparator() {
+    return _comparator;
+  }
+
+  public int getLength() {
+    return _length;
   }
 
   @Override

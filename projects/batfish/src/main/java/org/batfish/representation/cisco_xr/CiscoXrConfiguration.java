@@ -13,6 +13,8 @@ import static org.batfish.datamodel.routing_policy.Common.generateGenerationPoli
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeDedupedAsPathMatchExprName;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeOriginalAsPathMatchExprName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertMatchesAnyToCommunitySetMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.convertMatchesEveryToCommunitySetMatchExpr;
@@ -25,7 +27,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.getRsaPubKe
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveTunnelIfaceNames;
-import static org.batfish.representation.cisco_xr.CiscoXrConversions.toAsPathAccessList;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.toAsPathMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunitySetExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Key;
@@ -73,7 +75,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -2129,9 +2130,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // convert as-path-sets to vendor independent format
     _asPathSets.forEach(
         (name, asPathSet) -> {
-          // TODO: add VI support for AsPathSet references instead of relying on AsPathAccessList
-          AsPathAccessList apList = toAsPathAccessList(name, asPathSet);
-          c.getAsPathAccessLists().put(name, apList);
+          c.getAsPathMatchExprs()
+              .put(computeDedupedAsPathMatchExprName(name), toAsPathMatchExpr(asPathSet, true));
+          c.getAsPathMatchExprs()
+              .put(computeOriginalAsPathMatchExprName(name), toAsPathMatchExpr(asPathSet, false));
         });
 
     convertCommunitySets(c);

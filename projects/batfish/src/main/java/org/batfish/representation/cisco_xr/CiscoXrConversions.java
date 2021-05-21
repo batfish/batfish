@@ -44,7 +44,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -92,6 +91,11 @@ import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
@@ -142,7 +146,6 @@ import org.batfish.datamodel.routing_policy.expr.LongMatchAll;
 import org.batfish.datamodel.routing_policy.expr.LongMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.Uint32HighLowExpr;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
@@ -2078,120 +2081,107 @@ public class CiscoXrConversions {
     return String.format("~vrfExportImport~%s~%s", exportingVrf, importingVrf);
   }
 
-  static @Nonnull AsPathAccessList toAsPathAccessList(String name, AsPathSet asPathSet) {
-    return new AsPathAccessList(
-        name,
+  static @Nonnull String computeDedupedAsPathMatchExprName(String name) {
+    return String.format("~DEDUPED~%s", name);
+  }
+
+  static @Nonnull String computeOriginalAsPathMatchExprName(String name) {
+    return String.format("~ORIGINAL~%s", name);
+  }
+
+  static @Nonnull AsPathMatchExpr toAsPathMatchExpr(AsPathSet asPathSet, boolean usingDeduped) {
+    return AsPathMatchAny.of(
         asPathSet.getElements().stream()
-            .map(elem -> elem.accept(AS_PATH_SET_ELEM_TO_AS_PATH_ACCESS_LIST_LINE))
+            .map(elem -> elem.accept(AS_PATH_SET_ELEM_TO_AS_PATH_MATCH_EXPR, usingDeduped))
             .filter(Objects::nonNull)
             .collect(ImmutableList.toImmutableList()));
   }
 
-  // Returns null for unsupported elems
-  private static final class AsPathSetElemConverter implements AsPathSetElemVisitor<AsPathSetElem> {
+  // For any given concrete AsPathSetElem, the corresponding visit method should return a non-null
+  // value for exactly one value of usingDeduped.
+  private static final class AsPathSetElemToAsPathMatchExpr
+      implements AsPathSetElemVisitor<AsPathMatchExpr, Boolean> {
     @Override
-    public AsPathSetElem visitDfaRegexAsPathSetElem(DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
-      // TODO: figure out how this is different from ios-regex
-      return new RegexAsPathSetElem(toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
+    public AsPathMatchExpr visitDfaRegexAsPathSetElem(
+        DfaRegexAsPathSetElem dfaRegexAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped) {
+        return null;
+      } else {
+        // TODO: figure out how this is different from ios-regex
+        return AsPathMatchRegex.of(toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
+      }
     }
 
     @Override
-    public AsPathSetElem visitIosRegexAsPathSetElem(IosRegexAsPathSetElem iosRegexAsPathSetElem) {
-      return new RegexAsPathSetElem(toJavaRegex(iosRegexAsPathSetElem.getRegex()));
+    public AsPathMatchExpr visitIosRegexAsPathSetElem(
+        IosRegexAsPathSetElem iosRegexAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped) {
+        return null;
+      } else {
+        return AsPathMatchRegex.of(toJavaRegex(iosRegexAsPathSetElem.getRegex()));
+      }
     }
 
     @Override
-    public AsPathSetElem visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem) {
-      // TODO: implement
-      return null;
+    public AsPathMatchExpr visitLengthAsPathSetElem(
+        LengthAsPathSetElem lengthAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped) {
+        return null;
+      } else {
+        // TODO: something with getAll()?
+        return HasAsPathLength.of(
+            new IntComparison(
+                lengthAsPathSetElem.getComparator(),
+                new LiteralInt(lengthAsPathSetElem.getLength())));
+      }
     }
 
     @Override
-    public AsPathSetElem visitNeighborIsAsPathSetElem(
-        NeighborIsAsPathSetElem neighborIsAsPathSetElem) {
-      // TODO: implement
-      return null;
+    public AsPathMatchExpr visitNeighborIsAsPathSetElem(
+        NeighborIsAsPathSetElem neighborIsAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped ^ !neighborIsAsPathSetElem.getExact()) {
+        // exact means not deduped
+        return null;
+      }
+      return AsSetsMatchingRanges.of(false, true, neighborIsAsPathSetElem.getAsRanges());
     }
 
     @Override
-    public AsPathSetElem visitOriginatesFromAsPathSetElem(
-        OriginatesFromAsPathSetElem originatesFromAsPathSetElem) {
-      // TODO: implement
-      return null;
+    public AsPathMatchExpr visitOriginatesFromAsPathSetElem(
+        OriginatesFromAsPathSetElem originatesFromAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped ^ !originatesFromAsPathSetElem.getExact()) {
+        // exact means not deduped
+        return null;
+      }
+      return AsSetsMatchingRanges.of(true, false, originatesFromAsPathSetElem.getAsRanges());
     }
 
     @Override
-    public AsPathSetElem visitPassesThroughAsPathSetElem(
-        PassesThroughAsPathSetElem passesThroughAsPathSetElem) {
-      // TODO: implement
-      return null;
+    public AsPathMatchExpr visitPassesThroughAsPathSetElem(
+        PassesThroughAsPathSetElem passesThroughAsPathSetElem, Boolean usingDeduped) {
+      if (usingDeduped ^ !passesThroughAsPathSetElem.getExact()) {
+        // exact means not deduped
+        return null;
+      }
+      return AsSetsMatchingRanges.of(false, false, passesThroughAsPathSetElem.getAsRanges());
     }
 
     @Override
-    public AsPathSetElem visitUniqueLengthAsPathSetElem(
-        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem) {
-      // TODO: implement
-      return null;
-    }
-  }
-
-  static final AsPathSetElemConverter AS_PATH_SET_ELEM_CONVERTER = new AsPathSetElemConverter();
-
-  // Returns null for unsupported elems
-  private static final class AsPathSetElemToAsPathAccessListLine
-      implements AsPathSetElemVisitor<AsPathAccessListLine> {
-    @Override
-    public org.batfish.datamodel.AsPathAccessListLine visitDfaRegexAsPathSetElem(
-        DfaRegexAsPathSetElem dfaRegexAsPathSetElem) {
-      // TODO: figure out how this is different from ios-regex
-      return new AsPathAccessListLine(
-          LineAction.PERMIT, toJavaRegex(dfaRegexAsPathSetElem.getRegex()));
-    }
-
-    @Override
-    public org.batfish.datamodel.AsPathAccessListLine visitIosRegexAsPathSetElem(
-        IosRegexAsPathSetElem iosRegexAsPathSetElem) {
-      return new AsPathAccessListLine(
-          LineAction.PERMIT, toJavaRegex(iosRegexAsPathSetElem.getRegex()));
-    }
-
-    @Override
-    public AsPathAccessListLine visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem) {
-      // TODO: implement
-      return null;
-    }
-
-    @Override
-    public AsPathAccessListLine visitNeighborIsAsPathSetElem(
-        NeighborIsAsPathSetElem neighborIsAsPathSetElem) {
-      // TODO: implement
-      return null;
-    }
-
-    @Override
-    public AsPathAccessListLine visitOriginatesFromAsPathSetElem(
-        OriginatesFromAsPathSetElem originatesFromAsPathSetElem) {
-      // TODO: implement
-      return null;
-    }
-
-    @Override
-    public AsPathAccessListLine visitPassesThroughAsPathSetElem(
-        PassesThroughAsPathSetElem passesThroughAsPathSetElem) {
-      // TODO: implement
-      return null;
-    }
-
-    @Override
-    public AsPathAccessListLine visitUniqueLengthAsPathSetElem(
-        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem) {
-      // TODO: implement
-      return null;
+    public AsPathMatchExpr visitUniqueLengthAsPathSetElem(
+        UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem, Boolean usingDeduped) {
+      if (!usingDeduped) {
+        return null;
+      }
+      // TODO: something with getAll()?
+      return HasAsPathLength.of(
+          new IntComparison(
+              uniqueLengthAsPathSetElem.getComparator(),
+              new LiteralInt(uniqueLengthAsPathSetElem.getLength())));
     }
   }
 
-  static final AsPathSetElemToAsPathAccessListLine AS_PATH_SET_ELEM_TO_AS_PATH_ACCESS_LIST_LINE =
-      new AsPathSetElemToAsPathAccessListLine();
+  static final AsPathSetElemToAsPathMatchExpr AS_PATH_SET_ELEM_TO_AS_PATH_MATCH_EXPR =
+      new AsPathSetElemToAsPathMatchExpr();
 
   /**
    * Implements best-effort behavior for undefined route-policy.
