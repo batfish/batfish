@@ -34,6 +34,28 @@ public class OspfProcessTest {
     int cost = OspfProcess.computeInterfaceCost(1.0, i);
     assertThat(cost, equalTo(1));
 
+    // Defaults for IOS VLAN iface
+    assertThat(
+        OspfProcess.computeInterfaceCost(
+            1e6,
+            Interface.builder()
+                .setName("Vlan1")
+                .setBandwidth(1e9)
+                .setOwner(new Configuration("r1", ConfigurationFormat.CISCO_IOS))
+                .build()),
+        equalTo(1));
+
+    // Defaults for NXOS VLAN iface
+    assertThat(
+        OspfProcess.computeInterfaceCost(
+            4e10,
+            Interface.builder()
+                .setName("Vlan1")
+                .setBandwidth(1e9)
+                .setOwner(new Configuration("r1", ConfigurationFormat.CISCO_NX))
+                .build()),
+        equalTo(40));
+
     cost = OspfProcess.computeInterfaceCost(1e6, i);
     assertThat(cost, equalTo(1000));
 

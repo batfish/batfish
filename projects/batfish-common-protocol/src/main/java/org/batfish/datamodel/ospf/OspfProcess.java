@@ -216,7 +216,6 @@ public final class OspfProcess implements Serializable {
     }
   }
 
-  private static final int DEFAULT_CISCO_VLAN_OSPF_COST = 1;
   /** Set of routing protocols that are required to have a defined admin cost */
   public static final EnumSet<RoutingProtocol> REQUIRES_ADMIN =
       EnumSet.of(
@@ -370,19 +369,12 @@ public final class OspfProcess implements Serializable {
     }
 
     String interfaceName = i.getName();
-    if (interfaceName.startsWith("Vlan")) {
-      // Special handling for VLAN interfaces
-      // TODO: fix for non-cisco
-      return DEFAULT_CISCO_VLAN_OSPF_COST;
-    } else {
-      // Regular physical interface cost computation
-      checkState(
-          i.getBandwidth() != null,
-          "Interface %s on %s is missing bandwidth, cannot compute OSPF cost",
-          interfaceName,
-          i.getOwner().getHostname());
-      return Math.max((int) (referenceBandwidth / i.getBandwidth()), 1);
-    }
+    checkState(
+        i.getBandwidth() != null,
+        "Interface %s on %s is missing bandwidth, cannot compute OSPF cost",
+        interfaceName,
+        i.getOwner().getHostname());
+    return Math.max((int) (referenceBandwidth / i.getBandwidth()), 1);
   }
 
   /**
