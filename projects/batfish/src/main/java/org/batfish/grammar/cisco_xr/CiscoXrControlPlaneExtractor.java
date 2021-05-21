@@ -648,6 +648,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ogn_network_objectContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Origin_exprContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Origin_expr_literalContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ospf_areaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ospf_network_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.ParameterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_default_is_stanzaContext;
@@ -748,6 +749,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_aclContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_costContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_bgp_tailContext;
@@ -1075,24 +1077,29 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
+  public @Nullable OspfNetworkType toOspfNetworkType(Ospf_network_typeContext ctx) {
+    if (ctx.POINT_TO_POINT() != null) {
+      return OspfNetworkType.POINT_TO_POINT;
+    } else if (ctx.BROADCAST() != null) {
+      return OspfNetworkType.BROADCAST;
+    } else if (ctx.POINT_TO_MULTIPOINT() != null) {
+      if (ctx.NON_BROADCAST() != null) {
+        return OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST;
+      } else {
+        return OspfNetworkType.POINT_TO_MULTIPOINT;
+      }
+    } else if (ctx.NON_BROADCAST() != null) {
+      return OspfNetworkType.NON_BROADCAST;
+    } else {
+      warn(ctx, "Cannot determine OSPF network type.");
+      return null;
+    }
+  }
+
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
-      if (ctx.POINT_TO_POINT() != null) {
-        iface.setOspfNetworkType(OspfNetworkType.POINT_TO_POINT);
-      } else if (ctx.BROADCAST() != null) {
-        iface.setOspfNetworkType(OspfNetworkType.BROADCAST);
-      } else if (ctx.POINT_TO_MULTIPOINT() != null) {
-        if (ctx.NON_BROADCAST() != null) {
-          iface.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST);
-        } else {
-          iface.setOspfNetworkType(OspfNetworkType.POINT_TO_MULTIPOINT);
-        }
-      } else if (ctx.NON_BROADCAST() != null) {
-        iface.setOspfNetworkType(OspfNetworkType.NON_BROADCAST);
-      } else {
-        warn(ctx, "Cannot determine OSPF network type.");
-      }
+      iface.setOspfNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
     }
   }
 
@@ -2601,6 +2608,15 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     iface.setOspfArea(_currentOspfArea);
     iface.setOspfProcess(_currentOspfProcess.getName());
     _currentOspfInterface = iface.getName();
+  }
+
+  @Override
+  public void exitRoi_network(Roi_networkContext ctx) {
+    Interface iface = _configuration.getInterfaces().get(_currentOspfInterface);
+
+    // Guaranteed by roa_interface, should be created if it doesn't exist
+    assert iface != null;
+    iface.setOspfNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
   }
 
   @Override

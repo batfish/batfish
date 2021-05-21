@@ -1,0 +1,67 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname ospf-network-type
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.1.1 255.255.255.252
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 10.0.2.1 255.255.255.252
+!
+interface GigabitEthernet0/0/0/3
+ ipv4 address 10.0.3.1 255.255.255.252
+!
+interface GigabitEthernet0/0/0/4
+ ipv4 address 10.0.4.1 255.255.255.252
+!
+interface GigabitEthernet0/0/0/5
+ ipv4 address 10.0.5.1 255.255.255.252
+!
+interface GigabitEthernet0/0/0/6
+ ipv4 address 10.0.6.1 255.255.255.252
+ ip ospf network point-to-point
+!
+interface GigabitEthernet0/0/0/7
+ ipv4 address 10.0.7.1 255.255.255.252
+ ip ospf network broadcast
+!
+interface GigabitEthernet0/0/0/8
+ ipv4 address 10.0.8.1 255.255.255.252
+ ip ospf network non-broadcast
+!
+interface GigabitEthernet0/0/0/9
+ ipv4 address 10.0.9.1 255.255.255.252
+ ip ospf network point-to-multipoint
+!
+interface GigabitEthernet0/0/0/10
+ ipv4 address 10.0.10.1 255.255.255.252
+ ip ospf network point-to-multipoint non-broadcast
+!
+router ospf 65100
+ router-id 10.0.0.1
+ area 0
+  interface GigabitEthernet0/0/0/1
+   network point-to-point
+  !
+  interface GigabitEthernet0/0/0/2
+   network broadcast
+  !
+  interface GigabitEthernet0/0/0/3
+   network non-broadcast
+  !
+  interface GigabitEthernet0/0/0/4
+   network point-to-multipoint
+  !
+  interface GigabitEthernet0/0/0/5
+   network point-to-multipoint non-broadcast
+  !
+  interface GigabitEthernet0/0/0/6
+  !
+  interface GigabitEthernet0/0/0/7
+  !
+  interface GigabitEthernet0/0/0/8
+  !
+  interface GigabitEthernet0/0/0/9
+  !
+  interface GigabitEthernet0/0/0/10
+ !
+!
