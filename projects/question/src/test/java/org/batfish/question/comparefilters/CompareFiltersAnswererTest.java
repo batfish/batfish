@@ -1,42 +1,25 @@
 package org.batfish.question.comparefilters;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.ExprAclLine.accepting;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.question.comparefilters.CompareFiltersAnswerer.compareFilters;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
-import java.io.IOException;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.PermitAndDenyBdds;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.main.Batfish;
-import org.batfish.main.BatfishTestUtils;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 public final class CompareFiltersAnswererTest {
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   private static final String HOSTNAME = "hostname";
   private static final String FILTER = "filter";
@@ -145,31 +128,5 @@ public final class CompareFiltersAnswererTest {
                   : new PermitAndDenyBdds(_zero, bdds.get(i));
             })
         .collect(ImmutableList.toImmutableList());
-  }
-
-  @Test
-  public void testMatchSrcInterface_noDifference() throws IOException {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration c =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
-    Vrf vrf = nf.vrfBuilder().setOwner(c).build();
-    Interface iface = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true).build();
-    IpAccessList acl =
-        nf.aclBuilder()
-            .setOwner(c)
-            .setName("test")
-            .setLines(accepting(matchSrcInterface(iface.getName())))
-            .build();
-
-    SortedMap<String, Configuration> configs = ImmutableSortedMap.of(c.getHostname(), c);
-    Batfish batfish = BatfishTestUtils.getBatfish(configs, configs, _folder);
-
-    CompareFiltersQuestion question = new CompareFiltersQuestion(null, null, null);
-    TableAnswerElement answer =
-        (TableAnswerElement)
-            new CompareFiltersAnswerer(question, batfish)
-                .answerDiff(batfish.getSnapshot(), batfish.getReferenceSnapshot());
-
-    assertThat(answer.getRowsList(), empty());
   }
 }
