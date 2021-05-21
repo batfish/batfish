@@ -1,19 +1,22 @@
 package org.batfish.representation.cisco_xr;
 
-/** A visitor of {@link AsPathSetElem} that returns a generic argument. */
-public interface AsPathSetElemVisitor<T> {
+/**
+ * A visitor of {@link AsPathSetElem} that takes a generic argument and returns a generic argument.
+ */
+public interface AsPathSetElemVisitor<T, U> {
 
-  T visitDfaRegexAsPathSetElem(DfaRegexAsPathSetElem dfaRegexAsPathSetElem);
+  T visitDfaRegexAsPathSetElem(DfaRegexAsPathSetElem dfaRegexAsPathSetElem, U arg);
 
-  T visitIosRegexAsPathSetElem(IosRegexAsPathSetElem iosRegexAsPathSetElem);
+  T visitIosRegexAsPathSetElem(IosRegexAsPathSetElem iosRegexAsPathSetElem, U arg);
 
-  T visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem);
+  T visitLengthAsPathSetElem(LengthAsPathSetElem lengthAsPathSetElem, U arg);
 
-  T visitNeighborIsAsPathSetElem(NeighborIsAsPathSetElem neighborIsAsPathSetElem);
+  T visitNeighborIsAsPathSetElem(NeighborIsAsPathSetElem neighborIsAsPathSetElem, U arg);
 
-  T visitOriginatesFromAsPathSetElem(OriginatesFromAsPathSetElem originatesFromAsPathSetElem);
+  T visitOriginatesFromAsPathSetElem(
+      OriginatesFromAsPathSetElem originatesFromAsPathSetElem, U arg);
 
-  T visitPassesThroughAsPathSetElem(PassesThroughAsPathSetElem passesThroughAsPathSetElem);
+  T visitPassesThroughAsPathSetElem(PassesThroughAsPathSetElem passesThroughAsPathSetElem, U arg);
 
-  T visitUniqueLengthAsPathSetElem(UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem);
+  T visitUniqueLengthAsPathSetElem(UniqueLengthAsPathSetElem uniqueLengthAsPathSetElem, U arg);
 }

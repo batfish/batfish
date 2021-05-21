@@ -17,8 +17,16 @@ public final class LengthAsPathSetElem implements AsPathSetElem {
   }
 
   @Override
-  public <T> T accept(AsPathSetElemVisitor<T> visitor) {
-    return visitor.visitLengthAsPathSetElem(this);
+  public <T, U> T accept(AsPathSetElemVisitor<T, U> visitor, U arg) {
+    return visitor.visitLengthAsPathSetElem(this, arg);
+  }
+
+  public @Nonnull IntComparator getComparator() {
+    return _comparator;
+  }
+
+  public int getLength() {
+    return _length;
   }
 
   @Override
