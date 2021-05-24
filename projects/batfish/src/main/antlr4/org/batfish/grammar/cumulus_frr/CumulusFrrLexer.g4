@@ -130,6 +130,8 @@ CRITICAL: 'critical';
 
 DATACENTER: 'datacenter';
 
+DEAD_INTERVAL: 'dead-interval';
+
 DEBUGGING: 'debugging';
 
 DEFAULT: 'default';
@@ -193,6 +195,8 @@ FRR: 'frr';
 GE: 'ge';
 
 GOTO: 'goto';
+
+HELLO_INTERVAL: 'hello-interval';
 
 HOSTNAME
 :
