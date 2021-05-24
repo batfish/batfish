@@ -18,6 +18,8 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.RoutingPolicy.isGenerated;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
@@ -2771,5 +2773,46 @@ public final class XrGrammarTest {
     assertThat(
         c.getInterfaces().get("GigabitEthernet0/0/0/10").getOspfNetworkType(),
         equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
+  }
+
+  @Test
+  public void testOspfNetworkTypeOverrideExtraction() {
+    String hostname = "ospf-network-type-override";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces().keySet(),
+        containsInAnyOrder("GigabitEthernet0/0/0/1", "GigabitEthernet0/0/0/2"));
+
+    // Network types configured at OSPF interface level
+    assertThat(
+        vc.getInterfaces().get("GigabitEthernet0/0/0/1").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
+    assertNull(vc.getInterfaces().get("GigabitEthernet0/0/0/2").getOspfNetworkType());
+
+    // Network type configured at OSPF router level
+    assertThat(
+        vc.getDefaultVrf().getOspfProcesses().get("65100").getDefaultNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Test
+  public void testOspfNetworkTypeOverrideConversion() {
+    String hostname = "ospf-network-type-override";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        containsInAnyOrder("GigabitEthernet0/0/0/1", "GigabitEthernet0/0/0/2"));
+
+    // Network type configured at OSPF interface level overrides OSPF router level type
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0/0/1").getOspfNetworkType(),
+        equalTo(BROADCAST));
+
+    // Network type inherited from OSPF router level
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0/0/2").getOspfNetworkType(),
+        equalTo(POINT_TO_POINT));
   }
 }
