@@ -505,7 +505,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       return null;
     }
     return org.batfish.datamodel.questions.BgpRoute.builder()
-        .setWeight(dataplaneBgpRoute.getWeight())
         .setNextHopIp(dataplaneBgpRoute.getNextHopIp())
         .setProtocol(dataplaneBgpRoute.getProtocol())
         .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
