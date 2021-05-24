@@ -265,6 +265,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
     // the BDDRoute also tracks a metric but I believe for BGP we should use the MED
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
+    builder.setTag(r.getTag().satAssignmentToLong(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
     builder.setCommunities(communities);
@@ -512,6 +513,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         .setOriginatorIp(dataplaneBgpRoute.getOriginatorIp())
         .setMetric(dataplaneBgpRoute.getMetric())
         .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
+        .setTag(dataplaneBgpRoute.getTag())
         .setWeight(dataplaneBgpRoute.getWeight())
         .setNetwork(dataplaneBgpRoute.getNetwork())
         .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
