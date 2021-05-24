@@ -1214,6 +1214,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private RoutePolicyBoolean _currentAsPathBoolean;
 
+  @SuppressWarnings("unused")
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
@@ -1290,6 +1291,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private SnmpCommunity _currentSnmpCommunity;
 
+  @SuppressWarnings("unused")
   private SnmpHost _currentSnmpHost;
 
   private User _currentUser;
