@@ -1840,8 +1840,15 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     ospfSettings.setAreaName(areaNum);
     ospfSettings.setEnabled(proc != null && areaNum != null && !vsIface.getOspfShutdown());
-    org.batfish.datamodel.ospf.OspfNetworkType networkType =
-        toOspfNetworkType(vsIface.getOspfNetworkType(), _w);
+
+    org.batfish.representation.cisco_xr.OspfNetworkType vsNetworkType =
+        vsIface.getOspfNetworkType();
+    // Use default from process if it exists and no type is already set
+    if (vsNetworkType == null && proc != null) {
+      vsNetworkType = proc.getDefaultNetworkType();
+    }
+    org.batfish.datamodel.ospf.OspfNetworkType networkType = toOspfNetworkType(vsNetworkType, _w);
+
     ospfSettings.setNetworkType(networkType);
     if (vsIface.getOspfCost() == null
         && iface.isLoopback()

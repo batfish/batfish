@@ -34,6 +34,7 @@ public final class BgpRoute {
   public static final String PROP_ORIGIN_TYPE = "originType";
   public static final String PROP_PROTOCOL = "protocol";
   public static final String PROP_SRC_PROTOCOL = "srcProtocol";
+  public static final String PROP_TAG = "tag";
   public static final String PROP_WEIGHT = "weight";
   public static final String PROP_CLASS = "class";
 
@@ -47,6 +48,7 @@ public final class BgpRoute {
   @Nonnull private final OriginType _originType;
   @Nonnull private final RoutingProtocol _protocol;
   @Nullable private final RoutingProtocol _srcProtocol;
+  private final long _tag;
   private final int _weight;
 
   private BgpRoute(
@@ -60,6 +62,7 @@ public final class BgpRoute {
       OriginType originType,
       RoutingProtocol protocol,
       @Nullable RoutingProtocol srcProtocol,
+      long tag,
       int weight) {
     _asPath = asPath;
     _communities = communities;
@@ -71,6 +74,7 @@ public final class BgpRoute {
     _originType = originType;
     _protocol = protocol;
     _srcProtocol = srcProtocol;
+    _tag = tag;
     _weight = weight;
   }
 
@@ -86,6 +90,7 @@ public final class BgpRoute {
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
       @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
       @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_WEIGHT) int weight,
       // For backwards compatibility, does nothing
       @Nullable @JsonProperty(PROP_CLASS) String clazz) {
@@ -104,6 +109,7 @@ public final class BgpRoute {
         originType,
         protocol,
         srcProtocol,
+        tag,
         weight);
   }
 
@@ -165,6 +171,11 @@ public final class BgpRoute {
     return _srcProtocol;
   }
 
+  @JsonProperty(PROP_TAG)
+  public long getTag() {
+    return _tag;
+  }
+
   @JsonProperty(PROP_WEIGHT)
   public int getWeight() {
     return _weight;
@@ -181,6 +192,7 @@ public final class BgpRoute {
     BgpRoute bgpRoute = (BgpRoute) o;
     return _localPreference == bgpRoute._localPreference
         && _metric == bgpRoute._metric
+        && _tag == bgpRoute._tag
         && _weight == bgpRoute._weight
         && Objects.equals(_asPath, bgpRoute._asPath)
         && Objects.equals(_communities, bgpRoute._communities)
@@ -205,6 +217,7 @@ public final class BgpRoute {
         _originType,
         _protocol,
         _srcProtocol,
+        _tag,
         _weight);
   }
 
@@ -224,6 +237,7 @@ public final class BgpRoute {
         .setOriginatorIp(_originatorIp)
         .setOriginType(_originType)
         .setSrcProtocol(_srcProtocol)
+        .setTag(_tag)
         .setWeight(_weight);
   }
 
@@ -241,6 +255,7 @@ public final class BgpRoute {
     @Nullable private OriginType _originType;
     @Nullable private RoutingProtocol _protocol;
     @Nullable private RoutingProtocol _srcProtocol;
+    private long _tag;
     private int _weight;
 
     public Builder() {
@@ -266,6 +281,7 @@ public final class BgpRoute {
           _originType,
           _protocol,
           _srcProtocol,
+          _tag,
           _weight);
     }
 
@@ -319,6 +335,11 @@ public final class BgpRoute {
       return this;
     }
 
+    public Builder setTag(long tag) {
+      _tag = tag;
+      return this;
+    }
+
     public Builder setWeight(int weight) {
       _weight = weight;
       return this;
@@ -339,6 +360,7 @@ public final class BgpRoute {
         .add("originType", _originType)
         .add("protocol", _protocol)
         .add("srcProtocol", _srcProtocol)
+        .add("tag", _tag)
         .add("weight", _weight)
         .toString();
   }
