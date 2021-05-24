@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,7 +9,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -84,8 +82,6 @@ public class OspfProcess implements Serializable {
 
   private Map<Long, Map<Prefix, OspfAreaSummary>> _summaries;
 
-  private Set<OspfWildcardNetwork> _wildcardNetworks;
-
   public long getDefaultMetric(RoutingProtocol protocol) {
     if (_defaultMetric != null) {
       return _defaultMetric;
@@ -109,34 +105,8 @@ public class OspfProcess implements Serializable {
     _nssas = new HashMap<>();
     _passiveInterfaces = new HashSet<>();
     _stubs = new HashMap<>();
-    _wildcardNetworks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _summaries = new TreeMap<>();
-  }
-
-  public void computeNetworks(Collection<Interface> interfaces) {
-    for (Interface i : interfaces) {
-      ConcreteInterfaceAddress address = i.getAddress();
-      if (address == null) {
-        continue;
-      }
-      for (OspfWildcardNetwork wn : _wildcardNetworks) {
-        // first we check if the interface ip address matches the ospf
-        // network when the wildcard is ORed to both
-        long wildcardLong = wn.getWildcard().asLong();
-        long ospfNetworkLong = wn.getNetworkAddress().asLong();
-        long intIpLong = address.getIp().asLong();
-        long wildcardedOspfNetworkLong = ospfNetworkLong | wildcardLong;
-        long wildcardedIntIpLong = intIpLong | wildcardLong;
-        if (wildcardedOspfNetworkLong == wildcardedIntIpLong) {
-          // since we have a match, we add the INTERFACE network, ignoring
-          // the wildcard stuff from before
-          Prefix newOspfNetwork = address.getPrefix();
-          _networks.add(new OspfNetwork(newOspfNetwork, wn.getArea()));
-          break;
-        }
-      }
-    }
   }
 
   public long getDefaultInformationMetric() {
@@ -235,10 +205,6 @@ public class OspfProcess implements Serializable {
 
   public Map<Long, Map<Prefix, OspfAreaSummary>> getSummaries() {
     return _summaries;
-  }
-
-  public Set<OspfWildcardNetwork> getWildcardNetworks() {
-    return _wildcardNetworks;
   }
 
   public void setDefaultInformationMetric(int metric) {
