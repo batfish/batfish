@@ -22,7 +22,7 @@ ro_area_inner
   | roa_cost
   | roa_interface
   | roa_mpls
-  | roa_network_null
+  | roa_network
   | roa_range
 ;
 
@@ -427,9 +427,9 @@ roa_mpls
 
 roampls_traffic_eng: TRAFFIC_ENG NEWLINE;
 
-roa_network_null
+roa_network
 :
-   NETWORK POINT_TO_POINT NEWLINE
+   NETWORK ospf_network_type NEWLINE
 ;
 
 roi_cost

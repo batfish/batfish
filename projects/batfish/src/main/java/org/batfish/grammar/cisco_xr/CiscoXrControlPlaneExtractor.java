@@ -745,6 +745,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_rfc1583_compatibilityContex
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_router_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_interfaceContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_aclContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
@@ -6215,6 +6216,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitRoa_interface(Roa_interfaceContext ctx) {
     _currentOspfInterface = null;
+  }
+
+  @Override
+  public void exitRoa_network(Roa_networkContext ctx) {
+    _currentOspfProcess.setDefaultNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
   }
 
   @Override

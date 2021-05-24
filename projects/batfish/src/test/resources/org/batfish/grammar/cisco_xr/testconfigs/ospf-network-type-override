@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname ospf-network-type-override
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 10.0.1.1 255.255.255.252
+!
+interface GigabitEthernet0/0/0/2
+ ipv4 address 10.0.2.1 255.255.255.252
+!
+router ospf 65100
+ router-id 10.0.0.1
+ area 0
+ network point-to-point
+ interface GigabitEthernet0/0/0/1
+  network broadcast
+ !
+ interface GigabitEthernet0/0/0/2
+ !
+!
