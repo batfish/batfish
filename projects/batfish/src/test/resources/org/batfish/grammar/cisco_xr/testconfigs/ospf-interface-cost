@@ -1,0 +1,28 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+hostname ospf-interface-cost
+!
+interface GigabitEthernet0/0/0/1
+ no shutdown
+!
+interface GigabitEthernet0/0/0/2
+ no shutdown
+!
+router ospf 2
+ router-id 10.10.10.10
+ auto-cost reference-bandwidth 400000
+ area 0
+  interface GigabitEthernet0/0/0/1
+   cost 1
+  !
+  interface GigabitEthernet0/0/0/2
+  !
+  interface Loopback1
+  !
+  interface Loopback2
+   network point-to-point
+  !
+  interface Loopback3
+   cost 12
+  !
+ !
+!

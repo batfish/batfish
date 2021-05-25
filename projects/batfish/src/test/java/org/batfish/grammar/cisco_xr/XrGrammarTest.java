@@ -1129,6 +1129,34 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testOspfInterfaceCost() {
+    Configuration c = parseConfig("ospf-interface-cost");
+    String ifaceEth1Name = "GigabitEthernet0/0/0/1";
+    String ifaceEth2Name = "GigabitEthernet0/0/0/2";
+    String ifaceLoop1Name = "Loopback1";
+    String ifaceLoop2Name = "Loopback2";
+    String ifaceLoop3Name = "Loopback3";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(
+        ifaces.keySet(),
+        contains(ifaceEth1Name, ifaceEth2Name, ifaceLoop1Name, ifaceLoop2Name, ifaceLoop3Name));
+    Interface ifaceEth1 = ifaces.get(ifaceEth1Name);
+    Interface ifaceEth2 = ifaces.get(ifaceEth2Name);
+    Interface ifaceLoop1 = ifaces.get(ifaceLoop1Name);
+    Interface ifaceLoop2 = ifaces.get(ifaceLoop2Name);
+    Interface ifaceLoop3 = ifaces.get(ifaceLoop3Name);
+
+    // Confirm explicitly configured costs are applied
+    assertThat(ifaceEth1.getOspfCost(), equalTo(1));
+    assertThat(ifaceLoop3.getOspfCost(), equalTo(12));
+
+    // Confirm other costs are calculated correctly
+    assertThat(ifaceEth2.getOspfCost(), equalTo(400));
+    assertThat(ifaceLoop1.getOspfCost(), equalTo(1));
+    assertThat(ifaceLoop2.getOspfCost(), equalTo(1));
+  }
+
+  @Test
   public void testOspfInterface() {
     Configuration c = parseConfig("ospf-interface");
     String ifaceName = "Bundle-Ether201";
