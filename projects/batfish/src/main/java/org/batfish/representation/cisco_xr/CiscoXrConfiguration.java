@@ -83,13 +83,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
-import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
@@ -122,9 +120,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TunnelConfiguration;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.eigrp.ClassicMetric;
@@ -367,7 +362,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final List<Ip> _dhcpRelayServers;
 
-  private NavigableSet<String> _dnsServers;
+  private final NavigableSet<String> _dnsServers;
 
   private String _dnsSourceInterface;
 
@@ -375,27 +370,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final @Nonnull Map<String, ExtcommunitySetRt> _extcommunitySetRts;
 
-  private boolean _failover;
-
-  private String _failoverCommunicationInterface;
-
-  private String _failoverCommunicationInterfaceAlias;
-
-  private final Map<String, String> _failoverInterfaces;
-
-  private final Map<String, ConcreteInterfaceAddress> _failoverPrimaryAddresses;
-
-  private boolean _failoverSecondary;
-
-  private final Map<String, ConcreteInterfaceAddress> _failoverStandbyAddresses;
-
-  private String _failoverStatefulSignalingInterface;
-
-  private String _failoverStatefulSignalingInterfaceAlias;
-
   private String _hostname;
-
-  private final Map<String, InspectClassMap> _inspectClassMaps;
 
   private final Map<String, Interface> _interfaces;
 
@@ -415,15 +390,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, Keyring> _keyrings;
 
-  private final Map<String, MacAccessList> _macAccessLists;
-
-  private final Map<String, IntegerSpace> _namedVlans;
-
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
-
-  private final Map<String, NetworkObjectInfo> _networkObjectInfos;
-
-  private final Map<String, NetworkObject> _networkObjects;
 
   private String _ntpSourceInterface;
 
@@ -441,7 +408,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private boolean _spanningTreePortfastDefault;
 
-  private NavigableSet<String> _tacacsServers;
+  private final NavigableSet<String> _tacacsServers;
 
   private String _tacacsSourceInterface;
 
@@ -453,7 +420,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, TrackMethod> _trackingGroups;
 
-  private Map<String, XrCommunitySet> _communitySets;
+  private final Map<String, XrCommunitySet> _communitySets;
 
   @Nonnull private final Map<String, RdSet> _rdSets;
 
@@ -468,22 +435,14 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     _ipv4Acls = new TreeMap<>();
     _ipv6Acls = new TreeMap<>();
     _extcommunitySetRts = new HashMap<>();
-    _failoverInterfaces = new TreeMap<>();
-    _failoverPrimaryAddresses = new TreeMap<>();
-    _failoverStandbyAddresses = new TreeMap<>();
     _isakmpKeys = new ArrayList<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
-    _inspectClassMaps = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipsecTransformSets = new TreeMap<>();
     _ipsecProfiles = new TreeMap<>();
     _keyrings = new TreeMap<>();
-    _macAccessLists = new TreeMap<>();
-    _namedVlans = new HashMap<>();
     _networkObjectGroups = new TreeMap<>();
-    _networkObjectInfos = new TreeMap<>();
-    _networkObjects = new TreeMap<>();
     _objectGroups = new TreeMap<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
@@ -629,42 +588,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _ipv6Acls;
   }
 
-  public boolean getFailover() {
-    return _failover;
-  }
-
-  public String getFailoverCommunicationInterface() {
-    return _failoverCommunicationInterface;
-  }
-
-  public String getFailoverCommunicationInterfaceAlias() {
-    return _failoverCommunicationInterfaceAlias;
-  }
-
-  public Map<String, String> getFailoverInterfaces() {
-    return _failoverInterfaces;
-  }
-
-  public Map<String, ConcreteInterfaceAddress> getFailoverPrimaryAddresses() {
-    return _failoverPrimaryAddresses;
-  }
-
-  public boolean getFailoverSecondary() {
-    return _failoverSecondary;
-  }
-
-  public Map<String, ConcreteInterfaceAddress> getFailoverStandbyAddresses() {
-    return _failoverStandbyAddresses;
-  }
-
-  public String getFailoverStatefulSignalingInterface() {
-    return _failoverStatefulSignalingInterface;
-  }
-
-  public String getFailoverStatefulSignalingInterfaceAlias() {
-    return _failoverStatefulSignalingInterfaceAlias;
-  }
-
   @Override
   public String getHostname() {
     return _hostname;
@@ -696,14 +619,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, Keyring> getKeyrings() {
     return _keyrings;
-  }
-
-  public Map<String, MacAccessList> getMacAccessLists() {
-    return _macAccessLists;
-  }
-
-  public Map<String, IntegerSpace> getNamedVlans() {
-    return _namedVlans;
   }
 
   public String getNtpSourceInterface() {
@@ -799,64 +714,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _vrrpGroups;
   }
 
-  private void processFailoverSettings() {
-    if (_failover) {
-      Interface commIface;
-      ConcreteInterfaceAddress commAddress;
-      Interface sigIface;
-      ConcreteInterfaceAddress sigAddress;
-      if (_failoverSecondary) {
-        commIface = _interfaces.get(_failoverCommunicationInterface);
-        commAddress = _failoverStandbyAddresses.get(_failoverCommunicationInterfaceAlias);
-        sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
-        sigAddress = _failoverStandbyAddresses.get(_failoverStatefulSignalingInterfaceAlias);
-        for (Interface iface : _interfaces.values()) {
-          iface.setAddress(iface.getStandbyAddress());
-        }
-      } else {
-        commIface = _interfaces.get(_failoverCommunicationInterface);
-        commAddress = _failoverPrimaryAddresses.get(_failoverCommunicationInterfaceAlias);
-        sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
-        sigAddress = _failoverPrimaryAddresses.get(_failoverStatefulSignalingInterfaceAlias);
-      }
-      commIface.setAddress(commAddress);
-      commIface.setActive(true);
-      sigIface.setAddress(sigAddress);
-      sigIface.setActive(true);
-    }
-  }
-
   public void setDnsSourceInterface(String dnsSourceInterface) {
     _dnsSourceInterface = dnsSourceInterface;
   }
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
-  }
-
-  public void setFailover(boolean failover) {
-    _failover = failover;
-  }
-
-  public void setFailoverCommunicationInterface(String failoverCommunicationInterface) {
-    _failoverCommunicationInterface = failoverCommunicationInterface;
-  }
-
-  public void setFailoverCommunicationInterfaceAlias(String failoverCommunicationInterfaceAlias) {
-    _failoverCommunicationInterfaceAlias = failoverCommunicationInterfaceAlias;
-  }
-
-  public void setFailoverSecondary(boolean failoverSecondary) {
-    _failoverSecondary = failoverSecondary;
-  }
-
-  public void setFailoverStatefulSignalingInterface(String failoverStatefulSignalingInterface) {
-    _failoverStatefulSignalingInterface = failoverStatefulSignalingInterface;
-  }
-
-  public void setFailoverStatefulSignalingInterfaceAlias(
-      String failoverStatefulSignalingInterfaceAlias) {
-    _failoverStatefulSignalingInterfaceAlias = failoverStatefulSignalingInterfaceAlias;
   }
 
   @Override
@@ -1334,23 +1197,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
     }
     return null;
-  }
-
-  /**
-   * Get the {@link OspfProcess} corresponding to the specified {@link Interface}
-   *
-   * <p>Returns {@code null} if the {@link Interface} does not have an {@link OspfProcess}
-   * explicitly associated with it and does not overlap with an {@link OspfNetwork} in any {@link
-   * OspfProcess} in the specified {@link Vrf}
-   */
-  private static @Nullable OspfProcess getOspfProcessForInterface(Vrf vrf, Interface iface) {
-    if (iface.getOspfProcess() != null) {
-      return vrf.getOspfProcesses().get(iface.getOspfProcess());
-    }
-    return vrf.getOspfProcesses().values().stream()
-        .filter(p -> getOspfNetworkForInterface(iface, p) != null)
-        .findFirst()
-        .orElse(null);
   }
 
   private org.batfish.datamodel.Interface toInterface(
@@ -2078,8 +1924,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
     c.setSnmpSourceInterface(_snmpSourceInterface);
 
-    processFailoverSettings();
-
     // remove line login authentication lists if they don't exist
     for (Line line : _cf.getLines().values()) {
       String list = line.getLoginAuthentication();
@@ -2166,19 +2010,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
-    /*
-     * Consolidate info about networkObjects
-     * - Associate networkObjects with their Info
-     * - Associate ASA Object NATs with their object (needed for sorting)
-     * - Removes ASA Object NATs that were created without a valid network object
-     */
-    _networkObjectInfos.forEach(
-        (name, info) -> {
-          if (_networkObjects.containsKey(name)) {
-            _networkObjects.get(name).setInfo(info);
-          }
-        });
-
     // convert each NetworkObject and NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
@@ -2193,17 +2024,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                             name,
                             CiscoXrStructureType.NETWORK_OBJECT_GROUP.getDescription(),
                             null)));
-    _networkObjects.forEach(
-        (name, networkObject) -> c.getIpSpaces().put(name, networkObject.toIpSpace()));
-    _networkObjects
-        .keySet()
-        .forEach(
-            name ->
-                c.getIpSpaceMetadata()
-                    .put(
-                        name,
-                        new IpSpaceMetadata(
-                            name, CiscoXrStructureType.NETWORK_OBJECT.getDescription(), null)));
 
     // convert IPv6 access lists to ipv6 access lists route6 filter lists
     for (Ipv6AccessList eaList : _ipv6Acls.values()) {
@@ -2216,8 +2036,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       RoutingPolicy routingPolicy = toRoutingPolicy(c, routePolicy);
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
     }
-
-    createInspectClassMapAcls(c);
 
     // convert interfaces
     _interfaces.forEach(
@@ -2531,46 +2349,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         });
   }
 
-  private void createInspectClassMapAcls(Configuration c) {
-    _inspectClassMaps.forEach(
-        (inspectClassMapName, inspectClassMap) -> {
-          String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassMapName);
-          MatchSemantics matchSemantics = inspectClassMap.getMatchSemantics();
-          List<AclLineMatchExpr> matchConditions =
-              inspectClassMap.getMatches().stream()
-                  .map(
-                      inspectClassMapMatch ->
-                          inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
-                  .collect(ImmutableList.toImmutableList());
-          AclLineMatchExpr matchClassMap;
-          switch (matchSemantics) {
-            case MATCH_ALL:
-              matchClassMap = new AndMatchExpr(matchConditions);
-              break;
-            case MATCH_ANY:
-              matchClassMap = new OrMatchExpr(matchConditions);
-              break;
-            default:
-              throw new BatfishException(
-                  String.format(
-                      "Unsupported %s: %s", MatchSemantics.class.getSimpleName(), matchSemantics));
-          }
-          IpAccessList.builder()
-              .setOwner(c)
-              .setName(inspectClassMapAclName)
-              .setLines(
-                  ImmutableList.of(
-                      ExprAclLine.accepting().setMatchCondition(matchClassMap).build()))
-              .setSourceName(inspectClassMapName)
-              .setSourceType(CiscoXrStructureType.INSPECT_CLASS_MAP.getDescription())
-              .build();
-        });
-  }
-
-  public static String computeInspectClassMapAclName(@Nonnull String inspectClassMapName) {
-    return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
-  }
-
   @SuppressWarnings("unused")
   private boolean isAclUsedForRouting(@Nonnull String aclName) {
     // TODO: implement OSPF acl distribute-list
@@ -2618,20 +2396,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _networkObjectGroups;
   }
 
-  public Map<String, NetworkObjectInfo> getNetworkObjectInfos() {
-    return _networkObjectInfos;
-  }
-
-  public Map<String, NetworkObject> getNetworkObjects() {
-    return _networkObjects;
-  }
-
   public Map<String, ObjectGroup> getObjectGroups() {
     return _objectGroups;
-  }
-
-  public Map<String, InspectClassMap> getInspectClassMaps() {
-    return _inspectClassMaps;
   }
 
   public Map<String, TrackMethod> getTrackingGroups() {

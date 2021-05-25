@@ -578,7 +578,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifvrrp_priorityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ike_encryptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inherit_peer_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Inherit_peer_session_bgp_tailContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Inspect_protocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Int_compContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Int_exprContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Interface_ipv4_addressContext;
@@ -923,7 +922,6 @@ import org.batfish.representation.cisco_xr.ExtcommunitySetRtReference;
 import org.batfish.representation.cisco_xr.HsrpGroup;
 import org.batfish.representation.cisco_xr.InlineAsPathSet;
 import org.batfish.representation.cisco_xr.InlineExtcommunitySetRt;
-import org.batfish.representation.cisco_xr.InspectClassMapProtocol;
 import org.batfish.representation.cisco_xr.Interface;
 import org.batfish.representation.cisco_xr.IosRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.IpBgpPeerGroup;
@@ -944,7 +942,6 @@ import org.batfish.representation.cisco_xr.LengthAsPathSetElem;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint16Range;
 import org.batfish.representation.cisco_xr.LiteralUint32;
-import org.batfish.representation.cisco_xr.MacAccessList;
 import org.batfish.representation.cisco_xr.MasterBgpPeerGroup;
 import org.batfish.representation.cisco_xr.MatchSemantics;
 import org.batfish.representation.cisco_xr.NamedBgpPeerGroup;
@@ -1268,9 +1265,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private Keyring _currentKeyring;
 
   private List<String> _currentLineNames;
-
-  @SuppressWarnings("unused")
-  private MacAccessList _currentMacAccessList;
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
 
@@ -3394,24 +3388,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _currentCryptoMapEntry.getTransforms().add(name);
       _configuration.referenceStructure(
           IPSEC_TRANSFORM_SET, name, CRYPTO_DYNAMIC_MAP_TRANSFORM_SET, line);
-    }
-  }
-
-  private InspectClassMapProtocol toInspectClassMapProtocol(Inspect_protocolContext ctx) {
-    if (ctx.HTTP() != null) {
-      return InspectClassMapProtocol.HTTP;
-    } else if (ctx.HTTPS() != null) {
-      return InspectClassMapProtocol.HTTPS;
-    } else if (ctx.ICMP() != null) {
-      return InspectClassMapProtocol.ICMP;
-    } else if (ctx.TCP() != null) {
-      return InspectClassMapProtocol.TCP;
-    } else if (ctx.TFTP() != null) {
-      return InspectClassMapProtocol.TFTP;
-    } else if (ctx.UDP() != null) {
-      return InspectClassMapProtocol.UDP;
-    } else {
-      throw convError(InspectClassMapProtocol.class, ctx);
     }
   }
 
@@ -6390,7 +6366,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitS_router_ospf(S_router_ospfContext ctx) {
-    _currentOspfProcess.computeNetworks(_configuration.getInterfaces().values());
     _currentOspfProcess = null;
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
   }
