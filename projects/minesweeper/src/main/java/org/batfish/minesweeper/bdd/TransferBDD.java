@@ -1,7 +1,8 @@
 package org.batfish.minesweeper.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
@@ -148,7 +149,7 @@ public class TransferBDD {
    */
   private BDDInteger applyLongExprModification(
       TransferParam<BDDRoute> p, BDDInteger x, LongExpr e) {
-    Preconditions.checkArgument(e instanceof LiteralLong, "Unsupported integer update: " + e);
+    checkArgument(e instanceof LiteralLong, "Unsupported integer update: " + e);
     LiteralLong z = (LiteralLong) e;
     p.debug("LiteralLong: " + z.getValue());
     return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
@@ -948,7 +949,7 @@ public class TransferBDD {
   // Produce a BDD representing a constraint on the given BDDInteger that enforces the
   // integer (in)equality constraint represented by the given IntComparator and LongExpr
   private BDD matchIntComparison(IntComparator comp, LongExpr expr, BDDInteger bddInt) {
-    Preconditions.checkArgument(
+    checkArgument(
         expr instanceof LiteralLong,
         "Currently only supporting matching against integer literals: " + expr);
     long val = ((LiteralLong) expr).getValue();
