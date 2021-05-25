@@ -21,6 +21,7 @@ public class BgpRouteConstraints {
   private static final String PROP_COMPLEMENT_PREFIX = "complementPrefix";
   private static final String PROP_LOCAL_PREFERENCE = "localPreference";
   private static final String PROP_MED = "med";
+  private static final String PROP_TAG = "tag";
   private static final String PROP_COMMUNITIES = "communities";
   private static final String PROP_AS_PATH = "asPath";
 
@@ -32,6 +33,8 @@ public class BgpRouteConstraints {
   @Nonnull private final LongSpace _localPreference;
   // the announcement's MED must be within this range
   @Nonnull private final LongSpace _med;
+  // the announcement's tag must be within this range
+  @Nonnull private final LongSpace _tag;
   // the announcement's communities must satisfy these constraints
   @Nonnull private final RegexConstraints _communities;
   // the announcement's AS path must satisfy these constraints
@@ -46,6 +49,7 @@ public class BgpRouteConstraints {
       @JsonProperty(PROP_COMPLEMENT_PREFIX) boolean complementPrefix,
       @Nullable @JsonProperty(PROP_LOCAL_PREFERENCE) LongSpace.Builder localPreference,
       @Nullable @JsonProperty(PROP_MED) LongSpace.Builder med,
+      @Nullable @JsonProperty(PROP_TAG) LongSpace.Builder tag,
       @Nullable @JsonProperty(PROP_COMMUNITIES) RegexConstraints communities,
       @Nullable @JsonProperty(PROP_AS_PATH) RegexConstraints asPath) {
     this(
@@ -53,6 +57,7 @@ public class BgpRouteConstraints {
         complementPrefix,
         processBuilder(localPreference),
         processBuilder(med),
+        processBuilder(tag),
         communities,
         asPath);
   }
@@ -62,12 +67,14 @@ public class BgpRouteConstraints {
       boolean complementPrefix,
       @Nullable LongSpace localPreference,
       @Nullable LongSpace med,
+      @Nullable LongSpace tag,
       @Nullable RegexConstraints communities,
       @Nullable RegexConstraints asPath) {
     _prefix = firstNonNull(prefix, new PrefixSpace());
     _complementPrefix = complementPrefix;
     _localPreference = firstNonNull(localPreference, LongSpace.EMPTY);
     _med = firstNonNull(med, LongSpace.EMPTY);
+    _tag = firstNonNull(tag, LongSpace.EMPTY);
     _communities = firstNonNull(communities, new RegexConstraints());
     _asPath = firstNonNull(asPath, new RegexConstraints());
     validate(this);
@@ -89,9 +96,11 @@ public class BgpRouteConstraints {
   private static void validate(@Nonnull BgpRouteConstraints constraints) {
     LongSpace localPref = constraints.getLocalPreference();
     LongSpace med = constraints.getMed();
+    LongSpace tag = constraints.getTag();
 
     checkArgument(is32BitRange(localPref), "Invalid value for local preference: %s", localPref);
     checkArgument(is32BitRange(med), "Invalid value for MED: %s", med);
+    checkArgument(is32BitRange(tag), "Invalid value for tag: %s", med);
   }
 
   /** Check that the given long space only contains 32-bit integers. */
@@ -109,6 +118,7 @@ public class BgpRouteConstraints {
     private boolean _complementPrefix = false;
     private LongSpace _localPreference;
     private LongSpace _med;
+    private LongSpace _tag;
     private RegexConstraints _communities;
     private RegexConstraints _asPath;
 
@@ -134,6 +144,11 @@ public class BgpRouteConstraints {
       return this;
     }
 
+    public Builder setTag(LongSpace tag) {
+      _tag = tag;
+      return this;
+    }
+
     public Builder setCommunities(RegexConstraints communities) {
       _communities = communities;
       return this;
@@ -146,7 +161,7 @@ public class BgpRouteConstraints {
 
     public BgpRouteConstraints build() {
       return new BgpRouteConstraints(
-          _prefix, _complementPrefix, _localPreference, _med, _communities, _asPath);
+          _prefix, _complementPrefix, _localPreference, _med, _tag, _communities, _asPath);
     }
   }
 
@@ -171,6 +186,12 @@ public class BgpRouteConstraints {
   @Nonnull
   public LongSpace getMed() {
     return _med;
+  }
+
+  @JsonProperty(PROP_TAG)
+  @Nonnull
+  public LongSpace getTag() {
+    return _tag;
   }
 
   @JsonProperty(PROP_COMMUNITIES)

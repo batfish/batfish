@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -38,13 +40,10 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
-import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
-import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
-import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
@@ -56,6 +55,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -72,6 +72,7 @@ import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.minesweeper.CommunityVar;
@@ -148,11 +149,15 @@ public class TransferBDD {
    */
   private BDDInteger applyLongExprModification(
       TransferParam<BDDRoute> p, BDDInteger x, LongExpr e) {
-    if (e instanceof LiteralLong) {
-      LiteralLong z = (LiteralLong) e;
-      p.debug("LiteralLong: " + z.getValue());
-      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
-    }
+    checkArgument(e instanceof LiteralLong, "Unsupported integer update: " + e);
+    LiteralLong z = (LiteralLong) e;
+    p.debug("LiteralLong: " + z.getValue());
+    return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
+
+    /* TODO: These old cases are not correct; removing for now since they are not currently used.
+    First, they should dec/inc the corresponding field of the route, not whatever BDDInteger x
+    is passed in.  Second, they need to prevent overflow.  See LongExpr::evaluate for details.
+
     if (e instanceof DecrementMetric) {
       DecrementMetric z = (DecrementMetric) e;
       p.debug("Decrement: " + z.getSubtrahend());
@@ -173,7 +178,7 @@ public class TransferBDD {
       p.debug("DecrementLocalPreference: " + z.getSubtrahend());
       return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
-    throw new BatfishException("int expr transfer function: " + e);
+     */
   }
 
   // produce the union of all atomic predicates associated with any of the given symbolic regexes
@@ -362,6 +367,11 @@ public class TransferBDD {
           mc.getCommunitySetMatchExpr()
               .accept(new CommunitySetMatchExprToBDD(), new Arg(this, _initialRoute));
       return result.setReturnValueBDD(mcPredicate);
+
+    } else if (expr instanceof MatchTag) {
+      MatchTag mt = (MatchTag) expr;
+      BDD mtBDD = matchIntComparison(mt.getCmp(), mt.getTag(), p.getData().getTag());
+      return result.setReturnValueBDD(mtBDD);
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
@@ -588,6 +598,15 @@ public class TransferBDD {
       newValue = ite(unreachable(result), curP.getData().getLocalPref(), newValue);
       curP.getData().setLocalPref(newValue);
 
+    } else if (stmt instanceof SetTag) {
+      curP.debug("SetTag");
+      SetTag st = (SetTag) stmt;
+      LongExpr ie = st.getTag();
+      BDDInteger currTag = curP.getData().getTag();
+      BDDInteger newValue = applyLongExprModification(curP.indent(), currTag, ie);
+      newValue = ite(unreachable(result), currTag, newValue);
+      curP.getData().setTag(newValue);
+
     } else if (stmt instanceof SetCommunities) {
       curP.debug("SetCommunities");
       SetCommunities sc = (SetCommunities) stmt;
@@ -796,6 +815,10 @@ public class TransferBDD {
     y = r2.getMed();
     ret.getMed().setValue(ite(guard, x, y));
 
+    x = r1.getTag();
+    y = r2.getTag();
+    ret.getTag().setValue(ite(guard, x, y));
+
     BDD[] retCommAPs = ret.getCommunityAtomicPredicates();
     BDD[] r1CommAPs = r1.getCommunityAtomicPredicates();
     BDD[] r2CommAPs = r2.getCommunityAtomicPredicates();
@@ -923,6 +946,30 @@ public class TransferBDD {
     }
   }
 
+  // Produce a BDD representing a constraint on the given BDDInteger that enforces the
+  // integer (in)equality constraint represented by the given IntComparator and LongExpr
+  private BDD matchIntComparison(IntComparator comp, LongExpr expr, BDDInteger bddInt) {
+    checkArgument(
+        expr instanceof LiteralLong,
+        "Currently only supporting matching against integer literals: " + expr);
+    long val = ((LiteralLong) expr).getValue();
+    switch (comp) {
+      case EQ:
+        return bddInt.value(val);
+      case GE:
+        return bddInt.geq(val);
+      case GT:
+        return bddInt.geq(val).and(bddInt.value(val).not());
+      case LE:
+        return bddInt.leq(val);
+      case LT:
+        return bddInt.leq(val).and(bddInt.value(val).not());
+      default:
+        throw new UnsupportedOperationException(
+            "Unknown integer comparator: " + comp.getClass().getSimpleName());
+    }
+  }
+
   /*
    * Return a BDD from a boolean
    */
@@ -1026,6 +1073,7 @@ public class TransferBDD {
     rec.getAdminDist().setValue(0);
     rec.getPrefixLength().setValue(0);
     rec.getMed().setValue(0);
+    rec.getTag().setValue(0);
     rec.getPrefix().setValue(0);
     for (int i = 0; i < rec.getCommunityAtomicPredicates().length; i++) {
       rec.getCommunityAtomicPredicates()[i] = factory.zero();
