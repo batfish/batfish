@@ -18,6 +18,8 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEncapsulationVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.RoutingPolicy.isGenerated;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
@@ -1124,6 +1126,34 @@ public final class XrGrammarTest {
               new ExtcommunitySetRtElemAsDotColon(
                   new LiteralUint16(12), new LiteralUint16(34), new LiteralUint16(56))));
     }
+  }
+
+  @Test
+  public void testOspfInterfaceCost() {
+    Configuration c = parseConfig("ospf-interface-cost");
+    String ifaceEth1Name = "GigabitEthernet0/0/0/1";
+    String ifaceEth2Name = "GigabitEthernet0/0/0/2";
+    String ifaceLoop1Name = "Loopback1";
+    String ifaceLoop2Name = "Loopback2";
+    String ifaceLoop3Name = "Loopback3";
+    Map<String, Interface> ifaces = c.getAllInterfaces();
+    assertThat(
+        ifaces.keySet(),
+        contains(ifaceEth1Name, ifaceEth2Name, ifaceLoop1Name, ifaceLoop2Name, ifaceLoop3Name));
+    Interface ifaceEth1 = ifaces.get(ifaceEth1Name);
+    Interface ifaceEth2 = ifaces.get(ifaceEth2Name);
+    Interface ifaceLoop1 = ifaces.get(ifaceLoop1Name);
+    Interface ifaceLoop2 = ifaces.get(ifaceLoop2Name);
+    Interface ifaceLoop3 = ifaces.get(ifaceLoop3Name);
+
+    // Confirm explicitly configured costs are applied
+    assertThat(ifaceEth1.getOspfCost(), equalTo(1));
+    assertThat(ifaceLoop3.getOspfCost(), equalTo(12));
+
+    // Confirm other costs are calculated correctly
+    assertThat(ifaceEth2.getOspfCost(), equalTo(400));
+    assertThat(ifaceLoop1.getOspfCost(), equalTo(1));
+    assertThat(ifaceLoop2.getOspfCost(), equalTo(1));
   }
 
   @Test
@@ -2771,5 +2801,46 @@ public final class XrGrammarTest {
     assertThat(
         c.getInterfaces().get("GigabitEthernet0/0/0/10").getOspfNetworkType(),
         equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
+  }
+
+  @Test
+  public void testOspfNetworkTypeOverrideExtraction() {
+    String hostname = "ospf-network-type-override";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces().keySet(),
+        containsInAnyOrder("GigabitEthernet0/0/0/1", "GigabitEthernet0/0/0/2"));
+
+    // Network types configured at OSPF interface level
+    assertThat(
+        vc.getInterfaces().get("GigabitEthernet0/0/0/1").getOspfNetworkType(),
+        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
+    assertNull(vc.getInterfaces().get("GigabitEthernet0/0/0/2").getOspfNetworkType());
+
+    // Network type configured at OSPF router level
+    assertThat(
+        vc.getDefaultVrf().getOspfProcesses().get("65100").getDefaultNetworkType(),
+        equalTo(OspfNetworkType.POINT_TO_POINT));
+  }
+
+  @Test
+  public void testOspfNetworkTypeOverrideConversion() {
+    String hostname = "ospf-network-type-override";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getAllInterfaces().keySet(),
+        containsInAnyOrder("GigabitEthernet0/0/0/1", "GigabitEthernet0/0/0/2"));
+
+    // Network type configured at OSPF interface level overrides OSPF router level type
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0/0/1").getOspfNetworkType(),
+        equalTo(BROADCAST));
+
+    // Network type inherited from OSPF router level
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0/0/2").getOspfNetworkType(),
+        equalTo(POINT_TO_POINT));
   }
 }

@@ -123,6 +123,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final BDDDomain<Protocol> _protocolHistory;
 
+  private BDDInteger _tag;
+
   /**
    * A constructor that obtains the number of atomic predicates for community and AS-path regexes
    * from a given {@link org.batfish.minesweeper.Graph} object.
@@ -141,7 +143,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDDRoute(int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
     int numVars = factory.varNum();
-    int numNeeded = 32 * 5 + 6 + numCommAtomicPredicates + numAsPathRegexAtomicPredicates + 4;
+    int numNeeded = 32 * 6 + 6 + numCommAtomicPredicates + numAsPathRegexAtomicPredicates + 4;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -158,6 +160,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     idx += 32;
     _med = BDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("med", 32, idx, false);
+    idx += 32;
+    _tag = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("tag", 32, idx, false);
     idx += 32;
     _adminDist = BDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("ad", 32, idx, false);
@@ -206,6 +211,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _metric = new BDDInteger(other._metric);
     _adminDist = new BDDInteger(other._adminDist);
     _med = new BDDInteger(other._med);
+    _tag = new BDDInteger(other._tag);
     _localPref = new BDDInteger(other._localPref);
     _protocolHistory = new BDDDomain<>(other._protocolHistory);
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
@@ -396,6 +402,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _protocolHistory;
   }
 
+  public BDDInteger getTag() {
+    return _tag;
+  }
+
+  public void setTag(BDDInteger tag) {
+    _tag = tag;
+  }
+
   @Override
   public int hashCode() {
     if (_hcode == 0) {
@@ -404,6 +418,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
       result = 31 * result + (_med != null ? _med.hashCode() : 0);
       result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
+      result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
       result =
           31 * result
               + (_communityAtomicPredicates != null
@@ -432,6 +447,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
         && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_med, other._med)
+        && Objects.equals(_tag, other._tag)
         && Objects.equals(_adminDist, other._adminDist);
   }
 
@@ -443,12 +459,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD[] adminDist = getAdminDist().getBitvec();
     BDD[] med = getMed().getBitvec();
     BDD[] localPref = getLocalPref().getBitvec();
+    BDD[] tag = getTag().getBitvec();
     BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
 
     BDD[] metric2 = other.getMetric().getBitvec();
     BDD[] adminDist2 = other.getAdminDist().getBitvec();
     BDD[] med2 = other.getMed().getBitvec();
     BDD[] localPref2 = other.getLocalPref().getBitvec();
+    BDD[] tag2 = other.getTag().getBitvec();
     BDD[] ospfMet2 = other.getOspfMetric().getInteger().getBitvec();
 
     for (int i = 0; i < 32; i++) {
@@ -456,6 +474,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       adminDist[i].orWith(adminDist2[i]);
       med[i].orWith(med2[i]);
       localPref[i].orWith(localPref2[i]);
+      tag[i].orWith(tag2[i]);
     }
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i].orWith(ospfMet2[i]);
@@ -489,12 +508,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD[] adminDist = rec.getAdminDist().getBitvec();
     BDD[] med = rec.getMed().getBitvec();
     BDD[] localPref = rec.getLocalPref().getBitvec();
+    BDD[] tag = rec.getTag().getBitvec();
     BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
     for (int i = 0; i < 32; i++) {
       metric[i] = metric[i].veccompose(pairing);
       adminDist[i] = adminDist[i].veccompose(pairing);
       med[i] = med[i].veccompose(pairing);
       localPref[i] = localPref[i].veccompose(pairing);
+      tag[i] = tag[i].veccompose(pairing);
     }
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i] = ospfMet[i].veccompose(pairing);

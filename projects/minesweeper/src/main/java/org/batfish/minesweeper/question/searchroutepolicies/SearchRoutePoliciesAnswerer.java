@@ -265,6 +265,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     builder.setAdmin((int) (long) r.getAdminDist().satAssignmentToLong(fullModel));
     // the BDDRoute also tracks a metric but I believe for BGP we should use the MED
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
+    builder.setTag(r.getTag().satAssignmentToLong(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
     builder.setCommunities(communities);
@@ -406,6 +407,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result.andWith(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
     result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));
+    result.andWith(longSpaceToBDD(constraints.getTag(), r.getTag()));
     result.andWith(
         regexConstraintsToBDD(
             constraints.getCommunities(),
@@ -505,7 +507,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       return null;
     }
     return org.batfish.datamodel.questions.BgpRoute.builder()
-        .setWeight(dataplaneBgpRoute.getWeight())
         .setNextHopIp(dataplaneBgpRoute.getNextHopIp())
         .setProtocol(dataplaneBgpRoute.getProtocol())
         .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
@@ -513,6 +514,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         .setOriginatorIp(dataplaneBgpRoute.getOriginatorIp())
         .setMetric(dataplaneBgpRoute.getMetric())
         .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
+        .setTag(dataplaneBgpRoute.getTag())
         .setWeight(dataplaneBgpRoute.getWeight())
         .setNetwork(dataplaneBgpRoute.getNetwork())
         .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())

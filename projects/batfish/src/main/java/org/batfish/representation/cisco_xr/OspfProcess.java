@@ -48,6 +48,8 @@ public class OspfProcess implements Serializable {
 
   private Long _defaultMetric;
 
+  @Nullable private OspfNetworkType _defaultNetworkType;
+
   @Nullable private DistributeList _inboundGlobalDistributeList;
 
   private Long _maxMetricExternalLsa;
@@ -164,6 +166,11 @@ public class OspfProcess implements Serializable {
   }
 
   @Nullable
+  public OspfNetworkType getDefaultNetworkType() {
+    return _defaultNetworkType;
+  }
+
+  @Nullable
   public DistributeList getInboundGlobalDistributeList() {
     return _inboundGlobalDistributeList;
   }
@@ -263,6 +270,10 @@ public class OspfProcess implements Serializable {
 
   public void setDefaultMetric(Long metric) {
     _defaultMetric = metric;
+  }
+
+  public void setDefaultNetworkType(@Nullable OspfNetworkType networkType) {
+    _defaultNetworkType = networkType;
   }
 
   public void setInboundGlobalDistributeList(@Nullable DistributeList inboundGlobalDistributeList) {
