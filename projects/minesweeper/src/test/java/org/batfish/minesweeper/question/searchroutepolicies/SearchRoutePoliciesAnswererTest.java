@@ -931,6 +931,7 @@ public class SearchRoutePoliciesAnswererTest {
     PrefixRange prefixRange = PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32"));
     LongSpace localPref = LongSpace.builder().including(45L).build();
     LongSpace med = LongSpace.builder().including(56L).build();
+    LongSpace tag = LongSpace.builder().including(67L).build();
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
@@ -938,6 +939,7 @@ public class SearchRoutePoliciesAnswererTest {
                 .setPrefix(new PrefixSpace(prefixRange))
                 .setLocalPreference(localPref)
                 .setMed(med)
+                .setTag(tag)
                 .build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
@@ -952,6 +954,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setLocalPreference(45)
             .setMetric(56)
+            .setTag(67)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
