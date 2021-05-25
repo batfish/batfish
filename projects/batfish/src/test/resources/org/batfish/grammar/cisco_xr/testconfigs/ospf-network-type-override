@@ -17,4 +17,7 @@ router ospf 65100
   interface GigabitEthernet0/0/0/2
   !
  !
+ area 1
+  network non-broadcast
+ !
 !
