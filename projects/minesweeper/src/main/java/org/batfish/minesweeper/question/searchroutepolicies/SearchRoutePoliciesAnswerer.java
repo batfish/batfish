@@ -407,6 +407,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result.andWith(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
     result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));
+    result.andWith(longSpaceToBDD(constraints.getTag(), r.getTag()));
     result.andWith(
         regexConstraintsToBDD(
             constraints.getCommunities(),

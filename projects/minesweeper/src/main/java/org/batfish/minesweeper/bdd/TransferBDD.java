@@ -906,6 +906,8 @@ public class TransferBDD {
     }
   }
 
+  // Produce a BDD representing a constraint on the given BDDInteger that enforces the
+  // integer (in)equality constraint represented by the given IntComparator and LongExpr
   private BDD matchIntComparison(IntComparator comp, LongExpr expr, BDDInteger bddInt) {
     Preconditions.checkArgument(
         expr instanceof LiteralLong,
