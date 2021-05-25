@@ -205,16 +205,6 @@ color_setter
    )
 ;
 
-inspect_protocol
-:
-   HTTP
-   | HTTPS
-   | ICMP
-   | TCP
-   | TFTP
-   | UDP
-;
-
 match_semantics
 :
    MATCH_ALL
