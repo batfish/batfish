@@ -183,16 +183,7 @@ ro_maximum_paths
    ) uint_legacy NEWLINE
 ;
 
-ro_network
-:
-   NETWORK
-   (
-     BROADCAST
-     | NON_BROADCAST
-     | POINT_TO_MULTIPOINT NON_BROADCAST?
-     | POINT_TO_POINT
-   ) NEWLINE
-;
+ro_network: NETWORK ospf_network_type NEWLINE;
 
 ro_nssa
 :
