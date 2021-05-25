@@ -9,11 +9,15 @@ interface GigabitEthernet0/0/0/2
 !
 router ospf 65100
  router-id 10.0.0.1
- area 0
  network point-to-point
- interface GigabitEthernet0/0/0/1
-  network broadcast
+ area 0
+  interface GigabitEthernet0/0/0/1
+   network broadcast
+  !
+  interface GigabitEthernet0/0/0/2
+  !
  !
- interface GigabitEthernet0/0/0/2
+ area 1
+  network non-broadcast
  !
 !
