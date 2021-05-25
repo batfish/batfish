@@ -6063,7 +6063,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_network(Ro_networkContext ctx) {
-    todo(ctx);
+    _currentOspfProcess.setDefaultNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
   }
 
   @Override
@@ -6220,7 +6220,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRoa_network(Roa_networkContext ctx) {
-    _currentOspfProcess.setDefaultNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
+    todo(ctx);
   }
 
   @Override
