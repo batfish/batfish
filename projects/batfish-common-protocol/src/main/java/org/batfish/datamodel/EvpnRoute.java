@@ -9,9 +9,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute.Builder;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 /**
  * A generic EVPN route containing the common properties among the different types of EVPN routes
@@ -50,7 +50,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       NextHop nextHop,
       int admin,
       AsPath asPath,
-      Set<Community> communities,
+      CommunitySet communities,
       long localPreference,
       long med,
       Ip originatorIp,

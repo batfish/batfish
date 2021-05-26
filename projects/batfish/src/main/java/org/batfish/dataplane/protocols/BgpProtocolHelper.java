@@ -34,6 +34,7 @@ import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 @ParametersAreNonnullByDefault
 public final class BgpProtocolHelper {
@@ -114,12 +115,15 @@ public final class BgpProtocolHelper {
     }
 
     // Set transformed route's communities
-    builder.setCommunities(ImmutableSet.of());
-    if (af.getAddressFamilyCapabilities().getSendCommunity()) {
-      builder.addCommunities(route.getStandardCommunities());
-    }
-    if (af.getAddressFamilyCapabilities().getSendExtendedCommunity()) {
-      builder.addCommunities(route.getExtendedCommunities());
+    if (af.getAddressFamilyCapabilities().getSendCommunity()
+        && af.getAddressFamilyCapabilities().getSendExtendedCommunity()) {
+      builder.setCommunities(route.getCommunities());
+    } else if (af.getAddressFamilyCapabilities().getSendCommunity()) {
+      builder.setCommunities(route.getStandardCommunities());
+    } else if (af.getAddressFamilyCapabilities().getSendExtendedCommunity()) {
+      builder.setCommunities(route.getExtendedCommunities());
+    } else {
+      builder.setCommunities(CommunitySet.empty());
     }
 
     /*

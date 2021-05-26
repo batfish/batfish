@@ -60,8 +60,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nonnull protected AsPath _asPath;
     // Invariant: either immutable or a local copy shielded from external mutations.
     @Nonnull protected Set<Long> _clusterList;
-    // Invariant: either immutable or a local copy shielded from external mutations.
-    @Nonnull protected Set<Community> _communities;
+    @Nonnull protected CommunitySet _communities;
     protected long _localPreference;
     @Nullable protected Ip _originatorIp;
     @Nullable protected OriginType _originType;
@@ -73,7 +72,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
 
     protected Builder() {
       _asPath = AsPath.empty();
-      _communities = ImmutableSet.of();
+      _communities = CommunitySet.empty();
       _clusterList = ImmutableSet.of();
     }
 
@@ -112,15 +111,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nonnull
     @Override
     public CommunitySet getCommunities() {
-      return CommunitySet.of(_communities);
+      return _communities;
     }
 
     @Nonnull
     @Override
     public Set<Community> getCommunitiesAsSet() {
-      return _communities instanceof ImmutableSet
-          ? _communities
-          : Collections.unmodifiableSet(_communities);
+      return _communities.getCommunities();
     }
 
     @Override
@@ -188,47 +185,36 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     @Nonnull
     @Override
     public B setCommunities(CommunitySet communities) {
-      _communities = communities.getCommunities();
+      _communities = communities;
       return getThis();
     }
 
     /** Overwrite communities */
     // TODO: remove in favor of setCommunities(CommunitySet)
     public B setCommunities(Collection<? extends Community> communities) {
-      if (communities instanceof ImmutableSet) {
-        @SuppressWarnings("unchecked") // cannot be mutated, cast to superclass is safe.
-        ImmutableSet<Community> immutableComm = (ImmutableSet<Community>) communities;
-        _communities = immutableComm;
-      } else {
-        _communities = new HashSet<>(communities);
-      }
+      _communities = CommunitySet.of(communities);
       return getThis();
     }
 
     /** Add communities */
     public B addCommunities(Collection<? extends Community> communities) {
-      if (_communities instanceof ImmutableSet) {
-        _communities = new HashSet<>(_communities);
+      if (communities.isEmpty()) {
+        return getThis();
       }
-      _communities.addAll(communities);
-      return getThis();
-    }
-
-    /** Add a single community */
-    public B addCommunity(Community community) {
-      if (_communities instanceof ImmutableSet) {
-        _communities = new HashSet<>(_communities);
+      Set<Community> currentCommunities = _communities.getCommunities();
+      if (currentCommunities.isEmpty()) {
+        return setCommunities(communities);
       }
-      _communities.add(community);
-      return getThis();
-    }
-
-    /** Add communities */
-    public B removeCommunities(Set<Community> communities) {
-      if (_communities instanceof ImmutableSet) {
-        _communities = new HashSet<>(_communities);
+      if (currentCommunities.containsAll(communities)) {
+        return getThis();
       }
-      _communities.removeAll(communities);
+      Set<Community> combined =
+          ImmutableSet.<Community>builderWithExpectedSize(
+                  currentCommunities.size() + communities.size())
+              .addAll(currentCommunities)
+              .addAll(communities)
+              .build();
+      _communities = CommunitySet.of(combined);
       return getThis();
     }
 
@@ -321,7 +307,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       @Nonnull NextHop nextHop,
       int admin,
       @Nullable AsPath asPath,
-      @Nullable Set<Community> communities,
+      @Nonnull CommunitySet communities,
       long localPreference,
       long med,
       Ip originatorIp,
@@ -344,7 +330,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _asPath = firstNonNull(asPath, AsPath.empty());
     _clusterList =
         clusterList == null ? ImmutableSet.of() : CLUSTER_CACHE.getUnchecked(clusterList);
-    _communities = communities == null ? CommunitySet.empty() : CommunitySet.of(communities);
+    _communities = communities;
     _localPreference = localPreference;
     _med = med;
     _nextHop = nextHop;
