@@ -8610,4 +8610,19 @@ public final class CiscoNxosGrammarTest {
     // Rib should NOT have the static route whose NHI is determined from the default route
     assertThat(routes, not(hasItem(hasPrefix(Prefix.parse("10.103.3.1/32")))));
   }
+
+  @Test
+  public void testOspfDefaultInterfaceCost() throws IOException {
+    Configuration c = parseConfig("ospf_default_interface_cost");
+    String ifaceEth1Name = "Ethernet1/1";
+    String ifaceVlan1Name = "Vlan1";
+    Map<String, org.batfish.datamodel.Interface> ifaces = c.getAllInterfaces();
+    assertThat(ifaces.keySet(), containsInAnyOrder(ifaceEth1Name, ifaceVlan1Name));
+    org.batfish.datamodel.Interface ifaceEth1 = ifaces.get(ifaceEth1Name);
+    org.batfish.datamodel.Interface ifaceVlan1 = ifaces.get(ifaceVlan1Name);
+
+    // Confirm default costs are calculated correctly
+    assertThat(ifaceEth1.getOspfCost(), equalTo(40));
+    assertThat(ifaceVlan1.getOspfCost(), equalTo(40));
+  }
 }
