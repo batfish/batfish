@@ -81,6 +81,7 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.ibdp.VirtualRouter.RibExprEvaluator;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
@@ -693,7 +694,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Locally all routes start as eBGP routes in our own RIB
     EvpnType3Route.Builder type3RouteBuilder = EvpnType3Route.builder();
     type3RouteBuilder.setAdmin(ebgpAdmin);
-    type3RouteBuilder.setCommunities(ImmutableSet.of(routeTarget));
+    type3RouteBuilder.setCommunities(CommunitySet.of(routeTarget));
     type3RouteBuilder.setLocalPreference(DEFAULT_LOCAL_PREFERENCE);
     // so that this route is not installed back in the main RIB of any of the VRFs
     type3RouteBuilder.setNonRouting(true);
@@ -1535,7 +1536,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           Bgpv4Route.testBuilder()
               .setAsPath(advert.getAsPath())
               .setClusterList(advert.getClusterList())
-              .setCommunities(ImmutableSortedSet.copyOf(advert.getCommunities()))
+              .setCommunities(advert.getCommunities())
               .setLocalPreference(localPreference)
               .setMetric(advert.getMed())
               .setNetwork(advert.getNetwork())
@@ -1552,7 +1553,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               .setAdmin(admin)
               .setAsPath(transformedOutgoingRoute.getAsPath())
               .setClusterList(transformedOutgoingRoute.getClusterList())
-              .setCommunities(transformedOutgoingRoute.getCommunities().getCommunities())
+              .setCommunities(transformedOutgoingRoute.getCommunities())
               .setLocalPreference(transformedOutgoingRoute.getLocalPreference())
               .setMetric(transformedOutgoingRoute.getMetric())
               .setNetwork(transformedOutgoingRoute.getNetwork())

@@ -61,29 +61,33 @@ public final class CommunitySet implements Serializable {
   }
 
   public @Nonnull Set<ExtendedCommunity> getExtendedCommunities() {
-    if (_communities.isEmpty()) {
-      return ImmutableSet.of();
-    }
-    ImmutableSet.Builder<ExtendedCommunity> ret = ImmutableSet.builder();
-    for (Community c : _communities) {
-      if (c instanceof ExtendedCommunity) {
-        ret.add((ExtendedCommunity) c);
+    Set<ExtendedCommunity> extended = _extendedCommunities;
+    if (extended == null) {
+      ImmutableSet.Builder<ExtendedCommunity> ret = ImmutableSet.builder();
+      for (Community c : _communities) {
+        if (c instanceof ExtendedCommunity) {
+          ret.add((ExtendedCommunity) c);
+        }
       }
+      extended = ret.build();
+      _extendedCommunities = extended;
     }
-    return ret.build();
+    return extended;
   }
 
   public @Nonnull Set<StandardCommunity> getStandardCommunities() {
-    if (_communities.isEmpty()) {
-      return ImmutableSet.of();
-    }
-    ImmutableSet.Builder<StandardCommunity> ret = ImmutableSet.builder();
-    for (Community c : _communities) {
-      if (c instanceof StandardCommunity) {
-        ret.add((StandardCommunity) c);
+    Set<StandardCommunity> standard = _standardCommunities;
+    if (standard == null) {
+      ImmutableSet.Builder<StandardCommunity> ret = ImmutableSet.builder();
+      for (Community c : _communities) {
+        if (c instanceof StandardCommunity) {
+          ret.add((StandardCommunity) c);
+        }
       }
+      standard = ret.build();
+      _standardCommunities = standard;
     }
-    return ret.build();
+    return standard;
   }
 
   @Override
@@ -148,4 +152,7 @@ public final class CommunitySet implements Serializable {
 
   /* Cache the hashcode */
   private transient int _hashCode = 0;
+  /* Cache conversions to _extendedCommunities and _standardCommunities. */
+  private transient @Nullable Set<ExtendedCommunity> _extendedCommunities;
+  private transient @Nullable Set<StandardCommunity> _standardCommunities;
 }

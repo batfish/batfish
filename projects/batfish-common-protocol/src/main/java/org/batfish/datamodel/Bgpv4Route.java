@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -11,9 +12,9 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 /**
  * A BGP Route. Captures attributes of both iBGP and eBGP routes.
@@ -79,7 +80,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) Set<Community> communities,
+      @Nullable @JsonProperty(PROP_COMMUNITIES) CommunitySet communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long med,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
@@ -101,7 +102,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
         admin,
         asPath,
-        communities,
+        firstNonNull(communities, CommunitySet.empty()),
         localPreference,
         med,
         originatorIp,
@@ -122,11 +123,11 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nonnull NextHop nextHop,
       int admin,
       @Nullable AsPath asPath,
-      @Nullable Set<Community> communities,
+      CommunitySet communities,
       long localPreference,
       long med,
       Ip originatorIp,
-      @Nullable Set<Long> clusterList,
+      Set<Long> clusterList,
       boolean receivedFromRouteReflectorClient,
       OriginType originType,
       RoutingProtocol protocol,

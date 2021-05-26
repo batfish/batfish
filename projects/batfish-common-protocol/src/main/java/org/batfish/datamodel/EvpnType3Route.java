@@ -12,8 +12,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
-import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 
 /** An EVPN type 3 route */
 @ParametersAreNonnullByDefault
@@ -93,7 +93,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) Set<Community> communities,
+      @Nullable @JsonProperty(PROP_COMMUNITIES) CommunitySet communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long med,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
@@ -118,7 +118,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
         admin,
         firstNonNull(asPath, AsPath.empty()),
         firstNonNull(clusterList, ImmutableSet.of()),
-        firstNonNull(communities, ImmutableSet.of()),
+        firstNonNull(communities, CommunitySet.empty()),
         localPreference,
         med,
         NextHop.legacyConverter(nextHopInterface, nextHopIp),
@@ -140,7 +140,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       int admin,
       AsPath asPath,
       Set<Long> clusterList,
-      Set<Community> communities,
+      CommunitySet communities,
       long localPreference,
       long med,
       NextHop nextHop,
