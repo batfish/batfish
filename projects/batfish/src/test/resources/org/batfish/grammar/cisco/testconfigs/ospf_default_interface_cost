@@ -4,6 +4,7 @@ version 15.2
 hostname ospf_default_interface_cost
 !
 interface GigabitEthernet1
+ no switchport
  ip address 10.0.1.1 255.255.255.0
 !
 interface Vlan1
