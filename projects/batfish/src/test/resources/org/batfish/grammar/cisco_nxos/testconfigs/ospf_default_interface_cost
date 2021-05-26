@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname ospf_default_interface_cost
+!
+vlan 1
+interface Vlan1
+  no shutdown
+  no autostate
+  ip router ospf 65001 area 0.0.0.0
+!
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  ip address 10.0.1.1/24
+  ip router ospf 65001 area 0.0.0.1
+!
+router ospf 65001
+  router-id 10.0.1.1
+!
