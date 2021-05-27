@@ -224,7 +224,12 @@ public final class BatfishLogger {
   }
 
   public void debugf(String format, Object... args) {
-    debug(String.format(format, args));
+    if (LOGGER.isDebugEnabled()) {
+      String message = String.format(format, args);
+      debug(message);
+      return;
+    }
+    writef(LEVEL_DEBUG, format, args);
   }
 
   public void error(String msg) {
@@ -233,7 +238,12 @@ public final class BatfishLogger {
   }
 
   public void errorf(String format, Object... args) {
-    error(String.format(format, args));
+    if (LOGGER.isErrorEnabled()) {
+      String message = String.format(format, args);
+      error(message);
+      return;
+    }
+    writef(LEVEL_ERROR, format, args);
   }
 
   public void fatal(String msg) {
@@ -269,7 +279,12 @@ public final class BatfishLogger {
   }
 
   public void infof(String format, Object... args) {
-    info(String.format(format, args));
+    if (LOGGER.isInfoEnabled()) {
+      String message = String.format(format, args);
+      info(message);
+      return;
+    }
+    writef(LEVEL_INFO, format, args);
   }
 
   public boolean isActive(int level) {
@@ -319,24 +334,37 @@ public final class BatfishLogger {
   }
 
   public void warnf(String format, Object... args) {
-    warn(String.format(format, args));
+    if (LOGGER.isWarnEnabled()) {
+      String message = String.format(format, args);
+      warn(message);
+      return;
+    }
+    writef(LEVEL_WARN, format, args);
+  }
+
+  private synchronized void writef(int level, @Nonnull String format, @Nonnull Object... args) {
+    if (!isActive(level)) {
+      return;
+    }
+    write(level, String.format(format, args));
   }
 
   private synchronized void write(int level, @Nonnull String msg) {
-    if (isActive(level)) {
-      String outputMsg;
-      if (_timestamp) {
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String dateStr = df.format(new Date());
-        outputMsg = String.format("%s: %s", dateStr, msg);
-      } else {
-        outputMsg = msg;
-      }
-      if (_ps != null) {
-        _ps.print(outputMsg);
-      } else {
-        _history.add(new HistoryItem(level, msg));
-      }
+    if (!isActive(level)) {
+      return;
+    }
+    String outputMsg;
+    if (_timestamp) {
+      DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+      String dateStr = df.format(new Date());
+      outputMsg = String.format("%s: %s", dateStr, msg);
+    } else {
+      outputMsg = msg;
+    }
+    if (_ps != null) {
+      _ps.print(outputMsg);
+    } else {
+      _history.add(new HistoryItem(level, msg));
     }
   }
 
