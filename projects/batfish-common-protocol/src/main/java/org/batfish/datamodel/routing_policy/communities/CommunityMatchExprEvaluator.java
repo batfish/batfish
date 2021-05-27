@@ -1,5 +1,9 @@
 package org.batfish.datamodel.routing_policy.communities;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.PatternProvider;
 import org.batfish.datamodel.LineAction;
@@ -97,12 +101,7 @@ public final class CommunityMatchExprEvaluator
   @Override
   public @Nonnull Boolean visitCommunityMatchRegex(
       CommunityMatchRegex communityMatchRegex, Community arg) {
-    return PatternProvider.fromString(communityMatchRegex.getRegex())
-        .matcher(
-            communityMatchRegex
-                .getCommunityRendering()
-                .accept(CommunityToRegexInputString.instance(), arg))
-        .find();
+    return REGEX_MATCH_CACHE.getUnchecked(new RegexCacheKey(communityMatchRegex, arg));
   }
 
   @Override
@@ -216,4 +215,48 @@ public final class CommunityMatchExprEvaluator
   }
 
   private final @Nonnull CommunityContext _ctx;
+  ////////////////////////////////
+  private static final LoadingCache<RegexCacheKey, Boolean> REGEX_MATCH_CACHE =
+      CacheBuilder.newBuilder()
+          .maximumSize(1 << 20) // 1M instances that are each using maybe 40 bytes
+          .build(
+              CacheLoader.from(
+                  k ->
+                      PatternProvider.fromString(k._regex.getRegex())
+                          .matcher(
+                              k._regex
+                                  .getCommunityRendering()
+                                  .accept(CommunityToRegexInputString.instance(), k._community))
+                          .find()));
+
+  @VisibleForTesting
+  static final class RegexCacheKey {
+    public RegexCacheKey(CommunityMatchRegex regex, Community community) {
+      _regex = regex;
+      _community = community;
+      _hashCode = 31 * regex.hashCode() + community.hashCode(); // inlined hash
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      } else if (!(o instanceof RegexCacheKey)) {
+        return false;
+      }
+      RegexCacheKey that = (RegexCacheKey) o;
+      return _hashCode == that._hashCode
+          && _regex.equals(that._regex)
+          && _community.equals(that._community);
+    }
+
+    @Override
+    public int hashCode() {
+      return _hashCode;
+    }
+
+    private final CommunityMatchRegex _regex;
+    private final Community _community;
+    private final int _hashCode;
+  }
 }
