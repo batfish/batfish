@@ -5,9 +5,11 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator.RegexCacheKey;
 import org.junit.Test;
 
 /** Test of {@link CommunitySetMatchExprEvaluator}. */
@@ -128,5 +130,20 @@ public final class CommunitySetMatchExprEvaluatorTest {
         hc.accept(
             EVAL, CommunitySet.of(StandardCommunity.of(1L), ExtendedCommunity.of(1, 1L, 1L))));
     assertFalse(hc.accept(EVAL, CommunitySet.empty()));
+  }
+
+  @Test
+  public void testRegexCacheKey() {
+    CommunitySetRendering rendering =
+        new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance());
+    CommunitySetMatchRegex regex1 = new CommunitySetMatchRegex(rendering, "regex");
+    CommunitySetMatchRegex regex2 = new CommunitySetMatchRegex(rendering, "regex2");
+    CommunitySet set1 = CommunitySet.empty();
+    CommunitySet set2 = CommunitySet.of(StandardCommunity.ACCEPT_OWN);
+    new EqualsTester()
+        .addEqualityGroup(new RegexCacheKey(regex1, set1), new RegexCacheKey(regex1, set1))
+        .addEqualityGroup(new RegexCacheKey(regex2, set1))
+        .addEqualityGroup(new RegexCacheKey(regex2, set2))
+        .testEquals();
   }
 }

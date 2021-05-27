@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -43,7 +42,12 @@ public final class CommunitySetMatchRegex extends CommunitySetMatchExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_communitySetRendering, _regex);
+    int h = _hashCode;
+    if (h == 0) {
+      h = 31 * _communitySetRendering.hashCode() + _regex.hashCode();
+      _hashCode = h;
+    }
+    return h;
   }
 
   @Override
@@ -66,4 +70,5 @@ public final class CommunitySetMatchRegex extends CommunitySetMatchExpr {
 
   private final @Nonnull CommunitySetRendering _communitySetRendering;
   private final @Nonnull String _regex;
+  private transient int _hashCode; // cached hash
 }
