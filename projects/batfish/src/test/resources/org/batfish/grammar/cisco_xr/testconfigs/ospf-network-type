@@ -18,23 +18,18 @@ interface GigabitEthernet0/0/0/5
 !
 interface GigabitEthernet0/0/0/6
  ipv4 address 10.0.6.1 255.255.255.252
- ip ospf network point-to-point
 !
 interface GigabitEthernet0/0/0/7
  ipv4 address 10.0.7.1 255.255.255.252
- ip ospf network broadcast
 !
 interface GigabitEthernet0/0/0/8
  ipv4 address 10.0.8.1 255.255.255.252
- ip ospf network non-broadcast
 !
 interface GigabitEthernet0/0/0/9
  ipv4 address 10.0.9.1 255.255.255.252
- ip ospf network point-to-multipoint
 !
 interface GigabitEthernet0/0/0/10
  ipv4 address 10.0.10.1 255.255.255.252
- ip ospf network point-to-multipoint non-broadcast
 !
 router ospf 65100
  router-id 10.0.0.1
@@ -55,13 +50,18 @@ router ospf 65100
    network point-to-multipoint non-broadcast
   !
   interface GigabitEthernet0/0/0/6
+   network point-to-point
   !
   interface GigabitEthernet0/0/0/7
+   network broadcast
   !
   interface GigabitEthernet0/0/0/8
+   network non-broadcast
   !
   interface GigabitEthernet0/0/0/9
+   network point-to-multipoint
   !
   interface GigabitEthernet0/0/0/10
+   network point-to-multipoint non-broadcast
  !
 !

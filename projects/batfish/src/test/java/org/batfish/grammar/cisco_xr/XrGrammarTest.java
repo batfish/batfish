@@ -2785,7 +2785,7 @@ public final class XrGrammarTest {
         c.getInterfaces().get("GigabitEthernet0/0/0/5").getOspfNetworkType(),
         equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
 
-    // Configured in interface directly
+    // Configured in interface under OSPF area
     assertThat(
         c.getInterfaces().get("GigabitEthernet0/0/0/6").getOspfNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_POINT));
