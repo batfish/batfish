@@ -136,6 +136,8 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
+    c.setAsPathExprs(toImmutableMap(c.getAsPathExprs()));
+    c.setAsPathMatchExprs(toImmutableMap(c.getAsPathMatchExprs()));
     c.setAuthenticationKeyChains(toImmutableMap(c.getAuthenticationKeyChains()));
     c.setCommunityMatchExprs(toImmutableMap(c.getCommunityMatchExprs()));
     c.setCommunitySetExprs(toImmutableMap(c.getCommunitySetExprs()));
