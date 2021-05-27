@@ -1,10 +1,14 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 
 /** A generic OSPF route */
 @ParametersAreNonnullByDefault
@@ -28,6 +32,12 @@ public abstract class OspfRoute extends AbstractRoute {
       boolean nonRouting,
       boolean nonForwarding) {
     super(network, admin, tag, nonRouting, nonForwarding);
+    checkArgument(
+        nonRouting || !(nextHop instanceof NextHopIp),
+        "OSPF routes cannot only have next-hop IP unless they are non-routing.");
+    checkArgument(
+        !(nextHop instanceof NextHopInterface) || ((NextHopInterface) nextHop).getIp() != null,
+        "OSPF routes with next-hop interface must have next-hop IP.");
     _metric = metric;
     _nextHop = nextHop;
     _area = area;

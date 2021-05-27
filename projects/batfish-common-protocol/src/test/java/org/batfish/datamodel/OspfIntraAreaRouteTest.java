@@ -7,6 +7,7 @@ import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.junit.Test;
 
 /** Tests of {@link OspfIntraAreaRoute} */
@@ -26,7 +27,8 @@ public class OspfIntraAreaRouteTest {
         .addEqualityGroup(builder.setAdmin(1000).build())
         .addEqualityGroup(builder.setArea(2L).build())
         .addEqualityGroup(builder.setMetric(20L).build())
-        .addEqualityGroup(builder.setNextHopIp(Ip.parse("8.8.8.8")).build())
+        .addEqualityGroup(
+            builder.setNextHop(NextHopInterface.of("e0", Ip.parse("8.8.8.8"))).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }

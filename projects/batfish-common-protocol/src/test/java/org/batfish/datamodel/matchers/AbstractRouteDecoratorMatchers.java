@@ -166,8 +166,8 @@ public final class AbstractRouteDecoratorMatchers {
    * Provides a matcher that matches when the supplied {@code nonRouting} is equal to the {@link
    * AbstractRouteDecorator}'s nonRouting.
    */
-  public static IsNonRouting isNonRouting(boolean nonForwarding) {
-    return new IsNonRouting(equalTo(nonForwarding));
+  public static IsNonRouting isNonRouting(boolean nonRouting) {
+    return new IsNonRouting(equalTo(nonRouting));
   }
 
   private AbstractRouteDecoratorMatchers() {}

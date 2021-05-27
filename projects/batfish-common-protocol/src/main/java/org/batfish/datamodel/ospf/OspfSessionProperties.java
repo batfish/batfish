@@ -1,5 +1,7 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -22,10 +24,11 @@ public final class OspfSessionProperties {
   @JsonCreator
   private static @Nonnull OspfSessionProperties create(
       @JsonProperty(PROP_AREA) long area, @JsonProperty(PROP_IP_LINK) @Nullable IpLink ipLink) {
+    checkArgument(ipLink != null, "Missing %s", PROP_IP_LINK);
     return new OspfSessionProperties(area, ipLink);
   }
 
-  public OspfSessionProperties(long area, @Nullable IpLink ipLink) {
+  public OspfSessionProperties(long area, IpLink ipLink) {
     _area = area;
     _ipLink = ipLink;
   }
@@ -36,7 +39,7 @@ public final class OspfSessionProperties {
   }
 
   @JsonProperty(PROP_IP_LINK)
-  public @Nullable IpLink getIpLink() {
+  public IpLink getIpLink() {
     return _ipLink;
   }
 
