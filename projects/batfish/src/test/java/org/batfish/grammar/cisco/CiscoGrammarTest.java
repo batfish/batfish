@@ -359,6 +359,7 @@ import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -1233,7 +1234,7 @@ public final class CiscoGrammarTest {
     assertTrue(
         routingPolicy.process(
             OspfIntraAreaRoute.builder()
-                .setNextHop(NextHopIp.of(Ip.parse("5.5.5.5")))
+                .setNextHop(NextHopInterface.of("dummyInterface", Ip.parse("5.5.5.5")))
                 .setNetwork(Prefix.parse("4.4.4.4/32"))
                 .setAdmin(1)
                 .setMetric(1)

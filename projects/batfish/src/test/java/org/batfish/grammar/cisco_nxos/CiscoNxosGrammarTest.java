@@ -410,16 +410,20 @@ public final class CiscoNxosGrammarTest {
         .setAdvertiser("dummy")
         .setArea(0L)
         .setCostToAdvertiser(0L)
-        .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
+        .setNextHop(NextHopInterface.of("dummyInt", Ip.parse("3.3.3.3")))
         .setLsaMetric(0L);
   }
 
   private static @Nonnull OspfIntraAreaRoute.Builder ospfRouteBuilder() {
-    return OspfIntraAreaRoute.builder().setNextHop(NextHopIp.of(Ip.parse("3.3.3.3"))).setArea(0L);
+    return OspfIntraAreaRoute.builder()
+        .setNextHop(NextHopInterface.of("dummyInterface", Ip.parse("3.3.3.3")))
+        .setArea(0L);
   }
 
   private static @Nonnull OspfInterAreaRoute.Builder ospfIARouteBuilder() {
-    return OspfInterAreaRoute.builder().setNextHop(NextHopIp.of(Ip.parse("3.3.3.3"))).setArea(0L);
+    return OspfInterAreaRoute.builder()
+        .setNextHop(NextHopInterface.of("dummyInterface", Ip.parse("3.3.3.3")))
+        .setArea(0L);
   }
 
   private @Nonnull BDD toBDD(AclLineMatchExpr aclLineMatchExpr) {
@@ -530,7 +534,7 @@ public final class CiscoNxosGrammarTest {
     OspfExternalRoute.Builder builder =
         OspfExternalRoute.builder()
             .setNetwork(route.getNetwork())
-            .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
+            .setNextHop(NextHopInterface.of("dummyInterface", Ip.parse("3.3.3.3")))
             .setLsaMetric(123L)
             .setArea(456L)
             .setCostToAdvertiser(789L)
