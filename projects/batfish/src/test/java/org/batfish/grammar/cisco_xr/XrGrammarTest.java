@@ -2761,12 +2761,7 @@ public final class XrGrammarTest {
             "GigabitEthernet0/0/0/2",
             "GigabitEthernet0/0/0/3",
             "GigabitEthernet0/0/0/4",
-            "GigabitEthernet0/0/0/5",
-            "GigabitEthernet0/0/0/6",
-            "GigabitEthernet0/0/0/7",
-            "GigabitEthernet0/0/0/8",
-            "GigabitEthernet0/0/0/9",
-            "GigabitEthernet0/0/0/10"));
+            "GigabitEthernet0/0/0/5"));
 
     // Configured in OSPF router
     assertThat(
@@ -2783,23 +2778,6 @@ public final class XrGrammarTest {
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_MULTIPOINT));
     assertThat(
         c.getInterfaces().get("GigabitEthernet0/0/0/5").getOspfNetworkType(),
-        equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
-
-    // Configured in interface under OSPF area
-    assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/6").getOspfNetworkType(),
-        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_POINT));
-    assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/7").getOspfNetworkType(),
-        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
-    assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/8").getOspfNetworkType(),
-        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.NON_BROADCAST));
-    assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/9").getOspfNetworkType(),
-        equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_MULTIPOINT));
-    assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/10").getOspfNetworkType(),
         equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
   }
 
