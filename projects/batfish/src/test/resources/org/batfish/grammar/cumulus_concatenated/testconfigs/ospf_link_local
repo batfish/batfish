@@ -1,0 +1,74 @@
+ospf_link_local
+# This file describes the network interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+auto swp1
+iface swp1
+  # Should own 10.0.0.1/32, since this is the earliest declared interface that assigns it.
+  # Should not receive an LLA, since it already has an address.
+  address 10.0.0.1/32
+
+auto swp2
+iface swp2
+  # Should not own 10.0.0.1/32.
+  # Instead should receive LLA, since OSPF is enabled on this interface and the network type is point-to-point.
+  address 10.0.0.1/32
+
+auto swp3
+iface swp3
+  # Should not own 10.0.0.1/32.
+  # Since OSPF is passive on this interface, should not receive LLA.
+  address 10.0.0.1/32
+
+auto swp4
+iface swp4
+  # Should not own 10.0.0.1/32.
+  # Since the OSPF network type is not point-to-point on this interface, should not receive LLA.
+  address 10.0.0.1/32
+
+auto swp5
+iface swp5
+  # Should not own 10.0.0.1/32.
+  # Since OSPF is not enabled on this interface, should not receive LLA.
+  address 10.0.0.1/32
+
+# ports.conf --
+# ports.conf --
+#
+#   configure port speed, aggregation, and subdivision.
+#
+#   The ports in Cumulus VX are not configurable from here.
+#frr version
+frr version 4.0+cl3u8
+frr defaults datacenter
+hostname ip_reuse
+username cumulus nopassword
+!
+service integrated-vtysh-config
+!
+log syslog informational
+!
+interface swp1
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+interface swp2
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+interface swp3
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+interface swp4
+ ip ospf area 0
+!
+interface swp5
+!
+router ospf
+  ospf router-id 1.1.1.1
+  passive-interface swp3
+!
+line vty
+!
