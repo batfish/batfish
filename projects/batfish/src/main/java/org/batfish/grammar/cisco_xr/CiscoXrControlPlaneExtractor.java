@@ -527,14 +527,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_flowContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_forwardContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_helper_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_igmpContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_areaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_costContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_dead_intervalContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_dead_interval_minimalContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_hello_intervalContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_networkContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_passive_interfaceContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_ospf_shutdownContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_pim_neighbor_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_isisContext;
@@ -1091,13 +1083,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     } else {
       warn(ctx, "Cannot determine OSPF network type.");
       return null;
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
     }
   }
 
@@ -4132,71 +4117,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitIf_ip_igmp(If_ip_igmpContext ctx) {
     _no = false;
-  }
-
-  @Override
-  public void exitIf_ip_ospf_area(If_ip_ospf_areaContext ctx) {
-    long area;
-    if (ctx.area_dec != null) {
-      area = toInteger(ctx.area_dec);
-    } else {
-      assert ctx.area_ip != null;
-      area = toIp(ctx.area_ip).asLong();
-    }
-    String ospfProcessName = ctx.procname.getText();
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfArea(area);
-      iface.setOspfProcess(ospfProcessName);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_cost(If_ip_ospf_costContext ctx) {
-    int cost = toInteger(ctx.cost);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setOspfCost(cost);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_dead_interval(If_ip_ospf_dead_intervalContext ctx) {
-    int seconds = toInteger(ctx.seconds);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setOspfDeadInterval(seconds);
-      currentInterface.setOspfHelloMultiplier(0);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_dead_interval_minimal(If_ip_ospf_dead_interval_minimalContext ctx) {
-    int multiplier = toInteger(ctx.mult);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setOspfDeadInterval(1);
-      currentInterface.setOspfHelloMultiplier(multiplier);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_hello_interval(If_ip_ospf_hello_intervalContext ctx) {
-    int seconds = toInteger(ctx.seconds);
-    for (Interface currentInterface : _currentInterfaces) {
-      currentInterface.setOspfHelloInterval(seconds);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_passive_interface(If_ip_ospf_passive_interfaceContext ctx) {
-    boolean passive = ctx.NO() == null;
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfPassive(passive);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_ospf_shutdown(If_ip_ospf_shutdownContext ctx) {
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfShutdown(ctx.NO() == null);
-    }
   }
 
   @Override

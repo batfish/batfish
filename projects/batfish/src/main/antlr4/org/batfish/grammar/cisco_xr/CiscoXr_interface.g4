@@ -331,43 +331,6 @@ if_ip_nbar
    IP NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
 ;
 
-if_ip_ospf_area
-:
-   IP OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = uint_legacy) NEWLINE
-;
-
-if_ip_ospf_cost
-:
-   IP? OSPF COST cost = uint_legacy NEWLINE
-;
-
-if_ip_ospf_dead_interval
-:
-   IP OSPF DEAD_INTERVAL seconds = uint_legacy NEWLINE
-;
-
-if_ip_ospf_dead_interval_minimal
-:
-   IP OSPF DEAD_INTERVAL MINIMAL HELLO_MULTIPLIER mult = uint_legacy NEWLINE
-;
-
-if_ip_ospf_hello_interval
-:
-   IP OSPF HELLO_INTERVAL seconds = uint_legacy NEWLINE
-;
-
-if_ip_ospf_network: IP OSPF NETWORK ospf_network_type NEWLINE;
-
-if_ip_ospf_passive_interface
-:
-   NO? IP OSPF PASSIVE_INTERFACE NEWLINE
-;
-
-if_ip_ospf_shutdown
-:
-   NO? IP OSPF SHUTDOWN NEWLINE
-;
-
 if_ip_passive_interface_eigrp
 :
    NO? IP PASSIVE_INTERFACE EIGRP tag = uint_legacy NEWLINE
@@ -1666,14 +1629,6 @@ if_inner
    | if_ip_nat_inside
    | if_ip_nat_outside
    | if_ip_nbar
-   | if_ip_ospf_area
-   | if_ip_ospf_cost
-   | if_ip_ospf_dead_interval
-   | if_ip_ospf_dead_interval_minimal
-   | if_ip_ospf_hello_interval
-   | if_ip_ospf_network
-   | if_ip_ospf_passive_interface
-   | if_ip_ospf_shutdown
    | if_ip_passive_interface_eigrp
    | if_ip_pim_neighbor_filter
    | if_ip_router_isis
