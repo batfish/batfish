@@ -35,7 +35,6 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalRoute;
-import org.batfish.datamodel.OspfExternalRoute.Builder;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.OspfInterAreaRoute;
@@ -58,6 +57,7 @@ import org.batfish.datamodel.ospf.OspfTopology.EdgeId;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -451,8 +451,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
     return OspfIntraAreaRoute.builder()
         .setNetwork(ifaceAddress.getPrefix())
+        // locally originated from connected route, next-hop interface not populated
         .setNonRouting(true)
-        .setNextHopIp(ifaceAddress.getIp())
+        .setNextHop(NextHopIp.of(ifaceAddress.getIp()))
         .setAdmin(_process.getAdminCosts().get(RoutingProtocol.OSPF))
         .setMetric(getIncrementalCost(iface, true))
         .setArea(areaNum)
@@ -596,6 +597,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       OspfInterAreaRoute route, String ifaceName, long incrementalCost) {
     // sanity check that this is a non-routing in-transit route
     assert route.getNonRouting();
+    // in-transit route should always have only next-hop-ip
+    assert route.getNextHop() instanceof NextHopIp;
     if (isABR() && route.getNetwork().equals(Prefix.ZERO)) {
       // ABR should not accept default inter-area routes, as it is the one that originates them
       return Optional.empty();
@@ -605,7 +608,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         route.toBuilder()
             .setMetric(route.getMetric() + incrementalCost)
             .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
-            .setNextHopInterface(ifaceName)
+            .setNextHop(NextHopInterface.of(ifaceName, ((NextHopIp) route.getNextHop()).getIp()))
             // Clear any non-routing or non-forwarding bit
             .setNonRouting(false)
             .setNonForwarding(false));
@@ -693,10 +696,12 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
       OspfIntraAreaRoute route, String ifaceName, long incrementalCost) {
     // sanity check that this is a non-routing in-transit route
     assert route.getNonRouting();
+    // in-transit route should always have only next-hop-ip
+    assert route.getNextHop() instanceof NextHopIp;
     return route.toBuilder()
         .setMetric(route.getMetric() + incrementalCost)
         .setAdmin(_process.getAdminCosts().get(route.getProtocol()))
-        .setNextHopInterface(ifaceName)
+        .setNextHop(NextHopInterface.of(ifaceName, ((NextHopIp) route.getNextHop()).getIp()))
         // Clear any non-routing or non-forwarding bit
         .setNonRouting(false)
         .setNonForwarding(false);
@@ -938,7 +943,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                 r.toBuilder()
                     .setRoute(
                         r.getRoute().toBuilder()
-                            .setNextHopIp(nextHopIp)
+                            .setNextHop(NextHopIp.of(nextHopIp))
+                            // Set to non-routing because this is in-transit route missing final
+                            // next-hop-interface of receiver.
                             .setNonRouting(true)
                             .build())
                     .build())
@@ -997,7 +1004,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     .setRoute(
                         r.getRoute().toBuilder()
                             .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
-                            .setNextHopIp(nextHopIp)
+                            .setNextHop(NextHopIp.of(nextHopIp))
+                            // Set to non-routing because this is in-transit route missing final
+                            // next-hop-interface of receiver.
                             .setNonRouting(true)
                             .build())
                     .build())
@@ -1077,7 +1086,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                         r.getRoute().toBuilder()
                             .setArea(areaConfig.getAreaNumber())
                             .setMetric(firstNonNull(customMetric, r.getRoute().getMetric()))
-                            .setNextHopIp(nextHopIp)
+                            .setNextHop(NextHopIp.of(nextHopIp))
+                            // Set to non-routing because this is in-transit route missing final
+                            // next-hop-interface of receiver.
                             .setNonRouting(true)
                             .build())
                     .build());
@@ -1133,7 +1144,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             .setRoute(
                 OspfInterAreaRoute.builder()
                     .setNetwork(Prefix.ZERO)
-                    .setNextHopIp(nextHopIp)
+                    .setNextHop(NextHopIp.of(nextHopIp))
+                    // Set to non-routing because this is in-transit route missing final
+                    // next-hop-interface of receiver.
                     .setNonRouting(true)
                     // Intentionally large. Must be correctly set on the receiver's side
                     .setAdmin(Integer.MAX_VALUE)
@@ -1253,7 +1266,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /** Transform type2 routes on import */
   @Nonnull
   @VisibleForTesting
-  Builder transformType2RouteOnImport(
+  OspfExternalRoute.Builder transformType2RouteOnImport(
       OspfExternalType2Route route, String nextHopInterface, Ip nextHopIp, long incrementalCost) {
     return transformType1and2CommonOnImport(route, nextHopInterface, nextHopIp)
         /*
@@ -1267,6 +1280,10 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   private OspfExternalRoute.Builder transformType1and2CommonOnImport(
       OspfExternalRoute r, String nextHopInterface, Ip nextHopIp) {
     assert r.getArea() != OspfRoute.NO_AREA; // Area must be set during export
+    // sanity check that this is a non-routing in-transit route
+    assert r.getNonRouting();
+    // in-transit route should always have only next-hop-ip
+    assert r.getNextHop() instanceof NextHopIp;
     return r.toBuilder()
         .setNextHop(NextHopInterface.of(nextHopInterface, nextHopIp))
         .setAdmin(_process.getAdminCosts().get(r.getOspfMetricType().toRoutingProtocol()))
@@ -1394,6 +1411,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                                   firstNonNull(metricOverride, route.getCostToAdvertiser()))
                               // Override area before sending out
                               .setArea(areaConfig.getAreaNumber())
+                              // Set to non-routing because this is in-transit route.
                               .setNonRouting(true)
                               .build())
                   .build();
@@ -1424,6 +1442,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                                   route.getArea() == OspfRoute.NO_AREA
                                       ? areaConfig.getAreaNumber()
                                       : route.getArea())
+                              // Set to non-routing because this is in-transit route.
                               .setNonRouting(true)
                               .build())
                   .build();

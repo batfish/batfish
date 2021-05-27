@@ -842,18 +842,19 @@ public class OspfRoutingProcessTest {
             .setAdvertiser("someNode")
             .setArea(1L)
             .setAdmin(0)
-            .setNonRouting(true)
-            .setNextHopIp(Ip.parse("1.1.1.1"));
-    Stream<RouteAdvertisement<OspfExternalType1Route>> routes =
-        Stream.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build()));
+            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.1")));
     final OspfArea ospfArea = OspfArea.builder().setNumber(33).build();
 
     // Going to area 0
+    // routing -> non-routing
     assertThat(
-        _routingProcess.transformType1RoutesOnExport(routes, AREA0_CONFIG),
-        contains(new RouteAdvertisement<>(builder.setArea(0).build())));
+        _routingProcess.transformType1RoutesOnExport(
+            Stream.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build())),
+            AREA0_CONFIG),
+        contains(new RouteAdvertisement<>(builder.setArea(0).setNonRouting(true).build())));
 
     // Going from area 0 to some area
+    // non-routing -> non-routing from here on
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
             Stream.of(
@@ -947,13 +948,14 @@ public class OspfRoutingProcessTest {
             .setAdvertiser("someNode")
             .setArea(1L)
             .setAdmin(0)
-            .setNonRouting(true)
-            .setNextHopIp(Ip.parse("1.1.1.1"));
-    Stream<RouteAdvertisement<OspfExternalType2Route>> routes =
-        Stream.of(new RouteAdvertisement<>((OspfExternalType2Route) builder.build()));
+            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.1")));
+    // routing -> non-routing
     assertThat(
-        OspfRoutingProcess.transformType2RoutesOnExport(routes, AREA0_CONFIG),
-        contains(new RouteAdvertisement<>(builder.setArea(1).build())));
+        OspfRoutingProcess.transformType2RoutesOnExport(
+            Stream.of(new RouteAdvertisement<>((OspfExternalType2Route) builder.build())),
+            AREA0_CONFIG),
+        contains(new RouteAdvertisement<>(builder.setArea(1).setNonRouting(true).build())));
+    // non-routing -> non-routing
     assertThat(
         OspfRoutingProcess.transformType2RoutesOnExport(
             Stream.of(
