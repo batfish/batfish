@@ -5,7 +5,6 @@ import static org.batfish.datamodel.Interface.DEFAULT_MTU;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.isValidVIInterface;
-import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.populateCommonInterfaceProperties;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.populateLoopbackProperties;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
@@ -329,17 +328,18 @@ public class CumulusConcatenatedConfigurationTest {
   @Test
   public void testPopulateCommonProperties_mtu() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    CumulusConcatenatedConfiguration vc = new CumulusConcatenatedConfiguration();
     InterfacesInterface vsIface = new InterfacesInterface("iface");
     Interface viIface =
         org.batfish.datamodel.Interface.builder().setName("iface").setOwner(c).build();
 
     // unset means default
-    populateCommonInterfaceProperties(vsIface, viIface);
+    vc.populateCommonInterfaceProperties(vsIface, viIface);
     assertEquals(viIface.getMtu(), DEFAULT_MTU);
 
     // should get the set value
     vsIface.setMtu(42);
-    populateCommonInterfaceProperties(vsIface, viIface);
+    vc.populateCommonInterfaceProperties(vsIface, viIface);
     assertEquals(viIface.getMtu(), 42);
   }
 

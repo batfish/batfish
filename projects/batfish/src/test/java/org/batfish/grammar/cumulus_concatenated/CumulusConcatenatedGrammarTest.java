@@ -5,6 +5,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
@@ -822,5 +823,42 @@ public class CumulusConcatenatedGrammarTest {
         new ConnectedRoute(Prefix.parse("1.1.1.0/24"), "iface"),
         OspfExternalType2Route.builder(),
         OUT);
+  }
+
+  @Test
+  public void testIpReuse() throws IOException {
+    Configuration c = parseConfig("ip_reuse");
+
+    assertThat(
+        c.getAllInterfaces(), hasKeys("swp1", "swp2", "swp3", "swp4", "swp5", "lo", "v1", "v2"));
+    {
+      Interface iface = c.getAllInterfaces().get("swp1");
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.1.1.2/32")));
+      assertThat(
+          iface.getAllAddresses(),
+          contains(
+              ConcreteInterfaceAddress.parse("10.0.0.2/32"),
+              ConcreteInterfaceAddress.parse("10.1.1.2/32")));
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp2");
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
+      assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp3");
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.1.1.1/32")));
+      assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.1.1.1/32")));
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp4");
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
+      assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp5");
+      assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.1.1.1/32")));
+      assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.1.1.1/32")));
+    }
   }
 }

@@ -26,10 +26,12 @@ import static org.batfish.representation.cumulus.InterfaceConverter.getSuperInte
 import static org.batfish.representation.cumulus.InterfacesInterface.isPhysicalInterfaceType;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.SetMultimap;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -86,6 +88,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
 
   @Nonnull private final CumulusPortsConfiguration _portsConfiguration;
 
+  private transient SetMultimap<String, Prefix> _ownedPrefixesByVrf;
+
   public CumulusConcatenatedConfiguration() {
     this(
         new CumulusInterfacesConfiguration(),
@@ -121,6 +125,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     return ImmutableList.of(toVendorIndependentConfiguration());
   }
 
+  private void initializeVrfIpOwners() {}
+
   @Nonnull
   @VisibleForTesting
   Configuration toVendorIndependentConfiguration() {
@@ -132,6 +138,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     // create default VRF
     getOrCreateVrf(c, DEFAULT_VRF_NAME);
 
+    initializeVrfIpOwners();
     initializeAllInterfaces(c);
     populateInterfacesInterfaceProperties(c);
     populatePortsInterfaceProperties(c);
@@ -265,13 +272,12 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
   }
 
   private void populateFrrInterfaceProperties(Configuration c) {
-    _frrConfiguration
-        .getInterfaces()
-        .values()
+    _frrConfiguration.getInterfaceInitOrder().stream()
+        .map(_frrConfiguration.getInterfaces()::get)
         .forEach(iface -> populateFrrInterfaceProperties(c, iface));
   }
 
-  private static void populateFrrInterfaceProperties(Configuration c, FrrInterface iface) {
+  private void populateFrrInterfaceProperties(Configuration c, FrrInterface iface) {
     org.batfish.datamodel.Interface viIface = c.getAllInterfaces().get(iface.getName());
     checkArgument(
         viIface != null, "VI interface object not found for interface %s", iface.getName());
@@ -281,19 +287,35 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     if (iface.getShutdown()) {
       viIface.setActive(false);
     }
-    if (!iface.getIpAddresses().isEmpty()) {
-      viIface.setAddress(iface.getIpAddresses().get(0));
+
+    // ip addresses
+    String vrf = iface.getVrfName();
+    ImmutableList.Builder<ConcreteInterfaceAddress> ownedIpAddressesBuilder =
+        ImmutableList.builder();
+    for (ConcreteInterfaceAddress address : iface.getIpAddresses()) {
+      Prefix prefix = address.getPrefix();
+      if (ownedPrefixesByVrf().containsEntry(vrf, prefix)) {
+        // TODO: store shadowed interface address in VI somewhere for e.g. OSPF unnumbered
+        continue;
+      }
+      ownedPrefixesByVrf().put(vrf, prefix);
+      ownedIpAddressesBuilder.add(address);
+    }
+    List<ConcreteInterfaceAddress> ownedIpAddresses = ownedIpAddressesBuilder.build();
+    if (!ownedIpAddresses.isEmpty()) {
+      viIface.setAddress(ownedIpAddresses.get(0));
       viIface.setAllAddresses(
           ImmutableSet.<InterfaceAddress>builder()
               .addAll(viIface.getAllAddresses())
-              .addAll(iface.getIpAddresses())
+              .addAll(ownedIpAddresses)
               .build());
     }
   }
 
   /** Add interface properties based on what we saw in the interfaces file */
   private void populateInterfacesInterfaceProperties(Configuration c) {
-    _interfacesConfiguration.getInterfaces().values().stream()
+    _interfacesConfiguration.getInterfaceInitOrder().stream()
+        .map(_interfacesConfiguration.getInterfaces()::get)
         .filter(CumulusConcatenatedConfiguration::isValidVIInterface)
         .forEach(iface -> populateInterfaceProperties(c, iface));
     populateLoopbackProperties(
@@ -427,14 +449,36 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     viIface.setMlagId(iface.getClagId());
   }
 
+  private @Nonnull SetMultimap<String, Prefix> ownedPrefixesByVrf() {
+    if (_ownedPrefixesByVrf == null) {
+      _ownedPrefixesByVrf = HashMultimap.create();
+    }
+    return _ownedPrefixesByVrf;
+  }
+
   @VisibleForTesting
-  static void populateCommonInterfaceProperties(
+  void populateCommonInterfaceProperties(
       InterfacesInterface vsIface, org.batfish.datamodel.Interface viIface) {
     // addresses
     if (vsIface.getAddresses() != null && !vsIface.getAddresses().isEmpty()) {
       List<ConcreteInterfaceAddress> addresses = vsIface.getAddresses();
-      viIface.setAddress(addresses.get(0));
-      viIface.setAllAddresses(addresses);
+      ImmutableList.Builder<ConcreteInterfaceAddress> ownedAddressesBuilder =
+          ImmutableList.builder();
+      String vrf = firstNonNull(vsIface.getVrf(), DEFAULT_VRF_NAME);
+      for (ConcreteInterfaceAddress address : addresses) {
+        Prefix prefix = address.getPrefix();
+        if (ownedPrefixesByVrf().containsEntry(vrf, prefix)) {
+          // TODO: store shadowed interface address in VI somewhere for e.g. OSPF unnumbered
+          continue;
+        }
+        ownedPrefixesByVrf().put(vrf, prefix);
+        ownedAddressesBuilder.add(address);
+      }
+      List<ConcreteInterfaceAddress> ownedAddresses = ownedAddressesBuilder.build();
+      if (!ownedAddresses.isEmpty()) {
+        viIface.setAddress(ownedAddresses.get(0));
+        viIface.setAllAddresses(ownedAddresses);
+      }
     }
 
     // description
