@@ -66,13 +66,13 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.routes.DiffRoutesOutput.KeyPresenceStatus;
@@ -179,7 +179,7 @@ public class RoutesAnswererUtilTest {
                     ImmutableSet.of(
                         OspfExternalType2Route.builder()
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHopIp(Ip.parse("1.1.1.2"))
+                            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
                             .setAdmin(10)
                             .setMetric(2L << 34)
                             .setLsaMetric(2)
@@ -206,7 +206,7 @@ public class RoutesAnswererUtilTest {
                 hasColumn(COL_VRF_NAME, Configuration.DEFAULT_VRF_NAME, Schema.STRING),
                 hasColumn(COL_NETWORK, Prefix.parse("1.1.1.0/24"), Schema.PREFIX),
                 hasColumn(COL_NEXT_HOP_IP, Ip.parse("1.1.1.2"), Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING),
+                hasColumn(COL_NEXT_HOP_INTERFACE, "e0", Schema.STRING),
                 hasColumn(COL_NEXT_HOP, nullValue(), Schema.STRING),
                 hasColumn(COL_PROTOCOL, "ospfE2", Schema.STRING),
                 hasColumn(COL_TAG, equalTo(2L << 35), Schema.LONG),
@@ -474,7 +474,7 @@ public class RoutesAnswererUtilTest {
                     ImmutableSet.of(
                         OspfExternalType2Route.builder()
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHopIp(Ip.parse("1.1.1.2"))
+                            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.2")))
                             .setAdmin(10)
                             .setMetric(30L)
                             .setLsaMetric(2)
@@ -485,7 +485,7 @@ public class RoutesAnswererUtilTest {
                             .build(),
                         OspfExternalType2Route.builder()
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
-                            .setNextHopIp(Ip.parse("1.1.1.3"))
+                            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.3")))
                             .setAdmin(10)
                             .setMetric(20L)
                             .setLsaMetric(2)
@@ -519,14 +519,14 @@ public class RoutesAnswererUtilTest {
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
                     .setMetric(30L)
-                    .setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE)
+                    .setNextHopInterface("e0")
                     .build()),
             new RouteRowSecondaryKey(Ip.parse("1.1.1.3"), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
                     .setAdminDistance(10)
                     .setMetric(20L)
-                    .setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE)
+                    .setNextHopInterface("e0")
                     .build()));
     // matching the secondary key
     assertThat(innerGroup, equalTo(expectedInnerMap));

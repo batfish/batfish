@@ -88,6 +88,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.grammar.BatfishParseTreeWalker;
@@ -2127,7 +2128,7 @@ public class CumulusFrrGrammarTest {
             equalTo(
                 OspfExternalType2Route.builder()
                     .setNetwork(Prefix.parse("10.2.2.2/32"))
-                    .setNextHopIp(Ip.parse("10.1.1.2"))
+                    .setNextHop(NextHopInterface.of("swp1", Ip.parse("10.1.1.2")))
                     .setAdvertiser("frr-redistributor")
                     .setAdmin(110)
                     .setLsaMetric(10000L)

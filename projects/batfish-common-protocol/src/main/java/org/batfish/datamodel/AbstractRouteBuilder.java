@@ -101,6 +101,8 @@ public abstract class AbstractRouteBuilder<
     if (_nextHop instanceof NextHopIp) {
       // Merge NH INT + NH IP
       _nextHop = NextHopInterface.of(iface, ((NextHopIp) _nextHop).getIp());
+    } else if (_nextHop instanceof NextHopInterface) {
+      _nextHop = NextHopInterface.of(iface, ((NextHopInterface) _nextHop).getIp());
     } else {
       _nextHop = NextHopInterface.of(iface);
     }
