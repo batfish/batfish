@@ -834,7 +834,8 @@ public class OspfRoutingProcessTest {
 
   @Test
   public void testTransformType1RouteOnExportNoMetricOverride() {
-    final OspfExternalRoute.Builder builder =
+    Ip nextHopIp = Ip.parse("1.1.1.1");
+    final OspfExternalRoute base =
         OspfExternalType1Route.builder()
             .setNetwork(Prefix.parse("2.2.2.2/32"))
             .setLsaMetric(0L)
@@ -842,56 +843,88 @@ public class OspfRoutingProcessTest {
             .setAdvertiser("someNode")
             .setArea(1L)
             .setAdmin(0)
-            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.1")));
+            .setNextHop(NextHopDiscard.instance())
+            .build();
     final OspfArea ospfArea = OspfArea.builder().setNumber(33).build();
 
     // Going to area 0
-    // routing -> non-routing
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
-            Stream.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build())),
-            AREA0_CONFIG),
-        contains(new RouteAdvertisement<>(builder.setArea(0).setNonRouting(true).build())));
+            Stream.of(new RouteAdvertisement<>((OspfExternalType1Route) base)),
+            AREA0_CONFIG,
+            nextHopIp),
+        contains(
+            new RouteAdvertisement<>(
+                base.toBuilder()
+                    .setArea(0)
+                    .setNonRouting(true)
+                    .setNextHop(NextHopIp.of(nextHopIp))
+                    .build())));
 
     // Going from area 0 to some area
-    // non-routing -> non-routing from here on
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
             Stream.of(
-                new RouteAdvertisement<>((OspfExternalType1Route) builder.setArea(0).build())),
-            ospfArea),
-        contains(new RouteAdvertisement<>(builder.setArea(ospfArea.getAreaNumber()).build())));
+                new RouteAdvertisement<>(
+                    (OspfExternalType1Route) base.toBuilder().setArea(0).build())),
+            ospfArea,
+            nextHopIp),
+        contains(
+            new RouteAdvertisement<>(
+                base.toBuilder()
+                    .setArea(ospfArea.getAreaNumber())
+                    .setNonRouting(true)
+                    .setNextHop(NextHopIp.of(nextHopIp))
+                    .build())));
 
     // Generated locally, going to some area
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
             Stream.of(
                 new RouteAdvertisement<>(
-                    (OspfExternalType1Route) builder.setArea(OspfRoute.NO_AREA).build())),
-            ospfArea),
-        contains(new RouteAdvertisement<>(builder.setArea(ospfArea.getAreaNumber()).build())));
+                    (OspfExternalType1Route) base.toBuilder().setArea(OspfRoute.NO_AREA).build())),
+            ospfArea,
+            nextHopIp),
+        contains(
+            new RouteAdvertisement<>(
+                base.toBuilder()
+                    .setArea(ospfArea.getAreaNumber())
+                    .setNonRouting(true)
+                    .setNextHop(NextHopIp.of(nextHopIp))
+                    .build())));
 
     // In the same area
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
             Stream.of(
                 new RouteAdvertisement<>(
-                    (OspfExternalType1Route) builder.setArea(ospfArea.getAreaNumber()).build())),
-            ospfArea),
-        contains(new RouteAdvertisement<>(builder.setArea(ospfArea.getAreaNumber()).build())));
+                    (OspfExternalType1Route)
+                        base.toBuilder().setArea(ospfArea.getAreaNumber()).build())),
+            ospfArea,
+            nextHopIp),
+        contains(
+            new RouteAdvertisement<>(
+                base.toBuilder()
+                    .setArea(ospfArea.getAreaNumber())
+                    .setNonRouting(true)
+                    .setNextHop(NextHopIp.of(nextHopIp))
+                    .build())));
 
     // Going across two non-zero areas: not allowed
     assertThat(
         _routingProcess.transformType1RoutesOnExport(
             Stream.of(
                 new RouteAdvertisement<>(
-                    (OspfExternalType1Route) builder.setArea(ospfArea.getAreaNumber()).build())),
-            OspfArea.builder().setNumber(44).build()),
+                    (OspfExternalType1Route)
+                        base.toBuilder().setArea(ospfArea.getAreaNumber()).build())),
+            OspfArea.builder().setNumber(44).build(),
+            nextHopIp),
         empty());
   }
 
   @Test
   public void testTransformType1RouteOnExportWithMetricOverride() {
+    Ip nextHopIp = Ip.parse("1.1.1.1");
     // Overriden behavior for summary routes
     final long overrideMetric = 8888L;
     Builder ospfProcess =
@@ -903,7 +936,7 @@ public class OspfRoutingProcessTest {
             .setMaxMetricSummaryNetworks(overrideMetric);
     OspfRoutingProcess routingProcess =
         new OspfRoutingProcess(ospfProcess.build(), VRF_NAME, _c, _emptyOspfTopology);
-    final OspfExternalRoute.Builder builder =
+    final OspfExternalRoute base =
         OspfExternalType1Route.builder()
             .setNetwork(Prefix.parse("2.2.2.2/32"))
             .setLsaMetric(10L)
@@ -911,21 +944,23 @@ public class OspfRoutingProcessTest {
             .setAdvertiser("someNode")
             .setArea(1L)
             .setAdmin(0)
-            .setNonRouting(true)
-            .setNextHopIp(Ip.parse("1.1.1.1"));
-    Stream<RouteAdvertisement<OspfExternalType1Route>> routes =
-        Stream.of(new RouteAdvertisement<>((OspfExternalType1Route) builder.build()));
-
+            .setNextHop(NextHopDiscard.instance())
+            .build();
     // Override for routes transiting across areas
     assertThat(
-        routingProcess.transformType1RoutesOnExport(routes, AREA0_CONFIG),
+        routingProcess.transformType1RoutesOnExport(
+            Stream.of(new RouteAdvertisement<>((OspfExternalType1Route) base.toBuilder().build())),
+            AREA0_CONFIG,
+            nextHopIp),
         contains(
             new RouteAdvertisement<>(
                 (OspfExternalType1Route)
-                    builder
+                    base.toBuilder()
                         .setCostToAdvertiser(overrideMetric)
                         .setMetric(overrideMetric + 10) // + LsaMetric
                         .setArea(0)
+                        .setNonRouting(true)
+                        .setNextHop(NextHopIp.of(nextHopIp))
                         .build())));
 
     // No override for locally generated routes
@@ -933,14 +968,25 @@ public class OspfRoutingProcessTest {
         routingProcess.transformType1RoutesOnExport(
             Stream.of(
                 new RouteAdvertisement<>(
-                    (OspfExternalType1Route) builder.setArea(OspfRoute.NO_AREA).build())),
-            AREA0_CONFIG),
-        contains(new RouteAdvertisement<>((OspfExternalType1Route) builder.setArea(0).build())));
+                    (OspfExternalType1Route) base.toBuilder().setArea(OspfRoute.NO_AREA).build())),
+            AREA0_CONFIG,
+            nextHopIp),
+        contains(
+            new RouteAdvertisement<>(
+                (OspfExternalType1Route)
+                    base.toBuilder()
+                        .setCostToAdvertiser(overrideMetric)
+                        .setMetric(0) // not overridden
+                        .setArea(0)
+                        .setNonRouting(true)
+                        .setNextHop(NextHopIp.of(nextHopIp))
+                        .build())));
   }
 
   @Test
   public void testTransformType2RouteOnExport() {
-    final OspfExternalRoute.Builder builder =
+    Ip nextHopIp = Ip.parse("1.1.1.1");
+    final OspfExternalRoute base =
         OspfExternalType2Route.builder()
             .setNetwork(Prefix.parse("2.2.2.2/32"))
             .setLsaMetric(0L)
@@ -948,21 +994,34 @@ public class OspfRoutingProcessTest {
             .setAdvertiser("someNode")
             .setArea(1L)
             .setAdmin(0)
-            .setNextHop(NextHopInterface.of("e0", Ip.parse("1.1.1.1")));
-    // routing -> non-routing
+            .setNextHop(NextHopDiscard.instance())
+            .build();
     assertThat(
         OspfRoutingProcess.transformType2RoutesOnExport(
-            Stream.of(new RouteAdvertisement<>((OspfExternalType2Route) builder.build())),
-            AREA0_CONFIG),
-        contains(new RouteAdvertisement<>(builder.setArea(1).setNonRouting(true).build())));
-    // non-routing -> non-routing
+            Stream.of(new RouteAdvertisement<>((OspfExternalType2Route) base.toBuilder().build())),
+            AREA0_CONFIG,
+            nextHopIp),
+        contains(
+            new RouteAdvertisement<>(
+                base.toBuilder()
+                    .setArea(1)
+                    .setNonRouting(true)
+                    .setNextHop(NextHopIp.of(nextHopIp))
+                    .build())));
     assertThat(
         OspfRoutingProcess.transformType2RoutesOnExport(
             Stream.of(
                 new RouteAdvertisement<>(
-                    (OspfExternalType2Route) builder.setArea(OspfRoute.NO_AREA).build())),
-            AREA0_CONFIG),
-        contains(new RouteAdvertisement<>(builder.setArea(0).build())));
+                    (OspfExternalType2Route) base.toBuilder().setArea(OspfRoute.NO_AREA).build())),
+            AREA0_CONFIG,
+            nextHopIp),
+        contains(
+            new RouteAdvertisement<>(
+                base.toBuilder()
+                    .setArea(0)
+                    .setNonRouting(true)
+                    .setNextHop(NextHopIp.of(nextHopIp))
+                    .build())));
   }
 
   @Test

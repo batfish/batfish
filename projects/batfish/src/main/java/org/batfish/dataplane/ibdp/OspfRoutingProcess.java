@@ -1313,7 +1313,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
               neighborProcess.enqueueMessagesType1(
                   edge.reverse(),
                   transformType1RoutesOnExport(
-                      filterExternalRoutesOnExport(type1, areaConfig), areaConfig));
+                      filterExternalRoutesOnExport(type1, areaConfig),
+                      areaConfig,
+                      edge.getHead().getAddress().getIp()));
             });
   }
 
@@ -1332,7 +1334,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
               neighborProcess.enqueueMessagesType2(
                   edge.reverse(),
                   transformType2RoutesOnExport(
-                      filterExternalRoutesOnExport(type2, areaConfig), areaConfig));
+                      filterExternalRoutesOnExport(type2, areaConfig),
+                      areaConfig,
+                      edge.getHead().getAddress().getIp()));
             });
   }
 
@@ -1375,7 +1379,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull
   @VisibleForTesting
   Collection<RouteAdvertisement<OspfExternalType1Route>> transformType1RoutesOnExport(
-      Stream<RouteAdvertisement<OspfExternalType1Route>> routeAdvertisements, OspfArea areaConfig) {
+      Stream<RouteAdvertisement<OspfExternalType1Route>> routeAdvertisements,
+      OspfArea areaConfig,
+      Ip nextHopIp) {
     Long metricOverride = _process.getMaxMetricSummaryNetworks();
     return routeAdvertisements
         .filter(
@@ -1407,12 +1413,15 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                                           && areaConfig.getAreaNumber() != route.getArea()
                                       ? metricOverride + route.getLsaMetric()
                                       : route.getMetric())
+                              // TODO: should cost to advertiser ignore override for locally
+                              //       generated routes like metric does?
                               .setCostToAdvertiser(
                                   firstNonNull(metricOverride, route.getCostToAdvertiser()))
                               // Override area before sending out
                               .setArea(areaConfig.getAreaNumber())
                               // Set to non-routing because this is in-transit route.
                               .setNonRouting(true)
+                              .setNextHop(NextHopIp.of(nextHopIp))
                               .build())
                   .build();
             })
@@ -1428,7 +1437,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   @Nonnull
   @VisibleForTesting
   static Collection<RouteAdvertisement<OspfExternalType2Route>> transformType2RoutesOnExport(
-      Stream<RouteAdvertisement<OspfExternalType2Route>> routeAdvertisements, OspfArea areaConfig) {
+      Stream<RouteAdvertisement<OspfExternalType2Route>> routeAdvertisements,
+      OspfArea areaConfig,
+      Ip nextHopIp) {
     return routeAdvertisements
         .map(
             r -> {
@@ -1444,6 +1455,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                                       : route.getArea())
                               // Set to non-routing because this is in-transit route.
                               .setNonRouting(true)
+                              .setNextHop(NextHopIp.of(nextHopIp))
                               .build())
                   .build();
             })
@@ -1581,7 +1593,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                           _activatedGeneratedRoutes.getRoutesStream(),
                           areaConfig,
                           OspfExternalType1Route.class),
-                      areaConfig));
+                      areaConfig,
+                      edge.getHead().getAddress().getIp()));
               neighborProcess.enqueueMessagesType2(
                   edge.reverse(),
                   transformType2RoutesOnExport(
@@ -1589,7 +1602,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                           _activatedGeneratedRoutes.getRoutesStream(),
                           areaConfig,
                           OspfExternalType2Route.class),
-                      areaConfig));
+                      areaConfig,
+                      edge.getHead().getAddress().getIp()));
             });
   }
 
