@@ -167,6 +167,7 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityContext;
@@ -645,7 +646,7 @@ public class AristaGrammarTest {
         hasItem(
             OspfExternalType2Route.builder()
                 .setNetwork(Prefix.ZERO)
-                .setNextHopIp(Ip.parse("1.2.3.5"))
+                .setNextHop(NextHopInterface.of("GigabitEthernet1/0", Ip.parse("1.2.3.5")))
                 .setArea(1)
                 .setCostToAdvertiser(1)
                 .setAdvertiser(advertiser)

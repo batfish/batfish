@@ -94,18 +94,33 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
+          "id" : "node-as2border1",
+          "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.12.11.0/24",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.23.11.0/24",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.3.1/32",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -124,6 +139,21 @@
       },
       {
         "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.12.22.0/24",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-as2dept1",
           "name" : "as2dept1"
         },
@@ -136,6 +166,21 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.12.12.0/24",
+        "Next_Hop_IP" : "2.12.11.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2border1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -169,21 +214,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.22.0/24",
-        "Next_Hop_IP" : "2.23.12.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as2border1",
           "name" : "as2border1"
         },
@@ -211,21 +241,6 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "2.34.201.0/24",
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
       },
       {
         "Node" : {
@@ -289,18 +304,33 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
         },
         "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
+        "Network" : "2.1.1.2/32",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as1border1",
+          "name" : "as1border1"
+        },
+        "VRF" : "default",
+        "Network" : "10.14.22.0/24",
+        "Next_Hop_IP" : "1.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as1core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -323,10 +353,10 @@
           "name" : "as1core1"
         },
         "VRF" : "default",
-        "Network" : "10.14.22.0/24",
-        "Next_Hop_IP" : "1.0.2.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1border2",
+        "Network" : "10.12.11.0/24",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as1border1",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -340,57 +370,12 @@
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
         "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.2/32",
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as3border1",
-          "name" : "as3border1"
-        },
-        "VRF" : "default",
-        "Network" : "10.13.22.0/24",
-        "Next_Hop_IP" : "3.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
       },
       {
         "Node" : {
@@ -409,14 +394,44 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
+          "id" : "node-as2core1",
+          "name" : "as2core1"
         },
         "VRF" : "default",
-        "Network" : "2.34.101.0/24",
-        "Next_Hop_IP" : "2.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist1",
+        "Network" : "2.23.22.0/24",
+        "Next_Hop_IP" : "2.23.12.3",
+        "Next_Hop_Interface" : "GigabitEthernet3/0",
+        "Next_Hop" : "as2dist2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.1/32",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "10.12.11.0/24",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -424,18 +439,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
+          "id" : "node-as2border2",
+          "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "2.12.21.0/24",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.34.201.0/24",
+        "Next_Hop_IP" : "2.12.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 2
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -451,36 +466,6 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.34.101.0/24",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.21.0/24",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -496,6 +481,21 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.3.2/32",
+        "Next_Hop_IP" : "2.23.22.3",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2dist2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -511,21 +511,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
-        },
-        "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "2.12.21.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
       },
       {
         "Node" : {
@@ -559,29 +544,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.2.0/24",
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as2core2",
           "name" : "as2core2"
         },
         "VRF" : "default",
-        "Network" : "2.1.1.2/32",
-        "Next_Hop_IP" : "2.12.22.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
+        "Network" : "2.23.11.0/24",
+        "Next_Hop_IP" : "2.23.21.3",
+        "Next_Hop_Interface" : "GigabitEthernet3/0",
+        "Next_Hop" : "as2dist1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -589,63 +559,33 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
+          "id" : "node-as3border2",
+          "name" : "as3border2"
         },
         "VRF" : "default",
-        "Network" : "2.12.21.0/24",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
-        },
-        "VRF" : "default",
-        "Network" : "2.34.201.0/24",
-        "Next_Hop_IP" : "2.23.22.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist2",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.2/32",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
+        "Network" : "3.1.1.1/32",
+        "Next_Hop_IP" : "3.0.2.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as3core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.23.22.0/24",
+        "Next_Hop_IP" : "2.12.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -728,6 +668,36 @@
           "name" : "as2core1"
         },
         "VRF" : "default",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "2.12.11.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2border1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "2.12.12.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2border1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
         "Network" : "3.0.1.0/24",
         "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
@@ -788,36 +758,6 @@
           "name" : "as3border1"
         },
         "VRF" : "default",
-        "Network" : "3.10.1.1/32",
-        "Next_Hop_IP" : "3.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.1/32",
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as3border1",
-          "name" : "as3border1"
-        },
-        "VRF" : "default",
         "Network" : "2.128.0.0/16",
         "Next_Hop_IP" : "10.23.21.2",
         "Next_Hop_Interface" : "dynamic",
@@ -844,33 +784,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
+          "id" : "node-as2border2",
+          "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.23.21.0/24",
+        "Next_Hop_IP" : "2.12.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.34.101.0/24",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -901,6 +826,21 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "10.12.11.0/24",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -964,6 +904,51 @@
       },
       {
         "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.2/32",
+        "Next_Hop_IP" : "2.12.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as3border2",
+          "name" : "as3border2"
+        },
+        "VRF" : "default",
+        "Network" : "3.10.1.1/32",
+        "Next_Hop_IP" : "3.0.2.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as3core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as1core1",
+          "name" : "as1core1"
+        },
+        "VRF" : "default",
+        "Network" : "10.14.22.0/24",
+        "Next_Hop_IP" : "1.0.2.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as1border2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
           "id" : "node-host1",
           "name" : "host1"
         },
@@ -976,6 +961,21 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.2/32",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -998,51 +998,6 @@
           "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.1.2.2/32",
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.2/32",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
         "Network" : "2.12.12.0/24",
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet2/0",
@@ -1051,21 +1006,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as1border2",
-          "name" : "as1border2"
-        },
-        "VRF" : "default",
-        "Network" : "1.10.1.1/32",
-        "Next_Hop_IP" : "1.0.2.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -1118,14 +1058,14 @@
           "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.34.101.0/24",
+        "Network" : "2.1.3.1/32",
         "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -1144,6 +1084,36 @@
       },
       {
         "Node" : {
+          "id" : "node-as1core1",
+          "name" : "as1core1"
+        },
+        "VRF" : "default",
+        "Network" : "1.1.1.1/32",
+        "Next_Hop_IP" : "1.0.1.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as1border1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.12.22.0/24",
+        "Next_Hop_IP" : "2.12.21.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2border2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-as1border1",
           "name" : "as1border1"
         },
@@ -1159,14 +1129,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
+          "id" : "node-as2core2",
+          "name" : "as2core2"
         },
         "VRF" : "default",
-        "Network" : "2.23.22.0/24",
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
+        "Network" : "2.1.1.2/32",
+        "Next_Hop_IP" : "2.12.22.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2border2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1174,18 +1144,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
+          "id" : "node-as3border2",
+          "name" : "as3border2"
         },
         "VRF" : "default",
-        "Network" : "2.34.101.0/24",
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
+        "Network" : "3.0.1.0/24",
+        "Next_Hop_IP" : "3.0.2.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as3core1",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -1234,93 +1204,63 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.2/32",
-        "Next_Hop_IP" : "2.23.22.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.11.0/24",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.22.0/24",
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.1/32",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.12.0/24",
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as1core1",
           "name" : "as1core1"
         },
         "VRF" : "default",
         "Network" : "1.2.2.2/32",
         "Next_Hop_IP" : "1.0.2.1",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Next_Hop" : "as1border2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.2/32",
+        "Next_Hop_IP" : "2.23.12.3",
+        "Next_Hop_Interface" : "GigabitEthernet3/0",
+        "Next_Hop" : "as2dist2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.201.0/24",
+        "Next_Hop_IP" : "2.23.22.3",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2dist2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.201.0/24",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -1354,18 +1294,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
+          "id" : "node-as2border1",
+          "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.23.12.0/24",
-        "Next_Hop_IP" : "2.23.22.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist2",
-        "Protocol" : "ospf",
+        "Network" : "10.23.21.0/24",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 2
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -1373,29 +1313,14 @@
           "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "2.23.11.0/24",
+        "Network" : "2.1.3.1/32",
         "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -1429,36 +1354,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hop_IP" : "2.12.12.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.1/32",
-        "Next_Hop_IP" : "2.12.22.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
           "id" : "node-as1core1",
           "name" : "as1core1"
         },
@@ -1486,6 +1381,21 @@
         "Tag" : null,
         "Admin_Distance" : 20,
         "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.3.2/32",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -1549,14 +1459,29 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
         },
         "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.23.21.0/24",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.101.0/24",
+        "Next_Hop_IP" : "2.23.11.3",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2dist1",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1579,14 +1504,74 @@
       },
       {
         "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
+          "id" : "node-as2core1",
+          "name" : "as2core1"
         },
         "VRF" : "default",
-        "Network" : "10.14.22.0/24",
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
+        "Network" : "2.1.3.2/32",
+        "Next_Hop_IP" : "2.23.12.3",
+        "Next_Hop_Interface" : "GigabitEthernet3/0",
+        "Next_Hop" : "as2dist2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.201.0/24",
+        "Next_Hop_IP" : "2.23.12.3",
+        "Next_Hop_Interface" : "GigabitEthernet3/0",
+        "Next_Hop" : "as2dist2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.12.21.0/24",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.2/32",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as3border1",
+          "name" : "as3border1"
+        },
+        "VRF" : "default",
+        "Network" : "10.13.22.0/24",
+        "Next_Hop_IP" : "3.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as3core1",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -1606,6 +1591,21 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
+      },
+      {
+        "Node" : {
+          "id" : "node-as1core1",
+          "name" : "as1core1"
+        },
+        "VRF" : "default",
+        "Network" : "10.13.22.0/24",
+        "Next_Hop_IP" : "1.0.2.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as1border2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -1639,18 +1639,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
+          "id" : "node-as2border2",
+          "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "2.12.12.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border1",
-        "Protocol" : "ospfE2",
+        "Network" : "2.1.3.2/32",
+        "Next_Hop_IP" : "2.12.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -1699,6 +1699,36 @@
       },
       {
         "Node" : {
+          "id" : "node-as3core1",
+          "name" : "as3core1"
+        },
+        "VRF" : "default",
+        "Network" : "3.1.1.1/32",
+        "Next_Hop_IP" : "3.0.1.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as3border1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.12.11.0/24",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-as2border1",
           "name" : "as2border1"
         },
@@ -1726,21 +1756,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as3border1",
-          "name" : "as3border1"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.2.0/24",
-        "Next_Hop_IP" : "3.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -1789,6 +1804,21 @@
       },
       {
         "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.201.0/24",
+        "Next_Hop_IP" : "2.12.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
           "id" : "node-as3border2",
           "name" : "as3border2"
         },
@@ -1801,21 +1831,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
       },
       {
         "Node" : {
@@ -1834,18 +1849,108 @@
       },
       {
         "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
           "id" : "node-as3border2",
           "name" : "as3border2"
         },
         "VRF" : "default",
         "Network" : "10.23.21.0/24",
         "Next_Hop_IP" : "3.0.2.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as3core1",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.2/32",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.101.0/24",
+        "Next_Hop_IP" : "2.23.21.3",
+        "Next_Hop_Interface" : "GigabitEthernet3/0",
+        "Next_Hop" : "as2dist1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.101.0/24",
+        "Next_Hop_IP" : "2.12.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as3border1",
+          "name" : "as3border1"
+        },
+        "VRF" : "default",
+        "Network" : "3.2.2.2/32",
+        "Next_Hop_IP" : "3.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as3core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "2.23.12.0/24",
+        "Next_Hop_IP" : "2.12.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -1861,21 +1966,6 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
-      },
-      {
-        "Node" : {
-          "id" : "node-as3border2",
-          "name" : "as3border2"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.1/32",
-        "Next_Hop_IP" : "3.0.2.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
       },
       {
         "Node" : {
@@ -1936,6 +2026,21 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as3border1",
+          "name" : "as3border1"
+        },
+        "VRF" : "default",
+        "Network" : "3.0.2.0/24",
+        "Next_Hop_IP" : "3.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as3core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -2029,6 +2134,21 @@
       },
       {
         "Node" : {
+          "id" : "node-as1border2",
+          "name" : "as1border2"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.0/24",
+        "Next_Hop_IP" : "1.0.2.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as1core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-as3core1",
           "name" : "as3core1"
         },
@@ -2044,48 +2164,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
+          "id" : "node-as3core1",
+          "name" : "as3core1"
         },
         "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hop_IP" : "2.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
-        },
-        "VRF" : "default",
-        "Network" : "2.34.201.0/24",
-        "Next_Hop_IP" : "2.23.12.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist2",
+        "Network" : "10.13.22.0/24",
+        "Next_Hop_IP" : "3.0.2.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as3border2",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.1/32",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -2104,21 +2194,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as1core1",
-          "name" : "as1core1"
-        },
-        "VRF" : "default",
-        "Network" : "10.13.22.0/24",
-        "Next_Hop_IP" : "1.0.2.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1border2",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
           "id" : "node-as2core2",
           "name" : "as2core2"
         },
@@ -2134,14 +2209,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
         },
         "VRF" : "default",
-        "Network" : "2.1.2.1/32",
-        "Next_Hop_IP" : "2.12.12.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border1",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2191,36 +2266,6 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.2/32",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
       },
       {
         "Node" : {
@@ -2239,59 +2284,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as3border2",
-          "name" : "as3border2"
+          "id" : "node-as2border1",
+          "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "3.10.1.1/32",
-        "Next_Hop_IP" : "3.0.2.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.2/32",
-        "Next_Hop_IP" : "2.23.12.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.12.22.0/24",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.1.1.2/32",
+        "Next_Hop_IP" : "2.12.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.1/32",
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2311,6 +2311,21 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.1/32",
+        "Next_Hop_IP" : "2.23.21.3",
+        "Next_Hop_Interface" : "GigabitEthernet3/0",
+        "Next_Hop" : "as2dist1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -2344,14 +2359,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
         },
         "VRF" : "default",
-        "Network" : "2.12.11.0/24",
-        "Next_Hop_IP" : "2.12.12.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border1",
+        "Network" : "2.23.11.0/24",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -2389,33 +2404,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
+          "id" : "node-as2border2",
+          "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "2.12.12.0/24",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
+        "Network" : "2.23.11.0/24",
+        "Next_Hop_IP" : "2.12.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.2/32",
-        "Next_Hop_IP" : "2.12.21.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
       },
       {
         "Node" : {
@@ -2479,36 +2479,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.2/32",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
-        },
-        "VRF" : "default",
-        "Network" : "2.12.22.0/24",
-        "Next_Hop_IP" : "2.12.21.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as2core1",
           "name" : "as2core1"
         },
@@ -2521,36 +2491,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as3border1",
-          "name" : "as3border1"
-        },
-        "VRF" : "default",
-        "Network" : "3.2.2.2/32",
-        "Next_Hop_IP" : "3.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
       },
       {
         "Node" : {
@@ -2584,13 +2524,28 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
+          "id" : "node-as2core1",
+          "name" : "as2core1"
         },
         "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.1.1.2/32",
+        "Next_Hop_IP" : "2.12.21.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2border2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "10.23.21.0/24",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core1",
         "Protocol" : "ospfE2",
         "Tag" : null,
@@ -2663,21 +2618,6 @@
           "name" : "as2core2"
         },
         "VRF" : "default",
-        "Network" : "2.1.2.1/32",
-        "Next_Hop_IP" : "2.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
-        },
-        "VRF" : "default",
         "Network" : "2.1.2.2/32",
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "Loopback0",
@@ -2734,13 +2674,13 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
+          "id" : "node-as2border2",
+          "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "2.1.1.2/32",
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.1.3.1/32",
+        "Next_Hop_IP" : "2.12.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
@@ -2779,6 +2719,36 @@
       },
       {
         "Node" : {
+          "id" : "node-as1border1",
+          "name" : "as1border1"
+        },
+        "VRF" : "default",
+        "Network" : "1.10.1.1/32",
+        "Next_Hop_IP" : "1.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as1core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as1border2",
+          "name" : "as1border2"
+        },
+        "VRF" : "default",
+        "Network" : "1.10.1.1/32",
+        "Next_Hop_IP" : "1.0.2.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as1core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-host1",
           "name" : "host1"
         },
@@ -2798,6 +2768,21 @@
           "name" : "as2core2"
         },
         "VRF" : "default",
+        "Network" : "2.1.2.1/32",
+        "Next_Hop_IP" : "2.12.12.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2border1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
         "Network" : "2.23.21.2/32",
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet3/0",
@@ -2809,18 +2794,48 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
+          "id" : "node-as2core2",
+          "name" : "as2core2"
         },
         "VRF" : "default",
-        "Network" : "2.1.2.2/32",
-        "Next_Hop_IP" : "2.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border1",
+        "Network" : "2.1.3.1/32",
+        "Next_Hop_IP" : "2.23.21.3",
+        "Next_Hop_Interface" : "GigabitEthernet3/0",
+        "Next_Hop" : "as2dist1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 3
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.23.12.0/24",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "2.23.22.0/24",
+        "Next_Hop_IP" : "2.12.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -2828,14 +2843,14 @@
           "name" : "as2dist1"
         },
         "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
+        "Network" : "2.12.12.0/24",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 3
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -2869,36 +2884,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.2/32",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.2/32",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
           "id" : "node-host2",
           "name" : "host2"
         },
@@ -2911,51 +2896,6 @@
         "Tag" : null,
         "Admin_Distance" : 1,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as1border2",
-          "name" : "as1border2"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.0/24",
-        "Next_Hop_IP" : "1.0.2.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.1/32",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as3core1",
-          "name" : "as3core1"
-        },
-        "VRF" : "default",
-        "Network" : "3.2.2.2/32",
-        "Next_Hop_IP" : "3.0.2.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3border2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -2989,18 +2929,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as3core1",
-          "name" : "as3core1"
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
         },
         "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "3.0.1.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3border1",
-        "Protocol" : "ospfE2",
+        "Network" : "2.1.2.1/32",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -3016,36 +2956,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.2/32",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.12.22.0/24",
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -3079,63 +2989,33 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
+          "id" : "node-as2core1",
+          "name" : "as2core1"
         },
         "VRF" : "default",
-        "Network" : "2.12.12.0/24",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
+        "Network" : "10.12.11.0/24",
+        "Next_Hop_IP" : "2.12.11.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2border1",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 2
+        "Metric" : 20
       },
       {
         "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
+          "id" : "node-as2core2",
+          "name" : "as2core2"
         },
         "VRF" : "default",
-        "Network" : "1.2.2.2/32",
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
-        "Protocol" : "ospf",
+        "Network" : "10.12.11.0/24",
+        "Next_Hop_IP" : "2.12.12.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2border1",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.128.0.0/24",
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dept1",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 50
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.128.0.0/24",
-        "Next_Hop_IP" : "2.34.201.4",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dept1",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 50
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -3143,10 +3023,85 @@
           "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "2.34.101.0/24",
+        "Network" : "10.12.11.0/24",
         "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/24",
+        "Next_Hop_IP" : "2.34.201.4",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : "as2dept1",
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.128.0.0/24",
+        "Next_Hop_IP" : "2.34.201.4",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : "as2dept1",
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "10.23.21.0/24",
+        "Next_Hop_IP" : "2.12.22.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2border2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.201.0/24",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3184,18 +3139,33 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
+          "id" : "node-as2border2",
+          "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "2.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border1",
-        "Protocol" : "ospfE2",
+        "Network" : "2.12.11.0/24",
+        "Next_Hop_IP" : "2.12.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.23.12.0/24",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -3244,21 +3214,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.2/32",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
           "id" : "node-as2core1",
           "name" : "as2core1"
         },
@@ -3274,29 +3229,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
+          "id" : "node-as3core1",
+          "name" : "as3core1"
         },
         "VRF" : "default",
-        "Network" : "2.12.11.0/24",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.1/32",
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
+        "Network" : "3.2.2.2/32",
+        "Next_Hop_IP" : "3.0.2.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as3border2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3364,14 +3304,29 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
         },
         "VRF" : "default",
         "Network" : "2.1.1.2/32",
-        "Next_Hop_IP" : "2.12.21.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "2.12.11.0/24",
+        "Next_Hop_IP" : "2.12.12.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2border1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3379,18 +3334,33 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
+          "id" : "node-as1border2",
+          "name" : "as1border2"
         },
         "VRF" : "default",
-        "Network" : "2.34.201.0/24",
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
+        "Network" : "1.1.1.1/32",
+        "Next_Hop_IP" : "1.0.2.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as1core1",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.12.22.0/24",
+        "Next_Hop_IP" : "2.12.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -3439,18 +3409,78 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
         },
         "VRF" : "default",
-        "Network" : "2.1.3.1/32",
-        "Next_Hop_IP" : "2.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist1",
-        "Protocol" : "ospf",
+        "Network" : "2.34.201.0/24",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 2
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "10.12.11.0/24",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.101.0/24",
+        "Next_Hop_IP" : "2.12.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.101.0/24",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "10.23.21.0/24",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -3466,21 +3496,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
-        },
-        "VRF" : "default",
-        "Network" : "10.13.22.0/24",
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
       },
       {
         "Node" : {
@@ -3511,6 +3526,36 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.1/32",
+        "Next_Hop_IP" : "2.12.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.2/32",
+        "Next_Hop_IP" : "2.23.11.3",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2dist1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -3548,6 +3593,21 @@
           "name" : "as2core2"
         },
         "VRF" : "default",
+        "Network" : "2.23.12.0/24",
+        "Next_Hop_IP" : "2.23.22.3",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2dist2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
         "Network" : "2.12.12.2/32",
         "Next_Hop_IP" : "AUTO/NONE(-1l)",
         "Next_Hop_Interface" : "GigabitEthernet1/0",
@@ -3563,10 +3623,55 @@
           "name" : "as2core2"
         },
         "VRF" : "default",
-        "Network" : "2.12.21.0/24",
+        "Network" : "2.1.2.1/32",
         "Next_Hop_IP" : "2.12.22.1",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Next_Hop" : "as2border2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.0/24",
+        "Next_Hop_IP" : "10.12.11.1",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : "as1border1",
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.1.0/24",
+        "Next_Hop_IP" : "10.12.11.1",
+        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop" : "as1border1",
+        "Protocol" : "ibgp",
+        "Tag" : null,
+        "Admin_Distance" : 200,
+        "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.23.22.0/24",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3574,48 +3679,33 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.0/24",
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1border1",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 50
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "1.0.1.0/24",
-        "Next_Hop_IP" : "10.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1border1",
-        "Protocol" : "ibgp",
-        "Tag" : null,
-        "Admin_Distance" : 200,
-        "Metric" : 50
-      },
-      {
-        "Node" : {
           "id" : "node-as2border1",
           "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.34.201.0/24",
+        "Network" : "2.1.3.1/32",
         "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core1",
-        "Protocol" : "ospfE2",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "2.12.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -3634,6 +3724,21 @@
       },
       {
         "Node" : {
+          "id" : "node-as1border1",
+          "name" : "as1border1"
+        },
+        "VRF" : "default",
+        "Network" : "1.0.2.0/24",
+        "Next_Hop_IP" : "1.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as1core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-as2border1",
           "name" : "as2border1"
         },
@@ -3691,6 +3796,21 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.3.1/32",
+        "Next_Hop_IP" : "2.23.11.3",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2dist1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -3784,43 +3904,28 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "2.12.11.0/24",
-        "Next_Hop_IP" : "2.12.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as2core1",
           "name" : "as2core1"
         },
         "VRF" : "default",
         "Network" : "2.1.2.2/32",
-        "Next_Hop_IP" : "2.23.12.3",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_IP" : "2.12.21.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2border2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core2",
+          "name" : "as2core2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.1/32",
+        "Next_Hop_IP" : "2.23.22.3",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2dist2",
         "Protocol" : "ospf",
         "Tag" : null,
@@ -3829,78 +3934,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
+          "id" : "node-as2border1",
+          "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.2/32",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.34.201.0/24",
+        "Next_Hop_IP" : "2.12.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
-          "id" : "node-as3core1",
-          "name" : "as3core1"
-        },
-        "VRF" : "default",
-        "Network" : "10.13.22.0/24",
-        "Next_Hop_IP" : "3.0.2.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3border2",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.1/32",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as1core1",
-          "name" : "as1core1"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.1/32",
-        "Next_Hop_IP" : "1.0.1.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1border1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -3919,14 +3964,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
+          "id" : "node-as1border1",
+          "name" : "as1border1"
         },
         "VRF" : "default",
-        "Network" : "2.1.3.1/32",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
+        "Network" : "1.2.2.2/32",
+        "Next_Hop_IP" : "1.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as1core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -3938,29 +3983,14 @@
           "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.23.21.0/24",
+        "Network" : "10.23.21.0/24",
         "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.12.0/24",
-        "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -3994,18 +4024,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
+          "id" : "node-as2border1",
+          "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.34.201.0/24",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.1.3.2/32",
+        "Next_Hop_IP" : "2.12.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -4024,14 +4054,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
         },
         "VRF" : "default",
-        "Network" : "2.23.12.0/24",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
+        "Network" : "2.12.12.0/24",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4066,6 +4096,21 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "2.12.21.0/24",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -4099,51 +4144,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as1border2",
-          "name" : "as1border2"
-        },
-        "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "1.0.2.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as1core1",
-          "name" : "as1core1"
-        },
-        "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "1.0.1.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1border1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.21.0/24",
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as2border1",
           "name" : "as2border1"
         },
@@ -4174,28 +4174,13 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
         },
         "VRF" : "default",
-        "Network" : "2.34.101.0/24",
-        "Next_Hop_IP" : "2.23.11.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist1",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.2.2/32",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.12.22.0/24",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
@@ -4219,21 +4204,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.12.22.0/24",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as2dept1",
           "name" : "as2dept1"
         },
@@ -4246,21 +4216,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.11.0/24",
-        "Next_Hop_IP" : "2.12.11.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -4313,14 +4268,14 @@
           "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.34.201.0/24",
+        "Network" : "2.23.21.0/24",
         "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
         "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -4369,18 +4324,33 @@
       },
       {
         "Node" : {
-          "id" : "node-as1border1",
-          "name" : "as1border1"
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
         },
         "VRF" : "default",
-        "Network" : "1.10.1.1/32",
-        "Next_Hop_IP" : "1.0.1.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
+        "Network" : "2.1.3.1/32",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 2
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "10.12.11.0/24",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -4388,14 +4358,14 @@
           "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "2.12.12.0/24",
+        "Network" : "10.12.11.0/24",
         "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 2
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -4429,44 +4399,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
-        },
-        "VRF" : "default",
-        "Network" : "2.23.11.0/24",
-        "Next_Hop_IP" : "2.23.21.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as2core1",
           "name" : "as2core1"
         },
         "VRF" : "default",
-        "Network" : "2.23.21.0/24",
-        "Next_Hop_IP" : "2.23.11.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "10.12.11.0/24",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
+        "Network" : "10.23.21.0/24",
+        "Next_Hop_IP" : "2.12.21.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2border2",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4489,18 +4429,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
+          "id" : "node-as2border1",
+          "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.1.2.1/32",
-        "Next_Hop_IP" : "2.23.22.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist2",
-        "Protocol" : "ospf",
+        "Network" : "2.34.101.0/24",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 3
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -4519,14 +4459,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
+          "id" : "node-as2border1",
+          "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "2.12.12.0/24",
-        "Next_Hop_IP" : "2.12.11.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border1",
+        "Network" : "2.12.21.0/24",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4534,33 +4474,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.1.1/32",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
           "id" : "node-as2border2",
           "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "2.1.3.1/32",
+        "Network" : "2.1.2.2/32",
         "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 3
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -4568,29 +4493,29 @@
           "name" : "as2dist2"
         },
         "VRF" : "default",
-        "Network" : "2.1.3.1/32",
+        "Network" : "2.12.11.0/24",
         "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 3
+        "Metric" : 2
       },
       {
         "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
+          "id" : "node-as3core1",
+          "name" : "as3core1"
         },
         "VRF" : "default",
-        "Network" : "2.1.2.2/32",
-        "Next_Hop_IP" : "2.23.11.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist1",
-        "Protocol" : "ospf",
+        "Network" : "10.23.21.0/24",
+        "Next_Hop_IP" : "3.0.1.1",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as3border1",
+        "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 3
+        "Metric" : 20
       },
       {
         "Node" : {
@@ -4639,21 +4564,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as3core1",
-          "name" : "as3core1"
-        },
-        "VRF" : "default",
-        "Network" : "3.1.1.1/32",
-        "Next_Hop_IP" : "3.0.1.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3border1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
-      },
-      {
-        "Node" : {
           "id" : "node-as2dist1",
           "name" : "as2dist1"
         },
@@ -4681,21 +4591,6 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
-      },
-      {
-        "Node" : {
-          "id" : "node-as2core1",
-          "name" : "as2core1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.1/32",
-        "Next_Hop_IP" : "2.23.11.3",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2dist1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       },
       {
         "Node" : {
@@ -4714,13 +4609,13 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist1",
-          "name" : "as2dist1"
+          "id" : "node-as2border2",
+          "name" : "as2border2"
         },
         "VRF" : "default",
-        "Network" : "2.23.22.0/24",
-        "Next_Hop_IP" : "2.23.21.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.12.12.0/24",
+        "Next_Hop_IP" : "2.12.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core2",
         "Protocol" : "ospf",
         "Tag" : null,
@@ -4729,18 +4624,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
+          "id" : "node-as2core2",
+          "name" : "as2core2"
         },
         "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "2.23.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
+        "Network" : "2.12.21.0/24",
+        "Next_Hop_IP" : "2.12.22.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2border2",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 2
       },
       {
         "Node" : {
@@ -4756,6 +4651,66 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 50
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "10.23.21.0/24",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.101.0/24",
+        "Next_Hop_IP" : "2.12.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as1border2",
+          "name" : "as1border2"
+        },
+        "VRF" : "default",
+        "Network" : "10.12.11.0/24",
+        "Next_Hop_IP" : "1.0.2.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as1core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.2/32",
+        "Next_Hop_IP" : "2.12.11.1",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2border1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -4804,6 +4759,36 @@
       },
       {
         "Node" : {
+          "id" : "node-as1border1",
+          "name" : "as1border1"
+        },
+        "VRF" : "default",
+        "Network" : "10.13.22.0/24",
+        "Next_Hop_IP" : "1.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as1core1",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.2/32",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-as3border2",
           "name" : "as3border2"
         },
@@ -4834,14 +4819,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border2",
-          "name" : "as2border2"
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
         },
         "VRF" : "default",
         "Network" : "2.1.3.2/32",
-        "Next_Hop_IP" : "2.12.22.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
+        "Next_Hop_IP" : "2.23.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -4876,21 +4861,6 @@
         "Tag" : null,
         "Admin_Distance" : 0,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
       },
       {
         "Node" : {
@@ -4939,21 +4909,6 @@
       },
       {
         "Node" : {
-          "id" : "node-as2border1",
-          "name" : "as2border1"
-        },
-        "VRF" : "default",
-        "Network" : "2.1.3.2/32",
-        "Next_Hop_IP" : "2.12.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core2",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
-      },
-      {
-        "Node" : {
           "id" : "node-as2dist1",
           "name" : "as2dist1"
         },
@@ -4981,21 +4936,6 @@
         "Tag" : null,
         "Admin_Distance" : 200,
         "Metric" : 0
-      },
-      {
-        "Node" : {
-          "id" : "node-as1border2",
-          "name" : "as1border2"
-        },
-        "VRF" : "default",
-        "Network" : "1.1.1.1/32",
-        "Next_Hop_IP" : "1.0.2.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as1core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 3
       },
       {
         "Node" : {
@@ -5029,6 +4969,51 @@
       },
       {
         "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "2.23.12.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.1.1/32",
+        "Next_Hop_IP" : "2.12.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist2",
+          "name" : "as2dist2"
+        },
+        "VRF" : "default",
+        "Network" : "2.34.101.0/24",
+        "Next_Hop_IP" : "2.23.22.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospfE2",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 20
+      },
+      {
+        "Node" : {
           "id" : "node-as2dept1",
           "name" : "as2dept1"
         },
@@ -5059,14 +5044,14 @@
       },
       {
         "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
+          "id" : "node-as3border1",
+          "name" : "as3border1"
         },
         "VRF" : "default",
-        "Network" : "2.12.21.0/24",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2core1",
+        "Network" : "3.10.1.1/32",
+        "Next_Hop_IP" : "3.0.1.2",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
+        "Next_Hop" : "as3core1",
         "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
@@ -5074,33 +5059,18 @@
       },
       {
         "Node" : {
-          "id" : "node-as2core2",
-          "name" : "as2core2"
+          "id" : "node-as2border1",
+          "name" : "as2border1"
         },
         "VRF" : "default",
-        "Network" : "10.23.21.0/24",
-        "Next_Hop_IP" : "2.12.22.1",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as2border2",
-        "Protocol" : "ospfE2",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as2dist2",
-          "name" : "as2dist2"
-        },
-        "VRF" : "default",
-        "Network" : "2.34.101.0/24",
-        "Next_Hop_IP" : "2.23.12.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Network" : "2.1.1.2/32",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
         "Next_Hop" : "as2core1",
-        "Protocol" : "ospfE2",
+        "Protocol" : "ospf",
         "Tag" : null,
         "Admin_Distance" : 110,
-        "Metric" : 20
+        "Metric" : 3
       },
       {
         "Node" : {
@@ -5119,6 +5089,21 @@
       },
       {
         "Node" : {
+          "id" : "node-as2core1",
+          "name" : "as2core1"
+        },
+        "VRF" : "default",
+        "Network" : "2.23.21.0/24",
+        "Next_Hop_IP" : "2.23.11.3",
+        "Next_Hop_Interface" : "GigabitEthernet2/0",
+        "Next_Hop" : "as2dist1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-as2border2",
           "name" : "as2border2"
         },
@@ -5134,33 +5119,48 @@
       },
       {
         "Node" : {
+          "id" : "node-as2border1",
+          "name" : "as2border1"
+        },
+        "VRF" : "default",
+        "Network" : "2.1.2.1/32",
+        "Next_Hop_IP" : "2.12.11.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core1",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 2
+      },
+      {
+        "Node" : {
           "id" : "node-as2dist1",
           "name" : "as2dist1"
         },
         "VRF" : "default",
-        "Network" : "2.34.201.0/24",
+        "Network" : "2.1.3.2/32",
+        "Next_Hop_IP" : "2.23.21.2",
+        "Next_Hop_Interface" : "GigabitEthernet1/0",
+        "Next_Hop" : "as2core2",
+        "Protocol" : "ospf",
+        "Tag" : null,
+        "Admin_Distance" : 110,
+        "Metric" : 3
+      },
+      {
+        "Node" : {
+          "id" : "node-as2dist1",
+          "name" : "as2dist1"
+        },
+        "VRF" : "default",
+        "Network" : "10.23.21.0/24",
         "Next_Hop_IP" : "2.23.11.2",
-        "Next_Hop_Interface" : "dynamic",
+        "Next_Hop_Interface" : "GigabitEthernet0/0",
         "Next_Hop" : "as2core1",
         "Protocol" : "ospfE2",
         "Tag" : null,
         "Admin_Distance" : 110,
         "Metric" : 20
-      },
-      {
-        "Node" : {
-          "id" : "node-as3border2",
-          "name" : "as3border2"
-        },
-        "VRF" : "default",
-        "Network" : "3.0.1.0/24",
-        "Next_Hop_IP" : "3.0.2.2",
-        "Next_Hop_Interface" : "dynamic",
-        "Next_Hop" : "as3core1",
-        "Protocol" : "ospf",
-        "Tag" : null,
-        "Admin_Distance" : 110,
-        "Metric" : 2
       }
     ],
     "summary" : {
