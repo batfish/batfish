@@ -1073,9 +1073,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       GeneratedRoute.Builder defaultRoute = null;
       GeneratedRoute6.Builder defaultRoute6;
       if (lpg.getDefaultOriginate()) {
-        defaultRoute = GeneratedRoute.builder();
-        defaultRoute.setNetwork(Prefix.ZERO);
-        defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
+        defaultRoute =
+            GeneratedRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setAdmin(MAX_ADMINISTRATIVE_COST)
+                .setOriginType(OriginType.IGP);
         defaultRoute6 = new GeneratedRoute6.Builder();
         defaultRoute6.setNetwork(Prefix6.ZERO);
         defaultRoute6.setAdmin(MAX_ADMINISTRATIVE_COST);

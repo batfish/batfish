@@ -498,17 +498,13 @@ final class AristaConversions {
       newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute));
 
       // 2. Do not export any other default route to this neighbor, since the generated route should
-      // dominate.
+      // dominate. (Generated route doesn't go through export policy, so no need to accommodate it.)
+      // TODO Is this necessary? Shouldn't we export all default BGP routes and let the neighbor
+      //  decide which is best?
       exportStatements.add(
           new If(
-              Common.matchDefaultRoute(), // we are exporting some default route
-              ImmutableList.of(
-                  new If(
-                      new MatchProtocol(RoutingProtocol.AGGREGATE),
-                      // default-originate (we generated it): let it through.
-                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                      // not default-originate: deny.
-                      ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))));
+              Common.matchDefaultRoute(),
+              ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
     }
     if (firstNonNull(neighbor.getNextHopSelf(), Boolean.FALSE)) {
       exportStatements.add(new SetNextHop(SelfNextHop.getInstance()));

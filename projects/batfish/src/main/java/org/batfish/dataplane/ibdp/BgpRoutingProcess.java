@@ -1005,7 +1005,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                       remoteConfig,
                       remoteBgpRoutingProcess,
                       session,
-                      Type.IPV4_UNICAST);
+                      Type.IPV4_UNICAST,
+                      false);
                 })
             .filter(Optional::isPresent)
             .map(Optional::get)
@@ -1029,7 +1030,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                               remoteConfig,
                               remoteBgpRoutingProcess,
                               session,
-                              Type.IPV4_UNICAST);
+                              Type.IPV4_UNICAST,
+                              true);
                       // REPLACE does not make sense across routers, update with WITHDRAW
                       return transformedRoute
                           .map(
@@ -1065,9 +1067,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     RoutingPolicy policy = policyName != null ? _policies.get(policyName).orElse(null) : null;
     @Nullable
     RoutingPolicy attrPolicy =
-        generatedRoute.getAttributePolicy() != null
-            ? _policies.get(generatedRoute.getAttributePolicy()).orElse(null)
-            : null;
+        Optional.ofNullable(generatedRoute.getAttributePolicy())
+            .flatMap(_policies::get)
+            .orElse(null);
     // This kind of generation policy should not need access to the main rib
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
@@ -1279,7 +1281,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                         remoteConfig,
                         remoteBgpRoutingProcess,
                         session,
-                        Type.EVPN)
+                        Type.EVPN,
+                        true)
                     .map(
                         r ->
                             RouteAdvertisement.<R>builder()
@@ -1294,8 +1297,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /**
-   * Given a {@link BgpRoute}, run it through the BGP outbound transformations and export routing
-   * policy.
+   * Given a {@link BgpRoute}, run it through the BGP outbound transformations and (optionally)
+   * export routing policy.
    *
    * @param exportCandidate a route to try and export
    * @param ourConfig {@link BgpPeerConfig} that sends the route
@@ -1304,6 +1307,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param sessionProperties {@link BgpSessionProperties} representing the <em>incoming</em> edge:
    *     i.e. the edge from {@code remoteConfig} to {@code ourConfig}
    * @param afType {@link AddressFamily.Type} for which the transformation should occur
+   * @param applyExportPolicy Whether to apply our peer's export policy
    * @return The transformed route as a {@link Bgpv4Route}, or {@code null} if the route should not
    *     be exported.
    */
@@ -1316,7 +1320,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           BgpPeerConfig remoteConfig,
           BgpRoutingProcess remoteBgpRoutingProcess,
           BgpSessionProperties sessionProperties,
-          AddressFamily.Type afType) {
+          AddressFamily.Type afType,
+          boolean applyExportPolicy) {
 
     // Do some sanity checking first -- AF and policies should exist
     AddressFamily addressFamily = ourConfig.getAddressFamily(afType);
@@ -1347,12 +1352,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // Process transformed outgoing route by the export policy
     boolean shouldExport =
-        exportPolicy.processBgpRoute(
-            exportCandidate,
-            transformedOutgoingRouteBuilder,
-            sessionProperties,
-            Direction.OUT,
-            _ribExprEvaluator);
+        !applyExportPolicy
+            || exportPolicy.processBgpRoute(
+                exportCandidate,
+                transformedOutgoingRouteBuilder,
+                sessionProperties,
+                Direction.OUT,
+                _ribExprEvaluator);
 
     // sessionProperties represents the incoming edge, so its tailIp is the remote peer's IP
     Ip remoteIp = sessionProperties.getTailIp();

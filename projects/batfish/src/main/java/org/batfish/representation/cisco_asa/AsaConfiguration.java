@@ -346,12 +346,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
-  public static String computeBgpDefaultRouteExportPolicyName(
-      boolean ipv4, String vrf, String peer) {
-    return String.format(
-        "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
-  }
-
   public static String computeBgpPeerImportPolicyName(String vrf, String peer) {
     return String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", vrf, peer);
   }
@@ -1522,9 +1516,12 @@ public final class AsaConfiguration extends VendorConfiguration {
       GeneratedRoute.Builder defaultRoute = null;
       GeneratedRoute6.Builder defaultRoute6;
       if (lpg.getDefaultOriginate()) {
-        defaultRoute = GeneratedRoute.builder();
-        defaultRoute.setNetwork(Prefix.ZERO);
-        defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
+        defaultRoute =
+            GeneratedRoute.builder()
+                .setNetwork(Prefix.ZERO)
+                .setAdmin(MAX_ADMINISTRATIVE_COST)
+                // TODO This is copied, but should probably be IGP.
+                .setOriginType(OriginType.INCOMPLETE);
         defaultRoute6 = new GeneratedRoute6.Builder();
         defaultRoute6.setNetwork(Prefix6.ZERO);
         defaultRoute6.setAdmin(MAX_ADMINISTRATIVE_COST);

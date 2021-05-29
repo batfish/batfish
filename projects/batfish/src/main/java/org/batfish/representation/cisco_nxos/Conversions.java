@@ -1,10 +1,8 @@
 package org.batfish.representation.cisco_nxos;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
-import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnImportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
@@ -62,7 +60,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
-import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -71,7 +68,6 @@ import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
-import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -861,23 +857,17 @@ final class Conversions {
       statementsBuilder.add(RemovePrivateAs.toStaticStatement());
     }
 
-    // If defaultOriginate is set, generate route and default route export policy. Default route
-    // will match this policy and get exported without going through the rest of the export policy.
-    // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
+    // If defaultOriginate is set, create default GeneratedRoute. This route will not be subjected
+    // to the export policy.
+    // TODO Check if nextHopSelf and removePrivateAs settings apply to default-originate route.
+    //  If so, those statements should go into the GeneratedRoute's attribute policy.
     if (firstNonNull(naf.getDefaultOriginate(), Boolean.FALSE)) {
-      initBgpDefaultRouteExportPolicy(configuration);
-      statementsBuilder.add(
-          new If(
-              "Export default route from peer with default-originate configured",
-              new CallExpr(generatedBgpDefaultRouteExportPolicyName(true)),
-              singletonList(Statements.ReturnTrue.toStaticStatement()),
-              ImmutableList.of()));
-
       GeneratedRoute defaultRoute =
           GeneratedRoute.builder()
               .setNetwork(Prefix.ZERO)
               .setAdmin(MAX_ADMINISTRATIVE_COST)
               .setGenerationPolicy(naf.getDefaultOriginateMap())
+              .setOriginType(OriginType.IGP)
               .build();
       newNeighborBuilder.setGeneratedRoutes(ImmutableSet.of(defaultRoute));
     }
@@ -915,30 +905,6 @@ final class Conversions {
                 ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                 ImmutableList.of(Statements.ExitReject.toStaticStatement())))
         .build();
-  }
-
-  /**
-   * Initializes export policy for default routes if it doesn't already exist. This policy is the
-   * same across BGP processes, so only one is created for each configuration.
-   */
-  static void initBgpDefaultRouteExportPolicy(Configuration c) {
-    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName(true);
-    if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
-      RoutingPolicy.builder()
-          .setOwner(c)
-          .setName(defaultRouteExportPolicyName)
-          .addStatement(
-              new If(
-                  new Conjunction(
-                      ImmutableList.of(
-                          Common.matchDefaultRoute(),
-                          new MatchProtocol(RoutingProtocol.AGGREGATE))),
-                  ImmutableList.of(
-                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                      Statements.ReturnTrue.toStaticStatement())))
-          .addStatement(Statements.ReturnFalse.toStaticStatement())
-          .build();
-    }
   }
 
   private static String getTextDesc(Ip ip, Vrf v) {

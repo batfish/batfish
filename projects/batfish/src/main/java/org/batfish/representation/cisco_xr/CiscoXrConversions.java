@@ -2,13 +2,11 @@ package org.batfish.representation.cisco_xr;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
-import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
@@ -69,7 +67,6 @@ import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
@@ -89,7 +86,6 @@ import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.route.nh.NextHop;
-import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
@@ -139,7 +135,6 @@ import org.batfish.datamodel.routing_policy.expr.IntMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.LongMatchAll;
@@ -152,7 +147,6 @@ import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
-import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
@@ -796,25 +790,13 @@ public class CiscoXrConversions {
         RoutingPolicy.builder()
             .setOwner(c)
             .setName(generatedBgpPeerExportPolicyName(vrfName, lpg.getName()));
+    // TODO nextHopSelf and removePrivateAs should probably apply to default-originate route, which
+    //  doesn't go through the export policy. If so, add them to generated route's attribute policy.
     if (lpg.getNextHopSelf() != null && lpg.getNextHopSelf()) {
       exportPolicy.addStatement(new SetNextHop(SelfNextHop.getInstance()));
     }
     if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
       exportPolicy.addStatement(Statements.RemovePrivateAs.toStaticStatement());
-    }
-
-    // If defaultOriginate is set, generate a default route export policy. Default route will match
-    // this policy and get exported without going through the rest of the export policy.
-    // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
-    // TODO Verify that default route can be originated even if no export filter is configured.
-    if (lpg.getDefaultOriginate()) {
-      initBgpDefaultRouteExportPolicy(ipv4, c);
-      exportPolicy.addStatement(
-          new If(
-              "Export default route from peer with default-originate configured",
-              new CallExpr(generatedBgpDefaultRouteExportPolicyName(ipv4)),
-              singletonList(Statements.ReturnTrue.toStaticStatement()),
-              ImmutableList.of()));
     }
 
     // Conditions for exporting regular routes (not spawned by default-originate)
@@ -837,34 +819,6 @@ public class CiscoXrConversions {
                 ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                 ImmutableList.of(Statements.ExitReject.toStaticStatement())))
         .build();
-  }
-
-  /**
-   * Initializes export policy for IPv4 or IPv6 default routes if it doesn't already exist. This
-   * policy is the same across BGP processes, so at most two are created for each configuration, for
-   * IPv4 and IPv6.
-   *
-   * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
-   */
-  static void initBgpDefaultRouteExportPolicy(boolean ipv4, Configuration c) {
-    String defaultRouteExportPolicyName = generatedBgpDefaultRouteExportPolicyName(ipv4);
-    if (!c.getRoutingPolicies().containsKey(defaultRouteExportPolicyName)) {
-      SetOrigin setOrigin = new SetOrigin(new LiteralOrigin(OriginType.IGP, null));
-      List<Statement> defaultRouteExportStatements =
-          ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
-      RoutingPolicy.builder()
-          .setOwner(c)
-          .setName(defaultRouteExportPolicyName)
-          .addStatement(
-              new If(
-                  new Conjunction(
-                      ImmutableList.of(
-                          ipv4 ? Common.matchDefaultRoute() : Common.matchDefaultRouteV6(),
-                          new MatchProtocol(RoutingProtocol.AGGREGATE))),
-                  defaultRouteExportStatements))
-          .addStatement(Statements.ReturnFalse.toStaticStatement())
-          .build();
-    }
   }
 
   /**

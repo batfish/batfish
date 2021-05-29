@@ -784,7 +784,7 @@ public final class CumulusConversionsTest {
             .getRoutingPolicies()
             .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
             .getStatements()
-            .get(1),
+            .get(0),
         equalTo(REJECT_DEFAULT_ROUTE));
   }
 

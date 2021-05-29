@@ -1428,7 +1428,11 @@ public final class CiscoNxosGrammarTest {
         peer.getGeneratedRoutes(),
         equalTo(
             ImmutableSet.of(
-                GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(32767).build())));
+                GeneratedRoute.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setAdmin(32767)
+                    .setOriginType(OriginType.IGP)
+                    .build())));
 
     Ipv4UnicastAddressFamily ipv4Af = peer.getIpv4UnicastAddressFamily();
     assertThat(ipv4Af, notNullValue());
@@ -1437,7 +1441,6 @@ public final class CiscoNxosGrammarTest {
         hasAddressFamilyCapabilites(allOf(hasSendCommunity(true), hasAllowLocalAsIn(true))));
 
     String commonBgpExportPolicy = "~BGP_COMMON_EXPORT_POLICY:default~";
-    String defaultRouteOriginatePolicy = "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv4~";
     String peerExportPolicyName = "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~";
 
     assertThat(ipv4Af, hasExportPolicy(peerExportPolicyName));
@@ -1445,9 +1448,6 @@ public final class CiscoNxosGrammarTest {
         c.getRoutingPolicies().get(peerExportPolicyName).getStatements(),
         equalTo(
             ImmutableList.of(
-                new If(
-                    new CallExpr(defaultRouteOriginatePolicy),
-                    ImmutableList.of(Statements.ReturnTrue.toStaticStatement())),
                 new If(
                     new Conjunction(
                         ImmutableList.of(
