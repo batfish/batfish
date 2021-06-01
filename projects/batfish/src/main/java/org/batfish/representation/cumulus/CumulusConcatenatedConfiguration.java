@@ -125,8 +125,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     return ImmutableList.of(toVendorIndependentConfiguration());
   }
 
-  private void initializeVrfIpOwners() {}
-
   @Nonnull
   @VisibleForTesting
   Configuration toVendorIndependentConfiguration() {
@@ -138,7 +136,6 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     // create default VRF
     getOrCreateVrf(c, DEFAULT_VRF_NAME);
 
-    initializeVrfIpOwners();
     initializeAllInterfaces(c);
     populateInterfacesInterfaceProperties(c);
     populatePortsInterfaceProperties(c);

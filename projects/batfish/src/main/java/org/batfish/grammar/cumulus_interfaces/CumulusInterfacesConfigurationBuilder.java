@@ -172,6 +172,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   @Override
   public void enterS_iface(S_ifaceContext ctx) {
     _currentIfaceName = ctx.interface_name().getText();
+    // Duplicates are ignored and do not change the order, since this is a LinkedHashSet.
     _interfaceInitOrder.add(_currentIfaceName);
   }
 

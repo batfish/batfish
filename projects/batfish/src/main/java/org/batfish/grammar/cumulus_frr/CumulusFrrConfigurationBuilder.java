@@ -264,6 +264,8 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable FrrInterface _currentInterface;
   private OspfArea _currentOspfArea;
   private OspfVrf _currentOspfVrf;
+  // Interfaces in the frr file are initialized from bottom to top, where bottommost occurrence of a
+  // given interface is the only one that matters for determining order.
   private Set<String> _reverseInterfaceInitOrder;
 
   public CumulusFrrConfigurationBuilder(
