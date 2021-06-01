@@ -1,0 +1,18 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname abf
+!
+ipv4 access-list aclv4
+ 10 deny tcp host 10.0.0.1 host 10.0.1.1 eq ssh
+ 20 permit tcp any host 10.0.2.1
+ 30 permit tcp any host 10.0.3.1 nexthop1 ipv4 10.0.13.1 nexthop2 ipv4 10.0.13.2 nexthop3 ipv4 10.0.13.3
+ 40 permit tcp any host 10.0.4.1 nexthop1 vrf vrf1 ipv4 10.0.14.1
+ 50 permit tcp any any
+!
+ipv6 access-list aclv6
+ 10 deny tcp 1000::/32 1001::/32 eq ssh
+ 20 permit tcp any 2000::/32
+ 30 permit tcp any 3000::/32 nexthop1 ipv6 3001:: nexthop2 ipv6 3002:: nexthop3 ipv6 3003::
+ 40 permit tcp any 4000::/32 nexthop1 vrf vrf1 ipv6 4001::
+ 50 permit tcp any any
+!

@@ -153,6 +153,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OriginType;
@@ -198,6 +199,7 @@ import org.batfish.representation.cisco_xr.IosRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.Ipv4AccessList;
 import org.batfish.representation.cisco_xr.Ipv4AccessListLine;
 import org.batfish.representation.cisco_xr.Ipv6AccessList;
+import org.batfish.representation.cisco_xr.Ipv6AccessListLine;
 import org.batfish.representation.cisco_xr.LengthAsPathSetElem;
 import org.batfish.representation.cisco_xr.LiteralUint16;
 import org.batfish.representation.cisco_xr.LiteralUint16Range;
@@ -2820,5 +2822,53 @@ public final class XrGrammarTest {
     assertThat(
         c.getAllInterfaces().get("GigabitEthernet0/0/0/2").getOspfNetworkType(),
         equalTo(POINT_TO_POINT));
+  }
+
+  /** Test extraction of ACL based forwarding constructs in IP access-lists */
+  @Test
+  public void testAbfExtraction() {
+    String hostname = "abf";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getIpv4Acls().keySet(), contains("aclv4"));
+    assertThat(vc.getIpv6Acls().keySet(), contains("aclv6"));
+
+    // Ipv4
+    {
+      Ipv4AccessList acl = vc.getIpv4Acls().get("aclv4");
+      Ipv4AccessListLine nhIpLine = acl.getLines().get(2);
+      Ipv4AccessListLine nhVrfLine = acl.getLines().get(3);
+
+      assertThat(nhIpLine.getNexthop1().getIp(), equalTo(Ip.parse("10.0.13.1")));
+      assertNull(nhIpLine.getNexthop1().getVrf());
+      assertThat(nhIpLine.getNexthop2().getIp(), equalTo(Ip.parse("10.0.13.2")));
+      assertNull(nhIpLine.getNexthop2().getVrf());
+      assertThat(nhIpLine.getNexthop3().getIp(), equalTo(Ip.parse("10.0.13.3")));
+      assertNull(nhIpLine.getNexthop3().getVrf());
+
+      assertThat(nhVrfLine.getNexthop1().getIp(), equalTo(Ip.parse("10.0.14.1")));
+      assertThat(nhVrfLine.getNexthop1().getVrf(), equalTo("vrf1"));
+      assertNull(nhVrfLine.getNexthop2());
+      assertNull(nhVrfLine.getNexthop3());
+    }
+
+    // Ipv6
+    {
+      Ipv6AccessList acl = vc.getIpv6Acls().get("aclv6");
+      Ipv6AccessListLine nhIpLine = acl.getLines().get(2);
+      Ipv6AccessListLine nhVrfLine = acl.getLines().get(3);
+
+      assertThat(nhIpLine.getNexthop1().getIp(), equalTo(Ip6.parse("3001::")));
+      assertNull(nhIpLine.getNexthop1().getVrf());
+      assertThat(nhIpLine.getNexthop2().getIp(), equalTo(Ip6.parse("3002::")));
+      assertNull(nhIpLine.getNexthop2().getVrf());
+      assertThat(nhIpLine.getNexthop3().getIp(), equalTo(Ip6.parse("3003::")));
+      assertNull(nhIpLine.getNexthop3().getVrf());
+
+      assertThat(nhVrfLine.getNexthop1().getIp(), equalTo(Ip6.parse("4001::")));
+      assertThat(nhVrfLine.getNexthop1().getVrf(), equalTo("vrf1"));
+      assertNull(nhVrfLine.getNexthop2());
+      assertNull(nhVrfLine.getNexthop3());
+    }
   }
 }

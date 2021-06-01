@@ -17,6 +17,12 @@ public class Ipv4AccessListLine implements Serializable {
 
     private String _name;
 
+    private Ipv4Nexthop _nexthop1;
+
+    private Ipv4Nexthop _nexthop2;
+
+    private Ipv4Nexthop _nexthop3;
+
     private AccessListServiceSpecifier _serviceSpecifier;
 
     private AccessListAddressSpecifier _srcAddressSpecifier;
@@ -42,6 +48,21 @@ public class Ipv4AccessListLine implements Serializable {
       return this;
     }
 
+    public Builder setNexthop1(Ipv4Nexthop nexthop) {
+      _nexthop1 = nexthop;
+      return this;
+    }
+
+    public Builder setNexthop2(Ipv4Nexthop nexthop) {
+      _nexthop2 = nexthop;
+      return this;
+    }
+
+    public Builder setNexthop3(Ipv4Nexthop nexthop) {
+      _nexthop3 = nexthop;
+      return this;
+    }
+
     public Builder setServiceSpecifier(AccessListServiceSpecifier serviceSpecifier) {
       _serviceSpecifier = serviceSpecifier;
       return this;
@@ -63,6 +84,12 @@ public class Ipv4AccessListLine implements Serializable {
 
   private final String _name;
 
+  private final Ipv4Nexthop _nexthop1;
+
+  private final Ipv4Nexthop _nexthop2;
+
+  private final Ipv4Nexthop _nexthop3;
+
   private final AccessListServiceSpecifier _serviceSpecifier;
 
   private final AccessListAddressSpecifier _srcAddressSpecifier;
@@ -73,6 +100,9 @@ public class Ipv4AccessListLine implements Serializable {
     _name = requireNonNull(builder._name);
     _serviceSpecifier = requireNonNull(builder._serviceSpecifier);
     _srcAddressSpecifier = requireNonNull(builder._srcAddressSpecifier);
+    _nexthop1 = builder._nexthop1;
+    _nexthop2 = builder._nexthop2;
+    _nexthop3 = builder._nexthop3;
   }
 
   public @Nonnull LineAction getAction() {
@@ -85,6 +115,18 @@ public class Ipv4AccessListLine implements Serializable {
 
   public String getName() {
     return _name;
+  }
+
+  public Ipv4Nexthop getNexthop1() {
+    return _nexthop1;
+  }
+
+  public Ipv4Nexthop getNexthop2() {
+    return _nexthop2;
+  }
+
+  public Ipv4Nexthop getNexthop3() {
+    return _nexthop3;
   }
 
   public AccessListServiceSpecifier getServiceSpecifier() {
