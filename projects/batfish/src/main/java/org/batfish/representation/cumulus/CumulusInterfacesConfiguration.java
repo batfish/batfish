@@ -1,10 +1,15 @@
 package org.batfish.representation.cumulus;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.representation.cumulus.InterfaceConverter.isVrf;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -15,6 +20,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class CumulusInterfacesConfiguration implements Serializable {
   @Nonnull private final Set<String> _autoIfaces;
   @Nonnull private final Map<String, InterfacesInterface> _interfaces;
+  private List<String> _interfaceInitOrder;
 
   public CumulusInterfacesConfiguration() {
     _autoIfaces = new HashSet<>();
@@ -50,5 +56,17 @@ public final class CumulusInterfacesConfiguration implements Serializable {
   @Nonnull
   public Map<String, InterfacesInterface> getInterfaces() {
     return _interfaces;
+  }
+
+  @Nonnull
+  public Collection<String> getInterfaceInitOrder() {
+    return firstNonNull(
+        _interfaceInitOrder,
+        // for ease of testing
+        Collections.unmodifiableSet(_interfaces.keySet()));
+  }
+
+  public void setInterfaceInitOrder(Iterable<String> interfaceInitOrder) {
+    _interfaceInitOrder = ImmutableList.copyOf(interfaceInitOrder);
   }
 }

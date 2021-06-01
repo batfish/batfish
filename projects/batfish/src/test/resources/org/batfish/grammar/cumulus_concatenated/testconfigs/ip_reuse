@@ -1,0 +1,85 @@
+ip_reuse
+# This file describes the network interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+iface v1
+  vrf-table auto
+iface v2
+  vrf-table auto
+
+
+# Should be first to be initialized since it appears first, independently of re-entry at bottom.
+auto swp2
+iface swp2
+
+# Should own 10.0.0.2/32, since this is the earliest declared interface that assigns it.
+auto swp1
+iface swp1
+  address 10.0.0.1/32
+  address 10.0.0.2/32
+
+# Should own this address, since it is in a distinct vrf from other owner.
+auto swp4
+iface swp4
+  vrf v1
+  address 10.0.0.1/32
+
+auto swp5
+iface swp5
+  vrf v2
+
+# Should own 10.0.0.1/32, since this interface is initialized first.
+auto swp2
+iface swp2
+  address 10.0.0.1/32
+
+# Should have neither of these IP addresses, since the assignments are all shadowed by other interfaces.
+auto swp3
+iface swp3
+  address 10.0.0.1/32
+  address 10.0.0.2/32
+
+
+# ports.conf --
+# ports.conf --
+#
+#   configure port speed, aggregation, and subdivision.
+#
+#   The ports in Cumulus VX are not configurable from here.
+#frr version
+frr version 4.0+cl3u8
+frr defaults datacenter
+hostname ip_reuse
+username cumulus nopassword
+!
+service integrated-vtysh-config
+!
+log syslog informational
+!
+! Should have neither of these IP addresses, since the assignments are all shadowed by other interfaces.
+interface swp2
+  ip address 10.1.1.1/32
+  ip address 10.1.1.2/32
+!
+! Should own 10.1.1.1/32, since this interface is initialized first.
+interface swp3
+ ip address 10.1.1.1/32
+!
+! Should own this address, since it is in a distinct vrf from other owner.
+interface swp5 vrf v2
+ ip address 10.1.1.1/32
+!
+! Should own 10.1.1.2/32, since this is the latest declared interface that assigns it.
+interface swp1
+ ip address 10.1.1.1/32
+ ip address 10.1.1.2/32
+!
+! Should be first to be initialized since it appears last, independently of earlier declaration.
+! Should have neither of thse addresses, since they were assigned to other interfaces in interfaces file.
+interface swp3
+  ip address 10.0.0.1/32
+  ip address 10.0.0.2/32
+!
+line vty
+!
