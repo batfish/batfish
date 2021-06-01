@@ -3,10 +3,12 @@ package org.batfish.datamodel.ospf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.junit.Test;
 
@@ -25,6 +27,8 @@ public class OspfInterfaceSettingsTest {
             .setHelloMultiplier(55)
             .setNbmaNeighbors(ImmutableSet.of(Ip.parse("1.2.3.4")))
             .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+            .setOspfAddresses(
+                OspfAddresses.of(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/32"))))
             .build();
 
     // test (de)serialization
@@ -45,6 +49,8 @@ public class OspfInterfaceSettingsTest {
             .setHelloMultiplier(55)
             .setNbmaNeighbors(ImmutableSet.of(Ip.parse("1.2.3.4")))
             .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+            .setOspfAddresses(
+                OspfAddresses.of(ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/32"))))
             .build();
 
     assertThat(SerializationUtils.clone(s), equalTo(s));
@@ -77,6 +83,11 @@ public class OspfInterfaceSettingsTest {
         .addEqualityGroup(s.setNetworkType(OspfNetworkType.NON_BROADCAST_MULTI_ACCESS).build())
         .addEqualityGroup(s.setPassive(false).build())
         .addEqualityGroup(s.setProcess("proc").build())
+        .addEqualityGroup(
+            s.setOspfAddresses(
+                    OspfAddresses.of(
+                        ImmutableList.of(ConcreteInterfaceAddress.parse("1.1.1.1/32"))))
+                .build())
         .testEquals();
   }
 }

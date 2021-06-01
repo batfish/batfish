@@ -35,6 +35,7 @@ public final class OspfInterfaceSettings implements Serializable {
   }
 
   public static final class Builder {
+    private @Nullable OspfAddresses _ospfAddresses;
     private Long _ospfAreaName;
     private Integer _ospfCost;
     private int _ospfDeadInterval;
@@ -49,6 +50,11 @@ public final class OspfInterfaceSettings implements Serializable {
 
     public Builder() {
       _ospfEnabled = true;
+    }
+
+    public @Nonnull Builder setOspfAddresses(@Nullable OspfAddresses ospfAddresses) {
+      _ospfAddresses = ospfAddresses;
+      return this;
     }
 
     public Builder setAreaName(@Nullable Long ospfAreaName) {
@@ -108,6 +114,7 @@ public final class OspfInterfaceSettings implements Serializable {
 
     public OspfInterfaceSettings build() {
       return create(
+          _ospfAddresses,
           _ospfAreaName,
           _ospfCost,
           _ospfDeadInterval,
@@ -122,6 +129,7 @@ public final class OspfInterfaceSettings implements Serializable {
     }
   }
 
+  @Nullable private OspfAddresses _ospfAddresses;
   @Nullable private Long _ospfAreaName;
   @Nullable private Integer _ospfCost;
   private int _ospfDeadInterval;
@@ -143,11 +151,13 @@ public final class OspfInterfaceSettings implements Serializable {
   private static final String PROP_INBOUND_DISTRIBUTE_LIST_POLICY = "inboundDistributeListPolicy";
   private static final String PROP_NBMA_NEIGHBORS = "nbmaNeighbors";
   private static final String PROP_NETWORK_TYPE = "networkType";
+  private static final String PROP_OSPF_ADDRESSES = "ospfAddresses";
   private static final String PROP_PASSIVE = "passive";
   private static final String PROP_PROCESS = "process";
 
   @JsonCreator
   private static OspfInterfaceSettings create(
+      @Nullable @JsonProperty(PROP_OSPF_ADDRESSES) OspfAddresses addresses,
       @Nullable @JsonProperty(PROP_AREA) Long area,
       @Nullable @JsonProperty(PROP_COST) Integer cost,
       @Nullable @JsonProperty(PROP_DEAD_INTERVAL) Integer deadInterval,
@@ -165,6 +175,7 @@ public final class OspfInterfaceSettings implements Serializable {
     checkArgument(helloInterval != null, "OSPF hello interval must be specified");
     checkArgument(deadInterval != null, "OSPF dead interval must be specified");
     return new OspfInterfaceSettings(
+        addresses,
         area,
         cost,
         deadInterval,
@@ -179,6 +190,7 @@ public final class OspfInterfaceSettings implements Serializable {
   }
 
   private OspfInterfaceSettings(
+      @Nullable OspfAddresses addresses,
       @Nullable Long area,
       @Nullable Integer cost,
       int deadInterval,
@@ -190,6 +202,7 @@ public final class OspfInterfaceSettings implements Serializable {
       @Nullable OspfNetworkType networkType,
       boolean passive,
       @Nullable String process) {
+    _ospfAddresses = addresses;
     _ospfAreaName = area;
     _ospfCost = cost;
     _ospfDeadInterval = deadInterval;
@@ -206,6 +219,7 @@ public final class OspfInterfaceSettings implements Serializable {
   @Override
   public int hashCode() {
     return Objects.hash(
+        _ospfAddresses,
         _ospfAreaName,
         _ospfCost,
         _ospfDeadInterval,
@@ -227,7 +241,8 @@ public final class OspfInterfaceSettings implements Serializable {
       return false;
     }
     OspfInterfaceSettings other = (OspfInterfaceSettings) o;
-    return Objects.equals(_ospfAreaName, other._ospfAreaName)
+    return Objects.equals(_ospfAddresses, other._ospfAddresses)
+        && Objects.equals(_ospfAreaName, other._ospfAreaName)
         && Objects.equals(_ospfCost, other._ospfCost)
         && _ospfDeadInterval == other._ospfDeadInterval
         && _ospfEnabled == other._ospfEnabled
@@ -305,6 +320,12 @@ public final class OspfInterfaceSettings implements Serializable {
   @Nullable
   public OspfNetworkType getNetworkType() {
     return _ospfNetworkType;
+  }
+
+  @JsonProperty(PROP_OSPF_ADDRESSES)
+  @Nullable
+  public OspfAddresses getOspfAddresses() {
+    return _ospfAddresses;
   }
 
   /**
