@@ -7,6 +7,7 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -155,11 +156,13 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -173,6 +176,13 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.FlowEvaluator;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -1393,12 +1403,7 @@ public final class XrGrammarTest {
     assertThat(
         vc.getVrfs(),
         hasKeys(
-            Configuration.DEFAULT_VRF_NAME,
-            "none",
-            "single-oneline",
-            "single-block",
-            "multiple",
-            "multiple-af"));
+            DEFAULT_VRF_NAME, "none", "single-oneline", "single-block", "multiple", "multiple-af"));
     {
       Vrf v = vc.getVrfs().get("none");
       assertThat(v.getIpv4UnicastAddressFamily().getRouteTargetExport(), empty());
@@ -1461,7 +1466,7 @@ public final class XrGrammarTest {
   public void testVrfRoutePolicyExtraction() {
     String hostname = "xr-vrf-route-policy";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
-    assertThat(vc.getVrfs(), hasKeys(Configuration.DEFAULT_VRF_NAME, "v0", "v1", "v2"));
+    assertThat(vc.getVrfs(), hasKeys(DEFAULT_VRF_NAME, "v0", "v1", "v2"));
     {
       Vrf v = vc.getVrfs().get("v0");
       assertThat(v.getIpv4UnicastAddressFamily().getExportPolicy(), nullValue());
@@ -2901,5 +2906,97 @@ public final class XrGrammarTest {
                         "ACL based forwarding can only be configured on an ACL line with a permit"
                             + " action"),
                     hasText("100 deny tcp any host 1111:: nexthop1 ipv6 1112::")))));
+  }
+
+  /** Test conversion of ACL based forwarding constructs in IP access-lists */
+  @Test
+  public void testAbfConversion() {
+    String hostname = "abf_conversion";
+    Configuration c = parseConfig(hostname);
+    String v4AclName = "aclv4";
+    String v6AclName = "aclv6";
+    String gigE0 = "GigabitEthernet0/0/0/0";
+
+    // TODO v6
+    // assertThat(c.getPacketPolicies().keySet(), contains(v4AclName, v6AclName));
+    assertThat(c.getPacketPolicies().keySet(), contains(v4AclName));
+
+    // Ipv4
+    {
+      PacketPolicy policy = c.getPacketPolicies().get(v4AclName);
+      Flow permittedNoAbf =
+          Flow.builder()
+              .setIpProtocol(IpProtocol.TCP)
+              .setIngressNode(hostname)
+              .setIngressInterface(gigE0)
+              .setSrcIp(Ip.parse("8.8.8.8"))
+              .setSrcPort(22222)
+              .setDstIp(Ip.parse("10.0.5.1"))
+              .setDstPort(22)
+              .build();
+      Flow permittedAbfNoVrf = permittedNoAbf.toBuilder().setDstIp(Ip.parse("10.0.3.1")).build();
+      Flow permittedAbfWithVrf = permittedNoAbf.toBuilder().setDstIp(Ip.parse("10.0.4.1")).build();
+      FibLookup regularFibLookup = new FibLookup(IngressInterfaceVrf.instance());
+      // Permitted flow hitting regular permit statement uses regular fib lookup
+      assertThat(
+          FlowEvaluator.evaluate(
+                  permittedNoAbf,
+                  gigE0,
+                  DEFAULT_VRF_NAME,
+                  policy,
+                  c.getIpAccessLists(),
+                  ImmutableMap.of(),
+                  ImmutableMap.of())
+              .getAction(),
+          equalTo(regularFibLookup));
+
+      // Permitted flow hitting ACL line with ABF uses specified nexthop
+      assertThat(
+          FlowEvaluator.evaluate(
+                  permittedAbfNoVrf,
+                  gigE0,
+                  DEFAULT_VRF_NAME,
+                  policy,
+                  c.getIpAccessLists(),
+                  ImmutableMap.of(),
+                  ImmutableMap.of())
+              .getAction(),
+          equalTo(
+              FibLookupOverrideLookupIp.builder()
+                  .setIps(ImmutableList.of(Ip.parse("10.0.13.1")))
+                  .setVrfExpr(IngressInterfaceVrf.instance())
+                  .setDefaultAction(Drop.instance())
+                  .setRequireConnected(true)
+                  .build()));
+
+      // Permitted flow hitting ACL line with ABF uses specified nexthop and VRF
+      assertThat(
+          FlowEvaluator.evaluate(
+                  permittedAbfWithVrf,
+                  gigE0,
+                  DEFAULT_VRF_NAME,
+                  policy,
+                  c.getIpAccessLists(),
+                  ImmutableMap.of(),
+                  ImmutableMap.of())
+              .getAction(),
+          equalTo(
+              FibLookupOverrideLookupIp.builder()
+                  .setIps(ImmutableList.of(Ip.parse("10.0.14.1")))
+                  .setVrfExpr(new LiteralVrfName("vrf1"))
+                  .setDefaultAction(Drop.instance())
+                  .setRequireConnected(true)
+                  .build()));
+
+      // TODO more cases
+
+      assertThat(c.getAllInterfaces().get(gigE0).getRoutingPolicyName(), equalTo(v4AclName));
+    }
+
+    // Ipv6
+    {
+      PacketPolicy acl = c.getPacketPolicies().get("aclv6");
+      // TODO test v6
+    }
   }
 }

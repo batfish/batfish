@@ -137,6 +137,7 @@ import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -2000,8 +2001,14 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
-    // convert access lists to access lists or route filter
+    // convert access lists to access lists, route filter, or packet policy
     for (Ipv4AccessList eaList : _ipv4Acls.values()) {
+      if (isAclUsedForAbf(eaList)) {
+        PacketPolicy packetPolicy =
+            CiscoXrConversions.toPacketPolicy(eaList, _objectGroups, _filename);
+        c.getPacketPolicies().put(eaList.getName(), packetPolicy);
+        continue;
+      }
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoXrConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
@@ -2353,6 +2360,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private boolean isAclUsedForRouting(@Nonnull String aclName) {
     // TODO: implement OSPF acl distribute-list
     return false;
+  }
+
+  private boolean isAclUsedForAbf(@Nonnull Ipv4AccessList acl) {
+    // TODO add logic
+    return true;
   }
 
   /**

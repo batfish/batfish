@@ -88,6 +88,15 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.isis.IsisLevelSettings;
+import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
+import org.batfish.datamodel.packet_policy.PacketMatchExpr;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.VrfExpr;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1642,6 +1651,56 @@ public class CiscoXrConversions {
         new VendorStructureId(vendorConfigFilename, list.getName(), PREFIX_LIST.getDescription()));
   }
 
+  static PacketPolicy toPacketPolicy(
+      Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups, String vendorConfigFilename) {
+    return new PacketPolicy(
+        eaList.getName(),
+        eaList.getLines().stream()
+            .map(l -> toPacketPolicyStatement(l, objectGroups))
+            .collect(ImmutableList.toImmutableList()),
+        new Return(new FibLookup(IngressInterfaceVrf.instance())));
+  }
+
+  /**
+   * Convert an {@link Ipv4AccessListLine} into a guarded {@link
+   * org.batfish.datamodel.packet_policy.Statement}
+   */
+  private static org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
+      Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
+    return new org.batfish.datamodel.packet_policy.If(
+        new PacketMatchExpr(toAclLineMatchExpr(line, objectGroups)),
+        ImmutableList.of(toPacketPolicyActions(line)));
+  }
+
+  /**
+   * Convert an {@link Ipv4AccessListLine} into a list of {@link
+   * org.batfish.datamodel.packet_policy.Statement} action taken when the ACL is matched.
+   */
+  private static org.batfish.datamodel.packet_policy.Statement toPacketPolicyActions(
+      Ipv4AccessListLine line) {
+    if (line.getAction() == LineAction.DENY) {
+      return new Return(Drop.instance());
+    }
+
+    Ipv4Nexthop nexthop1 = line.getNexthop1();
+    if (nexthop1 != null) {
+      String nexthop1Vrf = nexthop1.getVrf();
+      VrfExpr vrfExpr =
+          nexthop1Vrf == null
+              ? IngressInterfaceVrf.instance()
+              : new LiteralVrfName(nexthop1.getVrf());
+      return new Return(
+          FibLookupOverrideLookupIp.builder()
+              .setIps(ImmutableList.of(nexthop1.getIp()))
+              .setVrfExpr(vrfExpr)
+              .setDefaultAction(Drop.instance())
+              .build());
+    }
+
+    // No override nexthops
+    return new Return(new FibLookup(IngressInterfaceVrf.instance()));
+  }
+
   /**
    * Given a list of {@link If} statements, sets the false statements of every {@link If} to an
    * empty list and adds a rule at the end to allow EIGRP from provided ownAsn.
@@ -1718,7 +1777,7 @@ public class CiscoXrConversions {
         .build();
   }
 
-  private static ExprAclLine toExprAclLine(
+  private static AclLineMatchExpr toAclLineMatchExpr(
       Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
@@ -1740,10 +1799,14 @@ public class CiscoXrConversions {
                   new MatchHeaderSpace(
                       HeaderSpace.builder().setSrcIps(srcIpSpace).setDstIps(dstIpSpace).build())));
     }
+    return match;
+  }
 
+  private static ExprAclLine toExprAclLine(
+      Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
     return ExprAclLine.builder()
         .setAction(line.getAction())
-        .setMatchCondition(match)
+        .setMatchCondition(toAclLineMatchExpr(line, objectGroups))
         .setName(line.getName())
         .build();
   }
