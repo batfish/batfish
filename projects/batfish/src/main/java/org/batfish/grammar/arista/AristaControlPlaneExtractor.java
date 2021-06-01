@@ -574,8 +574,6 @@ import org.batfish.grammar.arista.AristaParser.If_eos_mlagContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_helper_addressContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_inband_access_groupContext;
 import org.batfish.grammar.arista.AristaParser.If_ip_local_proxy_arp_eosContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_nat_destinationContext;
-import org.batfish.grammar.arista.AristaParser.If_ip_nat_sourceContext;
 import org.batfish.grammar.arista.AristaParser.If_ipv6_traffic_filterContext;
 import org.batfish.grammar.arista.AristaParser.If_isis_metricContext;
 import org.batfish.grammar.arista.AristaParser.If_member_interfaceContext;
@@ -616,6 +614,8 @@ import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipm_boundary_eosContext;
+import org.batfish.grammar.arista.AristaParser.Ifipn_destinationContext;
+import org.batfish.grammar.arista.AristaParser.Ifipns_dynamicContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_area_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_cost_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_dead_interval_eosContext;
@@ -4745,15 +4745,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIf_ip_nat_destination(If_ip_nat_destinationContext ctx) {
-    // Arista syntax
+  public void exitIfipn_destination(Ifipn_destinationContext ctx) {
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
   }
 
   @Override
-  public void exitIf_ip_nat_source(If_ip_nat_sourceContext ctx) {
+  public void exitIfipns_dynamic(Ifipns_dynamicContext ctx) {
     String acl = null;
     String pool = null;
     if (ctx.acl != null) {

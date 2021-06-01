@@ -276,8 +276,7 @@ if_ip
     | if_ip_inband_access_group
     | if_ip_local_proxy_arp_eos
     | if_ip_multicast_eos
-    | if_ip_nat_destination
-    | if_ip_nat_source
+    | if_ip_nat
     | if_ip_nbar
     | ifip_null_eos
     | ifip_ospf_eos
@@ -405,20 +404,43 @@ ifipm_static_eos
   STATIC NEWLINE
 ;
 
-if_ip_nat_destination
+if_ip_nat
 :
-   NAT DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
+  NAT
+  (
+    ifipn_destination
+    | ifipn_source
+  )
+;
+
+ifipn_destination
+:
+   DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
    NEWLINE
 ;
 
-if_ip_nat_source
+ifipn_source
 :
-   NAT SOURCE DYNAMIC ACCESS_LIST acl = variable
+   SOURCE
+   (
+     ifipns_dynamic
+     // | ifipns_static
+   )
+;
+
+ifipns_dynamic
+:
+   DYNAMIC ACCESS_LIST acl = variable
    (
      OVERLOAD
      | POOL pool = variable
    ) NEWLINE
 ;
+
+//ifipns_static
+//:
+//   STATIC
+//;
 
 if_ip_nbar
 :
