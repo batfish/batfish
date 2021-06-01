@@ -80,7 +80,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -500,20 +499,14 @@ final class AristaConversions {
 
       // 2. Do not export any other default route to this neighbor, since the generated route should
       // dominate.
-      Builder<Statement> trueStatementsForGeneratedDefaultRoute = ImmutableList.builder();
-      if (defaultOriginateRouteMapName != null
-          && c.getRoutingPolicies().containsKey(defaultOriginateRouteMapName)) {
-        trueStatementsForGeneratedDefaultRoute.add(new CallStatement(defaultOriginateRouteMapName));
-      }
-      trueStatementsForGeneratedDefaultRoute.add(Statements.ReturnTrue.toStaticStatement());
       exportStatements.add(
           new If(
               Common.matchDefaultRoute(), // we are exporting some default route
               ImmutableList.of(
                   new If(
                       new MatchProtocol(RoutingProtocol.AGGREGATE),
-                      // default-originate (we generated it): call the routemap, etc.
-                      trueStatementsForGeneratedDefaultRoute.build(),
+                      // default-originate (we generated it): let it through.
+                      ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
                       // not default-originate: deny.
                       ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))));
     }
