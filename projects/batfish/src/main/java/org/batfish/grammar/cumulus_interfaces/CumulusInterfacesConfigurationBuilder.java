@@ -4,9 +4,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,6 +28,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.AddressContext;
+import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.Cumulus_interfaces_configurationContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_addressContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_address_virtualContext;
 import org.batfish.grammar.cumulus_interfaces.CumulusInterfacesParser.I_aliasContext;
@@ -81,6 +85,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   private final Warnings _w;
   private InterfacesInterface _currentIface;
   private @Nullable String _currentIfaceName;
+  private final @Nonnull Set<String> _interfaceInitOrder;
   private @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public CumulusInterfacesConfigurationBuilder(
@@ -94,6 +99,7 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
     _text = text;
     _w = w;
     _silentSyntax = silentSyntax;
+    _interfaceInitOrder = new LinkedHashSet<>(); // order matters
   }
 
   @Nonnull
@@ -166,6 +172,15 @@ public final class CumulusInterfacesConfigurationBuilder extends CumulusInterfac
   @Override
   public void enterS_iface(S_ifaceContext ctx) {
     _currentIfaceName = ctx.interface_name().getText();
+    // Duplicates are ignored and do not change the order, since this is a LinkedHashSet.
+    _interfaceInitOrder.add(_currentIfaceName);
+  }
+
+  @Override
+  public void exitCumulus_interfaces_configuration(Cumulus_interfaces_configurationContext ctx) {
+    _config
+        .getInterfacesConfiguration()
+        .setInterfaceInitOrder(ImmutableList.copyOf(_interfaceInitOrder));
   }
 
   @Override

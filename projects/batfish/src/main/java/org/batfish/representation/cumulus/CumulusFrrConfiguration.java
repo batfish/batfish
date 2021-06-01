@@ -1,6 +1,11 @@
 package org.batfish.representation.cumulus;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -19,6 +24,7 @@ public class CumulusFrrConfiguration implements Serializable {
   private @Nullable BgpProcess _bgpProcess;
   private @Nullable OspfProcess _ospfProcess;
   private @Nonnull Map<String, FrrInterface> _interfaces;
+  private List<String> _interfaceInitOrder;
   private final @Nonnull List<Ip> _ipv4Nameservers;
   private final @Nonnull List<Ip6> _ipv6Nameservers;
   private final @Nonnull Map<String, RouteMap> _routeMaps;
@@ -123,5 +129,17 @@ public class CumulusFrrConfiguration implements Serializable {
   @Nonnull
   public Map<String, FrrInterface> getInterfaces() {
     return _interfaces;
+  }
+
+  @Nonnull
+  public Collection<String> getInterfaceInitOrder() {
+    return firstNonNull(
+        _interfaceInitOrder,
+        // for ease of testing
+        Collections.unmodifiableSet(_interfaces.keySet()));
+  }
+
+  public void setInterfaceInitOrder(List<String> interfaceInitOrder) {
+    _interfaceInitOrder = ImmutableList.copyOf(interfaceInitOrder);
   }
 }
