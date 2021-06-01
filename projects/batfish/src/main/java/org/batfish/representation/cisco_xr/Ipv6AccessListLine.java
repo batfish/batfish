@@ -153,7 +153,7 @@ public class Ipv6AccessListLine implements Serializable {
 
   private final Set<Integer> _dscps;
 
-  private final String _dstAddressGroup;
+  @Nullable private final String _dstAddressGroup;
 
   private final Ip6Wildcard _dstIpWildcard;
 
@@ -161,21 +161,21 @@ public class Ipv6AccessListLine implements Serializable {
 
   private final Set<Integer> _ecns;
 
-  private final Integer _icmpCode;
+  @Nullable private final Integer _icmpCode;
 
-  private final Integer _icmpType;
+  @Nullable private final Integer _icmpType;
 
   private final String _name;
 
-  private final Ipv6Nexthop _nexthop1;
+  @Nullable private final Ipv6Nexthop _nexthop1;
 
-  private final Ipv6Nexthop _nexthop2;
+  @Nullable private final Ipv6Nexthop _nexthop2;
 
-  private final Ipv6Nexthop _nexthop3;
+  @Nullable private final Ipv6Nexthop _nexthop3;
 
-  private final @Nullable IpProtocol _protocol;
+  @Nullable private final IpProtocol _protocol;
 
-  private final String _srcAddressGroup;
+  @Nullable private final String _srcAddressGroup;
 
   private final Ip6Wildcard _srcIpWildcard;
 

@@ -1,6 +1,10 @@
 package org.batfish.grammar.cisco_xr;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
@@ -2842,7 +2846,7 @@ public final class XrGrammarTest {
       assertThat(nhIpLine.getNexthop1().getIp(), equalTo(Ip.parse("10.0.13.1")));
       assertNull(nhIpLine.getNexthop1().getVrf());
       assertThat(nhIpLine.getNexthop2().getIp(), equalTo(Ip.parse("10.0.13.2")));
-      assertNull(nhIpLine.getNexthop2().getVrf());
+      assertThat(nhIpLine.getNexthop2().getVrf(), equalTo("vrf2"));
       assertThat(nhIpLine.getNexthop3().getIp(), equalTo(Ip.parse("10.0.13.3")));
       assertNull(nhIpLine.getNexthop3().getVrf());
 
@@ -2861,7 +2865,7 @@ public final class XrGrammarTest {
       assertThat(nhIpLine.getNexthop1().getIp(), equalTo(Ip6.parse("3001::")));
       assertNull(nhIpLine.getNexthop1().getVrf());
       assertThat(nhIpLine.getNexthop2().getIp(), equalTo(Ip6.parse("3002::")));
-      assertNull(nhIpLine.getNexthop2().getVrf());
+      assertThat(nhIpLine.getNexthop2().getVrf(), equalTo("vrf2"));
       assertThat(nhIpLine.getNexthop3().getIp(), equalTo(Ip6.parse("3003::")));
       assertNull(nhIpLine.getNexthop3().getVrf());
 
@@ -2870,5 +2874,32 @@ public final class XrGrammarTest {
       assertNull(nhVrfLine.getNexthop2());
       assertNull(nhVrfLine.getNexthop3());
     }
+  }
+
+  @Test
+  public void testAbfExtractionWarning() {
+    String hostname = "abf_extraction";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                allOf(
+                    hasComment(
+                        "ACL based forwarding can only be configured on an ACL line with a permit"
+                            + " action"),
+                    hasText("100 deny tcp any host 10.0.10.1 nexthop1 ipv4 10.10.10.10")),
+                allOf(
+                    hasComment(
+                        "ACL based forwarding can only be configured on an ACL line with a permit"
+                            + " action"),
+                    hasText("100 deny tcp any host 1111:: nexthop1 ipv6 1112::")))));
   }
 }

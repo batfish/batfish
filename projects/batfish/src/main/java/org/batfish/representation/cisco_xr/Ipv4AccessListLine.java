@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.LineAction;
 
 public class Ipv4AccessListLine implements Serializable {
@@ -84,11 +85,11 @@ public class Ipv4AccessListLine implements Serializable {
 
   private final String _name;
 
-  private final Ipv4Nexthop _nexthop1;
+  @Nullable private final Ipv4Nexthop _nexthop1;
 
-  private final Ipv4Nexthop _nexthop2;
+  @Nullable private final Ipv4Nexthop _nexthop2;
 
-  private final Ipv4Nexthop _nexthop3;
+  @Nullable private final Ipv4Nexthop _nexthop3;
 
   private final AccessListServiceSpecifier _serviceSpecifier;
 

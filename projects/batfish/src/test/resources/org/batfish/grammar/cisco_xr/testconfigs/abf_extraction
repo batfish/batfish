@@ -3,10 +3,12 @@
 hostname abf_extraction
 !
 ipv4 access-list aclv4
- 30 permit tcp any host 10.0.3.1 nexthop1 ipv4 10.0.13.1 nexthop2 ipv4 10.0.13.2 nexthop3 ipv4 10.0.13.3
+ 30 permit tcp any host 10.0.3.1 nexthop1 ipv4 10.0.13.1 nexthop2 vrf vrf2 ipv4 10.0.13.2 nexthop3 ipv4 10.0.13.3
  40 permit tcp any host 10.0.4.1 nexthop1 vrf vrf1 ipv4 10.0.14.1
+ 100 deny tcp any host 10.0.10.1 nexthop1 ipv4 10.10.10.10
 !
 ipv6 access-list aclv6
- 30 permit tcp any 3000::/32 nexthop1 ipv6 3001:: nexthop2 ipv6 3002:: nexthop3 ipv6 3003::
+ 30 permit tcp any 3000::/32 nexthop1 ipv6 3001:: nexthop2 vrf vrf2 ipv6 3002:: nexthop3 ipv6 3003::
  40 permit tcp any 4000::/32 nexthop1 vrf vrf1 ipv6 4001::
+ 100 deny tcp any host 1111:: nexthop1 ipv6 1112::
 !

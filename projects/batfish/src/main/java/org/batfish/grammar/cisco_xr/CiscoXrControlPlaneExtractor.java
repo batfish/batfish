@@ -3619,14 +3619,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     AccessListAddressSpecifier dstAddressSpecifier = toAccessListAddressSpecifier(ctx.dstipr);
     AccessListServiceSpecifier serviceSpecifier = computeExtendedAccessListServiceSpecifier(ctx);
     String name = getFullText(ctx).trim();
-    _currentIpv4Acl.addLine(
+    Ipv4AccessListLine line =
         _currentIpv4AclLine
             .setAction(action)
             .setDstAddressSpecifier(dstAddressSpecifier)
             .setName(name)
             .setServiceSpecifier(serviceSpecifier)
             .setSrcAddressSpecifier(srcAddressSpecifier)
-            .build());
+            .build();
+    _currentIpv4Acl.addLine(line);
+    if (line.getAction() != LineAction.PERMIT && line.getNexthop1() != null) {
+      warn(ctx, "ACL based forwarding can only be configured on an ACL line with a permit action");
+    }
     _currentIpv4AclLine = null;
   }
 
@@ -4015,7 +4019,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       }
     }
     String name = getFullText(ctx).trim();
-    _currentIpv6Acl.addLine(
+    Ipv6AccessListLine line =
         _currentIpv6AclLine
             .setName(name)
             .setAction(action)
@@ -4031,7 +4035,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             .setIcmpCode(icmpCode)
             .setIcmpType(icmpType)
             .setTcpFlags(tcpFlags)
-            .build());
+            .build();
+    _currentIpv6Acl.addLine(line);
+    if (line.getAction() != LineAction.PERMIT && line.getNexthop1() != null) {
+      warn(ctx, "ACL based forwarding can only be configured on an ACL line with a permit action");
+    }
     _currentIpv6AclLine = null;
   }
 
