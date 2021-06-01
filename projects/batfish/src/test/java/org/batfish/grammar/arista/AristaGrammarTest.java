@@ -11,7 +11,6 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
-import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
@@ -397,9 +396,28 @@ public class AristaGrammarTest {
   @Test
   public void testAristaBgpDefaultOriginatePolicy() throws IOException {
     /*
-     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
-     Because this is an Arista device, the route-map should be applied to the default route before
-     it is exported rather than used as a default route generation policy.
+      Snapshot contains two devices, arista-originator and ios-listener, configured with
+      multiple BGP peerings between them. The peers in ios-listener are all in separate VRFs
+      so that it is clear which peer each BGP route came from.
+
+      All peers on the originator use an export route-map that denies everything, to prove
+      that the default-originate route is not affected by the export route-map.
+
+      There is another route-map on the originator, SET_RM, that prepends AS 1234 and adds
+      communities 111:222 and 333:444.
+
+      Peer 1 should export a default route with SET_RM's AS and communities:
+        neighbor 10.1.1.2 default-originate route-map SET_RM
+        neighbor 10.1.1.2 send-community
+
+      Peer 2 should export a default route with SET_RM's AS, but not its communities:
+        neighbor 10.2.2.2 default-originate route-map SET_RM
+
+      Peer 3 should export a regular default route:
+        neighbor 10.3.3.2 default-originate route-map UNDEFINED
+
+      Peer 4 should also export a regular default route:
+        neighbor 10.4.4.2 default-originate
     */
     String testrigName = "arista-bgp-default-originate";
     List<String> configurationNames = ImmutableList.of("arista-originator", "ios-listener");
@@ -413,17 +431,12 @@ public class AristaGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> listenerRoutes =
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
-    // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
-    Bgpv4Route expectedDefaultRoute =
+    // The route that each listener peer will receive if no attributes are modified
+    // (except missing peer-specific nextHopIp and receivedFromIp)
+    Bgpv4Route defaultOriginateRoute =
         Bgpv4Route.testBuilder()
-            .setCommunities(
-                ImmutableSet.of(StandardCommunity.of(111, 222), StandardCommunity.of(333, 444)))
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.1.1.1"))
-            .setReceivedFromIp(Ip.parse("10.1.1.1"))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
@@ -432,50 +445,48 @@ public class AristaGrammarTest {
             .setAdmin(20)
             .setLocalPreference(100)
             .build();
-    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
-    // Ensure 10.10.10.0/24 doesn't get blocked
-    assertThat(listenerRoutes, hasItem(hasPrefix(Prefix.parse("10.10.10.0/24"))));
-  }
-
-  @Test
-  public void testAristaBgpDefaultOriginateUndefinedRouteMap() throws IOException {
-    /*
-     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
-     However, ROUTE_MAP is undefined. Since this is Arista, default route should still be exported
-     (on IOS, where ROUTE_MAP is used as a generation policy rather than an export policy in this
-     context, the default route would not be exported).
-    */
-    String testrigName = "arista-bgp-default-originate";
-    List<String> configurationNames =
-        ImmutableList.of("arista-originator-undefined-rm", "ios-listener");
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-
-    NetworkSnapshot snapshot = batfish.getSnapshot();
-    batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> listenerRoutes =
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
-
-    Bgpv4Route expectedDefaultRoute =
-        Bgpv4Route.testBuilder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.1.1.1"))
-            .setReceivedFromIp(Ip.parse("10.1.1.1"))
-            .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setAsPath(AsPath.ofSingletonAsSets(1L))
-            .setCommunities(ImmutableSet.of())
-            .setAdmin(20)
-            .setLocalPreference(100)
-            .build();
-    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+    {
+      // Peer 1 (sets default-originate route-map SET_RM and configures send-community)
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF1").getRoutes();
+      Ip peerIp = Ip.parse("10.1.1.1"); // local IP of originating peer
+      Bgpv4Route expectedRoute =
+          defaultOriginateRoute.toBuilder()
+              .setAsPath(AsPath.ofSingletonAsSets(1L, 1234L))
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(111, 222), StandardCommunity.of(333, 444)))
+              .setNextHopIp(peerIp)
+              .setReceivedFromIp(peerIp)
+              .build();
+      assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
+    }
+    {
+      // Peer 2 (sets default-originate route-map SET_RM, does not configure send-community)
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF2").getRoutes();
+      Ip peerIp = Ip.parse("10.2.2.1"); // local IP of originating peer
+      Bgpv4Route expectedRoute =
+          defaultOriginateRoute.toBuilder()
+              .setAsPath(AsPath.ofSingletonAsSets(1L, 1234L))
+              .setNextHopIp(peerIp)
+              .setReceivedFromIp(peerIp)
+              .build();
+      assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
+    }
+    {
+      // Peer 3 (sets default-originate route-map UNDEFINED)
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF3").getRoutes();
+      Ip peerIp = Ip.parse("10.3.3.1"); // local IP of originating peer
+      Bgpv4Route expectedRoute =
+          defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
+      assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
+    }
+    {
+      // Peer 4 (sets default-originate without a route-map)
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF4").getRoutes();
+      Ip peerIp = Ip.parse("10.4.4.1"); // local IP of originating peer
+      Bgpv4Route expectedRoute =
+          defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
+      assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
+    }
   }
 
   @Test

@@ -8,14 +8,38 @@ interface Loopback0
 interface Eth0
  ip address 10.1.1.1/24
 !
+interface Eth1
+ ip address 10.2.2.1/24
+!
+interface Eth2
+ ip address 10.3.3.1/24
+!
+interface Eth3
+ ip address 10.4.4.1/24
+!
 router bgp 1
  router-id 1.1.1.1
+ !
  neighbor 10.1.1.2 remote-as 2
- neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
- network 10.10.10.0/24
+ neighbor 10.1.1.2 route-map DENY_ALL out
+ neighbor 10.1.1.2 default-originate route-map SET_RM
+ neighbor 10.1.1.2 send-community
+ !
+ neighbor 10.2.2.2 remote-as 2
+ neighbor 10.2.2.2 route-map DENY_ALL out
+ neighbor 10.2.2.2 default-originate route-map SET_RM
+ !
+ neighbor 10.3.3.2 remote-as 2
+ neighbor 10.3.3.2 route-map DENY_ALL out
+ neighbor 10.3.3.2 default-originate route-map UNDEFINED
+ !
+ neighbor 10.4.4.2 remote-as 2
+ neighbor 10.4.4.2 route-map DENY_ALL out
+ neighbor 10.4.4.2 default-originate
 !
-route-map ROUTE_MAP permit 10
+route-map SET_RM permit 10
  set community 111:222 additive
  set community 333:444 additive
+ set as-path prepend 1234
 !
-ip route 10.10.10.0/24 Null0
+route-map DENY_ALL deny 10
