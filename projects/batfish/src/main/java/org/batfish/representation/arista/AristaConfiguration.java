@@ -16,8 +16,10 @@ import static org.batfish.representation.arista.AristaConversions.toCommunitySet
 import static org.batfish.representation.arista.AristaConversions.toCommunitySetMatchExpr;
 import static org.batfish.representation.arista.Conversions.computeDistributeListPolicies;
 import static org.batfish.representation.arista.Conversions.convertCryptoMapSet;
+import static org.batfish.representation.arista.Conversions.extractSourceNatIpSpaceFromAcl;
 import static org.batfish.representation.arista.Conversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.arista.Conversions.getRsaPubKeyGeneratedName;
+import static org.batfish.representation.arista.Conversions.nameOfSourceNatIpSpaceFromAcl;
 import static org.batfish.representation.arista.Conversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.arista.Conversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.arista.Conversions.resolveTunnelIfaceNames;
@@ -104,6 +106,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -1252,13 +1255,14 @@ public final class AristaConfiguration extends VendorConfiguration {
      * (inside-to-outside)
      *
      * Currently, only static NATs have both incoming and outgoing transformations
+     *
+     * Transformations are built back-to-front. Dynamic before static means static NAT will take
+     * precedence. As we are unable to test NAT on a virtual platform, this is just a guess
+     * following Cisco behavior. TODO(https://github.com/batfish/batfish/issues/7047)
      */
-
-    List<AristaDynamicSourceNat> aristaDynamicSourceNats =
-        firstNonNull(iface.getAristaNats(), ImmutableList.of());
-    if (!aristaDynamicSourceNats.isEmpty()) {
-      generateAristaDynamicSourceNats(newIface, aristaDynamicSourceNats);
-    }
+    generateDynamicSourceNats(newIface, iface.getDynamicSourceNats());
+    // Only extended ACLs are suitable for static source NAT (filtering on destination IP).
+    generateStaticSourceNats(newIface, iface.getStaticSourceNats(), c);
 
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
@@ -1268,16 +1272,60 @@ public final class AristaConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  private void generateAristaDynamicSourceNats(
+  private void generateStaticSourceNats(
       org.batfish.datamodel.Interface newIface,
-      List<AristaDynamicSourceNat> aristaDynamicSourceNats) {
+      @Nullable List<AristaStaticSourceNat> nats,
+      Configuration c) {
+    if (nats == null || nats.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    Transformation nextIn = newIface.getIncomingTransformation();
+    Transformation nextOut = newIface.getOutgoingTransformation();
+    for (AristaStaticSourceNat nat : Lists.reverse(nats)) {
+      @Nullable String aclName = nat.getExtendedAclName();
+      if (aclName != null) {
+        ExtendedAccessList acl = _extendedAccessLists.get(aclName);
+        if (acl == null) {
+          // https://www.arista.com/en/um-eos/eos-data-plane-security#xx1143262
+          // Commands referencing nonexistent ACLs are accepted by the CLI but not installed in
+          // hardware until the ACL is created.
+          _w.redFlag(
+              String.format(
+                  "ip nat source commands referencing nonexistent ACL %s are not installed until"
+                      + " the ACL is created",
+                  aclName));
+          continue;
+        }
+        String ipSpaceName = nameOfSourceNatIpSpaceFromAcl(aclName);
+        if (!c.getIpSpaces().containsKey(ipSpaceName)) {
+          // If not already done, extract the IpSpace for source nat from the ACL.
+          IpSpace space = extractSourceNatIpSpaceFromAcl(acl, _w);
+          c.getIpSpaces().put(ipSpaceName, space);
+        }
+      }
+      nextIn = nat.toIncomingTransformation(nextIn);
+      nextOut = nat.toOutgoingTransformation(nextOut);
+    }
+    newIface.setIncomingTransformation(nextIn);
+    newIface.setOutgoingTransformation(nextOut);
+  }
+
+  private void generateDynamicSourceNats(
+      org.batfish.datamodel.Interface newIface,
+      @Nullable List<AristaDynamicSourceNat> aristaDynamicSourceNats) {
+    if (aristaDynamicSourceNats == null || aristaDynamicSourceNats.isEmpty()) {
+      // nothing to do.
+      return;
+    }
     ConcreteInterfaceAddress address = newIface.getConcreteAddress();
     if (address == null) {
       // nothing to do.
       return;
     }
     Ip interfaceIp = address.getIp();
-    Transformation next = null;
+    Transformation next = newIface.getOutgoingTransformation();
     for (AristaDynamicSourceNat nat : Lists.reverse(aristaDynamicSourceNats)) {
       next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
     }

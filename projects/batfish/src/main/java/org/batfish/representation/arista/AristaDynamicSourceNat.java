@@ -14,7 +14,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.transformation.Transformation;
 
-/** Representation of a Arista dynamic source NAT. */
+/** Interface-level configuration of {@code ip nat source dynamic}. */
 @ParametersAreNonnullByDefault
 public final class AristaDynamicSourceNat implements Serializable {
 
@@ -32,7 +32,7 @@ public final class AristaDynamicSourceNat implements Serializable {
   }
 
   public Optional<Transformation> toTransformation(
-      Ip interfaceIp, Map<String, NatPool> natPools, Transformation orElse) {
+      Ip interfaceIp, Map<String, NatPool> natPools, @Nullable Transformation orElse) {
     NatPool natPool =
         _overload ? new NatPool(interfaceIp, interfaceIp) : natPools.get(_natPoolName);
     if (natPool == null) {

@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: arista
+!
+interface Loopback0
+  ip address 8.8.8.8/32
+!
+interface Ethernet1
+  no switchport
+  no shutdown
+  ip address 1.0.0.0/31
+  ip nat source static 8.8.8.8 9.9.9.9
