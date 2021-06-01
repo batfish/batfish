@@ -2827,7 +2827,7 @@ public final class XrGrammarTest {
   /** Test extraction of ACL based forwarding constructs in IP access-lists */
   @Test
   public void testAbfExtraction() {
-    String hostname = "abf";
+    String hostname = "abf_extraction";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
     assertThat(vc.getIpv4Acls().keySet(), contains("aclv4"));
@@ -2836,8 +2836,8 @@ public final class XrGrammarTest {
     // Ipv4
     {
       Ipv4AccessList acl = vc.getIpv4Acls().get("aclv4");
-      Ipv4AccessListLine nhIpLine = acl.getLines().get(2);
-      Ipv4AccessListLine nhVrfLine = acl.getLines().get(3);
+      Ipv4AccessListLine nhIpLine = acl.getLines().get(0);
+      Ipv4AccessListLine nhVrfLine = acl.getLines().get(1);
 
       assertThat(nhIpLine.getNexthop1().getIp(), equalTo(Ip.parse("10.0.13.1")));
       assertNull(nhIpLine.getNexthop1().getVrf());
@@ -2855,8 +2855,8 @@ public final class XrGrammarTest {
     // Ipv6
     {
       Ipv6AccessList acl = vc.getIpv6Acls().get("aclv6");
-      Ipv6AccessListLine nhIpLine = acl.getLines().get(2);
-      Ipv6AccessListLine nhVrfLine = acl.getLines().get(3);
+      Ipv6AccessListLine nhIpLine = acl.getLines().get(0);
+      Ipv6AccessListLine nhVrfLine = acl.getLines().get(1);
 
       assertThat(nhIpLine.getNexthop1().getIp(), equalTo(Ip6.parse("3001::")));
       assertNull(nhIpLine.getNexthop1().getVrf());
