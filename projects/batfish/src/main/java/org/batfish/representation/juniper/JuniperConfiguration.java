@@ -3033,8 +3033,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            prefixList.getName(),
-            JuniperStructureType.PREFIX_LIST.getDescription()));
+            JuniperStructureType.PREFIX_LIST.getDescription(),
+            prefixList.getName()));
   }
 
   @Override

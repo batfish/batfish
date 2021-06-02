@@ -331,7 +331,7 @@ public final class CumulusConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", CumulusStructureType.IP_PREFIX_LIST.getDescription())));
+                "file", CumulusStructureType.IP_PREFIX_LIST.getDescription(), "name")));
   }
 
   @Test

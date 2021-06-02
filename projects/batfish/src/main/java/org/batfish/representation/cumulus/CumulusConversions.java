@@ -1704,8 +1704,8 @@ public final class CumulusConversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            ipPrefixList.getName(),
-            CumulusStructureType.IP_PREFIX_LIST.getDescription()));
+            CumulusStructureType.IP_PREFIX_LIST.getDescription(),
+            ipPrefixList.getName()));
   }
 
   @VisibleForTesting

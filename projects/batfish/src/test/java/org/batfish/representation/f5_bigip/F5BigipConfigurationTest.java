@@ -172,7 +172,7 @@ public class F5BigipConfigurationTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", F5BigipStructureType.ACCESS_LIST.getDescription())));
+                "file", F5BigipStructureType.ACCESS_LIST.getDescription(), "name")));
   }
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
@@ -184,6 +184,6 @@ public class F5BigipConfigurationTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", F5BigipStructureType.PREFIX_LIST.getDescription())));
+                "file", F5BigipStructureType.PREFIX_LIST.getDescription(), "name")));
   }
 }

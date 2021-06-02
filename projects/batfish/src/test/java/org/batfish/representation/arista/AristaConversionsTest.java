@@ -61,7 +61,7 @@ public class AristaConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", AristaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription())));
+                "file", AristaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription(), "name")));
   }
 
   /** Check that vendorStructureId is set when standard ACL is converted to route filter list */
@@ -73,7 +73,7 @@ public class AristaConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", AristaStructureType.IP_ACCESS_LIST_STANDARD.getDescription())));
+                "file", AristaStructureType.IP_ACCESS_LIST_STANDARD.getDescription(), "name")));
   }
 
   /** Check that source name and type is set when prefix list is converted to route filter list */
@@ -85,6 +85,6 @@ public class AristaConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", AristaStructureType.PREFIX_LIST.getDescription())));
+                "file", AristaStructureType.PREFIX_LIST.getDescription(), "name")));
   }
 }
