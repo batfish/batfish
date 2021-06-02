@@ -240,16 +240,19 @@ extended_access_list_tail
    (
       alps_dst = port_specifier
    )? features += extended_access_list_additional_feature*
-   (
-      NEXTHOP1 IPV4 nexthop1 = IP_ADDRESS
-      (
-         NEXTHOP2 IPV4 nexthop2 = IP_ADDRESS
-      )?
-   )?
+   ipv4_nexthop1?
    (
       SEQUENCE num = uint_legacy
    )? NEWLINE
 ;
+
+ipv4_nexthop1: NEXTHOP1 ipv4_nexthop ipv4_nexthop2?;
+
+ipv4_nexthop2: NEXTHOP2 ipv4_nexthop ipv4_nexthop3?;
+
+ipv4_nexthop3: NEXTHOP3 ipv4_nexthop;
+
+ipv4_nexthop: (VRF vrf_name)? IPV4 nexthop = IP_ADDRESS;
 
 extended_ipv6_access_list_tail
 :
@@ -265,16 +268,19 @@ extended_ipv6_access_list_tail
    (
       alps_dst = port_specifier
    )? features += extended_access_list_additional_feature*
-   (
-      NEXTHOP1 IPV6 nexthop1 = IPV6_ADDRESS
-      (
-         NEXTHOP2 IPV6 nexthop2 = IPV6_ADDRESS
-      )?
-   )?
+   ipv6_nexthop1?
    (
       SEQUENCE num = uint_legacy
    )? NEWLINE
 ;
+
+ipv6_nexthop1: NEXTHOP1 ipv6_nexthop ipv6_nexthop2?;
+
+ipv6_nexthop2: NEXTHOP2 ipv6_nexthop ipv6_nexthop3?;
+
+ipv6_nexthop3: NEXTHOP3 ipv6_nexthop;
+
+ipv6_nexthop: (VRF vrf_name)? IPV6 nexthop = IPV6_ADDRESS;
 
 interface_rs_stanza
 :

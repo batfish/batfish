@@ -3587,6 +3587,8 @@ NEXTHOP1: 'nexthop1';
 
 NEXTHOP2: 'nexthop2';
 
+NEXTHOP3: 'nexthop3';
+
 NEXTHOP_ATTRIBUTE: 'nexthop-attribute';
 
 NEXTHOP_LIST: 'nexthop-list';
