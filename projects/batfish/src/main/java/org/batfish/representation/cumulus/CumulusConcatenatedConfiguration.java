@@ -223,12 +223,21 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     c.getAllInterfaces()
         .forEach(
             (iname, iface) -> {
-              if (iface.getAllAddresses().size() == 0
+              if (iface.getInterfaceType() != InterfaceType.LOOPBACK
                   && iface.getOspfEnabled()
                   && !iface.getOspfPassive()
-                  && iface.getOspfSettings().getNetworkType() == OspfNetworkType.POINT_TO_POINT) {
-                iface.setAddress(LINK_LOCAL_ADDRESS);
-                iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
+                  && iface.getOspfSettings().getNetworkType() == OspfNetworkType.POINT_TO_POINT
+                  && !iface.getOspfSettings().getOspfAddresses().getAddresses().isEmpty()
+                  && iface.getAllLinkLocalAddresses().isEmpty()) {
+                if (iface.getAddress() == null) {
+                  iface.setAddress(LINK_LOCAL_ADDRESS);
+                }
+                iface.setAllAddresses(
+                    ImmutableSet.<InterfaceAddress>builderWithExpectedSize(
+                            iface.getAllAddresses().size() + 1)
+                        .addAll(iface.getAllAddresses())
+                        .add(LINK_LOCAL_ADDRESS)
+                        .build());
               }
             });
   }

@@ -945,11 +945,15 @@ public class CumulusConcatenatedGrammarTest {
   @Test
   public void testOspfUnnumberedLLAs() throws IOException {
     Configuration c = parseConfig("ospf_link_local");
-    assertThat(c.getAllInterfaces(), hasKeys("swp1", "swp2", "swp3", "swp4", "swp5", "lo"));
+    assertThat(c.getAllInterfaces(), hasKeys("swp1", "swp2", "swp3", "swp4", "swp5", "swp6", "lo"));
     {
       Interface iface = c.getAllInterfaces().get("swp1");
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
-      assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
+      assertThat(
+          iface.getAllAddresses(),
+          containsInAnyOrder(
+              equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/32")),
+              instanceOf(LinkLocalAddress.class)));
     }
     {
       Interface iface = c.getAllInterfaces().get("swp2");
@@ -968,6 +972,16 @@ public class CumulusConcatenatedGrammarTest {
     }
     {
       Interface iface = c.getAllInterfaces().get("swp5");
+      assertNull(iface.getAddress());
+      assertThat(iface.getAllAddresses(), empty());
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp6");
+      assertNull(iface.getAddress());
+      assertThat(iface.getAllAddresses(), empty());
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("lo");
       assertNull(iface.getAddress());
       assertThat(iface.getAllAddresses(), empty());
     }
