@@ -45,6 +45,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.common.runtime.InterfaceRuntimeData;
 import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.datamodel.AclIpSpace;
@@ -542,7 +543,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
         .getInterfaces()
         .values()
         .forEach(
-            iface -> initializeInterface(c, iface.getName(), iface.getVrfName(), _runtimeData));
+            iface -> initializeInterface(c, iface.getName(), iface.getVrfName(), _runtimeData, _w));
 
     // initialize super interfaces of sub-interfaces if needed
     Set<String> ifaceNames = ImmutableSet.copyOf(c.getAllInterfaces().keySet());
@@ -550,17 +551,36 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
         .map(InterfaceConverter::getSuperInterfaceName)
         .filter(Objects::nonNull)
         .filter(superName -> !c.getAllInterfaces().containsKey(superName))
-        .forEach(superName -> initializeInterface(c, superName, null, _runtimeData));
+        .forEach(superName -> initializeInterface(c, superName, null, _runtimeData, _w));
     if (!c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME)) {
-      initializeInterface(c, LOOPBACK_INTERFACE_NAME, null, _runtimeData);
+      initializeInterface(c, LOOPBACK_INTERFACE_NAME, null, _runtimeData, _w);
     }
+  }
+
+  /** Sanity check user provided bandwidth values. */
+  private static boolean validateBandwidth(Double value, String iface, Warnings w) {
+    if (value <= 0) {
+      w.redFlag(
+          String.format(
+              "Ignoring provided runtime bandwidth value %f for interface %s: not positive",
+              value, iface));
+      return false;
+    } else if (value > 1000e9) {
+      w.redFlag(
+          String.format(
+              "Ignoring provided runtime bandwidth value %f for interface %s: bigger than 1Tbps",
+              value, iface));
+      return false;
+    }
+    return true;
   }
 
   private static void initializeInterface(
       Configuration c,
       String ifaceName,
       @Nullable String vrfName,
-      SnapshotRuntimeData snapshotRuntimeData) {
+      SnapshotRuntimeData snapshotRuntimeData,
+      Warnings w) {
     // Either use the provided runtime data to get the interface speed, or else default to guessing
     // based on name.
     Optional<InterfaceRuntimeData> runtimeData =
@@ -571,7 +591,11 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
         ifaceName.equals(LOOPBACK_INTERFACE_NAME)
             ? DEFAULT_LOOPBACK_BANDWIDTH
             : DEFAULT_PORT_BANDWIDTH;
-    double bandwidth = runtimeData.map(InterfaceRuntimeData::getBandwidth).orElse(guessedBandwidth);
+    double bandwidth =
+        runtimeData
+            .map(InterfaceRuntimeData::getBandwidth)
+            .filter(bw -> validateBandwidth(bw, ifaceName, w))
+            .orElse(guessedBandwidth);
 
     Interface.builder()
         .setName(ifaceName)
