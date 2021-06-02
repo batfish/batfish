@@ -1541,7 +1541,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .map(F5BigipConfiguration::toRouteFilterLine)
             .collect(ImmutableList.toImmutableList()),
         new VendorStructureId(
-            vendorConfigFilename, name, F5BigipStructureType.ACCESS_LIST.getDescription()));
+            vendorConfigFilename, F5BigipStructureType.ACCESS_LIST.getDescription(), name));
   }
 
   /**
@@ -1565,7 +1565,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
         name,
         lines,
         new VendorStructureId(
-            vendorConfigFilename, name, F5BigipStructureType.PREFIX_LIST.getDescription()));
+            vendorConfigFilename, F5BigipStructureType.PREFIX_LIST.getDescription(), name));
   }
 
   private @Nonnull RoutingPolicy toRoutingPolicy(RouteMap routeMap) {

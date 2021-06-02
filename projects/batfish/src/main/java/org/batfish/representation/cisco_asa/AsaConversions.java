@@ -1320,8 +1320,8 @@ public class AsaConversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            eaList.getName(),
-            AsaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription()));
+            AsaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription(),
+            eaList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList, String vendorConfigFilename) {
@@ -1334,8 +1334,8 @@ public class AsaConversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            saList.getName(),
-            AsaStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()));
+            AsaStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription(),
+            saList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
@@ -1350,7 +1350,7 @@ public class AsaConversions {
         list.getName(),
         newLines,
         new VendorStructureId(
-            vendorConfigFilename, list.getName(), AsaStructureType.PREFIX_LIST.getDescription()));
+            vendorConfigFilename, AsaStructureType.PREFIX_LIST.getDescription(), list.getName()));
   }
 
   @VisibleForTesting

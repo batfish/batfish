@@ -395,7 +395,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         name,
         lines,
         new VendorStructureId(
-            vendorConfigFilename, name, CiscoNxosStructureType.IP_PREFIX_LIST.getDescription()));
+            vendorConfigFilename, CiscoNxosStructureType.IP_PREFIX_LIST.getDescription(), name));
   }
 
   private static @Nonnull Route6FilterList toRoute6FilterList(Ipv6PrefixList ipv6PrefixList) {
