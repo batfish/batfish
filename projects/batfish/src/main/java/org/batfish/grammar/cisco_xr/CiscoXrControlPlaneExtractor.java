@@ -583,7 +583,15 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_authenticationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipsec_encryptionContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_conflict_policyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_nexthop1Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_nexthop2Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_nexthop3Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv4_nexthopContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_access_listContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_nexthop1Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_nexthop2Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_nexthop3Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_nexthopContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Is_type_is_stanzaContext;
@@ -921,9 +929,11 @@ import org.batfish.representation.cisco_xr.IpsecProfile;
 import org.batfish.representation.cisco_xr.IpsecTransformSet;
 import org.batfish.representation.cisco_xr.Ipv4AccessList;
 import org.batfish.representation.cisco_xr.Ipv4AccessListLine;
+import org.batfish.representation.cisco_xr.Ipv4Nexthop;
 import org.batfish.representation.cisco_xr.Ipv6AccessList;
 import org.batfish.representation.cisco_xr.Ipv6AccessListLine;
 import org.batfish.representation.cisco_xr.Ipv6BgpPeerGroup;
+import org.batfish.representation.cisco_xr.Ipv6Nexthop;
 import org.batfish.representation.cisco_xr.IsakmpKey;
 import org.batfish.representation.cisco_xr.IsakmpPolicy;
 import org.batfish.representation.cisco_xr.IsakmpProfile;
@@ -1229,7 +1239,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private Ipv4AccessList _currentIpv4Acl;
 
+  private Ipv4AccessListLine.Builder _currentIpv4AclLine;
+
   private Ipv6AccessList _currentIpv6Acl;
+
+  private Ipv6AccessListLine.Builder _currentIpv6AclLine;
 
   private IsakmpPolicy _currentIsakmpPolicy;
 
@@ -3594,6 +3608,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
+  public void enterExtended_access_list_tail(Extended_access_list_tailContext ctx) {
+    _currentIpv4AclLine = Ipv4AccessListLine.builder();
+  }
+
+  @Override
   public void exitExtended_access_list_tail(Extended_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
     AccessListAddressSpecifier srcAddressSpecifier = toAccessListAddressSpecifier(ctx.srcipr);
@@ -3601,14 +3620,39 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     AccessListServiceSpecifier serviceSpecifier = computeExtendedAccessListServiceSpecifier(ctx);
     String name = getFullText(ctx).trim();
     Ipv4AccessListLine line =
-        Ipv4AccessListLine.builder()
+        _currentIpv4AclLine
             .setAction(action)
             .setDstAddressSpecifier(dstAddressSpecifier)
             .setName(name)
             .setServiceSpecifier(serviceSpecifier)
             .setSrcAddressSpecifier(srcAddressSpecifier)
             .build();
-    _currentIpv4Acl.addLine(line);
+    if (line.getAction() != LineAction.PERMIT && line.getNexthop1() != null) {
+      warn(ctx, "ACL based forwarding can only be configured on an ACL line with a permit action");
+    } else {
+      _currentIpv4Acl.addLine(line);
+    }
+    _currentIpv4AclLine = null;
+  }
+
+  public Ipv4Nexthop toIpv4Nexthop(Ipv4_nexthopContext ctx) {
+    String vrfName = ctx.vrf_name() == null ? null : ctx.vrf_name().getText();
+    return new Ipv4Nexthop(toIp(ctx.nexthop), vrfName);
+  }
+
+  @Override
+  public void exitIpv4_nexthop1(Ipv4_nexthop1Context ctx) {
+    _currentIpv4AclLine.setNexthop1(toIpv4Nexthop(ctx.ipv4_nexthop()));
+  }
+
+  @Override
+  public void exitIpv4_nexthop2(Ipv4_nexthop2Context ctx) {
+    _currentIpv4AclLine.setNexthop2(toIpv4Nexthop(ctx.ipv4_nexthop()));
+  }
+
+  @Override
+  public void exitIpv4_nexthop3(Ipv4_nexthop3Context ctx) {
+    _currentIpv4AclLine.setNexthop3(toIpv4Nexthop(ctx.ipv4_nexthop()));
   }
 
   private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
@@ -3850,6 +3894,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
+  public void enterExtended_ipv6_access_list_tail(Extended_ipv6_access_list_tailContext ctx) {
+    _currentIpv6AclLine = Ipv6AccessListLine.builder();
+  }
+
+  @Override
   public void exitExtended_ipv6_access_list_tail(Extended_ipv6_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
     IpProtocol protocol = toIpProtocol(ctx.prot);
@@ -3972,22 +4021,48 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     String name = getFullText(ctx).trim();
     Ipv6AccessListLine line =
-        new Ipv6AccessListLine(
-            name,
-            action,
-            protocol,
-            new Ip6Wildcard(srcIp, srcWildcard),
-            srcAddressGroup,
-            new Ip6Wildcard(dstIp, dstWildcard),
-            dstAddressGroup,
-            srcPortRanges,
-            dstPortRanges,
-            dscps,
-            ecns,
-            icmpType,
-            icmpCode,
-            tcpFlags);
-    _currentIpv6Acl.addLine(line);
+        _currentIpv6AclLine
+            .setName(name)
+            .setAction(action)
+            .setProtocol(protocol)
+            .setSrcIpWildcard(new Ip6Wildcard(srcIp, srcWildcard))
+            .setSrcAddressGroup(srcAddressGroup)
+            .setSrcPortRanges(srcPortRanges)
+            .setDstIpWildcard(new Ip6Wildcard(dstIp, dstWildcard))
+            .setDstAddressGroup(dstAddressGroup)
+            .setDstPortRanges(dstPortRanges)
+            .setDscps(dscps)
+            .setEcns(ecns)
+            .setIcmpCode(icmpCode)
+            .setIcmpType(icmpType)
+            .setTcpFlags(tcpFlags)
+            .build();
+    if (line.getAction() != LineAction.PERMIT && line.getNexthop1() != null) {
+      warn(ctx, "ACL based forwarding can only be configured on an ACL line with a permit action");
+    } else {
+      _currentIpv6Acl.addLine(line);
+    }
+    _currentIpv6AclLine = null;
+  }
+
+  public Ipv6Nexthop toIpv6Nexthop(Ipv6_nexthopContext ctx) {
+    String vrfName = ctx.vrf_name() == null ? null : ctx.vrf_name().getText();
+    return new Ipv6Nexthop(toIp6(ctx.nexthop), vrfName);
+  }
+
+  @Override
+  public void exitIpv6_nexthop1(Ipv6_nexthop1Context ctx) {
+    _currentIpv6AclLine.setNexthop1(toIpv6Nexthop(ctx.ipv6_nexthop()));
+  }
+
+  @Override
+  public void exitIpv6_nexthop2(Ipv6_nexthop2Context ctx) {
+    _currentIpv6AclLine.setNexthop2(toIpv6Nexthop(ctx.ipv6_nexthop()));
+  }
+
+  @Override
+  public void exitIpv6_nexthop3(Ipv6_nexthop3Context ctx) {
+    _currentIpv6AclLine.setNexthop3(toIpv6Nexthop(ctx.ipv6_nexthop()));
   }
 
   @Override
