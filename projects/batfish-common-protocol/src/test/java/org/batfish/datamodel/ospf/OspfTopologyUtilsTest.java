@@ -604,11 +604,15 @@ public class OspfTopologyUtilsTest {
         buildNetworkConfigurations(
             LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
             OspfInterfaceSettings.defaultSettingsBuilder()
+                .setOspfAddresses(
+                    OspfAddresses.of(ImmutableList.of(LOCAL_CONFIG_ID_UNNUMBERED.getAddress())))
                 .setProcess(LOCAL_CONFIG_ID_UNNUMBERED.getProcName())
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .build(),
             REMOTE_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
             OspfInterfaceSettings.defaultSettingsBuilder()
+                .setOspfAddresses(
+                    OspfAddresses.of(ImmutableList.of(REMOTE_CONFIG_ID_UNNUMBERED.getAddress())))
                 .setProcess(REMOTE_CONFIG_ID_UNNUMBERED.getProcName())
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .build(),
@@ -632,17 +636,9 @@ public class OspfTopologyUtilsTest {
   private static void updateConfigsForUnnumbered(NetworkConfigurations configs) {
     LinkLocalAddress lla = LinkLocalAddress.of(Ip.parse("169.254.0.1"));
     Interface iface1 = configs.getInterface("r1", "iface1").get();
-    iface1
-        .getOspfSettings()
-        .setOspfAddresses(
-            OspfAddresses.of(ImmutableList.of(LOCAL_CONFIG_ID_UNNUMBERED.getAddress())));
     iface1.setAddress(lla);
     iface1.setAllAddresses(ImmutableList.of(lla));
     Interface iface2 = configs.getInterface("r2", "iface2").get();
-    iface2
-        .getOspfSettings()
-        .setOspfAddresses(
-            OspfAddresses.of(ImmutableList.of(REMOTE_CONFIG_ID_UNNUMBERED.getAddress())));
     iface2.setAddress(lla);
     iface2.setAllAddresses(ImmutableList.of(lla));
   }
@@ -653,11 +649,15 @@ public class OspfTopologyUtilsTest {
         buildNetworkConfigurations(
             LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
             OspfInterfaceSettings.defaultSettingsBuilder()
+                .setOspfAddresses(
+                    OspfAddresses.of(ImmutableList.of(LOCAL_CONFIG_ID_UNNUMBERED.getAddress())))
                 .setProcess(LOCAL_CONFIG_ID_UNNUMBERED.getProcName())
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .build(),
             REMOTE_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
             OspfInterfaceSettings.defaultSettingsBuilder()
+                .setOspfAddresses(
+                    OspfAddresses.of(ImmutableList.of(REMOTE_CONFIG_ID_UNNUMBERED.getAddress())))
                 .setProcess(REMOTE_CONFIG_ID_UNNUMBERED.getProcName())
                 .setNetworkType(OspfNetworkType.POINT_TO_POINT)
                 .build());
@@ -675,11 +675,15 @@ public class OspfTopologyUtilsTest {
         buildNetworkConfigurations(
             LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
             OspfInterfaceSettings.defaultSettingsBuilder()
+                .setOspfAddresses(
+                    OspfAddresses.of(ImmutableList.of(LOCAL_CONFIG_ID_UNNUMBERED.getAddress())))
                 .setProcess(LOCAL_CONFIG_ID_UNNUMBERED.getProcName())
                 .setNetworkType(OspfNetworkType.BROADCAST)
                 .build(),
             REMOTE_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
             OspfInterfaceSettings.defaultSettingsBuilder()
+                .setOspfAddresses(
+                    OspfAddresses.of(ImmutableList.of(REMOTE_CONFIG_ID_UNNUMBERED.getAddress())))
                 .setProcess(REMOTE_CONFIG_ID_UNNUMBERED.getProcName())
                 .setNetworkType(OspfNetworkType.BROADCAST)
                 .build(),
