@@ -3627,9 +3627,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             .setServiceSpecifier(serviceSpecifier)
             .setSrcAddressSpecifier(srcAddressSpecifier)
             .build();
-    _currentIpv4Acl.addLine(line);
     if (line.getAction() != LineAction.PERMIT && line.getNexthop1() != null) {
       warn(ctx, "ACL based forwarding can only be configured on an ACL line with a permit action");
+    } else {
+      _currentIpv4Acl.addLine(line);
     }
     _currentIpv4AclLine = null;
   }
@@ -4036,9 +4037,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
             .setIcmpType(icmpType)
             .setTcpFlags(tcpFlags)
             .build();
-    _currentIpv6Acl.addLine(line);
     if (line.getAction() != LineAction.PERMIT && line.getNexthop1() != null) {
       warn(ctx, "ACL based forwarding can only be configured on an ACL line with a permit action");
+    } else {
+      _currentIpv6Acl.addLine(line);
     }
     _currentIpv6AclLine = null;
   }
