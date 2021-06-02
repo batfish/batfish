@@ -47,6 +47,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.runtime.InterfaceRuntimeData;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -292,7 +293,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     for (ConcreteInterfaceAddress address : iface.getIpAddresses()) {
       Prefix prefix = address.getPrefix();
       if (ownedPrefixesByVrf().containsEntry(vrf, prefix)) {
-        // TODO: store shadowed interface address in VI somewhere for e.g. OSPF unnumbered
+        viIface.setAdditionalArpIps(
+            AclIpSpace.union(viIface.getAdditionalArpIps(), address.getIp().toIpSpace()));
         continue;
       }
       ownedPrefixesByVrf().put(vrf, prefix);
@@ -465,7 +467,8 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
       for (ConcreteInterfaceAddress address : addresses) {
         Prefix prefix = address.getPrefix();
         if (ownedPrefixesByVrf().containsEntry(vrf, prefix)) {
-          // TODO: store shadowed interface address in VI somewhere for e.g. OSPF unnumbered
+          viIface.setAdditionalArpIps(
+              AclIpSpace.union(viIface.getAdditionalArpIps(), address.getIp().toIpSpace()));
           continue;
         }
         ownedPrefixesByVrf().put(vrf, prefix);

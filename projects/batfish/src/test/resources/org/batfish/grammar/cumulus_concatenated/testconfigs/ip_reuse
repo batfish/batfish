@@ -61,25 +61,33 @@ log syslog informational
 interface swp2
   ip address 10.1.1.1/32
   ip address 10.1.1.2/32
+  ip ospf area 0
 !
 ! Should own 10.1.1.1/32, since this interface is initialized first.
 interface swp3
  ip address 10.1.1.1/32
+ ip ospf area 0
 !
 ! Should own this address, since it is in a distinct vrf from other owner.
 interface swp5 vrf v2
  ip address 10.1.1.1/32
+ ip ospf area 0
 !
 ! Should own 10.1.1.2/32, since this is the latest declared interface that assigns it.
 interface swp1
  ip address 10.1.1.1/32
  ip address 10.1.1.2/32
+ ip ospf area 0
 !
 ! Should be first to be initialized since it appears last, independently of earlier declaration.
 ! Should have neither of thse addresses, since they were assigned to other interfaces in interfaces file.
 interface swp3
   ip address 10.0.0.1/32
   ip address 10.0.0.2/32
+  ip ospf area 0
+!
+router ospf
+  ospf router-id 1.1.1.1
 !
 line vty
 !
