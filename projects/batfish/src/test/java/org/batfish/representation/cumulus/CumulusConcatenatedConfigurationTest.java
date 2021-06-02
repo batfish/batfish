@@ -2,6 +2,8 @@ package org.batfish.representation.cumulus;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.Interface.DEFAULT_MTU;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LINK_LOCAL_ADDRESS;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.isValidVIInterface;
@@ -10,6 +12,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOP
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_BANDWIDTH;
 import static org.batfish.representation.cumulus.InterfaceConverter.BRIDGE_NAME;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -19,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import org.batfish.common.Warnings;
 import org.batfish.common.runtime.InterfaceRuntimeData;
 import org.batfish.common.runtime.RuntimeData;
 import org.batfish.common.runtime.SnapshotRuntimeData;
@@ -47,26 +51,60 @@ public class CumulusConcatenatedConfigurationTest {
         equalTo(DEFAULT_LOOPBACK_BANDWIDTH));
   }
 
-  /** Test bandwidths incorporate interface runtime data. */
-  @Test
-  public void testInterfaceRuntimeData() {
-    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
-    InterfaceRuntimeData ifaceData = InterfaceRuntimeData.builder().setBandwidth(123456.0).build();
+  private static SnapshotRuntimeData makeRuntimeData(String hostname, double loopbackBandwidth) {
+    InterfaceRuntimeData ifaceData =
+        InterfaceRuntimeData.builder().setBandwidth(loopbackBandwidth).build();
     RuntimeData hostData =
         RuntimeData.builder()
             .setInterfaces(ImmutableMap.of(LOOPBACK_INTERFACE_NAME, ifaceData))
             .build();
-    SnapshotRuntimeData data =
-        SnapshotRuntimeData.builder()
-            .setRuntimeData(ImmutableMap.of(c.getHostname(), hostData))
-            .build();
+    return SnapshotRuntimeData.builder()
+        .setRuntimeData(ImmutableMap.of(hostname, hostData))
+        .build();
+  }
+
+  /** Test bandwidths incorporate interface runtime data. */
+  @Test
+  public void testInterfaceRuntimeData() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     CumulusConcatenatedConfiguration.builder()
         .setHostname("c")
-        .setSnapshotRuntimeData(data)
+        .setSnapshotRuntimeData(makeRuntimeData(c.getHostname(), 123456.0))
         .build()
         .initializeAllInterfaces(c);
-    assertTrue(c.getAllInterfaces().containsKey(LOOPBACK_INTERFACE_NAME));
-    assertThat(c.getAllInterfaces().get(LOOPBACK_INTERFACE_NAME).getBandwidth(), equalTo(123456.0));
+    assertThat(c, hasInterface(LOOPBACK_INTERFACE_NAME, hasBandwidth(123456.0)));
+  }
+
+  /** Test bandwidths ignore invalid interface runtime data. */
+  @Test
+  public void testInterfaceRuntimeDataInvalidTooLow() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    CumulusConcatenatedConfiguration vs =
+        CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
+            .setSnapshotRuntimeData(makeRuntimeData(c.getHostname(), 0))
+            .build();
+    Warnings w = new Warnings(true, true, true);
+    vs.setWarnings(w);
+    vs.initializeAllInterfaces(c);
+    assertThat(c, hasInterface(LOOPBACK_INTERFACE_NAME, hasBandwidth(DEFAULT_LOOPBACK_BANDWIDTH)));
+    assertThat(w.getRedFlagWarnings(), hasSize(1));
+  }
+
+  /** Test bandwidths ignore invalid interface runtime data. */
+  @Test
+  public void testInterfaceRuntimeDataInvalidTooHigh() {
+    Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
+    CumulusConcatenatedConfiguration vs =
+        CumulusConcatenatedConfiguration.builder()
+            .setHostname("c")
+            .setSnapshotRuntimeData(makeRuntimeData(c.getHostname(), 1e20))
+            .build();
+    Warnings w = new Warnings(true, true, true);
+    vs.setWarnings(w);
+    vs.initializeAllInterfaces(c);
+    assertThat(c, hasInterface(LOOPBACK_INTERFACE_NAME, hasBandwidth(DEFAULT_LOOPBACK_BANDWIDTH)));
+    assertThat(w.getRedFlagWarnings(), hasSize(1));
   }
 
   /** Test that bridge is not included as an interface */
