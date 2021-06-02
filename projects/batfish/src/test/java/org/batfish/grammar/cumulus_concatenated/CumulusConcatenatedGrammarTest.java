@@ -61,6 +61,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.OriginType;
@@ -985,5 +986,12 @@ public class CumulusConcatenatedGrammarTest {
       assertNull(iface.getAddress());
       assertThat(iface.getAllAddresses(), empty());
     }
+  }
+
+  @Test
+  public void testLoopbackInterfaceType() throws IOException {
+    Configuration c = parseConfig("loopback");
+    assertThat(c.getAllInterfaces(), hasKeys("lo"));
+    assertThat(c.getAllInterfaces().get("lo").getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
   }
 }

@@ -406,6 +406,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
   @VisibleForTesting
   static void populateLoopbackProperties(
       @Nullable InterfacesInterface vsLoopback, org.batfish.datamodel.Interface viLoopback) {
+    viLoopback.setInterfaceType(InterfaceType.LOOPBACK);
     if (vsLoopback != null && vsLoopback.getClagVxlanAnycastIp() != null) {
       // Just assume CLAG is correctly configured and comes up
       viLoopback.setAllAddresses(
