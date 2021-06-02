@@ -1,5 +1,7 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -108,8 +110,9 @@ public final class OspfTopologyUtils {
               }
               String hostname = config.getHostname();
               String vrfName = vrf.getName();
-              iface
-                  .getAllConcreteAddresses()
+              firstNonNull(
+                      iface.getOspfSettings().getOspfAddresses().getAddresses(),
+                      iface.getAllConcreteAddresses())
                   .forEach(
                       concreteAddress -> {
                         OspfNeighborConfigId id =
@@ -201,12 +204,6 @@ public final class OspfTopologyUtils {
                   if (configId.getAddress().getIp().equals(remoteConfigId.getAddress().getIp())) {
                     return;
                   }
-                  if (!configId
-                      .getAddress()
-                      .getPrefix()
-                      .equals(remoteConfigId.getAddress().getPrefix())) {
-                    return;
-                  }
                   OspfSessionStatus status =
                       getSessionStatus(configId, remoteConfigId, networkConfigurations);
                   if (status != OspfSessionStatus.NO_SESSION) {
@@ -275,9 +272,21 @@ public final class OspfTopologyUtils {
     // Optimistically assume unspecified network types match and therefore are compatible
     OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
     OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
-    if ((localNetworkType != null && remoteNetworkType != null)
-        && (localNetworkType != remoteNetworkType)) {
-      return OspfSessionStatus.NETWORK_TYPE_MISMATCH;
+    if (localNetworkType != null && remoteNetworkType != null) {
+      if (localNetworkType != remoteNetworkType) {
+        return OspfSessionStatus.NETWORK_TYPE_MISMATCH;
+      }
+      // - If P2P and prefixes do not match, the session is unnumbered.
+      // - If not P2P and prefixes do not match, the session should not come up. This can commonly
+      //   occur even when things are properly configured, so just silently throw out this edge with
+      //   NO_SESSION.
+      if (localNetworkType != OspfNetworkType.POINT_TO_POINT
+          && !localConfigId
+              .getAddress()
+              .getPrefix()
+              .equals(remoteConfigId.getAddress().getPrefix())) {
+        return OspfSessionStatus.NO_SESSION;
+      }
     }
 
     OspfInterfaceSettings localOspf = localIface.getOspfSettings();

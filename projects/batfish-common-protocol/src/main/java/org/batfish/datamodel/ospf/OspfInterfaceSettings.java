@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
@@ -326,6 +327,11 @@ public final class OspfInterfaceSettings implements Serializable {
   @Nullable
   public OspfAddresses getOspfAddresses() {
     return _ospfAddresses;
+  }
+
+  @VisibleForTesting
+  void setOspfAddresses(@Nullable OspfAddresses ospfAddresses) {
+    _ospfAddresses = ospfAddresses;
   }
 
   /**

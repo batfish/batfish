@@ -2,13 +2,17 @@ package org.batfish.datamodel.ospf;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.getSessionStatus;
+import static org.batfish.datamodel.ospf.OspfTopologyUtils.initNeighborConfigs;
 import static org.batfish.datamodel.ospf.OspfTopologyUtils.trimLinks;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Iterables;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
@@ -19,6 +23,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Builder;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Vrf;
 import org.junit.Ignore;
@@ -33,6 +38,13 @@ public class OspfTopologyUtilsTest {
   private static final OspfNeighborConfigId REMOTE_CONFIG_ID =
       new OspfNeighborConfigId(
           "r2", "vrf2", "proc2", "iface2", ConcreteInterfaceAddress.parse("192.0.2.1/31"));
+
+  private static final OspfNeighborConfigId LOCAL_CONFIG_ID_UNNUMBERED =
+      new OspfNeighborConfigId(
+          "r1", "vrf1", "proc1", "iface1", ConcreteInterfaceAddress.parse("192.0.2.0/32"));
+  private static final OspfNeighborConfigId REMOTE_CONFIG_ID_UNNUMBERED =
+      new OspfNeighborConfigId(
+          "r2", "vrf2", "proc2", "iface2", ConcreteInterfaceAddress.parse("192.0.2.1/32"));
 
   private static NetworkConfigurations buildNetworkConfigurations(Ip localIp, Ip remoteIp) {
     return buildNetworkConfigurations(
@@ -153,6 +165,16 @@ public class OspfTopologyUtilsTest {
       Ip remoteIp,
       OspfInterfaceSettings remoteOspfSettings) {
     return buildNetworkConfigurations(
+        localIp, localOspfSettings, remoteIp, remoteOspfSettings, true);
+  }
+
+  private static NetworkConfigurations buildNetworkConfigurations(
+      Ip localIp,
+      OspfInterfaceSettings localOspfSettings,
+      Ip remoteIp,
+      OspfInterfaceSettings remoteOspfSettings,
+      boolean initNeighborConfigs) {
+    return buildNetworkConfigurations(
         localIp,
         false,
         localIp,
@@ -166,7 +188,8 @@ public class OspfTopologyUtilsTest {
         0L,
         1500,
         StubType.NONE,
-        remoteOspfSettings);
+        remoteOspfSettings,
+        initNeighborConfigs);
   }
 
   private static NetworkConfigurations buildNetworkConfigurations(
@@ -184,6 +207,40 @@ public class OspfTopologyUtilsTest {
       int remoteMtu,
       StubType remoteAreaType,
       OspfInterfaceSettings remoteOspfSettings) {
+    return buildNetworkConfigurations(
+        localIp,
+        localPassive,
+        localRouterId,
+        localArea,
+        localMtu,
+        localAreaType,
+        localOspfSettings,
+        remoteIp,
+        remotePassive,
+        remoteRouterId,
+        remoteArea,
+        remoteMtu,
+        remoteAreaType,
+        remoteOspfSettings,
+        true);
+  }
+
+  private static NetworkConfigurations buildNetworkConfigurations(
+      Ip localIp,
+      boolean localPassive,
+      Ip localRouterId,
+      long localArea,
+      int localMtu,
+      StubType localAreaType,
+      OspfInterfaceSettings localOspfSettings,
+      Ip remoteIp,
+      boolean remotePassive,
+      Ip remoteRouterId,
+      long remoteArea,
+      int remoteMtu,
+      StubType remoteAreaType,
+      OspfInterfaceSettings remoteOspfSettings,
+      boolean initNeighborConfigs) {
     return NetworkConfigurations.of(
         ImmutableMap.of(
             LOCAL_CONFIG_ID.getHostname(),
@@ -195,7 +252,8 @@ public class OspfTopologyUtilsTest {
                 localArea,
                 localMtu,
                 localAreaType,
-                localOspfSettings),
+                localOspfSettings,
+                initNeighborConfigs),
             REMOTE_CONFIG_ID.getHostname(),
             buildConfiguration(
                 REMOTE_CONFIG_ID,
@@ -205,7 +263,8 @@ public class OspfTopologyUtilsTest {
                 remoteArea,
                 remoteMtu,
                 remoteAreaType,
-                remoteOspfSettings)));
+                remoteOspfSettings,
+                initNeighborConfigs)));
   }
 
   private static Configuration buildConfiguration(
@@ -217,6 +276,20 @@ public class OspfTopologyUtilsTest {
       int mtu,
       StubType areaType,
       OspfInterfaceSettings ospfSettings) {
+    return buildConfiguration(
+        configId, ospfNeighborIp, passive, routerId, area, mtu, areaType, ospfSettings, true);
+  }
+
+  private static Configuration buildConfiguration(
+      OspfNeighborConfigId configId,
+      Ip ospfNeighborIp,
+      boolean passive,
+      Ip routerId,
+      long area,
+      int mtu,
+      StubType areaType,
+      OspfInterfaceSettings ospfSettings,
+      boolean initNeighborConfigs) {
     String hostname = configId.getHostname();
     String vrfName = configId.getVrfName();
     String procName = configId.getProcName();
@@ -238,21 +311,23 @@ public class OspfTopologyUtilsTest {
                 .setProcessId(procName)
                 .setReferenceBandwidth(7.0)
                 .setNeighborConfigs(
-                    ImmutableMap.of(
-                        new OspfNeighborConfigId(
-                            hostname,
-                            vrfName,
-                            procName,
-                            ifaceName,
-                            ConcreteInterfaceAddress.create(ospfNeighborIp, 31)),
-                        OspfNeighborConfig.builder()
-                            .setVrfName(vrfName)
-                            .setInterfaceName(ifaceName)
-                            .setHostname(hostname)
-                            .setArea(area)
-                            .setPassive(passive)
-                            .setIp(ospfNeighborIp)
-                            .build()))
+                    initNeighborConfigs
+                        ? ImmutableMap.of(
+                            new OspfNeighborConfigId(
+                                hostname,
+                                vrfName,
+                                procName,
+                                ifaceName,
+                                ConcreteInterfaceAddress.create(ospfNeighborIp, 31)),
+                            OspfNeighborConfig.builder()
+                                .setVrfName(vrfName)
+                                .setInterfaceName(ifaceName)
+                                .setHostname(hostname)
+                                .setArea(area)
+                                .setPassive(passive)
+                                .setIp(ospfNeighborIp)
+                                .build())
+                        : ImmutableMap.of())
                 .setRouterId(routerId)
                 .build()));
     Builder iface = Interface.builder().setName(ifaceName).setMtu(mtu);
@@ -521,5 +596,99 @@ public class OspfTopologyUtilsTest {
       OspfSessionStatus val = getSessionStatus(REMOTE_CONFIG_ID, LOCAL_CONFIG_ID, configs);
       assertThat(val, equalTo(OspfSessionStatus.NO_SESSION));
     }
+  }
+
+  @Test
+  public void testInitNeighborConfigsOspfAddresses() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setProcess(LOCAL_CONFIG_ID_UNNUMBERED.getProcName())
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .build(),
+            REMOTE_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setProcess(REMOTE_CONFIG_ID_UNNUMBERED.getProcName())
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .build(),
+            false);
+    updateConfigsForUnnumbered(configs);
+
+    // Confirm that unnumbered interfaces are candidates for sessions using ospfAddresses
+    initNeighborConfigs(configs);
+    assertThat(
+        Iterables.getOnlyElement(configs.getVrf("r1", "vrf1").get().getOspfProcesses().values())
+            .getOspfNeighborConfigs()
+            .keySet(),
+        containsInAnyOrder(LOCAL_CONFIG_ID_UNNUMBERED));
+    assertThat(
+        Iterables.getOnlyElement(configs.getVrf("r2", "vrf2").get().getOspfProcesses().values())
+            .getOspfNeighborConfigs()
+            .keySet(),
+        containsInAnyOrder(REMOTE_CONFIG_ID_UNNUMBERED));
+  }
+
+  private static void updateConfigsForUnnumbered(NetworkConfigurations configs) {
+    LinkLocalAddress lla = LinkLocalAddress.of(Ip.parse("169.254.0.1"));
+    Interface iface1 = configs.getInterface("r1", "iface1").get();
+    iface1
+        .getOspfSettings()
+        .setOspfAddresses(
+            OspfAddresses.of(ImmutableList.of(LOCAL_CONFIG_ID_UNNUMBERED.getAddress())));
+    iface1.setAddress(lla);
+    iface1.setAllAddresses(ImmutableList.of(lla));
+    Interface iface2 = configs.getInterface("r2", "iface2").get();
+    iface2
+        .getOspfSettings()
+        .setOspfAddresses(
+            OspfAddresses.of(ImmutableList.of(REMOTE_CONFIG_ID_UNNUMBERED.getAddress())));
+    iface2.setAddress(lla);
+    iface2.setAllAddresses(ImmutableList.of(lla));
+  }
+
+  @Test
+  public void testGetSessionStatusP2PDifferentPrefix() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setProcess(LOCAL_CONFIG_ID_UNNUMBERED.getProcName())
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .build(),
+            REMOTE_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setProcess(REMOTE_CONFIG_ID_UNNUMBERED.getProcName())
+                .setNetworkType(OspfNetworkType.POINT_TO_POINT)
+                .build());
+    updateConfigsForUnnumbered(configs);
+    initNeighborConfigs(configs);
+
+    assertThat(
+        getSessionStatus(LOCAL_CONFIG_ID_UNNUMBERED, REMOTE_CONFIG_ID_UNNUMBERED, configs),
+        equalTo(OspfSessionStatus.ESTABLISHED));
+  }
+
+  @Test
+  public void testGetSessionStatusNonP2PDifferentPrefix() {
+    NetworkConfigurations configs =
+        buildNetworkConfigurations(
+            LOCAL_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setProcess(LOCAL_CONFIG_ID_UNNUMBERED.getProcName())
+                .setNetworkType(OspfNetworkType.BROADCAST)
+                .build(),
+            REMOTE_CONFIG_ID_UNNUMBERED.getAddress().getIp(),
+            OspfInterfaceSettings.defaultSettingsBuilder()
+                .setProcess(REMOTE_CONFIG_ID_UNNUMBERED.getProcName())
+                .setNetworkType(OspfNetworkType.BROADCAST)
+                .build(),
+            false);
+    updateConfigsForUnnumbered(configs);
+    initNeighborConfigs(configs);
+
+    assertThat(
+        getSessionStatus(LOCAL_CONFIG_ID_UNNUMBERED, REMOTE_CONFIG_ID_UNNUMBERED, configs),
+        equalTo(OspfSessionStatus.NO_SESSION));
   }
 }
