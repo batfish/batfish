@@ -65,6 +65,6 @@ public class CiscoNxosConfigurationTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", CiscoNxosStructureType.IP_PREFIX_LIST.getDescription())));
+                "file", CiscoNxosStructureType.IP_PREFIX_LIST.getDescription(), "name")));
   }
 }

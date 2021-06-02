@@ -360,7 +360,7 @@ public class AsaConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", AsaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription())));
+                "file", AsaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription(), "name")));
   }
 
   /** Check that vendorStructureId is set when standard ACL is converted to route filter list */
@@ -372,7 +372,7 @@ public class AsaConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", AsaStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription())));
+                "file", AsaStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription(), "name")));
   }
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
@@ -383,6 +383,6 @@ public class AsaConversionsTest {
     assertThat(
         rfl.getVendorStructureId(),
         equalTo(
-            new VendorStructureId("file", "name", AsaStructureType.PREFIX_LIST.getDescription())));
+            new VendorStructureId("file", AsaStructureType.PREFIX_LIST.getDescription(), "name")));
   }
 }

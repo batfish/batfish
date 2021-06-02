@@ -216,8 +216,8 @@
           "name" : "102",
           "vendorStructureId" : {
             "filename" : "configs/as1border1.cfg",
-            "structureName" : "extended ipv4 access-list",
-            "structureType" : "102"
+            "structureName" : "102",
+            "structureType" : "extended ipv4 access-list"
           }
         },
         "structType" : "RouteFilterList",

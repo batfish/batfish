@@ -1369,8 +1369,8 @@ public class CiscoConversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            eaList.getName(),
-            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription()));
+            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription(),
+            eaList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList, String vendorConfigFilename) {
@@ -1383,8 +1383,8 @@ public class CiscoConversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            saList.getName(),
-            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()));
+            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription(),
+            saList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
@@ -1399,7 +1399,7 @@ public class CiscoConversions {
         list.getName(),
         newLines,
         new VendorStructureId(
-            vendorConfigFilename, list.getName(), CiscoStructureType.PREFIX_LIST.getDescription()));
+            vendorConfigFilename, CiscoStructureType.PREFIX_LIST.getDescription(), list.getName()));
   }
 
   @VisibleForTesting

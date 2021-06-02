@@ -821,8 +821,8 @@ public class Conversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            eaList.getName(),
-            AristaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription()));
+            AristaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription(),
+            eaList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList, String vendorConfigFilename) {
@@ -837,8 +837,8 @@ public class Conversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            saList.getName(),
-            AristaStructureType.IP_ACCESS_LIST_STANDARD.getDescription()));
+            AristaStructureType.IP_ACCESS_LIST_STANDARD.getDescription(),
+            saList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
@@ -854,8 +854,8 @@ public class Conversions {
         newLines,
         new VendorStructureId(
             vendorConfigFilename,
-            list.getName(),
-            AristaStructureType.PREFIX_LIST.getDescription()));
+            AristaStructureType.PREFIX_LIST.getDescription(),
+            list.getName()));
   }
 
   @VisibleForTesting

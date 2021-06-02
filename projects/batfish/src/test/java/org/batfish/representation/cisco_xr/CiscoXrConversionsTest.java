@@ -20,7 +20,7 @@ public class CiscoXrConversionsTest extends TestCase {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", CiscoXrStructureType.IPV4_ACCESS_LIST.getDescription())));
+                "file", CiscoXrStructureType.IPV4_ACCESS_LIST.getDescription(), "name")));
   }
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
@@ -32,6 +32,6 @@ public class CiscoXrConversionsTest extends TestCase {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", CiscoXrStructureType.PREFIX_LIST.getDescription())));
+                "file", CiscoXrStructureType.PREFIX_LIST.getDescription(), "name")));
   }
 }
