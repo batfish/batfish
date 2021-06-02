@@ -60,6 +60,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -938,5 +939,12 @@ public class CumulusConcatenatedGrammarTest {
       // TODO: support OSPF in another VRF
       assertNull(iface.getOspfSettings());
     }
+  }
+
+  @Test
+  public void testLoopbackInterfaceType() throws IOException {
+    Configuration c = parseConfig("loopback");
+    assertThat(c.getAllInterfaces(), hasKeys("lo"));
+    assertThat(c.getAllInterfaces().get("lo").getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
   }
 }
