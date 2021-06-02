@@ -9,12 +9,14 @@ import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /**
  * Describes the {@link org.batfish.datamodel.ConcreteInterfaceAddress}es that may be used for OSPF
  * point-to-point session establishment.
  */
+@ParametersAreNonnullByDefault
 public class OspfAddresses implements Serializable {
 
   public static @Nonnull OspfAddresses of(Iterable<ConcreteInterfaceAddress> addresses) {
@@ -22,7 +24,7 @@ public class OspfAddresses implements Serializable {
   }
 
   @JsonProperty(PROP_ADDRESSES)
-  public @Nullable List<ConcreteInterfaceAddress> getAddresses() {
+  public @Nonnull List<ConcreteInterfaceAddress> getAddresses() {
     return _addresses;
   }
 
@@ -50,7 +52,7 @@ public class OspfAddresses implements Serializable {
     return of(ImmutableList.copyOf(firstNonNull(addresses, ImmutableList.of())));
   }
 
-  private final @Nullable List<ConcreteInterfaceAddress> _addresses;
+  private final @Nonnull List<ConcreteInterfaceAddress> _addresses;
 
   private OspfAddresses(List<ConcreteInterfaceAddress> addresses) {
     _addresses = addresses;
