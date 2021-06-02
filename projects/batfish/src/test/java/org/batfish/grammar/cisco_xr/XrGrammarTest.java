@@ -116,6 +116,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -2840,6 +2841,7 @@ public final class XrGrammarTest {
     // Ipv4
     {
       Ipv4AccessList acl = vc.getIpv4Acls().get("aclv4");
+      assertThat(acl.getLines(), iterableWithSize(2));
       Ipv4AccessListLine nhIpLine = acl.getLines().get(0);
       Ipv4AccessListLine nhVrfLine = acl.getLines().get(1);
 
@@ -2859,6 +2861,7 @@ public final class XrGrammarTest {
     // Ipv6
     {
       Ipv6AccessList acl = vc.getIpv6Acls().get("aclv6");
+      assertThat(acl.getLines(), iterableWithSize(2));
       Ipv6AccessListLine nhIpLine = acl.getLines().get(0);
       Ipv6AccessListLine nhVrfLine = acl.getLines().get(1);
 

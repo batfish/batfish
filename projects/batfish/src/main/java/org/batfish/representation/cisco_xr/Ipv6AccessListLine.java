@@ -8,50 +8,53 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 
+@ParametersAreNonnullByDefault
 public class Ipv6AccessListLine implements Serializable {
 
   public static class Builder {
 
-    private LineAction _action;
+    @Nullable private LineAction _action;
 
-    private Set<Integer> _dscps;
+    @Nullable private Set<Integer> _dscps;
 
-    private String _dstAddressGroup;
+    @Nullable private String _dstAddressGroup;
 
-    private Ip6Wildcard _dstIpWildcard;
+    @Nullable private Ip6Wildcard _dstIpWildcard;
 
-    private List<SubRange> _dstPortRanges;
+    @Nullable private List<SubRange> _dstPortRanges;
 
-    private Set<Integer> _ecns;
+    @Nullable private Set<Integer> _ecns;
 
-    private Integer _icmpCode;
+    @Nullable private Integer _icmpCode;
 
-    private Integer _icmpType;
+    @Nullable private Integer _icmpType;
 
-    private String _name;
+    @Nullable private String _name;
 
-    private Ipv6Nexthop _nexthop1;
+    @Nullable private Ipv6Nexthop _nexthop1;
 
-    private Ipv6Nexthop _nexthop2;
+    @Nullable private Ipv6Nexthop _nexthop2;
 
-    private Ipv6Nexthop _nexthop3;
+    @Nullable private Ipv6Nexthop _nexthop3;
 
-    private IpProtocol _protocol;
+    @Nullable private IpProtocol _protocol;
 
-    private String _srcAddressGroup;
+    @Nullable private String _srcAddressGroup;
 
-    private Ip6Wildcard _srcIpWildcard;
+    @Nullable private Ip6Wildcard _srcIpWildcard;
 
-    private List<SubRange> _srcPortRanges;
+    @Nullable private List<SubRange> _srcPortRanges;
 
-    private List<TcpFlagsMatchConditions> _tcpFlags;
+    @Nullable private List<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {}
 
@@ -149,23 +152,23 @@ public class Ipv6AccessListLine implements Serializable {
     return new Ipv6AccessListLine.Builder();
   }
 
-  private final LineAction _action;
+  @Nonnull private final LineAction _action;
 
-  private final Set<Integer> _dscps;
+  @Nonnull private final Set<Integer> _dscps;
 
   @Nullable private final String _dstAddressGroup;
 
-  private final Ip6Wildcard _dstIpWildcard;
+  @Nonnull private final Ip6Wildcard _dstIpWildcard;
 
-  private final List<SubRange> _dstPortRanges;
+  @Nonnull private final List<SubRange> _dstPortRanges;
 
-  private final Set<Integer> _ecns;
+  @Nonnull private final Set<Integer> _ecns;
 
   @Nullable private final Integer _icmpCode;
 
   @Nullable private final Integer _icmpType;
 
-  private final String _name;
+  @Nonnull private final String _name;
 
   @Nullable private final Ipv6Nexthop _nexthop1;
 
@@ -177,11 +180,11 @@ public class Ipv6AccessListLine implements Serializable {
 
   @Nullable private final String _srcAddressGroup;
 
-  private final Ip6Wildcard _srcIpWildcard;
+  @Nonnull private final Ip6Wildcard _srcIpWildcard;
 
-  private final List<SubRange> _srcPortRanges;
+  @Nonnull private final List<SubRange> _srcPortRanges;
 
-  private final List<TcpFlagsMatchConditions> _tcpFlags;
+  @Nonnull private final List<TcpFlagsMatchConditions> _tcpFlags;
 
   private Ipv6AccessListLine(Ipv6AccessListLine.Builder builder) {
     _action = requireNonNull(builder._action);
@@ -203,70 +206,87 @@ public class Ipv6AccessListLine implements Serializable {
     _tcpFlags = ImmutableList.copyOf(requireNonNull(builder._tcpFlags));
   }
 
+  @Nonnull
   public LineAction getAction() {
     return _action;
   }
 
+  @Nonnull
   public Ip6Wildcard getDestinationIpWildcard() {
     return _dstIpWildcard;
   }
 
+  @Nonnull
   public Set<Integer> getDscps() {
     return _dscps;
   }
 
+  @Nullable
   public String getDstAddressGroup() {
     return _dstAddressGroup;
   }
 
+  @Nonnull
   public List<SubRange> getDstPorts() {
     return _dstPortRanges;
   }
 
+  @Nonnull
   public Set<Integer> getEcns() {
     return _ecns;
   }
 
+  @Nullable
   public Integer getIcmpCode() {
     return _icmpCode;
   }
 
+  @Nullable
   public Integer getIcmpType() {
     return _icmpType;
   }
 
+  @Nonnull
   public String getName() {
     return _name;
   }
 
+  @Nullable
   public Ipv6Nexthop getNexthop1() {
     return _nexthop1;
   }
 
+  @Nullable
   public Ipv6Nexthop getNexthop2() {
     return _nexthop2;
   }
 
+  @Nullable
   public Ipv6Nexthop getNexthop3() {
     return _nexthop3;
   }
 
+  @Nonnull
   public Optional<IpProtocol> getProtocol() {
     return Optional.ofNullable(_protocol);
   }
 
+  @Nonnull
   public Ip6Wildcard getSourceIpWildcard() {
     return _srcIpWildcard;
   }
 
+  @Nullable
   public String getSrcAddressGroup() {
     return _srcAddressGroup;
   }
 
+  @Nonnull
   public List<SubRange> getSrcPorts() {
     return _srcPortRanges;
   }
 
+  @Nonnull
   public List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
   }
