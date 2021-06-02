@@ -24,9 +24,12 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ValueGraph;
 import java.io.IOException;
@@ -40,9 +43,12 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
@@ -51,6 +57,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -90,6 +97,9 @@ public class CumulusConcatenatedGrammarTest {
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  private final BddTestbed _bddTestbed = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
+  private final IpSpaceToBDD _dstIpBdd = _bddTestbed.getDstIpBdd();
 
   private static CumulusConcatenatedConfiguration parseFromTextWithSettings(
       String src, Settings settings) {
@@ -839,26 +849,94 @@ public class CumulusConcatenatedGrammarTest {
           contains(
               ConcreteInterfaceAddress.parse("10.0.0.2/32"),
               ConcreteInterfaceAddress.parse("10.1.1.2/32")));
+      assertThat(
+          iface.getAdditionalArpIps().accept(_dstIpBdd),
+          equalTo(
+              AclIpSpace.union(Ip.parse("10.0.0.1").toIpSpace(), Ip.parse("10.1.1.1").toIpSpace())
+                  .accept(_dstIpBdd)));
     }
     {
       Interface iface = c.getAllInterfaces().get("swp2");
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
       assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
+      assertThat(
+          iface.getAdditionalArpIps().accept(_dstIpBdd),
+          equalTo(
+              AclIpSpace.union(Ip.parse("10.1.1.1").toIpSpace(), Ip.parse("10.1.1.2").toIpSpace())
+                  .accept(_dstIpBdd)));
     }
     {
       Interface iface = c.getAllInterfaces().get("swp3");
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.1.1.1/32")));
       assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.1.1.1/32")));
+      assertThat(
+          iface.getAdditionalArpIps().accept(_dstIpBdd),
+          equalTo(
+              AclIpSpace.union(Ip.parse("10.0.0.1").toIpSpace(), Ip.parse("10.0.0.2").toIpSpace())
+                  .accept(_dstIpBdd)));
     }
     {
       Interface iface = c.getAllInterfaces().get("swp4");
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
       assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.0.0.1/32")));
+      assertThat(
+          iface.getAdditionalArpIps().accept(_dstIpBdd),
+          equalTo(EmptyIpSpace.INSTANCE.accept(_dstIpBdd)));
     }
     {
       Interface iface = c.getAllInterfaces().get("swp5");
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.1.1.1/32")));
       assertThat(iface.getAllAddresses(), contains(ConcreteInterfaceAddress.parse("10.1.1.1/32")));
+      assertThat(
+          iface.getAdditionalArpIps().accept(_dstIpBdd),
+          equalTo(EmptyIpSpace.INSTANCE.accept(_dstIpBdd)));
+    }
+  }
+
+  @Test
+  public void testOspfAddresses() throws IOException {
+    Configuration c = parseConfig("ip_reuse");
+    assertThat(
+        c.getAllInterfaces(), hasKeys("swp1", "swp2", "swp3", "swp4", "swp5", "lo", "v1", "v2"));
+    {
+      Interface iface = c.getAllInterfaces().get("swp1");
+      assertNotNull(iface.getOspfSettings());
+      assertThat(
+          iface.getOspfSettings().getOspfAddresses().getAddresses(),
+          contains(
+              ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("10.0.0.2/32"),
+              ConcreteInterfaceAddress.parse("10.1.1.1/32"),
+              ConcreteInterfaceAddress.parse("10.1.1.2/32")));
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp2");
+      assertNotNull(iface.getOspfSettings());
+      assertThat(
+          iface.getOspfSettings().getOspfAddresses().getAddresses(),
+          contains(
+              ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("10.1.1.1/32"),
+              ConcreteInterfaceAddress.parse("10.1.1.2/32")));
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp3");
+      assertNotNull(iface.getOspfSettings());
+      assertThat(
+          iface.getOspfSettings().getOspfAddresses().getAddresses(),
+          contains(
+              ConcreteInterfaceAddress.parse("10.0.0.1/32"),
+              ConcreteInterfaceAddress.parse("10.0.0.2/32"),
+              ConcreteInterfaceAddress.parse("10.1.1.1/32")));
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp4");
+      assertNull(iface.getOspfSettings());
+    }
+    {
+      Interface iface = c.getAllInterfaces().get("swp5");
+      // TODO: support OSPF in another VRF
+      assertNull(iface.getOspfSettings());
     }
   }
 }

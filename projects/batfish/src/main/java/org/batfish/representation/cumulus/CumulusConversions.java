@@ -81,6 +81,7 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.ospf.OspfAddresses;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
@@ -1433,8 +1434,22 @@ public final class CumulusConversions {
                           .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
                   .setProcess(processId)
                   .setCost(ospfInterface.getCost())
+                  .setOspfAddresses(getOspfAddresses(vsConfig, ifaceName))
                   .build());
         });
+  }
+
+  private static @Nonnull OspfAddresses getOspfAddresses(
+      CumulusConcatenatedConfiguration vsConfig, String ifaceName) {
+    // use ImmutableSet to preserve order and remove duplicates
+    ImmutableSet.Builder<ConcreteInterfaceAddress> addressesBuilder = ImmutableSet.builder();
+    Optional.ofNullable(vsConfig.getInterfacesConfiguration().getInterfaces().get(ifaceName))
+        .map(InterfacesInterface::getAddresses)
+        .ifPresent(addressesBuilder::addAll);
+    Optional.ofNullable(vsConfig.getFrrConfiguration().getInterfaces().get(ifaceName))
+        .map(FrrInterface::getIpAddresses)
+        .ifPresent(addressesBuilder::addAll);
+    return OspfAddresses.of(addressesBuilder.build());
   }
 
   @VisibleForTesting
