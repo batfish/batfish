@@ -66,6 +66,7 @@ import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.MacAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
 import org.batfish.representation.cumulus.CumulusPortsConfiguration.PortSettings;
 import org.batfish.vendor.VendorConfiguration;
@@ -143,17 +144,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     populatePortsInterfaceProperties(c);
     populateFrrInterfaceProperties(c);
 
-    // for interfaces that didn't get an address via either interfaces or FRR, give them a link
-    // local address if they are being used for BGP unnumbered
-    c.getAllInterfaces()
-        .forEach(
-            (iname, iface) -> {
-              if (iface.getAllAddresses().size() == 0
-                  && isUsedForBgpUnnumbered(iface.getName(), _frrConfiguration.getBgpProcess())) {
-                iface.setAddress(LINK_LOCAL_ADDRESS);
-                iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
-              }
-            });
+    addBgpUnnumberedLLAs(c);
 
     // FRR does not generate local routes for connected routes.
     c.getAllInterfaces()
@@ -199,6 +190,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     convertVxlans(c, this, vniToVrf, loopbackClagVxlanAnycastIp, loopbackVxlanLocalTunnelIp, _w);
 
     convertOspfProcess(c, this, _w);
+    addOspfUnnumberedLLAs(c);
     convertBgpProcess(c, this, _w);
 
     initVendorFamily(c);
@@ -206,6 +198,49 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     markStructures();
 
     return c;
+  }
+
+  /**
+   * For interfaces that didn't get an address via either interfaces or FRR, give them a link-local
+   * address if they are being used for BGP unnumbered.
+   */
+  private void addBgpUnnumberedLLAs(Configuration c) {
+    c.getAllInterfaces()
+        .forEach(
+            (iname, iface) -> {
+              if (iface.getAllAddresses().size() == 0
+                  && isUsedForBgpUnnumbered(iface.getName(), _frrConfiguration.getBgpProcess())) {
+                iface.setAddress(LINK_LOCAL_ADDRESS);
+                iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));
+              }
+            });
+  }
+
+  /**
+   * For interfaces that didn't get an address via either interfaces or FRR, give them a link-local
+   * address if they are being used for OSPF unnumbered.
+   */
+  private void addOspfUnnumberedLLAs(Configuration c) {
+    c.getAllInterfaces()
+        .forEach(
+            (iname, iface) -> {
+              if (iface.getInterfaceType() != InterfaceType.LOOPBACK
+                  && iface.getOspfEnabled()
+                  && !iface.getOspfPassive()
+                  && iface.getOspfSettings().getNetworkType() == OspfNetworkType.POINT_TO_POINT
+                  && !iface.getOspfSettings().getOspfAddresses().getAddresses().isEmpty()
+                  && iface.getAllLinkLocalAddresses().isEmpty()) {
+                if (iface.getAddress() == null) {
+                  iface.setAddress(LINK_LOCAL_ADDRESS);
+                }
+                iface.setAllAddresses(
+                    ImmutableSet.<InterfaceAddress>builderWithExpectedSize(
+                            iface.getAllAddresses().size() + 1)
+                        .addAll(iface.getAllAddresses())
+                        .add(LINK_LOCAL_ADDRESS)
+                        .build());
+              }
+            });
   }
 
   private void populatePortsInterfaceProperties(Configuration c) {
