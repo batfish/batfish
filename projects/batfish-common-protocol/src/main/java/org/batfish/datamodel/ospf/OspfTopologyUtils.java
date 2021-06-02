@@ -286,16 +286,16 @@ public final class OspfTopologyUtils {
     } else if (remoteNetworkType != null) {
       assumedNetworkType = remoteNetworkType;
     }
-    // - If P2P and prefixes do not match, the session is unnumbered.
-    // - If not P2P and prefixes do not match, the session should not come up. This can commonly
-    //   occur even when things are properly configured, so just silently throw out this edge with
-    //   NO_SESSION.
+    // Skip prefix check for P2P sessions
     if (assumedNetworkType != null
         && assumedNetworkType != OspfNetworkType.POINT_TO_POINT
         && !localConfigId
             .getAddress()
             .getPrefix()
             .equals(remoteConfigId.getAddress().getPrefix())) {
+      // If not P2P and prefixes do not match, the session should not come up. This can commonly
+      // occur even when things are properly configured, so just silently throw out this edge with
+      // NO_SESSION.
       return OspfSessionStatus.NO_SESSION;
     }
 
