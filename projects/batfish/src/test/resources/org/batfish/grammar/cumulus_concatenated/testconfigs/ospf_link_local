@@ -1,0 +1,95 @@
+ospf_link_local
+# This file describes the network interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+auto swp1
+iface swp1
+  # Should own 10.0.0.1/32, since this is the earliest declared interface that assigns it.
+  address 10.0.0.1/32
+
+auto swp2
+iface swp2
+  # Should not own 10.0.0.1/32.
+  address 10.0.0.1/32
+
+auto swp3
+iface swp3
+
+auto swp4
+iface swp4
+  # Should not own 10.0.0.1/32.
+  address 10.0.0.1/32
+
+auto swp5
+iface swp5
+  # Should not own 10.0.0.1/32.
+  address 10.0.0.1/32
+
+auto swp6
+iface swp6
+  # Should not own 10.0.0.1/32.
+  address 10.0.0.1/32
+
+auto lo
+iface lo
+  # Should not own 10.0.0.1/32.
+  address 10.0.0.1/32
+
+# ports.conf --
+# ports.conf --
+#
+#   configure port speed, aggregation, and subdivision.
+#
+#   The ports in Cumulus VX are not configurable from here.
+#frr version
+frr version 4.0+cl3u8
+frr defaults datacenter
+hostname ospf_link_local
+username cumulus nopassword
+!
+service integrated-vtysh-config
+!
+log syslog informational
+!
+interface swp1
+ ! Should receive LLA, since OSPF is enabled on this interface and the network type is point-to-point.
+ ! Even though it already has an address, it needs an LLA to ensure L3 edge can come up.
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+interface swp2
+ ! Should receive LLA, since OSPF is enabled on this interface and the network type is point-to-point.
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+interface swp3
+ ! Even though OSPF is enabled on this interface and the network type is point-to-point, should
+ ! not receive LLA since it was never assigned any addresses.
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+interface swp4
+ ! Since OSPF is passive on this interface, should not receive LLA.
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+interface swp5
+ ! Since the OSPF network type is not point-to-point on this interface, should not receive LLA.
+ ip ospf area 0
+!
+interface swp6
+ ! Since OSPF is not enabled on this interface, should not receive LLA.
+!
+interface lo
+ ! Should not receive LLA since this is a loopback, even though OSPF is enabled on this interface
+ ! and the network type is point-to-point.
+ ip ospf area 0
+ ip ospf network point-to-point
+!
+router ospf
+  ospf router-id 1.1.1.1
+  passive-interface swp4
+!
+line vty
+!
