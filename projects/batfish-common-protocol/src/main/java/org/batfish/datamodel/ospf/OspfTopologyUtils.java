@@ -1,5 +1,7 @@
 package org.batfish.datamodel.ospf;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -9,6 +11,7 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Map.Entry;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -108,8 +111,11 @@ public final class OspfTopologyUtils {
               }
               String hostname = config.getHostname();
               String vrfName = vrf.getName();
-              iface
-                  .getAllConcreteAddresses()
+              firstNonNull(
+                      Optional.ofNullable(iface.getOspfSettings().getOspfAddresses())
+                          .map(OspfAddresses::getAddresses)
+                          .orElse(null),
+                      iface.getAllConcreteAddresses())
                   .forEach(
                       concreteAddress -> {
                         OspfNeighborConfigId id =
@@ -201,12 +207,6 @@ public final class OspfTopologyUtils {
                   if (configId.getAddress().getIp().equals(remoteConfigId.getAddress().getIp())) {
                     return;
                   }
-                  if (!configId
-                      .getAddress()
-                      .getPrefix()
-                      .equals(remoteConfigId.getAddress().getPrefix())) {
-                    return;
-                  }
                   OspfSessionStatus status =
                       getSessionStatus(configId, remoteConfigId, networkConfigurations);
                   if (status != OspfSessionStatus.NO_SESSION) {
@@ -275,9 +275,28 @@ public final class OspfTopologyUtils {
     // Optimistically assume unspecified network types match and therefore are compatible
     OspfNetworkType localNetworkType = localIface.getOspfNetworkType();
     OspfNetworkType remoteNetworkType = remoteIface.getOspfNetworkType();
-    if ((localNetworkType != null && remoteNetworkType != null)
-        && (localNetworkType != remoteNetworkType)) {
-      return OspfSessionStatus.NETWORK_TYPE_MISMATCH;
+    @Nullable OspfNetworkType assumedNetworkType = null;
+    if (localNetworkType != null && remoteNetworkType != null) {
+      if (localNetworkType != remoteNetworkType) {
+        return OspfSessionStatus.NETWORK_TYPE_MISMATCH;
+      }
+      assumedNetworkType = localNetworkType;
+    } else if (localNetworkType != null) {
+      assumedNetworkType = localNetworkType;
+    } else if (remoteNetworkType != null) {
+      assumedNetworkType = remoteNetworkType;
+    }
+    // Skip prefix check for P2P sessions
+    if (assumedNetworkType != null
+        && assumedNetworkType != OspfNetworkType.POINT_TO_POINT
+        && !localConfigId
+            .getAddress()
+            .getPrefix()
+            .equals(remoteConfigId.getAddress().getPrefix())) {
+      // If not P2P and prefixes do not match, the session should not come up. This can commonly
+      // occur even when things are properly configured, so just silently throw out this edge with
+      // NO_SESSION.
+      return OspfSessionStatus.NO_SESSION;
     }
 
     OspfInterfaceSettings localOspf = localIface.getOspfSettings();
