@@ -5,6 +5,7 @@ import static junit.framework.TestCase.assertNotNull;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.InterfaceType.LOOPBACK;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.RoutingProtocol.IBGP;
@@ -1446,6 +1447,29 @@ public final class CumulusConversionsTest {
 
     addOspfInterfaces(config, ifaceMap, "1", new Warnings());
     assertThat(viIface.getOspfCost(), equalTo(100));
+  }
+
+  /** Test that loopback cost is ignored, even if configured, and forced to 0. */
+  @Test
+  public void testAddOspfInterfaces_LoopbackCost() {
+    CumulusConcatenatedConfiguration config = new CumulusConcatenatedConfiguration();
+    config.getFrrConfiguration().setOspfProcess(new OspfProcess());
+    OspfInterface ospf = config.getFrrConfiguration().getOrCreateInterface("lo").getOrCreateOspf();
+    ospf.setOspfArea(0L);
+    ospf.setCost(100);
+
+    Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
+    org.batfish.datamodel.Interface viIface =
+        org.batfish.datamodel.Interface.builder()
+            .setName("lo")
+            .setVrf(vrf)
+            .setType(LOOPBACK)
+            .build();
+    Map<String, org.batfish.datamodel.Interface> ifaceMap =
+        ImmutableMap.of(viIface.getName(), viIface);
+
+    addOspfInterfaces(config, ifaceMap, "1", new Warnings());
+    assertThat(viIface.getOspfCost(), equalTo(0));
   }
 
   @Test
