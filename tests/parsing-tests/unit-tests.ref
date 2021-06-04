@@ -69217,7 +69217,7 @@
               "Text" : "bgp redistribute-internal"
             },
             {
-              "Comment" : "BGP unusuppress-map is not currently supported",
+              "Comment" : "BGP unsuppress-map is not currently supported",
               "Line" : 40,
               "Parser_Context" : "[unsuppress_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
               "Text" : "unsuppress-map UNSUPP-MAP"
