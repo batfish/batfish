@@ -21,6 +21,12 @@ route-policy rp_ip
   endif
 end-policy
 !
+router static
+  address-family ipv4 unicast
+    1.2.3.4/32 Null0
+    1.2.3.5/32 Null0
+    2.0.0.0/8 Null0
+!
 router bgp 1
   bgp router-id 1.1.1.1
   address-family ipv4 unicast

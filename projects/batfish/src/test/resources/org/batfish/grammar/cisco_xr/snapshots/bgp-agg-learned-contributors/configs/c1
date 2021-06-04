@@ -1,0 +1,30 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname c1
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.10.10.1 255.255.255.0
+!
+! Next hop for static routes
+interface GigabitEthernet0/0/0/1
+ ipv4 address 40.40.40.1 255.255.255.0
+!
+! XR BGP neighbors will not import or export any routes unless a policy is configured
+route-policy ALLOW-ALL
+  pass
+end-policy
+!
+router static
+  address-family ipv4 unicast
+    1.1.1.0/24 Null0
+    2.2.2.0/24 Null0
+!
+router bgp 1
+  bgp router-id 1.1.1.1
+  address-family ipv4 unicast
+    redistribute static
+  neighbor 10.10.10.2
+    remote-as 2
+    route-policy ALLOW-ALL in
+    route-policy ALLOW-ALL out
+!
