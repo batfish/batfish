@@ -80,6 +80,6 @@ public final class Node {
     if (!_c.getHostname().equals(ribId.getHostname())) {
       return Optional.empty();
     }
-    return getVirtualRouter(ribId.getVrfName()).map(vr -> vr.getRib(ribId)).get();
+    return getVirtualRouter(ribId.getVrfName()).flatMap(vr -> vr.getRib(ribId));
   }
 }
