@@ -1870,6 +1870,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     c.setDnsServers(_dnsServers);
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);
+    c.setExportBgpFromBgpRib(true);
     c.setNormalVlanRange(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO));
     c.setTacacsServers(_tacacsServers);
     c.setTacacsSourceInterface(_tacacsSourceInterface);

@@ -56,7 +56,6 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType3Route;
 import org.batfish.datamodel.EvpnType5Route;
@@ -265,9 +264,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _topology = topology;
     _prefixTracer = prefixTracer;
 
-    // TODO Should probably create a special field in Configuration or Vrf to track this
-    _exportFromBgpRib =
-        configuration.getConfigurationFormat().equals(ConfigurationFormat.CISCO_IOS_XR);
+    _exportFromBgpRib = configuration.getExportBgpFromBgpRib();
 
     // Message queues start out empty
     _bgpv4Edges = ImmutableSortedSet.of();

@@ -4,6 +4,7 @@
     "nodes" : {
       "as1border1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as1border1",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -1595,6 +1596,7 @@
       },
       "as1border2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as1border2",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -3235,6 +3237,7 @@
       },
       "as1core1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as1core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -3711,6 +3714,7 @@
       },
       "as2border1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2border1",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -5298,6 +5302,7 @@
       },
       "as2border2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2border2",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -6819,6 +6824,7 @@
       },
       "as2core1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -7550,6 +7556,7 @@
       },
       "as2core2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2core2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -8210,6 +8217,7 @@
       },
       "as2dept1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2dept1",
         "communityMatchExprs" : {
           "as2_community" : {
@@ -9469,6 +9477,7 @@
       },
       "as2dist1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2dist1",
         "communityMatchExprs" : {
           "dept_community" : {
@@ -10392,6 +10401,7 @@
       },
       "as2dist2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2dist2",
         "communityMatchExprs" : {
           "dept_community" : {
@@ -11315,6 +11325,7 @@
       },
       "as3border1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as3border1",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -12818,6 +12829,7 @@
       },
       "as3border2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as3border2",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -14260,6 +14272,7 @@
       },
       "as3core1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as3core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -15054,6 +15067,7 @@
       },
       "host1" : {
         "configurationFormat" : "HOST",
+        "exportBgpFromBgpRib" : false,
         "name" : "host1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -15392,6 +15406,7 @@
       },
       "host2" : {
         "configurationFormat" : "HOST",
+        "exportBgpFromBgpRib" : false,
         "name" : "host2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
