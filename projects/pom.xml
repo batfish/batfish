@@ -27,7 +27,7 @@
 
     <!-- The versions of Apache Maven plugins used. Please keep alphabetical.-->
     <antlr4-maven-plugin.version>4.7.2</antlr4-maven-plugin.version>
-    <dependency-check-plugin.version>5.3.2</dependency-check-plugin.version>
+    <dependency-check-plugin.version>6.2.0</dependency-check-plugin.version>
     <maven-checkstyle-plugin.version>3.1.0</maven-checkstyle-plugin.version>
     <maven-compiler-plugin.version>3.6.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
