@@ -2218,7 +2218,6 @@ public final class XrGrammarTest {
      */
     String hostname = "bgp-redist-policy";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.loadConfigurations(batfish.getSnapshot());
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, Configuration.DEFAULT_VRF_NAME);
@@ -2258,7 +2257,6 @@ public final class XrGrammarTest {
      */
     String hostname = "bgp-aggregate";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, Configuration.DEFAULT_VRF_NAME);
@@ -2317,7 +2315,6 @@ public final class XrGrammarTest {
                     SNAPSHOTS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
                 .build(),
             _folder);
-    batfish.loadConfigurations(batfish.getSnapshot());
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
 

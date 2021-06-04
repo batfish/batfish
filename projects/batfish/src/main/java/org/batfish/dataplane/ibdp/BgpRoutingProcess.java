@@ -923,29 +923,29 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
     // If exporting from main RIB, queue mainRib updates that were not introduced by BGP process
     // (i.e., IGP routes). Also, do not double-export main RIB routes: filter out bgp routes.
-    Stream<RouteAdvertisement<Bgpv4Route>> mainRibExports =
-        _exportFromBgpRib
-            ? Stream.of()
-            : (isNewSession
-                    // Look at the entire main RIB if this session is new.
-                    ? _mainRibPrev.stream().map(RouteAdvertisement::adding)
-                    : _toRedistribute.values().stream().flatMap(RibDelta::getActions))
-                .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
-                .map(
-                    adv -> {
-                      _prefixTracer.originated(adv.getRoute().getNetwork());
-                      Bgpv4Route bgpRoute =
-                          exportNonBgpRouteToBgp(
-                              adv.getRoute(), remoteConfigId, ourConfig, session);
-                      if (bgpRoute == null) {
-                        return null;
-                      }
-                      return RouteAdvertisement.<Bgpv4Route>builder()
-                          .setReason(adv.getReason())
-                          .setRoute(bgpRoute)
-                          .build();
-                    })
-                .filter(Objects::nonNull);
+    Stream<RouteAdvertisement<Bgpv4Route>> mainRibExports = Stream.of();
+    if (!_exportFromBgpRib) {
+      mainRibExports =
+          (isNewSession
+                  // Look at the entire main RIB if this session is new.
+                  ? _mainRibPrev.stream().map(RouteAdvertisement::adding)
+                  : _toRedistribute.values().stream().flatMap(RibDelta::getActions))
+              .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
+              .map(
+                  adv -> {
+                    _prefixTracer.originated(adv.getRoute().getNetwork());
+                    Bgpv4Route bgpRoute =
+                        exportNonBgpRouteToBgp(adv.getRoute(), remoteConfigId, ourConfig, session);
+                    if (bgpRoute == null) {
+                      return null;
+                    }
+                    return RouteAdvertisement.<Bgpv4Route>builder()
+                        .setReason(adv.getReason())
+                        .setRoute(bgpRoute)
+                        .build();
+                  })
+              .filter(Objects::nonNull);
+    }
 
     // Needs to retain annotations since export policy will be run on routes from resulting delta.
     Builder<AnnotatedRoute<Bgpv4Route>> bgpRibExports = RibDelta.builder();
