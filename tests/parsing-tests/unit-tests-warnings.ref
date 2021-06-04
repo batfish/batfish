@@ -285,7 +285,7 @@
         "Line" : 40,
         "Text" : "unsuppress-map UNSUPP-MAP",
         "Parser_Context" : "[unsuppress_map_bgp_tail bgp_tail neighbor_flat_rb_stanza router_bgp_stanza_tail router_bgp_stanza stanza cisco_configuration]",
-        "Comment" : "BGP unsuppress-map is not currently supported"
+        "Comment" : "BGP unusuppress-map is not currently supported"
       },
       {
         "Filename" : "configs/cisco_crypto",
