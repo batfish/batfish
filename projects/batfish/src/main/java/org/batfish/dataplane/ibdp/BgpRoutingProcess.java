@@ -168,6 +168,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   // Nullable so they crash on improper use.
   private @Nullable Set<Bgpv4Route> _ebgpv4Prev;
   private @Nullable Set<Bgpv4Route> _bgpv4Prev;
+
+  /**
+   * Routes in the main RIB at the end of the previous round. Unused if {@link #_exportFromBgpRib}
+   * is set.
+   */
   private @Nullable Set<AnnotatedRoute<AbstractRoute>> _mainRibPrev;
 
   /** Combined BGP (both iBGP and eBGP) RIB, for IPv4 unicast */
@@ -221,8 +226,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   @Nonnull private final Map<String, String> _rtVrfMapping;
 
-  /** Mapping of routes to be redistributed. Maps source VRF to a set of routes to process */
-  @Nonnull private Map<String, RibDelta<? extends AnnotatedRoute<AbstractRoute>>> _toRedistribute;
+  /** Changed main RIB routes to be redistributed. Unused if {@link #_exportFromBgpRib} is set. */
+  @Nonnull private RibDelta<? extends AnnotatedRoute<AbstractRoute>> _mainRibDelta;
 
   /** Set of edges (sessions) that came up since previous topology update */
   private Set<EdgeId> _evpnEdgesWentUp = ImmutableSet.of();
@@ -304,7 +309,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         new Bgpv4Rib(
             _mainRib, bestPathTieBreaker, null, multiPathMatchMode, true, clusterListAsIgpCost);
 
-    _toRedistribute = new HashMap<>(1);
+    _mainRibDelta = RibDelta.empty();
 
     // EVPN Ribs
     _ebgpType3EvpnRib =
@@ -456,7 +461,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       assert _bgpv4DeltaBuilder.isEmpty();
       assert _ebgpv4DeltaBuilder.isEmpty();
 
-      _mainRibPrev = _mainRib.getTypedRoutes(); // Will only be used if !_exportFromBgpRib
+      if (!_exportFromBgpRib) {
+        _mainRibPrev = _mainRib.getTypedRoutes();
+      }
       _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
       _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
     } else {
@@ -535,16 +542,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Override
   public void redistribute(RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    redistribute(mainRibDelta, _vrfName);
-  }
-
-  /** Redistribute routes from {@code srcVrfName} into our VRF. */
-  private void redistribute(
-      RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta, String srcVrfName) {
-    // Legacy redistribution model.
+    // Legacy redistribution model. (Unnecessary if redistribution is done from BGP RIB.)
     if (!_exportFromBgpRib) {
-      assert _toRedistribute.values().stream().allMatch(RibDelta::isEmpty);
-      _toRedistribute.put(srcVrfName, mainRibDelta);
+      assert _mainRibDelta.isEmpty();
+      _mainRibDelta = mainRibDelta;
     }
 
     // newer redistribution model:
@@ -615,7 +616,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         // endOfRound has been called BEFORE the isDirty check and we've already switched over.
         || !_ebgpv4DeltaPrev.isEmpty()
         || !_bgpv4DeltaPrev.isEmpty()
-        || _toRedistribute.values().stream().anyMatch(d -> !d.isEmpty())
+        || !_mainRibDelta.isEmpty()
         || !_localDeltaPrev.isEmpty()
         // Delta builders
         || !_bgpv4DeltaBuilder.isEmpty()
@@ -926,7 +927,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           (isNewSession
                   // Look at the entire main RIB if this session is new.
                   ? _mainRibPrev.stream().map(RouteAdvertisement::adding)
-                  : _toRedistribute.values().stream().flatMap(RibDelta::getActions))
+                  : _mainRibDelta.getActions())
               .filter(adv -> !(adv.getRoute().getRoute() instanceof BgpRoute))
               .map(
                   adv -> {
@@ -1796,8 +1797,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _mainRibPrev = null;
     _bgpv4Prev = null;
     _ebgpv4Prev = null;
-    // Legacy redistribution map
-    _toRedistribute = new HashMap<>();
+    // Main RIB delta for exporting directly from main RIB
+    _mainRibDelta = RibDelta.empty();
   }
 
   /**
