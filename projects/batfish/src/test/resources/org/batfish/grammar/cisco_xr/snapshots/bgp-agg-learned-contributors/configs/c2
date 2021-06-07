@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname c2
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.10.10.2 255.255.255.0
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 11.11.11.2 255.255.255.0
+!
+! XR BGP neighbors will not import or export any routes unless a policy is configured
+route-policy ALLOW-ALL
+  pass
+end-policy
+!
+router bgp 2
+  bgp router-id 2.2.2.2
+  address-family ipv4 unicast
+    aggregate-address 1.1.0.0/16
+    aggregate-address 2.2.0.0/16 summary-only
+  neighbor 10.10.10.1
+    remote-as 1
+    route-policy ALLOW-ALL in
+    route-policy ALLOW-ALL out
+  neighbor 11.11.11.1
+    remote-as 3
+    route-policy ALLOW-ALL in
+    route-policy ALLOW-ALL out
+!
