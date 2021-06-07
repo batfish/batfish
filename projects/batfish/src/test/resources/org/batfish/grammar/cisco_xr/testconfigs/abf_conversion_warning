@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname abf_conversion_warning
+!
+ipv4 access-list aclv4
+ ! All nexthops have the same or no vrf specified
+ 10 permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1
+ 20 permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf vrf1 ipv4 10.0.11.2 nexthop3 vrf vrf1 ipv4 10.0.11.3
+ 30 permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.11.1
+ 40 permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.11.1 nexthop2 ipv4 10.0.11.2 nexthop3 ipv4 10.0.11.3
+ ! Nexthops have different vrfs
+ ! NH2 has different vrf
+ 60 permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf vrfOther ipv4 10.0.11.2
+ ! NH3 has different vrf
+ 70 permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf vrf1 ipv4 10.0.11.2 nexthop3 vrf vrfOther ipv4 10.0.11.3
+ ! NH2 has no vrf specified
+ 80 permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 ipv4 10.0.11.2
+ ! NH2 has a vrf specified but NH1 does not
+ 90 permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.11.1 nexthop2 vrf vrfOther ipv4 10.0.11.2
+!
