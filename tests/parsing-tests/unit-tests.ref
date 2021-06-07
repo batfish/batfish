@@ -70952,6 +70952,12 @@
               "definitionLines" : "16",
               "numReferrers" : 1
             }
+          },
+          "route-map entry" : {
+            "ROUTE_MAP 10" : {
+              "definitionLines" : "16",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/arista_bgp_asn" : { },
@@ -70966,6 +70972,12 @@
             "TO_NEIGHBOR" : {
               "definitionLines" : "9-11",
               "numReferrers" : 0
+            }
+          },
+          "route-map entry" : {
+            "TO_NEIGHBOR 30" : {
+              "definitionLines" : "9-11",
+              "numReferrers" : 1
             }
           },
           "standard community-list" : {
@@ -75600,6 +75612,13 @@
                 14
               ]
             }
+          },
+          "route-map entry" : {
+            "ROUTE_MAP 10" : {
+              "route-map entry" : [
+                16
+              ]
+            }
           }
         },
         "configs/arista_community_list_named" : {
@@ -75614,6 +75633,13 @@
             "PFX_LIST" : {
               "route-map match ipv4 prefix-list" : [
                 10
+              ]
+            }
+          },
+          "route-map entry" : {
+            "TO_NEIGHBOR 30" : {
+              "route-map entry" : [
+                9
               ]
             }
           }

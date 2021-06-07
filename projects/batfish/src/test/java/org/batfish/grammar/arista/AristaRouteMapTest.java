@@ -3,11 +3,14 @@ package org.batfish.grammar.arista;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -21,6 +24,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
+import org.batfish.common.matchers.ParseWarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -32,12 +36,15 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.RouteMap;
+import org.batfish.representation.arista.RouteMapClause;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -53,9 +60,10 @@ public class AristaRouteMapTest {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     AristaCombinedParser parser = new AristaCombinedParser(src, settings);
+    Warnings warnings = new Warnings(true, true, true);
     AristaControlPlaneExtractor extractor =
         new AristaControlPlaneExtractor(
-            src, parser, ConfigurationFormat.ARISTA, new Warnings(), new SilentSyntaxCollection());
+            src, parser, ConfigurationFormat.ARISTA, warnings, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
@@ -63,7 +71,10 @@ public class AristaRouteMapTest {
         (AristaConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
-    return SerializationUtils.clone(vendorConfiguration);
+    AristaConfiguration cloned = SerializationUtils.clone(vendorConfiguration);
+    // restore warnings after cloning.
+    cloned.setWarnings(warnings);
+    return cloned;
   }
 
   private @Nonnull Batfish getBatfishForConfigurationNames(String... configurationNames)
@@ -99,13 +110,6 @@ public class AristaRouteMapTest {
             route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
 
-  private static void assertRoutingPolicyPermitsRoute(
-      RoutingPolicy routingPolicy, AbstractRoute route) {
-    assertFalse(
-        routingPolicy.process(
-            route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
-  }
-
   private static @Nonnull Bgpv4Route processRouteIn(RoutingPolicy routingPolicy, Bgpv4Route route) {
     Bgpv4Route.Builder builder = route.toBuilder();
     assertTrue(routingPolicy.process(route, builder, Direction.IN));
@@ -131,6 +135,53 @@ public class AristaRouteMapTest {
       assertThat(rp, notNullValue());
       Bgpv4Route processed = processRouteIn(rp, baseBgpRoute);
       assertThat(processed.getAdministrativeCost(), equalTo(180));
+    }
+  }
+
+  @Test
+  public void testMisconfiguredRouteMapExtraction() {
+    AristaConfiguration c = parseVendorConfig("arista_route_map_misconfigured");
+    RouteMap map = c.getRouteMaps().get("MAP");
+    assertThat(map, notNullValue());
+    assertThat(map.getClauses(), hasKeys(10, 30, 40));
+    // Undefined continue is extracted.
+    RouteMapClause clause10 = map.getClauses().get(10);
+    assertThat(clause10.getContinueLine().getTarget(), equalTo(20));
+    // Loop continue not even extracted.
+    RouteMapClause clause30 = map.getClauses().get(30);
+    assertThat(clause30.getContinueLine(), nullValue());
+    // Warnings
+    assertThat(
+        c.getWarnings().getParseWarnings(),
+        hasItem(
+            ParseWarningMatchers.hasComment(
+                "Route-map MAP entry 30: continue 10 introduces a loop")));
+  }
+
+  @Test
+  public void testMisconfiguredRouteMapConversion() {
+    Configuration c = parseConfig("arista_route_map_misconfigured");
+    final Bgpv4Route testRoute =
+        Bgpv4Route.testBuilder()
+            .setAsPath(AsPath.ofSingletonAsSets(2L))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHop(NextHopDiscard.instance())
+            .setNetwork(Prefix.ZERO)
+            .setTag(1L)
+            .build();
+    RoutingPolicy rp = c.getRoutingPolicies().get("MAP");
+    assertThat(rp, notNullValue());
+    {
+      // Tag 1 is matched by first term, and the continue is ignored.
+      Bgpv4Route processed = processRouteIn(rp, testRoute);
+      assertThat(processed.getLocalPreference(), equalTo(75L));
+    }
+    {
+      // Not tag 1 is not matched by first term, and the unconditional deny is applied.
+      // Loop does not happen (continue 10), nor does term 40 get applied.
+      assertRoutingPolicyDeniesRoute(rp, testRoute.toBuilder().setTag(0L).build());
     }
   }
 }

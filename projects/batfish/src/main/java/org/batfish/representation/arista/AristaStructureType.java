@@ -38,7 +38,7 @@ public enum AristaStructureType implements StructureType {
   PREFIX_LIST("ipv4 prefix-list"),
   PREFIX6_LIST("ipv6 prefix-list"),
   ROUTE_MAP("route-map"),
-  ROUTE_MAP_CLAUSE("route-map-clause"),
+  ROUTE_MAP_ENTRY("route-map entry"),
   SERVICE_TEMPLATE("service-template"),
   TRACK("track"),
   VXLAN("vxlan");

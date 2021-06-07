@@ -124,10 +124,8 @@ public enum AristaStructureUsage implements StructureUsage {
   RIP_REDISTRIBUTE_BGP_MAP("router rip redistribute bgp route-map"),
   RIP_REDISTRIBUTE_CONNECTED_MAP("router rip redistribute connected route-map"),
   RIP_REDISTRIBUTE_STATIC_MAP("router rip redistribute static route-map"),
-  ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_ADDITIVE(
-      "route-map set community community-list additive"),
-  ROUTE_MAP_CONTINUE("route-map continue target clause"),
-  ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_DELETE("route-map set community community-list delete"),
+  ROUTE_MAP_CONTINUE("route-map continue"),
+  ROUTE_MAP_ENTRY_AUTO_REF("route-map entry"),
   ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST("route-map match as-path access-list"),
   ROUTE_MAP_MATCH_COMMUNITY_LIST("route-map match community-list"),
   ROUTE_MAP_MATCH_IPV4_ACCESS_LIST("route-map match ipv4 access-list"),
@@ -135,6 +133,9 @@ public enum AristaStructureUsage implements StructureUsage {
   ROUTE_MAP_MATCH_IPV6_ACCESS_LIST("route-map match ipv6 access-list"),
   ROUTE_MAP_MATCH_IPV6_PREFIX_LIST("route-map match ipv6 prefix-list"),
   ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST("route-map set community community list"),
+  ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_ADDITIVE(
+      "route-map set community community-list additive"),
+  ROUTE_MAP_SET_COMMUNITY_COMMUNITY_LIST_DELETE("route-map set community community-list delete"),
   ROUTER_ISIS_DISTRIBUTE_LIST_ACL("router isis distribute-list acl"),
   ROUTER_STATIC_ROUTE("router static route"),
   ROUTER_VRRP_INTERFACE("router vrrp interface"),
