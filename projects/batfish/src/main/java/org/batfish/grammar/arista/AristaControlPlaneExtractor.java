@@ -36,6 +36,7 @@ import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.PREFIX6_LIST;
 import static org.batfish.representation.arista.AristaStructureType.PREFIX_LIST;
 import static org.batfish.representation.arista.AristaStructureType.ROUTE_MAP;
+import static org.batfish.representation.arista.AristaStructureType.ROUTE_MAP_ENTRY;
 import static org.batfish.representation.arista.AristaStructureType.SERVICE_TEMPLATE;
 import static org.batfish.representation.arista.AristaStructureType.TRACK;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
@@ -136,6 +137,8 @@ import static org.batfish.representation.arista.AristaStructureUsage.POLICY_MAP_
 import static org.batfish.representation.arista.AristaStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTER_VRRP_INTERFACE;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_CONTINUE;
+import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_ENTRY_AUTO_REF;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
@@ -945,6 +948,10 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class AristaControlPlaneExtractor extends AristaParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
+
+  public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
+  }
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
@@ -3547,6 +3554,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
     _currentRouteMapClause = clause;
     _configuration.defineStructure(ROUTE_MAP, name, ctx);
+    // Declare and auto-reference the entry too.
+    String entryName = computeRouteMapEntryName(name, num);
+    _configuration.defineStructure(ROUTE_MAP_ENTRY, entryName, ctx);
+    _configuration.referenceStructure(
+        ROUTE_MAP_ENTRY, entryName, ROUTE_MAP_ENTRY_AUTO_REF, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -4080,12 +4092,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitContinue_rm_stanza(Continue_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
     Integer target = null;
     if (ctx.dec() != null) {
       target = toInteger(ctx.dec());
+      if (_currentRouteMapClause.getSeqNum() >= target) {
+        warn(
+            ctx,
+            String.format(
+                "Route-map %s entry %d: continue %d introduces a loop",
+                _currentRouteMap.getName(), _currentRouteMapClause.getSeqNum(), target));
+        return;
+      }
+      String targetName = computeRouteMapEntryName(_currentRouteMap.getName(), target);
+      _configuration.referenceStructure(
+          ROUTE_MAP_ENTRY, targetName, ROUTE_MAP_CONTINUE, ctx.getStart().getLine());
     }
-    RouteMapContinue continueLine = new RouteMapContinue(target, statementLine);
+    RouteMapContinue continueLine = new RouteMapContinue(target);
     _currentRouteMapClause.setContinueLine(continueLine);
   }
 

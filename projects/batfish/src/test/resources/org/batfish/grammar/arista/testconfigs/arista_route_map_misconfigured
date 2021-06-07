@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_route_map_misconfigured
+!
+route-map MAP permit 10
+  match tag 1
+  set local-preference 75
+  ! Continue to undefined target
+  continue 20
+route-map MAP deny 30
+  ! Introduce a loop
+  continue 10
+!
+route-map MAP permit 40
+  ! not reached
+!
