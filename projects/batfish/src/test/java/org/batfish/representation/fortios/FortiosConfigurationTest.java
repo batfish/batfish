@@ -434,7 +434,7 @@ public class FortiosConfigurationTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", FortiosStructureType.ACCESS_LIST.getDescription())));
+                "file", FortiosStructureType.ACCESS_LIST.getDescription(), "name")));
   }
 
   private static void assertConvertsWithoutWarnings(Address address, IpSpace expected) {

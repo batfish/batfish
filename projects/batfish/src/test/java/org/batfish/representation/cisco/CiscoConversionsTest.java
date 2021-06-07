@@ -412,7 +412,7 @@ public class CiscoConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription())));
+                "file", CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription(), "name")));
   }
 
   /** Check that vendorStructureId is set when standard ACL is converted to route filter list */
@@ -424,7 +424,7 @@ public class CiscoConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription())));
+                "file", CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription(), "name")));
   }
 
   /** Check that vendorStructureId is set when prefix list is converted to route filter list */
@@ -436,6 +436,6 @@ public class CiscoConversionsTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", CiscoStructureType.PREFIX_LIST.getDescription())));
+                "file", CiscoStructureType.PREFIX_LIST.getDescription(), "name")));
   }
 }

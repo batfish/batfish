@@ -414,8 +414,8 @@ public class FortiosConfiguration extends VendorConfiguration {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            accessList.getName(),
-            FortiosStructureType.ACCESS_LIST.getDescription()));
+            FortiosStructureType.ACCESS_LIST.getDescription(),
+            accessList.getName()));
   }
 
   private static @Nonnull org.batfish.datamodel.Zone convertZone(Zone zone) {

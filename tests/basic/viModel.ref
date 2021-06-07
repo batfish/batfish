@@ -4,6 +4,7 @@
     "nodes" : {
       "as1border1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as1border1",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -446,8 +447,8 @@
             "name" : "101",
             "vendorStructureId" : {
               "filename" : "configs/as1border1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "101"
+              "structureName" : "101",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "102" : {
@@ -466,8 +467,8 @@
             "name" : "102",
             "vendorStructureId" : {
               "filename" : "configs/as1border1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "102"
+              "structureName" : "102",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "103" : {
@@ -486,8 +487,8 @@
             "name" : "103",
             "vendorStructureId" : {
               "filename" : "configs/as1border1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "103"
+              "structureName" : "103",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "default_list" : {
@@ -501,8 +502,8 @@
             "name" : "default_list",
             "vendorStructureId" : {
               "filename" : "configs/as1border1.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "default_list"
+              "structureName" : "default_list",
+              "structureType" : "ipv4 prefix-list"
             }
           },
           "inbound_route_filter" : {
@@ -521,8 +522,8 @@
             "name" : "inbound_route_filter",
             "vendorStructureId" : {
               "filename" : "configs/as1border1.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "inbound_route_filter"
+              "structureName" : "inbound_route_filter",
+              "structureType" : "ipv4 prefix-list"
             }
           }
         },
@@ -1595,6 +1596,7 @@
       },
       "as1border2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as1border2",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -2075,8 +2077,8 @@
             "name" : "101",
             "vendorStructureId" : {
               "filename" : "configs/as1border2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "101"
+              "structureName" : "101",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "102" : {
@@ -2095,8 +2097,8 @@
             "name" : "102",
             "vendorStructureId" : {
               "filename" : "configs/as1border2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "102"
+              "structureName" : "102",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "103" : {
@@ -2110,8 +2112,8 @@
             "name" : "103",
             "vendorStructureId" : {
               "filename" : "configs/as1border2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "103"
+              "structureName" : "103",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "as4-prefixes" : {
@@ -2125,8 +2127,8 @@
             "name" : "as4-prefixes",
             "vendorStructureId" : {
               "filename" : "configs/as1border2.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "as4-prefixes"
+              "structureName" : "as4-prefixes",
+              "structureType" : "ipv4 prefix-list"
             }
           },
           "inbound_route_filter" : {
@@ -2145,8 +2147,8 @@
             "name" : "inbound_route_filter",
             "vendorStructureId" : {
               "filename" : "configs/as1border2.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "inbound_route_filter"
+              "structureName" : "inbound_route_filter",
+              "structureType" : "ipv4 prefix-list"
             }
           }
         },
@@ -3235,6 +3237,7 @@
       },
       "as1core1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as1core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -3711,6 +3714,7 @@
       },
       "as2border1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2border1",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -4313,8 +4317,8 @@
             "name" : "101",
             "vendorStructureId" : {
               "filename" : "configs/as2border1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "101"
+              "structureName" : "101",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "103" : {
@@ -4333,8 +4337,8 @@
             "name" : "103",
             "vendorStructureId" : {
               "filename" : "configs/as2border1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "103"
+              "structureName" : "103",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "inbound_route_filter" : {
@@ -4353,8 +4357,8 @@
             "name" : "inbound_route_filter",
             "vendorStructureId" : {
               "filename" : "configs/as2border1.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "inbound_route_filter"
+              "structureName" : "inbound_route_filter",
+              "structureType" : "ipv4 prefix-list"
             }
           },
           "outbound_routes" : {
@@ -4368,8 +4372,8 @@
             "name" : "outbound_routes",
             "vendorStructureId" : {
               "filename" : "configs/as2border1.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "outbound_routes"
+              "structureName" : "outbound_routes",
+              "structureType" : "ipv4 prefix-list"
             }
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
@@ -5298,6 +5302,7 @@
       },
       "as2border2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2border2",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -5872,8 +5877,8 @@
             "name" : "101",
             "vendorStructureId" : {
               "filename" : "configs/as2border2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "101"
+              "structureName" : "101",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "103" : {
@@ -5892,8 +5897,8 @@
             "name" : "103",
             "vendorStructureId" : {
               "filename" : "configs/as2border2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "103"
+              "structureName" : "103",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "inbound_route_filter" : {
@@ -5912,8 +5917,8 @@
             "name" : "inbound_route_filter",
             "vendorStructureId" : {
               "filename" : "configs/as2border2.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "inbound_route_filter"
+              "structureName" : "inbound_route_filter",
+              "structureType" : "ipv4 prefix-list"
             }
           },
           "outbound_routes" : {
@@ -5927,8 +5932,8 @@
             "name" : "outbound_routes",
             "vendorStructureId" : {
               "filename" : "configs/as2border2.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "outbound_routes"
+              "structureName" : "outbound_routes",
+              "structureType" : "ipv4 prefix-list"
             }
           },
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
@@ -6819,6 +6824,7 @@
       },
       "as2core1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -7550,6 +7556,7 @@
       },
       "as2core2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2core2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -8210,6 +8217,7 @@
       },
       "as2dept1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2dept1",
         "communityMatchExprs" : {
           "as2_community" : {
@@ -8794,8 +8802,8 @@
             "name" : "102",
             "vendorStructureId" : {
               "filename" : "configs/as2dept1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "102"
+              "structureName" : "102",
+              "structureType" : "extended ipv4 access-list"
             }
           }
         },
@@ -9469,6 +9477,7 @@
       },
       "as2dist1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2dist1",
         "communityMatchExprs" : {
           "dept_community" : {
@@ -9860,8 +9869,8 @@
             "name" : "105",
             "vendorStructureId" : {
               "filename" : "configs/as2dist1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "105"
+              "structureName" : "105",
+              "structureType" : "extended ipv4 access-list"
             }
           }
         },
@@ -10392,6 +10401,7 @@
       },
       "as2dist2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as2dist2",
         "communityMatchExprs" : {
           "dept_community" : {
@@ -10783,8 +10793,8 @@
             "name" : "105",
             "vendorStructureId" : {
               "filename" : "configs/as2dist2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "105"
+              "structureName" : "105",
+              "structureType" : "extended ipv4 access-list"
             }
           }
         },
@@ -11315,6 +11325,7 @@
       },
       "as3border1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as3border1",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -11761,8 +11772,8 @@
             "name" : "101",
             "vendorStructureId" : {
               "filename" : "configs/as3border1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "101"
+              "structureName" : "101",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "102" : {
@@ -11781,8 +11792,8 @@
             "name" : "102",
             "vendorStructureId" : {
               "filename" : "configs/as3border1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "102"
+              "structureName" : "102",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "103" : {
@@ -11801,8 +11812,8 @@
             "name" : "103",
             "vendorStructureId" : {
               "filename" : "configs/as3border1.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "103"
+              "structureName" : "103",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "default_list" : {
@@ -11816,8 +11827,8 @@
             "name" : "default_list",
             "vendorStructureId" : {
               "filename" : "configs/as3border1.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "default_list"
+              "structureName" : "default_list",
+              "structureType" : "ipv4 prefix-list"
             }
           },
           "inbound_route_filter" : {
@@ -11836,8 +11847,8 @@
             "name" : "inbound_route_filter",
             "vendorStructureId" : {
               "filename" : "configs/as3border1.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "inbound_route_filter"
+              "structureName" : "inbound_route_filter",
+              "structureType" : "ipv4 prefix-list"
             }
           }
         },
@@ -12818,6 +12829,7 @@
       },
       "as3border2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as3border2",
         "communityMatchExprs" : {
           "as1_community" : {
@@ -13264,8 +13276,8 @@
             "name" : "101",
             "vendorStructureId" : {
               "filename" : "configs/as3border2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "101"
+              "structureName" : "101",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "102" : {
@@ -13284,8 +13296,8 @@
             "name" : "102",
             "vendorStructureId" : {
               "filename" : "configs/as3border2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "102"
+              "structureName" : "102",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "103" : {
@@ -13304,8 +13316,8 @@
             "name" : "103",
             "vendorStructureId" : {
               "filename" : "configs/as3border2.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "103"
+              "structureName" : "103",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "inbound_route_filter" : {
@@ -13324,8 +13336,8 @@
             "name" : "inbound_route_filter",
             "vendorStructureId" : {
               "filename" : "configs/as3border2.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "inbound_route_filter"
+              "structureName" : "inbound_route_filter",
+              "structureType" : "ipv4 prefix-list"
             }
           }
         },
@@ -14260,6 +14272,7 @@
       },
       "as3core1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as3core1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -15054,6 +15067,7 @@
       },
       "host1" : {
         "configurationFormat" : "HOST",
+        "exportBgpFromBgpRib" : false,
         "name" : "host1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -15392,6 +15406,7 @@
       },
       "host2" : {
         "configurationFormat" : "HOST",
+        "exportBgpFromBgpRib" : false,
         "name" : "host2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",

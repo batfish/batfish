@@ -596,4 +596,12 @@ public class CumulusInterfacesGrammarTest {
     // assert we can parse the input text
     parse(input);
   }
+
+  @Test
+  public void testInterfaceInitOrderSimple() {
+    String input = "iface swp1\n iface swp3\n iface swp1\n iface swp2\n";
+    CumulusInterfacesConfiguration interfaces = parse(input);
+
+    assertThat(interfaces.getInterfaceInitOrder(), contains("swp1", "swp3", "swp2"));
+  }
 }

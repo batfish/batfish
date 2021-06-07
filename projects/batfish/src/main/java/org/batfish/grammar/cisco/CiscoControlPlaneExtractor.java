@@ -9036,7 +9036,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.mapname.getText();
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_ROUTE_MAP_UNSUPPRESS, ctx.getStart().getLine());
-    warn(ctx, "BGP unusuppress-map is not currently supported");
+    warn(ctx, "BGP unsuppress-map is not currently supported");
   }
 
   @Override

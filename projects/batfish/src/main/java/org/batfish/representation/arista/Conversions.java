@@ -30,6 +30,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -821,8 +822,8 @@ public class Conversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            eaList.getName(),
-            AristaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription()));
+            AristaStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription(),
+            eaList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList, String vendorConfigFilename) {
@@ -837,8 +838,8 @@ public class Conversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            saList.getName(),
-            AristaStructureType.IP_ACCESS_LIST_STANDARD.getDescription()));
+            AristaStructureType.IP_ACCESS_LIST_STANDARD.getDescription(),
+            saList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
@@ -854,8 +855,8 @@ public class Conversions {
         newLines,
         new VendorStructureId(
             vendorConfigFilename,
-            list.getName(),
-            AristaStructureType.PREFIX_LIST.getDescription()));
+            AristaStructureType.PREFIX_LIST.getDescription(),
+            list.getName()));
   }
 
   @VisibleForTesting
@@ -1132,6 +1133,50 @@ public class Conversions {
                 "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString()));
         return null;
     }
+  }
+
+  public static @Nonnull String nameOfSourceNatIpSpaceFromAcl(@Nonnull String aclName) {
+    return aclName + "~ip~nat~source~ips";
+  }
+
+  /**
+   * An ACL can be used to express the set of destination IPs used for source nat. Validate the ACL
+   * and return the set of IPs it will match.
+   *
+   * <p>TODO(https://github.com/batfish/batfish/issues/7047) for truly validating what the behavior
+   * here is. Current code is inspired by
+   * https://eos.arista.com/7150s-nat-practical-guide-source-nat-static/#2Static_Source_NAT_Unicast_and_multicast_with_routed_ports
+   */
+  static IpSpace extractSourceNatIpSpaceFromAcl(ExtendedAccessList acl, Warnings w) {
+    AclIpSpace.Builder builder = AclIpSpace.builder();
+    for (ExtendedAccessListLine line : acl.getLines()) {
+      if (!(line.getSourceAddressSpecifier() instanceof AnyAddressSpecifier)) {
+        w.redFlag(
+            String.format(
+                "%s line %s: source address must be 'any'", acl.getName(), line.getName()));
+        continue;
+      }
+      if (line.getDestinationAddressSpecifier() instanceof AnyAddressSpecifier) {
+        w.redFlag(
+            String.format(
+                "%s line %s: destination address cannot be 'any'", acl.getName(), line.getName()));
+        continue;
+      }
+      if (!line.getServiceSpecifier()
+          .toAclLineMatchExpr()
+          .equals(new MatchHeaderSpace(HeaderSpace.builder().build()))) {
+        w.redFlag(
+            String.format(
+                "%s line %s: cannot filter on anything but destination address",
+                acl.getName(), line.getName()));
+        continue;
+      }
+      assert line.getDestinationAddressSpecifier() instanceof WildcardAddressSpecifier;
+      WildcardAddressSpecifier destIps =
+          (WildcardAddressSpecifier) line.getDestinationAddressSpecifier();
+      builder.thenAction(line.getAction(), destIps.toIpSpace());
+    }
+    return builder.build();
   }
 
   private Conversions() {} // prevent instantiation of utility class

@@ -76,7 +76,9 @@ public class Interface implements Serializable {
 
   @Nullable private IntegerSpace _allowedVlans;
 
-  private List<AristaDynamicSourceNat> _aristaNats;
+  private List<AristaDynamicSourceNat> _dynamicSourceNats;
+
+  private List<AristaStaticSourceNat> _staticSourceNats;
 
   private boolean _autoState;
 
@@ -236,10 +238,6 @@ public class Interface implements Serializable {
     return allAddresses;
   }
 
-  public List<AristaDynamicSourceNat> getAristaNats() {
-    return _aristaNats;
-  }
-
   public boolean getAutoState() {
     return _autoState;
   }
@@ -266,6 +264,10 @@ public class Interface implements Serializable {
 
   public boolean getDhcpRelayClient() {
     return _dhcpRelayClient;
+  }
+
+  public List<AristaDynamicSourceNat> getDynamicSourceNats() {
+    return _dynamicSourceNats;
   }
 
   public @Nullable Integer getEncapsulationVlan() {
@@ -383,6 +385,14 @@ public class Interface implements Serializable {
     return _speed;
   }
 
+  public List<AristaStaticSourceNat> getStaticSourceNats() {
+    return _staticSourceNats;
+  }
+
+  public void setStaticSourceNats(List<AristaStaticSourceNat> staticSourceNats) {
+    _staticSourceNats = staticSourceNats;
+  }
+
   public Boolean getSwitchport() {
     return _switchport;
   }
@@ -431,8 +441,8 @@ public class Interface implements Serializable {
     _shutdown = shutdown;
   }
 
-  public void setAristaNats(List<AristaDynamicSourceNat> aristaNats) {
-    _aristaNats = aristaNats;
+  public void setDynamicSourceNats(List<AristaDynamicSourceNat> dynamicSourceNats) {
+    _dynamicSourceNats = dynamicSourceNats;
   }
 
   public void setAutoState(boolean autoState) {

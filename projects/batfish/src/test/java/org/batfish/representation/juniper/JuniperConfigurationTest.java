@@ -839,6 +839,6 @@ public class JuniperConfigurationTest {
         rfl.getVendorStructureId(),
         equalTo(
             new VendorStructureId(
-                "file", "name", JuniperStructureType.PREFIX_LIST.getDescription())));
+                "file", JuniperStructureType.PREFIX_LIST.getDescription(), "name")));
   }
 }

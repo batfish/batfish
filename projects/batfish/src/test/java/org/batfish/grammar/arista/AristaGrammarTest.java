@@ -9,9 +9,11 @@ import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
-import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
@@ -32,6 +34,8 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNoUndefinedReferences;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasDstIp;
+import static org.batfish.datamodel.matchers.FlowMatchers.hasSrcIp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -57,12 +61,14 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasL2VniSettings;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
 import static org.batfish.datamodel.transformation.Transformation.when;
+import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
+import static org.batfish.representation.arista.Conversions.nameOfSourceNatIpSpaceFromAcl;
 import static org.batfish.representation.arista.OspfProcess.getReferenceOspfBandwidth;
 import static org.batfish.representation.arista.eos.AristaBgpProcess.DEFAULT_VRF;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF;
@@ -111,6 +117,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -131,6 +138,8 @@ import org.batfish.datamodel.BumTransportMethod;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.IntegerSpace;
@@ -138,6 +147,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
@@ -154,6 +164,7 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -164,6 +175,7 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.MlagMatchers;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -176,6 +188,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprEvalua
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprEvaluator;
+import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -183,6 +196,8 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.AristaStaticSourceNat;
+import org.batfish.representation.arista.AristaStaticSourceNat.Protocol;
 import org.batfish.representation.arista.ExpandedCommunityList;
 import org.batfish.representation.arista.ExpandedCommunityListLine;
 import org.batfish.representation.arista.IpAsPathAccessList;
@@ -397,9 +412,28 @@ public class AristaGrammarTest {
   @Test
   public void testAristaBgpDefaultOriginatePolicy() throws IOException {
     /*
-     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
-     Because this is an Arista device, the route-map should be applied to the default route before
-     it is exported rather than used as a default route generation policy.
+      Snapshot contains two devices, arista-originator and ios-listener, configured with
+      multiple BGP peerings between them. The peers in ios-listener are all in separate VRFs
+      so that it is clear which peer each BGP route came from.
+
+      All peers on the originator use an export route-map that denies everything, to prove
+      that the default-originate route is not affected by the export route-map.
+
+      There is another route-map on the originator, SET_RM, that prepends AS 1234 and adds
+      communities 111:222 and 333:444.
+
+      Peer 1 should export a default route with SET_RM's AS and communities:
+        neighbor 10.1.1.2 default-originate route-map SET_RM
+        neighbor 10.1.1.2 send-community
+
+      Peer 2 should export a default route with SET_RM's AS, but not its communities:
+        neighbor 10.2.2.2 default-originate route-map SET_RM
+
+      Peer 3 should export a regular default route:
+        neighbor 10.3.3.2 default-originate route-map UNDEFINED
+
+      Peer 4 should also export a regular default route:
+        neighbor 10.4.4.2 default-originate
     */
     String testrigName = "arista-bgp-default-originate";
     List<String> configurationNames = ImmutableList.of("arista-originator", "ios-listener");
@@ -413,17 +447,12 @@ public class AristaGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> listenerRoutes =
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
 
-    // ROUTE_MAP adds two communities to default route. Make sure listener's default route has them.
-    Bgpv4Route expectedDefaultRoute =
+    // The route that each listener peer will receive if no attributes are modified
+    // (except missing peer-specific nextHopIp and receivedFromIp)
+    Bgpv4Route defaultOriginateRoute =
         Bgpv4Route.testBuilder()
-            .setCommunities(
-                ImmutableSet.of(StandardCommunity.of(111, 222), StandardCommunity.of(333, 444)))
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.1.1.1"))
-            .setReceivedFromIp(Ip.parse("10.1.1.1"))
             .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
@@ -432,50 +461,48 @@ public class AristaGrammarTest {
             .setAdmin(20)
             .setLocalPreference(100)
             .build();
-    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
-    // Ensure 10.10.10.0/24 doesn't get blocked
-    assertThat(listenerRoutes, hasItem(hasPrefix(Prefix.parse("10.10.10.0/24"))));
-  }
-
-  @Test
-  public void testAristaBgpDefaultOriginateUndefinedRouteMap() throws IOException {
-    /*
-     Arista originator has: neighbor 10.1.1.2 default-originate route-map ROUTE_MAP
-     However, ROUTE_MAP is undefined. Since this is Arista, default route should still be exported
-     (on IOS, where ROUTE_MAP is used as a generation policy rather than an export policy in this
-     context, the default route would not be exported).
-    */
-    String testrigName = "arista-bgp-default-originate";
-    List<String> configurationNames =
-        ImmutableList.of("arista-originator-undefined-rm", "ios-listener");
-    Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
-
-    NetworkSnapshot snapshot = batfish.getSnapshot();
-    batfish.computeDataPlane(snapshot);
-    DataPlane dp = batfish.loadDataPlane(snapshot);
-    Set<AbstractRoute> listenerRoutes =
-        dp.getRibs().get("ios-listener").get(DEFAULT_VRF_NAME).getRoutes();
-
-    Bgpv4Route expectedDefaultRoute =
-        Bgpv4Route.testBuilder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.1.1.1"))
-            .setReceivedFromIp(Ip.parse("10.1.1.1"))
-            .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setAsPath(AsPath.ofSingletonAsSets(1L))
-            .setCommunities(ImmutableSet.of())
-            .setAdmin(20)
-            .setLocalPreference(100)
-            .build();
-    assertThat(listenerRoutes, hasItem(equalTo(expectedDefaultRoute)));
+    {
+      // Peer 1 (sets default-originate route-map SET_RM and configures send-community)
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF1").getRoutes();
+      Ip peerIp = Ip.parse("10.1.1.1"); // local IP of originating peer
+      Bgpv4Route expectedRoute =
+          defaultOriginateRoute.toBuilder()
+              .setAsPath(AsPath.ofSingletonAsSets(1L, 1234L))
+              .setCommunities(
+                  ImmutableSet.of(StandardCommunity.of(111, 222), StandardCommunity.of(333, 444)))
+              .setNextHopIp(peerIp)
+              .setReceivedFromIp(peerIp)
+              .build();
+      assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
+    }
+    {
+      // Peer 2 (sets default-originate route-map SET_RM, does not configure send-community)
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF2").getRoutes();
+      Ip peerIp = Ip.parse("10.2.2.1"); // local IP of originating peer
+      Bgpv4Route expectedRoute =
+          defaultOriginateRoute.toBuilder()
+              .setAsPath(AsPath.ofSingletonAsSets(1L, 1234L))
+              .setNextHopIp(peerIp)
+              .setReceivedFromIp(peerIp)
+              .build();
+      assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
+    }
+    {
+      // Peer 3 (sets default-originate route-map UNDEFINED)
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF3").getRoutes();
+      Ip peerIp = Ip.parse("10.3.3.1"); // local IP of originating peer
+      Bgpv4Route expectedRoute =
+          defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
+      assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
+    }
+    {
+      // Peer 4 (sets default-originate without a route-map)
+      Set<AbstractRoute> listenerRoutes = dp.getRibs().get("ios-listener").get("VRF4").getRoutes();
+      Ip peerIp = Ip.parse("10.4.4.1"); // local IP of originating peer
+      Bgpv4Route expectedRoute =
+          defaultOriginateRoute.toBuilder().setNextHopIp(peerIp).setReceivedFromIp(peerIp).build();
+      assertThat(listenerRoutes, hasItem(equalTo(expectedRoute)));
+    }
   }
 
   @Test
@@ -784,6 +811,54 @@ public class AristaGrammarTest {
                 // overload rule, so use the interface IP
                 .apply(assignSourceIp(Ip.parse("8.8.8.8"), Ip.parse("8.8.8.8")))
                 .build()));
+  }
+
+  /**
+   * Test that static source NAT works as expected. A flow originates from r1[loopback0] with srcIp
+   * 8.8.8.8, gets routed towards r2[Ethernet1] via connected route, is src-natted to 9.9.9.9 on the
+   * way out. It should be accepted at r2[Ethernet1].
+   *
+   * <p>The reverse flow should start out from 1.0.0.1 -> 9.9.9.9, be dest-natted on the way back
+   * in, rewritten to 8.8.8.8 at r1[Ethernet1], and then accepted.
+   */
+  @Test
+  public void testStaticSourceNatE2e() throws IOException {
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(
+                    TESTRIGS_PREFIX + "nat-source-static", ImmutableList.of("r1", "r2"))
+                .build(),
+            _folder);
+    NetworkSnapshot snapshot = batfish.getSnapshot();
+    assertThat(batfish.loadConfigurations(snapshot), hasKeys("r1", "r2"));
+
+    batfish.computeDataPlane(snapshot);
+
+    Flow testFlow =
+        Flow.builder()
+            .setIngressNode("r1")
+            .setIngressVrf("default")
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setDstIp(Ip.parse("1.0.0.1"))
+            .build();
+    TraceAndReverseFlow tarf =
+        getOnlyElement(
+            batfish
+                .getTracerouteEngine(snapshot)
+                .computeTracesAndReverseFlows(ImmutableSet.of(testFlow), false)
+                .get(testFlow));
+    assertThat(tarf.getTrace().getDisposition(), equalTo(FlowDisposition.ACCEPTED));
+    assertThat(tarf.getReverseFlow(), hasDstIp(Ip.parse("9.9.9.9")));
+
+    TraceAndReverseFlow reverseTarf =
+        getOnlyElement(
+            batfish
+                .getTracerouteEngine(snapshot)
+                .computeTracesAndReverseFlows(ImmutableSet.of(tarf.getReverseFlow()), false)
+                .get(tarf.getReverseFlow()));
+    assertThat(reverseTarf.getTrace().getDisposition(), equalTo(FlowDisposition.ACCEPTED));
+    assertThat(reverseTarf.getReverseFlow(), hasSrcIp(Ip.parse("8.8.8.8")));
   }
 
   @Test
@@ -2669,6 +2744,133 @@ public class AristaGrammarTest {
         policy.processBgpRoute(acceptRoute, Bgpv4Route.testBuilder(), null, Direction.IN, null));
     assertFalse(
         policy.processBgpRoute(denyRoute, Bgpv4Route.testBuilder(), null, Direction.IN, null));
+  }
+
+  @Test
+  public void testIpNatSourceStaticExtraction() {
+    AristaConfiguration c = parseVendorConfig("ip-nat-source-static");
+    assertThat(c.getExtendedAcls(), hasKeys("ACL", "INVALID_ACL"));
+    assertThat(c.getInterfaces(), hasKeys("Ethernet1", "Ethernet2"));
+    {
+      org.batfish.representation.arista.Interface ethernet1 = c.getInterfaces().get("Ethernet1");
+      assertThat(ethernet1.getStaticSourceNats(), hasSize(4));
+      Iterator<AristaStaticSourceNat> nats = ethernet1.getStaticSourceNats().iterator();
+      {
+        AristaStaticSourceNat nat = nats.next();
+        assertThat(nat.getOriginalIp(), equalTo(Ip.parse("1.1.1.1")));
+        assertThat(nat.getOriginalPort(), nullValue());
+        assertThat(nat.getExtendedAclName(), nullValue());
+        assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("2.2.2.2")));
+        assertThat(nat.getTranslatedPort(), nullValue());
+        assertThat(nat.getProtocol(), equalTo(Protocol.ANY));
+      }
+      {
+        AristaStaticSourceNat nat = nats.next();
+        assertThat(nat.getOriginalIp(), equalTo(Ip.parse("3.3.3.3")));
+        assertThat(nat.getOriginalPort(), equalTo(33));
+        assertThat(nat.getExtendedAclName(), nullValue());
+        assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("4.4.4.4")));
+        assertThat(nat.getTranslatedPort(), equalTo(44));
+        assertThat(nat.getProtocol(), equalTo(Protocol.ANY));
+      }
+      {
+        AristaStaticSourceNat nat = nats.next();
+        assertThat(nat.getOriginalIp(), equalTo(Ip.parse("5.5.5.5")));
+        assertThat(nat.getOriginalPort(), equalTo(55));
+        assertThat(nat.getExtendedAclName(), equalTo("ACL"));
+        assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("6.6.6.6")));
+        assertThat(nat.getTranslatedPort(), equalTo(66));
+        assertThat(nat.getProtocol(), equalTo(Protocol.TCP));
+      }
+      {
+        AristaStaticSourceNat nat = nats.next();
+        assertThat(nat.getOriginalIp(), equalTo(Ip.parse("7.7.7.7")));
+        assertThat(nat.getOriginalPort(), equalTo(77));
+        assertThat(nat.getExtendedAclName(), equalTo("ACL"));
+        assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("8.8.8.8")));
+        assertThat(nat.getTranslatedPort(), equalTo(88));
+        assertThat(nat.getProtocol(), equalTo(Protocol.UDP));
+      }
+    }
+    {
+      // Shallow test of Ethernet2, since we did extraction tests above.
+      org.batfish.representation.arista.Interface ethernet2 = c.getInterfaces().get("Ethernet2");
+      assertThat(ethernet2.getStaticSourceNats(), hasSize(2));
+    }
+  }
+
+  @Test
+  public void testIpNatSourceStaticConversion() {
+    AristaConfiguration vendor = parseVendorConfig("ip-nat-source-static");
+    Warnings w = new Warnings(true, true, true);
+    vendor.setWarnings(w);
+    Configuration c = Iterables.getOnlyElement(vendor.toVendorIndependentConfigurations());
+    // Check that IP Spaces are extracted, and warnings are appropriate.
+    assertThat(
+        c.getIpSpaces(),
+        hasKeys(
+            nameOfSourceNatIpSpaceFromAcl("ACL"), nameOfSourceNatIpSpaceFromAcl("INVALID_ACL")));
+    assertThat(
+        c.getIpSpaces().get(nameOfSourceNatIpSpaceFromAcl("ACL")),
+        equalTo(
+            AclIpSpace.builder()
+                .thenPermitting(IpWildcard.parse("9.9.9.9").toIpSpace())
+                .thenRejecting(IpWildcard.parse("10.10.10.0/24").toIpSpace())
+                .thenPermitting(IpWildcard.parse("11.11.11.11").toIpSpace())
+                .build()));
+    assertThat(
+        c.getIpSpaces().get(nameOfSourceNatIpSpaceFromAcl("INVALID_ACL")),
+        equalTo(AclIpSpace.builder().build()));
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                "INVALID_ACL line permit ip any any: destination address cannot be 'any'"),
+            WarningMatchers.hasText(
+                "INVALID_ACL line permit ip host 1.2.3.4 host 9.9.9.9: source address must be"
+                    + " 'any'"),
+            WarningMatchers.hasText(
+                "INVALID_ACL line permit tcp any host 10.10.10.10: cannot filter on anything but"
+                    + " destination address"),
+            WarningMatchers.hasText(
+                "INVALID_ACL line permit ip any host 11.11.11.11 fragments: cannot filter on"
+                    + " anything but destination address"),
+            WarningMatchers.hasText(
+                "ip nat source commands referencing nonexistent ACL UNDEFINED_ACL are not installed"
+                    + " until the ACL is created")));
+    // Check that applied transformations are correct.
+    {
+      Transformation e1out = c.getAllInterfaces().get("Ethernet1").getOutgoingTransformation();
+      assertThat(e1out.getGuard(), equalTo(AclLineMatchExprs.and(matchSrc(Ip.parse("1.1.1.1")))));
+      assertThat(e1out.getTransformationSteps(), contains(assignSourceIp(Ip.parse("2.2.2.2"))));
+      assertThat(e1out.getAndThen(), nullValue());
+      assertThat(e1out.getOrElse(), notNullValue());
+      // We do deep testing of the conversion to Transformation elsewhere.
+    }
+    {
+      Transformation e1in = c.getAllInterfaces().get("Ethernet1").getIncomingTransformation();
+      assertThat(e1in.getGuard(), equalTo(AclLineMatchExprs.and(matchDst(Ip.parse("2.2.2.2")))));
+      assertThat(e1in.getTransformationSteps(), contains(assignDestinationIp(Ip.parse("1.1.1.1"))));
+      assertThat(e1in.getAndThen(), nullValue());
+      assertThat(e1in.getOrElse(), notNullValue());
+      // We do deep testing of the conversion to Transformation elsewhere.
+    }
+    assertThat(
+        c.getAllInterfaces().get("Ethernet2").getIncomingTransformation(),
+        equalTo(
+            when(and(
+                    matchDst(Ip.parse("2.2.2.2")),
+                    matchSrc(new IpSpaceReference(nameOfSourceNatIpSpaceFromAcl("INVALID_ACL")))))
+                .apply(assignDestinationIp(Ip.parse("1.1.1.1")))
+                .build()));
+    assertThat(
+        c.getAllInterfaces().get("Ethernet2").getOutgoingTransformation(),
+        equalTo(
+            when(and(
+                    matchSrc(Ip.parse("1.1.1.1")),
+                    matchDst(new IpSpaceReference(nameOfSourceNatIpSpaceFromAcl("INVALID_ACL")))))
+                .apply(assignSourceIp(Ip.parse("2.2.2.2")))
+                .build()));
   }
 
   @Test

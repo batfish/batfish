@@ -4,6 +4,7 @@
     "nodes" : {
       "0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "0-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -234,6 +235,7 @@
       },
       "1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "1-vpc-es-domain-uiqo2tedr5ttdqrhdzcu5upaee.us-west-2.es.amazonaws.com",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -464,6 +466,7 @@
       },
       "__aws-services-gateway__" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "__aws-services-gateway__",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18669,6 +18672,7 @@
       },
       "igw-068fee63" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "igw-068fee63",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18848,6 +18852,7 @@
       },
       "igw-9b93ddfc" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "igw-9b93ddfc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19028,6 +19033,7 @@
       },
       "igw-fac5839d" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "igw-fac5839d",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19207,6 +19213,7 @@
       },
       "internet" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "internet",
         "deviceModel" : "BATFISH_INTERNET",
         "deviceType" : "INTERNET",
@@ -19385,6 +19392,7 @@
       },
       "isp_16509" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "isp_16509",
         "deviceModel" : "BATFISH_ISP",
         "deviceType" : "ISP",
@@ -43555,6 +43563,7 @@
       },
       "lhr-border-02" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "lhr-border-02",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -44276,8 +44285,8 @@
             "name" : "MATCH_ALL_BGP",
             "vendorStructureId" : {
               "filename" : "configs/lhr-border-02.cfg",
-              "structureName" : "extended ipv4 access-list",
-              "structureType" : "MATCH_ALL_BGP"
+              "structureName" : "MATCH_ALL_BGP",
+              "structureType" : "extended ipv4 access-list"
             }
           },
           "PROTECT_LOOPBACK" : {
@@ -44296,8 +44305,8 @@
             "name" : "PROTECT_LOOPBACK",
             "vendorStructureId" : {
               "filename" : "configs/lhr-border-02.cfg",
-              "structureName" : "ipv4 prefix-list",
-              "structureType" : "PROTECT_LOOPBACK"
+              "structureName" : "PROTECT_LOOPBACK",
+              "structureType" : "ipv4 prefix-list"
             }
           }
         },
@@ -45284,6 +45293,7 @@
       },
       "subnet-073b8061" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-073b8061",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45493,6 +45503,7 @@
       },
       "subnet-1641fa70" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-1641fa70",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45702,6 +45713,7 @@
       },
       "subnet-1f315846" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-1f315846",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45922,6 +45934,7 @@
       },
       "subnet-30398256" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-30398256",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -46131,6 +46144,7 @@
       },
       "subnet-62f14104" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-62f14104",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -46340,6 +46354,7 @@
       },
       "subnet-7044ff16" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-7044ff16",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -46549,6 +46564,7 @@
       },
       "subnet-8d0cbdeb" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-8d0cbdeb",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -46758,6 +46774,7 @@
       },
       "subnet-9c8adceb" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-9c8adceb",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -46978,6 +46995,7 @@
       },
       "subnet-d9cafabc" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-d9cafabc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -47198,6 +47216,7 @@
       },
       "subnet-f73a8191" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "subnet-f73a8191",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -47407,6 +47426,7 @@
       },
       "test-rds" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "test-rds",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -47922,6 +47942,7 @@
       },
       "vgw-81fd279f" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "vgw-81fd279f",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -48453,6 +48474,7 @@
       },
       "vpc-815775e7" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "vpc-815775e7",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -48532,6 +48554,7 @@
       },
       "vpc-925131f4" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "vpc-925131f4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -48735,6 +48758,7 @@
       },
       "vpc-b390fad5" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "vpc-b390fad5",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -49124,6 +49148,7 @@
       },
       "vpc-f8fad69d" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "vpc-f8fad69d",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",

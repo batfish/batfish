@@ -2465,7 +2465,7 @@ public class CumulusFrrGrammarTest {
                     .setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setAdmin(20)
                     .setLocalPreference(100)
-                    .setMetric(22)
+                    .setMetric(10)
                     .build())));
   }
 
@@ -2502,5 +2502,26 @@ public class CumulusFrrGrammarTest {
     assertThat(
         dp.getRibs().get("frr-t2-r2").get(DEFAULT_VRF_NAME).getRoutes(),
         hasItem(isBgpv4RouteThat(hasPrefix(Prefix.parse("99.8.0.0/20")))));
+  }
+
+  @Test
+  public void testInterfaceInitOrderNoVrfs() {
+    parseLines("interface swp1", "interface swp2", "interface swp1", "interface swp3");
+
+    // init from the back
+    assertThat(_frr.getInterfaceInitOrder(), contains("swp3", "swp1", "swp2"));
+  }
+
+  @Test
+  public void testInterfaceInitOrderVrfs() {
+    _frr.getVrfs().put("v1", new Vrf("v1"));
+    parseLines(
+        "interface swp1 vrf v1",
+        "interface swp2 vrf v1",
+        "interface swp1 vrf v1",
+        "interface swp3 vrf v1");
+
+    // init from the back
+    assertThat(_frr.getInterfaceInitOrder(), contains("swp3", "swp1", "swp2"));
   }
 }

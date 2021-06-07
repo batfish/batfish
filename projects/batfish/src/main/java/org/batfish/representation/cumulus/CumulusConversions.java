@@ -60,6 +60,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
@@ -81,6 +82,7 @@ import org.batfish.datamodel.bgp.Layer3VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.ospf.OspfAddresses;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfAreaSummary.SummaryRouteBehavior;
@@ -1418,6 +1420,12 @@ public final class CumulusConversions {
           }
 
           OspfInterface ospfInterface = ospfOpt.get();
+          @Nullable Integer ospfCost = ospfInterface.getCost();
+          if (iface.getInterfaceType() == InterfaceType.LOOPBACK) {
+            // FRR does not include loopback cost, even if explicitly configured, in the LSA.
+            // See: https://github.com/FRRouting/frr/issues/2922
+            ospfCost = 0;
+          }
           iface.setOspfSettings(
               OspfInterfaceSettings.builder()
                   .setPassive(
@@ -1432,9 +1440,23 @@ public final class CumulusConversions {
                       Optional.ofNullable(ospfInterface.getHelloInterval())
                           .orElse(DEFAULT_OSPF_HELLO_INTERVAL))
                   .setProcess(processId)
-                  .setCost(ospfInterface.getCost())
+                  .setCost(ospfCost)
+                  .setOspfAddresses(getOspfAddresses(vsConfig, ifaceName))
                   .build());
         });
+  }
+
+  private static @Nonnull OspfAddresses getOspfAddresses(
+      CumulusConcatenatedConfiguration vsConfig, String ifaceName) {
+    // use ImmutableSet to preserve order and remove duplicates
+    ImmutableSet.Builder<ConcreteInterfaceAddress> addressesBuilder = ImmutableSet.builder();
+    Optional.ofNullable(vsConfig.getInterfacesConfiguration().getInterfaces().get(ifaceName))
+        .map(InterfacesInterface::getAddresses)
+        .ifPresent(addressesBuilder::addAll);
+    Optional.ofNullable(vsConfig.getFrrConfiguration().getInterfaces().get(ifaceName))
+        .map(FrrInterface::getIpAddresses)
+        .ifPresent(addressesBuilder::addAll);
+    return OspfAddresses.of(addressesBuilder.build());
   }
 
   @VisibleForTesting
@@ -1689,8 +1711,8 @@ public final class CumulusConversions {
         lines,
         new VendorStructureId(
             vendorConfigFilename,
-            ipPrefixList.getName(),
-            CumulusStructureType.IP_PREFIX_LIST.getDescription()));
+            CumulusStructureType.IP_PREFIX_LIST.getDescription(),
+            ipPrefixList.getName()));
   }
 
   @VisibleForTesting

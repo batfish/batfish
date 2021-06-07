@@ -1635,7 +1635,7 @@ public class CiscoXrConversions {
         eaList.getName(),
         lines,
         new VendorStructureId(
-            vendorConfigFilename, eaList.getName(), IPV4_ACCESS_LIST.getDescription()));
+            vendorConfigFilename, IPV4_ACCESS_LIST.getDescription(), eaList.getName()));
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
@@ -1649,7 +1649,7 @@ public class CiscoXrConversions {
     return new RouteFilterList(
         list.getName(),
         newLines,
-        new VendorStructureId(vendorConfigFilename, list.getName(), PREFIX_LIST.getDescription()));
+        new VendorStructureId(vendorConfigFilename, PREFIX_LIST.getDescription(), list.getName()));
   }
 
   static PacketPolicy toPacketPolicy(

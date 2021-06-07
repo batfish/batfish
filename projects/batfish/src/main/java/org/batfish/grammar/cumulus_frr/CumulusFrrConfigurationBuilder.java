@@ -32,8 +32,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,6 +66,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Bgp_redist_typeContext;
+import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Cumulus_frr_configurationContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_expandedContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Icl_standardContext;
 import org.batfish.grammar.cumulus_frr.CumulusFrrParser.Interface_ospf_costContext;
@@ -261,6 +264,9 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
   private @Nullable FrrInterface _currentInterface;
   private OspfArea _currentOspfArea;
   private OspfVrf _currentOspfVrf;
+  // Interfaces in the frr file are initialized from bottom to top, where bottommost occurrence of a
+  // given interface is the only one that matters for determining order.
+  private Set<String> _reverseInterfaceInitOrder;
 
   public CumulusFrrConfigurationBuilder(
       CumulusConcatenatedConfiguration configuration,
@@ -274,6 +280,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
     _w = w;
     _text = fullText;
     _silentSyntax = silentSyntax;
+    _reverseInterfaceInitOrder = new LinkedHashSet<>();
   }
 
   @Override
@@ -788,7 +795,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         return;
       }
 
-      _currentInterface = _frr.getInterfaces().get(name);
+      setRealCurrentInterface(_frr.getInterfaces().get(name));
       return;
     }
 
@@ -811,7 +818,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
           _currentInterface = new FrrInterface("dummy", "dummy");
           return;
         }
-        _currentInterface = _frr.getOrCreateInterface(name, vrfName);
+        setRealCurrentInterface(_frr.getOrCreateInterface(name, vrfName));
         return;
       }
 
@@ -824,12 +831,24 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         _currentInterface = new FrrInterface("dummy", "dummy");
         return;
       }
-      _currentInterface = _frr.getOrCreateInterface(name, vrfName);
+      setRealCurrentInterface(_frr.getOrCreateInterface(name, vrfName));
       return;
     }
 
     // interface with default vrf and defined for the first time in FRR
-    _currentInterface = _frr.getOrCreateInterface(name, DEFAULT_VRF_NAME);
+    setRealCurrentInterface(_frr.getOrCreateInterface(name, DEFAULT_VRF_NAME));
+  }
+
+  private void setRealCurrentInterface(FrrInterface newCurrentInterface) {
+    _currentInterface = newCurrentInterface;
+    String name = newCurrentInterface.getName();
+    _reverseInterfaceInitOrder.remove(name);
+    _reverseInterfaceInitOrder.add(name);
+  }
+
+  @Override
+  public void exitCumulus_frr_configuration(Cumulus_frr_configurationContext ctx) {
+    _frr.setInterfaceInitOrder(Lists.reverse(ImmutableList.copyOf(_reverseInterfaceInitOrder)));
   }
 
   @Override

@@ -1,0 +1,19 @@
+loopback
+# This file describes the network interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+auto lo
+iface lo
+
+# ports.conf --
+# ports.conf --
+#
+#   configure port speed, aggregation, and subdivision.
+#
+#   The ports in Cumulus VX are not configurable from here.
+#frr version
+frr version 4.0+cl3u8
+frr defaults datacenter
+hostname loopback
+!

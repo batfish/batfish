@@ -161,6 +161,7 @@ public final class ConfigurationTest {
     c.setCommunitySetExprs(communitySetExprs);
     c.setCommunitySetMatchExprs(communitySetMatchExprs);
     c.setCommunitySets(communitySets);
+    c.setExportBgpFromBgpRib(true);
     Configuration cloned = BatfishObjectMapper.clone(c, Configuration.class);
 
     assertThat(cloned.getCommunityMatchExprs(), equalTo(communityMatchExprs));
@@ -189,6 +190,7 @@ public final class ConfigurationTest {
     c.setCommunitySetExprs(communitySetExprs);
     c.setCommunitySetMatchExprs(communitySetMatchExprs);
     c.setCommunitySets(communitySets);
+    c.setExportBgpFromBgpRib(true);
     c.setLocationInfo(locationInfo);
     Configuration cloned = SerializationUtils.clone(c);
 

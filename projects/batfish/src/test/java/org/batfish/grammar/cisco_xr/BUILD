@@ -11,6 +11,7 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
+        "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_xr/snapshots",
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_xr/testconfigs",
     ],
     tags = ["cpu:4"],
