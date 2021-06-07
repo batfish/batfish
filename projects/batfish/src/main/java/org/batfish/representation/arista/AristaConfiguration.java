@@ -1860,10 +1860,17 @@ public final class AristaConfiguration extends VendorConfiguration {
                     // Naked continue on last line.
                     return null;
                   }
+                  if (!routeMap.getClauses().containsKey(effectiveTarget)) {
+                    // On Arista, an undefined continue target is just treated as not a continue.
+                    _w.redFlag(
+                        String.format(
+                            "route-map %s entry %d: ignoring continue to missing entry %d",
+                            routeMap.getName(), clause.getSeqNum(), effectiveTarget));
+                    return null;
+                  }
                   return new SimpleEntry<>(clause.getSeqNum(), effectiveTarget);
                 })
             .filter(Objects::nonNull)
-            .filter(e -> routeMap.getClauses().containsKey(e.getValue()))
             .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     // sequences that are valid targets of a continue statement
     Set<Integer> continueTargets = ImmutableSet.copyOf(continues.values());
@@ -1940,9 +1947,9 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     LineAction action = entry.getAction();
 
-    RouteMapContinue cont = entry.getContinueLine();
-    if (cont == null) {
-      // No continue: on match, return the action.
+    @Nullable Integer continueSeq = continues.get(entry.getSeqNum());
+    if (continueSeq == null) {
+      // No continue (after cleaning up invalid refs, etc.): on match, return the action.
       if (action == LineAction.PERMIT) {
         trueStatements.add(Statements.ReturnTrue.toStaticStatement());
       } else {
@@ -1957,21 +1964,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         assert action == LineAction.DENY;
         trueStatements.add(Statements.SetLocalDefaultActionReject.toStaticStatement());
       }
-      Integer target = continues.get(entry.getSeqNum());
-      if (target != null) {
-        trueStatements.add(call(computeRoutingPolicyName(routeMapName, target)));
-      } else {
-        String targetName =
-            String.format("clause: '%s' in route-map: '%s'", cont.getTarget(), routeMapName);
-        undefined(
-            AristaStructureType.ROUTE_MAP_CLAUSE,
-            targetName,
-            AristaStructureUsage.ROUTE_MAP_CONTINUE,
-            cont.getStatementLine());
-        // invalid continue target, so just deny
-        // TODO: verify actual behavior
-        trueStatements.add(Statements.ReturnFalse.toStaticStatement());
-      }
+      trueStatements.add(call(computeRoutingPolicyName(routeMapName, continueSeq)));
     }
 
     // final action if not matched
@@ -2626,6 +2619,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     // mark references to route-maps
     markConcreteStructure(AristaStructureType.ROUTE_MAP);
+    markConcreteStructure(AristaStructureType.ROUTE_MAP_ENTRY);
 
     // L2tp
     markConcreteStructure(AristaStructureType.L2TP_CLASS);
