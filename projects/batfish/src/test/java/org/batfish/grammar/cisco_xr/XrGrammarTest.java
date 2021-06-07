@@ -15,6 +15,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasParseWarning;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
@@ -32,6 +33,7 @@ import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.RESOLUTION_POLICY_NAME;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
@@ -2916,90 +2918,160 @@ public final class XrGrammarTest {
   public void testAbfConversion() {
     String hostname = "abf_conversion";
     Configuration c = parseConfig(hostname);
-    String v4AclName = "aclv4";
-    String v6AclName = "aclv6";
+    String abfPolicyName = computeAbfIpv4PolicyName("aclv4");
     String gigE0 = "GigabitEthernet0/0/0/0";
+    FibLookup regularFibLookup = new FibLookup(IngressInterfaceVrf.instance());
 
-    // TODO v6
-    // assertThat(c.getPacketPolicies().keySet(), contains(v4AclName, v6AclName));
-    assertThat(c.getPacketPolicies().keySet(), contains(v4AclName));
+    assertThat(c.getPacketPolicies().keySet(), contains(abfPolicyName));
 
-    // Ipv4
-    {
-      PacketPolicy policy = c.getPacketPolicies().get(v4AclName);
-      Flow permittedNoAbf =
-          Flow.builder()
-              .setIpProtocol(IpProtocol.TCP)
-              .setIngressNode(hostname)
-              .setIngressInterface(gigE0)
-              .setSrcIp(Ip.parse("8.8.8.8"))
-              .setSrcPort(22222)
-              .setDstIp(Ip.parse("10.0.5.1"))
-              .setDstPort(22)
-              .build();
-      Flow permittedAbfNoVrf = permittedNoAbf.toBuilder().setDstIp(Ip.parse("10.0.3.1")).build();
-      Flow permittedAbfWithVrf = permittedNoAbf.toBuilder().setDstIp(Ip.parse("10.0.4.1")).build();
-      FibLookup regularFibLookup = new FibLookup(IngressInterfaceVrf.instance());
-      // Permitted flow hitting regular permit statement uses regular fib lookup
-      assertThat(
-          FlowEvaluator.evaluate(
-                  permittedNoAbf,
-                  gigE0,
-                  DEFAULT_VRF_NAME,
-                  policy,
-                  c.getIpAccessLists(),
-                  ImmutableMap.of(),
-                  ImmutableMap.of())
-              .getAction(),
-          equalTo(regularFibLookup));
+    PacketPolicy policy = c.getPacketPolicies().get(abfPolicyName);
+    Flow permittedNoAbf =
+        Flow.builder()
+            .setIpProtocol(IpProtocol.TCP)
+            .setIngressNode(hostname)
+            .setIngressInterface(gigE0)
+            // Arbitrary source
+            .setSrcIp(Ip.parse("8.8.8.8"))
+            .setSrcPort(22222)
+            .setDstIp(Ip.parse("10.0.5.1"))
+            .setDstPort(22)
+            .build();
+    Flow permittedAbfNoVrf = permittedNoAbf.toBuilder().setDstIp(Ip.parse("10.0.3.1")).build();
+    Flow permittedAbfWithVrf = permittedNoAbf.toBuilder().setDstIp(Ip.parse("10.0.4.1")).build();
+    Flow denied = permittedNoAbf.toBuilder().setSrcIp(Ip.parse("10.0.0.1")).build();
 
-      // Permitted flow hitting ACL line with ABF uses specified nexthop
-      assertThat(
-          FlowEvaluator.evaluate(
-                  permittedAbfNoVrf,
-                  gigE0,
-                  DEFAULT_VRF_NAME,
-                  policy,
-                  c.getIpAccessLists(),
-                  ImmutableMap.of(),
-                  ImmutableMap.of())
-              .getAction(),
-          equalTo(
-              FibLookupOverrideLookupIp.builder()
-                  .setIps(ImmutableList.of(Ip.parse("10.0.13.1")))
-                  .setVrfExpr(IngressInterfaceVrf.instance())
-                  .setDefaultAction(Drop.instance())
-                  .setRequireConnected(true)
-                  .build()));
+    // Permitted by non-ABF line
+    assertThat(
+        FlowEvaluator.evaluate(
+                permittedNoAbf,
+                gigE0,
+                DEFAULT_VRF_NAME,
+                policy,
+                c.getIpAccessLists(),
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(regularFibLookup));
 
-      // Permitted flow hitting ACL line with ABF uses specified nexthop and VRF
-      assertThat(
-          FlowEvaluator.evaluate(
-                  permittedAbfWithVrf,
-                  gigE0,
-                  DEFAULT_VRF_NAME,
-                  policy,
-                  c.getIpAccessLists(),
-                  ImmutableMap.of(),
-                  ImmutableMap.of())
-              .getAction(),
-          equalTo(
-              FibLookupOverrideLookupIp.builder()
-                  .setIps(ImmutableList.of(Ip.parse("10.0.14.1")))
-                  .setVrfExpr(new LiteralVrfName("vrf1"))
-                  .setDefaultAction(Drop.instance())
-                  .setRequireConnected(true)
-                  .build()));
+    // Permitted by ABF line (nexthop specified but not vrf)
+    assertThat(
+        FlowEvaluator.evaluate(
+                permittedAbfNoVrf,
+                gigE0,
+                DEFAULT_VRF_NAME,
+                policy,
+                c.getIpAccessLists(),
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(
+            FibLookupOverrideLookupIp.builder()
+                .setIps(ImmutableList.of(Ip.parse("10.0.13.1")))
+                .setVrfExpr(IngressInterfaceVrf.instance())
+                .setDefaultAction(Drop.instance())
+                .setRequireConnected(true)
+                .build()));
 
-      // TODO more cases
+    // Permitted by ABF line (nexthop AND vrf specified)
+    assertThat(
+        FlowEvaluator.evaluate(
+                permittedAbfWithVrf,
+                gigE0,
+                DEFAULT_VRF_NAME,
+                policy,
+                c.getIpAccessLists(),
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(
+            FibLookupOverrideLookupIp.builder()
+                .setIps(ImmutableList.of(Ip.parse("10.0.14.1")))
+                .setVrfExpr(new LiteralVrfName("vrf1"))
+                .setDefaultAction(Drop.instance())
+                .setRequireConnected(true)
+                .build()));
 
-      assertThat(c.getAllInterfaces().get(gigE0).getRoutingPolicyName(), equalTo(v4AclName));
-    }
+    // Denied by explicit deny line
+    assertThat(
+        FlowEvaluator.evaluate(
+                denied,
+                gigE0,
+                DEFAULT_VRF_NAME,
+                policy,
+                c.getIpAccessLists(),
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(Drop.instance()));
+    // Similar to denied flow, but not matching source IP or dest port
+    assertThat(
+        FlowEvaluator.evaluate(
+                denied.toBuilder().setSrcIp(Ip.parse("10.0.0.2")).build(),
+                gigE0,
+                DEFAULT_VRF_NAME,
+                policy,
+                c.getIpAccessLists(),
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(regularFibLookup));
+    assertThat(
+        FlowEvaluator.evaluate(
+                denied.toBuilder().setDstPort(23).build(),
+                gigE0,
+                DEFAULT_VRF_NAME,
+                policy,
+                c.getIpAccessLists(),
+                ImmutableMap.of(),
+                ImmutableMap.of())
+            .getAction(),
+        equalTo(regularFibLookup));
 
-    // Ipv6
-    {
-      PacketPolicy acl = c.getPacketPolicies().get("aclv6");
-      // TODO test v6
-    }
+    assertThat(c.getAllInterfaces().get(gigE0).getRoutingPolicyName(), equalTo(abfPolicyName));
+  }
+
+  @Test
+  public void testAbfConversionWarning() {
+    String hostname = "abf_conversion_warning";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Access-list lines with different nexthop VRFs are not yet supported. Line '60"
+                    + " permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf"
+                    + " vrfOther ipv4 10.0.11.2' in ACL aclv4 will be ignored.")));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Access-list lines with different nexthop VRFs are not yet supported. Line '70"
+                    + " permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf"
+                    + " vrf1 ipv4 10.0.11.2 nexthop3 vrf vrfOther ipv4 10.0.11.3' in ACL aclv4 will"
+                    + " be ignored.")));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Access-list lines with different nexthop VRFs are not yet supported. Line '80"
+                    + " permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 ipv4"
+                    + " 10.0.11.2' in ACL aclv4 will be ignored.")));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Access-list lines with different nexthop VRFs are not yet supported. Line '90"
+                    + " permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.11.1 nexthop2 vrf vrfOther"
+                    + " ipv4 10.0.11.2' in ACL aclv4 will be ignored.")));
+
+    // No other warnings, i.e. other lines are converted successfully
+    assertThat(ccae.getWarnings().get(hostname).getRedFlagWarnings(), iterableWithSize(4));
   }
 }
