@@ -19222,8 +19222,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                      "ipWildcard" : "0.0.0.0/0"
+                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -19257,8 +19256,7 @@
                     ],
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                      "ipWildcard" : "0.0.0.0/0"
+                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     },
                     "tcpFlagsMatchConditions" : [
                       {
@@ -19301,13 +19299,11 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                      "ipWildcard" : "0.0.0.0/0"
+                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                      "ipWildcard" : "0.0.0.0/0"
+                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -20077,13 +20073,11 @@
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
                     "dstIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                      "ipWildcard" : "0.0.0.0/0"
+                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     },
                     "negate" : false,
                     "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                      "ipWildcard" : "0.0.0.0/0"
+                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },

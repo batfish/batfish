@@ -27,6 +27,12 @@ ospf_area
   | id = uint32
 ;
 
+port_number
+:
+// 1-65535
+  uint16
+;
+
 uint8: UINT8;
 uint16: UINT8 | UINT16;
 uint32: UINT8 | UINT16 | UINT32;

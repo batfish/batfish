@@ -424,7 +424,7 @@ ifipn_source
    SOURCE
    (
      ifipns_dynamic
-     // | ifipns_static
+     | ifipns_static
    )
 ;
 
@@ -437,10 +437,15 @@ ifipns_dynamic
    ) NEWLINE
 ;
 
-//ifipns_static
-//:
-//   STATIC
-//;
+ifipns_static
+:
+   STATIC
+   original_ip = IP_ADDRESS (original_port = port_number)?
+   (ACCESS_LIST acl = variable)?
+   tx_ip = IP_ADDRESS (tx_port = port_number)?
+   (PROTOCOL (TCP | UDP))?
+   NEWLINE
+;
 
 if_ip_nbar
 :

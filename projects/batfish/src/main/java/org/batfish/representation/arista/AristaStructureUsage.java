@@ -63,6 +63,7 @@ public enum AristaStructureUsage implements StructureUsage {
   IP_ROUTE_NHINT("ip route next-hop interface"),
   IP_NAT_DESTINATION_ACCESS_LIST("ip nat destination acl"),
   IP_NAT_SOURCE_ACCESS_LIST("ip nat source dynamic access-list"),
+  IP_NAT_SOURCE_STATIC_ACCESS_LIST("ip nat source static access-list"),
   IP_NAT_SOURCE_POOL("ip nat source pool"),
   IP_TACACS_SOURCE_INTERFACE("ip tacacs source-interface"),
   IPSEC_PROFILE_ISAKMP_PROFILE("ipsec profile set isakmp-profile"),
