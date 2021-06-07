@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 
+/** Used iff a user specifies the address {@code any} for an IPv4 address in an ACL. */
 public final class AnyAddressSpecifier implements AccessListAddressSpecifier {
 
   public static final AnyAddressSpecifier INSTANCE = new AnyAddressSpecifier();

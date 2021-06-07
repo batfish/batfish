@@ -1261,7 +1261,6 @@ public final class AristaConfiguration extends VendorConfiguration {
      * following Cisco behavior. TODO(https://github.com/batfish/batfish/issues/7047)
      */
     generateDynamicSourceNats(newIface, iface.getDynamicSourceNats());
-    // Only extended ACLs are suitable for static source NAT (filtering on destination IP).
     generateStaticSourceNats(newIface, iface.getStaticSourceNats(), c);
 
     String routingPolicyName = iface.getRoutingPolicy();
