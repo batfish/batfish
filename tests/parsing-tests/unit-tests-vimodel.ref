@@ -4,6 +4,7 @@
     "nodes" : {
       "__aws-services-gateway__" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "__aws-services-gateway__",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18190,6 +18191,7 @@
       },
       "aaa_accounting" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "aaa_accounting",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18255,6 +18257,7 @@
       },
       "aaa_authentication_login_default_tacacs_local" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "aaa_authentication_login_default_tacacs_local",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18327,6 +18330,7 @@
       },
       "aaa_group_server_source_interface" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "aaa_group_server_source_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18387,6 +18391,7 @@
       },
       "access_list" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18444,6 +18449,7 @@
       },
       "address_family" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -18598,6 +18604,7 @@
       },
       "aggaddress" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "aggaddress",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19133,6 +19140,7 @@
       },
       "arista-event-handler" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista-event-handler",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19190,6 +19198,7 @@
       },
       "arista_acl" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19331,6 +19340,7 @@
       },
       "arista_bgp" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19457,6 +19467,7 @@
       },
       "arista_bgp_asn" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_bgp_asn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19512,6 +19523,7 @@
       },
       "arista_community_list_named" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_community_list_named",
         "communityMatchExprs" : {
           "COMM_LIST_NAME" : {
@@ -19693,6 +19705,7 @@
       },
       "arista_dhcp_relay" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_dhcp_relay",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19761,6 +19774,7 @@
       },
       "arista_interface" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19824,6 +19838,7 @@
       },
       "arista_ip_route" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_ip_route",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19862,6 +19877,7 @@
       },
       "arista_logging" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19919,6 +19935,7 @@
       },
       "arista_misc" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -19993,6 +20010,7 @@
       },
       "arista_nat" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -20098,6 +20116,7 @@
       },
       "arista_ospf" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -20142,6 +20161,7 @@
       },
       "arista_queue_monitor" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_queue_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -20160,6 +20180,7 @@
       },
       "arista_username" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_username",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -20190,6 +20211,7 @@
       },
       "arista_vrf" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "arista_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -20249,6 +20271,7 @@
       },
       "as_path_prepend" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "as_path_prepend",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -20327,6 +20350,7 @@
       },
       "asa-interface-redundant" : {
         "configurationFormat" : "CISCO_ASA",
+        "exportBgpFromBgpRib" : false,
         "name" : "asa-interface-redundant",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -20693,6 +20717,7 @@
       },
       "asa_acl" : {
         "configurationFormat" : "CISCO_ASA",
+        "exportBgpFromBgpRib" : false,
         "name" : "asa_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21500,6 +21525,7 @@
       },
       "asa_banner" : {
         "configurationFormat" : "CISCO_ASA",
+        "exportBgpFromBgpRib" : false,
         "name" : "asa_banner",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21529,6 +21555,7 @@
       },
       "asa_interface" : {
         "configurationFormat" : "CISCO_ASA",
+        "exportBgpFromBgpRib" : false,
         "name" : "asa_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21588,6 +21615,7 @@
       },
       "asa_nat" : {
         "configurationFormat" : "CISCO_ASA",
+        "exportBgpFromBgpRib" : false,
         "name" : "asa_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21614,6 +21642,7 @@
       },
       "asa_object_groups" : {
         "configurationFormat" : "CISCO_ASA",
+        "exportBgpFromBgpRib" : false,
         "name" : "asa_object_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21757,6 +21786,7 @@
       },
       "asa_ospf" : {
         "configurationFormat" : "CISCO_ASA",
+        "exportBgpFromBgpRib" : false,
         "name" : "asa_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -21951,6 +21981,7 @@
       },
       "asa_ssh" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "asa_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -22016,6 +22047,7 @@
       },
       "bgp-allow" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "bgp-allow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -22280,6 +22312,7 @@
       },
       "bgp-disable" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "bgp-disable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -22326,6 +22359,7 @@
       },
       "bgp-enforce-first-as" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "bgp-enforce-first-as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -22589,6 +22623,7 @@
       },
       "bgp_address_family" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "bgp_address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -23121,6 +23156,7 @@
       },
       "bgp_default_originate_policy" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "bgp_default_originate_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -23131,29 +23167,13 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocols" : [
-                    "bgp",
-                    "ibgp"
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
+                "type" : "ReturnTrue"
               }
             ]
           },
-          "~BGP_REDISTRIBUTION~default~" : {
-            "name" : "~BGP_REDISTRIBUTION~default~",
+          "~BGP_REDISTRIBUTION_POLICY:default~" : {
+            "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
@@ -23202,7 +23222,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -23216,6 +23236,7 @@
       },
       "bgp_nsr" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "bgp_nsr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -23318,6 +23339,7 @@
       },
       "bgp_route_policy" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "bgp_route_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -23340,73 +23362,8 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                      "comment" : "Redistribute connected routes into BGP",
-                      "conjuncts" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocols" : [
-                            "connected"
-                          ]
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                            "type" : "True"
-                          },
-                          "postStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "UnsetWriteIntermediateBgpAttributes"
-                            }
-                          ],
-                          "postTrueStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "SetReadIntermediateBgpAttributes"
-                            },
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                              "originType" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                                "originType" : "incomplete"
-                              }
-                            }
-                          ],
-                          "preStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "SetWriteIntermediateBgpAttributes"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "bgp",
-                        "ibgp"
-                      ]
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
+                "type" : "ReturnTrue"
               }
             ]
           },
@@ -23453,60 +23410,15 @@
               }
             ]
           },
-          "~BGP_REDISTRIBUTION~default~" : {
-            "name" : "~BGP_REDISTRIBUTION~default~",
+          "~BGP_REDISTRIBUTION_POLICY:default~" : {
+            "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Redistribute routes into BGP",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "comment" : "Redistribute connected routes into BGP",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "connected"
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
-                      "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                        "type" : "True"
-                      },
-                      "postStatements" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                          "type" : "UnsetWriteIntermediateBgpAttributes"
-                        }
-                      ],
-                      "postTrueStatements" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                          "type" : "SetReadIntermediateBgpAttributes"
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                          "originType" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                            "originType" : "incomplete"
-                          }
-                        }
-                      ],
-                      "preStatements" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                          "type" : "SetWriteIntermediateBgpAttributes"
-                        }
-                      ]
-                    }
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "connected"
                   ]
                 },
                 "trueStatements" : [
@@ -23515,6 +23427,10 @@
                     "type" : "ExitAccept"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
               }
             ]
           },
@@ -23559,7 +23475,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : true,
@@ -23603,6 +23519,7 @@
       },
       "cisco-zone" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco-zone",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -23668,6 +23585,7 @@
       },
       "cisco_aaa" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_aaa",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -23754,6 +23672,7 @@
       },
       "cisco_acl" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -25558,6 +25477,7 @@
       },
       "cisco_additional_paths" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_additional_paths",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -25660,6 +25580,7 @@
       },
       "cisco_authentication" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_authentication",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -25717,6 +25638,7 @@
       },
       "cisco_bgp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_bgp",
         "asPathAccessLists" : {
           "10" : {
@@ -26940,6 +26862,7 @@
       },
       "cisco_bgp_confederation" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_bgp_confederation",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27049,6 +26972,7 @@
       },
       "cisco_cable" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_cable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27173,6 +27097,7 @@
       },
       "cisco_callhome" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_callhome",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27231,6 +27156,7 @@
       },
       "cisco_control_plane" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_control_plane",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27288,6 +27214,7 @@
       },
       "cisco_controller" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_controller",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27345,6 +27272,7 @@
       },
       "cisco_crypto" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_crypto",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27552,6 +27480,7 @@
       },
       "cisco_dhcp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_dhcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27614,6 +27543,7 @@
       },
       "cisco_domain" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_domain",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27677,6 +27607,7 @@
       },
       "cisco_dot11" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_dot11",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27734,6 +27665,7 @@
       },
       "cisco_dot1x" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_dot1x",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27791,6 +27723,7 @@
       },
       "cisco_dspfarm" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_dspfarm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27848,6 +27781,7 @@
       },
       "cisco_dynamic_access_policy_record" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_dynamic_access_policy_record",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27905,6 +27839,7 @@
       },
       "cisco_eigrp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_eigrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28405,6 +28340,7 @@
       },
       "cisco_enable" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_enable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28463,6 +28399,7 @@
       },
       "cisco_flow" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_flow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28546,6 +28483,7 @@
       },
       "cisco_hardware" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_hardware",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28603,6 +28541,7 @@
       },
       "cisco_hsrp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_hsrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28686,6 +28625,7 @@
       },
       "cisco_interface" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -29399,6 +29339,7 @@
       },
       "cisco_ios_neighbor" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ios_neighbor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -29555,6 +29496,7 @@
       },
       "cisco_ip" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -29615,6 +29557,7 @@
       },
       "cisco_ip_nat" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ip_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -29683,6 +29626,7 @@
       },
       "cisco_ip_route" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ip_route",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -29856,6 +29800,7 @@
       },
       "cisco_ipsla" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ipsla",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -29913,6 +29858,7 @@
       },
       "cisco_ipv6" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ipv6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -29970,6 +29916,7 @@
       },
       "cisco_ipv6_access_list" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ipv6_access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -30263,6 +30210,7 @@
       },
       "cisco_isis" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -30533,6 +30481,7 @@
       },
       "cisco_l2tp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_l2tp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -30595,6 +30544,7 @@
       },
       "cisco_line" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_line",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -31191,6 +31141,7 @@
       },
       "cisco_logging" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -31290,6 +31241,7 @@
       },
       "cisco_mac_acl" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_mac_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -31347,6 +31299,7 @@
       },
       "cisco_misc" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -31441,6 +31394,7 @@
       },
       "cisco_monitor" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -31498,6 +31452,7 @@
       },
       "cisco_mpls" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "cisco_mpls",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -31548,6 +31503,7 @@
       },
       "cisco_ntp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -31626,6 +31582,7 @@
       },
       "cisco_ospf" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -31996,6 +31953,7 @@
       },
       "cisco_ospf_ipv6" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ospf_ipv6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32091,6 +32049,7 @@
       },
       "cisco_ospf_multi_process" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ospf_multi_process",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32382,6 +32341,7 @@
       },
       "cisco_ospfv3" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ospfv3",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32477,6 +32437,7 @@
       },
       "cisco_pim" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_pim",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32534,6 +32495,7 @@
       },
       "cisco_platform" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_platform",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32591,6 +32553,7 @@
       },
       "cisco_privilege" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_privilege",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32648,6 +32611,7 @@
       },
       "cisco_qos" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_qos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32780,6 +32744,7 @@
       },
       "cisco_queue_monitor" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_queue_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32837,6 +32802,7 @@
       },
       "cisco_redundancy" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_redundancy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32894,6 +32860,7 @@
       },
       "cisco_rip" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_rip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -32957,6 +32924,7 @@
       },
       "cisco_role" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_role",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33014,6 +32982,7 @@
       },
       "cisco_route_map" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_route_map",
         "asPathAccessLists" : {
           "AS_PATH_ACL1" : {
@@ -33306,6 +33275,7 @@
       },
       "cisco_sccp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_sccp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33363,6 +33333,7 @@
       },
       "cisco_snmp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_snmp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33540,6 +33511,7 @@
       },
       "cisco_spanning_tree" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_spanning_tree",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33597,6 +33569,7 @@
       },
       "cisco_ssh" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33657,6 +33630,7 @@
       },
       "cisco_stcapp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_stcapp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33714,6 +33688,7 @@
       },
       "cisco_style_acl1" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_style_acl1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33806,6 +33781,7 @@
       },
       "cisco_style_acl2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_style_acl2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33898,6 +33874,7 @@
       },
       "cisco_system" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -33956,6 +33933,7 @@
       },
       "cisco_track" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_track",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34023,6 +34001,7 @@
       },
       "cisco_username" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_username",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34141,6 +34120,7 @@
       },
       "cisco_username_without_password" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_username_without_password",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34209,6 +34189,7 @@
       },
       "cisco_vdc" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_vdc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34266,6 +34247,7 @@
       },
       "cisco_vlan" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_vlan",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34323,6 +34305,7 @@
       },
       "cisco_voice" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_voice",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34380,6 +34363,7 @@
       },
       "cisco_vpdn" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_vpdn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34437,6 +34421,7 @@
       },
       "cisco_vpn" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34494,6 +34479,7 @@
       },
       "cisco_vrrp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_vrrp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34589,6 +34575,7 @@
       },
       "cisco_webvpn" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_webvpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34646,6 +34633,7 @@
       },
       "cisco_wsma" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "cisco_wsma",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34703,6 +34691,7 @@
       },
       "colon_in_vrf" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "colon_in_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -34959,6 +34948,7 @@
       },
       "commset" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "commset",
         "communityMatchExprs" : {
           "EBGP-PEER" : {
@@ -36356,6 +36346,7 @@
       },
       "community-name-numbers" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "community-name-numbers",
         "communityMatchExprs" : {
           "9999-RRR" : {
@@ -36500,6 +36491,7 @@
       },
       "community-name-numbers_dos" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "community-name-numbers_dos",
         "communityMatchExprs" : {
           "9999-RRR" : {
@@ -36644,6 +36636,7 @@
       },
       "community_set" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "community_set",
         "communityMatchExprs" : {
           "190" : {
@@ -36973,6 +36966,7 @@
       },
       "cumulus_nclu" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -37999,6 +37993,7 @@
       },
       "cumulus_nclu_bgp" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -38242,6 +38237,7 @@
       },
       "cumulus_nclu_bgp_no_address_family" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_bgp_no_address_family",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -38324,6 +38320,7 @@
       },
       "cumulus_nclu_bgp_no_remote_as" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_bgp_no_remote_as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -38465,6 +38462,7 @@
       },
       "cumulus_nclu_bgp_no_router_id" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_bgp_no_router_id",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -38551,6 +38549,7 @@
       },
       "cumulus_nclu_bgp_no_router_id_or_loopback_ip" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_bgp_no_router_id_or_loopback_ip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -38633,6 +38632,7 @@
       },
       "cumulus_nclu_bond" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_bond",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -38962,6 +38962,7 @@
       },
       "cumulus_nclu_interface" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39045,6 +39046,7 @@
       },
       "cumulus_nclu_invalid_bonds" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_invalid_bonds",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39110,6 +39112,7 @@
       },
       "cumulus_nclu_invalid_interfaces" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_invalid_interfaces",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39195,6 +39198,7 @@
       },
       "cumulus_nclu_invalid_vrfs" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_invalid_vrfs",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39282,6 +39286,7 @@
       },
       "cumulus_nclu_invalid_vxlans" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_invalid_vxlans",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39391,6 +39396,7 @@
       },
       "cumulus_nclu_routing" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_routing",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39434,6 +39440,7 @@
       },
       "cumulus_nclu_stp" : {
         "configurationFormat" : "CUMULUS_NCLU",
+        "exportBgpFromBgpRib" : false,
         "name" : "cumulus_nclu_stp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39521,6 +39528,7 @@
       },
       "eos_mlag" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "eos_mlag",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39602,6 +39610,7 @@
       },
       "eos_trunk_group" : {
         "configurationFormat" : "ARISTA",
+        "exportBgpFromBgpRib" : false,
         "name" : "eos_trunk_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39646,6 +39655,7 @@
       },
       "f5_bigip_imish_malformed" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_imish_malformed",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39773,6 +39783,7 @@
       },
       "f5_bigip_structured_cm" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_cm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39795,6 +39806,7 @@
       },
       "f5_bigip_structured_ltm" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_ltm",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39845,6 +39857,7 @@
       },
       "f5_bigip_structured_malformed" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_malformed",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -39878,6 +39891,7 @@
       },
       "f5_bigip_structured_net" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_net",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -40049,6 +40063,7 @@
       },
       "f5_bigip_structured_net_routing_bgp" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_net_routing_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -40209,6 +40224,7 @@
       },
       "f5_bigip_structured_net_routing_prefix_list" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_net_routing_prefix_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -40270,6 +40286,7 @@
       },
       "f5_bigip_structured_net_routing_route_map" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_net_routing_route_map",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -40307,6 +40324,7 @@
       },
       "f5_bigip_structured_sys" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_sys",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -40333,6 +40351,7 @@
       },
       "f5_bigip_structured_sys_ha_group" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_sys_ha_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -40355,6 +40374,7 @@
       },
       "f5_bigip_structured_with_imish" : {
         "configurationFormat" : "F5_BIGIP_STRUCTURED",
+        "exportBgpFromBgpRib" : false,
         "name" : "f5_bigip_structured_with_imish",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -40740,6 +40760,7 @@
       },
       "host1" : {
         "configurationFormat" : "HOST",
+        "exportBgpFromBgpRib" : false,
         "name" : "host1",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -41152,6 +41173,7 @@
       },
       "host2" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "host2",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -41428,6 +41450,7 @@
       },
       "if_tag_is" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "if_tag_is",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -41761,6 +41784,7 @@
       },
       "interface-reth" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "interface-reth",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -41965,6 +41989,7 @@
       },
       "interface_exit" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "interface_exit",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -42084,6 +42109,7 @@
       },
       "interface_name" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "interface_name",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -42230,6 +42256,7 @@
       },
       "interface_sdr" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "interface_sdr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -42317,6 +42344,7 @@
       },
       "interfacemtu" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "interfacemtu",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -42519,6 +42547,7 @@
       },
       "internet" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "internet",
         "deviceModel" : "BATFISH_INTERNET",
         "deviceType" : "INTERNET",
@@ -42697,6 +42726,7 @@
       },
       "ios-xe-bgp-vrf" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios-xe-bgp-vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -42878,6 +42908,7 @@
       },
       "ios_banner" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_banner",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -42939,6 +42970,7 @@
       },
       "ios_banner_dos" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_banner_dos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43000,6 +43032,7 @@
       },
       "ios_bfd" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_bfd",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43057,6 +43090,7 @@
       },
       "ios_bgp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43159,6 +43193,7 @@
       },
       "ios_interface" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43242,6 +43277,7 @@
       },
       "ios_interface_ip_authentication" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_interface_ip_authentication",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43325,6 +43361,7 @@
       },
       "ios_interface_ip_eigrp_settings" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_interface_ip_eigrp_settings",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43408,6 +43445,7 @@
       },
       "ios_interface_ip_tcp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_interface_ip_tcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43491,6 +43529,7 @@
       },
       "ios_standby" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_standby",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43634,6 +43673,7 @@
       },
       "ios_template" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_template",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43691,6 +43731,7 @@
       },
       "ios_xe_bgp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ios_xe_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43842,6 +43883,7 @@
       },
       "ios_xr_acl" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43928,6 +43970,7 @@
       },
       "ios_xr_bgp" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -43996,183 +44039,36 @@
                 ]
               },
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                      "conjuncts" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                          "prefix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                          },
-                          "prefixSet" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                            "prefixSpace" : [
-                              "1.0.0.0/8"
-                            ]
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocols" : [
-                            "aggregate"
-                          ]
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                            "type" : "True"
-                          },
-                          "postStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "UnsetWriteIntermediateBgpAttributes"
-                            }
-                          ],
-                          "postTrueStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "SetReadIntermediateBgpAttributes"
-                            },
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                              "originType" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                                "originType" : "igp"
-                              }
-                            }
-                          ],
-                          "preStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "SetWriteIntermediateBgpAttributes"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                      "comment" : "Redistribute static routes into BGP",
-                      "conjuncts" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                          "protocols" : [
-                            "static"
-                          ]
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
-                          "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                            "type" : "True"
-                          },
-                          "postStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "UnsetWriteIntermediateBgpAttributes"
-                            }
-                          ],
-                          "postTrueStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "SetReadIntermediateBgpAttributes"
-                            },
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                              "originType" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                                "originType" : "incomplete"
-                              }
-                            }
-                          ],
-                          "preStatements" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                              "type" : "SetWriteIntermediateBgpAttributes"
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "bgp",
-                        "ibgp"
-                      ]
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
+                "type" : "ReturnTrue"
               }
             ]
           },
-          "~BGP_REDISTRIBUTION~default~" : {
-            "name" : "~BGP_REDISTRIBUTION~default~",
+          "~BGP_REDISTRIBUTION_POLICY:default~" : {
+            "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Redistribute routes into BGP",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
+                "comment" : "Import aggregate routes into BGP",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "comment" : "Redistribute static routes into BGP",
                   "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "1.0.0.0/8"
+                        ]
+                      }
+                    },
                     {
                       "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                       "protocols" : [
-                        "static"
-                      ]
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
-                      "expr" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                        "type" : "True"
-                      },
-                      "postStatements" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                          "type" : "UnsetWriteIntermediateBgpAttributes"
-                        }
-                      ],
-                      "postTrueStatements" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                          "type" : "SetReadIntermediateBgpAttributes"
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                          "originType" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                            "originType" : "incomplete"
-                          }
-                        }
-                      ],
-                      "preStatements" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                          "type" : "SetWriteIntermediateBgpAttributes"
-                        }
+                        "aggregate"
                       ]
                     }
                   ]
@@ -44183,6 +44079,25 @@
                     "type" : "ExitAccept"
                   }
                 ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocols" : [
+                    "static"
+                  ]
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitReject"
               }
             ]
           },
@@ -44245,7 +44160,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -44259,6 +44174,7 @@
       },
       "ios_xr_bgp_neighbor_group" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_bgp_neighbor_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -44269,24 +44185,8 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocols" : [
-                    "bgp",
-                    "ibgp"
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
+                "type" : "ReturnTrue"
               }
             ]
           },
@@ -44365,8 +44265,8 @@
               }
             ]
           },
-          "~BGP_REDISTRIBUTION~default~" : {
-            "name" : "~BGP_REDISTRIBUTION~default~",
+          "~BGP_REDISTRIBUTION_POLICY:default~" : {
+            "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
@@ -44415,7 +44315,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
-              "redistributionPolicy" : "~BGP_REDISTRIBUTION~default~",
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -44512,6 +44412,7 @@
       },
       "ios_xr_class_map" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_class_map",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -44562,6 +44463,7 @@
       },
       "ios_xr_isis" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -44647,6 +44549,7 @@
       },
       "ios_xr_logging" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_logging",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -44697,6 +44600,7 @@
       },
       "ios_xr_misc" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -44747,6 +44651,7 @@
       },
       "ios_xr_multipart" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_multipart",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -44797,6 +44702,7 @@
       },
       "ios_xr_ntp" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -44850,6 +44756,7 @@
       },
       "ios_xr_ospf" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45371,6 +45278,7 @@
       },
       "ios_xr_router_static" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_router_static",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45513,6 +45421,7 @@
       },
       "ios_xr_ssh" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45563,6 +45472,7 @@
       },
       "ios_xr_taskgroup" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "ios_xr_taskgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45613,6 +45523,7 @@
       },
       "iosxrmulticast" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "iosxrmulticast",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45663,6 +45574,7 @@
       },
       "ip_prefix_list_single_line" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "ip_prefix_list_single_line",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45737,6 +45649,7 @@
       },
       "isp_16509" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "isp_16509",
         "deviceModel" : "BATFISH_ISP",
         "deviceType" : "ISP",
@@ -69727,6 +69640,7 @@
       },
       "isr_crypto_gdoi" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "isr_crypto_gdoi",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -69784,6 +69698,7 @@
       },
       "isr_voip" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "isr_voip",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -69841,6 +69756,7 @@
       },
       "juniper-ospf" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper-ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -69971,6 +69887,7 @@
       },
       "juniper-tcpflags" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper-tcpflags",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -70092,6 +70009,7 @@
       },
       "juniper_application" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_application",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -70138,6 +70056,7 @@
       },
       "juniper_apply_macro" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_apply_macro",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -70184,6 +70103,7 @@
       },
       "juniper_as_path_group" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_as_path_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -70230,6 +70150,7 @@
       },
       "juniper_bgp" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -70677,6 +70598,7 @@
       },
       "juniper_bgp_authentication" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_bgp_authentication",
         "authenticationKeyChains" : {
           "bgp-auth" : {
@@ -71087,6 +71009,7 @@
       },
       "juniper_bgp_remove_private_as" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_bgp_remove_private_as",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -71226,6 +71149,7 @@
       },
       "juniper_extended_community" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_extended_community",
         "communityMatchExprs" : {
           "COMM_ALL" : {
@@ -71357,6 +71281,7 @@
       },
       "juniper_firewall" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_firewall",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -72677,6 +72602,7 @@
       },
       "juniper_forwarding_options" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_forwarding_options",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -72723,6 +72649,7 @@
       },
       "juniper_interfaces" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_interfaces",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -73302,6 +73229,7 @@
       },
       "juniper_isis" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_isis",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -73396,6 +73324,7 @@
       },
       "juniper_l2_learning" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_l2_learning",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -73442,6 +73371,7 @@
       },
       "juniper_misc" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -73492,6 +73422,7 @@
       },
       "juniper_nat" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_nat",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "DENY",
@@ -73771,6 +73702,7 @@
       },
       "juniper_ntp" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -73824,6 +73756,7 @@
       },
       "juniper_ospf_stub_areas" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_ospf_stub_areas",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -73961,6 +73894,7 @@
       },
       "juniper_passwords" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_passwords",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -74024,6 +73958,7 @@
       },
       "juniper_policy_statement" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_policy_statement",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -74137,6 +74072,7 @@
       },
       "juniper_relay" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_relay",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -74183,6 +74119,7 @@
       },
       "juniper_rib_groups" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_rib_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -74591,6 +74528,7 @@
       },
       "juniper_rib_groups~logical_system~logicalsystem" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_rib_groups~logical_system~logicalsystem",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -74862,6 +74800,7 @@
       },
       "juniper_route_filter" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_route_filter",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -75118,6 +75057,7 @@
       },
       "juniper_routing_options" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_routing_options",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -75515,6 +75455,7 @@
       },
       "juniper_routing_policy" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_routing_policy",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -75683,6 +75624,7 @@
       },
       "juniper_security" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_security",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "DENY",
@@ -77123,6 +77065,7 @@
       },
       "juniper_snmp" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_snmp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77193,6 +77136,7 @@
       },
       "juniper_syslog" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_syslog",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77242,6 +77186,7 @@
       },
       "juniper_system" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77288,6 +77233,7 @@
       },
       "juniper_tacplus" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_tacplus",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77350,6 +77296,7 @@
       },
       "juniper_trailing_space" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_trailing_space",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77396,6 +77343,7 @@
       },
       "juniper_vlan" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "juniper_vlan",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77491,6 +77439,7 @@
       },
       "l2vpn" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "l2vpn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77541,6 +77490,7 @@
       },
       "local_v6_addr" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "local_v6_addr",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77643,6 +77593,7 @@
       },
       "mac_access_list" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "mac_access_list",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77700,6 +77651,7 @@
       },
       "mcastrouting" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "mcastrouting",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77750,6 +77702,7 @@
       },
       "mos_interface" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "mos_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77903,6 +77856,7 @@
       },
       "mos_misc" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "mos_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -77981,6 +77935,7 @@
       },
       "msdp_originator_id" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "msdp_originator_id",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78038,6 +77993,7 @@
       },
       "named_and_numbered_lists" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "named_and_numbered_lists",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78104,6 +78060,7 @@
       },
       "nat-08c21704416f06046" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "nat-08c21704416f06046",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78125,6 +78082,7 @@
       },
       "nat-09fd8f73171d2d9a3" : {
         "configurationFormat" : "AWS",
+        "exportBgpFromBgpRib" : false,
         "name" : "nat-09fd8f73171d2d9a3",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78146,6 +78104,7 @@
       },
       "neighbor_mix" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "neighbor_mix",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78540,6 +78499,7 @@
       },
       "network6" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "network6",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78654,6 +78614,7 @@
       },
       "nexus" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "nexus",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78711,6 +78672,7 @@
       },
       "no_aaa_group_server" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "no_aaa_group_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78768,6 +78730,7 @@
       },
       "no_ip_name_server" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "no_ip_name_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78825,6 +78788,7 @@
       },
       "no_mask_reply" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "no_mask_reply",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78912,6 +78876,7 @@
       },
       "no_snmp_server" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "no_snmp_server",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -78969,6 +78934,7 @@
       },
       "non_nexus_neighbor_af" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "non_nexus_neighbor_af",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -79260,6 +79226,7 @@
       },
       "nxos_acl" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -79363,6 +79330,7 @@
       },
       "nxos_bgp" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -79811,6 +79779,7 @@
       },
       "nxos_interface" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -79942,6 +79911,7 @@
       },
       "nxos_misc" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -80002,6 +79972,7 @@
       },
       "nxos_ntp" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_ntp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -80065,6 +80036,7 @@
       },
       "nxos_ospf" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -80283,6 +80255,7 @@
       },
       "nxos_route_map_continue" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_route_map_continue",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -82231,6 +82204,7 @@
       },
       "nxos_ssh" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_ssh",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -82291,6 +82265,7 @@
       },
       "nxos_system" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_system",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -82351,6 +82326,7 @@
       },
       "nxos_vrf" : {
         "configurationFormat" : "CISCO_NX",
+        "exportBgpFromBgpRib" : false,
         "name" : "nxos_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -82446,6 +82422,7 @@
       },
       "openflow" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "openflow",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -82503,6 +82480,7 @@
       },
       "ospf-disable" : {
         "configurationFormat" : "FLAT_JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "ospf-disable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -82601,6 +82579,7 @@
       },
       "palo_alto_virtual_routers" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
+        "exportBgpFromBgpRib" : false,
         "name" : "palo_alto_virtual_routers",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
@@ -82630,6 +82609,7 @@
       },
       "paloalto_applications" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
+        "exportBgpFromBgpRib" : false,
         "name" : "paloalto_applications",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
@@ -82639,6 +82619,7 @@
       },
       "paloalto_interfaces" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
+        "exportBgpFromBgpRib" : false,
         "name" : "paloalto_interfaces",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
@@ -83172,6 +83153,7 @@
       },
       "paloalto_nat" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
+        "exportBgpFromBgpRib" : false,
         "name" : "paloalto_nat",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
@@ -83181,6 +83163,7 @@
       },
       "paloalto_policy" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
+        "exportBgpFromBgpRib" : false,
         "name" : "paloalto_policy",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
@@ -83202,6 +83185,7 @@
       },
       "paloalto_zones" : {
         "configurationFormat" : "PALO_ALTO_NESTED",
+        "exportBgpFromBgpRib" : false,
         "name" : "paloalto_zones",
         "defaultCrossZoneAction" : "DENY",
         "defaultInboundAction" : "PERMIT",
@@ -83463,6 +83447,7 @@
       },
       "pim" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "pim",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -83513,6 +83498,7 @@
       },
       "pim_snooping" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "pim_snooping",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -83570,6 +83556,7 @@
       },
       "prefix_list_ipv4" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "prefix_list_ipv4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -83690,6 +83677,7 @@
       },
       "preset" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "preset",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -83807,6 +83795,7 @@
       },
       "route_policy_as_path_set" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "route_policy_as_path_set",
         "asPathMatchExprs" : {
           "~DEDUPED~ama-coe-as-path" : {
@@ -84744,6 +84733,7 @@
       },
       "route_policy_igp_cost" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "route_policy_igp_cost",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -84852,6 +84842,7 @@
       },
       "route_policy_metric_type" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "route_policy_metric_type",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -85063,6 +85054,7 @@
       },
       "route_policy_param" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "route_policy_param",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -85284,6 +85276,7 @@
       },
       "router_msdp" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "router_msdp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -85341,6 +85334,7 @@
       },
       "rp" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "rp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -87681,6 +87675,7 @@
       },
       "set_inline_community" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "set_inline_community",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -87830,6 +87825,7 @@
       },
       "statistics" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "statistics",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -87887,6 +87883,7 @@
       },
       "switchport_range" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "switchport_range",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -87971,6 +87968,7 @@
       },
       "syslog_source_interface" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "syslog_source_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -88028,6 +88026,7 @@
       },
       "taskgroup" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "taskgroup",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -88078,6 +88077,7 @@
       },
       "tcpflags" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "tcpflags",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -88564,6 +88564,7 @@
       },
       "test" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "test",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -88621,6 +88622,7 @@
       },
       "underscore_variable" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "underscore_variable",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -88687,6 +88689,7 @@
       },
       "variables" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "variables",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -88770,6 +88773,7 @@
       },
       "variables_dos" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "variables_dos",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -88853,6 +88857,7 @@
       },
       "vlan_access_map4" : {
         "configurationFormat" : "CISCO_IOS",
+        "exportBgpFromBgpRib" : false,
         "name" : "vlan_access_map4",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -88955,6 +88960,7 @@
       },
       "vmx4" : {
         "configurationFormat" : "JUNIPER",
+        "exportBgpFromBgpRib" : false,
         "name" : "vmx4",
         "communityMatchExprs" : {
           "fabric" : {
@@ -90607,6 +90613,7 @@
       },
       "xr_dhcp" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "xr_dhcp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -90657,6 +90664,7 @@
       },
       "xr_multicast" : {
         "configurationFormat" : "CISCO_IOS_XR",
+        "exportBgpFromBgpRib" : true,
         "name" : "xr_multicast",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",

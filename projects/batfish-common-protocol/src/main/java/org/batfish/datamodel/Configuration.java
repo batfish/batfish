@@ -150,6 +150,7 @@ public final class Configuration implements Serializable {
   private static final String PROP_DNS_SERVERS = "dnsServers";
   private static final String PROP_DNS_SOURCE_INTERFACE = "dnsSourceInterface";
   private static final String PROP_DOMAIN_NAME = "domainName";
+  private static final String PROP_EXPORT_BGP_FROM_BGP_RIB = "exportBgpFromBgpRib";
   private static final String PROP_GENERATED_REFERENCE_BOOKS = "generatedReferenceBooks";
   private static final String PROP_HUMAN_NAME = "humanName";
   private static final String PROP_IKE_PHASE1_KEYS = "ikePhase1Keys";
@@ -211,6 +212,12 @@ public final class Configuration implements Serializable {
   private String _dnsSourceInterface;
 
   private String _domainName;
+
+  /**
+   * Whether the BGP export pipeline should start with main RIB routes (Juniper-like behavior) or
+   * BGP RIB routes (Cisco-like behavior).
+   */
+  private boolean _exportBgpFromBgpRib;
 
   private Map<String, ReferenceBook> _generatedReferenceBooks;
 
@@ -281,10 +288,15 @@ public final class Configuration implements Serializable {
   @JsonCreator
   private static Configuration makeConfiguration(
       @Nullable @JsonProperty(PROP_NAME) String hostname,
-      @Nullable @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat) {
+      @Nullable @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat,
+      @Nullable @JsonProperty(PROP_EXPORT_BGP_FROM_BGP_RIB) Boolean exportBgpFromBgpRib) {
     checkNotNull(hostname, "%s cannot be null", PROP_NAME);
     checkNotNull(configurationFormat, "%s cannot be null", PROP_CONFIGURATION_FORMAT);
-    return new Configuration(hostname, configurationFormat);
+    Configuration c = new Configuration(hostname, configurationFormat);
+    if (exportBgpFromBgpRib != null && exportBgpFromBgpRib) {
+      c.setExportBgpFromBgpRib(true);
+    }
+    return c;
   }
 
   public Configuration(@Nonnull String hostname, @Nonnull ConfigurationFormat configurationFormat) {
@@ -497,6 +509,19 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_DOMAIN_NAME)
   public String getDomainName() {
     return _domainName;
+  }
+
+  /**
+   * Whether the BGP export pipeline should start with main RIB routes (Juniper-like behavior) or
+   * BGP RIB routes (Cisco-like behavior).
+   */
+  @JsonProperty(PROP_EXPORT_BGP_FROM_BGP_RIB)
+  public boolean getExportBgpFromBgpRib() {
+    return _exportBgpFromBgpRib;
+  }
+
+  public void setExportBgpFromBgpRib(boolean exportBgpFromBgpRib) {
+    _exportBgpFromBgpRib = exportBgpFromBgpRib;
   }
 
   /** Dictionary of Reference Books generated from device configurations (e.g., F5 Pools). */

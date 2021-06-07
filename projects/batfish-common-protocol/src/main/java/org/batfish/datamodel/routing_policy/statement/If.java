@@ -43,6 +43,11 @@ public class If extends Statement {
     this(null, guard, trueStatements, falseStatements);
   }
 
+  /** Initializes If with the specified parameters and an empty list of {@code falseStatements} */
+  public If(String comment, BooleanExpr guard, List<Statement> trueStatements) {
+    this(comment, guard, trueStatements, ImmutableList.of());
+  }
+
   public If(
       @Nullable String comment,
       @Nullable BooleanExpr guard,
