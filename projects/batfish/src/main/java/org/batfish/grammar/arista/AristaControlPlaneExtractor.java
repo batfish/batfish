@@ -93,6 +93,7 @@ import static org.batfish.representation.arista.AristaStructureUsage.IP_DOMAIN_L
 import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_SOURCE_POOL;
+import static org.batfish.representation.arista.AristaStructureUsage.IP_NAT_SOURCE_STATIC_ACCESS_LIST;
 import static org.batfish.representation.arista.AristaStructureUsage.IP_ROUTE_NHINT;
 import static org.batfish.representation.arista.AristaStructureUsage.IP_TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.arista.AristaStructureUsage.ISAKMP_POLICY_SELF_REF;
@@ -176,6 +177,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -616,6 +618,7 @@ import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipm_boundary_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipn_destinationContext;
 import org.batfish.grammar.arista.AristaParser.Ifipns_dynamicContext;
+import org.batfish.grammar.arista.AristaParser.Ifipns_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_area_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_cost_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_dead_interval_eosContext;
@@ -695,6 +698,7 @@ import org.batfish.grammar.arista.AristaParser.Pm_classContext;
 import org.batfish.grammar.arista.AristaParser.Pm_event_classContext;
 import org.batfish.grammar.arista.AristaParser.Pmc_service_policyContext;
 import org.batfish.grammar.arista.AristaParser.PortContext;
+import org.batfish.grammar.arista.AristaParser.Port_numberContext;
 import org.batfish.grammar.arista.AristaParser.Port_specifierContext;
 import org.batfish.grammar.arista.AristaParser.ProtocolContext;
 import org.batfish.grammar.arista.AristaParser.RangeContext;
@@ -824,8 +828,11 @@ import org.batfish.grammar.arista.AristaParser.Wccp_idContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.arista.AccessListAddressSpecifier;
 import org.batfish.representation.arista.AccessListServiceSpecifier;
+import org.batfish.representation.arista.AnyAddressSpecifier;
 import org.batfish.representation.arista.AristaConfiguration;
 import org.batfish.representation.arista.AristaDynamicSourceNat;
+import org.batfish.representation.arista.AristaStaticSourceNat;
+import org.batfish.representation.arista.AristaStaticSourceNat.Protocol;
 import org.batfish.representation.arista.AristaStructureType;
 import org.batfish.representation.arista.AristaStructureUsage;
 import org.batfish.representation.arista.CryptoMapEntry;
@@ -4439,7 +4446,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
         return new WildcardAddressSpecifier(IpWildcard.create(toIp(ctx.ip)));
       }
     } else if (ctx.ANY() != null) {
-      return new WildcardAddressSpecifier(IpWildcard.ANY);
+      return AnyAddressSpecifier.INSTANCE;
     } else if (ctx.prefix != null) {
       return new WildcardAddressSpecifier(IpWildcard.create(Prefix.parse(ctx.prefix.getText())));
     } else {
@@ -4781,10 +4788,54 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     AristaDynamicSourceNat nat = new AristaDynamicSourceNat(acl, pool, overload);
 
     for (Interface iface : _currentInterfaces) {
-      if (iface.getAristaNats() == null) {
-        iface.setAristaNats(new ArrayList<>(1));
+      if (iface.getDynamicSourceNats() == null) {
+        iface.setDynamicSourceNats(new ArrayList<>(1));
       }
-      iface.getAristaNats().add(nat);
+      iface.getDynamicSourceNats().add(nat);
+    }
+  }
+
+  @Override
+  public void exitIfipns_static(Ifipns_staticContext ctx) {
+    if ((ctx.original_port == null) != (ctx.tx_port == null)) {
+      warn(ctx, "For port translation, must specify both original and translated ports.");
+      return;
+    }
+    Optional<Integer> originalPort =
+        Optional.ofNullable(ctx.original_port).flatMap(p -> toPort(ctx, p));
+    Optional<Integer> translatedPort =
+        Optional.ofNullable(ctx.tx_port).flatMap(p -> toPort(ctx, p));
+    if (ctx.original_port != null && (!originalPort.isPresent() || !translatedPort.isPresent())) {
+      // already warned.
+      return;
+    }
+    Protocol protocol =
+        ctx.UDP() != null ? Protocol.UDP : ctx.TCP() != null ? Protocol.TCP : Protocol.ANY;
+    String aclName;
+    if (ctx.acl != null) {
+      aclName = ctx.acl.getText();
+      // Standard ACLs cannot be used to express filtering on destination IPs.
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST_EXTENDED,
+          aclName,
+          IP_NAT_SOURCE_STATIC_ACCESS_LIST,
+          ctx.acl.getStart().getLine());
+    } else {
+      aclName = null;
+    }
+    AristaStaticSourceNat nat =
+        new AristaStaticSourceNat(
+            toIp(ctx.original_ip),
+            originalPort.orElse(null),
+            toIp(ctx.tx_ip),
+            translatedPort.orElse(null),
+            aclName,
+            protocol);
+    for (Interface iface : _currentInterfaces) {
+      if (iface.getStaticSourceNats() == null) {
+        iface.setStaticSourceNats(new ArrayList<>(1));
+      }
+      iface.getStaticSourceNats().add(nat);
     }
   }
 
@@ -7832,6 +7883,27 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     } else {
       return toLong(ctx.id);
     }
+  }
+
+  private static final IntegerSpace PORT_NUMBER_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+
+  private Optional<Integer> toPort(ParserRuleContext messageCtx, Port_numberContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, PORT_NUMBER_RANGE, "port number");
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Integer> toIntegerInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
+    int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
   }
 
   @Nonnull

@@ -1,0 +1,37 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname ip-nat-source-static
+!
+ip access-list ACL
+  permit ip any host 9.9.9.9
+  ! TODO(https://github.com/batfish/batfish/issues/7047) are these semantics honored?
+  deny ip any 10.10.10.0/24
+  permit ip any host 11.11.11.11
+ip access-list INVALID_ACL
+  ! invalid: dest ip cannot be any
+  permit ip any any
+  ! invalid: src IP must be any
+  permit ip host 1.2.3.4 host 9.9.9.9
+  ! invalid: cannot match on protocol
+  permit tcp any host 10.10.10.10
+  ! believed invalid: cannot match on anything but dstIp
+  permit ip any host 11.11.11.11 fragments
+!
+interface Ethernet1
+  ! lots of valid configurations
+  ip address 1.0.0.0/31
+  ip nat source static 1.1.1.1 2.2.2.2
+  ip nat source static 3.3.3.3 33 4.4.4.4 44
+  ip nat source static 5.5.5.5 55 access-list ACL 6.6.6.6 66 protocol tcp
+  ip nat source static 7.7.7.7 77 access-list ACL 8.8.8.8 88 protocol udp
+!
+interface Ethernet2
+  ip address 2.0.0.0/31
+  ip nat source static 1.1.1.1 access-list INVALID_ACL 2.2.2.2
+  ip nat source static 3.3.3.3 access-list UNDEFINED_ACL 4.4.4.4
+  ! Next 2 lines invalid b/c only one port provided
+  ip nat source static 5.5.5.5 55 6.6.6.6
+  ip nat source static 7.7.7.7 8.8.8.8 88
+  ! Next line invalid b/c port 0 used
+  ip nat source static 9.9.9.9 99 10.10.10.10 0
+!
