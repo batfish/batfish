@@ -301,12 +301,11 @@ final class IncrementalBdpEngine {
    *   <li>EGP routes (various protocols)
    * </ul>
    *
-   * @param nodes nodes that are participating in the computation
+   * @param vrs virtual routers that are participating in the computation
    * @param iterationLabel iteration label (for stats tracking)
    * @param allNodes all nodes in the network (for correct neighbor referencing)
    */
   private static void computeDependentRoutesIteration(
-      Map<String, Node> nodes,
       List<VirtualRouter> vrs,
       String iterationLabel,
       Map<String, Node> allNodes,
@@ -410,7 +409,7 @@ final class IncrementalBdpEngine {
         span.finish();
       }
 
-      computeIterationOfBgpRoutes(iterationLabel, allNodes, nodes, vrs);
+      computeIterationOfBgpRoutes(iterationLabel, allNodes, vrs);
 
       leakAcrossVrfs(vrs, iterationLabel);
     } finally {
@@ -419,10 +418,7 @@ final class IncrementalBdpEngine {
   }
 
   private static void computeIterationOfBgpRoutes(
-      String iterationLabel,
-      Map<String, Node> allNodes,
-      Map<String, Node> nodes,
-      List<VirtualRouter> vrs) {
+      String iterationLabel, Map<String, Node> allNodes, List<VirtualRouter> vrs) {
     Span span =
         GlobalTracer.get().buildSpan(iterationLabel + ": Init for new BGP iteration").start();
     LOGGER.info("{}: Init for new BGP iteration", iterationLabel);
@@ -670,12 +666,7 @@ final class IncrementalBdpEngine {
             String iterationlabel =
                 String.format("Iteration %d Schedule %d", _numIterations, nodeSet);
             computeDependentRoutesIteration(
-                iterationNodes,
-                iterationVrs,
-                iterationlabel,
-                nodes,
-                networkConfigurations,
-                _numIterations);
+                iterationVrs, iterationlabel, nodes, networkConfigurations, _numIterations);
             ++nodeSet;
           }
 
