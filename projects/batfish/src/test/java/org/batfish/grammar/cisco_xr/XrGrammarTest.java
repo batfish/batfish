@@ -177,7 +177,6 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
-import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityContext;
@@ -2285,7 +2284,7 @@ public final class XrGrammarTest {
             .setNonRouting(true)
             .setAdmin(CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST)
             .setLocalPreference(100)
-            .setNextHop(NextHopIp.of(Ip.ZERO))
+            .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
@@ -2298,11 +2297,14 @@ public final class XrGrammarTest {
 
   @Test
   public void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
-    /**
+    /*
      * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16 and 2.2.2.0/16
      * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not summary-only) and
      * 2.2.0.0/16 (summary-only). c2 advertises both aggregates and 1.1.1.0/16 to c3 (not
      * 2.2.2.0/16, which is suppressed by the summary-only aggregate).
+     *
+     * c1 should also receive c2's aggregate routes. Worth checking in addition to c3's routes
+     * because the c1-c2 peering is IBGP, whereas the c2-c3 peering is EBGP.
      */
     String snapshotName = "bgp-agg-learned-contributors";
     String c1 = "c1";
@@ -2331,7 +2333,7 @@ public final class XrGrammarTest {
               .setNonRouting(true)
               .setAdmin(CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST)
               .setLocalPreference(100)
-              .setNextHop(NextHopIp.of(Ip.ZERO))
+              .setNextHop(NextHopDiscard.instance())
               .setOriginatorIp(Ip.parse("2.2.2.2"))
               .setOriginType(OriginType.IGP)
               .setProtocol(RoutingProtocol.AGGREGATE)
@@ -2354,6 +2356,17 @@ public final class XrGrammarTest {
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix2)));
       assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
       assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
+    }
+    {
+      // Check c1 routes. (Has both learned routes because it originates them itself.)
+      Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c1, Configuration.DEFAULT_VRF_NAME);
+      assertThat(
+          bgpRibRoutes,
+          containsInAnyOrder(
+              hasPrefix(learnedPrefix1),
+              hasPrefix(learnedPrefix2),
+              hasPrefix(aggPrefix1),
+              hasPrefix(aggPrefix2)));
     }
     {
       // Check c3 routes.
