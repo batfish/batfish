@@ -194,7 +194,9 @@ final class IncrementalBdpEngine {
       SortedMap<String, Node> nodes =
           toImmutableSortedMap(configurations.values(), Configuration::getHostname, Node::new);
       // A collection of all the virtual routers in random order enables parallelization across all
-      // VRs. nodes.values().parallelStream().flatMap(get vrs stream) is only node-parallel.
+      // VRs, and likely spreads nodes with similar hostnames across different cores. In contrast,
+      // nodes.values().parallelStream().flatMap(get vrs stream) is only node-parallel and clusters
+      // nodes by hostname. See https://github.com/batfish/batfish/pull/7054 description.
       List<VirtualRouter> vrs =
           toListInRandomOrder(nodes.values().stream().flatMap(n -> n.getVirtualRouters().stream()));
       NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
