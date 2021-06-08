@@ -1981,10 +1981,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // convert VS access lists to VI access lists, route filter, or packet policy
     for (Ipv4AccessList eaList : _ipv4Acls.values()) {
       if (isIpv4AclUsedForAbf(eaList)) {
-        String policyName = computeAbfIpv4PolicyName(eaList.getName());
-        PacketPolicy packetPolicy =
-            CiscoXrConversions.toPacketPolicy(policyName, eaList, _objectGroups, _w);
-        c.getPacketPolicies().put(policyName, packetPolicy);
+        PacketPolicy packetPolicy = CiscoXrConversions.toPacketPolicy(eaList, _objectGroups, _w);
+        c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy);
         // Don't do other conversions for this ACL since ABF ACLs can't be used in non-ABF contexts
         continue;
       }

@@ -13,6 +13,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LIST;
@@ -1654,12 +1655,9 @@ public class CiscoXrConversions {
 
   /** Convert the specified ACL into a packet policy, for use in ACL based forwarding. */
   static PacketPolicy toPacketPolicy(
-      String policyName,
-      Ipv4AccessList eaList,
-      Map<String, ObjectGroup> objectGroups,
-      Warnings warnings) {
+      Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups, Warnings warnings) {
     return new PacketPolicy(
-        policyName,
+        computeAbfIpv4PolicyName(eaList.getName()),
         eaList.getLines().stream()
             .filter(l -> canConvertAbfAclLine(l, eaList.getName(), warnings))
             .map(l -> toPacketPolicyStatement(l, objectGroups))
@@ -1693,9 +1691,9 @@ public class CiscoXrConversions {
   }
 
   /**
-   * Convert an {@link Ipv4AccessListLine} into a {@link
-   * org.batfish.datamodel.packet_policy.Statement} which includes both the predicate and action.
-   * Must only be called on lines that can be converted according to {@code canConvertAbfAclLine}.
+   * Convert an {@link Ipv4AccessListLine} into a guarded-action {@link
+   * org.batfish.datamodel.packet_policy.Statement}. Must only be called on lines that can be
+   * converted according to {@code canConvertAbfAclLine}.
    */
   private static org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
       Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
@@ -1706,7 +1704,7 @@ public class CiscoXrConversions {
 
   /**
    * Convert an {@link Ipv4AccessListLine} into a {@link
-   * org.batfish.datamodel.packet_policy.Statement} action taken when the ACL is matched. Must only
+   * org.batfish.datamodel.packet_policy.Statement} action taken when the line is matched. Must only
    * be called on lines that can be converted according to {@code canConvertAbfAclLine}.
    */
   private static org.batfish.datamodel.packet_policy.Statement toPacketPolicyActions(
@@ -1817,6 +1815,9 @@ public class CiscoXrConversions {
         .build();
   }
 
+  /**
+   * Convert specified ACL line into an {@link AclLineMatchExpr} representing its match conditions.
+   */
   private static AclLineMatchExpr toAclLineMatchExpr(
       Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
