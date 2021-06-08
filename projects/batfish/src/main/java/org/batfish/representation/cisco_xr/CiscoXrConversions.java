@@ -1652,6 +1652,7 @@ public class CiscoXrConversions {
         new VendorStructureId(vendorConfigFilename, PREFIX_LIST.getDescription(), list.getName()));
   }
 
+  /** Convert the specified ACL into a packet policy, for use in ACL based forwarding. */
   static PacketPolicy toPacketPolicy(
       String policyName,
       Ipv4AccessList eaList,
@@ -1660,7 +1661,7 @@ public class CiscoXrConversions {
     return new PacketPolicy(
         policyName,
         eaList.getLines().stream()
-            .filter(l -> canConvertAbfAcl(l, eaList.getName(), warnings))
+            .filter(l -> canConvertAbfAclLine(l, eaList.getName(), warnings))
             .map(l -> toPacketPolicyStatement(l, objectGroups))
             .collect(ImmutableList.toImmutableList()),
         new Return(new FibLookup(IngressInterfaceVrf.instance())));
@@ -1669,7 +1670,7 @@ public class CiscoXrConversions {
   /**
    * Indicates if the specified acl line can be converted into the VI model; adds a warning if not.
    */
-  private static boolean canConvertAbfAcl(
+  private static boolean canConvertAbfAclLine(
       Ipv4AccessListLine line, String aclName, Warnings warnings) {
     Ipv4Nexthop nexthop1 = line.getNexthop1();
     if (nexthop1 == null) {
@@ -1694,7 +1695,7 @@ public class CiscoXrConversions {
   /**
    * Convert an {@link Ipv4AccessListLine} into a {@link
    * org.batfish.datamodel.packet_policy.Statement} which includes both the predicate and action.
-   * Must only be called on lines that can be converted according to {@code canConvertAbfAcl}.
+   * Must only be called on lines that can be converted according to {@code canConvertAbfAclLine}.
    */
   private static org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
       Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
@@ -1706,7 +1707,7 @@ public class CiscoXrConversions {
   /**
    * Convert an {@link Ipv4AccessListLine} into a {@link
    * org.batfish.datamodel.packet_policy.Statement} action taken when the ACL is matched. Must only
-   * be called on lines that can be converted according to {@code canConvertAbfAcl}.
+   * be called on lines that can be converted according to {@code canConvertAbfAclLine}.
    */
   private static org.batfish.datamodel.packet_policy.Statement toPacketPolicyActions(
       Ipv4AccessListLine line) {
@@ -1715,14 +1716,12 @@ public class CiscoXrConversions {
     }
 
     Ipv4Nexthop nexthop1 = line.getNexthop1();
-    Optional<Ipv4Nexthop> nexthop2 = Optional.ofNullable(line.getNexthop2());
-    Optional<Ipv4Nexthop> nexthop3 = Optional.ofNullable(line.getNexthop3());
 
     if (nexthop1 != null) {
       Builder<Ip> ips = ImmutableList.builder();
       ips.add(nexthop1.getIp());
-      nexthop2.ifPresent(n -> ips.add(n.getIp()));
-      nexthop3.ifPresent(n -> ips.add(n.getIp()));
+      Optional.ofNullable(line.getNexthop2()).ifPresent(n -> ips.add(n.getIp()));
+      Optional.ofNullable(line.getNexthop3()).ifPresent(n -> ips.add(n.getIp()));
 
       String nexthopVrf = nexthop1.getVrf();
       VrfExpr vrfExpr =
@@ -1731,13 +1730,14 @@ public class CiscoXrConversions {
               : new LiteralVrfName(nexthop1.getVrf());
       return new Return(
           FibLookupOverrideLookupIp.builder()
-              .setIps(ImmutableList.of(nexthop1.getIp()))
+              .setIps(ips.build())
               .setVrfExpr(vrfExpr)
               .setDefaultAction(Drop.instance())
+              .setRequireConnected(false)
               .build());
     }
 
-    // No override nexthops
+    // Nexthop not overridden
     return new Return(new FibLookup(IngressInterfaceVrf.instance()));
   }
 

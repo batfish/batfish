@@ -18,3 +18,8 @@ ipv4 access-list aclv4
  ! NH2 has a vrf specified but NH1 does not
  90 permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.11.1 nexthop2 vrf vrfOther ipv4 10.0.11.2
 !
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.1/24
+ no shutdown
+ ipv4 access-group aclv4 egress
+!

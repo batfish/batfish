@@ -43,7 +43,6 @@ public class CiscoXrConfigurationTest {
     abfAcl.addLine(nonAbfLine);
     abfAcl.addLine(abfLine);
 
-    assertFalse(isIpv4AclUsedForAbf(null));
     assertFalse(isIpv4AclUsedForAbf(nonAbfAcl));
     assertTrue(isIpv4AclUsedForAbf(abfAcl));
   }

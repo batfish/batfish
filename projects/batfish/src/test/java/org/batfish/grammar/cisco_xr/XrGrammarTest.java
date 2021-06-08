@@ -3076,10 +3076,12 @@ public final class XrGrammarTest {
             .getAction(),
         equalTo(
             FibLookupOverrideLookupIp.builder()
-                .setIps(ImmutableList.of(Ip.parse("10.0.13.1")))
+                .setIps(
+                    ImmutableList.of(
+                        Ip.parse("10.0.13.1"), Ip.parse("10.0.13.2"), Ip.parse("10.0.13.3")))
                 .setVrfExpr(IngressInterfaceVrf.instance())
                 .setDefaultAction(Drop.instance())
-                .setRequireConnected(true)
+                .setRequireConnected(false)
                 .build()));
 
     // Permitted by ABF line (nexthop AND vrf specified)
@@ -3098,7 +3100,7 @@ public final class XrGrammarTest {
                 .setIps(ImmutableList.of(Ip.parse("10.0.14.1")))
                 .setVrfExpr(new LiteralVrfName("vrf1"))
                 .setDefaultAction(Drop.instance())
-                .setRequireConnected(true)
+                .setRequireConnected(false)
                 .build()));
 
     // Denied by explicit deny line
@@ -3180,8 +3182,14 @@ public final class XrGrammarTest {
                 "Access-list lines with different nexthop VRFs are not yet supported. Line '90"
                     + " permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.11.1 nexthop2 vrf vrfOther"
                     + " ipv4 10.0.11.2' in ACL aclv4 will be ignored.")));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "ACL based forwarding rule aclv4 cannot be applied to an egress interface.")));
 
     // No other warnings, i.e. other lines are converted successfully
-    assertThat(ccae.getWarnings().get(hostname).getRedFlagWarnings(), iterableWithSize(4));
+    assertThat(ccae.getWarnings().get(hostname).getRedFlagWarnings(), iterableWithSize(5));
   }
 }
