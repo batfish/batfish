@@ -595,7 +595,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_PROXY_ARP = "proxyArp";
   private static final String PROP_RIP_ENABLED = "ripEnabled";
   private static final String PROP_RIP_PASSIVE = "ripPassive";
-  private static final String PROP_PACKET_POLICY = "packetPolicy";
+  private static final String PROP_ROUTING_POLICY = "routingPolicy";
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
   private static final String PROP_SPEED = "speed";
   private static final String PROP_SWITCHPORT = "switchport";
@@ -1443,7 +1443,7 @@ public final class Interface extends ComparableStructure<String> {
    * The name of the packet policy used on this interface for policy routing (as opposed to
    * destination-based routing).
    */
-  @JsonProperty(PROP_PACKET_POLICY)
+  @JsonProperty(PROP_ROUTING_POLICY)
   public String getPacketPolicyName() {
     return _packetPolicyName;
   }
@@ -1778,7 +1778,7 @@ public final class Interface extends ComparableStructure<String> {
     _ripPassive = ripPassive;
   }
 
-  @JsonProperty(PROP_PACKET_POLICY)
+  @JsonProperty(PROP_ROUTING_POLICY)
   public void setPacketPolicy(String packetPolicyName) {
     _packetPolicyName = packetPolicyName;
   }
