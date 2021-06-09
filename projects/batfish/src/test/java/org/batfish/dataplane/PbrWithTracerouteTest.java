@@ -151,7 +151,7 @@ public class PbrWithTracerouteTest {
         .setAddress(ConcreteInterfaceAddress.create(ingressIfaceIp, _subnetLength))
         .setOwner(c)
         .setVrf(vrf)
-        .setRoutingPolicy(policyName)
+        .setPacketPolicy(policyName)
         .build();
     nf.interfaceBuilder()
         .setName(_pbrOutIface)

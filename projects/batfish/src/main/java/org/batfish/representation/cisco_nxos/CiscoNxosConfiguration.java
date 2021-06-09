@@ -1250,7 +1250,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Find which route maps are used for PBR
     _c.getAllInterfaces().values().stream()
-        .map(org.batfish.datamodel.Interface::getRoutingPolicyName)
+        .map(org.batfish.datamodel.Interface::getPacketPolicyName)
         .filter(Objects::nonNull)
         .distinct()
         // Extract route map objects
@@ -2032,7 +2032,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     String pbrPolicy = iface.getPbrPolicy();
     // Do not convert undefined references
     if (pbrPolicy != null && _routeMaps.get(pbrPolicy) != null) {
-      newIfaceBuilder.setRoutingPolicy(pbrPolicy);
+      newIfaceBuilder.setPacketPolicy(pbrPolicy);
     }
 
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();

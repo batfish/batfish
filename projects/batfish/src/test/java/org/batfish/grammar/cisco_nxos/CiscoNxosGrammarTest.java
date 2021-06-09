@@ -2105,7 +2105,7 @@ public final class CiscoNxosGrammarTest {
     String policyName = "PBR_POLICY";
     PacketPolicy policy = c.getPacketPolicies().get(policyName);
     assertThat(policy, notNullValue());
-    assertThat(c.getAllInterfaces().get("Ethernet1/1").getRoutingPolicyName(), equalTo(policyName));
+    assertThat(c.getAllInterfaces().get("Ethernet1/1").getPacketPolicyName(), equalTo(policyName));
     Builder builder =
         Flow.builder()
             .setIngressNode(hostname)

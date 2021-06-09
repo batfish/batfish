@@ -1332,7 +1332,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       Ipv4AccessList incomingFilter = _ipv4Acls.get(incomingFilterName);
       if (incomingFilter != null) {
         if (isIpv4AclUsedForAbf(incomingFilter)) {
-          newIface.setRoutingPolicy(computeAbfIpv4PolicyName(incomingFilterName));
+          newIface.setPacketPolicy(computeAbfIpv4PolicyName(incomingFilterName));
         } else {
           newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
         }
@@ -1353,7 +1353,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
-      newIface.setRoutingPolicy(routingPolicyName);
+      newIface.setPacketPolicy(routingPolicyName);
     }
 
     return newIface;

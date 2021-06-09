@@ -536,7 +536,7 @@ public final class BDDReachabilityAnalysisFactory {
                             .getActiveInterfaces(vrf.getName())
                             .values()
                             .stream()
-                            .filter(iface -> iface.getRoutingPolicyName() != null)
+                            .filter(iface -> iface.getPacketPolicyName() != null)
                             .map(
                                 iface ->
                                     Maps.immutableEntry(
@@ -545,7 +545,7 @@ public final class BDDReachabilityAnalysisFactory {
                                             configEntry
                                                 .getValue()
                                                 .getPacketPolicies()
-                                                .get(iface.getRoutingPolicyName()),
+                                                .get(iface.getPacketPolicyName()),
                                             ipAccessListToBdd(configEntry.getValue()),
                                             ipsRoutedOutInterfaces)));
                       })
@@ -900,7 +900,7 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting
   Stream<Edge> generateRules_PreInInterface_NodeDropAclIn() {
     return getInterfaces()
-        .filter(iface -> iface.getRoutingPolicyName() != null || iface.getIncomingFilter() != null)
+        .filter(iface -> iface.getPacketPolicyName() != null || iface.getIncomingFilter() != null)
         .map(
             i -> {
               String node = i.getOwner().getHostname();
@@ -909,7 +909,7 @@ public final class BDDReachabilityAnalysisFactory {
               // There are two ways to drop based on ACLs: incoming filter, or PBR.
               // PBR takes precedence (consistent with FlowTracer)
               Transition denyTransition =
-                  i.getRoutingPolicyName() != null
+                  i.getPacketPolicyName() != null
                       ? _convertedPacketPolicies.get(node).get(iface).getToDrop()
                       : constraint(ignorableAclDenyBDD(node, i.getIncomingFilter()));
 
@@ -929,7 +929,7 @@ public final class BDDReachabilityAnalysisFactory {
   @VisibleForTesting
   Stream<Edge> generateRules_PreInInterface_PbrFibLookup() {
     return getInterfaces()
-        .filter(iface -> iface.getRoutingPolicyName() != null)
+        .filter(iface -> iface.getPacketPolicyName() != null)
         .flatMap(
             iface -> {
               String nodeName = iface.getOwner().getHostname();
@@ -1045,7 +1045,7 @@ public final class BDDReachabilityAnalysisFactory {
   /** Returns {@link PbrFibLookup} states reachable by entering the given interface */
   @Nonnull
   private Stream<PbrFibLookup> interfaceToPbrFibLookups(Interface iface) {
-    if (iface.getRoutingPolicyName() == null) {
+    if (iface.getPacketPolicyName() == null) {
       // Interface does not have PBR
       return Stream.of();
     }
@@ -1081,7 +1081,7 @@ public final class BDDReachabilityAnalysisFactory {
   Stream<Edge> generateRules_PreInInterface_PostInInterface() {
     return getInterfaces()
         // Policy-based routing edges handled elsewhere
-        .filter(iface -> iface.getRoutingPolicyName() == null)
+        .filter(iface -> iface.getPacketPolicyName() == null)
         .map(
             iface -> {
               IpAccessList acl = iface.getIncomingFilter();

@@ -1356,7 +1356,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
     Interface ingressIface =
         ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24")).build();
-    ingressIface.setRoutingPolicy(packetPolicyName);
+    ingressIface.setPacketPolicy(packetPolicyName);
     Interface i1 =
         ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24")).build();
 
@@ -1675,7 +1675,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
     Interface ingressIface =
         ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("10.0.0.0/24")).build();
-    ingressIface.setRoutingPolicy(packetPolicyName);
+    ingressIface.setPacketPolicy(packetPolicyName);
     ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     ib.setName("i2").setAddress(ConcreteInterfaceAddress.parse("2.2.2.1/24")).build();
 
@@ -1979,7 +1979,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setActive(true)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
             .setIncomingFilter(nf.aclBuilder().setOwner(n1).setLines(ACCEPT_ALL).build())
-            .setRoutingPolicy(pbr.getName())
+            .setPacketPolicy(pbr.getName())
             .build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(n1.getHostname(), n1);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);

@@ -72,7 +72,7 @@ public final class Interface extends ComparableStructure<String> {
     @Nullable private IpAccessList _outgoingOriginalFlowFilter;
     private Transformation _outgoingTransformation;
     private Configuration _owner;
-    private String _routingPolicy;
+    private String _packetPolicy;
     private IpAccessList _postTransformationIncomingFilter;
     private boolean _proxyArp;
     private IpAccessList _preTransformationOutgoingFilter;
@@ -161,7 +161,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setPostTransformationIncomingFilter(_postTransformationIncomingFilter);
       iface.setPreTransformationOutgoingFilter(_preTransformationOutgoingFilter);
       iface.setProxyArp(_proxyArp);
-      iface.setRoutingPolicy(_routingPolicy);
+      iface.setPacketPolicy(_packetPolicy);
       iface.setSpeed(_speed);
       if (_switchport != null) {
         iface.setSwitchport(_switchport);
@@ -411,8 +411,8 @@ public final class Interface extends ComparableStructure<String> {
     }
 
     /** Set the policy-based routing (PBR) policy */
-    public Builder setRoutingPolicy(String routingPolicy) {
-      _routingPolicy = routingPolicy;
+    public Builder setPacketPolicy(String packetPolicy) {
+      _packetPolicy = packetPolicy;
       return this;
     }
 
@@ -889,7 +889,7 @@ public final class Interface extends ComparableStructure<String> {
   private transient String _preTransformationOutgoingFilterName;
   private boolean _ripEnabled;
   private boolean _ripPassive;
-  private String _routingPolicyName;
+  private String _packetPolicyName;
   private boolean _spanningTreePortfast;
   private @Nullable Double _speed;
   private boolean _switchport;
@@ -1016,7 +1016,7 @@ public final class Interface extends ComparableStructure<String> {
     if (!_proxyArp == other._proxyArp) {
       return false;
     }
-    if (!Objects.equals(_routingPolicyName, other._routingPolicyName)) {
+    if (!Objects.equals(_packetPolicyName, other._packetPolicyName)) {
       return false;
     }
     if (!Objects.equals(_speed, other._speed)) {
@@ -1440,12 +1440,12 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /**
-   * The name of the policy used on this interface for policy routing (as opposed to
+   * The name of the packet policy used on this interface for policy routing (as opposed to
    * destination-based routing).
    */
   @JsonProperty(PROP_ROUTING_POLICY)
-  public String getRoutingPolicyName() {
-    return _routingPolicyName;
+  public String getPacketPolicyName() {
+    return _packetPolicyName;
   }
 
   /** Whether or not spanning-tree portfast feature is enabled. */
@@ -1779,8 +1779,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ROUTING_POLICY)
-  public void setRoutingPolicy(String routingPolicyName) {
-    _routingPolicyName = routingPolicyName;
+  public void setPacketPolicy(String packetPolicyName) {
+    _packetPolicyName = packetPolicyName;
   }
 
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)

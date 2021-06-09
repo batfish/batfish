@@ -236,7 +236,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               PBR_POLICY_NAME,
               new PropertyDescriptor<>(
-                  Interface::getRoutingPolicyName,
+                  Interface::getPacketPolicyName,
                   Schema.STRING,
                   "Name of policy-based routing (PBR) policy"))
           .put(
