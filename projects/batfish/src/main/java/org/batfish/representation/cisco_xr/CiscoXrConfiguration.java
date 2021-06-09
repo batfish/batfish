@@ -1983,8 +1983,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       if (isIpv4AclUsedForAbf(eaList)) {
         PacketPolicy packetPolicy = CiscoXrConversions.toPacketPolicy(eaList, _objectGroups, _w);
         c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy);
-        // Don't do other conversions for this ACL since ABF ACLs can't be used in non-ABF contexts
-        continue;
       }
 
       if (isAclUsedForRouting(eaList.getName())) {

@@ -3080,7 +3080,7 @@ public final class XrGrammarTest {
                     ImmutableList.of(
                         Ip.parse("10.0.13.1"), Ip.parse("10.0.13.2"), Ip.parse("10.0.13.3")))
                 .setVrfExpr(IngressInterfaceVrf.instance())
-                .setDefaultAction(Drop.instance())
+                .setDefaultAction(regularFibLookup)
                 .setRequireConnected(false)
                 .build()));
 
@@ -3099,7 +3099,7 @@ public final class XrGrammarTest {
             FibLookupOverrideLookupIp.builder()
                 .setIps(ImmutableList.of(Ip.parse("10.0.14.1")))
                 .setVrfExpr(new LiteralVrfName("vrf1"))
-                .setDefaultAction(Drop.instance())
+                .setDefaultAction(regularFibLookup)
                 .setRequireConnected(false)
                 .build()));
 

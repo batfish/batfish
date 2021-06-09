@@ -1717,20 +1717,22 @@ public class CiscoXrConversions {
 
     if (nexthop1 != null) {
       Builder<Ip> ips = ImmutableList.builder();
-      ips.add(nexthop1.getIp());
-      Optional.ofNullable(line.getNexthop2()).ifPresent(n -> ips.add(n.getIp()));
-      Optional.ofNullable(line.getNexthop3()).ifPresent(n -> ips.add(n.getIp()));
+      Optional.ofNullable(nexthop1.getIp()).ifPresent(ips::add);
+      Optional.ofNullable(line.getNexthop2())
+          .flatMap(n -> Optional.ofNullable(n.getIp()))
+          .ifPresent(ips::add);
+      Optional.ofNullable(line.getNexthop3())
+          .flatMap(n -> Optional.ofNullable(n.getIp()))
+          .ifPresent(ips::add);
 
       String nexthopVrf = nexthop1.getVrf();
       VrfExpr vrfExpr =
-          nexthopVrf == null
-              ? IngressInterfaceVrf.instance()
-              : new LiteralVrfName(nexthop1.getVrf());
+          nexthopVrf == null ? IngressInterfaceVrf.instance() : new LiteralVrfName(nexthopVrf);
       return new Return(
           FibLookupOverrideLookupIp.builder()
               .setIps(ips.build())
               .setVrfExpr(vrfExpr)
-              .setDefaultAction(Drop.instance())
+              .setDefaultAction(new FibLookup(IngressInterfaceVrf.instance()))
               .setRequireConnected(false)
               .build());
     }
