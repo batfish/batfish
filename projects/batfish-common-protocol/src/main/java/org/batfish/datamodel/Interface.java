@@ -161,7 +161,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setPostTransformationIncomingFilter(_postTransformationIncomingFilter);
       iface.setPreTransformationOutgoingFilter(_preTransformationOutgoingFilter);
       iface.setProxyArp(_proxyArp);
-      iface.setRoutingPolicy(_routingPolicy);
+      iface.setPacketPolicy(_routingPolicy);
       iface.setSpeed(_speed);
       if (_switchport != null) {
         iface.setSwitchport(_switchport);
@@ -595,7 +595,7 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_PROXY_ARP = "proxyArp";
   private static final String PROP_RIP_ENABLED = "ripEnabled";
   private static final String PROP_RIP_PASSIVE = "ripPassive";
-  private static final String PROP_ROUTING_POLICY = "routingPolicy";
+  private static final String PROP_PACKET_POLICY = "packetPolicy";
   private static final String PROP_SPANNING_TREE_PORTFAST = "spanningTreePortfast";
   private static final String PROP_SPEED = "speed";
   private static final String PROP_SWITCHPORT = "switchport";
@@ -889,7 +889,7 @@ public final class Interface extends ComparableStructure<String> {
   private transient String _preTransformationOutgoingFilterName;
   private boolean _ripEnabled;
   private boolean _ripPassive;
-  private String _routingPolicyName;
+  private String _packetPolicyName;
   private boolean _spanningTreePortfast;
   private @Nullable Double _speed;
   private boolean _switchport;
@@ -1016,7 +1016,7 @@ public final class Interface extends ComparableStructure<String> {
     if (!_proxyArp == other._proxyArp) {
       return false;
     }
-    if (!Objects.equals(_routingPolicyName, other._routingPolicyName)) {
+    if (!Objects.equals(_packetPolicyName, other._packetPolicyName)) {
       return false;
     }
     if (!Objects.equals(_speed, other._speed)) {
@@ -1440,12 +1440,12 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /**
-   * The name of the policy used on this interface for policy routing (as opposed to
+   * The name of the packet policy used on this interface for policy routing (as opposed to
    * destination-based routing).
    */
-  @JsonProperty(PROP_ROUTING_POLICY)
-  public String getRoutingPolicyName() {
-    return _routingPolicyName;
+  @JsonProperty(PROP_PACKET_POLICY)
+  public String getPacketPolicyName() {
+    return _packetPolicyName;
   }
 
   /** Whether or not spanning-tree portfast feature is enabled. */
@@ -1778,9 +1778,9 @@ public final class Interface extends ComparableStructure<String> {
     _ripPassive = ripPassive;
   }
 
-  @JsonProperty(PROP_ROUTING_POLICY)
-  public void setRoutingPolicy(String routingPolicyName) {
-    _routingPolicyName = routingPolicyName;
+  @JsonProperty(PROP_PACKET_POLICY)
+  public void setPacketPolicy(String packetPolicyName) {
+    _packetPolicyName = packetPolicyName;
   }
 
   @JsonProperty(PROP_SPANNING_TREE_PORTFAST)

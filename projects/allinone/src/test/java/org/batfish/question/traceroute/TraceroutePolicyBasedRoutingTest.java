@@ -85,7 +85,7 @@ public class TraceroutePolicyBasedRoutingTest {
             .build();
 
     if (withPolicy) {
-      ingressIface.setRoutingPolicy(ROUTING_POLICY_NAME);
+      ingressIface.setPacketPolicy(ROUTING_POLICY_NAME);
       // If IP protocol is TCP use PBR to do a lookup in V2, which will cause the packet to
       // take a different exit interface
       c1.setPacketPolicies(
@@ -106,7 +106,7 @@ public class TraceroutePolicyBasedRoutingTest {
                                   HeaderSpace.builder().setIpProtocols(IpProtocol.UDP).build())),
                           ImmutableList.of(new Return(Drop.instance())))),
                   new Return(new FibLookup(new LiteralVrfName(v1.getName()))))));
-      ingressIface.setRoutingPolicy(ROUTING_POLICY_NAME);
+      ingressIface.setPacketPolicy(ROUTING_POLICY_NAME);
     }
 
     Interface i1 =

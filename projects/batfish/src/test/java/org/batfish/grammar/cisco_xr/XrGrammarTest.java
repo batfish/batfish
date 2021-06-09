@@ -3139,7 +3139,7 @@ public final class XrGrammarTest {
             .getAction(),
         equalTo(regularFibLookup));
 
-    assertThat(c.getAllInterfaces().get(gigE0).getRoutingPolicyName(), equalTo(abfPolicyName));
+    assertThat(c.getAllInterfaces().get(gigE0).getPacketPolicyName(), equalTo(abfPolicyName));
   }
 
   @Test

@@ -58,7 +58,7 @@ public class InterfaceTest {
   public void testRoutingPolicySettingInBuilder() {
     String policy = "some_policy";
     Interface i = Interface.builder().setName("iface").setRoutingPolicy(policy).build();
-    assertThat(i.getRoutingPolicyName(), equalTo(policy));
+    assertThat(i.getPacketPolicyName(), equalTo(policy));
   }
 
   @Test

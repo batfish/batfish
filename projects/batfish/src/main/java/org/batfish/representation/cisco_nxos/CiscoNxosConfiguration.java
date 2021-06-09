@@ -1250,7 +1250,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
     // Find which route maps are used for PBR
     _c.getAllInterfaces().values().stream()
-        .map(org.batfish.datamodel.Interface::getRoutingPolicyName)
+        .map(org.batfish.datamodel.Interface::getPacketPolicyName)
         .filter(Objects::nonNull)
         .distinct()
         // Extract route map objects

@@ -1265,7 +1265,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
-      newIface.setRoutingPolicy(routingPolicyName);
+      newIface.setPacketPolicy(routingPolicyName);
     }
 
     return newIface;
