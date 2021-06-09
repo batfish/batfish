@@ -175,8 +175,10 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         _sessionProperties.isEbgp(),
         ConfedSessionType.NO_CONFED,
         _headNeighbor.getLocalAs(),
-        Ip.ZERO,
-        Ip.ZERO);
+        // Can't use non-concrete IPs for local IP or original route NHIP because both may be used
+        // as transformed route's next hop
+        Ip.parse("1.1.1.1"),
+        Ip.parse("1.1.1.1"));
   }
 
   /**

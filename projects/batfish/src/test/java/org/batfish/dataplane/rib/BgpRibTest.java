@@ -14,6 +14,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.junit.Test;
 
 /** Tests of {@link BgpRib} */
@@ -25,7 +26,7 @@ public class BgpRibTest {
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.IBGP);
     /*
@@ -64,7 +65,7 @@ public class BgpRibTest {
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.ZERO)
             .setProtocol(RoutingProtocol.IBGP);
@@ -104,7 +105,7 @@ public class BgpRibTest {
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setOriginType(OriginType.IGP)
             .setOriginatorIp(Ip.ZERO)
             .setProtocol(RoutingProtocol.IBGP);

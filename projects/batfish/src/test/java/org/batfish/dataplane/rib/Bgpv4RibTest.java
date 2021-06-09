@@ -31,6 +31,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
@@ -752,14 +753,14 @@ public class Bgpv4RibTest {
     Ip ip2 = Ip.parse("2.2.0.0");
     Bgpv4Route.Builder b1 =
         Bgpv4Route.testBuilder()
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.ZERO)
             .setProtocol(RoutingProtocol.BGP)
             .setReceivedFromIp(Ip.ZERO);
     Bgpv4Route.Builder b2 =
         Bgpv4Route.testBuilder()
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(Ip.MAX)
             .setProtocol(RoutingProtocol.BGP)

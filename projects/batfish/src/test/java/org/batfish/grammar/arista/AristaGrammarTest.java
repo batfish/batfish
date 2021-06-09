@@ -2501,7 +2501,7 @@ public class AristaGrammarTest {
     // assert on the behavior of routing policies
     Builder originalRoute =
         Bgpv4Route.testBuilder()
-            .setNextHopIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("6.7.8.9"))
             .setAdmin(1)
             .setOriginatorIp(Ip.parse("9.8.7.6"))
             .setOriginType(OriginType.EGP)
@@ -2732,7 +2732,7 @@ public class AristaGrammarTest {
 
     Builder builder =
         Bgpv4Route.testBuilder()
-            .setNextHopIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("5.5.5.5"))
             .setAdmin(1)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.EGP)
