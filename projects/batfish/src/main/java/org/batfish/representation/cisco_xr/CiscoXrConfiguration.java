@@ -1351,11 +1351,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
     }
 
-    String routingPolicyName = iface.getRoutingPolicy();
-    if (routingPolicyName != null) {
-      newIface.setPacketPolicy(routingPolicyName);
-    }
-
     return newIface;
   }
 
