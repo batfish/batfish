@@ -1,6 +1,6 @@
 package org.batfish.dataplane.protocols;
 
-import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
@@ -38,7 +38,9 @@ import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.junit.Before;
 import org.junit.Test;
@@ -132,7 +134,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
           convertGeneratedRouteToBgp(
                   (GeneratedRoute) route,
                   _fromBgpProcess.getRouterId(),
-                  Objects.requireNonNull(_headNeighbor.getLocalIp()),
+                  NextHopIp.of(Objects.requireNonNull(_headNeighbor.getLocalIp())),
                   false)
               .build(),
           Type.IPV4_UNICAST);
@@ -175,8 +177,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         _sessionProperties.isEbgp(),
         ConfedSessionType.NO_CONFED,
         _headNeighbor.getLocalAs(),
-        Ip.ZERO,
-        Ip.ZERO);
+        Ip.parse("1.1.1.1"),
+        Ip.parse("1.1.1.1"));
   }
 
   /**
@@ -194,28 +196,25 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   @Test
   public void testConvertGeneratedToBgpHasNextHop() {
-    Ip nextHopIp = Ip.parse("1.1.1.1");
+    NextHop nextHop = NextHopIp.of(Ip.parse("1.1.1.1"));
     assertThat(
-        convertGeneratedRouteToBgp(_baseAggRouteBuilder.build(), Ip.ZERO, nextHopIp, false).build(),
-        hasNextHopIp(nextHopIp));
+        convertGeneratedRouteToBgp(_baseAggRouteBuilder.build(), Ip.ZERO, nextHop, false).build(),
+        hasNextHop(nextHop));
   }
 
   @Test
   public void testConvertGeneratedToBgpPreservesOriginType() {
-    Ip nextHopIp = Ip.parse("1.1.1.1");
+    NextHop nextHop = NextHopIp.of(Ip.parse("1.1.1.1"));
     assertThat(
         convertGeneratedRouteToBgp(
-                _baseAggRouteBuilder.setOriginType(OriginType.IGP).build(),
-                Ip.ZERO,
-                nextHopIp,
-                false)
+                _baseAggRouteBuilder.setOriginType(OriginType.IGP).build(), Ip.ZERO, nextHop, false)
             .build(),
         hasOriginType(OriginType.IGP));
     assertThat(
         convertGeneratedRouteToBgp(
                 _baseAggRouteBuilder.setOriginType(OriginType.INCOMPLETE).build(),
                 Ip.ZERO,
-                nextHopIp,
+                nextHop,
                 false)
             .build(),
         hasOriginType(OriginType.INCOMPLETE));

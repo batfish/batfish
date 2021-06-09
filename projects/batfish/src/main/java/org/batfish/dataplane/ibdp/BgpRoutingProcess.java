@@ -1130,7 +1130,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               gr,
               Optional.ofNullable(gr.getAttributePolicy()).flatMap(_policies::get).orElse(null),
               _process.getRouterId(),
-              Ip.ZERO,
+              Ip.AUTO,
               // Prevent route from being merged into the main RIB by marking it non-routing
               true);
       /* TODO: tests for this */

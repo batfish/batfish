@@ -19,7 +19,7 @@ router bgp 2
     aggregate-address 1.1.0.0/16
     aggregate-address 2.2.0.0/16 summary-only
   neighbor 10.10.10.1
-    remote-as 1
+    remote-as 2
     route-policy ALLOW-ALL in
     route-policy ALLOW-ALL out
   neighbor 11.11.11.1
