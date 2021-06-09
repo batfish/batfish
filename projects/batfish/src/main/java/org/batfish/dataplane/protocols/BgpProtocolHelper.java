@@ -31,6 +31,7 @@ import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -261,14 +262,16 @@ public final class BgpProtocolHelper {
       Ip routerId,
       Ip nextHopIp,
       boolean nonRouting) {
-    Builder builder = convertGeneratedRouteToBgp(generatedRoute, routerId, nextHopIp, nonRouting);
+    NextHop nextHop =
+        nextHopIp.equals(Ip.AUTO) ? NextHopDiscard.instance() : NextHopIp.of(nextHopIp);
+    Builder builder = convertGeneratedRouteToBgp(generatedRoute, routerId, nextHop, nonRouting);
     if (attributePolicy == null) {
       return builder.build();
     }
     boolean accepted =
         attributePolicy.process(builder.build(), builder.clearNextHop(), Direction.OUT);
     assert accepted;
-    return builder.setNextHop(NextHopIp.of(nextHopIp)).build();
+    return builder.setNextHop(nextHop).build();
   }
 
   /**
@@ -281,7 +284,7 @@ public final class BgpProtocolHelper {
   @Nonnull
   @VisibleForTesting
   static Builder convertGeneratedRouteToBgp(
-      GeneratedRoute generatedRoute, Ip routerId, Ip nextHopIp, boolean nonRouting) {
+      GeneratedRoute generatedRoute, Ip routerId, NextHop nextHop, boolean nonRouting) {
     return Bgpv4Route.builder()
         .setAdmin(generatedRoute.getAdministrativeCost())
         .setAsPath(generatedRoute.getAsPath())
@@ -289,7 +292,7 @@ public final class BgpProtocolHelper {
         .setMetric(generatedRoute.getMetric())
         .setSrcProtocol(RoutingProtocol.AGGREGATE)
         .setProtocol(RoutingProtocol.AGGREGATE)
-        .setNextHop(NextHopIp.of(nextHopIp))
+        .setNextHop(nextHop)
         .setNetwork(generatedRoute.getNetwork())
         .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
         /*

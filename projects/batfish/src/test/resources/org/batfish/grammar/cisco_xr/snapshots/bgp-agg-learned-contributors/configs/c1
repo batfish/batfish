@@ -19,7 +19,7 @@ router static
     1.1.1.0/24 Null0
     2.2.2.0/24 Null0
 !
-router bgp 1
+router bgp 2
   bgp router-id 1.1.1.1
   address-family ipv4 unicast
     redistribute static
