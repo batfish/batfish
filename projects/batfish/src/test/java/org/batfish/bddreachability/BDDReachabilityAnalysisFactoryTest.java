@@ -1979,7 +1979,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setActive(true)
             .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
             .setIncomingFilter(nf.aclBuilder().setOwner(n1).setLines(ACCEPT_ALL).build())
-            .setRoutingPolicy(pbr.getName())
+            .setPacketPolicy(pbr.getName())
             .build();
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(n1.getHostname(), n1);
     BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);

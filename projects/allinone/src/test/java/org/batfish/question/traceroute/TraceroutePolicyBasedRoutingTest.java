@@ -51,7 +51,7 @@ import org.junit.rules.TemporaryFolder;
 /** End-to-end-ish tests of traceroute with policy-based routing */
 public class TraceroutePolicyBasedRoutingTest {
 
-  private static final String ROUTING_POLICY_NAME = "packetPolicy";
+  private static final String PACKET_POLICY_NAME = "packetPolicy";
   private static final String SOURCE_LOCATION_STR = "enter(c1[ingressInterface])";
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -85,14 +85,14 @@ public class TraceroutePolicyBasedRoutingTest {
             .build();
 
     if (withPolicy) {
-      ingressIface.setPacketPolicy(ROUTING_POLICY_NAME);
+      ingressIface.setPacketPolicy(PACKET_POLICY_NAME);
       // If IP protocol is TCP use PBR to do a lookup in V2, which will cause the packet to
       // take a different exit interface
       c1.setPacketPolicies(
           ImmutableSortedMap.of(
-              ROUTING_POLICY_NAME,
+              PACKET_POLICY_NAME,
               new PacketPolicy(
-                  ROUTING_POLICY_NAME,
+                  PACKET_POLICY_NAME,
                   ImmutableList.of(
                       new If(
                           new PacketMatchExpr(
@@ -106,7 +106,7 @@ public class TraceroutePolicyBasedRoutingTest {
                                   HeaderSpace.builder().setIpProtocols(IpProtocol.UDP).build())),
                           ImmutableList.of(new Return(Drop.instance())))),
                   new Return(new FibLookup(new LiteralVrfName(v1.getName()))))));
-      ingressIface.setPacketPolicy(ROUTING_POLICY_NAME);
+      ingressIface.setPacketPolicy(PACKET_POLICY_NAME);
     }
 
     Interface i1 =

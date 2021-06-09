@@ -2032,7 +2032,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     String pbrPolicy = iface.getPbrPolicy();
     // Do not convert undefined references
     if (pbrPolicy != null && _routeMaps.get(pbrPolicy) != null) {
-      newIfaceBuilder.setRoutingPolicy(pbrPolicy);
+      newIfaceBuilder.setPacketPolicy(pbrPolicy);
     }
 
     org.batfish.datamodel.Interface newIface = newIfaceBuilder.build();

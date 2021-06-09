@@ -72,7 +72,7 @@ public final class Interface extends ComparableStructure<String> {
     @Nullable private IpAccessList _outgoingOriginalFlowFilter;
     private Transformation _outgoingTransformation;
     private Configuration _owner;
-    private String _routingPolicy;
+    private String _packetPolicy;
     private IpAccessList _postTransformationIncomingFilter;
     private boolean _proxyArp;
     private IpAccessList _preTransformationOutgoingFilter;
@@ -161,7 +161,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setPostTransformationIncomingFilter(_postTransformationIncomingFilter);
       iface.setPreTransformationOutgoingFilter(_preTransformationOutgoingFilter);
       iface.setProxyArp(_proxyArp);
-      iface.setPacketPolicy(_routingPolicy);
+      iface.setPacketPolicy(_packetPolicy);
       iface.setSpeed(_speed);
       if (_switchport != null) {
         iface.setSwitchport(_switchport);
@@ -411,8 +411,8 @@ public final class Interface extends ComparableStructure<String> {
     }
 
     /** Set the policy-based routing (PBR) policy */
-    public Builder setRoutingPolicy(String routingPolicy) {
-      _routingPolicy = routingPolicy;
+    public Builder setPacketPolicy(String packetPolicy) {
+      _packetPolicy = packetPolicy;
       return this;
     }
 
