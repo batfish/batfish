@@ -1717,13 +1717,9 @@ public class CiscoXrConversions {
 
     if (nexthop1 != null) {
       Builder<Ip> ips = ImmutableList.builder();
-      Optional.ofNullable(nexthop1.getIp()).ifPresent(ips::add);
-      Optional.ofNullable(line.getNexthop2())
-          .flatMap(n -> Optional.ofNullable(n.getIp()))
-          .ifPresent(ips::add);
-      Optional.ofNullable(line.getNexthop3())
-          .flatMap(n -> Optional.ofNullable(n.getIp()))
-          .ifPresent(ips::add);
+      ips.add(nexthop1.getIp());
+      Optional.ofNullable(line.getNexthop2()).ifPresent(n -> ips.add(n.getIp()));
+      Optional.ofNullable(line.getNexthop3()).ifPresent(n -> ips.add(n.getIp()));
 
       String nexthopVrf = nexthop1.getVrf();
       VrfExpr vrfExpr =
