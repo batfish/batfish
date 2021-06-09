@@ -42,10 +42,11 @@ public class SetNextHopTest {
 
   @Test
   public void testBgpRoute() {
-    SetNextHop expr = new SetNextHop(new IpNextHop(Collections.singletonList(Ip.ZERO)));
+    Ip ip = Ip.parse("1.1.1.1");
+    SetNextHop expr = new SetNextHop(new IpNextHop(Collections.singletonList(ip)));
     Bgpv4Route.Builder builder = Bgpv4Route.testBuilder();
     expr.execute(Environment.builder(_c).setOutputRoute(builder).build());
-    assertThat(builder.getNextHopIp(), equalTo(Ip.ZERO));
+    assertThat(builder.getNextHopIp(), equalTo(ip));
   }
 
   @Test
