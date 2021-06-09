@@ -815,6 +815,12 @@ public class TransferBDD {
     y = r2.getMed();
     ret.getMed().setValue(ite(guard, x, y));
 
+    x = r1.getNextHop();
+    y = r2.getNextHop();
+    ret.getNextHop().setValue(ite(guard, x, y));
+
+    ret.setNextHopSet(ite(guard, r1.getNextHopSet(), r2.getNextHopSet()));
+
     x = r1.getTag();
     y = r2.getTag();
     ret.getTag().setValue(ite(guard, x, y));
@@ -1073,6 +1079,8 @@ public class TransferBDD {
     rec.getAdminDist().setValue(0);
     rec.getPrefixLength().setValue(0);
     rec.getMed().setValue(0);
+    rec.getNextHop().setValue(0);
+    rec.setNextHopSet(factory.zero());
     rec.getTag().setValue(0);
     rec.getPrefix().setValue(0);
     for (int i = 0; i < rec.getCommunityAtomicPredicates().length; i++) {
