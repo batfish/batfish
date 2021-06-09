@@ -13,6 +13,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LIST;
@@ -20,6 +21,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LI
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -88,6 +90,15 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.isis.IsisLevelSettings;
+import org.batfish.datamodel.packet_policy.Drop;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.FibLookupOverrideLookupIp;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
+import org.batfish.datamodel.packet_policy.LiteralVrfName;
+import org.batfish.datamodel.packet_policy.PacketMatchExpr;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
+import org.batfish.datamodel.packet_policy.VrfExpr;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1642,6 +1653,90 @@ public class CiscoXrConversions {
         new VendorStructureId(vendorConfigFilename, PREFIX_LIST.getDescription(), list.getName()));
   }
 
+  /** Convert the specified ACL into a packet policy, for use in ACL based forwarding. */
+  static PacketPolicy toPacketPolicy(
+      Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups, Warnings warnings) {
+    return new PacketPolicy(
+        computeAbfIpv4PolicyName(eaList.getName()),
+        eaList.getLines().stream()
+            .filter(l -> canConvertAbfAclLine(l, eaList.getName(), warnings))
+            .map(l -> toPacketPolicyStatement(l, objectGroups))
+            .collect(ImmutableList.toImmutableList()),
+        new Return(new FibLookup(IngressInterfaceVrf.instance())));
+  }
+
+  /**
+   * Indicates if the specified acl line can be converted into the VI model; adds a warning if not.
+   */
+  private static boolean canConvertAbfAclLine(
+      Ipv4AccessListLine line, String aclName, Warnings warnings) {
+    Ipv4Nexthop nexthop1 = line.getNexthop1();
+    if (nexthop1 == null) {
+      return true;
+    }
+
+    String vrf1 = nexthop1.getVrf();
+    String vrf2 = line.getNexthop2() == null ? vrf1 : line.getNexthop2().getVrf();
+    String vrf3 = line.getNexthop3() == null ? vrf1 : line.getNexthop3().getVrf();
+    if (!Objects.equals(vrf1, vrf2) || !Objects.equals(vrf1, vrf3)) {
+      warnings.redFlag(
+          String.format(
+              "Access-list lines with different nexthop VRFs are not yet supported. Line '%s' in"
+                  + " ACL %s will be ignored.",
+              line.getName(), aclName));
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Convert an {@link Ipv4AccessListLine} into a guarded-action {@link
+   * org.batfish.datamodel.packet_policy.Statement}. Must only be called on lines that can be
+   * converted according to {@code canConvertAbfAclLine}.
+   */
+  private static org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
+      Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
+    return new org.batfish.datamodel.packet_policy.If(
+        new PacketMatchExpr(toAclLineMatchExpr(line, objectGroups)),
+        ImmutableList.of(toPacketPolicyActions(line)));
+  }
+
+  /**
+   * Convert an {@link Ipv4AccessListLine} into a {@link
+   * org.batfish.datamodel.packet_policy.Statement} action taken when the line is matched. Must only
+   * be called on lines that can be converted according to {@code canConvertAbfAclLine}.
+   */
+  private static org.batfish.datamodel.packet_policy.Statement toPacketPolicyActions(
+      Ipv4AccessListLine line) {
+    if (line.getAction() == LineAction.DENY) {
+      return new Return(Drop.instance());
+    }
+
+    Ipv4Nexthop nexthop1 = line.getNexthop1();
+
+    if (nexthop1 != null) {
+      Builder<Ip> ips = ImmutableList.builder();
+      ips.add(nexthop1.getIp());
+      Optional.ofNullable(line.getNexthop2()).ifPresent(n -> ips.add(n.getIp()));
+      Optional.ofNullable(line.getNexthop3()).ifPresent(n -> ips.add(n.getIp()));
+
+      String nexthopVrf = nexthop1.getVrf();
+      VrfExpr vrfExpr =
+          nexthopVrf == null ? IngressInterfaceVrf.instance() : new LiteralVrfName(nexthopVrf);
+      return new Return(
+          FibLookupOverrideLookupIp.builder()
+              .setIps(ips.build())
+              .setVrfExpr(vrfExpr)
+              .setDefaultAction(new FibLookup(IngressInterfaceVrf.instance()))
+              .setRequireConnected(false)
+              .build());
+    }
+
+    // Nexthop not overridden
+    return new Return(new FibLookup(IngressInterfaceVrf.instance()));
+  }
+
   /**
    * Given a list of {@link If} statements, sets the false statements of every {@link If} to an
    * empty list and adds a rule at the end to allow EIGRP from provided ownAsn.
@@ -1718,7 +1813,10 @@ public class CiscoXrConversions {
         .build();
   }
 
-  private static ExprAclLine toExprAclLine(
+  /**
+   * Convert specified ACL line into an {@link AclLineMatchExpr} representing its match conditions.
+   */
+  private static AclLineMatchExpr toAclLineMatchExpr(
       Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
@@ -1740,10 +1838,14 @@ public class CiscoXrConversions {
                   new MatchHeaderSpace(
                       HeaderSpace.builder().setSrcIps(srcIpSpace).setDstIps(dstIpSpace).build())));
     }
+    return match;
+  }
 
+  private static ExprAclLine toExprAclLine(
+      Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
     return ExprAclLine.builder()
         .setAction(line.getAction())
-        .setMatchCondition(match)
+        .setMatchCondition(toAclLineMatchExpr(line, objectGroups))
         .setName(line.getName())
         .build();
   }
