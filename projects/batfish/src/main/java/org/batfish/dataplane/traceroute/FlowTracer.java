@@ -599,7 +599,7 @@ class FlowTracer {
   private boolean processPBR(Interface incomingInterface) {
 
     // apply routing/packet policy applied to the interface, if defined.
-    String policyName = incomingInterface.getRoutingPolicyName();
+    String policyName = incomingInterface.getPacketPolicyName();
     if (policyName == null) {
       return false;
     }

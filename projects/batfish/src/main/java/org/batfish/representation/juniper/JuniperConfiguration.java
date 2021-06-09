@@ -1765,9 +1765,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (inFilter.isUsedForFBF()) {
           PacketPolicy routingPolicy = _c.getPacketPolicies().get(incomingFilterName);
           if (routingPolicy != null) {
-            newIface.setRoutingPolicy(incomingFilterName);
+            newIface.setPacketPolicy(incomingFilterName);
           } else {
-            newIface.setRoutingPolicy(null);
+            newIface.setPacketPolicy(null);
             _w.redFlag(
                 String.format(
                     "Interface %s: cannot resolve applied filter %s, defaulting to no filter",

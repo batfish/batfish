@@ -1697,7 +1697,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
-      newIface.setRoutingPolicy(routingPolicyName);
+      newIface.setPacketPolicy(routingPolicyName);
     }
 
     // For IOS and XR, FirewallSessionInterfaceInfo is created once for all NAT interfaces.
