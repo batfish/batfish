@@ -33,35 +33,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
-import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.LongExpr;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.MatchTag;
-import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
-import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
+import org.batfish.datamodel.routing_policy.expr.*;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -317,7 +289,7 @@ public class TransferBDD {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
 
-      BDD prefixSet = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), p.getData());
+      BDD prefixSet = matchPrefixSet(p.indent(), _conf, m, p.getData());
       return result.setReturnValueBDD(prefixSet);
 
       // TODO: implement me
@@ -738,17 +710,39 @@ public class TransferBDD {
    * is not modified, and thus will contain only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  public static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
+  public static BDD isRelevantForDestination(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
-    BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, p.getPrefixLength());
+    int pLen = p.getPrefixLength();
 
-    BDDInteger prefixLength = record.getPrefixLength();
     SubRange r = range.getLengthRange();
     int lower = r.getStart();
     int upper = r.getEnd();
-    BDD lenMatch = prefixLength.range(lower, upper);
 
-    return lenMatch.and(prefixMatch);
+    BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, pLen);
+    BDDInteger prefixLength = record.getPrefixLength();
+    BDD lenMatch = prefixLength.range(lower, upper);
+    return prefixMatch.and(lenMatch);
+  }
+
+  // Produce a BDD representing conditions under which the route's next-hop address is within a
+  // given prefix range.
+  private static BDD isRelevantForNextHop(BDDRoute record, PrefixRange range) {
+    Prefix p = range.getPrefix();
+    int pLen = p.getPrefixLength();
+    return firstBitsEqual(record.getNextHop().getBitvec(), p, pLen);
+  }
+
+  // Produce a BDD representing conditions under which a particular prefix in the route is within a
+  // given prefix range.
+  private static BDD isRelevantFor(BDDRoute record, PrefixRange range, PrefixType type) {
+    switch (type) {
+      case DESTINATION:
+        return isRelevantForDestination(record, range);
+      case NEXTHOP:
+        return isRelevantForNextHop(record, range);
+      default:
+        throw new UnsupportedOperationException("Unexpected PrefixType: " + type);
+    }
   }
 
   /*
@@ -895,7 +889,8 @@ public class TransferBDD {
   /*
    * Converts a route filter list to a boolean expression.
    */
-  private BDD matchFilterList(TransferParam<BDDRoute> p, RouteFilterList x, BDDRoute other) {
+  private BDD matchFilterList(
+      TransferParam<BDDRoute> p, RouteFilterList x, BDDRoute other, PrefixType type) {
     BDD acc = factory.zero();
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
     Collections.reverse(lines);
@@ -909,7 +904,7 @@ public class TransferBDD {
         PrefixRange range = new PrefixRange(pfx, r);
         p.debug("Prefix Range: " + range);
         p.debug("Action: " + line.getAction());
-        BDD matches = isRelevantFor(other, range);
+        BDD matches = isRelevantFor(other, range, type);
         BDD action = mkBDD(line.getAction() == LineAction.PERMIT);
         acc = ite(matches, action, acc);
       }
@@ -917,11 +912,31 @@ public class TransferBDD {
     return acc;
   }
 
+  private enum PrefixType {
+    DESTINATION,
+    NEXTHOP
+  }
+
+  private PrefixType toPrefixType(PrefixExpr pe) {
+    if (pe.equals(DestinationNetwork.instance())) {
+      return PrefixType.DESTINATION;
+    } else if (pe instanceof IpPrefix) {
+      IpPrefix ipp = (IpPrefix) pe;
+      if (ipp.getIp().equals(NextHopIp.instance())
+          && ipp.getPrefixLength().equals(new LiteralInt(Prefix.MAX_PREFIX_LENGTH))) {
+        return PrefixType.NEXTHOP;
+      }
+    }
+    throw new UnsupportedOperationException("Unsupported prefix expression: " + pe);
+  }
+
   /*
    * Converts a prefix set to a boolean expression.
    */
   private BDD matchPrefixSet(
-      TransferParam<BDDRoute> p, Configuration conf, PrefixSetExpr e, BDDRoute other) {
+      TransferParam<BDDRoute> p, Configuration conf, MatchPrefixSet m, BDDRoute other) {
+    PrefixType pt = toPrefixType(m.getPrefix());
+    PrefixSetExpr e = m.getPrefixSet();
     if (e instanceof ExplicitPrefixSet) {
       ExplicitPrefixSet x = (ExplicitPrefixSet) e;
 
@@ -935,7 +950,7 @@ public class TransferBDD {
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: " + range);
         if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
-          acc = acc.or(isRelevantFor(other, range));
+          acc = acc.or(isRelevantFor(other, range, pt));
         }
       }
       return acc;
@@ -945,7 +960,7 @@ public class TransferBDD {
       p.debug("Named: " + x.getName());
       String name = x.getName();
       RouteFilterList fl = conf.getRouteFilterLists().get(name);
-      return matchFilterList(p, fl, other);
+      return matchFilterList(p, fl, other, pt);
 
     } else {
       throw new BatfishException("TODO: match prefix set: " + e);

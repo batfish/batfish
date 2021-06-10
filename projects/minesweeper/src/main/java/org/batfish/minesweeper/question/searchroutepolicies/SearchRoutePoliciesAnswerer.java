@@ -6,7 +6,7 @@ import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
 import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
-import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
+import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.PERMIT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
@@ -313,7 +313,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     } else {
       BDD result = factory.zero();
       for (PrefixRange range : space.getPrefixRanges()) {
-        BDD rangeBDD = isRelevantFor(r, range);
+        BDD rangeBDD = isRelevantForDestination(r, range);
         result = result.or(rangeBDD);
       }
       if (complementPrefixes) {
