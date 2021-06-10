@@ -85,6 +85,7 @@ import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
@@ -188,6 +189,8 @@ public class CiscoXrConversions {
 
   static int DEFAULT_OSPF_DEAD_INTERVAL =
       OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
+
+  private static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
 
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
@@ -318,6 +321,36 @@ public class CiscoXrConversions {
         communitySet.getElements().stream()
             .map(elem -> elem.accept(CommunitySetElemToCommunityMatchExpr.INSTANCE, c))
             .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  static @Nonnull BgpAggregate toBgpAggregate(
+      BgpAggregateIpv4Network vsAggregate, Configuration c) {
+    // TODO: handle as-set
+    // TODO: handle route-policy
+    return BgpAggregate.of(
+        vsAggregate.getPrefix(),
+        generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
+        null,
+        vsAggregate.getAttributeMap());
+  }
+
+  /**
+   * If {@code summaryOnly} is {@code false}, returns {@code null}. Else, returns the name of a
+   * policy that accepts (suppresses) all routes.
+   */
+  static @Nullable String generateSuppressionPolicy(boolean summaryOnly, Configuration c) {
+    if (!summaryOnly) {
+      return null;
+    }
+    if (c.getRoutingPolicies().containsKey(SUMMARY_ONLY_SUPPRESSION_POLICY_NAME)) {
+      return SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
+    }
+    RoutingPolicy.builder()
+        .setName(SUMMARY_ONLY_SUPPRESSION_POLICY_NAME)
+        .setOwner(c)
+        .addStatement(Statements.ExitAccept.toStaticStatement())
+        .build();
+    return SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
   }
 
   private static final class CommunitySetElemToCommunityMatchExpr

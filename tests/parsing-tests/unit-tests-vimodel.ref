@@ -51046,32 +51046,6 @@
           }
         },
         "routingPolicies" : {
-          "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~" : {
-            "name" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                    "prefixSpace" : [
-                      "1.0.0.0/8:9-32"
-                    ]
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
@@ -51104,39 +51078,6 @@
           "~BGP_REDISTRIBUTION_POLICY:default~" : {
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Import aggregate routes into BGP",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                      "prefix" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                      },
-                      "prefixSet" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
-                        "prefixSpace" : [
-                          "1.0.0.0/8"
-                        ]
-                      }
-                    },
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "aggregate"
-                      ]
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
@@ -51190,35 +51131,33 @@
                 ]
               }
             ]
+          },
+          "~suppress~rp~summary-only~" : {
+            "name" : "~suppress~rp~summary-only~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ExitAccept"
+              }
+            ]
           }
         },
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
             "name" : "default",
-            "aggregateRoutes" : [
-              {
-                "class" : "org.batfish.datamodel.GeneratedRoute",
-                "administrativeCost" : 200,
-                "asPath" : [ ],
-                "communities" : [ ],
-                "discard" : true,
-                "generationPolicy" : "~AGGREGATE_ROUTE_GEN:default:1.0.0.0/8~",
-                "localPreference" : 100,
-                "metric" : 0,
-                "network" : "1.0.0.0/8",
-                "nextHopInterface" : "null_interface",
-                "nextHopIp" : "AUTO/NONE(-1l)",
-                "originType" : "igp",
-                "tag" : -1,
-                "weight" : 0
-              }
-            ],
             "bgpProcess" : {
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
               "routerId" : "0.0.0.0",
+              "aggregates" : [
+                {
+                  "attributePolicy" : "AGGREGATE_POLICY",
+                  "network" : "1.0.0.0/8",
+                  "suppressionPolicy" : "~suppress~rp~summary-only~"
+                }
+              ],
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
               "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",

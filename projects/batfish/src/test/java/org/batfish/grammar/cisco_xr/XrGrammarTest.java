@@ -2268,10 +2268,30 @@ public final class XrGrammarTest {
   @Test
   public void testBgpAggregateWithLocalSuppressedRoutes() {
     /*
-     * Config has static routes 1.1.1.0/24 and 2.2.2.0/24. BGP unconditionally redistributes static,
-     * and has aggregates 1.1.0.0/16 (not summary-only) and 2.2.0.0/16 (summary-only).
+     * Config has static routes:
+     * - 1.1.1.0/24
+     * - 2.2.2.0/24
+     * - 3.0.0.0/8
+     * - 4.4.4.0/24
+     * - 5.5.0.0/16
      *
-     * Should see both aggregates and both local routes in the BGP RIB.
+     * BGP is configured to unconditionally redistribute static routes,
+     * and has aggregates:
+     * 1.1.0.0/16 (not summary-only)
+     * 2.2.0.0/16 (summary-only)
+     * 3.0.0.0/16 (summary-only)
+     * 4.4.0.0/16 (summary-only)
+     * 4.4.4.0/31 (summary-only)
+     * 5.5.0.0/16 (summary-only)
+     *
+     * In the BGP RIB, we should see:
+     * - all local routes
+     * - the 3 aggregate routes with more specific local routes:
+     *   - 1.1.0/0/16
+     *   - 2.2.0.0/16
+     *   - 4.4.0.0/16
+     *
+     * In the main RIB, we should see the static routes and the 3 aggregates activated in the BGP RIB.
      */
     String hostname = "bgp-aggregate";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -2281,8 +2301,12 @@ public final class XrGrammarTest {
     Ip routerId = Ip.parse("1.1.1.1");
     Prefix staticPrefix1 = Prefix.parse("1.1.1.0/24");
     Prefix staticPrefix2 = Prefix.parse("2.2.2.0/24");
+    Prefix staticPrefix3 = Prefix.parse("3.0.0.0/8");
+    Prefix staticPrefix4 = Prefix.parse("4.4.4.0/24");
+    Prefix staticPrefix5 = Prefix.parse("5.5.0.0/16");
     Prefix aggPrefix1 = Prefix.parse("1.1.0.0/16");
     Prefix aggPrefix2 = Prefix.parse("2.2.0.0/16");
+    Prefix aggPrefix4General = Prefix.parse("4.4.0.0/16");
     Bgpv4Route localRoute1 =
         Bgpv4Route.builder()
             .setNetwork(staticPrefix1)
@@ -2297,10 +2321,12 @@ public final class XrGrammarTest {
             .setSrcProtocol(RoutingProtocol.STATIC)
             .build();
     Bgpv4Route localRoute2 = localRoute1.toBuilder().setNetwork(staticPrefix2).build();
+    Bgpv4Route localRoute3 = localRoute1.toBuilder().setNetwork(staticPrefix3).build();
+    Bgpv4Route localRoute4 = localRoute1.toBuilder().setNetwork(staticPrefix4).build();
+    Bgpv4Route localRoute5 = localRoute1.toBuilder().setNetwork(staticPrefix5).build();
     Bgpv4Route aggRoute1 =
         Bgpv4Route.builder()
             .setNetwork(aggPrefix1)
-            .setNonRouting(true)
             .setAdmin(CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST)
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
@@ -2311,7 +2337,24 @@ public final class XrGrammarTest {
             .setSrcProtocol(RoutingProtocol.AGGREGATE)
             .build();
     Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
-    assertThat(bgpRibRoutes, containsInAnyOrder(localRoute1, localRoute2, aggRoute1, aggRoute2));
+    Bgpv4Route aggRoute4General = aggRoute1.toBuilder().setNetwork(aggPrefix4General).build();
+    assertThat(
+        bgpRibRoutes,
+        containsInAnyOrder(
+            localRoute1,
+            localRoute2,
+            localRoute3,
+            localRoute4,
+            localRoute5,
+            aggRoute1,
+            aggRoute2,
+            aggRoute4General));
+
+    Set<AbstractRoute> mainRibRoutes =
+        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
+    assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
+    assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix4General)));
   }
 
   @Test
@@ -2349,7 +2392,6 @@ public final class XrGrammarTest {
       Bgpv4Route aggRoute1 =
           Bgpv4Route.builder()
               .setNetwork(aggPrefix1)
-              .setNonRouting(true)
               .setAdmin(CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST)
               .setLocalPreference(100)
               .setNextHop(NextHopDiscard.instance())
