@@ -138,6 +138,7 @@ import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -314,6 +315,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public static String computeServiceObjectAclName(String name) {
     return String.format("~SERVICE_OBJECT~%s~", name);
+  }
+
+  public static String computeAbfIpv4PolicyName(String name) {
+    return String.format("~ABF_POLICY_IPV4~%s~", name);
   }
 
   @Override
@@ -1324,16 +1329,26 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     String incomingFilterName = iface.getIncomingFilter();
     if (incomingFilterName != null) {
-      newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
+      Ipv4AccessList incomingFilter = _ipv4Acls.get(incomingFilterName);
+      if (incomingFilter != null) {
+        if (isIpv4AclUsedForAbf(incomingFilter)) {
+          newIface.setPacketPolicy(computeAbfIpv4PolicyName(incomingFilterName));
+        } else {
+          newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
+        }
+      }
     }
     String outgoingFilterName = iface.getOutgoingFilter();
     if (outgoingFilterName != null) {
-      newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
-    }
-
-    String routingPolicyName = iface.getRoutingPolicy();
-    if (routingPolicyName != null) {
-      newIface.setRoutingPolicy(routingPolicyName);
+      Ipv4AccessList outgoingFilter = _ipv4Acls.get(outgoingFilterName);
+      if (outgoingFilter != null && isIpv4AclUsedForAbf(outgoingFilter)) {
+        _w.redFlag(
+            String.format(
+                "ACL based forwarding rule %s cannot be applied to an egress interface.",
+                outgoingFilterName));
+      } else {
+        newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
+      }
     }
 
     return newIface;
@@ -1960,8 +1975,13 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
-    // convert access lists to access lists or route filter
+    // convert VS access lists to VI access lists, route filter, or packet policy
     for (Ipv4AccessList eaList : _ipv4Acls.values()) {
+      if (isIpv4AclUsedForAbf(eaList)) {
+        PacketPolicy packetPolicy = CiscoXrConversions.toPacketPolicy(eaList, _objectGroups, _w);
+        c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy);
+      }
+
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoXrConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
@@ -2313,6 +2333,13 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private boolean isAclUsedForRouting(@Nonnull String aclName) {
     // TODO: implement OSPF acl distribute-list
     return false;
+  }
+
+  /** Indicates if any line in the specified ipv4 ACL is used for ACL based forwarding. */
+  @VisibleForTesting
+  static boolean isIpv4AclUsedForAbf(@Nonnull Ipv4AccessList acl) {
+    // ABF lines will always have nexthop1 set
+    return acl.getLines().stream().anyMatch(l -> l.getNexthop1() != null);
   }
 
   /**

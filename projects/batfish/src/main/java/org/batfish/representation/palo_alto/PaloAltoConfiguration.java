@@ -2116,7 +2116,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // If there are NAT rules for packets entering this interface's zone, apply them
     String packetPolicyName = getPacketPolicyForZone(zone);
     if (packetPolicyName != null) {
-      newIface.setRoutingPolicy(packetPolicyName);
+      newIface.setPacketPolicy(packetPolicyName);
     }
 
     return newIface.build();

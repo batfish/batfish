@@ -84,6 +84,7 @@ import org.batfish.datamodel.isis.IsisTopology;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -436,7 +437,7 @@ public class VirtualRouterTest {
         ImmutableSortedSet.of(
             StaticRoute.testBuilder()
                 .setNetwork(Prefix.parse("1.1.1.1/32"))
-                .setNextHopIp(Ip.ZERO)
+                .setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
                 .setAdministrativeCost(1)
                 .setMetric(0L)
                 .setTag(0L)
@@ -466,7 +467,7 @@ public class VirtualRouterTest {
     StaticRoute sr1 =
         StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
@@ -474,7 +475,7 @@ public class VirtualRouterTest {
     StaticRoute sr2 =
         StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setAdministrativeCost(100)
             .setMetric(0L)
             .setTag(1L)
@@ -498,7 +499,7 @@ public class VirtualRouterTest {
     StaticRoute sr1 =
         StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setAdministrativeCost(1)
             .setMetric(0L)
             .setTag(1L)
@@ -506,7 +507,7 @@ public class VirtualRouterTest {
     StaticRoute sr2 =
         StaticRoute.testBuilder()
             .setNetwork(Ip.parse("1.1.1.1").toPrefix())
-            .setNextHopIp(Ip.ZERO)
+            .setNextHop(NextHopDiscard.instance())
             .setAdministrativeCost(100)
             .setMetric(0L)
             .setTag(1L)

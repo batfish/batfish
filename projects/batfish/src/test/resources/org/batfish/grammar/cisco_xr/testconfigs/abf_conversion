@@ -1,0 +1,17 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname abf_conversion
+!
+ipv4 access-list aclv4
+ 10 deny tcp host 10.0.0.1 any eq ssh
+ 20 permit tcp any host 10.0.2.1
+ 30 permit tcp any host 10.0.3.1 nexthop1 ipv4 10.0.13.1 nexthop2 ipv4 10.0.13.2 nexthop3 ipv4 10.0.13.3
+ 40 permit tcp any host 10.0.4.1 nexthop1 vrf vrf1 ipv4 10.0.14.1
+ 50 permit tcp any any
+!
+!
+interface GigabitEthernet0/0/0/0
+ ipv4 address 10.0.0.1/24
+ no shutdown
+ ipv4 access-group aclv4 ingress
+!

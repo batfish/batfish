@@ -2105,7 +2105,7 @@ public final class CiscoNxosGrammarTest {
     String policyName = "PBR_POLICY";
     PacketPolicy policy = c.getPacketPolicies().get(policyName);
     assertThat(policy, notNullValue());
-    assertThat(c.getAllInterfaces().get("Ethernet1/1").getRoutingPolicyName(), equalTo(policyName));
+    assertThat(c.getAllInterfaces().get("Ethernet1/1").getPacketPolicyName(), equalTo(policyName));
     Builder builder =
         Flow.builder()
             .setIngressNode(hostname)
@@ -6655,7 +6655,7 @@ public final class CiscoNxosGrammarTest {
           org.batfish.datamodel.StaticRoute.testBuilder()
               .setAdmin(1)
               .setNetwork(Prefix.ZERO)
-              .setNextHopIp(ZERO)
+              .setNextHopIp(Ip.parse("1.1.1.1"))
               .build());
       assertRoutingPolicyPermitsRoute(rp, new ConnectedRoute(Prefix.ZERO, "dummy"));
     }
@@ -6667,7 +6667,7 @@ public final class CiscoNxosGrammarTest {
           org.batfish.datamodel.StaticRoute.testBuilder()
               .setAdmin(1)
               .setNetwork(Prefix.ZERO)
-              .setNextHopIp(ZERO)
+              .setNextHopIp(Ip.parse("1.1.1.1"))
               .build());
     }
     {

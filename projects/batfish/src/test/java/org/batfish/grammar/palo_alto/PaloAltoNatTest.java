@@ -297,7 +297,7 @@ public class PaloAltoNatTest {
         containsInAnyOrder("ethernet1/1", inside1Name, inside2Name, "ethernet1/2", outside1Name));
 
     Interface outside1 = c.getAllInterfaces().get(outside1Name);
-    String outside1Policy = outside1.getRoutingPolicyName();
+    String outside1Policy = outside1.getPacketPolicyName();
     // Interface in OUTSIDE zone has packet policy
     assertThat(outside1Policy, notNullValue());
 
@@ -379,7 +379,7 @@ public class PaloAltoNatTest {
         containsInAnyOrder("ethernet1/1", inside1Name, "ethernet1/2", outside1Name));
 
     Interface outside1 = c.getAllInterfaces().get(outside1Name);
-    String outside1Policy = outside1.getRoutingPolicyName();
+    String outside1Policy = outside1.getPacketPolicyName();
     // Interface in OUTSIDE zone has packet policy
     assertThat(outside1Policy, notNullValue());
 

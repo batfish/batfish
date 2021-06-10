@@ -174,8 +174,6 @@ public class Interface implements Serializable {
 
   private boolean _proxyArp;
 
-  private String _routingPolicy;
-
   private Set<ConcreteInterfaceAddress> _secondaryAddresses;
 
   private boolean _spanningTreePortfast;
@@ -392,10 +390,6 @@ public class Interface implements Serializable {
     return _proxyArp;
   }
 
-  public String getRoutingPolicy() {
-    return _routingPolicy;
-  }
-
   public Set<ConcreteInterfaceAddress> getSecondaryAddresses() {
     return _secondaryAddresses;
   }
@@ -554,10 +548,6 @@ public class Interface implements Serializable {
 
   public void setProxyArp(boolean proxyArp) {
     _proxyArp = proxyArp;
-  }
-
-  public void setRoutingPolicy(String routingPolicy) {
-    _routingPolicy = routingPolicy;
   }
 
   public void setSpanningTreePortfast(boolean spanningTreePortfast) {
