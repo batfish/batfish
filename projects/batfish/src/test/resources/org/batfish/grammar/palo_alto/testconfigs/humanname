@@ -1,0 +1,18 @@
+# Panorama entities defined in device-group
+set device-group DG1 post-rulebase security rules RULE1 to TO_ZONE
+set device-group DG1 post-rulebase security rules RULE1 from FROM_ZONE
+set device-group DG1 post-rulebase security rules RULE1 source any
+set device-group DG1 post-rulebase security rules RULE1 destination ADDR1
+set device-group DG1 post-rulebase security rules RULE1 application any
+set device-group DG1 post-rulebase security rules RULE1 service [ service-http service-https ]
+set device-group DG1 post-rulebase security rules RULE1 action allow
+set device-group DG1 address ADDR1 ip-netmask 1.2.3.4
+set device-group DG2 address ADDR2 ip-netmask 2.3.4.5
+# Device-group specific entities
+set device-group DG1 description "long description"
+set device-group DG1 devices 00000001
+set device-group DG1 devices 00000002
+set device-group DG2 devices 00000003
+set device-group DG2 parent-dg DG1
+# Regular, non-device-group config - intentionally after device-group config to confirm we pop out as expected
+set deviceconfig system hostname device-group

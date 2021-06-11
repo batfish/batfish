@@ -1839,19 +1839,9 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testHostnameConversion() throws IOException {
-    String hostname = "nxos_hostname";
-    Configuration c = parseConfig(hostname);
-
-    assertThat(c, hasHostname(hostname));
-  }
-
-  @Test
-  public void testHostnameExtraction() {
-    String hostname = "nxos_hostname";
-    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
-
-    assertThat(vc.getHostname(), equalTo(hostname));
+  public void testHumanName() throws IOException {
+    Configuration c = parseConfig("nxos_hostname");
+    assertThat(c.getHumanName(), equalTo("NXOS_hostname"));
   }
 
   @Test

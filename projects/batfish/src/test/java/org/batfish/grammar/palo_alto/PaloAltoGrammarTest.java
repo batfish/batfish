@@ -308,12 +308,14 @@ public final class PaloAltoGrammarTest {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
+    org.batfish.grammar.palo_alto.PaloAltoCombinedParser parser =
+        new org.batfish.grammar.palo_alto.PaloAltoCombinedParser(src, settings, null);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     Warnings parseWarnings = new Warnings();
-    PaloAltoControlPlaneExtractor extractor =
-        new PaloAltoControlPlaneExtractor(src, parser, parseWarnings, new SilentSyntaxCollection());
+    org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor extractor =
+        new org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor(
+            src, parser, parseWarnings, new SilentSyntaxCollection());
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
@@ -338,9 +340,11 @@ public final class PaloAltoGrammarTest {
             src, logger, settings, w, PALO_ALTO_NESTED, BATFISH_FLATTENED_PALO_ALTO_HEADER);
     String fileText = flattener.getFlattenedConfigurationText();
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
-    PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(fileText, settings, lineMap);
-    PaloAltoControlPlaneExtractor extractor =
-        new PaloAltoControlPlaneExtractor(fileText, paParser, w, new SilentSyntaxCollection());
+    org.batfish.grammar.palo_alto.PaloAltoCombinedParser paParser =
+        new org.batfish.grammar.palo_alto.PaloAltoCombinedParser(fileText, settings, lineMap);
+    org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor extractor =
+        new org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor(
+            fileText, paParser, w, new SilentSyntaxCollection());
     ParserRuleContext tree = Batfish.parse(paParser, logger, settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
@@ -3388,12 +3392,15 @@ public final class PaloAltoGrammarTest {
     String firewallId2 = "firewall-2";
     String firewallId3 = "00000003";
     PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
-    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+    Map<String, Configuration> viConfigs =
+        c.toVendorIndependentConfigurations().stream()
+            .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, d -> d));
 
     // Should get four nodes from the one Panorama config with the correct hostnames
     assertThat(
-        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        viConfigs.keySet(),
         containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    assertThat(viConfigs.get(firewallId1).getHumanName(), equalTo("Firewall-1"));
   }
 
   @Test
