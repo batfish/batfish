@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Table;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.hsrp.HsrpGroup;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackInterface;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -247,5 +250,79 @@ public class IpOwnersTest {
     // Test: expect c2/i2 to win
     processHsrpGroups(ipOwners, groups);
     assertThat(ipOwners.get(ip).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
+  }
+
+  @Test
+  public void testProcessHsrpGroupTracking() {
+    Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    c1.setTrackingGroups(ImmutableMap.of("1", new TrackInterface("i1tracked")));
+
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    c2.setTrackingGroups(ImmutableMap.of("1", new TrackInterface("i2tracked")));
+
+    Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
+    Interface i1 =
+        Interface.builder()
+            .setOwner(c1)
+            .setName("i1")
+            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+            .build();
+    // Tracked by track "1" on c1
+    Interface.builder()
+        .setOwner(c1)
+        .setName("i1tracked")
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
+        .setActive(true)
+        .build();
+
+    Interface i2 =
+        Interface.builder()
+            .setOwner(c2)
+            .setName("i2")
+            .setAddress(ConcreteInterfaceAddress.parse("2.3.4.5/24"))
+            .build();
+    // Tracked by track "1" on c2
+    Interface.builder()
+        .setOwner(c2)
+        .setName("i2tracked")
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
+        .setActive(false)
+        .build();
+
+    Ip ip = Ip.parse("1.1.1.1");
+    i1.setHsrpGroups(
+        ImmutableMap.of(
+            1,
+            HsrpGroup.builder()
+                .setPriority(100)
+                .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(99)))
+                .setGroupNumber(1)
+                .setIp(ip)
+                .build()));
+    i2.setHsrpGroups(
+        ImmutableMap.of(
+            1,
+            HsrpGroup.builder()
+                .setPriority(200)
+                .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(101)))
+                .setGroupNumber(1)
+                .setIp(ip)
+                .build()));
+    extractHsrp(groups, i1);
+    extractHsrp(groups, i2);
+
+    // Expect c1/i1 to win
+    // Since track action decrement is not triggered for c1/i1, but it is triggered for c2/i2
+    processHsrpGroups(ipOwners, groups);
+    assertThat(ipOwners.get(ip).get(c1.getHostname()), equalTo(ImmutableSet.of(i1.getName())));
   }
 }

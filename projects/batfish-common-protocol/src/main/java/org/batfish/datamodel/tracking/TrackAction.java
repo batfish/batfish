@@ -5,4 +5,6 @@ import java.io.Serializable;
 
 /** An action to take when a tracking-group is down */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public interface TrackAction extends Serializable {}
+public interface TrackAction extends Serializable {
+  <R> R apply(GenericTrackActionVisitor<R> visitor);
+}

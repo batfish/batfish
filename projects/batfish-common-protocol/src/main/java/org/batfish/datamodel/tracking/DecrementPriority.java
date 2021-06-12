@@ -42,4 +42,9 @@ public class DecrementPriority implements TrackAction {
   public String toString() {
     return toStringHelper(getClass()).add(PROP_SUBTRAHEND, _subtrahend).toString();
   }
+
+  @Override
+  public <R> R apply(GenericTrackActionVisitor<R> visitor) {
+    return visitor.visitDecrementPriority(this);
+  }
 }
