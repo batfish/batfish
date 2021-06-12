@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -113,6 +114,11 @@ public class If extends Statement {
       return exprResult;
     }
     boolean guardVal = exprResult.getBooleanValue();
+    if (guardVal && environment.getTracer() != null && getComment() != null) {
+      environment
+          .getTracer()
+          .setTraceElement(TraceElement.of(String.format("Matched '%s'", getComment())));
+    }
     List<Statement> toExecute = guardVal ? _trueStatements : _falseStatements;
     for (Statement statement : toExecute) {
       Result result = statement.execute(environment);

@@ -2,10 +2,12 @@ package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.trace.TraceTree;
 
 /** A {@link TestRoutePoliciesQuestion} result for a single policy and input route. */
 final class Result {
@@ -42,12 +44,14 @@ final class Result {
   private final Bgpv4Route _inputRoute;
   private final LineAction _action;
   private final @Nullable Bgpv4Route _outputRoute;
+  private final List<TraceTree> _traceTrees;
 
   Result(
       RoutingPolicyId policyId,
       Bgpv4Route inputRoute,
       LineAction action,
-      @Nullable Bgpv4Route outputRoute) {
+      @Nullable Bgpv4Route outputRoute,
+      List<TraceTree> traceTrees) {
     checkArgument(
         (action == LineAction.DENY) == (outputRoute == null),
         "outputRoute is null if and only if action is DENY");
@@ -55,6 +59,7 @@ final class Result {
     _action = action;
     _inputRoute = inputRoute;
     _outputRoute = outputRoute;
+    _traceTrees = traceTrees;
   }
 
   @Override
@@ -69,7 +74,8 @@ final class Result {
     return Objects.equals(_policyId, result._policyId)
         && _action == result._action
         && Objects.equals(_inputRoute, result._inputRoute)
-        && Objects.equals(_outputRoute, result._outputRoute);
+        && Objects.equals(_outputRoute, result._outputRoute)
+        && Objects.equals(_traceTrees, result._traceTrees);
   }
 
   public LineAction getAction() {
@@ -93,8 +99,12 @@ final class Result {
     return _policyId;
   }
 
+  public List<TraceTree> getTraceTrees() {
+    return _traceTrees;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(_policyId, _action, _inputRoute, _outputRoute);
+    return Objects.hash(_policyId, _action, _inputRoute, _outputRoute, _traceTrees);
   }
 }
