@@ -114,17 +114,27 @@ public class If extends Statement {
       return exprResult;
     }
     boolean guardVal = exprResult.getBooleanValue();
-    if (guardVal && environment.getTracer() != null && getComment() != null) {
-      environment
-          .getTracer()
-          .setTraceElement(TraceElement.of(String.format("Matched '%s'", getComment())));
+    boolean traceIt = guardVal && environment.getTracer() != null;
+    if (traceIt) {
+      TraceElement traceElement =
+          getComment() == null
+              ? TraceElement.of("Matched unknown clause")
+              : TraceElement.of(String.format("Matched '%s'", getComment()));
+      environment.getTracer().setTraceElement(traceElement);
+      environment.getTracer().newSubTrace();
     }
     List<Statement> toExecute = guardVal ? _trueStatements : _falseStatements;
     for (Statement statement : toExecute) {
       Result result = statement.execute(environment);
       if (result.getExit() || result.getReturn()) {
+        if (traceIt) {
+          environment.getTracer().endSubTrace();
+        }
         return result;
       }
+    }
+    if (traceIt) {
+      environment.getTracer().endSubTrace();
     }
     return Result.builder().setFallThrough(true).build();
   }
