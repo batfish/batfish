@@ -507,43 +507,57 @@ public class TransferBDD {
       // copy the current BDDRoute so we can separately track any updates on the two branches
       TransferParam<BDDRoute> pTrue = curP.indent().setData(current.deepCopy());
       TransferParam<BDDRoute> pFalse = curP.indent().setData(current.deepCopy());
-      curP.debug("True Branch");
-      /**
-       * TODO: any updates to the TransferParam in the branches, for example updates to the default
-       * action, are lost. In general it seems we need to replace the booleans there with BDDs, so
-       * we can track the conditions under which each of them is true/false.
-       */
-      // symbolically execute both branches from the current state
-      TransferResult trueBranch =
-          compute(
-                  i.getTrueStatements(),
-                  new TransferBDDState(
-                      pTrue,
-                      result.setReturnValue(new TransferReturn(pTrue.getData(), factory.zero()))))
-              .getTransferResult();
-      curP.debug("True Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
-      curP.debug("False Branch");
-      TransferResult falseBranch =
-          compute(
-                  i.getFalseStatements(),
-                  new TransferBDDState(
-                      pFalse,
-                      result.setReturnValue(new TransferReturn(pFalse.getData(), factory.zero()))))
-              .getTransferResult();
-      curP.debug("False Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
 
-      // update return values
+      TransferBDDState trueState = null;
+      TransferBDDState falseState = null;
 
-      BDD returnedBeforeIf = unreachable(result);
-      BDD returnedInIfGuard = unreachable(guardResult);
-      // combine the results of analyzing the two branches, but take into account the possibility
-      // that the "if" statement is never reached or that it returns from within its guard (unlikely
+      // Symbolically execute each branch if it is feasible.
+      // Some guards are statically resolved (e.g. CallExprContext and StatementExprContext), which
+      // means that only one branch will be taken.  Skipping analysis of the other branch avoids
+      // causing an error unnecessarily if we reach a route-map construct that is not currently
+      // modeled.  It also allows us to properly account for updates to things like the default
+      // action that occur within the one feasible branch (see below for more on this).
+      if (!guard.isZero()) {
+        curP.debug("True Branch");
+        trueState =
+            compute(
+                i.getTrueStatements(),
+                new TransferBDDState(
+                    pTrue,
+                    result.setReturnValue(new TransferReturn(pTrue.getData(), factory.zero()))));
+      }
+      if (!guard.isOne()) {
+        curP.debug("False Branch");
+        falseState =
+            compute(
+                i.getFalseStatements(),
+                new TransferBDDState(
+                    pFalse,
+                    result.setReturnValue(new TransferReturn(pFalse.getData(), factory.zero()))));
+      }
+
+      TransferResult newResult;
+      if (guard.isOne()) {
+        curP = curP.setDefaultsFrom(trueState.getTransferParam());
+        newResult = trueState.getTransferResult();
+      } else if (guard.isZero()) {
+        curP = curP.setDefaultsFrom(falseState.getTransferParam());
+        newResult = falseState.getTransferResult();
+      } else {
+        /**
+         * TODO: any updates to the TransferParam in the branches, for example updates to the
+         * default action, are lost. In general it seems we need to replace the booleans there with
+         * BDDs, so we can track the conditions under which each of them is true/false.
+         */
+        newResult = ite(guard, trueState.getTransferResult(), falseState.getTransferResult());
+      }
+
+      // take into account the possibility
+      // that the "if" statement is never reached or that it returns from within its guard
+      // (unlikely
       // but seems possible)
       result =
-          ite(
-              returnedBeforeIf,
-              result,
-              ite(returnedInIfGuard, guardResult, ite(guard, trueBranch, falseBranch)));
+          ite(unreachable(result), result, ite(unreachable(guardResult), guardResult, newResult));
 
       curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
 

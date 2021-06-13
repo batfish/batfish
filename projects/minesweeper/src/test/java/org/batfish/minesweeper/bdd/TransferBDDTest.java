@@ -1030,6 +1030,28 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testConditionalDefaultAction() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_EXPR_CONTEXT,
+                    ImmutableList.of(),
+                    ImmutableList.of(new StaticStatement(Statements.SetDefaultActionAccept))))
+            .addStatement(new StaticStatement(Statements.DefaultAction))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(_anyRoute, outAnnouncements);
+  }
+
+  @Test
   public void testBufferedStatement() {
     RoutingPolicy policy =
         _policyBuilder
