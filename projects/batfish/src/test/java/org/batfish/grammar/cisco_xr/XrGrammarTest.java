@@ -1704,6 +1704,12 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testHostNameDomain() {
+    Configuration c = parseConfig("xr-hostname.domain");
+    assertThat(c.getHumanName(), equalTo("xr-hostname.domain"));
+  }
+
+  @Test
   public void testHumanName() {
     Configuration c = parseConfig("xr-humanname");
     assertThat(c.getHumanName(), equalTo("XR-humanname"));
