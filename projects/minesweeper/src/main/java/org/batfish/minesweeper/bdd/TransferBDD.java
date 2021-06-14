@@ -504,10 +504,6 @@ public class TransferBDD {
       BDDRoute current = guardResult.getReturnValue().getFirst();
       curP.debug("guard: ");
 
-      // copy the current BDDRoute so we can separately track any updates on the two branches
-      TransferParam<BDDRoute> pTrue = curP.indent().setData(current.deepCopy());
-      TransferParam<BDDRoute> pFalse = curP.indent().setData(current.deepCopy());
-
       TransferBDDState trueState = null;
       TransferBDDState falseState = null;
 
@@ -519,6 +515,8 @@ public class TransferBDD {
       // action that occur within the one feasible branch (see below for more on this).
       if (!guard.isZero()) {
         curP.debug("True Branch");
+        // copy the current BDDRoute so we can separately track any updates on the two branches
+        TransferParam<BDDRoute> pTrue = curP.indent().setData(current.deepCopy());
         trueState =
             compute(
                 i.getTrueStatements(),
@@ -528,6 +526,7 @@ public class TransferBDD {
       }
       if (!guard.isOne()) {
         curP.debug("False Branch");
+        TransferParam<BDDRoute> pFalse = curP.indent().setData(current.deepCopy());
         falseState =
             compute(
                 i.getFalseStatements(),
