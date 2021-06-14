@@ -510,7 +510,7 @@ public class TransferBDD {
       // Symbolically execute each branch if it is feasible.
       // Some guards are statically resolved (e.g. CallExprContext and StatementExprContext), which
       // means that only one branch will be analyzed.  Skipping analysis of the other branch avoids
-      // causing an error unnecessarily if we reach a route-map construct that is not currently
+      // signaling an error unnecessarily if we reach a route-map construct that is not currently
       // modelled.  It also allows us to properly account for updates to things like the default
       // action that occur within the one feasible branch (see below for more on this).
       if (!guard.isZero()) {
