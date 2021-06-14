@@ -43570,6 +43570,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "demo.com",
+        "humanName" : "lhr-border-02",
         "ikePhase1Keys" : {
           "keyring-vpn-ba2e34a8-0" : {
             "keyHash" : "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",

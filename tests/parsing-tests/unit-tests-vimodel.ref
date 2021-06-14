@@ -18197,6 +18197,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "aaa_accounting",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -18263,6 +18264,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "aaa_authentication_login_default_tacacs_local",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -18336,6 +18338,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "aaa_group_server_source_interface",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -18397,6 +18400,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "access_list",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -18455,6 +18459,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "address_family",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -18610,6 +18615,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "aggAddress",
         "route6FilterLists" : {
           "ScienceDMZ-networks" : {
             "lines" : [
@@ -19146,6 +19152,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista-event-handler",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -19204,6 +19211,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_acl",
         "ipAccessLists" : {
           "abcd" : {
             "lines" : [
@@ -19342,6 +19350,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "arista_bgp",
         "routingPolicies" : {
           "ROUTE_MAP" : {
             "name" : "ROUTE_MAP",
@@ -19469,6 +19478,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "arista_bgp_asn",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -19563,6 +19573,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_community_list_named",
         "routeFilterLists" : {
           "PFX_LIST" : {
             "lines" : [
@@ -19707,6 +19718,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_dhcp_relay",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -19776,6 +19788,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_interface",
         "interfaces" : {
           "Vlan1" : {
             "name" : "Vlan1",
@@ -19840,6 +19853,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_ip_route",
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "arista_ip_route"
@@ -19879,6 +19893,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_logging",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -19937,6 +19952,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_misc",
         "ipAccessLists" : {
           "sshabc" : {
             "lines" : [
@@ -20012,6 +20028,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_nat",
         "interfaces" : {
           "Ethernet1" : {
             "name" : "Ethernet1",
@@ -20116,6 +20133,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_ospf",
         "interfaces" : {
           "Ethernet1" : {
             "name" : "Ethernet1",
@@ -20161,6 +20179,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_queue_monitor",
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "arista_queue_monitor"
@@ -20180,6 +20199,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_username",
         "vendorFamily" : {
           "cisco" : {
             "enableSecret" : "6a04b2b4f67a9c3a69b681b1782b6cbcddf018f7dd810a274e71e012c83f5efe",
@@ -20211,6 +20231,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "arista_vrf",
         "interfaces" : {
           "Ethernet1" : {
             "name" : "Ethernet1",
@@ -20271,6 +20292,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "as_path_prepend",
         "routingPolicies" : {
           "rmap" : {
             "name" : "rmap",
@@ -20350,6 +20372,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "asa-interface-redundant",
         "interfaces" : {
           "GigabitEthernet0/1" : {
             "name" : "GigabitEthernet0/1",
@@ -20717,6 +20740,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "asa_acl",
         "ipAccessLists" : {
           "Local_LAN_Access" : {
             "lines" : [
@@ -21525,6 +21549,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "asa_banner",
         "vendorFamily" : {
           "cisco" : {
             "banners" : {
@@ -21555,6 +21580,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "asa_interface",
         "interfaces" : {
           "ifname" : {
             "name" : "ifname",
@@ -21615,6 +21641,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "asa_nat",
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "asa_nat",
@@ -21642,6 +21669,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "asa_object_groups",
         "ipAccessLists" : {
           "ALLOW_SERVER02" : {
             "lines" : [
@@ -21786,6 +21814,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "asa_ospf",
         "interfaces" : {
           "blah" : {
             "name" : "blah",
@@ -21981,6 +22010,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "asa_ssh",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -22623,6 +22653,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "bgp_address_family",
         "routingPolicies" : {
           "as1_to_as2~undefined" : {
             "name" : "as1_to_as2~undefined",
@@ -23156,6 +23187,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "bgp_default_originate_policy",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -23236,6 +23268,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "bgp_nsr",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -23339,6 +23372,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "bgp_route_policy",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "lines" : [
@@ -23519,6 +23553,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco-zone",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -23585,6 +23620,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_aaa",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -23672,6 +23708,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_acl",
         "ipAccessLists" : {
           "BLAH-BLAH" : {
             "lines" : [
@@ -25477,6 +25514,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_additional_paths",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -25580,6 +25618,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_authentication",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -25671,6 +25710,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_bgp",
         "ipAccessLists" : {
           "5" : {
             "lines" : [
@@ -26862,6 +26902,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_bgp_confederation",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -26972,6 +27013,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_cable",
         "interfaces" : {
           "Cable1/2/3" : {
             "name" : "Cable1/2/3",
@@ -27097,6 +27139,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_callhome",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27156,6 +27199,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_control_plane",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27214,6 +27258,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_controller",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27272,6 +27317,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_crypto",
         "ikePhase1Keys" : {
           "VRF:ABC:DEF:GHI:1234" : {
             "keyHash" : "f300fd9a9833dc8b16a2c399b2b51c32fc40293606df9c1e814d978f6ebcb9f8",
@@ -27480,6 +27526,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_dhcp",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27549,6 +27596,7 @@
         ],
         "dnsSourceInterface" : "Loopback666",
         "domainName" : "my.domain.name",
+        "humanName" : "cisco_domain",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27607,6 +27655,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_dot11",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27665,6 +27714,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_dot1x",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27723,6 +27773,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_dspfarm",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27781,6 +27832,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_dynamic_access_policy_record",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -27839,6 +27891,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_eigrp",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -28340,6 +28393,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_enable",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -28399,6 +28453,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_flow",
         "interfaces" : {
           "GigabitEthernet0/1" : {
             "name" : "GigabitEthernet0/1",
@@ -28483,6 +28538,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_hardware",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -28541,6 +28597,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_hsrp",
         "interfaces" : {
           "TenGigabitEthernet0/0/2/2" : {
             "name" : "TenGigabitEthernet0/0/2/2",
@@ -28625,6 +28682,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_interface",
         "interfaces" : {
           "Async1" : {
             "name" : "Async1",
@@ -29339,6 +29397,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_ios_neighbor",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -29496,6 +29555,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ip",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -29557,6 +29617,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ip_nat",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -29626,6 +29687,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ip_route",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -29800,6 +29862,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ipsla",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -29858,6 +29921,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ipv6",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -29916,6 +29980,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ipv6_access_list",
         "ip6AccessLists" : {
           "RT404888-XO" : {
             "name" : "RT404888-XO",
@@ -30210,6 +30275,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_isis",
         "interfaces" : {
           "GigabitEthernet0/0" : {
             "name" : "GigabitEthernet0/0",
@@ -30481,6 +30547,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_l2tp",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -30544,6 +30611,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_line",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -31141,6 +31209,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_logging",
         "loggingServers" : [
           "1.1.1.1",
           "1.2.3.4",
@@ -31241,6 +31310,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_mac_acl",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -31299,6 +31369,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_misc",
         "ipAccessLists" : {
           "~SERVICE_OBJECT_GROUP~SVCGRP-ICMP~" : {
             "lines" : [
@@ -31394,6 +31465,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_monitor",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -31452,6 +31524,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_mpls",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -31503,6 +31576,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ntp",
         "ntpServers" : [
           "1.2.3.4",
           "2.3.4.5"
@@ -31582,6 +31656,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_ospf",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -31953,6 +32028,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ospf_ipv6",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -32049,6 +32125,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_ospf_multi_process",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -32341,6 +32418,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ospfv3",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -32437,6 +32515,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_pim",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -32495,6 +32574,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_platform",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -32553,6 +32633,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_privilege",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -32611,6 +32692,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_qos",
         "ipAccessLists" : {
           "~INSPECT_POLICY_MAP_ACL~pminspect~" : {
             "lines" : [
@@ -32744,6 +32826,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_queue_monitor",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -32802,6 +32885,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_redundancy",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -32860,6 +32944,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "cisco_rip",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -32924,6 +33009,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_role",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -33015,6 +33101,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_route_map",
         "routingPolicies" : {
           "MAP_NAME1" : {
             "name" : "MAP_NAME1",
@@ -33275,6 +33362,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_sccp",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -33333,6 +33421,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_snmp",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -33511,6 +33600,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_spanning_tree",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -33569,6 +33659,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_ssh",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -33630,6 +33721,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_stcapp",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -33688,6 +33780,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_style_acl1",
         "ipAccessLists" : {
           "blah" : {
             "lines" : [
@@ -33781,6 +33874,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_style_acl2",
         "ipAccessLists" : {
           "1" : {
             "lines" : [
@@ -33874,6 +33968,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_system",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -33933,6 +34028,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_track",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34001,6 +34097,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_username",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34120,6 +34217,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_username_without_password",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34189,6 +34287,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_vdc",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34247,6 +34346,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_vlan",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34305,6 +34405,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_voice",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34363,6 +34464,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_vpdn",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34421,6 +34523,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_vpn",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34479,6 +34582,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_vrrp",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -34575,6 +34679,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_webvpn",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34633,6 +34738,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "cisco_wsma",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -34691,6 +34797,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "colon_in_vrf",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:VRF:MMS:RMT:PBI:145~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:VRF:MMS:RMT:PBI:145~",
@@ -36295,6 +36402,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "commSet",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -36379,6 +36487,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "community-name-numbers",
         "routingPolicies" : {
           "AAA1-BBB-CCC" : {
             "name" : "AAA1-BBB-CCC",
@@ -36524,6 +36633,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "community-name-numbers_dos",
         "routingPolicies" : {
           "AAA1-BBB-CCC" : {
             "name" : "AAA1-BBB-CCC",
@@ -36915,6 +37025,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "community_set",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -39528,6 +39639,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "eos_mlag",
         "interfaces" : {
           "Port-Channel1" : {
             "name" : "Port-Channel1",
@@ -39610,6 +39722,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "ARISTA_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "eos_trunk_group",
         "interfaces" : {
           "Port-Channel1" : {
             "name" : "Port-Channel1",
@@ -39663,6 +39776,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_imish_malformed"
           }
         },
+        "humanName" : "f5_bigip_imish_malformed",
         "routeFilterLists" : {
           "pl1" : {
             "lines" : [
@@ -39791,6 +39905,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_cm"
           }
         },
+        "humanName" : "f5_bigip_structured_cm",
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
@@ -39832,6 +39947,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_ltm"
           }
         },
+        "humanName" : "f5_bigip_structured_ltm",
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
@@ -39865,6 +39981,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_malformed"
           }
         },
+        "humanName" : "f5_bigip_structured_malformed",
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
@@ -39899,6 +40016,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_net"
           }
         },
+        "humanName" : "f5_bigip_structured_net",
         "interfaces" : {
           "/Common/MYVLAN" : {
             "name" : "/Common/MYVLAN",
@@ -40071,6 +40189,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_net_routing_bgp"
           }
         },
+        "humanName" : "f5_bigip_structured_net_routing_bgp",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:/Common/my_bgp~",
@@ -40232,6 +40351,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_net_routing_prefix_list"
           }
         },
+        "humanName" : "f5_bigip_structured_net_routing_prefix_list",
         "route6FilterLists" : {
           "/Common/MY_IPV6_PREFIX_LIST" : {
             "lines" : [
@@ -40294,6 +40414,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_net_routing_route_map"
           }
         },
+        "humanName" : "f5_bigip_structured_net_routing_route_map",
         "routingPolicies" : {
           "/Common/MY_ROUTE_MAP" : {
             "name" : "/Common/MY_ROUTE_MAP",
@@ -40332,6 +40453,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_sys"
           }
         },
+        "humanName" : "f5_bigip_structured_sys",
         "ntpServers" : [
           "192.0.2.3",
           "my.example.com"
@@ -40359,6 +40481,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_sys_ha_group"
           }
         },
+        "humanName" : "f5_bigip_structured_sys_ha_group",
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
@@ -40382,6 +40505,7 @@
             "name" : "VirtualAddresses~on~f5_bigip_structured_with_imish"
           }
         },
+        "humanName" : "f5_bigip_structured_with_imish",
         "ipAccessLists" : {
           "acl1" : {
             "lines" : [
@@ -41173,6 +41297,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "host2",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -41450,6 +41575,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "if_tag_is",
         "routingPolicies" : {
           "FOO" : {
             "name" : "FOO",
@@ -41989,6 +42115,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "interface_exit",
         "interfaces" : {
           "Vlan303" : {
             "name" : "Vlan303",
@@ -42109,6 +42236,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "interface_name",
         "interfaces" : {
           "FastEthernet12/13" : {
             "name" : "FastEthernet12/13",
@@ -42256,6 +42384,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "interface_sdr",
         "interfaces" : {
           "Loopback0" : {
             "name" : "Loopback0",
@@ -42726,6 +42855,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "ios-xe-bgp-vrf",
         "interfaces" : {
           "FastEthernet1/1" : {
             "name" : "FastEthernet1/1",
@@ -42908,6 +43038,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_banner",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -42970,6 +43101,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_banner_dos",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -43032,6 +43164,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_bfd",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -43090,6 +43223,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "ios_bgp",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -43193,6 +43327,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_interface",
         "interfaces" : {
           "GigabitEthernet1/0/1" : {
             "name" : "GigabitEthernet1/0/1",
@@ -43277,6 +43412,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_interface_ip_authentication",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -43361,6 +43497,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_interface_ip_eigrp_settings",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -43445,6 +43582,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_interface_ip_tcp",
         "interfaces" : {
           "Ethernet0" : {
             "name" : "Ethernet0",
@@ -43529,6 +43667,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_standby",
         "interfaces" : {
           "Vlan1000" : {
             "name" : "Vlan1000",
@@ -43673,6 +43812,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_template",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -43731,6 +43871,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "ios_xe_bgp",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:EXTRA~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:EXTRA~",
@@ -43883,6 +44024,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_acl",
         "ipAccessLists" : {
           "DENY_ALL" : {
             "lines" : [
@@ -43970,6 +44112,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "ios_xr_bgp",
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:default~" : {
             "lines" : [
@@ -44174,6 +44317,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "ios_xr_bgp_neighbor_group",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -44412,6 +44556,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_class_map",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -44463,6 +44608,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_isis",
         "interfaces" : {
           "GigabitEthernet0/2/1/6" : {
             "name" : "GigabitEthernet0/2/1/6",
@@ -44549,6 +44695,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_logging",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -44600,6 +44747,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_misc",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -44651,6 +44799,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_multipart",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -44702,6 +44851,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_ntp",
         "ntpServers" : [
           "1.2.3.4"
         ],
@@ -44756,6 +44906,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "ios_xr_ospf",
         "interfaces" : {
           "Bundle-Ether101" : {
             "name" : "Bundle-Ether101",
@@ -45278,6 +45429,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_router_static",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -45421,6 +45573,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_ssh",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -45472,6 +45625,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ios_xr_taskgroup",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -45523,6 +45677,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "IosXrMultiCast",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -45574,6 +45729,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "ip_prefix_list_single_line",
         "routeFilterLists" : {
           "DENY-IPV4-ANY-IN" : {
             "lines" : [
@@ -69640,6 +69796,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "isr_crypto_gdoi",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -69698,6 +69855,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "isr_voip",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -77439,6 +77597,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "L2VPN",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -77490,6 +77649,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "local_v6_addr",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -77593,6 +77753,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "mac_access_list",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -77651,6 +77812,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "MCastRouting",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -77702,6 +77864,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "mos_interface",
         "interfaces" : {
           "Ethernet1" : {
             "name" : "Ethernet1",
@@ -77856,6 +78019,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "mos_misc",
         "loggingServers" : [
           "1.2.3.4"
         ],
@@ -77935,6 +78099,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "msdp_originator_id",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -77993,6 +78158,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "named_and_numbered_lists",
         "routingPolicies" : {
           "foo" : {
             "name" : "foo",
@@ -78104,6 +78270,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "neighbor_mix",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -78499,6 +78666,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "network6",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "lines" : [
@@ -78614,6 +78782,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "nexus",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -78672,6 +78841,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "no_aaa_group_server",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -78730,6 +78900,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "no_ip_name_server",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -78788,6 +78959,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "no_mask_reply",
         "interfaces" : {
           "GigabitEthernet1" : {
             "name" : "GigabitEthernet1",
@@ -78876,6 +79048,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "no_snmp_server",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -78934,6 +79107,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "non_nexus_neighbor_af",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -79226,6 +79400,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "nxos_acl",
         "ipAccessLists" : {
           "blah" : {
             "lines" : [
@@ -79330,6 +79505,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "nxos_bgp",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "lines" : [
@@ -79779,6 +79955,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "nxos_interface",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -79911,6 +80088,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "nxos_misc",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -79972,6 +80150,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "nxos_ntp",
         "ntpServers" : [
           "10.1.2.3"
         ],
@@ -80036,6 +80215,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "nxos_ospf",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -80255,6 +80435,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "nxos_route_map_continue",
         "routingPolicies" : {
           "foobar" : {
             "name" : "foobar",
@@ -82204,6 +82385,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "nxos_ssh",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -82265,6 +82447,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "nxos_system",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -82326,6 +82509,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "nxos_vrf",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -82422,6 +82606,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "openflow",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -82579,6 +82764,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
+        "humanName" : "palo_alto_virtual_routers",
         "vendorFamily" : { },
         "vrfs" : {
           "vr1" : {
@@ -82609,6 +82795,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
+        "humanName" : "paloalto_applications",
         "vendorFamily" : { }
       },
       "paloalto_interfaces" : {
@@ -82619,6 +82806,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
+        "humanName" : "paloalto_interfaces",
         "interfaces" : {
           "ethernet1/1" : {
             "name" : "ethernet1/1",
@@ -83153,6 +83341,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
+        "humanName" : "paloalto_nat",
         "vendorFamily" : { }
       },
       "paloalto_policy" : {
@@ -83163,6 +83352,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
+        "humanName" : "paloalto_policy",
         "ipSpaceMetadata" : {
           "rfc1918_10" : {
             "sourceName" : "rfc1918_10",
@@ -83185,6 +83375,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "PALO_ALTO_FIREWALL",
         "deviceType" : "SWITCH",
+        "humanName" : "paloalto_zones",
         "interfaces" : {
           "ethernet1/1" : {
             "name" : "ethernet1/1",
@@ -83447,6 +83638,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "pim",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -83498,6 +83690,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "pim_snooping",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -83556,6 +83749,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "prefix_list_ipv4",
         "routeFilterLists" : {
           "default" : {
             "lines" : [
@@ -83677,6 +83871,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "preSet",
         "routeFilterLists" : {
           "default_route" : {
             "lines" : [
@@ -83837,6 +84032,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "route_policy_as_path_set",
         "routingPolicies" : {
           "erick-test" : {
             "name" : "erick-test",
@@ -84733,6 +84929,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "route_policy_igp_cost",
         "routingPolicies" : {
           "EBGP_CUST_FULL_v4" : {
             "name" : "EBGP_CUST_FULL_v4",
@@ -84842,6 +85039,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "route_policy_metric_type",
         "routingPolicies" : {
           "to_csuchico" : {
             "name" : "to_csuchico",
@@ -85054,6 +85252,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "route_policy_param",
         "routingPolicies" : {
           "cust_v4_in" : {
             "name" : "cust_v4_in",
@@ -85276,6 +85475,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "router_msdp",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -85334,6 +85534,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "rP",
         "routingPolicies" : {
           "EBGP-PEER-AS2828-LAX-PNI-OUT" : {
             "name" : "EBGP-PEER-AS2828-LAX-PNI-OUT",
@@ -87675,6 +87876,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "set_inline_community",
         "routingPolicies" : {
           "FOOBAR" : {
             "name" : "FOOBAR",
@@ -87825,6 +88027,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "statistics",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -87883,6 +88086,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "switchport_range",
         "interfaces" : {
           "FastEthernet0/1" : {
             "name" : "FastEthernet0/1",
@@ -87968,6 +88172,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "syslog_source_interface",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -88026,6 +88231,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "taskgroup",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -88077,6 +88283,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "tcpflags",
         "ipAccessLists" : {
           "100" : {
             "lines" : [
@@ -88564,6 +88771,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "test",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -88622,6 +88830,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "underscore_variable",
         "routingPolicies" : {
           "JKL_MNO_PQR" : {
             "name" : "JKL_MNO_PQR",
@@ -88689,6 +88898,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "variables",
         "interfaces" : {
           "FastEthernet0/0" : {
             "name" : "FastEthernet0/0",
@@ -88773,6 +88983,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "variables_dos",
         "interfaces" : {
           "FastEthernet0/0" : {
             "name" : "FastEthernet0/0",
@@ -88857,6 +89068,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
+        "humanName" : "vlan_access_map4",
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -90613,6 +90825,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "xr_dhcp",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -90664,6 +90877,7 @@
         "defaultInboundAction" : "PERMIT",
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
+        "humanName" : "xr_multicast",
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",

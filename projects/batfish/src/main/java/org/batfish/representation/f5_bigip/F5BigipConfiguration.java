@@ -230,6 +230,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private ConfigurationFormat _format;
   private final @Nonnull Map<String, HaGroup> _haGroups;
   private String _hostname;
+  private String _rawHostname;
   private boolean _imish;
   private final Map<String, ImishInterface> _imishInterfaces;
   private transient Map<String, ImmutableList.Builder<AclLine>> _interfaceIncomingFilterLines;
@@ -1284,7 +1285,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   @Override
   public void setHostname(String hostname) {
-    _hostname = hostname;
+    _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   public void setImish(boolean imish) {
@@ -1769,6 +1771,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, _format);
+    _c.setHumanName(_rawHostname);
 
     convertVendorFamily();
     _c.setDeviceModel(DeviceModel.F5_UNSPECIFIED);
