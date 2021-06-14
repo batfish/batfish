@@ -509,9 +509,9 @@ public class TransferBDD {
 
       // Symbolically execute each branch if it is feasible.
       // Some guards are statically resolved (e.g. CallExprContext and StatementExprContext), which
-      // means that only one branch will be taken.  Skipping analysis of the other branch avoids
+      // means that only one branch will be analyzed.  Skipping analysis of the other branch avoids
       // causing an error unnecessarily if we reach a route-map construct that is not currently
-      // modeled.  It also allows us to properly account for updates to things like the default
+      // modelled.  It also allows us to properly account for updates to things like the default
       // action that occur within the one feasible branch (see below for more on this).
       if (!guard.isZero()) {
         curP.debug("True Branch");
@@ -535,13 +535,18 @@ public class TransferBDD {
                     result.setReturnValue(new TransferReturn(pFalse.getData(), factory.zero()))));
       }
 
+      // compute the new state of the analysis
       TransferResult newResult;
       if (guard.isOne()) {
-        curP = curP.setDefaultsFrom(trueState.getTransferParam());
+        // the guard is logically true so we ignore the "else" branch
         newResult = trueState.getTransferResult();
+        // we also record any updates to the default actions/policies that occur
+        // in the "then" branch
+        curP = curP.setDefaultsFrom(trueState.getTransferParam());
       } else if (guard.isZero()) {
-        curP = curP.setDefaultsFrom(falseState.getTransferParam());
+        // same here, but for the case when the guard is logically false
         newResult = falseState.getTransferResult();
+        curP = curP.setDefaultsFrom(falseState.getTransferParam());
       } else {
         /**
          * TODO: any updates to the TransferParam in the branches, for example updates to the
@@ -551,10 +556,8 @@ public class TransferBDD {
         newResult = ite(guard, trueState.getTransferResult(), falseState.getTransferResult());
       }
 
-      // take into account the possibility
-      // that the "if" statement is never reached or that it returns from within its guard
-      // (unlikely
-      // but seems possible)
+      // finally, take into account the possibility that the "if" statement is never reached, or
+      // (unlikely but seems possible) that the "if" statement returns from within its guard
       result =
           ite(unreachable(result), result, ite(unreachable(guardResult), guardResult, newResult));
 
