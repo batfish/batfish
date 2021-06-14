@@ -1,0 +1,5 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+! https://batfish-org.slack.com/archives/C8XKQNHAQ/p1623711261096100?thread_ts=1623687818.095000&cid=C8XKQNHAQ
+hostname bms01-bprod.nae07
+! Override so test is happy.
+hostname xr-hostname.domain
