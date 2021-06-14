@@ -508,7 +508,7 @@ public class TransferBDD {
       TransferBDDState falseState = null;
 
       // Symbolically execute each branch if it is feasible.
-      // Some guards are statically resolved (e.g. CallExprContext and StatementExprContext), which
+      // Some guards are statically resolved (e.g. CallExprContext and CallStatementContext), which
       // means that only one branch will be analyzed.  Skipping analysis of the other branch avoids
       // signaling an error unnecessarily if we reach a route-map construct that is not currently
       // modelled.  It also allows us to properly account for updates to things like the default
