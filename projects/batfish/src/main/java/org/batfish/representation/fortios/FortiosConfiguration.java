@@ -76,6 +76,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   @Override
   public void setHostname(String hostname) {
     _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   @Override
@@ -159,6 +160,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   private String _hostname;
+  private String _rawHostname;
   private final @Nonnull Map<String, AccessList> _accessLists;
   private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Addrgrp> _addrgrps;
@@ -178,6 +180,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     Configuration c = new Configuration(_hostname, ConfigurationFormat.FORTIOS);
+    c.setHumanName(_rawHostname);
     c.setDeviceModel(DeviceModel.FORTIOS_UNSPECIFIED);
     // TODO: verify
     c.setDefaultCrossZoneAction(LineAction.DENY);

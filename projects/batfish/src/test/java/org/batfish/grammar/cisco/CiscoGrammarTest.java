@@ -3965,6 +3965,12 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testHumanName() throws IOException {
+    Configuration c = parseConfig("ios-humanname");
+    assertThat(c.getHumanName(), equalTo("IOS-HUMANNAME"));
+  }
+
+  @Test
   public void testInvalidCryptoMapDef() throws IOException {
     String hostname = "ios-crypto-map";
 
