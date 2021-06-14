@@ -2,7 +2,7 @@ package org.batfish.datamodel.tracking;
 
 /**
  * Evaluates the action of a {@link TrackAction} on a given HSRP {@code priority}. Visiting an
- * action returns the priority value after applying the action.
+ * action returns the updated priority value after applying the action.
  */
 public class HsrpPriorityEvaluator implements GenericTrackActionVisitor<Integer> {
 

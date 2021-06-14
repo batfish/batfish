@@ -34,6 +34,14 @@ public class TrackInterfaceTest {
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .setActive(false)
         .build();
+    // i3: active, but blacklisted
+    Interface.builder()
+        .setOwner(c1)
+        .setName("i3")
+        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
+        .setActive(true)
+        .setBlacklisted(true)
+        .build();
 
     // Iface is active
     TrackInterface trackInterface1 = new TrackInterface("i1");
@@ -43,8 +51,12 @@ public class TrackInterfaceTest {
     TrackInterface trackInterface2 = new TrackInterface("i2");
     assertTrue(trackInterface2.evaluate(c1));
 
-    // Non-existent iface
+    // Iface is active, but blacklisted
     TrackInterface trackInterface3 = new TrackInterface("i3");
-    assertFalse(trackInterface3.evaluate(c1));
+    assertTrue(trackInterface3.evaluate(c1));
+
+    // Non-existent iface
+    TrackInterface trackInterface4 = new TrackInterface("i4");
+    assertFalse(trackInterface4.evaluate(c1));
   }
 }
