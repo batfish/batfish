@@ -308,14 +308,12 @@ public final class PaloAltoGrammarTest {
     String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
-    org.batfish.grammar.palo_alto.PaloAltoCombinedParser parser =
-        new org.batfish.grammar.palo_alto.PaloAltoCombinedParser(src, settings, null);
+    PaloAltoCombinedParser parser = new PaloAltoCombinedParser(src, settings, null);
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     Warnings parseWarnings = new Warnings();
-    org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor extractor =
-        new org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor(
-            src, parser, parseWarnings, new SilentSyntaxCollection());
+    PaloAltoControlPlaneExtractor extractor =
+        new PaloAltoControlPlaneExtractor(src, parser, parseWarnings, new SilentSyntaxCollection());
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
@@ -340,11 +338,9 @@ public final class PaloAltoGrammarTest {
             src, logger, settings, w, PALO_ALTO_NESTED, BATFISH_FLATTENED_PALO_ALTO_HEADER);
     String fileText = flattener.getFlattenedConfigurationText();
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
-    org.batfish.grammar.palo_alto.PaloAltoCombinedParser paParser =
-        new org.batfish.grammar.palo_alto.PaloAltoCombinedParser(fileText, settings, lineMap);
-    org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor extractor =
-        new org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor(
-            fileText, paParser, w, new SilentSyntaxCollection());
+    PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(fileText, settings, lineMap);
+    PaloAltoControlPlaneExtractor extractor =
+        new PaloAltoControlPlaneExtractor(fileText, paParser, w, new SilentSyntaxCollection());
     ParserRuleContext tree = Batfish.parse(paParser, logger, settings);
     extractor.processParseTree(TEST_SNAPSHOT, tree);
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
