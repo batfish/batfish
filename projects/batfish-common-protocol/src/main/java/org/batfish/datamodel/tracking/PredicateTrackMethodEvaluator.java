@@ -1,5 +1,7 @@
 package org.batfish.datamodel.tracking;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 
@@ -8,6 +10,7 @@ import org.batfish.datamodel.Interface;
  * {@link TrackMethod} would be triggered and execute associated {@link TrackAction}s and {@code
  * false} otherwise.
  */
+@ParametersAreNonnullByDefault
 public class PredicateTrackMethodEvaluator implements GenericTrackMethodVisitor<Boolean> {
   public PredicateTrackMethodEvaluator(Configuration configuration) {
     _configuration = configuration;
@@ -24,5 +27,5 @@ public class PredicateTrackMethodEvaluator implements GenericTrackMethodVisitor<
     return !trackedInterface.getActive() || trackedInterface.getBlacklisted();
   }
 
-  private final Configuration _configuration;
+  @Nonnull private final Configuration _configuration;
 }

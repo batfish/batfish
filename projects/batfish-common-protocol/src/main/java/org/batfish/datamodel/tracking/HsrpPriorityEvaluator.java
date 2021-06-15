@@ -1,9 +1,12 @@
 package org.batfish.datamodel.tracking;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 /**
  * Evaluates the action of a {@link TrackAction} on a given HSRP {@code priority}. Visiting an
  * action updates evaluator's priority value according to the action.
  */
+@ParametersAreNonnullByDefault
 public class HsrpPriorityEvaluator implements GenericTrackActionVisitor {
 
   public final int MAX_PRIORITY = 255;
