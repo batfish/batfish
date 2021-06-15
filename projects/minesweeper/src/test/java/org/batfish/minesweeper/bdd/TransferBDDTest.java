@@ -71,6 +71,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
@@ -1039,6 +1040,28 @@ public class TransferBDDTest {
                     ImmutableList.of(),
                     ImmutableList.of(new StaticStatement(Statements.SetDefaultActionAccept))))
             .addStatement(new StaticStatement(Statements.DefaultAction))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(_anyRoute, outAnnouncements);
+  }
+
+  @Test
+  public void testUnreachableUnhandled() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_EXPR_CONTEXT,
+                    // currently we don't handle SetDefaultTag, but this branch is unreachable
+                    ImmutableList.of(new SetDefaultTag(new LiteralLong(0L))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     _g = new Graph(_batfish, _batfish.getSnapshot());
 
