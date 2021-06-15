@@ -1344,7 +1344,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private TcpFlags.Builder _currentTcpFlagsBuilder;
   private TcpOptions.Builder _currentTcpOptionsBuilder;
 
-  private Integer _currentTrackObjectId;
   private UdpOptions.Builder _currentUdpOptionsBuilder;
   private IntegerSpace _currentValidVlanRange;
   private List<Vlan> _currentVlans;
@@ -4747,18 +4746,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   @Override
-  public void enterS_track(S_trackContext ctx) {
-    toInteger(ctx, ctx.num).ifPresent(id -> _currentTrackObjectId = id);
-  }
-
-  @Override
   public void exitS_track(S_trackContext ctx) {
-    // TODO: support object tracking
-    todo(ctx);
-
     toInteger(ctx, ctx.num)
         .ifPresent(id -> toTrack(ctx.track_definition()).ifPresent(t -> _c.getTracks().put(id, t)));
-    _currentTrackObjectId = null;
   }
 
   private Optional<Track> toTrack(Track_definitionContext ctx) {

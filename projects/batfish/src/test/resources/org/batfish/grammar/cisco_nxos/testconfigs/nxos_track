@@ -6,8 +6,8 @@ hostname nxos_track
 vrf context v1
 
 track 1 interface port-channel1 line-protocol
-track 2 interface port-channel1 ip route
-track 500 interface port-channel1 ipv6 route
+track 2 interface Ethernet1/1 ip routing
+track 500 interface loopback1 ipv6 routing
 
 ! Syntax not yet supported
 !track 2 ip route 192.0.2.1/32 reachability hmm

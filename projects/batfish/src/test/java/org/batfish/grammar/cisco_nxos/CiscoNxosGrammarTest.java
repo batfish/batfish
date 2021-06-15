@@ -125,6 +125,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -383,6 +384,9 @@ import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.StaticRouteV6;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
+import org.batfish.representation.cisco_nxos.Track;
+import org.batfish.representation.cisco_nxos.TrackInterface;
+import org.batfish.representation.cisco_nxos.TrackInterface.Mode;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
@@ -1538,14 +1542,34 @@ public final class CiscoNxosGrammarTest {
 
   @Test
   public void testTrackExtraction() {
-    // TODO: make into extraction test asdf
-    assertThat(parseVendorConfig("nxos_track"), notNullValue());
-  }
+    String hostname = "nxos_track";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-  @Test
-  public void testTrackConversion() throws IOException {
-    // TODO: make into conversion test asdf
-    assertThat(parseConfig("nxos_track"), notNullValue());
+    assertThat(vc.getTracks(), hasKeys(1, 2, 500));
+
+    {
+      Track track = vc.getTracks().get(1);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("port-channel1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.LINE_PROTOCOL));
+    }
+
+    {
+      Track track = vc.getTracks().get(2);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("Ethernet1/1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.IP_ROUTING));
+    }
+
+    {
+      Track track = vc.getTracks().get(500);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("loopback1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.IPV6_ROUTING));
+    }
   }
 
   @Test
@@ -1556,8 +1580,18 @@ public final class CiscoNxosGrammarTest {
     assertThat(
         vc.getWarnings().getParseWarnings(),
         containsInAnyOrder(
+            hasComment(
+                "Unsupported interface type: mgmt, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
+            hasComment(
+                "Unsupported interface type: Vlan, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
             hasComment("Expected track object-id in range 1-500, but got '0'"),
             hasComment("Expected track object-id in range 1-500, but got '501'")));
+  }
+
+  @Test
+  public void testTrackConversion() throws IOException {
+    // TODO: make into conversion test
+    assertThat(parseConfig("nxos_track"), notNullValue());
   }
 
   @Test

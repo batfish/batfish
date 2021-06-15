@@ -3,6 +3,7 @@ package org.batfish.representation.cisco_nxos;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/** Represents interface tracking configuration. */
 @ParametersAreNonnullByDefault
 public class TrackInterface implements Track {
   public enum Mode {
