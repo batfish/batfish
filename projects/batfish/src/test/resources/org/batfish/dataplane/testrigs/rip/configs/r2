@@ -14,11 +14,7 @@ router rip
  network 3.0.0.0
 !
 router bgp 2
- redistribute rip route-map addcomm
+ redistribute rip
  neighbor 3.0.0.2 remote-as 3
  neighbor 3.0.0.2 activate
-!
-route-map addcom permit 1
- set community 2:3
-!
 !
