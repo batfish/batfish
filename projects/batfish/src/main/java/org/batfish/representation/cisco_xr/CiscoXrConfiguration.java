@@ -813,7 +813,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
       // create generation policy for aggregate network
       RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix6);
-      GeneratedRoute6 gr = new GeneratedRoute6(prefix6, CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST);
+      // Should be local bgp admin, but defaults are the same and this code will disappear when IPv6
+      // is implemented.
+      GeneratedRoute6 gr = new GeneratedRoute6(prefix6, ibgpAdmin);
       gr.setGenerationPolicy(genPolicy.getName());
       gr.setDiscard(true);
       v.getGeneratedIpv6Routes().add(gr);
