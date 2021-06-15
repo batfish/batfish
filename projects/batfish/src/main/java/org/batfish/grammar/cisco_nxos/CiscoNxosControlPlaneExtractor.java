@@ -996,7 +996,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   private static final IntegerSpace PROTOCOL_DISTANCE_RANGE = IntegerSpace.of(Range.closed(1, 255));
   private static final IntegerSpace RIP_PROCESS_ID_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 20));
-  private static final IntegerSpace TRACK_OBJECT_ID_RANGE = IntegerSpace.of(Range.closed(1, 500));
   private static final IntegerSpace SNMP_COMMUNITY_LENGTH_RANGE =
       IntegerSpace.of(Range.closed(1, 32));
 
@@ -1022,6 +1021,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @VisibleForTesting
   public static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+
+  private static final IntegerSpace TRACK_OBJECT_ID_RANGE = IntegerSpace.of(Range.closed(1, 500));
 
   @VisibleForTesting
   public static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
@@ -1343,7 +1344,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private TcpFlags.Builder _currentTcpFlagsBuilder;
   private TcpOptions.Builder _currentTcpOptionsBuilder;
-
   private UdpOptions.Builder _currentUdpOptionsBuilder;
   private IntegerSpace _currentValidVlanRange;
   private List<Vlan> _currentVlans;
