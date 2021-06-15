@@ -4,6 +4,7 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
@@ -497,9 +498,9 @@ public final class CiscoNxosGrammarTest {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
+    Warnings warnings = new Warnings();
     NxosControlPlaneExtractor extractor =
-        new NxosControlPlaneExtractor(
-            src, ciscoNxosParser, new Warnings(), new SilentSyntaxCollection());
+        new NxosControlPlaneExtractor(src, ciscoNxosParser, warnings, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoNxosParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
@@ -507,8 +508,11 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vendorConfiguration =
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
+
     // crash if not serializable
-    return SerializationUtils.clone(vendorConfiguration);
+    vendorConfiguration = SerializationUtils.clone(vendorConfiguration);
+    vendorConfiguration.setWarnings(warnings);
+    return vendorConfiguration;
   }
 
   private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
@@ -1534,14 +1538,26 @@ public final class CiscoNxosGrammarTest {
 
   @Test
   public void testTrackExtraction() {
-    // TODO: make into extraction test
+    // TODO: make into extraction test asdf
     assertThat(parseVendorConfig("nxos_track"), notNullValue());
   }
 
   @Test
   public void testTrackConversion() throws IOException {
-    // TODO: make into conversion test
+    // TODO: make into conversion test asdf
     assertThat(parseConfig("nxos_track"), notNullValue());
+  }
+
+  @Test
+  public void testTrackWarnings() {
+    String hostname = "nxos_track_warn";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        containsInAnyOrder(
+            hasComment("Expected track object-id in range 1-500, but got '0'"),
+            hasComment("Expected track object-id in range 1-500, but got '501'")));
   }
 
   @Test

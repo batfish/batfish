@@ -1,0 +1,10 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_track_warn
+!
+
+vrf context v1
+
+track 0 interface port-channel1 line-protocol
+track 501 interface port-channel2 line-protocol
+!

@@ -110,7 +110,7 @@ public final class StaticRoute implements Serializable {
 
   public static final IntegerSpace STATIC_ROUTE_PREFERENCE_RANGE =
       IntegerSpace.of(Range.closed(1, 255));
-  public static final IntegerSpace STATIC_ROUTE_TRACK_RANGE = IntegerSpace.of(Range.closed(1, 512));
+  public static final IntegerSpace STATIC_ROUTE_TRACK_RANGE = IntegerSpace.of(Range.closed(1, 500));
   public static final int MAX_NAME_LENGTH = 50;
 
   public static @Nonnull Builder builder() {

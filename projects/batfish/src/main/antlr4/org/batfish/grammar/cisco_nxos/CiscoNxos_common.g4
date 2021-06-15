@@ -511,9 +511,9 @@ template_name
   WORD
 ;
 
-track_object_number
+track_object_id
 :
-// 1-512
+// 1-500
   uint16
 ;
 
