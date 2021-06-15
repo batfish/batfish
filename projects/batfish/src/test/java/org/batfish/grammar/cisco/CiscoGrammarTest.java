@@ -938,6 +938,37 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testBgpRedistributionWithRouteMap() throws IOException {
+    /*
+     Config contains two VRFs, each of which has a static route for 1.1.1.1/32. Both VRFs redistribute
+     static routes into BGP with a route-map. The redistribution route-map in VRF1 permits 1.1.1.1/32,
+     so we should see it as a local route in VRF1's BGP RIB. The redistribution route-map in VRF2 is
+     undefined, so VRF2's BGP RIB should be empty.
+    */
+    String hostname = "bgp_redistribution_with_route_map";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Prefix staticPrefix = Prefix.parse("1.1.1.1/32");
+
+    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32
+    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
+        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
+        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    assertThat(
+        vrf1Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
+    assertThat(
+        vrf2Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
+
+    // Only VRF1 should have 1.1.1.1/32 in BGP
+    Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
+    Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
+    assertThat(vrf1BgpRoutes, hasItem(hasPrefix(staticPrefix)));
+    assertThat(vrf2BgpRoutes, not(hasItem(hasPrefix(staticPrefix))));
+  }
+
+  @Test
   public void testIosIbgpMissingUpdateSource() throws IOException {
     /*
     r1 is missing update-source, but session should still be established between r1 and r2. Both
