@@ -4,7 +4,7 @@ package org.batfish.datamodel.tracking;
  * Evaluates the action of a {@link TrackAction} on a given HSRP {@code priority}. Visiting an
  * action returns the updated priority value after applying the action.
  */
-public class HsrpPriorityEvaluator implements GenericTrackActionVisitor<Integer> {
+public class HsrpPriorityEvaluator implements GenericTrackActionVisitor {
 
   public final int MAX_PRIORITY = 255;
   public final int MIN_PRIORITY = 0;
@@ -18,12 +18,10 @@ public class HsrpPriorityEvaluator implements GenericTrackActionVisitor<Integer>
   }
 
   @Override
-  public Integer visitDecrementPriority(DecrementPriority decrementPriority) {
+  public void visitDecrementPriority(DecrementPriority decrementPriority) {
     _priority =
         Math.min(
             Math.max(_priority - decrementPriority.getSubtrahend(), MIN_PRIORITY), MAX_PRIORITY);
-
-    return _priority;
   }
 
   private int _priority;

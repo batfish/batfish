@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 
 /** Tracks whether a specified interface is active or not */
 public class TrackInterface implements TrackMethod {
@@ -47,12 +45,7 @@ public class TrackInterface implements TrackMethod {
   }
 
   @Override
-  public boolean evaluate(Configuration configuration) {
-    Interface trackedInterface = configuration.getAllInterfaces().get(this.getTrackedInterface());
-    if (trackedInterface == null) {
-      // Assume an undefined interface cannot trigger this track methood
-      return false;
-    }
-    return !trackedInterface.getActive() || trackedInterface.getBlacklisted();
+  public <R> R accept(GenericTrackMethodVisitor<R> visitor) {
+    return visitor.visitTrackInterface(this);
   }
 }

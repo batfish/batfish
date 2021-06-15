@@ -12,5 +12,6 @@ import org.batfish.datamodel.Configuration;
 public interface TrackMethod extends Serializable {
 
   /** Evaluate if this track method is triggered on the specified {@link Configuration}. */
-  boolean evaluate(Configuration configuration);
+  <R> R accept(GenericTrackMethodVisitor<R> visitor);
+  // boolean evaluate(Configuration configuration);
 }

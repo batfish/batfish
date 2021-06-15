@@ -44,7 +44,7 @@ public class DecrementPriority implements TrackAction {
   }
 
   @Override
-  public <R> R accept(GenericTrackActionVisitor<R> visitor) {
-    return visitor.visitDecrementPriority(this);
+  public void accept(GenericTrackActionVisitor visitor) {
+    visitor.visitDecrementPriority(this);
   }
 }

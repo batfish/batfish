@@ -6,5 +6,5 @@ import java.io.Serializable;
 /** An action to take when a {@link TrackMethod} has been triggered (is down). */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public interface TrackAction extends Serializable {
-  <R> R accept(GenericTrackActionVisitor<R> visitor);
+  void accept(GenericTrackActionVisitor visitor);
 }

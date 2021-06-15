@@ -10,10 +10,10 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.junit.Test;
 
-/** Tests of {@link TrackInterface} */
-public class TrackInterfaceTest {
+/** Tests of {@link PredicateTrackMethodEvaluator} */
+public class PredicateTrackMethodEvaluatorTest {
   @Test
-  public void testEvaluate() {
+  public void testVisitTrackInterface() {
     Configuration c1 =
         Configuration.builder()
             .setHostname("c1")
@@ -43,20 +43,21 @@ public class TrackInterfaceTest {
         .setBlacklisted(true)
         .build();
 
+    PredicateTrackMethodEvaluator evaluator = new PredicateTrackMethodEvaluator(c1);
     // Iface is active
     TrackInterface trackInterface1 = new TrackInterface("i1");
-    assertFalse(trackInterface1.evaluate(c1));
+    assertFalse(trackInterface1.accept(evaluator));
 
     // Iface is not active
     TrackInterface trackInterface2 = new TrackInterface("i2");
-    assertTrue(trackInterface2.evaluate(c1));
+    assertTrue(trackInterface2.accept(evaluator));
 
     // Iface is active, but blacklisted
     TrackInterface trackInterface3 = new TrackInterface("i3");
-    assertTrue(trackInterface3.evaluate(c1));
+    assertTrue(trackInterface3.accept(evaluator));
 
     // Non-existent iface
     TrackInterface trackInterface4 = new TrackInterface("i4");
-    assertFalse(trackInterface4.evaluate(c1));
+    assertFalse(trackInterface4.accept(evaluator));
   }
 }
