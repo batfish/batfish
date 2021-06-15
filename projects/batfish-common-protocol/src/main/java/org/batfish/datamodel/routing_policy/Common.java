@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy;
 
 import static java.util.Collections.singletonList;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -146,12 +147,20 @@ public final class Common {
     return MATCH_DEFAULT_ROUTE_V6;
   }
 
+  @VisibleForTesting
+  public static String generateAggregateInheritPolicyName(@Nullable String contributorPolicyName) {
+    return String.format(
+        "~AGG_INHERIT~%s", contributorPolicyName != null ? contributorPolicyName : "");
+  }
+
+  @VisibleForTesting
+  public static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
+
   // Private implementation details
   private Common() {} // prevent instantiation of utility class
 
   private static final MatchPrefixSet MATCH_DEFAULT_ROUTE = makeMatchDefaultRouteV4();
   private static final MatchPrefix6Set MATCH_DEFAULT_ROUTE_V6 = makeMatchDefaultRouteV6();
-  private static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
 
   private static MatchPrefixSet makeMatchDefaultRouteV4() {
     MatchPrefixSet ret =

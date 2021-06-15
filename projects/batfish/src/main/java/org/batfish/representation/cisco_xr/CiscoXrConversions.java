@@ -13,6 +13,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.datamodel.routing_policy.Common.generateAggregateInheritPolicyName;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
@@ -162,6 +163,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.Uint32HighLowExpr;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
+import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -329,8 +331,26 @@ public class CiscoXrConversions {
     return BgpAggregate.of(
         vsAggregate.getPrefix(),
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
-        vsAggregate.getRoutePolicy(),
+        generateGenerationPolicy(vsAggregate.getAsSet(), vsAggregate.getRoutePolicy(), c),
         null);
+  }
+
+  private static @Nullable String generateGenerationPolicy(
+      boolean asSet, @Nullable String routePolicy, Configuration c) {
+    if (!asSet) {
+      return routePolicy;
+    }
+    String name = generateAggregateInheritPolicyName(routePolicy);
+    if (c.getRoutingPolicies().containsKey(name)) {
+      return name;
+    }
+    // TODO: implement as-set
+    RoutingPolicy.builder()
+        .setName(name)
+        .setOwner(c)
+        .addStatement(new CallStatement(routePolicy))
+        .build();
+    return name;
   }
 
   private static final class CommunitySetElemToCommunityMatchExpr

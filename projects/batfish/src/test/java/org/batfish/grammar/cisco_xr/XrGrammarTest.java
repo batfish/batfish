@@ -26,6 +26,8 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
+import static org.batfish.datamodel.routing_policy.Common.generateAggregateInheritPolicyName;
 import static org.batfish.datamodel.routing_policy.RoutingPolicy.isGenerated;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
@@ -109,6 +111,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_TO_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -116,6 +119,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -176,6 +180,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -205,6 +210,7 @@ import org.batfish.representation.cisco_xr.AsPathSetElem;
 import org.batfish.representation.cisco_xr.AsPathSetExpr;
 import org.batfish.representation.cisco_xr.AsPathSetReference;
 import org.batfish.representation.cisco_xr.AsPathSetVariable;
+import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.DfaRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.DistributeList;
@@ -2262,6 +2268,105 @@ public final class XrGrammarTest {
         dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(mainRibRoutes, hasSize(3));
     assertThat(mainRibRoutes, everyItem(instanceOf(StaticRoute.class)));
+  }
+
+  @Test
+  public void testAggregateAddressExtraction() {
+    String hostname = "xr-aggregate-address";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    Map<Prefix, BgpAggregateIpv4Network> aggs =
+        vc.getDefaultVrf().getBgpProcess().getAggregateNetworks();
+    assertThat(aggs, aMapWithSize(6));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.1.0.0/16")),
+            equalTo(new BgpAggregateIpv4Network(false, Prefix.parse("1.1.0.0/16"), null, false))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.2.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(false, Prefix.parse("1.2.0.0/16"), "gen1", false))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.1.0.0/16")),
+            equalTo(new BgpAggregateIpv4Network(false, Prefix.parse("2.1.0.0/16"), null, true))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.2.0.0/16")),
+            equalTo(new BgpAggregateIpv4Network(false, Prefix.parse("2.2.0.0/16"), "gen2", true))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.1.0.0/16")),
+            equalTo(new BgpAggregateIpv4Network(true, Prefix.parse("3.1.0.0/16"), null, false))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.2.0.0/16")),
+            equalTo(new BgpAggregateIpv4Network(true, Prefix.parse("3.2.0.0/16"), "gen3", false))));
+  }
+
+  @Test
+  public void testAggregateAddressConversion() {
+    String hostname = "xr-aggregate-address";
+    Configuration c = parseConfig(hostname);
+
+    Map<Prefix, BgpAggregate> aggs = c.getDefaultVrf().getBgpProcess().getAggregates();
+    assertThat(aggs, aMapWithSize(6));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.1.0.0/16")),
+            equalTo(BgpAggregate.of(Prefix.parse("1.1.0.0/16"), null, null, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.2.0.0/16")),
+            equalTo(BgpAggregate.of(Prefix.parse("1.2.0.0/16"), null, "gen1", null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.1.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.1.0.0/16"),
+                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.2.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.2.0.0/16"),
+                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                    "gen2",
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.1.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.1.0.0/16"),
+                    null,
+                    generateAggregateInheritPolicyName(null),
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.2.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.2.0.0/16"),
+                    null,
+                    generateAggregateInheritPolicyName("gen3"),
+                    null))));
   }
 
   @Test
