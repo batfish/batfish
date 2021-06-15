@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,6 +22,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -273,7 +275,7 @@ public class BgpProcess implements Serializable {
 
   @JsonProperty(PROP_AGGREGATES)
   private void setAggregates(List<BgpAggregate> aggregates) {
-    aggregates.forEach(this::addAggregate);
+    _aggregates = toImmutableMap(aggregates, BgpAggregate::getNetwork, Function.identity());
   }
 
   /**

@@ -97,10 +97,11 @@ public final class BgpAggregate implements Serializable {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("_attributePolicy", _attributePolicy)
-        .add("_generationPolicy", _generationPolicy)
-        .add("_network", _network)
-        .add("_suppressionPolicy", _suppressionPolicy)
+        .omitNullValues()
+        .add(PROP_ATTRIBUTE_POLICY, _attributePolicy)
+        .add(PROP_GENERATION_POLICY, _generationPolicy)
+        .add(PROP_NETWORK, _network)
+        .add(PROP_SUPPRESSION_POLICY, _suppressionPolicy)
         .toString();
   }
 

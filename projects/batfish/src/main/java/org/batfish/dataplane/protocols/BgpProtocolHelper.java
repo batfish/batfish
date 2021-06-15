@@ -322,10 +322,6 @@ public final class BgpProtocolHelper {
             .setNextHop(NextHopDiscard.instance())
             .setNetwork(aggregate.getNetwork())
             .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-            /*
-             * Note: Origin type and originator IP should get overwritten by export policy,
-             * but are needed initially
-             */
             .setOriginatorIp(routerId)
             // TODO: confirm default is IGP for all devices initializing aggregates from BGP RIB
             .setOriginType(OriginType.IGP)
