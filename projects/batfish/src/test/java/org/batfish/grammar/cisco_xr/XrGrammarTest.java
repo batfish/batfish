@@ -2334,7 +2334,7 @@ public final class XrGrammarTest {
     Bgpv4Route aggRoute1 =
         Bgpv4Route.builder()
             .setNetwork(aggPrefix1)
-            .setAdmin(admin)
+            .setAdmin(aggAdmin)
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
