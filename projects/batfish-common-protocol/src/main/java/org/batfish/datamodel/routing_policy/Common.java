@@ -80,6 +80,25 @@ public final class Common {
         .build();
   }
 
+  /**
+   * If {@code summaryOnly} is {@code false}, returns {@code null}. Else, returns the name of a
+   * policy that accepts (suppresses) all routes.
+   */
+  public static @Nullable String generateSuppressionPolicy(boolean summaryOnly, Configuration c) {
+    if (!summaryOnly) {
+      return null;
+    }
+    if (c.getRoutingPolicies().containsKey(SUMMARY_ONLY_SUPPRESSION_POLICY_NAME)) {
+      return SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
+    }
+    RoutingPolicy.builder()
+        .setName(SUMMARY_ONLY_SUPPRESSION_POLICY_NAME)
+        .setOwner(c)
+        .addStatement(Statements.ExitAccept.toStaticStatement())
+        .build();
+    return SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
+  }
+
   public static String generatedBgpGenerationPolicyName(
       boolean ipv4, String vrfName, String prefix) {
     return String.format("~AGGREGATE_ROUTE%s_GEN:%s:%s~", ipv4 ? "" : "6", vrfName, prefix);
@@ -132,6 +151,7 @@ public final class Common {
 
   private static final MatchPrefixSet MATCH_DEFAULT_ROUTE = makeMatchDefaultRouteV4();
   private static final MatchPrefix6Set MATCH_DEFAULT_ROUTE_V6 = makeMatchDefaultRouteV6();
+  private static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
 
   private static MatchPrefixSet makeMatchDefaultRouteV4() {
     MatchPrefixSet ret =

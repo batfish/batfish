@@ -13,6 +13,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
@@ -190,8 +191,6 @@ public class CiscoXrConversions {
   static int DEFAULT_OSPF_DEAD_INTERVAL =
       OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
 
-  private static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
-
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
     Map<String, Interface> loopbackInterfaces = new HashMap<>();
@@ -330,27 +329,8 @@ public class CiscoXrConversions {
     return BgpAggregate.of(
         vsAggregate.getPrefix(),
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
-        null,
-        vsAggregate.getAttributeMap());
-  }
-
-  /**
-   * If {@code summaryOnly} is {@code false}, returns {@code null}. Else, returns the name of a
-   * policy that accepts (suppresses) all routes.
-   */
-  static @Nullable String generateSuppressionPolicy(boolean summaryOnly, Configuration c) {
-    if (!summaryOnly) {
-      return null;
-    }
-    if (c.getRoutingPolicies().containsKey(SUMMARY_ONLY_SUPPRESSION_POLICY_NAME)) {
-      return SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
-    }
-    RoutingPolicy.builder()
-        .setName(SUMMARY_ONLY_SUPPRESSION_POLICY_NAME)
-        .setOwner(c)
-        .addStatement(Statements.ExitAccept.toStaticStatement())
-        .build();
-    return SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
+        vsAggregate.getRoutePolicy(),
+        null);
   }
 
   private static final class CommunitySetElemToCommunityMatchExpr

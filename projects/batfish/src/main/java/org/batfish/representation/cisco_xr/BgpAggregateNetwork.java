@@ -1,12 +1,13 @@
 package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
+import javax.annotation.Nullable;
 
 public abstract class BgpAggregateNetwork implements Serializable {
 
   private boolean _asSet;
 
-  private String _attributeMap;
+  private @Nullable String _routePolicy;
 
   private boolean _summaryOnly;
 
@@ -17,8 +18,8 @@ public abstract class BgpAggregateNetwork implements Serializable {
     return _asSet;
   }
 
-  public String getAttributeMap() {
-    return _attributeMap;
+  public @Nullable String getRoutePolicy() {
+    return _routePolicy;
   }
 
   public boolean getSummaryOnly() {
@@ -32,8 +33,8 @@ public abstract class BgpAggregateNetwork implements Serializable {
     _asSet = asSet;
   }
 
-  public void setAttributeMap(String attributeMap) {
-    _attributeMap = attributeMap;
+  public void setRoutePolicy(@Nullable String attributeMap) {
+    _routePolicy = attributeMap;
   }
 
   public void setSummaryOnly(boolean summaryOnly) {

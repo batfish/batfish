@@ -821,7 +821,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       v.getGeneratedIpv6Routes().add(gr);
 
       // set attribute map for aggregate network
-      String attributeMapName = aggNet.getAttributeMap();
+      String attributeMapName = aggNet.getRoutePolicy();
       if (attributeMapName != null) {
         // TODO update to route-policy if valid, or delete grammar and VS
       }
