@@ -32,7 +32,6 @@ import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.RESOLUTION_POLICY_NAME;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
@@ -2297,6 +2296,14 @@ public final class XrGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    // TODO: change to local bgp cost once supported
+    int aggAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(hostname)
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getAdminCost(RoutingProtocol.IBGP);
     Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, Configuration.DEFAULT_VRF_NAME);
     Ip routerId = Ip.parse("1.1.1.1");
     Prefix staticPrefix1 = Prefix.parse("1.1.1.0/24");
@@ -2327,7 +2334,7 @@ public final class XrGrammarTest {
     Bgpv4Route aggRoute1 =
         Bgpv4Route.builder()
             .setNetwork(aggPrefix1)
-            .setAdmin(CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST)
+            .setAdmin(admin)
             .setLocalPreference(100)
             .setNextHop(NextHopDiscard.instance())
             .setOriginatorIp(routerId)
@@ -2381,6 +2388,14 @@ public final class XrGrammarTest {
             _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    // TODO: change to local bgp cost once supported
+    int aggAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(c1)
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getAdminCost(RoutingProtocol.IBGP);
 
     Prefix learnedPrefix1 = Prefix.parse("1.1.1.0/24");
     Prefix learnedPrefix2 = Prefix.parse("2.2.2.0/24");
@@ -2392,7 +2407,7 @@ public final class XrGrammarTest {
       Bgpv4Route aggRoute1 =
           Bgpv4Route.builder()
               .setNetwork(aggPrefix1)
-              .setAdmin(CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST)
+              .setAdmin(aggAdmin)
               .setLocalPreference(100)
               .setNextHop(NextHopDiscard.instance())
               .setOriginatorIp(Ip.parse("2.2.2.2"))
