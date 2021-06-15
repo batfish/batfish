@@ -22,7 +22,6 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -357,19 +356,19 @@ public final class IpOwners {
 
   /** Compute HSRP priority for a given HSRP group and the interface it is associated with. */
   static int computeHsrpPriority(Interface iface, HsrpGroup group) {
-    AtomicInteger priority = new AtomicInteger(group.getPriority());
     Configuration c = iface.getOwner();
     Map<String, TrackMethod> trackMethods = c.getTrackingGroups();
+    HsrpPriorityEvaluator evaluator = new HsrpPriorityEvaluator(group.getPriority());
     group
         .getTrackActions()
         .forEach(
             (trackName, action) -> {
               TrackMethod trackMethod = trackMethods.get(trackName);
               if (trackMethod != null && trackMethod.evaluate(c)) {
-                priority.set(action.apply(new HsrpPriorityEvaluator(priority.get())));
+                action.accept(evaluator);
               }
             });
-    return priority.get();
+    return evaluator.getPriority();
   }
 
   /**

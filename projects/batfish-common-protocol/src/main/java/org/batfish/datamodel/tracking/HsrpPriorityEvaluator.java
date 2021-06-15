@@ -13,11 +13,18 @@ public class HsrpPriorityEvaluator implements GenericTrackActionVisitor<Integer>
     _priority = priority;
   }
 
-  @Override
-  public Integer visitDecrementPriority(DecrementPriority decrementPriority) {
-    int priority = _priority - decrementPriority.getSubtrahend();
-    return Math.min(Math.max(priority, MIN_PRIORITY), MAX_PRIORITY);
+  public int getPriority() {
+    return _priority;
   }
 
-  private final int _priority;
+  @Override
+  public Integer visitDecrementPriority(DecrementPriority decrementPriority) {
+    _priority =
+        Math.min(
+            Math.max(_priority - decrementPriority.getSubtrahend(), MIN_PRIORITY), MAX_PRIORITY);
+
+    return _priority;
+  }
+
+  private int _priority;
 }

@@ -15,10 +15,10 @@ public class HsrpPriorityEvaluatorTest {
     DecrementPriority decrement125 = new DecrementPriority(125);
     DecrementPriority decrementNegative200 = new DecrementPriority(-200);
 
-    assertThat(evaluator.visit(decrement25), equalTo(75));
+    assertThat(evaluator.visitDecrementPriority(decrement25), equalTo(75));
 
     // Final priority must be between 0 and 255
-    assertThat(evaluator.visit(decrement125), equalTo(0));
-    assertThat(evaluator.visit(decrementNegative200), equalTo(255));
+    assertThat(evaluator.visitDecrementPriority(decrement125), equalTo(0));
+    assertThat(evaluator.visitDecrementPriority(decrementNegative200), equalTo(255));
   }
 }
