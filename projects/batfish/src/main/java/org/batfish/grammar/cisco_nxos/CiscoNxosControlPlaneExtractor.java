@@ -200,7 +200,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.Table;
 import com.google.common.primitives.Ints;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -7271,8 +7270,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_nameContext ctx) {
-    return toString(
-        messageCtx, ctx, ImmutableSet.copyOf(Arrays.asList(CiscoNxosInterfaceType.values())));
+    return toString(messageCtx, ctx, CiscoNxosInterfaceType.ALL_INTERFACE_TYPES);
   }
 
   private @Nonnull Optional<String> toString(
