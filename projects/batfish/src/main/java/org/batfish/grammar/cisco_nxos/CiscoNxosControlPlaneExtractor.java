@@ -192,7 +192,6 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRAC
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
-import static org.batfish.representation.cisco_nxos.Track.TRACK_OBJECT_ID_RANGE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
@@ -1021,6 +1020,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @VisibleForTesting
   public static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+
+  public static final IntegerSpace TRACK_OBJECT_ID_RANGE = IntegerSpace.of(Range.closed(1, 500));
 
   @VisibleForTesting
   public static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
@@ -2485,11 +2486,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       builder.setTag(toLong(ctx.tag));
     }
     if (ctx.track != null) {
-      Short track = toShort(ctx, ctx.track);
-      if (track == null) {
+      Optional<Integer> track = toInteger(ctx, ctx.track);
+      if (!track.isPresent()) {
         return;
       }
-      builder.setTrack(track);
+      builder.setTrack(track.get());
       // TODO: support track object number
       todo(ctx);
     }
@@ -5825,11 +5826,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       builder.setTag(toLong(ctx.tag));
     }
     if (ctx.track != null) {
-      Short track = toShort(ctx, ctx.track);
-      if (track == null) {
+      Optional<Integer> track = toInteger(ctx, ctx.track);
+      if (!track.isPresent()) {
         return;
       }
-      builder.setTrack(track);
+      builder.setTrack(track.get());
       // TODO: support track object number
       todo(ctx);
     }
@@ -7131,17 +7132,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       todo(ctx);
       return Optional.empty();
     }
-  }
-
-  private @Nullable Short toShort(ParserRuleContext messageCtx, Track_object_idContext ctx) {
-    short track = Short.parseShort(ctx.getText());
-    if (!TRACK_OBJECT_ID_RANGE.contains((int) track)) {
-      warn(
-          messageCtx,
-          String.format("Expected track in range %s, but got '%d'", TRACK_OBJECT_ID_RANGE, track));
-      return null;
-    }
-    return track;
   }
 
   private @Nonnull StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
