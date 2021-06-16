@@ -199,6 +199,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private String _domain;
 
   private String _hostname;
+  private String _rawHostname;
 
   /**
    * Map of device id to hostname. This represents hostname mapping extracted from Panorama `show
@@ -400,6 +401,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   public void setMgmtIfaceAddress(Ip ip) {
@@ -3019,8 +3021,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   private Configuration toVendorIndependentConfiguration() throws VendorConversionException {
-    String hostname = getHostname();
-    _c = new Configuration(hostname, _vendor);
+    _c = new Configuration(_hostname, _vendor);
+    _c.setHumanName(_rawHostname);
     _c.setDeviceModel(DeviceModel.PALO_ALTO_FIREWALL);
     _c.setDomainName(_domain);
     _c.setDefaultCrossZoneAction(LineAction.DENY);

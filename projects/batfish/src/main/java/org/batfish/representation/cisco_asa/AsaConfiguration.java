@@ -469,6 +469,7 @@ public final class AsaConfiguration extends VendorConfiguration {
   private String _failoverStatefulSignalingInterfaceAlias;
 
   private String _hostname;
+  private String _rawHostname;
 
   private final Map<String, InspectClassMap> _inspectClassMaps;
 
@@ -1094,6 +1095,7 @@ public final class AsaConfiguration extends VendorConfiguration {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   public void setNtpSourceInterface(String ntpSourceInterface) {
@@ -2784,6 +2786,7 @@ public final class AsaConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, ConfigurationFormat.CISCO_ASA);
+    c.setHumanName(_rawHostname);
     c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     c.getVendorFamily().setCisco(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);

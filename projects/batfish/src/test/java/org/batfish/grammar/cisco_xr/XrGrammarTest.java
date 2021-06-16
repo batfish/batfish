@@ -1704,6 +1704,18 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testHostNameDomain() {
+    Configuration c = parseConfig("xr-hostname.domain");
+    assertThat(c.getHumanName(), equalTo("xr-hostname.domain"));
+  }
+
+  @Test
+  public void testHumanName() {
+    Configuration c = parseConfig("xr-humanname");
+    assertThat(c.getHumanName(), equalTo("XR-humanname"));
+  }
+
+  @Test
   public void testIgmpReferences() {
     String hostname = "xr-igmp-references";
     String filename = String.format("configs/%s", hostname);

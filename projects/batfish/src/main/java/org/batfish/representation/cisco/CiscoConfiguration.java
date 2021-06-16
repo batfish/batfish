@@ -402,6 +402,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
 
   private String _hostname;
+  private String _rawHostname;
 
   private final Map<String, InspectClassMap> _inspectClassMaps;
 
@@ -908,6 +909,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @Override
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
+    _rawHostname = hostname;
     _hostname = hostname.toLowerCase();
   }
 
@@ -2385,6 +2387,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
+    c.setHumanName(_rawHostname);
     // Only set CISCO_UNSPECIFIED if the device is actually a cisco device
     if (_vendor == ConfigurationFormat.CISCO_IOS) {
       c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);

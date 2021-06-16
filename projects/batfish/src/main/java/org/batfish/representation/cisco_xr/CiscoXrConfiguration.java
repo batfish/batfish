@@ -375,6 +375,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, ExtcommunitySetRt> _extcommunitySetRts;
 
   private String _hostname;
+  private String _rawHostname;
 
   private final Map<String, Interface> _interfaces;
 
@@ -715,6 +716,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   public void setNtpSourceInterface(String ntpSourceInterface) {
@@ -1878,6 +1880,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
+    c.setHumanName(_rawHostname);
     c.getVendorFamily().setCiscoXr(_cf);
     c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     c.setDefaultInboundAction(LineAction.PERMIT);

@@ -3388,12 +3388,15 @@ public final class PaloAltoGrammarTest {
     String firewallId2 = "firewall-2";
     String firewallId3 = "00000003";
     PaloAltoConfiguration c = parsePaloAltoConfig(panoramaHostname);
-    List<Configuration> viConfigs = c.toVendorIndependentConfigurations();
+    Map<String, Configuration> viConfigs =
+        c.toVendorIndependentConfigurations().stream()
+            .collect(ImmutableMap.toImmutableMap(Configuration::getHostname, d -> d));
 
     // Should get four nodes from the one Panorama config with the correct hostnames
     assertThat(
-        viConfigs.stream().map(Configuration::getHostname).collect(Collectors.toList()),
+        viConfigs.keySet(),
         containsInAnyOrder(panoramaHostname, firewallId1, firewallId2, firewallId3));
+    assertThat(viConfigs.get(firewallId1).getHumanName(), equalTo("Firewall-1"));
   }
 
   @Test
