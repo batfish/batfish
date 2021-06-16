@@ -1213,12 +1213,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     int admin = _process.getAdminCost(RoutingProtocol.IBGP);
     // Traverse aggregates from most specific to least specific
     _aggregates.traverseEntries(
-        (aggNet, aggSingletonSet) -> {
-          if (aggSingletonSet.isEmpty()) {
+        (aggNet, aggregatesAtNode) -> {
+          if (aggregatesAtNode.isEmpty()) {
             // intermediate node of the PrefixTrieMultimap
             return;
           }
-          BgpAggregate aggregate = Iterables.getOnlyElement(aggSingletonSet);
+          BgpAggregate aggregate = Iterables.getOnlyElement(aggregatesAtNode);
           Collection<Bgpv4Route> potentialContributors =
               potentialContributorsByAggregatePrefix.get(aggNet);
           BgpAggregate moreGeneralAggregate = getMostSpecificAggregate(aggNet).orElse(null);
