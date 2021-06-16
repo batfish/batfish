@@ -148,12 +148,6 @@ public final class Common {
   }
 
   @VisibleForTesting
-  public static String generateAggregateInheritPolicyName(@Nullable String contributorPolicyName) {
-    // TODO: return generated name when inheritance is implemented (as-set)
-    return contributorPolicyName;
-  }
-
-  @VisibleForTesting
   public static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
 
   // Private implementation details

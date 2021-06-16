@@ -13,7 +13,6 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-import static org.batfish.datamodel.routing_policy.Common.generateAggregateInheritPolicyName;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
@@ -172,7 +171,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** Utilities that convert CiscoXr-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -326,26 +324,12 @@ public class CiscoXrConversions {
 
   static @Nonnull BgpAggregate toBgpAggregate(
       BgpAggregateIpv4Network vsAggregate, Configuration c) {
-    // TODO: handle as-set
-    // TODO: handle route-policy
+    // TODO: handle as-set by generating generation policy wrapping route-policy
     return BgpAggregate.of(
         vsAggregate.getPrefix(),
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
-        generateGenerationPolicy(vsAggregate.getAsSet(), vsAggregate.getRoutePolicy(), c),
+        vsAggregate.getRoutePolicy(),
         null);
-  }
-
-  private static @Nullable String generateGenerationPolicy(
-      boolean asSet, @Nullable String routePolicy, Configuration c) {
-    if (!asSet) {
-      return routePolicy;
-    }
-    String name = generateAggregateInheritPolicyName(routePolicy);
-    if (c.getRoutingPolicies().containsKey(name)) {
-      return name;
-    }
-    // TODO: implement as-set, make generateAggregateInheritPolicyName not be identity.
-    throw new NotImplementedException();
   }
 
   private static final class CommunitySetElemToCommunityMatchExpr

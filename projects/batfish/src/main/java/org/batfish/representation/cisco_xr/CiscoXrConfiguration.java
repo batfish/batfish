@@ -742,7 +742,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
-    org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());

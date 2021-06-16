@@ -27,7 +27,6 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
-import static org.batfish.datamodel.routing_policy.Common.generateAggregateInheritPolicyName;
 import static org.batfish.datamodel.routing_policy.RoutingPolicy.isGenerated;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
@@ -2355,7 +2354,8 @@ public final class XrGrammarTest {
                 BgpAggregate.of(
                     Prefix.parse("3.1.0.0/16"),
                     null,
-                    generateAggregateInheritPolicyName(null),
+                    // TODO: should be generated policy when inheritance is implemented
+                    null,
                     null))));
     assertThat(
         aggs,
@@ -2365,7 +2365,8 @@ public final class XrGrammarTest {
                 BgpAggregate.of(
                     Prefix.parse("3.2.0.0/16"),
                     null,
-                    generateAggregateInheritPolicyName("gen3"),
+                    // TODO: should be generated policy when inheritance is implemented
+                    "gen3",
                     null))));
   }
 
