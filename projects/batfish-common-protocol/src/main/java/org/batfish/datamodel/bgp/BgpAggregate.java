@@ -28,9 +28,9 @@ public final class BgpAggregate implements Serializable {
   }
 
   /**
-   * If present, this policy transforms the generated BGP aggregate after it has been activated by
-   * at least one valid contributing route. It is applied after all applications of the policy
-   * returned by {@link #getGenerationPolicy}.
+   * If present, this policy should be used to transform the generated BGP aggregate after it has
+   * been activated by at least one valid contributing route. It should be applied after all
+   * applications of the policy returned by {@link #getGenerationPolicy}.
    */
   @JsonProperty(PROP_ATTRIBUTE_POLICY)
   public @Nullable String getAttributePolicy() {
@@ -38,16 +38,24 @@ public final class BgpAggregate implements Serializable {
   }
 
   /**
-   * This policy is applied to each potential contributor to the aggregate network following the
-   * suppression policy. In each application, the potential contributor is the input, and the BGP
-   * aggregate route is the output. Transformations in this policy are cumulatively applied to the
-   * output aggregate. If any input potential contributor is permitted by the policy, then the
-   * aggregate is activated. Transformations applied to the aggregate for potential contributors
-   * that are rejected by the policy should be discarded. This policy also can additionally suppress
-   * or unsuppress contributing routes. However it cannot modify the suppressed status of
-   * non-contributing routes.
+   * This policy is meant to be applied to each potential contributor to the aggregate network
+   * following the suppression policy. In each application, the potential contributor should be thue
+   * input, and the BGP aggregate route should be the output. Transformations in this policy should
+   * be cumulatively applied to the output aggregate. If any input potential contributor is
+   * permitted by the policy, then the aggregate should be activated. Transformations applied to the
+   * aggregate for potential contributors that are rejected by the policy should be discarded. The
+   * suppressed status of the output route following execution of this policy shall indicate whether
+   * the input contributing route should be suppressed. Like transformations, the suppressed status
+   * of the output route should be ignored if the input route is not permitted.
    *
-   * <p>If absent, all potential contributors are treated as actual contributors.
+   * <p>If absent, all potential contributors should be treated as actual contributors.
+   *
+   * <p>NOTE: Current limitations:
+   *
+   * <ul>
+   *   <li>Transformations are currently ignored in iBDP.
+   *   <li>Suppressed status is not currently implemented.
+   * </ul>
    */
   @JsonProperty(PROP_GENERATION_POLICY)
   public @Nullable String getGenerationPolicy() {
@@ -64,11 +72,13 @@ public final class BgpAggregate implements Serializable {
   }
 
   /**
-   * This policy is used to determine which potential contributors are nominally suppressed. The
-   * suppressed status determined by this policy may be overridden by generation policy, but only
-   * when {@link #getGenerationPolicy} accepts the potential contributor.
+   * This policy should be used to determine which potential contributors are nominally suppressed.
+   * The suppressed status determined by this policy may be overridden by generation policy, but
+   * only when {@link #getGenerationPolicy} accepts the potential contributor.
    *
    * <p>If absent, no routes are suppressed.
+   *
+   * <p>NOTE: Currently, iBDP does not implement suppression policy.
    */
   @JsonProperty(PROP_SUPPRESSION_POLICY)
   public @Nullable String getSuppressionPolicy() {
