@@ -149,8 +149,8 @@ public final class Common {
 
   @VisibleForTesting
   public static String generateAggregateInheritPolicyName(@Nullable String contributorPolicyName) {
-    return String.format(
-        "~AGG_INHERIT~%s", contributorPolicyName != null ? contributorPolicyName : "");
+    // TODO: return generated name when inheritance is implemented (as-set)
+    return contributorPolicyName;
   }
 
   @VisibleForTesting

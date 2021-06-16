@@ -122,9 +122,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Nonnull private final PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
-  /** True iff the process has BGP aggregates activated via routes from the BGP RIB. */
-  private final boolean _hasBgpAggregates;
-
   @Nonnull private final RoutingPolicies _policies;
   @Nonnull private final String _hostname;
   /** Name of our VRF */
@@ -343,7 +340,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     assert _rtVrfMapping != null; // Avoid unused warning
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
     _aggregates = new PrefixTrieMultiMap<>();
-    _hasBgpAggregates = !_process.getAggregates().isEmpty();
     _process.getAggregates().forEach(_aggregates::put);
   }
 
@@ -1168,7 +1164,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * routes contributing to said aggregates.
    */
   void initBgpAggregateRoutes() {
-    if (!_hasBgpAggregates) {
+    if (_process.getAggregates().isEmpty()) {
+      // Nothing to do, so don't bother with unnecessary prep.
       return;
     }
     Set<BgpAggregate> activatedAggregates = new HashSet<>();

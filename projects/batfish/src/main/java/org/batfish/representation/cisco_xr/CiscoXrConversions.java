@@ -163,7 +163,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.Uint32HighLowExpr;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -173,6 +172,7 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /** Utilities that convert CiscoXr-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
@@ -344,13 +344,8 @@ public class CiscoXrConversions {
     if (c.getRoutingPolicies().containsKey(name)) {
       return name;
     }
-    // TODO: implement as-set
-    RoutingPolicy.builder()
-        .setName(name)
-        .setOwner(c)
-        .addStatement(new CallStatement(routePolicy))
-        .build();
-    return name;
+    // TODO: implement as-set, make generateAggregateInheritPolicyName not be identity.
+    throw new NotImplementedException();
   }
 
   private static final class CommunitySetElemToCommunityMatchExpr

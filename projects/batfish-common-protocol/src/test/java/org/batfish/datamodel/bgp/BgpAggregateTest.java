@@ -32,6 +32,7 @@ public final class BgpAggregateTest {
         .addEqualityGroup(BgpAggregate.of(Prefix.ZERO, "a", null, null))
         .addEqualityGroup(BgpAggregate.of(Prefix.ZERO, "a", "b", null))
         .addEqualityGroup(BgpAggregate.of(Prefix.ZERO, "a", "b", "c"))
+        .addEqualityGroup(BgpAggregate.of(Prefix.MULTICAST, "a", "b", "c"))
         .testEquals();
   }
 }
