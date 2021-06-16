@@ -25700,7 +25700,8 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                   "protocols" : [
                     "connected"
-                  ]
+                  ],
+                  "comment" : "Redistribute CONNECTED routes into BGP"
                 },
                 "trueStatements" : [
                   {
@@ -32560,7 +32561,8 @@
                   "protocols" : [
                     "ospf",
                     "ospfIA"
-                  ]
+                  ],
+                  "comment" : "Redistribute OSPF routes into BGP"
                 },
                 "trueStatements" : [
                   {
@@ -32576,7 +32578,8 @@
                   "protocols" : [
                     "eigrp",
                     "eigrpEX"
-                  ]
+                  ],
+                  "comment" : "Redistribute EIGRP routes into BGP"
                 },
                 "trueStatements" : [
                   {

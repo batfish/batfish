@@ -1315,15 +1315,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       // Route-map is undefined. No redistribution will occur.
       return null;
     }
-    ImmutableList.Builder<BooleanExpr> exportConditions = ImmutableList.builder();
+    MatchProtocol matchProtocol;
     switch (srcProtocol) {
       case RIP:
       case STATIC:
       case CONNECTED:
-        exportConditions.add(new MatchProtocol(srcProtocol));
+        matchProtocol = new MatchProtocol(srcProtocol);
         break;
       case OSPF:
-        exportConditions.add(
+        matchProtocol =
             firstNonNull(
                 (MatchProtocol)
                     redistributionPolicy
@@ -1331,22 +1331,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
                 // No match type means internal routes only, at least on IOS.
                 // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
-                new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
+                new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA));
         break;
       case EIGRP:
         // key EIGRP indicates redist external too; EIGRP_EX is never used as a key
-        exportConditions.add(new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX));
+        matchProtocol = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
         break;
       default:
         throw new IllegalStateException(
             String.format("Unexpected protocol for BGP redistribution: %s", srcProtocol));
     }
+    BooleanExpr redistExpr = matchProtocol;
     if (mapName != null) {
-      exportConditions.add(new CallExpr(mapName));
+      redistExpr = new Conjunction(ImmutableList.of(matchProtocol, new CallExpr(mapName)));
     }
-    Conjunction exportConjunction = new Conjunction(exportConditions.build());
-    exportConjunction.setComment(String.format("Redistribute %s routes into BGP", srcProtocol));
-    return new If(exportConjunction, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
+    redistExpr.setComment(String.format("Redistribute %s routes into BGP", srcProtocol));
+    return new If(redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
   }
 
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
