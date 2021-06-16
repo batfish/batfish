@@ -12,14 +12,19 @@ public final class HsrpTrack implements Serializable {
 
   public HsrpTrack(int trackObjectNumber, @Nullable Integer decrement) {
     _trackObjectNumber = trackObjectNumber;
-    _decrement = firstNonNull(decrement, DEFAULT_DECREMENT);
+    _decrement = decrement;
   }
 
   /**
-   * Value by which priority of {@link HsrpGroup} should be decremented when tracked object is down.
+   * Configured value to subtract from priority of {@link HsrpGroup} when tracked object is down.
    */
-  public int getDecrement() {
+  public @Nullable Integer getDecrement() {
     return _decrement;
+  }
+
+  /** Effective value to subtract from priority of {@link HsrpGroup} when tracked object is down. */
+  public int getDecrementEffective() {
+    return firstNonNull(_decrement, DEFAULT_DECREMENT);
   }
 
   public int getTrackObjectNumber() {
@@ -30,6 +35,6 @@ public final class HsrpTrack implements Serializable {
   ///// Private implementation details /////
   //////////////////////////////////////////
 
-  private final int _decrement;
+  private final @Nullable Integer _decrement;
   private final int _trackObjectNumber;
 }

@@ -1931,8 +1931,12 @@ public final class CiscoNxosGrammarTest {
         assertThat(group.getHelloIntervalMs(), equalTo(250));
         assertThat(group.getHoldTimeMs(), equalTo(750));
         assertThat(group.getTracks(), hasKeys(1, 2));
-        assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
+        assertThat(group.getTracks().get(1).getTrackObjectNumber(), equalTo(1));
+        assertNull(group.getTracks().get(1).getDecrement());
+        assertThat(group.getTracks().get(1).getDecrementEffective(), equalTo(10));
+        assertThat(group.getTracks().get(2).getTrackObjectNumber(), equalTo(2));
         assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
+        assertThat(group.getTracks().get(2).getDecrementEffective(), equalTo(20));
       }
       {
         HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(3);
