@@ -17,7 +17,7 @@ public class StaticRouteV6Test {
         .addEqualityGroup(builder.setName("name").build())
         .addEqualityGroup(builder.setPreference(11).build())
         .addEqualityGroup(builder.setTag(55).build())
-        .addEqualityGroup(builder.setTrack((short) 3).build())
+        .addEqualityGroup(builder.setTrack(3).build())
         .testEquals();
   }
 }

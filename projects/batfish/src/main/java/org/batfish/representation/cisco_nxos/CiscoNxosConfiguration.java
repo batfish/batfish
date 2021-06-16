@@ -452,6 +452,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private boolean _systemDefaultSwitchportShutdown;
   private final @Nonnull Map<String, TacacsServer> _tacacsServers;
   private @Nullable String _tacacsSourceInterface;
+  private @Nonnull Map<Integer, Track> _tracks;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -478,6 +479,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _snmpCommunities = new HashMap<>();
     _snmpServers = new HashMap<>();
     _tacacsServers = new HashMap<>();
+    _tracks = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
     // Populate the default VRFs.
@@ -1698,6 +1700,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   public @Nullable String getTacacsSourceInterface() {
     return _tacacsSourceInterface;
+  }
+
+  public @Nonnull Map<Integer, Track> getTracks() {
+    return _tracks;
   }
 
   public @Nullable String getVersion() {
