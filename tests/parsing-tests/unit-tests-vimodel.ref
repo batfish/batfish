@@ -50607,7 +50607,7 @@
                 "groupNumber" : 1001,
                 "helloTime" : 500,
                 "holdTime" : 2000,
-                "ip" : [
+                "ips" : [
                   "1.2.3.4"
                 ],
                 "preempt" : true,
@@ -50651,7 +50651,7 @@
                 "groupNumber" : 1001,
                 "helloTime" : 500,
                 "holdTime" : 2000,
-                "ip" : [
+                "ips" : [
                   "1.2.3.4"
                 ],
                 "preempt" : true,
@@ -94703,7 +94703,7 @@
                 "groupNumber" : 1,
                 "helloTime" : 0,
                 "holdTime" : 10000,
-                "ip" : [
+                "ips" : [
                   "1.1.1.1"
                 ],
                 "preempt" : false,

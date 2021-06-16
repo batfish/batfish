@@ -108,7 +108,7 @@ public final class HsrpGroup implements Serializable {
   private static final String PROP_GROUP_NUMBER = "groupNumber";
   private static final String PROP_HELLO_TIME = "helloTime";
   private static final String PROP_HOLD_TIME = "holdTime";
-  private static final String PROP_IP = "ip";
+  private static final String PROP_IPS = "ips";
   private static final String PROP_PREEMPT = "preempt";
   private static final String PROP_PRIORITY = "priority";
   private static final String PROP_TRACK_ACTIONS = "trackActions";
@@ -123,7 +123,7 @@ public final class HsrpGroup implements Serializable {
       @JsonProperty(PROP_GROUP_NUMBER) Integer groupNumber,
       @JsonProperty(PROP_HELLO_TIME) Integer helloTime,
       @JsonProperty(PROP_HOLD_TIME) Integer holdTime,
-      @JsonProperty(PROP_IP) Set<Ip> ips,
+      @JsonProperty(PROP_IPS) Set<Ip> ips,
       @JsonProperty(PROP_PREEMPT) Boolean preempt,
       @JsonProperty(PROP_PRIORITY) Integer priority,
       @JsonProperty(PROP_TRACK_ACTIONS) SortedMap<String, TrackAction> trackActions) {
@@ -133,7 +133,7 @@ public final class HsrpGroup implements Serializable {
             groupNumber, String.format("Missing required property: %s", PROP_GROUP_NUMBER)),
         requireNonNull(helloTime, String.format("Missing required property: %s", PROP_HELLO_TIME)),
         requireNonNull(holdTime, String.format("Missing required property: %s", PROP_HOLD_TIME)),
-        requireNonNull(ips, String.format("Missing required property: %s", PROP_IP)),
+        requireNonNull(ips, String.format("Missing required property: %s", PROP_IPS)),
         requireNonNull(preempt, String.format("Missing required property: %s", PROP_PREEMPT)),
         requireNonNull(priority, String.format("Missing required property: %s", PROP_PRIORITY)),
         trackActions != null ? ImmutableSortedMap.copyOf(trackActions) : ImmutableSortedMap.of());
@@ -221,7 +221,7 @@ public final class HsrpGroup implements Serializable {
   }
 
   /** The HSRP standby IP addresses to assume when this is the active router in the group */
-  @JsonProperty(PROP_IP)
+  @JsonProperty(PROP_IPS)
   public @Nonnull Set<Ip> getIps() {
     return _ips;
   }
@@ -270,7 +270,7 @@ public final class HsrpGroup implements Serializable {
         .add(PROP_GROUP_NUMBER, _groupNumber)
         .add(PROP_HELLO_TIME, _helloTime)
         .add(PROP_HOLD_TIME, _holdTime)
-        .add(PROP_IP, _ips)
+        .add(PROP_IPS, _ips)
         .add(PROP_PREEMPT, _preempt)
         .add(PROP_PRIORITY, _priority)
         .add(PROP_TRACK_ACTIONS, _trackActions)
