@@ -51,10 +51,29 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
-import org.batfish.datamodel.routing_policy.expr.*;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.IpPrefix;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.NextHopIp;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
@@ -1054,6 +1073,50 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testConditionalDefaultAction() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_EXPR_CONTEXT,
+                    ImmutableList.of(),
+                    ImmutableList.of(new StaticStatement(Statements.SetDefaultActionAccept))))
+            .addStatement(new StaticStatement(Statements.DefaultAction))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(_anyRoute, outAnnouncements);
+  }
+
+  @Test
+  public void testUnreachableUnhandled() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    BooleanExprs.CALL_EXPR_CONTEXT,
+                    // currently we don't handle SetDefaultTag, but this branch is unreachable
+                    ImmutableList.of(new SetDefaultTag(new LiteralLong(0L))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+    assertEquals(_anyRoute, outAnnouncements);
   }
 
   @Test

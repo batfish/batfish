@@ -43,4 +43,9 @@ public class TrackInterface implements TrackMethod {
   public String toString() {
     return toStringHelper(getClass()).add(PROP_TRACKED_INTERFACE, _trackedInterface).toString();
   }
+
+  @Override
+  public <R> R accept(GenericTrackMethodVisitor<R> visitor) {
+    return visitor.visitTrackInterface(this);
+  }
 }

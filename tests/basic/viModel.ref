@@ -114,6 +114,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as1border1",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -1739,6 +1740,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as1border2",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -3244,6 +3246,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as1core1",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -3824,6 +3827,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as2border1",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -5412,6 +5416,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as2border2",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -6831,6 +6836,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as2core1",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -7563,6 +7569,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as2core2",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -8261,6 +8268,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as2dept1",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -9521,6 +9529,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as2dist1",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -10445,6 +10454,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as2dist2",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -11435,6 +11445,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as3border1",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -12939,6 +12950,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as3border2",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",
@@ -14279,6 +14291,7 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "ROUTER",
         "domainName" : "lab.local",
+        "humanName" : "as3core1",
         "interfaces" : {
           "Ethernet0/0" : {
             "name" : "Ethernet0/0",

@@ -357,6 +357,7 @@ public final class AristaConfiguration extends VendorConfiguration {
   private final Map<String, ExtendedIpv6AccessList> _extendedIpv6AccessLists;
 
   private String _hostname;
+  private String _rawHostname;
 
   private final Map<String, Interface> _interfaces;
 
@@ -762,6 +763,7 @@ public final class AristaConfiguration extends VendorConfiguration {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   public void setNtpSourceInterface(String ntpSourceInterface) {
@@ -2082,6 +2084,7 @@ public final class AristaConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
+    c.setHumanName(_rawHostname);
     c.getVendorFamily().setCisco(_cf);
     c.setDeviceModel(DeviceModel.ARISTA_UNSPECIFIED);
     c.setDefaultInboundAction(LineAction.PERMIT);

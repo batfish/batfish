@@ -1809,6 +1809,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testHumanName() {
+    Configuration c = parseConfig("arista-humanname");
+    assertThat(c.getHumanName(), equalTo("ARISTA-HUMANNAME"));
+  }
+
+  @Test
   public void testInterfaceConversion() {
     Configuration c = parseConfig("arista_interface");
     assertThat(

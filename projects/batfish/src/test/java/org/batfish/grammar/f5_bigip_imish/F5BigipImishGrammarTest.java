@@ -916,6 +916,12 @@ public final class F5BigipImishGrammarTest {
   }
 
   @Test
+  public void testHumanName() throws IOException {
+    Configuration c = parseConfig("f5_bigip_imish_humanname");
+    assertThat(c.getHumanName(), equalTo("F5_BIGIP_imish_humanname"));
+  }
+
+  @Test
   public void testOspfExtraction() {
     F5BigipConfiguration vc = parseVendorConfig("f5_bigip_imish_ospf");
 

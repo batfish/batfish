@@ -423,6 +423,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, EigrpProcessConfiguration> _eigrpProcesses;
   private @Nullable Evpn _evpn;
   private @Nullable String _hostname;
+  private @Nullable String _rawHostname;
   private final @Nonnull Map<String, Interface> _interfaces;
   private final @Nonnull Map<String, IpAccessList> _ipAccessLists;
   private final @Nonnull Map<String, IpAsPathAccessList> _ipAsPathAccessLists;
@@ -1755,6 +1756,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "hostname cannot be null");
     _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   public void setIpDomainName(@Nullable String ipDomainName) {
@@ -1821,7 +1823,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(),
                     trackEntry -> trackEntry.getKey().toString(),
-                    trackEntry -> new DecrementPriority(trackEntry.getValue().getDecrement()))));
+                    trackEntry ->
+                        new DecrementPriority(trackEntry.getValue().getDecrementEffective()))));
     return builder.build();
   }
 
@@ -3662,6 +3665,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private @Nonnull Configuration toVendorIndependentConfiguration() {
     _c = new Configuration(_hostname, ConfigurationFormat.CISCO_NX);
+    _c.setHumanName(_rawHostname);
     _c.getVendorFamily().setCiscoNxos(createCiscoNxosFamily());
     _c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     _c.setDefaultInboundAction(LineAction.PERMIT);

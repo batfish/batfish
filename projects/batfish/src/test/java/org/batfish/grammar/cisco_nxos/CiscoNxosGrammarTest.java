@@ -1839,19 +1839,9 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testHostnameConversion() throws IOException {
-    String hostname = "nxos_hostname";
-    Configuration c = parseConfig(hostname);
-
-    assertThat(c, hasHostname(hostname));
-  }
-
-  @Test
-  public void testHostnameExtraction() {
-    String hostname = "nxos_hostname";
-    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
-
-    assertThat(vc.getHostname(), equalTo(hostname));
+  public void testHumanName() throws IOException {
+    Configuration c = parseConfig("nxos_hostname");
+    assertThat(c.getHumanName(), equalTo("NXOS_hostname"));
   }
 
   @Test
@@ -1941,8 +1931,12 @@ public final class CiscoNxosGrammarTest {
         assertThat(group.getHelloIntervalMs(), equalTo(250));
         assertThat(group.getHoldTimeMs(), equalTo(750));
         assertThat(group.getTracks(), hasKeys(1, 2));
-        assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
+        assertThat(group.getTracks().get(1).getTrackObjectNumber(), equalTo(1));
+        assertNull(group.getTracks().get(1).getDecrement());
+        assertThat(group.getTracks().get(1).getDecrementEffective(), equalTo(10));
+        assertThat(group.getTracks().get(2).getTrackObjectNumber(), equalTo(2));
         assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
+        assertThat(group.getTracks().get(2).getDecrementEffective(), equalTo(20));
       }
       {
         HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(3);
