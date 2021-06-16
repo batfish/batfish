@@ -13,5 +13,4 @@ public interface TrackMethod extends Serializable {
 
   /** Evaluate if this track method is triggered on the specified {@link Configuration}. */
   <R> R accept(GenericTrackMethodVisitor<R> visitor);
-  // boolean evaluate(Configuration configuration);
 }
