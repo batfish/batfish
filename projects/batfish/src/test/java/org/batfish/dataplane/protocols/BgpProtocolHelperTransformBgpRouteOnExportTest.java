@@ -474,6 +474,30 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
   }
 
   @Test
+  public void testTransformBgpRoutePreExportKeepMetric_ibgp() {
+    // Peers are IBGP, so routes should be exported with their metrics preserved
+    setUpPeers(true);
+    long metric = 333;
+    Bgpv4Route bgpRoute =
+        Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO).setMetric(metric).build();
+    assertThat(runTransformBgpRoutePreExport(bgpRoute).getMetric(), equalTo(metric));
+  }
+
+  @Test
+  public void testTransformBgpRoutePreExportKeepMetric_localOrigination() {
+    // Peers are EBGP, so routes should be exported metric 0 by default, but locally originated
+    // routes should retain their original metrics
+    setUpPeers(false);
+    long metric = 333;
+    Bgpv4Route bgpRoute =
+        Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO).setMetric(metric).build();
+    Bgpv4Route locallyOriginated =
+        bgpRoute.toBuilder().setSrcProtocol(RoutingProtocol.STATIC).build();
+    assertThat(runTransformBgpRoutePreExport(bgpRoute).getMetric(), equalTo(0L));
+    assertThat(runTransformBgpRoutePreExport(locallyOriginated).getMetric(), equalTo(metric));
+  }
+
+  @Test
   public void testAggregateProtocolIsCleared() {
     Builder routeBuilder = Bgpv4Route.testBuilder().setProtocol(RoutingProtocol.AGGREGATE);
     transformBgpRoutePostExport(

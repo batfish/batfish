@@ -179,9 +179,16 @@ public final class BgpProtocolHelper {
       }
     }
 
-    // Outgoing metric (MED) is preserved only if advertising to IBGP peer or within a confederation
+    // Outgoing metric (MED) is preserved only if advertising to IBGP peer, within a confederation,
+    // or for locally originated routes
     if (!sessionProperties.advertiseUnchangedMed()) {
-      builder.setMetric(0);
+      boolean locallyOriginated =
+          route.getSrcProtocol() != null
+              && !route.getSrcProtocol().equals(RoutingProtocol.BGP)
+              && !route.getSrcProtocol().equals(RoutingProtocol.IBGP);
+      if (!locallyOriginated) {
+        builder.setMetric(0);
+      }
     }
 
     // Local preference: only transitive for iBGP or within a confederation
