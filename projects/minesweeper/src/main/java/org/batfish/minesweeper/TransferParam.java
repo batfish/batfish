@@ -134,6 +134,12 @@ public class TransferParam<T extends IDeepCopy<T>> {
     return ret;
   }
 
+  public TransferParam<T> setDefaultsFrom(TransferParam<T> updatedParam) {
+    return setDefaultAccept(updatedParam._defaultAccept)
+        .setDefaultPolicy(updatedParam._defaultPolicy)
+        .setDefaultAcceptLocal(updatedParam._defaultAcceptLocal);
+  }
+
   public TransferParam<T> enterScope(String name) {
     TransferParam<T> ret = new TransferParam<>(this);
     ret._scopes = ret._scopes.plus(name);
