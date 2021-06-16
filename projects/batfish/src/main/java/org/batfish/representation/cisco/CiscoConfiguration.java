@@ -1331,7 +1331,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
                 // No match type means internal routes only, at least on IOS.
                 // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
-                new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA));
+                new MatchProtocol(
+                    RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA, RoutingProtocol.OSPF_IS));
         break;
       case EIGRP:
         // key EIGRP indicates redist external too; EIGRP_EX is never used as a key

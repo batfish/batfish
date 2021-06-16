@@ -32560,7 +32560,8 @@
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
                   "protocols" : [
                     "ospf",
-                    "ospfIA"
+                    "ospfIA",
+                    "ospfIS"
                   ],
                   "comment" : "Redistribute OSPF routes into BGP"
                 },
