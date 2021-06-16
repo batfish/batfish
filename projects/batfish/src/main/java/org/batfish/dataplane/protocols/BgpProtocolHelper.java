@@ -137,6 +137,7 @@ public final class BgpProtocolHelper {
     }
 
     builder.setClusterList(ImmutableSet.of());
+    boolean routeOriginatedLocally = Ip.ZERO.equals(route.getReceivedFromIp());
     if (routeProtocol.equals(RoutingProtocol.IBGP) && !sessionProperties.isEbgp()) {
       /*
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
@@ -150,8 +151,6 @@ public final class BgpProtocolHelper {
       boolean remoteRouteReceivedFromRouteReflectorClient =
           route.getReceivedFromRouteReflectorClient();
       boolean sendingToRouteReflectorClient = af.getRouteReflectorClient();
-      Ip remoteReceivedFromIp = route.getReceivedFromIp();
-      boolean routeOriginatedLocally = Ip.ZERO.equals(remoteReceivedFromIp);
       if (!remoteRouteReceivedFromRouteReflectorClient
           && !sendingToRouteReflectorClient
           && !routeOriginatedLocally) {
@@ -180,8 +179,8 @@ public final class BgpProtocolHelper {
     }
 
     // Outgoing metric (MED) is preserved only if advertising to IBGP peer, within a confederation,
-    // or for locally originated routes (indicated by receivedFromIp 0.0.0.0)
-    if (!sessionProperties.advertiseUnchangedMed() && !Ip.ZERO.equals(route.getReceivedFromIp())) {
+    // or for locally originated routes
+    if (!sessionProperties.advertiseUnchangedMed() && !routeOriginatedLocally) {
       builder.setMetric(0);
     }
 
