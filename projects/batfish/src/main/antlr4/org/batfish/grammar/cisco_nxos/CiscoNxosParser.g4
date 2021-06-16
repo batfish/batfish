@@ -512,43 +512,44 @@ sysvlan_reserve
   first = vlan_id RESERVE NEWLINE
 ;
 
-s_track
+s_track: TRACK num = track_object_id track_definition NEWLINE;
+
+track_definition
 :
-  TRACK num = track_object_number
-  (
-    track_interface
-    | track_ip
-  )
+  track_interface
+  // | track_ip
 ;
 
-track_interface
+track_interface: INTERFACE interface_name track_interface_mode;
+
+track_interface_mode
 :
-  INTERFACE interface_name null_rest_of_line
+  LINE_PROTOCOL
+  | IP ROUTING
+  | IPV6 ROUTING
 ;
 
-track_ip
-:
-  IP
-  (
-    track_ip_route
-    | track_ip_sla
-  )
-;
-
-track_ip_route
-:
-  ROUTE null_rest_of_line tir_vrf*
-;
-
-tir_vrf
-:
-  VRF MEMBER name = vrf_name NEWLINE
-;
-
-track_ip_sla
-:
-  SLA null_rest_of_line
-;
+// Currently unsupported tracking structures
+//track_ip
+//:
+//  IP
+//  (
+//    track_ip_route
+//    | track_ip_sla
+//  )
+//;
+//track_ip_route
+//:
+//  ROUTE null_rest_of_line tir_vrf*
+//;
+//tir_vrf
+//:
+//  VRF MEMBER name = vrf_name NEWLINE
+//;
+//track_ip_sla
+//:
+//  SLA null_rest_of_line
+//;
 
 s_version
 :

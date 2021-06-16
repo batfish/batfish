@@ -23,7 +23,7 @@ public final class StaticRoute implements Serializable {
     private int _preference;
     private @Nonnull Prefix _prefix;
     private long _tag;
-    private @Nullable Short _track;
+    private @Nullable Integer _track;
 
     private Builder() {
       _preference = 1;
@@ -45,11 +45,6 @@ public final class StaticRoute implements Serializable {
           0 <= _tag && _tag <= 0xFFFFFFFFL,
           "Invalid tag %s is not an unsigned 32-bit integer",
           _tag);
-      checkArgument(
-          _track == null || STATIC_ROUTE_TRACK_RANGE.contains((int) _track),
-          "Invalid track object number %s outside of %s",
-          _track,
-          STATIC_ROUTE_TRACK_RANGE);
       return new StaticRoute(
           _discard,
           _name,
@@ -102,7 +97,7 @@ public final class StaticRoute implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setTrack(@Nullable Short track) {
+    public @Nonnull Builder setTrack(@Nullable Integer track) {
       _track = track;
       return this;
     }
@@ -110,7 +105,6 @@ public final class StaticRoute implements Serializable {
 
   public static final IntegerSpace STATIC_ROUTE_PREFERENCE_RANGE =
       IntegerSpace.of(Range.closed(1, 255));
-  public static final IntegerSpace STATIC_ROUTE_TRACK_RANGE = IntegerSpace.of(Range.closed(1, 512));
   public static final int MAX_NAME_LENGTH = 50;
 
   public static @Nonnull Builder builder() {
@@ -126,7 +120,7 @@ public final class StaticRoute implements Serializable {
   private final @Nonnull Prefix _prefix;
   private final long _tag;
 
-  private final @Nullable Short _track;
+  private final @Nullable Integer _track;
 
   private StaticRoute(
       boolean discard,
@@ -136,7 +130,7 @@ public final class StaticRoute implements Serializable {
       @Nullable String nextHopVrf,
       int preference,
       Prefix prefix,
-      @Nullable Short track,
+      @Nullable Integer track,
       long tag) {
     _prefix = prefix;
     _discard = discard;
@@ -189,7 +183,7 @@ public final class StaticRoute implements Serializable {
     return _tag;
   }
 
-  public @Nullable Short getTrack() {
+  public @Nullable Integer getTrack() {
     return _track;
   }
 }
