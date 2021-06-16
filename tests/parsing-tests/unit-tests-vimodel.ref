@@ -50607,7 +50607,9 @@
                 "groupNumber" : 1001,
                 "helloTime" : 500,
                 "holdTime" : 2000,
-                "ip" : "1.2.3.4",
+                "ip" : [
+                  "1.2.3.4"
+                ],
                 "preempt" : true,
                 "priority" : 105,
                 "trackActions" : {
@@ -50649,7 +50651,9 @@
                 "groupNumber" : 1001,
                 "helloTime" : 500,
                 "holdTime" : 2000,
-                "ip" : "1.2.3.4",
+                "ip" : [
+                  "1.2.3.4"
+                ],
                 "preempt" : true,
                 "priority" : 105,
                 "trackActions" : {
@@ -94699,7 +94703,9 @@
                 "groupNumber" : 1,
                 "helloTime" : 0,
                 "holdTime" : 10000,
-                "ip" : "1.1.1.1",
+                "ip" : [
+                  "1.1.1.1"
+                ],
                 "preempt" : false,
                 "priority" : 100
               }

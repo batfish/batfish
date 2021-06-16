@@ -301,20 +301,23 @@ public final class IpOwners {
         .values()
         .forEach(
             g -> {
-              Ip ip = g.getIp();
+              Set<Ip> ips = g.getIps();
               int groupNum = g.getGroupNumber();
-              if (ip == null) {
+              if (ips.isEmpty()) {
                 return;
               }
-              Set<Interface> candidates = hsrpGroups.get(ip, groupNum);
-              if (candidates == null) {
-                candidates = Collections.newSetFromMap(new IdentityHashMap<>());
-                hsrpGroups.put(ip, groupNum, candidates);
-              }
-              if (i.getConcreteAddress() != null) {
-                // Only interfaces that have IP addresses are considered valid.
-                candidates.add(i);
-              }
+              ips.forEach(
+                  ip -> {
+                    Set<Interface> candidates = hsrpGroups.get(ip, groupNum);
+                    if (candidates == null) {
+                      candidates = Collections.newSetFromMap(new IdentityHashMap<>());
+                      hsrpGroups.put(ip, groupNum, candidates);
+                    }
+                    if (i.getConcreteAddress() != null) {
+                      // Only interfaces that have IP addresses are considered valid.
+                      candidates.add(i);
+                    }
+                  });
             });
   }
 

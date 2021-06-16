@@ -1424,7 +1424,7 @@ public final class CiscoGrammarTest {
                 sha256Digest("012345678901234567890123456789012345678"))));
     assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHelloTime(500)));
     assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasHoldTime(2000)));
-    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIp(Ip.parse("10.0.0.1"))));
+    assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasIps(contains(Ip.parse("10.0.0.1")))));
     assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPriority(105)));
     assertThat(i, hasHsrpGroup(1001, HsrpGroupMatchers.hasPreempt()));
     assertThat(

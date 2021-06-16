@@ -1889,7 +1889,7 @@ public final class CiscoNxosGrammarTest {
               allOf(
                   hasHelloTime(250),
                   hasHoldTime(750),
-                  HsrpGroupMatchers.hasIp(Ip.parse("192.0.2.1")),
+                  HsrpGroupMatchers.hasIps(contains(Ip.parse("192.0.2.1"))),
                   hasPreempt(),
                   hasPriority(105),
                   hasTrackActions(

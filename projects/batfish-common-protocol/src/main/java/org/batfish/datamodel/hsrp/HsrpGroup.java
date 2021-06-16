@@ -5,9 +5,12 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,7 +31,7 @@ public final class HsrpGroup implements Serializable {
 
     private int _holdTime;
 
-    private Ip _ip;
+    private Set<Ip> _ips;
 
     private boolean _preempt;
 
@@ -39,6 +42,7 @@ public final class HsrpGroup implements Serializable {
     private Builder() {
       _holdTime = DEFAULT_HOLD_TIME;
       _priority = DEFAULT_PRIORITY;
+      _ips = ImmutableSet.of();
       _trackActions = ImmutableSortedMap.of();
     }
 
@@ -48,7 +52,7 @@ public final class HsrpGroup implements Serializable {
           requireNonNull(_groupNumber, "Must set HSRP group number via setGroupNumber"),
           _helloTime,
           _holdTime,
-          _ip,
+          _ips,
           _preempt,
           _priority,
           _trackActions);
@@ -74,8 +78,8 @@ public final class HsrpGroup implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setIp(@Nullable Ip ip) {
-      _ip = ip;
+    public @Nonnull Builder setIps(@Nonnull Set<Ip> ips) {
+      _ips = ips;
       return this;
     }
 
@@ -119,7 +123,7 @@ public final class HsrpGroup implements Serializable {
       @JsonProperty(PROP_GROUP_NUMBER) Integer groupNumber,
       @JsonProperty(PROP_HELLO_TIME) Integer helloTime,
       @JsonProperty(PROP_HOLD_TIME) Integer holdTime,
-      @JsonProperty(PROP_IP) Ip ip,
+      @JsonProperty(PROP_IP) Set<Ip> ips,
       @JsonProperty(PROP_PREEMPT) Boolean preempt,
       @JsonProperty(PROP_PRIORITY) Integer priority,
       @JsonProperty(PROP_TRACK_ACTIONS) SortedMap<String, TrackAction> trackActions) {
@@ -129,7 +133,7 @@ public final class HsrpGroup implements Serializable {
             groupNumber, String.format("Missing required property: %s", PROP_GROUP_NUMBER)),
         requireNonNull(helloTime, String.format("Missing required property: %s", PROP_HELLO_TIME)),
         requireNonNull(holdTime, String.format("Missing required property: %s", PROP_HOLD_TIME)),
-        ip,
+        requireNonNull(ips, String.format("Missing required property: %s", PROP_IP)),
         requireNonNull(preempt, String.format("Missing required property: %s", PROP_PREEMPT)),
         requireNonNull(priority, String.format("Missing required property: %s", PROP_PRIORITY)),
         trackActions != null ? ImmutableSortedMap.copyOf(trackActions) : ImmutableSortedMap.of());
@@ -143,7 +147,7 @@ public final class HsrpGroup implements Serializable {
 
   private final int _holdTime;
 
-  private final Ip _ip;
+  private final Set<Ip> _ips;
 
   private final boolean _preempt;
 
@@ -156,7 +160,7 @@ public final class HsrpGroup implements Serializable {
       int groupNumber,
       int helloTime,
       int holdTime,
-      @Nullable Ip ip,
+      @Nonnull Set<Ip> ips,
       boolean preempt,
       int priority,
       @Nonnull SortedMap<String, TrackAction> trackActions) {
@@ -164,7 +168,7 @@ public final class HsrpGroup implements Serializable {
     _groupNumber = groupNumber;
     _helloTime = helloTime;
     _holdTime = holdTime;
-    _ip = ip;
+    _ips = ImmutableSortedSet.copyOf(ips);
     _preempt = preempt;
     _priority = priority;
     _trackActions = trackActions;
@@ -183,7 +187,7 @@ public final class HsrpGroup implements Serializable {
         && _groupNumber == rhs._groupNumber
         && _helloTime == rhs._helloTime
         && _holdTime == rhs._holdTime
-        && Objects.equals(_ip, rhs._ip)
+        && Objects.equals(_ips, rhs._ips)
         && _preempt == rhs._preempt
         && _priority == rhs._priority
         && _trackActions.equals(rhs._trackActions);
@@ -216,10 +220,10 @@ public final class HsrpGroup implements Serializable {
     return _holdTime;
   }
 
-  /** The HSRP standby IP address to assume when this is the active router in the group */
+  /** The HSRP standby IP addresses to assume when this is the active router in the group */
   @JsonProperty(PROP_IP)
-  public @Nullable Ip getIp() {
-    return _ip;
+  public @Nonnull Set<Ip> getIps() {
+    return _ips;
   }
 
   /** Whether this router should preempt the active router when its priority is higher */
@@ -252,7 +256,7 @@ public final class HsrpGroup implements Serializable {
         _groupNumber,
         _helloTime,
         _holdTime,
-        _ip,
+        _ips,
         _preempt,
         _priority,
         _trackActions);
@@ -266,7 +270,7 @@ public final class HsrpGroup implements Serializable {
         .add(PROP_GROUP_NUMBER, _groupNumber)
         .add(PROP_HELLO_TIME, _helloTime)
         .add(PROP_HOLD_TIME, _holdTime)
-        .add(PROP_IP, _ip)
+        .add(PROP_IP, _ips)
         .add(PROP_PREEMPT, _preempt)
         .add(PROP_PRIORITY, _priority)
         .add(PROP_TRACK_ACTIONS, _trackActions)
