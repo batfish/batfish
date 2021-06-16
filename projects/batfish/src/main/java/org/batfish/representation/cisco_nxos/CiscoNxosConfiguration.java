@@ -1829,7 +1829,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                 ImmutableSortedMap.toImmutableSortedMap(
                     Comparator.naturalOrder(),
                     trackEntry -> trackEntry.getKey().toString(),
-                    trackEntry -> new DecrementPriority(trackEntry.getValue().getDecrement()))));
+                    trackEntry ->
+                        new DecrementPriority(trackEntry.getValue().getDecrementEffective()))));
     return builder.build();
   }
 
