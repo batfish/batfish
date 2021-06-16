@@ -22,6 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -30,6 +31,10 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.hsrp.HsrpGroup;
+import org.batfish.datamodel.tracking.HsrpPriorityEvaluator;
+import org.batfish.datamodel.tracking.PredicateTrackMethodEvaluator;
+import org.batfish.datamodel.tracking.TrackMethod;
 
 /** A utility class for working with IPs owned by network devices. */
 public final class IpOwners {
@@ -341,13 +346,32 @@ public final class IpOwners {
                   Collections.max(
                       candidates,
                       Comparator.comparingInt(
-                              (Interface i) -> i.getHsrpGroups().get(groupNum).getPriority())
+                              (Interface i) ->
+                                  computeHsrpPriority(i, i.getHsrpGroups().get(groupNum)))
                           .thenComparing(i -> i.getConcreteAddress().getIp()));
               ipOwners
                   .computeIfAbsent(ip, k -> new HashMap<>())
                   .computeIfAbsent(hsrpMaster.getOwner().getHostname(), k -> new HashSet<>())
                   .add(hsrpMaster.getName());
             });
+  }
+
+  /** Compute HSRP priority for a given HSRP group and the interface it is associated with. */
+  static int computeHsrpPriority(@Nonnull Interface iface, @Nonnull HsrpGroup group) {
+    Configuration c = iface.getOwner();
+    Map<String, TrackMethod> trackMethods = c.getTrackingGroups();
+    PredicateTrackMethodEvaluator trackMethodEvaluator = new PredicateTrackMethodEvaluator(c);
+    HsrpPriorityEvaluator hsrpEvaluator = new HsrpPriorityEvaluator(group.getPriority());
+    group
+        .getTrackActions()
+        .forEach(
+            (trackName, action) -> {
+              TrackMethod trackMethod = trackMethods.get(trackName);
+              if (trackMethod != null && trackMethod.accept(trackMethodEvaluator)) {
+                action.accept(hsrpEvaluator);
+              }
+            });
+    return hsrpEvaluator.getPriority();
   }
 
   /**
