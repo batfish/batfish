@@ -7320,7 +7320,7 @@ M_Interface_WS
 
 mode M_Hostname;
 
-M_Hostname_WORD: ([A-Za-z0-9_] | '-')+ -> type(WORD), popMode;
+M_Hostname_WORD: ([A-Za-z0-9_.] | '-')+ -> type(WORD), popMode;
 
 M_Hostname_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 

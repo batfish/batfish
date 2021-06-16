@@ -1,5 +1,6 @@
 package org.batfish.common.topology;
 
+import static org.batfish.common.topology.IpOwners.computeHsrpPriority;
 import static org.batfish.common.topology.IpOwners.computeInterfaceHostSubnetIps;
 import static org.batfish.common.topology.IpOwners.computeIpIfaceOwners;
 import static org.batfish.common.topology.IpOwners.computeIpVrfOwners;
@@ -17,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Table;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +33,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.hsrp.HsrpGroup;
+import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackInterface;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -247,5 +251,148 @@ public class IpOwnersTest {
     // Test: expect c2/i2 to win
     processHsrpGroups(ipOwners, groups);
     assertThat(ipOwners.get(ip).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
+  }
+
+  @Test
+  public void testProcessHsrpGroupPriorityTie() {
+    Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
+    Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
+    Ip hsrpIp = Ip.parse("1.1.1.1");
+    HsrpGroup hsrpGroup =
+        HsrpGroup.builder().setPriority(100).setGroupNumber(1).setIp(hsrpIp).build();
+
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Interface i1 =
+        Interface.builder()
+            .setOwner(c1)
+            .setName("i1")
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/24"))
+            .build();
+    i1.setHsrpGroups(ImmutableMap.of(1, hsrpGroup));
+
+    Configuration c2 =
+        Configuration.builder()
+            .setHostname("c2")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Interface i2 =
+        Interface.builder()
+            .setOwner(c2)
+            .setName("i2")
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.4/24"))
+            .build();
+    i2.setHsrpGroups(ImmutableMap.of(1, hsrpGroup));
+
+    Configuration c3 =
+        Configuration.builder()
+            .setHostname("c3")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    Interface i3 =
+        Interface.builder()
+            .setOwner(c3)
+            .setName("i3")
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/24"))
+            .build();
+    i3.setHsrpGroups(ImmutableMap.of(1, hsrpGroup));
+
+    extractHsrp(groups, i1);
+    extractHsrp(groups, i2);
+    extractHsrp(groups, i3);
+
+    // Expect c2/i2 to win
+    // Since priority is identical, highest IP address wins
+    processHsrpGroups(ipOwners, groups);
+    assertThat(ipOwners.get(hsrpIp).get(c2.getHostname()), equalTo(ImmutableSet.of(i2.getName())));
+  }
+
+  @Test
+  public void testComputeHsrpPriority() {
+    int basePriority = 100;
+    int track1Decrement = 50;
+    int track2Decrement = 25;
+
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    HsrpGroup hsrpGroup =
+        HsrpGroup.builder()
+            .setPriority(basePriority)
+            .setTrackActions(
+                ImmutableSortedMap.of(
+                    "1",
+                    new DecrementPriority(track1Decrement),
+                    "2",
+                    new DecrementPriority(track2Decrement)))
+            .setGroupNumber(1)
+            .setIp(Ip.parse("10.10.10.1"))
+            .build();
+    Interface i1 =
+        Interface.builder()
+            .setOwner(c1)
+            .setName("i1")
+            .setAddress(ConcreteInterfaceAddress.parse("10.10.10.2/24"))
+            .build();
+    i1.setHsrpGroups(ImmutableMap.of(1, hsrpGroup));
+
+    c1.setTrackingGroups(
+        ImmutableMap.of(
+            "1", new TrackInterface("i1tracked"), "2", new TrackInterface("i1trackedAlso")));
+    // Tracked by track "1"
+    Interface.builder()
+        .setOwner(c1)
+        .setName("i1tracked")
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
+        .setActive(true)
+        .build();
+    // Tracked by track "2"
+    Interface.builder()
+        .setOwner(c1)
+        .setName("i1trackedAlso")
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
+        .setActive(false)
+        .build();
+
+    // Only track 2 is triggered, so only track 2 decrement is applied
+    assertThat(computeHsrpPriority(i1, hsrpGroup), equalTo(basePriority - track2Decrement));
+  }
+
+  @Test
+  public void testComputeHsrpPriorityUndefinedTrack() {
+    int basePriority = 100;
+    int track1Decrement = 50;
+
+    Configuration c1 =
+        Configuration.builder()
+            .setHostname("c1")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .build();
+    HsrpGroup hsrpGroup =
+        HsrpGroup.builder()
+            .setPriority(basePriority)
+            // Reference to undefined track method
+            .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(track1Decrement)))
+            .setGroupNumber(1)
+            .setIp(Ip.parse("10.10.10.1"))
+            .build();
+    Interface i1 =
+        Interface.builder()
+            .setOwner(c1)
+            .setName("i1")
+            .setAddress(ConcreteInterfaceAddress.parse("10.10.10.2/24"))
+            .build();
+    i1.setHsrpGroups(ImmutableMap.of(1, hsrpGroup));
+
+    // Empty map of tracking methods
+    c1.setTrackingGroups(ImmutableMap.of());
+    // If VI model doesn't have references to undefined track groups we shouldn't crash
+    // Also skip applying track action if that happens
+    assertThat(computeHsrpPriority(i1, hsrpGroup), equalTo(basePriority));
   }
 }
