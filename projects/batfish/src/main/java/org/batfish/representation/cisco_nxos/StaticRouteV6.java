@@ -25,7 +25,7 @@ public final class StaticRouteV6 implements Serializable {
     private int _preference;
     private @Nonnull Prefix6 _prefix;
     private long _tag;
-    private @Nullable Short _track;
+    private @Nullable Integer _track;
 
     private Builder(Prefix6 prefix) {
       _prefix = prefix;
@@ -105,7 +105,7 @@ public final class StaticRouteV6 implements Serializable {
       return this;
     }
 
-    public @Nonnull Builder setTrack(@Nullable Short track) {
+    public @Nonnull Builder setTrack(@Nullable Integer track) {
       _track = track;
       return this;
     }
@@ -128,7 +128,7 @@ public final class StaticRouteV6 implements Serializable {
   private final int _preference;
   private final @Nonnull Prefix6 _prefix;
   private final long _tag;
-  private final @Nullable Short _track;
+  private final @Nullable Integer _track;
 
   private StaticRouteV6(
       boolean discard,
@@ -138,7 +138,7 @@ public final class StaticRouteV6 implements Serializable {
       @Nullable String nextHopVrf,
       int preference,
       Prefix6 prefix,
-      @Nullable Short track,
+      @Nullable Integer track,
       long tag) {
     _prefix = prefix;
     _discard = discard;
@@ -191,7 +191,7 @@ public final class StaticRouteV6 implements Serializable {
     return _tag;
   }
 
-  public @Nullable Short getTrack() {
+  public @Nullable Integer getTrack() {
     return _track;
   }
 

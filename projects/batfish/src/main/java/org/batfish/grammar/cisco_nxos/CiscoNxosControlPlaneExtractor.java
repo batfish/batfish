@@ -192,7 +192,6 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRAC
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
-import static org.batfish.representation.cisco_nxos.StaticRoute.STATIC_ROUTE_TRACK_RANGE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
@@ -692,8 +691,10 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_flags_maskContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Tcp_port_numberContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Template_nameContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_definitionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_interfaceContext;
-import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_object_numberContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_interface_modeContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Track_object_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Ts_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_portContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Udp_port_numberContext;
@@ -841,6 +842,8 @@ import org.batfish.representation.cisco_nxos.StaticRouteV6;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TacacsServer;
 import org.batfish.representation.cisco_nxos.TcpOptions;
+import org.batfish.representation.cisco_nxos.Track;
+import org.batfish.representation.cisco_nxos.TrackInterface;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
@@ -1017,6 +1020,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @VisibleForTesting
   public static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
+
+  public static final IntegerSpace TRACK_OBJECT_ID_RANGE = IntegerSpace.of(Range.closed(1, 500));
 
   @VisibleForTesting
   public static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
@@ -2013,7 +2018,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitIhg_track(Ihg_trackContext ctx) {
     Optional<Integer> trackObjectNumberOrErr =
-        toIntegerInSpace(ctx, ctx.num, STATIC_ROUTE_TRACK_RANGE, "hsrp group track object number");
+        toIntegerInSpace(ctx, ctx.num, TRACK_OBJECT_ID_RANGE, "hsrp group track object number");
     if (!trackObjectNumberOrErr.isPresent()) {
       return;
     }
@@ -2481,11 +2486,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       builder.setTag(toLong(ctx.tag));
     }
     if (ctx.track != null) {
-      Short track = toShort(ctx, ctx.track);
-      if (track == null) {
+      Optional<Integer> track = toInteger(ctx, ctx.track);
+      if (!track.isPresent()) {
         return;
       }
-      builder.setTrack(track);
+      builder.setTrack(track.get());
       // TODO: support track object number
       todo(ctx);
     }
@@ -4741,8 +4746,37 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitS_track(S_trackContext ctx) {
-    // TODO: support object tracking
-    todo(ctx);
+    toInteger(ctx, ctx.num)
+        .ifPresent(id -> toTrack(ctx.track_definition()).ifPresent(t -> _c.getTracks().put(id, t)));
+  }
+
+  private Optional<Track> toTrack(Track_definitionContext ctx) {
+    // Interface tracking is the only method Batfish currently parses and extracts
+    assert ctx.track_interface() != null;
+    return toTrack(ctx.track_interface());
+  }
+
+  private Optional<Track> toTrack(Track_interfaceContext ctx) {
+    Optional<String> interfaceName =
+        toString(
+            ctx,
+            ctx.interface_name(),
+            // Can only track a subset of interface types
+            ImmutableSet.of(
+                CiscoNxosInterfaceType.ETHERNET,
+                CiscoNxosInterfaceType.PORT_CHANNEL,
+                CiscoNxosInterfaceType.LOOPBACK));
+    return interfaceName.map(s -> new TrackInterface(s, toMode(ctx.track_interface_mode())));
+  }
+
+  private TrackInterface.Mode toMode(Track_interface_modeContext ctx) {
+    if (ctx.LINE_PROTOCOL() != null) {
+      return TrackInterface.Mode.LINE_PROTOCOL;
+    } else if (ctx.IP() != null) {
+      return TrackInterface.Mode.IP_ROUTING;
+    }
+    assert ctx.IPV6() != null;
+    return TrackInterface.Mode.IPV6_ROUTING;
   }
 
   @Override
@@ -5792,11 +5826,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       builder.setTag(toLong(ctx.tag));
     }
     if (ctx.track != null) {
-      Short track = toShort(ctx, ctx.track);
-      if (track == null) {
+      Optional<Integer> track = toInteger(ctx, ctx.track);
+      if (!track.isPresent()) {
         return;
       }
-      builder.setTrack(track);
+      builder.setTrack(track.get());
       // TODO: support track object number
       todo(ctx);
     }
@@ -6578,6 +6612,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   }
 
   private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Track_object_idContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, TRACK_OBJECT_ID_RANGE, "track object-id");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Dscp_numberContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, DSCP_RANGE, "DSCP number");
   }
@@ -7095,18 +7134,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
   }
 
-  private @Nullable Short toShort(ParserRuleContext messageCtx, Track_object_numberContext ctx) {
-    short track = Short.parseShort(ctx.getText());
-    if (!STATIC_ROUTE_TRACK_RANGE.contains((int) track)) {
-      warn(
-          messageCtx,
-          String.format(
-              "Expected track in range %s, but got '%d'", STATIC_ROUTE_TRACK_RANGE, track));
-      return null;
-    }
-    return track;
-  }
-
   private @Nonnull StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
     return StandardCommunity.of(toInteger(ctx.high), toInteger(ctx.low));
   }
@@ -7232,11 +7259,31 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_nameContext ctx) {
+    return toString(messageCtx, ctx, null);
+  }
+
+  /**
+   * Convert specified interface name context into an interface name string, only allowing the
+   * interface types specified in {@code allowedTypes}. If {@code allowedTypes} is {@code null},
+   * then all known interface types are allowed.
+   *
+   * <p>If the interface name context cannot be converted, then {@link Optional#empty} is returned.
+   */
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx,
+      Interface_nameContext ctx,
+      @Nullable Set<CiscoNxosInterfaceType> allowedTypes) {
     String declaredName = getFullText(ctx);
     String prefix = ctx.prefix.getText();
     CiscoNxosInterfaceType type = toType(ctx.prefix);
     if (type == null) {
       warn(messageCtx, String.format("Unsupported interface type: %s", prefix));
+      return Optional.empty();
+    }
+    if (allowedTypes != null && !allowedTypes.contains(type)) {
+      warn(
+          messageCtx,
+          String.format("Unsupported interface type: %s, expected %s", prefix, allowedTypes));
       return Optional.empty();
     }
     String canonicalPrefix = getCanonicalInterfaceNamePrefix(prefix);

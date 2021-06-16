@@ -1960,6 +1960,8 @@ ROUTER_SOLICITATION: 'router-solicitation';
 
 ROUTINE: 'routine';
 
+ROUTING: 'routing';
+
 RP_ADDRESS: 'rp-address';
 
 RP_CANDIDATE: 'rp-candidate';

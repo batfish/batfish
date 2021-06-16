@@ -27,7 +27,7 @@ ip_route_network
     VRF nhvrf = vrf_name
   )?
   (
-    TRACK track = track_object_number
+    TRACK track = track_object_id
   )?
   (
     NAME name = static_route_name
@@ -61,7 +61,7 @@ ipv6_route
     VRF nhvrf = vrf_name
   )?
   (
-    TRACK track = track_object_number
+    TRACK track = track_object_id
   )?
   (
     NAME name = static_route_name

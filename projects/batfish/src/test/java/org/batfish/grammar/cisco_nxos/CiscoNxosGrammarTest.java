@@ -4,6 +4,7 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
@@ -124,6 +125,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -382,6 +384,9 @@ import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.StaticRouteV6;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
+import org.batfish.representation.cisco_nxos.Track;
+import org.batfish.representation.cisco_nxos.TrackInterface;
+import org.batfish.representation.cisco_nxos.TrackInterface.Mode;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
@@ -497,9 +502,9 @@ public final class CiscoNxosGrammarTest {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
+    Warnings warnings = new Warnings();
     NxosControlPlaneExtractor extractor =
-        new NxosControlPlaneExtractor(
-            src, ciscoNxosParser, new Warnings(), new SilentSyntaxCollection());
+        new NxosControlPlaneExtractor(src, ciscoNxosParser, warnings, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoNxosParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
@@ -507,8 +512,11 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vendorConfiguration =
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
+
     // crash if not serializable
-    return SerializationUtils.clone(vendorConfiguration);
+    vendorConfiguration = SerializationUtils.clone(vendorConfiguration);
+    vendorConfiguration.setWarnings(warnings);
+    return vendorConfiguration;
   }
 
   private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
@@ -1534,8 +1542,50 @@ public final class CiscoNxosGrammarTest {
 
   @Test
   public void testTrackExtraction() {
-    // TODO: make into extraction test
-    assertThat(parseVendorConfig("nxos_track"), notNullValue());
+    String hostname = "nxos_track";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getTracks(), hasKeys(1, 2, 500));
+
+    {
+      Track track = vc.getTracks().get(1);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("port-channel1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.LINE_PROTOCOL));
+    }
+
+    {
+      Track track = vc.getTracks().get(2);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("Ethernet1/1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.IP_ROUTING));
+    }
+
+    {
+      Track track = vc.getTracks().get(500);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("loopback1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.IPV6_ROUTING));
+    }
+  }
+
+  @Test
+  public void testTrackWarnings() {
+    String hostname = "nxos_track_warn";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        containsInAnyOrder(
+            hasComment(
+                "Unsupported interface type: mgmt, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
+            hasComment(
+                "Unsupported interface type: Vlan, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
+            hasComment("Expected track object-id in range 1-500, but got '0'"),
+            hasComment("Expected track object-id in range 1-500, but got '501'")));
   }
 
   @Test
@@ -4588,7 +4638,7 @@ public final class CiscoNxosGrammarTest {
                 .setName("name")
                 .setPreference(11)
                 .setTag(17)
-                .setTrack((short) 3)
+                .setTrack(3)
                 .build()));
 
     Vrf vrf = c.getVrfs().get("VRF");
@@ -7839,7 +7889,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
     }
     {
       StaticRoute route =
@@ -7849,7 +7899,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7860,7 +7910,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7871,7 +7921,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7882,7 +7932,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7893,7 +7943,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7904,7 +7954,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
       assertThat(route.getNextHopInterface(), nullValue());
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
       assertThat(route.getNextHopVrf(), equalTo("vrf2"));
     }
@@ -7916,7 +7966,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/2"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
       assertThat(route.getNextHopVrf(), equalTo("vrf2"));
     }
