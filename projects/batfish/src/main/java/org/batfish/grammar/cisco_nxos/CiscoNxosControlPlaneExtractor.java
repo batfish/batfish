@@ -192,6 +192,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRAC
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
+import static org.batfish.representation.cisco_nxos.Track.TRACK_OBJECT_ID_RANGE;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
@@ -1020,8 +1021,6 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @VisibleForTesting
   public static final IntegerSpace TCP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
-
-  private static final IntegerSpace TRACK_OBJECT_ID_RANGE = IntegerSpace.of(Range.closed(1, 500));
 
   @VisibleForTesting
   public static final IntegerSpace UDP_PORT_RANGE = IntegerSpace.of(Range.closed(0, 65535));
@@ -7270,13 +7269,20 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_nameContext ctx) {
-    return toString(messageCtx, ctx, CiscoNxosInterfaceType.ALL_INTERFACE_TYPES);
+    return toString(messageCtx, ctx, null);
   }
 
+  /**
+   * Convert specified interface name context into an interface name string, only allowing the
+   * interface types specified in {@code allowedTypes}. If {@code allowedTypes} is {@code null},
+   * then all known interface types are allowed.
+   *
+   * <p>If the interface name context cannot be converted, then {@link Optional#empty} is returned.
+   */
   private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx,
       Interface_nameContext ctx,
-      Set<CiscoNxosInterfaceType> allowedTypes) {
+      @Nullable Set<CiscoNxosInterfaceType> allowedTypes) {
     String declaredName = getFullText(ctx);
     String prefix = ctx.prefix.getText();
     CiscoNxosInterfaceType type = toType(ctx.prefix);
@@ -7284,7 +7290,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       warn(messageCtx, String.format("Unsupported interface type: %s", prefix));
       return Optional.empty();
     }
-    if (!allowedTypes.contains(type)) {
+    if (allowedTypes != null && !allowedTypes.contains(type)) {
       warn(
           messageCtx,
           String.format("Unsupported interface type: %s, expected %s", prefix, allowedTypes));

@@ -2,9 +2,6 @@
 !
 hostname nxos_track_warn
 !
-
-vrf context v1
-
 track 1 interface mgmt1 line-protocol
 track 2 interface Vlan1 line-protocol
 track 0 interface port-channel1 line-protocol

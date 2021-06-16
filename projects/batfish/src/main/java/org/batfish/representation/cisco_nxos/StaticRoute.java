@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.representation.cisco_nxos.Track.TRACK_OBJECT_ID_RANGE;
 
 import com.google.common.collect.Range;
 import java.io.Serializable;
@@ -46,10 +47,10 @@ public final class StaticRoute implements Serializable {
           "Invalid tag %s is not an unsigned 32-bit integer",
           _tag);
       checkArgument(
-          _track == null || STATIC_ROUTE_TRACK_RANGE.contains((int) _track),
+          _track == null || TRACK_OBJECT_ID_RANGE.contains((int) _track),
           "Invalid track object number %s outside of %s",
           _track,
-          STATIC_ROUTE_TRACK_RANGE);
+          TRACK_OBJECT_ID_RANGE);
       return new StaticRoute(
           _discard,
           _name,
@@ -110,7 +111,6 @@ public final class StaticRoute implements Serializable {
 
   public static final IntegerSpace STATIC_ROUTE_PREFERENCE_RANGE =
       IntegerSpace.of(Range.closed(1, 255));
-  public static final IntegerSpace STATIC_ROUTE_TRACK_RANGE = IntegerSpace.of(Range.closed(1, 500));
   public static final int MAX_NAME_LENGTH = 50;
 
   public static @Nonnull Builder builder() {
