@@ -1903,7 +1903,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
               ((HsrpGroupIpv4) group).setIp(ip);
             }
           } else {
-            warn(ctx, "HSRP IP must be contained by its interface subnets.");
+            warn(
+                ctx,
+                "HSRP IP must be contained by its interface subnets. This HSRP IP will be"
+                    + " ignored.");
           }
         });
   }

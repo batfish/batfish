@@ -1988,8 +1988,9 @@ public final class CiscoNxosGrammarTest {
               allOf(
                   hasHelloTime(250),
                   hasHoldTime(750),
-                  // TODO secondary
-                  HsrpGroupMatchers.hasIps(contains(Ip.parse("192.0.2.1"))),
+                  HsrpGroupMatchers.hasIps(
+                      containsInAnyOrder(
+                          Ip.parse("192.0.2.1"), Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1"))),
                   hasPreempt(),
                   hasPriority(105),
                   hasTrackActions(
@@ -2062,10 +2063,14 @@ public final class CiscoNxosGrammarTest {
         vc.getWarnings().getParseWarnings(),
         containsInAnyOrder(
             allOf(
-                hasComment("HSRP IP must be contained by its interface subnets."),
+                hasComment(
+                    "HSRP IP must be contained by its interface subnets. This HSRP IP will be"
+                        + " ignored."),
                 ParseWarningMatchers.hasText("ip 10.0.0.1")),
             allOf(
-                hasComment("HSRP IP must be contained by its interface subnets."),
+                hasComment(
+                    "HSRP IP must be contained by its interface subnets. This HSRP IP will be"
+                        + " ignored."),
                 ParseWarningMatchers.hasText("ip 10.0.0.2 secondary"))));
   }
 
