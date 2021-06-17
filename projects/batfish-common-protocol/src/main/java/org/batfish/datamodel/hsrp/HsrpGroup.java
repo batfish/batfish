@@ -1,5 +1,6 @@
 package org.batfish.datamodel.hsrp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
 
@@ -133,7 +134,7 @@ public final class HsrpGroup implements Serializable {
             groupNumber, String.format("Missing required property: %s", PROP_GROUP_NUMBER)),
         requireNonNull(helloTime, String.format("Missing required property: %s", PROP_HELLO_TIME)),
         requireNonNull(holdTime, String.format("Missing required property: %s", PROP_HOLD_TIME)),
-        requireNonNull(ips, String.format("Missing required property: %s", PROP_IPS)),
+        firstNonNull(ips, ImmutableSet.of()),
         requireNonNull(preempt, String.format("Missing required property: %s", PROP_PREEMPT)),
         requireNonNull(priority, String.format("Missing required property: %s", PROP_PRIORITY)),
         trackActions != null ? ImmutableSortedMap.copyOf(trackActions) : ImmutableSortedMap.of());
