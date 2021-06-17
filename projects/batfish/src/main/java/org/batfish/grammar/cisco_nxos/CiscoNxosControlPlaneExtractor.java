@@ -4780,7 +4780,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             id -> {
               _c.defineStructure(CiscoNxosStructureType.TRACK, id.toString(), ctx);
               // Create a placeholder to avoid incorrectly rejecting lines for undefined references
-              Track track = toTrack(ctx.track_definition()).orElse(new TrackUnsupported());
+              Track track = toTrack(ctx.track_definition()).orElse(TrackUnsupported.INSTANCE);
               _c.getTracks().put(id, track);
             });
   }
