@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,17 +10,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
 
 /** Represents a bgp process on a router */
@@ -104,6 +111,7 @@ public class BgpProcess implements Serializable {
     }
   }
 
+  private static final String PROP_AGGREGATES = "aggregates";
   private static final String PROP_CONFEDERATION = "confederation";
   private static final String PROP_EBGP_ADMIN_COST = "ebgpAdminCost";
   private static final String PROP_IBGP_ADMIN_COST = "ibgpAdminCost";
@@ -128,6 +136,8 @@ public class BgpProcess implements Serializable {
   private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
   private boolean _multipathIbgp;
   private boolean _clusterListAsIbgpCost;
+
+  private @Nonnull Map<Prefix, BgpAggregate> _aggregates;
 
   /**
    * A map of all non-dynamic bgp neighbors with which the router owning this process is configured
@@ -174,6 +184,7 @@ public class BgpProcess implements Serializable {
       @Nullable BgpConfederation confederation,
       @Nullable String redistributionPolicy) {
     _activeNeighbors = new TreeMap<>();
+    _aggregates = ImmutableMap.of();
     _confederation = confederation;
     _ebgpAdminCost = ebgpAdminCost;
     _ibgpAdminCost = ibgpAdminCost;
@@ -213,6 +224,24 @@ public class BgpProcess implements Serializable {
   }
 
   /**
+   * Add a {@link BgpAggregate}.
+   *
+   * @throws IllegalArgumentException if an entry already exists for the same network.
+   */
+  public void addAggregate(BgpAggregate aggregate) {
+    Prefix network = aggregate.getNetwork();
+    checkArgument(
+        !_aggregates.containsKey(network),
+        "Already contains an aggregate for network: %s",
+        network);
+    _aggregates =
+        ImmutableMap.<Prefix, BgpAggregate>builderWithExpectedSize(_aggregates.size() + 1)
+            .putAll(_aggregates)
+            .put(network, aggregate)
+            .build();
+  }
+
+  /**
    * Expand the origination space for this prefix
    *
    * @param space {@link PrefixSpace} to add
@@ -228,6 +257,25 @@ public class BgpProcess implements Serializable {
    */
   public void addToOriginationSpace(Prefix prefix) {
     _originationSpace.addPrefix(prefix);
+  }
+
+  /**
+   * BGP Aggregates that may be generated for this process. Should only be populated on devices that
+   * activate aggregates via entries from BGP RIB.
+   */
+  @JsonIgnore
+  public @Nonnull Map<Prefix, BgpAggregate> getAggregates() {
+    return _aggregates;
+  }
+
+  @JsonProperty(PROP_AGGREGATES)
+  private @Nonnull List<BgpAggregate> getAggregatesList() {
+    return ImmutableSortedMap.copyOf(_aggregates).values().asList();
+  }
+
+  @JsonProperty(PROP_AGGREGATES)
+  private void setAggregates(List<BgpAggregate> aggregates) {
+    _aggregates = toImmutableMap(aggregates, BgpAggregate::getNetwork, Function.identity());
   }
 
   /**
