@@ -151,6 +151,8 @@ public class CiscoConversions {
   static int DEFAULT_OSPF_DEAD_INTERVAL =
       OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
 
+  static final String DENY_ALL_REDIST_POLICY_NAME = "~DENY_ALL_REDISTRIBUTION_POLICY~";
+
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
     Map<String, Interface> loopbackInterfaces = new HashMap<>();
@@ -462,6 +464,20 @@ public class CiscoConversions {
                 defaultRouteExportStatements))
         .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();
+  }
+
+  /**
+   * Initializes dummy BGP redistribution policy that denies everything, for VRFs that are set up to
+   * receive leaked routes from other VRFs but have no BGP configuration themselves.
+   */
+  static void initBgpDenyAllRedistPolicy(Configuration c) {
+    if (!c.getRoutingPolicies().containsKey(DENY_ALL_REDIST_POLICY_NAME)) {
+      RoutingPolicy.builder()
+          .setOwner(c)
+          .setName(DENY_ALL_REDIST_POLICY_NAME)
+          .addStatement(Statements.ExitReject.toStaticStatement())
+          .build();
+    }
   }
 
   /**
