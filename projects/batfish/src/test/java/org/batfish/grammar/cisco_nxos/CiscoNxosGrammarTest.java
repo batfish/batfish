@@ -43,6 +43,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -118,6 +119,7 @@ import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
@@ -269,6 +271,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -1590,8 +1593,53 @@ public final class CiscoNxosGrammarTest {
 
   @Test
   public void testTrackConversion() throws IOException {
-    // TODO: make into conversion test
-    assertThat(parseConfig("nxos_track"), notNullValue());
+    String hostname = "nxos_track_conversion";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getTrackingGroups(), hasKeys("1", "500"));
+
+    {
+      TrackMethod trackMethod = c.getTrackingGroups().get("1");
+      assertThat(trackMethod, instanceOf(org.batfish.datamodel.tracking.TrackInterface.class));
+      org.batfish.datamodel.tracking.TrackInterface trackInterface =
+          (org.batfish.datamodel.tracking.TrackInterface) trackMethod;
+      assertThat(trackInterface.getTrackedInterface(), equalTo("port-channel1"));
+    }
+
+    {
+      TrackMethod trackMethod = c.getTrackingGroups().get("500");
+      assertThat(trackMethod, instanceOf(org.batfish.datamodel.tracking.TrackInterface.class));
+      org.batfish.datamodel.tracking.TrackInterface trackInterface =
+          (org.batfish.datamodel.tracking.TrackInterface) trackMethod;
+      assertThat(trackInterface.getTrackedInterface(), equalTo("Ethernet1/1"));
+    }
+  }
+
+  @Test
+  public void testTrackConversionWarnings() throws IOException {
+    String hostname = "nxos_track_conversion_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(c.getTrackingGroups(), anEmptyMap());
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "Interface track mode %s is not yet supported and will be ignored.",
+                    Mode.IP_ROUTING))));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "Interface track mode %s is not yet supported and will be ignored.",
+                    Mode.IPV6_ROUTING))));
   }
 
   @Test
