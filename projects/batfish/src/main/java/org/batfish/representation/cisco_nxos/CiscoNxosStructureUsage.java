@@ -96,6 +96,7 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   IP_ROUTE_TRACK("ip route track"),
   IPV6_ROUTE_NEXT_HOP_INTERFACE("ipv6 route next-hop-interface"),
   IPV6_ROUTE_NEXT_HOP_VRF("ipv6 route vrf"),
+  IPV6_ROUTE_TRACK("ipv6 route track"),
   LINE_VTY_ACCESS_CLASS_IN("line vty access-class in"),
   LINE_VTY_ACCESS_CLASS_OUT("line vty access-class out"),
   LOGGING_SOURCE_INTERFACE("logging source-interface"),

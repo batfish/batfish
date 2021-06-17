@@ -844,6 +844,7 @@ import org.batfish.representation.cisco_nxos.TacacsServer;
 import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.Track;
 import org.batfish.representation.cisco_nxos.TrackInterface;
+import org.batfish.representation.cisco_nxos.TrackUnsupported;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
@@ -2022,7 +2023,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (!trackObjectNumberOrErr.isPresent()) {
       return;
     }
-    int trackObjectNumber = trackObjectNumberOrErr.get();
+    Integer trackObjectNumber = trackObjectNumberOrErr.get();
+
+    if (!_c.getTracks().containsKey(trackObjectNumber)) {
+      warn(
+          ctx,
+          String.format(
+              "Cannot reference undefined track %s. This line will be ignored.",
+              trackObjectNumber));
+      return;
+    }
+    _c.referenceStructure(
+        CiscoNxosStructureType.TRACK,
+        trackObjectNumber.toString(),
+        CiscoNxosStructureUsage.INTERFACE_HSRP_GROUP_TRACK,
+        ctx.start.getLine());
     @Nullable Integer decrement;
     if (ctx.decrement != null) {
       Optional<Integer> decrementOrErr =
@@ -2490,7 +2505,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       if (!track.isPresent()) {
         return;
       }
-      builder.setTrack(track.get());
+      Integer trackNumber = track.get();
+      if (!_c.getTracks().containsKey(trackNumber)) {
+        warn(
+            ctx,
+            String.format(
+                "Cannot reference undefined track %s. This line will be ignored.", trackNumber));
+        return;
+      }
+      _c.referenceStructure(
+          CiscoNxosStructureType.TRACK,
+          trackNumber.toString(),
+          CiscoNxosStructureUsage.IPV6_ROUTE_TRACK,
+          ctx.start.getLine());
+
+      builder.setTrack(trackNumber);
       // TODO: support track object number
       todo(ctx);
     }
@@ -4747,7 +4776,13 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitS_track(S_trackContext ctx) {
     toInteger(ctx, ctx.num)
-        .ifPresent(id -> toTrack(ctx.track_definition()).ifPresent(t -> _c.getTracks().put(id, t)));
+        .ifPresent(
+            id -> {
+              _c.defineStructure(CiscoNxosStructureType.TRACK, id.toString(), ctx);
+              // Create a placeholder to avoid incorrectly rejecting lines for undefined references
+              Track track = toTrack(ctx.track_definition()).orElse(new TrackUnsupported());
+              _c.getTracks().put(id, track);
+            });
   }
 
   private Optional<Track> toTrack(Track_definitionContext ctx) {
@@ -5830,7 +5865,21 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       if (!track.isPresent()) {
         return;
       }
-      builder.setTrack(track.get());
+      Integer trackNumber = track.get();
+      if (!_c.getTracks().containsKey(trackNumber)) {
+        warn(
+            ctx,
+            String.format(
+                "Cannot reference undefined track %s. This line will be ignored.", trackNumber));
+        return;
+      }
+      _c.referenceStructure(
+          CiscoNxosStructureType.TRACK,
+          trackNumber.toString(),
+          CiscoNxosStructureUsage.IP_ROUTE_TRACK,
+          ctx.start.getLine());
+
+      builder.setTrack(trackNumber);
       // TODO: support track object number
       todo(ctx);
     }

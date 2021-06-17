@@ -2,7 +2,9 @@
 !
 hostname nxos_static_route
 !
-
+! Must exist or lines referencing this below will be rejected
+track 500 interface Ethernet1/1 line-protocol
+!
 interface Ethernet1/1
   no switchport
   no shutdown
