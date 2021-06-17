@@ -290,6 +290,7 @@ import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
+import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.DistributeList;
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
@@ -8672,5 +8673,29 @@ public final class CiscoNxosGrammarTest {
     // Confirm default costs are calculated correctly
     assertThat(ifaceEth1.getOspfCost(), equalTo(40));
     assertThat(ifaceVlan1.getOspfCost(), equalTo(40));
+  }
+
+  @Test
+  public void testTrackReferences() throws IOException {
+    String hostname = "nxos_track_refs";
+    String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
+
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "1", 1));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "2", 1));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "3", 0));
+    assertThat(
+        ans,
+        hasUndefinedReference(
+            filename,
+            CiscoNxosStructureType.TRACK,
+            "500",
+            CiscoNxosStructureUsage.INTERFACE_HSRP_GROUP_TRACK));
+    assertThat(
+        ans,
+        hasUndefinedReference(
+            filename, CiscoNxosStructureType.TRACK, "500", CiscoNxosStructureUsage.IP_ROUTE_TRACK));
   }
 }

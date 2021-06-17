@@ -46,6 +46,7 @@ public enum CiscoNxosStructureType implements StructureType {
   ROUTER_OSPF("router ospf"),
   ROUTER_OSPFV3("router ospfv3"),
   ROUTER_RIP("router rip"),
+  TRACK("track"),
   VLAN("vlan"),
   VRF("vrf");
 
