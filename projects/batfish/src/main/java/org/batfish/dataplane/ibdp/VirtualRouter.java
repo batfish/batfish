@@ -547,7 +547,7 @@ public final class VirtualRouter {
     if (_bgpRoutingProcess == null) {
       return;
     }
-    _bgpRoutingProcess.initBgpAggregateRoutes(_generatedRib.getRoutes());
+    _bgpRoutingProcess.initBgpAggregateRoutesLegacy(_generatedRib.getRoutes());
   }
 
   /** Initialize RIP routes from the interface prefixes */

@@ -28,6 +28,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AllowRemoteAsOutMode;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
@@ -303,6 +304,34 @@ public final class BgpProtocolHelper {
         .setOriginType(generatedRoute.getOriginType())
         .setReceivedFromIp(/* Originated locally. */ Ip.ZERO)
         .setNonRouting(nonRouting);
+  }
+
+  /** Create a BGP route from an activated aggregate. */
+  public static @Nonnull Bgpv4Route toBgpv4Route(
+      BgpAggregate aggregate, @Nullable RoutingPolicy attributePolicy, int admin, Ip routerId) {
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.builder()
+            .setAdmin(admin)
+            // TODO: support merging as-path from contributors via generationPolicy
+            .setAsPath(AsPath.empty())
+            // TODO: support merging communities from contributors via generationPolicy
+            .setCommunities(CommunitySet.empty())
+            .setMetric(0L)
+            .setSrcProtocol(RoutingProtocol.AGGREGATE)
+            .setProtocol(RoutingProtocol.AGGREGATE)
+            .setNextHop(NextHopDiscard.instance())
+            .setNetwork(aggregate.getNetwork())
+            .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+            .setOriginatorIp(routerId)
+            // TODO: confirm default is IGP for all devices initializing aggregates from BGP RIB
+            .setOriginType(OriginType.IGP)
+            .setReceivedFromIp(/* Originated locally. */ Ip.ZERO);
+    if (attributePolicy == null) {
+      return builder.build();
+    }
+    boolean accepted = attributePolicy.process(builder.build(), builder, Direction.OUT);
+    assert accepted;
+    return builder.build();
   }
 
   /**
