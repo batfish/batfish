@@ -397,14 +397,17 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
     assertThat(transformedBgpRoute, nullValue());
   }
 
-  /** Test that MED is not preserved/advertised to EBGP peers. */
+  /** Test that MED is cleared on export to EBGP peers except for locally originated routes. */
   @Test
   public void testEbgpDoesNotExportWithMEDSet() {
-    Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setMetric(1000).build();
+    // _baseBgpRouteBuilder has receivedFromIp 0.0.0.0 indicating local origination
+    Bgpv4Route locallyOriginated = _baseBgpRouteBuilder.setMetric(1000).build();
+    Bgpv4Route notLocallyOriginated =
+        locallyOriginated.toBuilder().setReceivedFromIp(Ip.parse("1.1.1.1")).build();
 
     setUpPeers(false);
-    Bgpv4Route.Builder transformedBgpRoute = runTransformBgpRoutePreExport(bgpv4Route);
-    assertThat(transformedBgpRoute.getMetric(), equalTo(0L));
+    assertThat(runTransformBgpRoutePreExport(locallyOriginated).getMetric(), equalTo(1000L));
+    assertThat(runTransformBgpRoutePreExport(notLocallyOriginated).getMetric(), equalTo(0L));
   }
 
   /** Test that MED is preserved/advertised to IBGP peers. */
@@ -471,6 +474,16 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
                 RoutingProtocol.BGP)
             .getMetric(),
         equalTo(metric));
+  }
+
+  @Test
+  public void testTransformBgpRoutePreExportKeepMetric_ibgp() {
+    // Peers are IBGP, so routes should be exported with their metrics preserved
+    setUpPeers(true);
+    long metric = 333;
+    Bgpv4Route bgpRoute =
+        Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO).setMetric(metric).build();
+    assertThat(runTransformBgpRoutePreExport(bgpRoute).getMetric(), equalTo(metric));
   }
 
   @Test

@@ -22,10 +22,12 @@ router bgp 1
  ! Listener 1: no export policy; should redistribute static default route
  neighbor 10.1.1.2 remote-as 2
  neighbor 10.1.1.2 default-originate route-map PERMIT_1234
+ neighbor 10.1.1.2 send-community
  !
  ! Listener 2: export policy should block redistribution of static route
  neighbor 10.2.2.2 remote-as 2
  neighbor 10.2.2.2 default-originate route-map PERMIT_1234
+ neighbor 10.2.2.2 send-community
  neighbor 10.2.2.2 route-map DENY_DEFAULT out
 !
 !

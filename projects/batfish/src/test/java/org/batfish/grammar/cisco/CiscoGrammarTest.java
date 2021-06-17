@@ -16,8 +16,8 @@ import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
-import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
@@ -938,6 +938,37 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testBgpRedistributionWithRouteMap() throws IOException {
+    /*
+     Config contains two VRFs, each of which has a static route for 1.1.1.1/32. Both VRFs redistribute
+     static routes into BGP with a route-map. The redistribution route-map in VRF1 permits 1.1.1.1/32,
+     so we should see it as a local route in VRF1's BGP RIB. The redistribution route-map in VRF2 is
+     undefined, so VRF2's BGP RIB should be empty.
+    */
+    String hostname = "bgp_redistribution_with_route_map";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Prefix staticPrefix = Prefix.parse("1.1.1.1/32");
+
+    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32
+    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
+        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
+        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    assertThat(
+        vrf1Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
+    assertThat(
+        vrf2Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
+
+    // Only VRF1 should have 1.1.1.1/32 in BGP
+    Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
+    Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
+    assertThat(vrf1BgpRoutes, hasItem(hasPrefix(staticPrefix)));
+    assertThat(vrf2BgpRoutes, not(hasItem(hasPrefix(staticPrefix))));
+  }
+
+  @Test
   public void testIosIbgpMissingUpdateSource() throws IOException {
     /*
     r1 is missing update-source, but session should still be established between r1 and r2. Both
@@ -1598,9 +1629,15 @@ public final class CiscoGrammarTest {
      The originator has a static default route and redistributes it to BGP on both peers with a
      route-map that sets community 50, so we can be certain of the route's origin in neighbors.
 
+     We should see the redistributed local route in the originator's BGP RIB.
+
      Peer 1 has no outbound route-map, so the static route should be redistributed to listener 1.
 
      Peer 2 has an outbound route-map that denies 0.0.0.0/0, so no default route on listener 2.
+
+     TODO The originator should probably need default-information originate configured in order
+      to redistribute default routes at all. We do not currently handle default-information
+      originate correctly.
     */
     String testrigName = "ios-default-originate";
     String originatorName = "originator-static-route";
@@ -1617,29 +1654,42 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
+    Set<Bgpv4Route> originatorBgpRoutes = dp.getBgpRoutes().get(originatorName, DEFAULT_VRF_NAME);
     Set<AbstractRoute> l1Routes = dp.getRibs().get(l1Name).get(DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> l2Routes = dp.getRibs().get(l2Name).get(DEFAULT_VRF_NAME).getRoutes();
 
     Ip originatorId = Ip.parse("1.1.1.1");
-    Ip originatorIp = Ip.parse("10.1.1.1");
-    long originatorAs = 1L;
     Bgpv4Route redistributedStaticRoute =
-        Bgpv4Route.testBuilder()
+        Bgpv4Route.builder()
             .setCommunities(ImmutableSet.of(StandardCommunity.of(50)))
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(originatorIp)
+            .setNextHop(NextHopDiscard.instance())
+            .setNonRouting(true)
             .setAdmin(20)
-            .setAsPath(AsPath.of(AsSet.of(originatorAs)))
+            .setAsPath(AsPath.empty())
             .setLocalPreference(100)
             .setOriginatorIp(originatorId)
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setReceivedFromIp(originatorIp)
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setReceivedFromIp(Ip.ZERO) // indicates local origination
             .build();
 
+    // Redistributed route should be in originator's BGP RIB as a local route
+    assertThat(originatorBgpRoutes, hasItem(redistributedStaticRoute));
+
     // Listener 1 should have received the static route
-    assertThat(l1Routes, hasItem(redistributedStaticRoute));
+    Ip originatorIp = Ip.parse("10.1.1.1");
+    long originatorAs = 1L;
+    Bgpv4Route exportedRoute =
+        redistributedStaticRoute.toBuilder()
+            .setAsPath(AsPath.of(AsSet.of(originatorAs)))
+            .setNextHop(NextHopIp.of(originatorIp))
+            .setNonRouting(false)
+            .setReceivedFromIp(originatorIp)
+            .setSrcProtocol(RoutingProtocol.BGP)
+            .build();
+    assertThat(l1Routes, hasItem(exportedRoute));
 
     // Listener 2 should not have received the static route since export policy prevents it
     assertThat(l2Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
@@ -3375,8 +3425,8 @@ public final class CiscoGrammarTest {
   public void testIosXeEigrpToBgpRedistConversion() throws IOException {
     // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
     Configuration c = parseConfig("ios-xe-eigrp-to-bgp");
-    RoutingPolicy bgpExportPolicy =
-        c.getRoutingPolicies().get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
+    RoutingPolicy bgpRedistPolicy =
+        c.getRoutingPolicies().get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME));
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     Prefix matchRm = Prefix.parse("5.5.5.0/24");
@@ -3409,7 +3459,7 @@ public final class CiscoGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -3432,7 +3482,7 @@ public final class CiscoGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
     }
     {
       // Redistribute matching EIGRP route to IBGP
@@ -3440,7 +3490,7 @@ public final class CiscoGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -3463,7 +3513,7 @@ public final class CiscoGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
     }
     {
       // Ensure external EIGRP route can also match routing policy
@@ -3482,7 +3532,7 @@ public final class CiscoGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
