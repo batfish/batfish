@@ -75,7 +75,13 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.minesweeper.*;
+import org.batfish.minesweeper.CommunityVar;
+import org.batfish.minesweeper.Graph;
+import org.batfish.minesweeper.IDeepCopy;
+import org.batfish.minesweeper.OspfType;
+import org.batfish.minesweeper.Protocol;
+import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
