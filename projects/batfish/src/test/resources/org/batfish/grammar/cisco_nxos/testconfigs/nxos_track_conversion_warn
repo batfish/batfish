@@ -1,0 +1,6 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_track_conversion_warn
+!
+track 1 interface port-channel1 ip routing
+track 500 interface Ethernet1/1 ipv6 routing
