@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname bgp_redistribution_with_route_map
+!
+ip route vrf VRF1 1.1.1.1 255.255.255.255 Null0
+ip route vrf VRF2 1.1.1.1 255.255.255.255 Null0
+!
+ip prefix-list PL seq 10 permit 1.1.1.1/32
+!
+route-map RM permit 10
+ match ip address prefix-list PL
+!
+router bgp 65535
+ !
+ address-family ipv4 vrf VRF1
+  redistribute static route-map RM
+ exit-address-family
+ !
+ address-family ipv4 vrf VRF2
+  redistribute static route-map UNDEFINED
+ exit-address-family
+!
