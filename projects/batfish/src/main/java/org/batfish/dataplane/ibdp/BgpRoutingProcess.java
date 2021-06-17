@@ -1221,7 +1221,6 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           BgpAggregate aggregate = Iterables.getOnlyElement(aggregatesAtNode);
           Collection<Bgpv4Route> potentialContributors =
               potentialContributorsByAggregatePrefix.get(aggNet);
-          BgpAggregate moreGeneralAggregate = getMostSpecificAggregate(aggNet).orElse(null);
           Bgpv4Route activatedAggregate = null;
           for (Bgpv4Route potentialContributor : potentialContributors) {
             // TODO: apply suppressionPolicy
@@ -1246,6 +1245,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               break;
             }
           }
+          BgpAggregate moreGeneralAggregate = getMostSpecificAggregate(aggNet).orElse(null);
           if (moreGeneralAggregate != null) {
             Prefix moreGeneralAggregatePrefix = moreGeneralAggregate.getNetwork();
             // funnel all potential contributors down to more general aggregate
