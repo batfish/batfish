@@ -1289,6 +1289,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     if (potentialContributingPrefix.equals(Prefix.ZERO)) {
       return Optional.empty();
     }
+    // There can only be zero or one aggregates at a node in the PrefixTrieMultimap because it is
+    // populated from a Map<Prefix, BgpAggregate>.
     return _aggregates
         .longestPrefixMatch(
             potentialContributingPrefix.getStartIp(),

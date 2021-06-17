@@ -756,8 +756,24 @@ public class BgpRoutingProcessTest {
             hasPrefix(Prefix.strict("1.0.0.0/16")), hasPrefix(Prefix.strict("1.0.0.0/24"))));
   }
 
+  /** Test that generation policy must pass for aggregate to be activated. */
+  @Test
+  public void testInitBgpAggregateRoutesMustPassGenerationPolicy() {
+    // No route has prefix length 20, so the /16 should not be activated.
+    List<RouteAdvertisement<Bgpv4Route>> deltaAdverts = initBgpAggregatesTestHelper(20);
+
+    // 1.0.0.0/16 should not be activated
+    assertThat(
+        deltaAdverts.stream()
+            .map(RouteAdvertisement::getRoute)
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(hasPrefix((Prefix.strict("1.0.0.0/24")))));
+  }
+
   /*
    * - Sets up a process with 2 aggregates: 1.0.0.0/16 and 1.0.0.0/24.
+   * - Activation of 1.0.0.0/16 is controlled by prefixLengthContributingToAggregate16
+   *   - only routes with provided prefix length will active it
    * - Redistributes connected route 1.0.0.0/32 into BGP
    * - Calls initBgpAggregates and returns the actions in resulting RIB delta.
    */
@@ -779,11 +795,11 @@ public class BgpRoutingProcessTest {
             .build();
     _bgpProcess.setRedistributionPolicy(policy.getName());
 
-    // Create policy only allowing /32s to contribute to /16 aggregate
-    String onlyAccept32s = "onlyAccept32s";
+    // Create policy only allowing specific prefix lengths to contribute to /16 aggregate
+    String filterByPrefixLength = "filterByPrefixLength";
     RoutingPolicy.builder()
         .setOwner(_c)
-        .setName(onlyAccept32s)
+        .setName(filterByPrefixLength)
         .addStatement(
             new If(
                 new MatchPrefixSet(
@@ -798,7 +814,7 @@ public class BgpRoutingProcessTest {
         .build();
     _bgpProcess.addAggregate(BgpAggregate.of(Prefix.strict("1.0.0.0/24"), null, null, null));
     _bgpProcess.addAggregate(
-        BgpAggregate.of(Prefix.strict("1.0.0.0/16"), null, onlyAccept32s, null));
+        BgpAggregate.of(Prefix.strict("1.0.0.0/16"), null, filterByPrefixLength, null));
 
     // re-init routing process after modifying configuration.
     _routingProcess =
