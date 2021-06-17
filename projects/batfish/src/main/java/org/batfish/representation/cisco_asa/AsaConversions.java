@@ -543,11 +543,12 @@ public class AsaConversions {
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+    Ip groupIp = hsrpGroup.getIp();
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
         .setHelloTime(hsrpGroup.getHelloTime())
         .setHoldTime(hsrpGroup.getHoldTime())
-        .setIp(hsrpGroup.getIp())
+        .setIps(groupIp == null ? ImmutableSet.of() : ImmutableSet.of(groupIp))
         .setGroupNumber(hsrpGroup.getGroupNumber())
         .setPreempt(hsrpGroup.getPreempt())
         .setPriority(hsrpGroup.getPriority())
