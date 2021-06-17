@@ -75,14 +75,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
-import org.batfish.minesweeper.CommunityVar;
-import org.batfish.minesweeper.Graph;
-import org.batfish.minesweeper.OspfType;
-import org.batfish.minesweeper.Protocol;
-import org.batfish.minesweeper.SymbolicAsPathRegex;
-import org.batfish.minesweeper.SymbolicRegex;
-import org.batfish.minesweeper.TransferParam;
-import org.batfish.minesweeper.TransferParam.CallContext;
+import org.batfish.minesweeper.*;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
@@ -335,7 +328,7 @@ public class TransferBDD {
       BDD oldReturnAssigned = result.getReturnAssignedValue();
 
       TransferParam<BDDRoute> newParam =
-          p.setCallContext(CallContext.EXPR_CALL).indent().enterScope(name);
+          p.setCallContext(TransferParam.CallContext.EXPR_CALL).indent().enterScope(name);
       TransferResult callResult =
           compute(
                   pol.getStatements(),
@@ -420,42 +413,42 @@ public class TransferBDD {
       switch (ss.getType()) {
         case ExitAccept:
           curP.debug("ExitAccept");
-          result = exitValue(result, true);
+          result = exitValue(result, factory.one());
           break;
 
         case ReturnTrue:
           curP.debug("ReturnTrue");
-          result = returnValue(result, true);
+          result = returnValue(result, factory.one());
           break;
 
         case ExitReject:
           curP.debug("ExitReject");
-          result = exitValue(result, false);
+          result = exitValue(result, factory.zero());
           break;
 
         case ReturnFalse:
           curP.debug("ReturnFalse");
-          result = returnValue(result, false);
+          result = returnValue(result, factory.zero());
           break;
 
         case SetDefaultActionAccept:
           curP.debug("SetDefaultActionAccept");
-          curP = curP.setDefaultAccept(true);
+          curP = curP.setDefaultAccept(factory.one());
           break;
 
         case SetDefaultActionReject:
           curP.debug("SetDefaultActionReject");
-          curP = curP.setDefaultAccept(false);
+          curP = curP.setDefaultAccept(factory.zero());
           break;
 
         case SetLocalDefaultActionAccept:
           curP.debug("SetLocalDefaultActionAccept");
-          curP = curP.setDefaultAcceptLocal(true);
+          curP = curP.setDefaultAcceptLocal(factory.one());
           break;
 
         case SetLocalDefaultActionReject:
           curP.debug("SetLocalDefaultActionReject");
-          curP = curP.setDefaultAcceptLocal(false);
+          curP = curP.setDefaultAcceptLocal(factory.zero());
           break;
 
         case ReturnLocalDefaultAction:
@@ -537,29 +530,34 @@ public class TransferBDD {
 
       // compute the new state of the analysis
       TransferResult newResult;
+      TransferParam<BDDRoute> newCurP;
       if (guard.isOne()) {
         // the guard is logically true so we ignore the "else" branch
         newResult = trueState.getTransferResult();
         // we also record any updates to the default actions/policies that occur
         // in the "then" branch
-        curP = curP.setDefaultsFrom(trueState.getTransferParam());
+        newCurP = curP.setDefaultsFrom(trueState.getTransferParam());
       } else if (guard.isZero()) {
         // same here, but for the case when the guard is logically false
         newResult = falseState.getTransferResult();
-        curP = curP.setDefaultsFrom(falseState.getTransferParam());
+        newCurP = curP.setDefaultsFrom(falseState.getTransferParam());
       } else {
         /**
-         * TODO: any updates to the TransferParam in the branches, for example updates to the
-         * default action, are lost. In general it seems we need to replace the booleans there with
-         * BDDs, so we can track the conditions under which each of them is true/false.
+         * TODO: any updates to the default policy in the branches are lost. In general it seems we
+         * need to track a map from BDDs to policies, indicating the conditions under which each
+         * policy is the default.
          */
         newResult = ite(guard, trueState.getTransferResult(), falseState.getTransferResult());
+        newCurP = ite(curP, guard, trueState.getTransferParam(), falseState.getTransferParam());
       }
 
       // finally, take into account the possibility that the "if" statement is never reached, or
       // (unlikely but seems possible) that the "if" statement returns from within its guard
-      result =
-          ite(unreachable(result), result, ite(unreachable(guardResult), guardResult, newResult));
+      BDD alreadyReturned = unreachable(result);
+      BDD guardReturned = unreachable(guardResult);
+
+      result = ite(alreadyReturned, result, ite(guardReturned, guardResult, newResult));
+      curP = ite(curP, guardReturned, curP, newCurP);
 
       curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
 
@@ -648,7 +646,7 @@ public class TransferBDD {
       BDD oldReturnAssigned = result.getReturnAssignedValue();
 
       TransferParam<BDDRoute> newParam =
-          curP.indent().setCallContext(CallContext.STMT_CALL).enterScope(name);
+          curP.indent().setCallContext(TransferParam.CallContext.STMT_CALL).enterScope(name);
       // TODO: Currently dropping the returned TransferParam on the floor
       TransferResult callResult =
           compute(
@@ -717,11 +715,7 @@ public class TransferBDD {
     if (curP.getInitialCall()) {
       curP.debug("InitialCall finalizing");
       // incorporate the default action
-      if (curP.getDefaultAccept()) {
-        result = exitValue(result, true);
-      } else {
-        result = exitValue(result, false);
-      }
+      result = exitValue(result, curP.getDefaultAccept());
 
       TransferReturn ret = result.getReturnValue();
       // Only accept routes that are not suppressed
@@ -866,6 +860,12 @@ public class TransferBDD {
 
     return new TransferResult(
         new TransferReturn(route, accepted), suppressed, exitAsgn, fallThrough, retAsgn);
+  }
+
+  private <T extends IDeepCopy<T>> TransferParam<T> ite(
+      TransferParam<T> orig, BDD guard, TransferParam<T> p1, TransferParam<T> p2) {
+    return orig.setDefaultAccept(ite(guard, p1.getDefaultAccept(), p2.getDefaultAccept()))
+        .setDefaultAcceptLocal(ite(guard, p1.getDefaultAcceptLocal(), p2.getDefaultAcceptLocal()));
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
@@ -1055,9 +1055,9 @@ public class TransferBDD {
   /*
    * Create the result of reaching a return statement, returning with the given value.
    */
-  private TransferResult returnValue(TransferResult r, boolean val) {
+  private TransferResult returnValue(TransferResult r, BDD val) {
     BDD notReached = unreachable(r);
-    BDD b = ite(notReached, r.getReturnValue().getSecond(), mkBDD(val));
+    BDD b = ite(notReached, r.getReturnValue().getSecond(), val);
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
     BDD retAsgn = ite(notReached, r.getReturnAssignedValue(), factory.one());
     return r.setReturnValue(ret).setReturnAssignedValue(retAsgn);
@@ -1066,9 +1066,9 @@ public class TransferBDD {
   /*
    * Create the result of reaching an exit statement, returning with the given value.
    */
-  private TransferResult exitValue(TransferResult r, boolean val) {
+  private TransferResult exitValue(TransferResult r, BDD val) {
     BDD notReached = unreachable(r);
-    BDD b = ite(notReached, r.getReturnValue().getSecond(), mkBDD(val));
+    BDD b = ite(notReached, r.getReturnValue().getSecond(), val);
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
     BDD exitAsgn = ite(notReached, r.getExitAssignedValue(), factory.one());
     return r.setReturnValue(ret).setExitAssignedValue(exitAsgn);
