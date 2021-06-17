@@ -11,8 +11,6 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public class BgpAggregateIpv4Network extends BgpAggregateNetwork {
 
-  private final @Nonnull Prefix _prefix;
-
   public BgpAggregateIpv4Network(Prefix prefix) {
     this(prefix, false, null, null, null, false);
   }
@@ -32,6 +30,10 @@ public class BgpAggregateIpv4Network extends BgpAggregateNetwork {
     setSummaryOnly(summaryOnly);
   }
 
+  public @Nonnull Prefix getPrefix() {
+    return _prefix;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (o == this) {
@@ -41,10 +43,6 @@ public class BgpAggregateIpv4Network extends BgpAggregateNetwork {
     }
     BgpAggregateIpv4Network rhs = (BgpAggregateIpv4Network) o;
     return baseEquals(rhs) && _prefix.equals(rhs._prefix);
-  }
-
-  public @Nonnull Prefix getPrefix() {
-    return _prefix;
   }
 
   @Override
@@ -64,4 +62,6 @@ public class BgpAggregateIpv4Network extends BgpAggregateNetwork {
         .add("suppressMap", getSuppressMap())
         .toString();
   }
+
+  private final @Nonnull Prefix _prefix;
 }
