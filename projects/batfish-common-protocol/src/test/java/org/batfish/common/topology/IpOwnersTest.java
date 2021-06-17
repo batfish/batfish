@@ -204,10 +204,14 @@ public class IpOwnersTest {
     extractHsrp(groups, i);
     assertTrue(groups.isEmpty());
 
-    Ip ip = Ip.parse("1.1.1.1");
-    i.setHsrpGroups(ImmutableMap.of(1, HsrpGroup.builder().setIp(ip).setGroupNumber(1).build()));
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    i.setHsrpGroups(
+        ImmutableMap.of(
+            1, HsrpGroup.builder().setIps(ImmutableSet.of(ip1, ip2)).setGroupNumber(1).build()));
     extractHsrp(groups, i);
-    assertThat(groups.get(ip, 1), equalTo(ImmutableSet.of(i)));
+    assertThat(groups.get(ip1, 1), equalTo(ImmutableSet.of(i)));
+    assertThat(groups.get(ip2, 1), equalTo(ImmutableSet.of(i)));
   }
 
   @Test
@@ -241,10 +245,20 @@ public class IpOwnersTest {
     Ip ip = Ip.parse("1.1.1.1");
     i1.setHsrpGroups(
         ImmutableMap.of(
-            1, HsrpGroup.builder().setPriority(100).setGroupNumber(1).setIp(ip).build()));
+            1,
+            HsrpGroup.builder()
+                .setPriority(100)
+                .setGroupNumber(1)
+                .setIps(ImmutableSet.of(ip))
+                .build()));
     i2.setHsrpGroups(
         ImmutableMap.of(
-            1, HsrpGroup.builder().setPriority(200).setGroupNumber(1).setIp(ip).build()));
+            1,
+            HsrpGroup.builder()
+                .setPriority(200)
+                .setGroupNumber(1)
+                .setIps(ImmutableSet.of(ip))
+                .build()));
     extractHsrp(groups, i1);
     extractHsrp(groups, i2);
 
@@ -259,7 +273,11 @@ public class IpOwnersTest {
     Table<Ip, Integer, Set<Interface>> groups = HashBasedTable.create();
     Ip hsrpIp = Ip.parse("1.1.1.1");
     HsrpGroup hsrpGroup =
-        HsrpGroup.builder().setPriority(100).setGroupNumber(1).setIp(hsrpIp).build();
+        HsrpGroup.builder()
+            .setPriority(100)
+            .setGroupNumber(1)
+            .setIps(ImmutableSet.of(hsrpIp))
+            .build();
 
     Configuration c1 =
         Configuration.builder()
@@ -331,7 +349,7 @@ public class IpOwnersTest {
                     "2",
                     new DecrementPriority(track2Decrement)))
             .setGroupNumber(1)
-            .setIp(Ip.parse("10.10.10.1"))
+            .setIps(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();
     Interface i1 =
         Interface.builder()
@@ -379,7 +397,7 @@ public class IpOwnersTest {
             // Reference to undefined track method
             .setTrackActions(ImmutableSortedMap.of("1", new DecrementPriority(track1Decrement)))
             .setGroupNumber(1)
-            .setIp(Ip.parse("10.10.10.1"))
+            .setIps(ImmutableSet.of(Ip.parse("10.10.10.1")))
             .build();
     Interface i1 =
         Interface.builder()

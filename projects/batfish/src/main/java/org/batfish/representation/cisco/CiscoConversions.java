@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.math.BigInteger;
@@ -607,11 +608,12 @@ public class CiscoConversions {
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+    Ip groupIp = hsrpGroup.getIp();
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
         .setHelloTime(hsrpGroup.getHelloTime())
         .setHoldTime(hsrpGroup.getHoldTime())
-        .setIp(hsrpGroup.getIp())
+        .setIps(groupIp == null ? ImmutableSet.of() : ImmutableSet.of(groupIp))
         .setGroupNumber(hsrpGroup.getGroupNumber())
         .setPreempt(hsrpGroup.getPreempt())
         .setPriority(hsrpGroup.getPriority())
