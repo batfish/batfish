@@ -21,6 +21,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.math.BigInteger;
@@ -150,6 +151,8 @@ public class CiscoConversions {
 
   static int DEFAULT_OSPF_DEAD_INTERVAL =
       OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
+
+  static final String DENY_ALL_REDIST_POLICY_NAME = "~DENY_ALL_REDISTRIBUTION_POLICY~";
 
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
@@ -465,6 +468,20 @@ public class CiscoConversions {
   }
 
   /**
+   * Initializes dummy BGP redistribution policy that denies everything, for VRFs that are set up to
+   * receive leaked routes from other VRFs but have no BGP configuration themselves.
+   */
+  static void initBgpDenyAllRedistPolicy(Configuration c) {
+    if (!c.getRoutingPolicies().containsKey(DENY_ALL_REDIST_POLICY_NAME)) {
+      RoutingPolicy.builder()
+          .setOwner(c)
+          .setName(DENY_ALL_REDIST_POLICY_NAME)
+          .addStatement(Statements.ExitReject.toStaticStatement())
+          .build();
+    }
+  }
+
+  /**
    * Computes a mapping of primary {@link Ip}s to the names of interfaces owning them. Filters out
    * the interfaces having no primary {@link ConcreteInterfaceAddress}
    */
@@ -591,11 +608,12 @@ public class CiscoConversions {
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+    Ip groupIp = hsrpGroup.getIp();
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
         .setHelloTime(hsrpGroup.getHelloTime())
         .setHoldTime(hsrpGroup.getHoldTime())
-        .setIp(hsrpGroup.getIp())
+        .setIps(groupIp == null ? ImmutableSet.of() : ImmutableSet.of(groupIp))
         .setGroupNumber(hsrpGroup.getGroupNumber())
         .setPreempt(hsrpGroup.getPreempt())
         .setPriority(hsrpGroup.getPriority())

@@ -329,7 +329,7 @@ hsrp_timers_hold_time_ms
 
 ihg_track
 :
-  TRACK num = track_object_number (DECREMENT decrement = hsrp_track_decrement)? NEWLINE
+  TRACK num = track_object_id (DECREMENT decrement = hsrp_track_decrement)? NEWLINE
 ;
 
 hsrp_track_decrement

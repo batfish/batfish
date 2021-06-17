@@ -1,0 +1,9 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_track_warn
+!
+track 1 interface mgmt1 line-protocol
+track 2 interface Vlan1 line-protocol
+track 0 interface port-channel1 line-protocol
+track 501 interface port-channel2 line-protocol
+!
