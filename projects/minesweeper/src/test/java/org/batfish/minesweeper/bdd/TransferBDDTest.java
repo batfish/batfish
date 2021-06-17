@@ -84,7 +84,6 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
-import org.batfish.minesweeper.TransferParam;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
@@ -684,6 +683,44 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testUnreachableStatefulConjunction() {
+    String calledPolicyName = "calledPolicy";
+
+    RoutingPolicy calledPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(calledPolicyName)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    BooleanExprs.TRUE,
+                    ImmutableList.of(new SetLocalPreference(new LiteralLong(300L)))))
+            .addStatement(new StaticStatement(Statements.ReturnTrue))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(new CallExpr(calledPolicyName), BooleanExprs.TRUE)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(calledPolicyName, calledPolicy, POLICY_NAME, policy));
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isZero());
+    assertEquals(outAnnouncements, tbdd.zeroedRecord());
+  }
+
+  @Test
   public void testConjunctionShortCircuit() {
     String calledPolicyName = "calledPolicy";
 
@@ -1095,6 +1132,58 @@ public class TransferBDDTest {
 
     assertTrue(acceptedAnnouncements.isOne());
     assertEquals(_anyRoute, outAnnouncements);
+  }
+
+  @Test
+  public void testConditionalDefaultAction2() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    ImmutableList.of(new StaticStatement(Statements.SetDefaultActionAccept))))
+            .addStatement(new StaticStatement(Statements.DefaultAction))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDD expectedBDD =
+        isRelevantFor(_anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    assertEquals(acceptedAnnouncements, expectedBDD);
+
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testUnreachableSetDefaultAction() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    ImmutableList.of(
+                        new StaticStatement(Statements.SetDefaultActionAccept),
+                        new StaticStatement(Statements.ExitReject))))
+            .addStatement(new StaticStatement(Statements.DefaultAction))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isZero());
+
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
   }
 
   @Test
