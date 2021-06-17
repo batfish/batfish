@@ -136,9 +136,8 @@ public class TransferParam<T extends IDeepCopy<T>> {
     return ret;
   }
 
-  public TransferParam<T> setDefaultsFrom(TransferParam<T> updatedParam) {
+  public TransferParam<T> setDefaultActionsFrom(TransferParam<T> updatedParam) {
     return setDefaultAccept(updatedParam._defaultAccept)
-        .setDefaultPolicy(updatedParam._defaultPolicy)
         .setDefaultAcceptLocal(updatedParam._defaultAcceptLocal);
   }
 

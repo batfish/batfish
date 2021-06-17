@@ -504,8 +504,7 @@ public class TransferBDD {
       // Some guards are statically resolved (e.g. CallExprContext and CallStatementContext), which
       // means that only one branch will be analyzed.  Skipping analysis of the other branch avoids
       // signaling an error unnecessarily if we reach a route-map construct that is not currently
-      // modelled.  It also allows us to properly account for updates to things like the default
-      // action that occur within the one feasible branch (see below for more on this).
+      // modelled.
       if (!guard.isZero()) {
         curP.debug("True Branch");
         // copy the current BDDRoute so we can separately track any updates on the two branches
@@ -531,33 +530,34 @@ public class TransferBDD {
       // compute the new state of the analysis
       TransferResult newResult;
       TransferParam<BDDRoute> newCurP;
+      /**
+       * TODO: any updates to the default policy in the branches are lost. In general it seems we
+       * need to track a map from BDDs to policies, indicating the conditions under which each
+       * policy is the default.
+       */
       if (guard.isOne()) {
         // the guard is logically true so we ignore the "else" branch
         newResult = trueState.getTransferResult();
-        // we also record any updates to the default actions/policies that occur
+        // record any updates to the default actions that occur
         // in the "then" branch
-        newCurP = curP.setDefaultsFrom(trueState.getTransferParam());
+        newCurP = curP.setDefaultActionsFrom(trueState.getTransferParam());
       } else if (guard.isZero()) {
         // same here, but for the case when the guard is logically false
         newResult = falseState.getTransferResult();
-        newCurP = curP.setDefaultsFrom(falseState.getTransferParam());
+        newCurP = curP.setDefaultActionsFrom(falseState.getTransferParam());
       } else {
-        /**
-         * TODO: any updates to the default policy in the branches are lost. In general it seems we
-         * need to track a map from BDDs to policies, indicating the conditions under which each
-         * policy is the default.
-         */
         newResult = ite(guard, trueState.getTransferResult(), falseState.getTransferResult());
         newCurP = ite(curP, guard, trueState.getTransferParam(), falseState.getTransferParam());
       }
 
-      // finally, take into account the possibility that the "if" statement is never reached, or
-      // (unlikely but seems possible) that the "if" statement returns from within its guard
+      // finally, take into account the possibility that the branches are never reached, because the
+      // policy already returned / exited
+      // TODO: Currently we are assuming that the guard of this conditional does not return/exit
+      // from this policy.  Handling that situation requires more thought.
       BDD alreadyReturned = unreachable(result);
-      BDD guardReturned = unreachable(guardResult);
 
-      result = ite(alreadyReturned, result, ite(guardReturned, guardResult, newResult));
-      curP = ite(curP, guardReturned, curP, newCurP);
+      result = ite(alreadyReturned, result, newResult);
+      curP = ite(curP, alreadyReturned, curP, newCurP);
 
       curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
 
