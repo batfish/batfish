@@ -3717,8 +3717,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       if (ctx.network != null || ctx.prefix != null) {
         proc.getAggregateNetworks().put(_currentIpv4Aggregate.getPrefix(), _currentIpv4Aggregate);
-      } else if (ctx.ipv6_prefix != null) {
+      } else {
         // ipv6
+        assert ctx.ipv6_prefix != null;
         proc.getAggregateIpv6Networks()
             .put(_currentIpv6Aggregate.getPrefix6(), _currentIpv6Aggregate);
       }

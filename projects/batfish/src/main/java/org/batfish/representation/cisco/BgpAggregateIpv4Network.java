@@ -55,6 +55,7 @@ public class BgpAggregateIpv4Network extends BgpAggregateNetwork {
   @Override
   public String toString() {
     return toStringHelper(this)
+        .omitNullValues()
         .add("prefix", _prefix)
         .add("advertiseMap", getAdvertiseMap())
         .add("asSet", getAsSet())
