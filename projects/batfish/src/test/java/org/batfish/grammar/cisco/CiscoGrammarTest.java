@@ -202,6 +202,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_SUPPRESS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
@@ -6159,6 +6162,26 @@ public final class CiscoGrammarTest {
                     SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                     null,
                     null))));
+  }
+
+  @Test
+  public void testAggregateAddressReferences() throws IOException {
+    String hostname = "ios-aggregate-address";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "atm1", BGP_AGGREGATE_ATTRIBUTE_MAP));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "adm", BGP_AGGREGATE_ADVERTISE_MAP));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "atm2", BGP_AGGREGATE_ATTRIBUTE_MAP));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "sm1", BGP_AGGREGATE_SUPPRESS_MAP));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "sm2", BGP_AGGREGATE_SUPPRESS_MAP));
   }
 
   @Test
