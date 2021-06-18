@@ -222,11 +222,13 @@ import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
@@ -1857,6 +1859,29 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
         .forEach(iface -> iface.setSwitchportMode(SwitchportMode.ACCESS));
   }
 
+  /**
+   * Returns boolean indicating if the interface's configured IP subnet(s) contain the specified IP
+   * address.
+   */
+  private boolean ifaceContainsIp(Interface iface, Ip ip) {
+    return ifaceAddrContainsIp(iface.getAddress(), ip)
+        || iface.getSecondaryAddresses().stream().anyMatch(a -> ifaceAddrContainsIp(a, ip));
+  }
+
+  private boolean ifaceAddrContainsIp(
+      @Nullable InterfaceAddressWithAttributes ifaceAddrWithAttributes, Ip ip) {
+    if (ifaceAddrWithAttributes == null) {
+      return false;
+    }
+
+    InterfaceAddress addr = ifaceAddrWithAttributes.getAddress();
+    if (addr instanceof ConcreteInterfaceAddress) {
+      return ((ConcreteInterfaceAddress) addr).getPrefix().containsIp(ip);
+    }
+    assert addr instanceof LinkLocalAddress;
+    return ((LinkLocalAddress) addr).getPrefix().containsIp(ip);
+  }
+
   @Override
   public void exitIhg4_ip(Ihg4_ipContext ctx) {
     if (ctx.prefix != null) {
@@ -1865,21 +1890,26 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     assert ctx.ip != null;
     Ip ip = toIp(ctx.ip);
-    if (ctx.SECONDARY() != null) {
-      _currentInterfaces.forEach(
-          iface -> {
+    _currentInterfaces.forEach(
+        iface -> {
+          // Device allows configuring HSRP IPs if either:
+          // 1. No interface IPs are configured yet OR
+          // 2. HSRP IPs are in the subnet(s) associated with the interface
+          if (iface.getAddress() == null || ifaceContainsIp(iface, ip)) {
             HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
             assert group instanceof HsrpGroupIpv4;
-            ((HsrpGroupIpv4) group).getIpSecondaries().add(ip);
-          });
-    } else {
-      _currentInterfaces.forEach(
-          iface -> {
-            HsrpGroup group = _currentHsrpGroupGetter.apply(iface);
-            assert group instanceof HsrpGroupIpv4;
-            ((HsrpGroupIpv4) group).setIp(ip);
-          });
-    }
+            if (ctx.SECONDARY() != null) {
+              ((HsrpGroupIpv4) group).getIpSecondaries().add(ip);
+            } else {
+              ((HsrpGroupIpv4) group).setIp(ip);
+            }
+          } else {
+            warn(
+                ctx,
+                "HSRP IP must be contained by its interface subnets. This HSRP IP will be"
+                    + " ignored.");
+          }
+        });
   }
 
   @Override

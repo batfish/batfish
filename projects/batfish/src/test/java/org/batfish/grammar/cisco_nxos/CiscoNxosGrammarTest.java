@@ -162,6 +162,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.matchers.ParseWarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -1993,7 +1994,9 @@ public final class CiscoNxosGrammarTest {
               allOf(
                   hasHelloTime(250),
                   hasHoldTime(750),
-                  HsrpGroupMatchers.hasIps(contains(Ip.parse("192.0.2.1"))),
+                  HsrpGroupMatchers.hasIps(
+                      containsInAnyOrder(
+                          Ip.parse("192.0.2.1"), Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1"))),
                   hasPreempt(),
                   hasPriority(105),
                   hasTrackActions(
@@ -2055,6 +2058,26 @@ public final class CiscoNxosGrammarTest {
         assertThat(group.getTracks(), anEmptyMap());
       }
     }
+  }
+
+  @Test
+  public void testInterfaceHsrpWarnings() {
+    String hostname = "nxos_interface_hsrp_warn";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        containsInAnyOrder(
+            allOf(
+                hasComment(
+                    "HSRP IP must be contained by its interface subnets. This HSRP IP will be"
+                        + " ignored."),
+                ParseWarningMatchers.hasText("ip 10.0.0.1")),
+            allOf(
+                hasComment(
+                    "HSRP IP must be contained by its interface subnets. This HSRP IP will be"
+                        + " ignored."),
+                ParseWarningMatchers.hasText("ip 10.0.0.2 secondary"))));
   }
 
   @Test
