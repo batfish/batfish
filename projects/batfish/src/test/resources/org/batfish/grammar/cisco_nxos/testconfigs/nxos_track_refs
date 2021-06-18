@@ -17,3 +17,15 @@ interface Ethernet1/1
   hsrp 2
     ip 192.0.2.1
     track 2
+
+! Undefined track references are rejected by the CLI but should still report undefined references
+!
+ip route 10.0.200.0/24 Ethernet1/1 10.255.1.254 track 497
+ipv6 route 2222::/24 Ethernet1/1 2220:: track 498
+!
+interface Ethernet1/2
+  no switchport
+  no shutdown
+  hsrp 2
+    track 499
+!

@@ -2031,6 +2031,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
           String.format(
               "Cannot reference undefined track %s. This line will be ignored.",
               trackObjectNumber));
+      _c.undefined(
+          CiscoNxosStructureType.TRACK,
+          trackObjectNumber.toString(),
+          CiscoNxosStructureUsage.INTERFACE_HSRP_GROUP_TRACK,
+          ctx.start.getLine());
       return;
     }
     _c.referenceStructure(
@@ -2511,6 +2516,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             ctx,
             String.format(
                 "Cannot reference undefined track %s. This line will be ignored.", trackNumber));
+        _c.undefined(
+            CiscoNxosStructureType.TRACK,
+            trackNumber.toString(),
+            CiscoNxosStructureUsage.IPV6_ROUTE_TRACK,
+            ctx.start.getLine());
         return;
       }
       _c.referenceStructure(
@@ -5871,6 +5881,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             ctx,
             String.format(
                 "Cannot reference undefined track %s. This line will be ignored.", trackNumber));
+        _c.undefined(
+            CiscoNxosStructureType.TRACK,
+            trackNumber.toString(),
+            CiscoNxosStructureUsage.IP_ROUTE_TRACK,
+            ctx.start.getLine());
         return;
       }
       _c.referenceStructure(
