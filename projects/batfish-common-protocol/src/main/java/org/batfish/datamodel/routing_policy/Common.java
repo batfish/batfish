@@ -107,18 +107,18 @@ public final class Common {
   }
 
   /**
-   * If the given {@link Configuration} does not already have a deny-all policy, creates and adds
-   * one. Returns the policy name for convenience.
+   * If the given {@link Configuration} does not already have a deny-all BGP redistribution policy,
+   * creates and adds one. Returns the policy name for convenience.
    */
-  public static @Nonnull String initDenyAllPolicy(Configuration c) {
-    if (!c.getRoutingPolicies().containsKey(DENY_ALL_POLICY_NAME)) {
+  public static @Nonnull String initDenyAllBgpRedistributionPolicy(Configuration c) {
+    if (!c.getRoutingPolicies().containsKey(DENY_ALL_BGP_REDISTRIBUTION_POLICY_NAME)) {
       RoutingPolicy.builder()
-          .setName(DENY_ALL_POLICY_NAME)
+          .setName(DENY_ALL_BGP_REDISTRIBUTION_POLICY_NAME)
           .setOwner(c)
           .addStatement(Statements.ExitReject.toStaticStatement())
           .build();
     }
-    return DENY_ALL_POLICY_NAME;
+    return DENY_ALL_BGP_REDISTRIBUTION_POLICY_NAME;
   }
 
   /**
@@ -166,7 +166,8 @@ public final class Common {
   @VisibleForTesting
   public static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
 
-  private static String DENY_ALL_POLICY_NAME = "~deny~all~";
+  private static String DENY_ALL_BGP_REDISTRIBUTION_POLICY_NAME =
+      "~deny~all~bgp~redistribution~policy~";
 
   // Private implementation details
   private Common() {} // prevent instantiation of utility class

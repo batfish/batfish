@@ -13,7 +13,7 @@ import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
-import static org.batfish.datamodel.routing_policy.Common.initDenyAllPolicy;
+import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
@@ -2881,7 +2881,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 org.batfish.datamodel.BgpProcess.builder()
                     .setRouterId(Ip.ZERO)
                     .setAdminCostsToVendorDefaults(c.getConfigurationFormat())
-                    .setRedistributionPolicy(initDenyAllPolicy(c))
+                    .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                     .build());
           }
         });
