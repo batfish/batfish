@@ -49689,7 +49689,6 @@
               "routerId" : "0.0.0.0",
               "aggregates" : [
                 {
-                  "generationPolicy" : "AGGREGATE_POLICY",
                   "network" : "1.0.0.0/8",
                   "suppressionPolicy" : "~suppress~rp~summary-only~"
                 }
