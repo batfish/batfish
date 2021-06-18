@@ -9,6 +9,7 @@ import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.toBgpv4Route;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
@@ -18,6 +19,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.graph.ValueGraph;
@@ -66,12 +70,14 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -116,6 +122,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * exported directly from the main RIB.
    */
   private final boolean _exportFromBgpRib;
+
+  @Nonnull private final PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
   @Nonnull private final RoutingPolicies _policies;
   @Nonnull private final String _hostname;
@@ -334,6 +342,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _rtVrfMapping = computeRouteTargetToVrfMap(getAllPeerConfigs(_process));
     assert _rtVrfMapping != null; // Avoid unused warning
     _ribExprEvaluator = new RibExprEvaluator(_mainRib);
+    _aggregates = new PrefixTrieMultiMap<>();
+    _process.getAggregates().forEach(_aggregates::put);
   }
 
   /**
@@ -756,6 +766,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
           bgpTopology, nc, nodes, ribDeltaBuilders, edgeId, _unicastEdgesWentUp.contains(edgeId));
     }
 
+    initBgpAggregateRoutes();
+
     unstage(ribDeltaBuilders);
   }
 
@@ -1109,8 +1121,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * This function creates BGP routes from generated routes that go into the BGP RIB, but cannot be
    * imported into the main RIB. The purpose of these routes is to prevent the local router from
    * accepting advertisements less desirable than the locally generated ones for a given network.
+   *
+   * <p>This function is deprecated, and only used by Cisco-style devices that have not been ported
+   * over to initialize BGP aggregates with contributors from the BGP RIB. Once all Cisco-style
+   * vendors have been ported, this function should be removed.
    */
-  void initBgpAggregateRoutes(Collection<AbstractRoute> generatedRoutes) {
+  void initBgpAggregateRoutesLegacy(Collection<AbstractRoute> generatedRoutes) {
+    if (_exportFromBgpRib) {
+      // Vendors for which this is true should not be using this legacy aggregates implementation.
+      return;
+    }
     // TODO: get rid of ConfigurationFormat switching. Source of known bugs.
     // first import aggregates
     switch (_c.getConfigurationFormat()) {
@@ -1140,6 +1160,143 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         _bgpAggDeps.addRouteDependency(br, gr);
       }
     }
+  }
+
+  /**
+   * Create BGP RIB entries from rules for generating aggregates, and update suppressed status of
+   * routes contributing to said aggregates.
+   *
+   * @return the {@link RibDelta} of {@link Bgpv4Route}s that was applied to the BGP RIB and its
+   *     delta builder.
+   */
+  @Nonnull
+  RibDelta<Bgpv4Route> initBgpAggregateRoutes() {
+    /*
+     * Implementation overview:
+     * 1. Start building a rib delta that has withdrawals for all old aggregates
+     * 2. For each non-aggregate route in the BGP RIB, record the most specific aggregate to which
+     *    it might contribute.
+     * 3. Going from most specific to least specific aggregate:
+     *    - Attempt to activate the aggregate via its recorded potential contributors
+     *    - Find the most specific aggregate to which this aggregate might contribute if it were
+     *      activated.
+     *    - If such a more general aggregate exists:
+     *      - Regardless of whether this aggregate is activated, record all potential contributors
+     *        to this aggregate as potential contributors the the more general aggregate.
+     *      - If this aggregate is activated, record it as a potential contributor to the more
+     *        general aggregate.
+     * 4. Add all activated aggregates to the rib delta we were building. At the fixed point, all
+     *    withdrawals should be canceled out by these adds.
+     * 5. Apply the finalized rib delta to the BGP RIB and to the BGP RIB delta builder.
+     */
+    if (_process.getAggregates().isEmpty()) {
+      // Nothing to do, so don't bother with unnecessary prep.
+      return RibDelta.empty();
+    }
+    Set<Bgpv4Route> currentRoutes = _bgpv4Rib.getTypedRoutes();
+    RibDelta.Builder<Bgpv4Route> aggDeltaBuilder = RibDelta.builder();
+    // Withdraw old aggregates. Withdrawals may be canceled out by activated aggregates below.
+    currentRoutes.stream()
+        .filter(r -> r.getProtocol() == RoutingProtocol.AGGREGATE)
+        .forEach(prevAggregate -> aggDeltaBuilder.remove(prevAggregate, Reason.WITHDRAW));
+    Multimap<Prefix, Bgpv4Route> potentialContributorsByAggregatePrefix =
+        MultimapBuilder.hashKeys(_process.getAggregates().size()).linkedListValues().build();
+    // Map each non-aggregate potential contributor to its most specific containing aggregate if it
+    // exists.
+    currentRoutes.stream()
+        .filter(r -> r.getProtocol() != RoutingProtocol.AGGREGATE)
+        .forEach(
+            potentialContributor ->
+                mapPotentialContributorToMostSpecificAggregate(
+                    potentialContributorsByAggregatePrefix, potentialContributor));
+    // TODO: use local BGP cost instead once available
+    int admin = _process.getAdminCost(RoutingProtocol.IBGP);
+    // Traverse aggregates from most specific to least specific
+    _aggregates.traverseEntries(
+        (aggNet, aggregatesAtNode) -> {
+          if (aggregatesAtNode.isEmpty()) {
+            // intermediate node of the PrefixTrieMultimap
+            return;
+          }
+          BgpAggregate aggregate = Iterables.getOnlyElement(aggregatesAtNode);
+          Collection<Bgpv4Route> potentialContributors =
+              potentialContributorsByAggregatePrefix.get(aggNet);
+          Bgpv4Route activatedAggregate = null;
+          for (Bgpv4Route potentialContributor : potentialContributors) {
+            // TODO: apply suppressionPolicy
+            // TODO: apply and merge transformations of generationPolicy
+            RoutingPolicy generationPolicy =
+                Optional.ofNullable(aggregate.getGenerationPolicy())
+                    .map(_c.getRoutingPolicies()::get)
+                    .orElse(null);
+            if (generationPolicy == null
+                || generationPolicy.processReadOnly(potentialContributor)) {
+              // When merging is supported, the aggregate should be updated by each contributor
+              // instead of just the first one.
+              activatedAggregate =
+                  toBgpv4Route(
+                      aggregate,
+                      Optional.ofNullable(aggregate.getAttributePolicy())
+                          .map(_c.getRoutingPolicies()::get)
+                          .orElse(null),
+                      admin,
+                      _process.getRouterId());
+              aggDeltaBuilder.add(activatedAggregate);
+              break;
+            }
+          }
+          BgpAggregate moreGeneralAggregate = getMostSpecificAggregate(aggNet).orElse(null);
+          if (moreGeneralAggregate != null) {
+            Prefix moreGeneralAggregatePrefix = moreGeneralAggregate.getNetwork();
+            // funnel all potential contributors down to more general aggregate
+            potentialContributorsByAggregatePrefix.putAll(
+                moreGeneralAggregatePrefix, potentialContributors);
+            if (activatedAggregate != null) {
+              // funnel this activated aggregate down to more general aggregate
+              potentialContributorsByAggregatePrefix.put(
+                  moreGeneralAggregatePrefix, activatedAggregate);
+            }
+          }
+        });
+    RibDelta<Bgpv4Route> aggDelta = aggDeltaBuilder.build();
+    aggDelta
+        .getActions()
+        .forEach(
+            action -> {
+              if (action.isWithdrawn()) {
+                _bgpv4DeltaBuilder.from(_bgpv4Rib.removeRouteGetDelta(action.getRoute()));
+              } else {
+                _bgpv4DeltaBuilder.from(_bgpv4Rib.mergeRouteGetDelta(action.getRoute()));
+              }
+            });
+    return aggDelta;
+  }
+
+  private void mapPotentialContributorToMostSpecificAggregate(
+      Multimap<Prefix, Bgpv4Route> potentialContributorsByAggregatePrefix,
+      Bgpv4Route potentialContributor) {
+    Optional<BgpAggregate> maybeAggregate =
+        getMostSpecificAggregate(potentialContributor.getNetwork());
+    if (!maybeAggregate.isPresent()) {
+      return;
+    }
+    potentialContributorsByAggregatePrefix.put(
+        maybeAggregate.get().getNetwork(), potentialContributor);
+  }
+
+  private @Nonnull Optional<BgpAggregate> getMostSpecificAggregate(
+      Prefix potentialContributingPrefix) {
+    if (potentialContributingPrefix.equals(Prefix.ZERO)) {
+      return Optional.empty();
+    }
+    // There can only be zero or one aggregates at a node in the PrefixTrieMultimap because it is
+    // populated from a Map<Prefix, BgpAggregate>.
+    return _aggregates
+        .longestPrefixMatch(
+            potentialContributingPrefix.getStartIp(),
+            potentialContributingPrefix.getPrefixLength() - 1)
+        .stream()
+        .findFirst();
   }
 
   private <R extends AbstractRoute> AnnotatedRoute<R> annotateRoute(@Nonnull R route) {

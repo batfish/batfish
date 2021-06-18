@@ -13,6 +13,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
@@ -85,6 +86,7 @@ import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
@@ -318,6 +320,16 @@ public class CiscoXrConversions {
         communitySet.getElements().stream()
             .map(elem -> elem.accept(CommunitySetElemToCommunityMatchExpr.INSTANCE, c))
             .collect(ImmutableSet.toImmutableSet()));
+  }
+
+  static @Nonnull BgpAggregate toBgpAggregate(
+      BgpAggregateIpv4Network vsAggregate, Configuration c) {
+    // TODO: handle as-set by generating generation policy wrapping route-policy
+    return BgpAggregate.of(
+        vsAggregate.getPrefix(),
+        generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
+        vsAggregate.getRoutePolicy(),
+        null);
   }
 
   private static final class CommunitySetElemToCommunityMatchExpr
@@ -945,11 +957,12 @@ public class CiscoXrConversions {
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+    Ip groupIp = hsrpGroup.getIp();
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
         .setHelloTime(hsrpGroup.getHelloTime())
         .setHoldTime(hsrpGroup.getHoldTime())
-        .setIp(hsrpGroup.getIp())
+        .setIps(groupIp == null ? ImmutableSet.of() : ImmutableSet.of(groupIp))
         .setGroupNumber(hsrpGroup.getGroupNumber())
         .setPreempt(hsrpGroup.getPreempt())
         .setPriority(hsrpGroup.getPriority())

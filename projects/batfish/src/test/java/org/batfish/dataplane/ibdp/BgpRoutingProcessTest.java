@@ -29,9 +29,11 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -56,6 +58,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
@@ -80,6 +83,7 @@ import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.dataplane.rib.Rib;
 import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RouteAdvertisement;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -717,5 +721,125 @@ public class BgpRoutingProcessTest {
     // Fake up end of round
     _routingProcess.endOfRound();
     assertThat(_routingProcess.getRoutesToLeak().collect(Collectors.toList()), empty());
+  }
+
+  /**
+   * Test that potential contributors are funneled past most specific aggregate to more general
+   * aggregates.
+   */
+  @Test
+  public void testInitBgpAggregateRoutesFunnelContributors() {
+    // Only allow the redistributed connected route to contribute to aggregate 1.0.0.0/16
+    List<RouteAdvertisement<Bgpv4Route>> deltaAdverts = initBgpAggregatesTestHelper(32);
+
+    // 1.0.0.0/16 should be activated by redistributed connected route 1.0.0.0/32 only
+    assertThat(
+        deltaAdverts.stream()
+            .map(RouteAdvertisement::getRoute)
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(
+            hasPrefix(Prefix.strict("1.0.0.0/16")), hasPrefix(Prefix.strict("1.0.0.0/24"))));
+  }
+
+  /** Test that aggregates can contribute to more general aggregates. */
+  @Test
+  public void testInitBgpAggregateRoutesAllowAggregatesToContributeToOtherAggregates() {
+    // Only allow the aggregate 1.0.0.0/24 to contribute to more general aggregate 1.0.0.0/16
+    List<RouteAdvertisement<Bgpv4Route>> deltaAdverts = initBgpAggregatesTestHelper(24);
+
+    // 1.0.0.0/16 should be activated by activated aggregate route 1.0.0.0/24
+    assertThat(
+        deltaAdverts.stream()
+            .map(RouteAdvertisement::getRoute)
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(
+            hasPrefix(Prefix.strict("1.0.0.0/16")), hasPrefix(Prefix.strict("1.0.0.0/24"))));
+  }
+
+  /** Test that generation policy must pass for aggregate to be activated. */
+  @Test
+  public void testInitBgpAggregateRoutesMustPassGenerationPolicy() {
+    // No route has prefix length 20, so the /16 should not be activated.
+    List<RouteAdvertisement<Bgpv4Route>> deltaAdverts = initBgpAggregatesTestHelper(20);
+
+    // 1.0.0.0/16 should not be activated
+    assertThat(
+        deltaAdverts.stream()
+            .map(RouteAdvertisement::getRoute)
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(hasPrefix((Prefix.strict("1.0.0.0/24")))));
+  }
+
+  /*
+   * - Sets up a process with 2 aggregates: 1.0.0.0/16 and 1.0.0.0/24.
+   * - Activation of 1.0.0.0/16 is controlled by prefixLengthContributingToAggregate16
+   *   - only routes with provided prefix length will active it
+   * - Redistributes connected route 1.0.0.0/32 into BGP
+   * - Calls initBgpAggregates and returns the actions in resulting RIB delta.
+   */
+  private @Nonnull List<RouteAdvertisement<Bgpv4Route>> initBgpAggregatesTestHelper(
+      int prefixLengthContributingToAggregate16) {
+    // Setup
+    _c.setExportBgpFromBgpRib(true);
+
+    // Make up a redistribution policy
+    RoutingPolicy policy =
+        RoutingPolicy.builder()
+            .setOwner(_c)
+            .setName("redistribute_policy")
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.CONNECTED),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+            .build();
+    _bgpProcess.setRedistributionPolicy(policy.getName());
+
+    // Create policy only allowing specific prefix lengths to contribute to /16 aggregate
+    String filterByPrefixLength = "filterByPrefixLength";
+    RoutingPolicy.builder()
+        .setOwner(_c)
+        .setName(filterByPrefixLength)
+        .addStatement(
+            new If(
+                new MatchPrefixSet(
+                    DestinationNetwork.instance(),
+                    new ExplicitPrefixSet(
+                        new PrefixSpace(
+                            new PrefixRange(
+                                Prefix.ZERO,
+                                SubRange.singleton(prefixLengthContributingToAggregate16))))),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement())))
+        .build();
+    _bgpProcess.addAggregate(BgpAggregate.of(Prefix.strict("1.0.0.0/24"), null, null, null));
+    _bgpProcess.addAggregate(
+        BgpAggregate.of(Prefix.strict("1.0.0.0/16"), null, filterByPrefixLength, null));
+
+    // re-init routing process after modifying configuration.
+    _routingProcess =
+        new BgpRoutingProcess(
+            _bgpProcess, _c, DEFAULT_VRF_NAME, new Rib(), BgpTopology.EMPTY, new PrefixTracer());
+
+    // Process allowed route
+    _routingProcess.redistribute(
+        RibDelta.adding(
+            new AnnotatedRoute<>(
+                ConnectedRoute.builder()
+                    .setNetwork(Prefix.strict("1.0.0.0/32"))
+                    .setNextHop(NextHopInterface.of("foo"))
+                    .build(),
+                _vrf.getName())));
+
+    // Test
+    List<RouteAdvertisement<Bgpv4Route>> deltaAdverts =
+        _routingProcess
+            .initBgpAggregateRoutes()
+            .getActions()
+            .collect(ImmutableList.toImmutableList());
+
+    // Initially, there should only be adds.
+    deltaAdverts.forEach(advert -> assertThat(advert.getReason(), equalTo(Reason.ADD)));
+    return deltaAdverts;
   }
 }

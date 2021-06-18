@@ -9,7 +9,8 @@ set template-stack TS1 devices 00000002
 
 # Panorama response to query about managed devices
 # Indicating firewall 1 and 2 have these hostnames (should override assumed/inherited hostnames)
-set response result devices 00000001 hostname firewall-1
+# Firewall-1 is deliberately capitalized to test human name
+set response result devices 00000001 hostname Firewall-1
 set response result devices 00000002 hostname firewall-2
 set response result devices 00000004 hostname firewall-unknown
 

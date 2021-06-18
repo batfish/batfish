@@ -190,6 +190,12 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testHumanName() throws IOException {
+    Configuration c = parseConfig("humanname");
+    assertThat(c.getHumanName(), equalTo("HUMANNAME"));
+  }
+
+  @Test
   public void testReplacemsgExtraction() {
     String hostname = "fortios_replacemsg";
     String majorType = "admin";

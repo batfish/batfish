@@ -3165,7 +3165,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         net.setSummaryOnly(summaryOnly);
         if (ctx.rp != null) {
           String policyName = toString(ctx.rp);
-          net.setAttributeMap(policyName);
+          net.setRoutePolicy(policyName);
           _configuration.referenceStructure(
               ROUTE_POLICY, policyName, BGP_AGGREGATE_ROUTE_POLICY, ctx.rp.getStart().getLine());
         }

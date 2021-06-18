@@ -10,7 +10,6 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
-import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
@@ -29,6 +28,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveIsak
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveTunnelIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toAsPathMatchExpr;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.toBgpAggregate;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunityMatchExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toCommunitySetExpr;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toIkePhase1Key;
@@ -109,7 +109,6 @@ import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
-import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
@@ -140,7 +139,6 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -169,8 +167,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(matchDefaultRoute());
-
-  @VisibleForTesting public static final int CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
   /*
    * This map is used to convert interface names to their canonical forms.
@@ -375,6 +371,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, ExtcommunitySetRt> _extcommunitySetRts;
 
   private String _hostname;
+  private String _rawHostname;
 
   private final Map<String, Interface> _interfaces;
 
@@ -715,6 +712,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   public void setHostname(String hostname) {
     checkNotNull(hostname, "'hostname' cannot be null");
     _hostname = hostname.toLowerCase();
+    _rawHostname = hostname;
   }
 
   public void setNtpSourceInterface(String ntpSourceInterface) {
@@ -744,7 +742,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
-    org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
@@ -774,6 +771,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     int defaultMetric = proc.getDefaultMetric();
 
+    // Populate process-level BGP aggregates
+    proc.getAggregateNetworks().values().stream()
+        .map(ipv4Aggregate -> toBgpAggregate(ipv4Aggregate, c))
+        .forEach(newBgpProcess::addAggregate);
+
     /*
      * Create common bgp export policy. This policy's only function is to prevent export of
      * suppressed routes (contributors to summary-only aggregates).
@@ -800,65 +802,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
     RoutingPolicy.Builder redistributionPolicy =
         RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
-
-    // Export the generated routes for aggregate ipv4 addresses
-    for (Entry<Prefix, BgpAggregateIpv4Network> e : proc.getAggregateNetworks().entrySet()) {
-      Prefix prefix = e.getKey();
-      BgpAggregateIpv4Network aggNet = e.getValue();
-
-      // Generate a policy that matches routes to be aggregated.
-      RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix);
-
-      GeneratedRoute.Builder gr =
-          GeneratedRoute.builder()
-              .setNetwork(prefix)
-              .setAdmin(CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST)
-              .setOriginType(OriginType.IGP)
-              .setGenerationPolicy(genPolicy.getName())
-              .setDiscard(true);
-
-      // Conditions to generate this route
-      List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
-      exportAggregateConditions.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(),
-              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-      exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-      // If defined, set attribute map for aggregate network
-      String attributeMapName = aggNet.getAttributeMap();
-      if (attributeMapName != null) {
-        // TODO update to route-policy if valid, or delete grammar and VS
-      }
-
-      v.getGeneratedRoutes().add(gr.build());
-      // Do export a generated aggregate.
-      redistributionPolicy.addStatement(
-          new If(
-              "Import aggregate routes into BGP",
-              new Conjunction(exportAggregateConditions),
-              ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
-    }
-
-    // add generated routes for aggregate ipv6 addresses
-    // TODO: merge with above to make cleaner
-    for (Entry<Prefix6, BgpAggregateIpv6Network> e : proc.getAggregateIpv6Networks().entrySet()) {
-      Prefix6 prefix6 = e.getKey();
-      BgpAggregateIpv6Network aggNet = e.getValue();
-
-      // create generation policy for aggregate network
-      RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix6);
-      GeneratedRoute6 gr = new GeneratedRoute6(prefix6, CISCO_XR_AGGREGATE_ROUTE_ADMIN_COST);
-      gr.setGenerationPolicy(genPolicy.getName());
-      gr.setDiscard(true);
-      v.getGeneratedIpv6Routes().add(gr);
-
-      // set attribute map for aggregate network
-      String attributeMapName = aggNet.getAttributeMap();
-      if (attributeMapName != null) {
-        // TODO update to route-policy if valid, or delete grammar and VS
-      }
-    }
 
     Set<String> convertedRoutePolicyNames = c.getRoutingPolicies().keySet();
 
@@ -1878,6 +1821,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   @Override
   public List<Configuration> toVendorIndependentConfigurations() {
     Configuration c = new Configuration(_hostname, _vendor);
+    c.setHumanName(_rawHostname);
     c.getVendorFamily().setCiscoXr(_cf);
     c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     c.setDefaultInboundAction(LineAction.PERMIT);

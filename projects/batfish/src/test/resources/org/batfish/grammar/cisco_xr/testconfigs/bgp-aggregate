@@ -6,11 +6,21 @@ router static
   address-family ipv4 unicast
     1.1.1.0/24 Null0
     2.2.2.0/24 Null0
+    ! less specific than similar aggregate
+    3.0.0.0/8 Null0
+    ! less specific than one similar aggregate, but more specific than another
+    4.4.4.0/24 Null0
+    ! same length as similar aggregate
+    5.5.0.0/16 Null0
 !
 router bgp 1
   bgp router-id 1.1.1.1
   address-family ipv4 unicast
     aggregate-address 1.1.0.0/16
     aggregate-address 2.2.0.0/16 summary-only
+    aggregate-address 3.0.0.0/16 summary-only
+    aggregate-address 4.4.0.0/16 summary-only
+    aggregate-address 4.4.4.0/31 summary-only
+    aggregate-address 5.5.0.0/16 summary-only
     redistribute static
 !

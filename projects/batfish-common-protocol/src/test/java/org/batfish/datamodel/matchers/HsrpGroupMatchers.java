@@ -2,6 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
+import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -46,14 +47,14 @@ public final class HsrpGroupMatchers {
     }
   }
 
-  private static final class HasIp extends FeatureMatcher<HsrpGroup, Ip> {
-    public HasIp(@Nonnull Matcher<? super Ip> subMatcher) {
-      super(subMatcher, "An HsrpGroup with ip:", "ip");
+  private static final class HasIps extends FeatureMatcher<HsrpGroup, Set<Ip>> {
+    public HasIps(@Nonnull Matcher<? super Set<Ip>> subMatcher) {
+      super(subMatcher, "An HsrpGroup with ips:", "ips");
     }
 
     @Override
-    protected Ip featureValueOf(HsrpGroup actual) {
-      return actual.getIp();
+    protected Set<Ip> featureValueOf(HsrpGroup actual) {
+      return actual.getIps();
     }
   }
 
@@ -116,11 +117,9 @@ public final class HsrpGroupMatchers {
     return new HasHoldTime(equalTo(expectedHoldTime));
   }
 
-  /**
-   * Provides a matcher that matches if the {@link HsrpGroup}'s ip is equal to {@code expectedIp}.
-   */
-  public static @Nonnull Matcher<HsrpGroup> hasIp(@Nonnull Ip expectedIp) {
-    return new HasIp(equalTo(expectedIp));
+  /** Provides a matcher that matches if the {@link HsrpGroup}'s ips match {@code subMatcher}. */
+  public static @Nonnull Matcher<HsrpGroup> hasIps(@Nonnull Matcher<? super Set<Ip>> subMatcher) {
+    return new HasIps(subMatcher);
   }
 
   /** Provides a matcher that matches if the {@link HsrpGroup} is set to preempt. */

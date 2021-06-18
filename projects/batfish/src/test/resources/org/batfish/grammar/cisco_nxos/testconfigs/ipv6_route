@@ -2,6 +2,9 @@
 !
 hostname ipv6_route
 !
+! Must exist or lines referencing this below will be rejected
+track 3 interface Ethernet1/1 line-protocol
+!
 ipv6 route ::1/128 Null0
 ipv6 route ::2/128 Ethernet1/2
 ipv6 route ::3/128 Ethernet1/2 ::100

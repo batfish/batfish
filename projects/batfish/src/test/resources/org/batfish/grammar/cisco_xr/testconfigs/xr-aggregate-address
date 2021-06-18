@@ -1,0 +1,24 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname xr-aggregate-address
+!
+route-policy gen1
+ pass
+end-policy
+route-policy gen2
+ pass
+end-policy
+route-policy gen3
+ pass
+end-policy
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ address-family ipv4 unicast
+  aggregate-address 1.1.0.0/16
+  aggregate-address 1.2.0.0/16 route-policy gen1
+  aggregate-address 2.1.0.0/16 summary-only
+  aggregate-address 2.2.0.0/16 summary-only route-policy gen2
+  aggregate-address 3.1.0.0/16 as-set
+  aggregate-address 3.2.0.0/16 as-set route-policy gen3
+!

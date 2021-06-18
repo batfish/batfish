@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_track_warn
+!
+track 1 interface mgmt1 line-protocol
+track 2 interface Vlan1 line-protocol
+track 0 interface port-channel1 line-protocol
+track 501 interface port-channel2 line-protocol
+!
+
+! Undefined track references are rejected by the CLI
+!
+ip route 10.0.200.0/24 Ethernet1/1 10.255.1.254 track 497
+ipv6 route 2222::/24 Ethernet1/1 2220:: track 498
+
+!
+interface Ethernet1/1
+  no switchport
+  no shutdown
+  hsrp 2
+    track 499
+!

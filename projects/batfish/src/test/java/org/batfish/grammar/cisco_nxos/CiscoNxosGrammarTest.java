@@ -4,6 +4,7 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static com.google.common.collect.Maps.immutableEntry;
 import static com.google.common.collect.MoreCollectors.onlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
@@ -42,6 +43,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -117,6 +119,7 @@ import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
@@ -124,6 +127,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -158,6 +162,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.bdd.IpAccessListToBdd;
 import org.batfish.common.bdd.IpSpaceToBDD;
+import org.batfish.common.matchers.ParseWarningMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -267,6 +272,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
+import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
@@ -288,6 +294,7 @@ import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
+import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.DistributeList;
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
@@ -382,6 +389,9 @@ import org.batfish.representation.cisco_nxos.StaticRoute;
 import org.batfish.representation.cisco_nxos.StaticRouteV6;
 import org.batfish.representation.cisco_nxos.SwitchportMode;
 import org.batfish.representation.cisco_nxos.TcpOptions;
+import org.batfish.representation.cisco_nxos.Track;
+import org.batfish.representation.cisco_nxos.TrackInterface;
+import org.batfish.representation.cisco_nxos.TrackInterface.Mode;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
@@ -497,9 +507,9 @@ public final class CiscoNxosGrammarTest {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     CiscoNxosCombinedParser ciscoNxosParser = new CiscoNxosCombinedParser(src, settings);
+    Warnings warnings = new Warnings();
     NxosControlPlaneExtractor extractor =
-        new NxosControlPlaneExtractor(
-            src, ciscoNxosParser, new Warnings(), new SilentSyntaxCollection());
+        new NxosControlPlaneExtractor(src, ciscoNxosParser, warnings, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(
             ciscoNxosParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
@@ -507,8 +517,11 @@ public final class CiscoNxosGrammarTest {
     CiscoNxosConfiguration vendorConfiguration =
         (CiscoNxosConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
+
     // crash if not serializable
-    return SerializationUtils.clone(vendorConfiguration);
+    vendorConfiguration = SerializationUtils.clone(vendorConfiguration);
+    vendorConfiguration.setWarnings(warnings);
+    return vendorConfiguration;
   }
 
   private void assertRoutingPolicyDeniesRoute(RoutingPolicy routingPolicy, AbstractRoute route) {
@@ -1534,14 +1547,106 @@ public final class CiscoNxosGrammarTest {
 
   @Test
   public void testTrackExtraction() {
-    // TODO: make into extraction test
-    assertThat(parseVendorConfig("nxos_track"), notNullValue());
+    String hostname = "nxos_track";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getTracks(), hasKeys(1, 2, 500));
+
+    {
+      Track track = vc.getTracks().get(1);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("port-channel1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.LINE_PROTOCOL));
+    }
+
+    {
+      Track track = vc.getTracks().get(2);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("Ethernet1/1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.IP_ROUTING));
+    }
+
+    {
+      Track track = vc.getTracks().get(500);
+      assertThat(track, instanceOf(TrackInterface.class));
+      TrackInterface trackInterface = (TrackInterface) track;
+      assertThat(trackInterface.getInterface(), equalTo("loopback1"));
+      assertThat(trackInterface.getMode(), equalTo(Mode.IPV6_ROUTING));
+    }
+  }
+
+  @Test
+  public void testTrackWarnings() {
+    String hostname = "nxos_track_warn";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        containsInAnyOrder(
+            hasComment(
+                "Unsupported interface type: mgmt, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
+            hasComment(
+                "Unsupported interface type: Vlan, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
+            hasComment("Expected track object-id in range 1-500, but got '0'"),
+            hasComment("Expected track object-id in range 1-500, but got '501'"),
+            // Undefined references are not accepted by the CLI
+            // Should also generate parse warnings
+            hasComment("Cannot reference undefined track 497. This line will be ignored."),
+            hasComment("Cannot reference undefined track 498. This line will be ignored."),
+            hasComment("Cannot reference undefined track 499. This line will be ignored.")));
   }
 
   @Test
   public void testTrackConversion() throws IOException {
-    // TODO: make into conversion test
-    assertThat(parseConfig("nxos_track"), notNullValue());
+    String hostname = "nxos_track_conversion";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c.getTrackingGroups(), hasKeys("1", "500"));
+
+    {
+      TrackMethod trackMethod = c.getTrackingGroups().get("1");
+      assertThat(trackMethod, instanceOf(org.batfish.datamodel.tracking.TrackInterface.class));
+      org.batfish.datamodel.tracking.TrackInterface trackInterface =
+          (org.batfish.datamodel.tracking.TrackInterface) trackMethod;
+      assertThat(trackInterface.getTrackedInterface(), equalTo("port-channel1"));
+    }
+
+    {
+      TrackMethod trackMethod = c.getTrackingGroups().get("500");
+      assertThat(trackMethod, instanceOf(org.batfish.datamodel.tracking.TrackInterface.class));
+      org.batfish.datamodel.tracking.TrackInterface trackInterface =
+          (org.batfish.datamodel.tracking.TrackInterface) trackMethod;
+      assertThat(trackInterface.getTrackedInterface(), equalTo("Ethernet1/1"));
+    }
+  }
+
+  @Test
+  public void testTrackConversionWarnings() throws IOException {
+    String hostname = "nxos_track_conversion_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(c.getTrackingGroups(), anEmptyMap());
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "Interface track mode %s is not yet supported and will be ignored.",
+                    Mode.IP_ROUTING))));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "Interface track mode %s is not yet supported and will be ignored.",
+                    Mode.IPV6_ROUTING))));
   }
 
   @Test
@@ -1839,19 +1944,9 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
-  public void testHostnameConversion() throws IOException {
-    String hostname = "nxos_hostname";
-    Configuration c = parseConfig(hostname);
-
-    assertThat(c, hasHostname(hostname));
-  }
-
-  @Test
-  public void testHostnameExtraction() {
-    String hostname = "nxos_hostname";
-    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
-
-    assertThat(vc.getHostname(), equalTo(hostname));
+  public void testHumanName() throws IOException {
+    Configuration c = parseConfig("nxos_hostname");
+    assertThat(c.getHumanName(), equalTo("NXOS_hostname"));
   }
 
   @Test
@@ -1899,7 +1994,9 @@ public final class CiscoNxosGrammarTest {
               allOf(
                   hasHelloTime(250),
                   hasHoldTime(750),
-                  HsrpGroupMatchers.hasIp(Ip.parse("192.0.2.1")),
+                  HsrpGroupMatchers.hasIps(
+                      containsInAnyOrder(
+                          Ip.parse("192.0.2.1"), Ip.parse("192.168.0.1"), Ip.parse("192.168.1.1"))),
                   hasPreempt(),
                   hasPriority(105),
                   hasTrackActions(
@@ -1941,8 +2038,12 @@ public final class CiscoNxosGrammarTest {
         assertThat(group.getHelloIntervalMs(), equalTo(250));
         assertThat(group.getHoldTimeMs(), equalTo(750));
         assertThat(group.getTracks(), hasKeys(1, 2));
-        assertThat(group.getTracks().get(1).getDecrement(), equalTo(10));
+        assertThat(group.getTracks().get(1).getTrackObjectNumber(), equalTo(1));
+        assertNull(group.getTracks().get(1).getDecrement());
+        assertThat(group.getTracks().get(1).getDecrementEffective(), equalTo(10));
+        assertThat(group.getTracks().get(2).getTrackObjectNumber(), equalTo(2));
         assertThat(group.getTracks().get(2).getDecrement(), equalTo(20));
+        assertThat(group.getTracks().get(2).getDecrementEffective(), equalTo(20));
       }
       {
         HsrpGroupIpv4 group = hsrp.getIpv4Groups().get(3);
@@ -1957,6 +2058,26 @@ public final class CiscoNxosGrammarTest {
         assertThat(group.getTracks(), anEmptyMap());
       }
     }
+  }
+
+  @Test
+  public void testInterfaceHsrpWarnings() {
+    String hostname = "nxos_interface_hsrp_warn";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        containsInAnyOrder(
+            allOf(
+                hasComment(
+                    "HSRP IP must be contained by its interface subnets. This HSRP IP will be"
+                        + " ignored."),
+                ParseWarningMatchers.hasText("ip 10.0.0.1")),
+            allOf(
+                hasComment(
+                    "HSRP IP must be contained by its interface subnets. This HSRP IP will be"
+                        + " ignored."),
+                ParseWarningMatchers.hasText("ip 10.0.0.2 secondary"))));
   }
 
   @Test
@@ -4594,7 +4715,7 @@ public final class CiscoNxosGrammarTest {
                 .setName("name")
                 .setPreference(11)
                 .setTag(17)
-                .setTrack((short) 3)
+                .setTrack(3)
                 .build()));
 
     Vrf vrf = c.getVrfs().get("VRF");
@@ -7845,7 +7966,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
     }
     {
       StaticRoute route =
@@ -7855,7 +7976,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7866,7 +7987,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7877,7 +7998,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7888,7 +8009,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(0L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7899,7 +8020,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.1.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/1"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
     }
     {
@@ -7910,7 +8031,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
       assertThat(route.getNextHopInterface(), nullValue());
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
       assertThat(route.getNextHopVrf(), equalTo("vrf2"));
     }
@@ -7922,7 +8043,7 @@ public final class CiscoNxosGrammarTest {
       assertThat(route.getTag(), equalTo(1000L));
       assertThat(route.getNextHopIp(), equalTo(Ip.parse("10.255.2.254")));
       assertThat(route.getNextHopInterface(), equalTo("Ethernet1/2"));
-      assertThat(route.getTrack(), equalTo((short) 500));
+      assertThat(route.getTrack(), equalTo(500));
       assertThat(route.getName(), equalTo("foo"));
       assertThat(route.getNextHopVrf(), equalTo("vrf2"));
     }
@@ -8628,5 +8749,37 @@ public final class CiscoNxosGrammarTest {
     // Confirm default costs are calculated correctly
     assertThat(ifaceEth1.getOspfCost(), equalTo(40));
     assertThat(ifaceVlan1.getOspfCost(), equalTo(40));
+  }
+
+  @Test
+  public void testTrackReferences() throws IOException {
+    String hostname = "nxos_track_refs";
+    String filename = "configs/" + hostname;
+    Batfish bf = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
+
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "1", 2));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "2", 1));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "3", 0));
+
+    assertThat(
+        ans,
+        hasUndefinedReference(
+            filename, CiscoNxosStructureType.TRACK, "497", CiscoNxosStructureUsage.IP_ROUTE_TRACK));
+    assertThat(
+        ans,
+        hasUndefinedReference(
+            filename,
+            CiscoNxosStructureType.TRACK,
+            "498",
+            CiscoNxosStructureUsage.IPV6_ROUTE_TRACK));
+    assertThat(
+        ans,
+        hasUndefinedReference(
+            filename,
+            CiscoNxosStructureType.TRACK,
+            "499",
+            CiscoNxosStructureUsage.INTERFACE_HSRP_GROUP_TRACK));
   }
 }

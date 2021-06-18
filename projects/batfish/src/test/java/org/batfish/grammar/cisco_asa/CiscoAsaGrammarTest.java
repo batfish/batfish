@@ -252,6 +252,12 @@ public final class CiscoAsaGrammarTest {
   }
 
   @Test
+  public void testHumanName() throws IOException {
+    Configuration c = parseConfig("asa-humanname");
+    assertThat(c.getHumanName(), equalTo("ASA-humanname"));
+  }
+
+  @Test
   public void testLineAuthenticationMethods() throws IOException {
     Configuration asaConfiguration = parseConfig("aaaAuthenticationAsa");
     SortedMap<String, Line> asaLines = asaConfiguration.getVendorFamily().getCisco().getLines();
