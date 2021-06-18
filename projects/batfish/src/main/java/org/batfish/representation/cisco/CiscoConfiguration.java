@@ -2877,12 +2877,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
              * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
              */
             assert newVrf.getBgpProcess() == null;
-            String denyAllPolicyName = initDenyAllPolicy(c);
             newVrf.setBgpProcess(
                 org.batfish.datamodel.BgpProcess.builder()
                     .setRouterId(Ip.ZERO)
                     .setAdminCostsToVendorDefaults(c.getConfigurationFormat())
-                    .setRedistributionPolicy(denyAllPolicyName)
+                    .setRedistributionPolicy(initDenyAllPolicy(c))
                     .build());
           }
         });
