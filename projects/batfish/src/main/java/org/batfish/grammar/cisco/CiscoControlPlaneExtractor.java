@@ -68,7 +68,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_TEMPLA
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureType.TRAFFIC_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ADVERTISE_MAP_EXIST_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_SUPPRESS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST;
@@ -104,7 +106,6 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_UPDATE_SO
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_USE_SESSION_GROUP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
@@ -431,6 +432,11 @@ import org.batfish.grammar.cisco.CiscoParser.Address_family_headerContext;
 import org.batfish.grammar.cisco.CiscoParser.Address_family_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Advertise_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Af_group_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Agg_advertise_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Agg_as_setContext;
+import org.batfish.grammar.cisco.CiscoParser.Agg_attribute_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Agg_summary_onlyContext;
+import org.batfish.grammar.cisco.CiscoParser.Agg_suppress_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Aggregate_address_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Allowas_in_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Always_compare_med_rb_stanzaContext;
@@ -1005,6 +1011,7 @@ import org.batfish.representation.cisco.AccessListAddressSpecifier;
 import org.batfish.representation.cisco.AccessListServiceSpecifier;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco.BgpAggregateIpv6Network;
+import org.batfish.representation.cisco.BgpAggregateNetwork;
 import org.batfish.representation.cisco.BgpNetwork;
 import org.batfish.representation.cisco.BgpNetwork6;
 import org.batfish.representation.cisco.BgpPeerGroup;
@@ -1472,6 +1479,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
    * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
    */
   private String _lastKnownOspfProcess;
+
+  private BgpAggregateNetwork _currentAggregate;
+  private BgpAggregateIpv4Network _currentIpv4Aggregate;
+  private BgpAggregateIpv6Network _currentIpv6Aggregate;
 
   public CiscoControlPlaneExtractor(
       String text,
@@ -3639,58 +3650,84 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterAggregate_address_rb_stanza(Aggregate_address_rb_stanzaContext ctx) {
+    if (ctx.network != null || ctx.prefix != null) {
+      // ipv4
+      Prefix prefix;
+      if (ctx.network != null) {
+        Ip network = toIp(ctx.network);
+        Ip subnet = toIp(ctx.subnet);
+        int prefixLength = subnet.numSubnetBits();
+        prefix = Prefix.create(network, prefixLength);
+      } else {
+        // ctx.prefix != null
+        prefix = Prefix.parse(ctx.prefix.getText());
+      }
+      _currentIpv4Aggregate = new BgpAggregateIpv4Network(prefix);
+      _currentAggregate = _currentIpv4Aggregate;
+    } else if (ctx.ipv6_prefix != null) {
+      // ipv6
+      Prefix6 prefix6 = Prefix6.parse(ctx.ipv6_prefix.getText());
+      _currentIpv6Aggregate = new BgpAggregateIpv6Network(prefix6);
+      _currentAggregate = _currentIpv6Aggregate;
+    }
+  }
+
+  @Override
+  public void exitAgg_advertise_map(Agg_advertise_mapContext ctx) {
+    todo(ctx);
+    String advertiseMap = ctx.adv_map.getText();
+    _currentAggregate.setAdvertiseMap(advertiseMap);
+    _configuration.referenceStructure(
+        ROUTE_MAP, advertiseMap, BGP_AGGREGATE_ADVERTISE_MAP, ctx.adv_map.getStart().getLine());
+  }
+
+  @Override
+  public void exitAgg_as_set(Agg_as_setContext ctx) {
+    todo(ctx);
+    _currentAggregate.setAsSet(true);
+  }
+
+  @Override
+  public void exitAgg_attribute_map(Agg_attribute_mapContext ctx) {
+    String attributeMap = ctx.att_map.getText();
+    _currentAggregate.setAttributeMap(attributeMap);
+    _configuration.referenceStructure(
+        ROUTE_MAP, attributeMap, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.att_map.getStart().getLine());
+  }
+
+  @Override
+  public void exitAgg_summary_only(Agg_summary_onlyContext ctx) {
+    _currentAggregate.setSummaryOnly(true);
+  }
+
+  @Override
+  public void exitAgg_suppress_map(Agg_suppress_mapContext ctx) {
+    todo(ctx);
+    String suppressMap = ctx.sup_map.getText();
+    _currentAggregate.setSuppressMap(suppressMap);
+    _configuration.referenceStructure(
+        ROUTE_MAP, suppressMap, BGP_AGGREGATE_SUPPRESS_MAP, ctx.sup_map.getStart().getLine());
+  }
+
+  @Override
   public void exitAggregate_address_rb_stanza(Aggregate_address_rb_stanzaContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
-      boolean summaryOnly = ctx.summary_only != null;
-      boolean asSet = ctx.as_set != null;
       if (ctx.network != null || ctx.prefix != null) {
-        // ipv4
-        Prefix prefix;
-        if (ctx.network != null) {
-          Ip network = toIp(ctx.network);
-          Ip subnet = toIp(ctx.subnet);
-          int prefixLength = subnet.numSubnetBits();
-          prefix = Prefix.create(network, prefixLength);
-        } else {
-          // ctx.prefix != null
-          prefix = Prefix.parse(ctx.prefix.getText());
-        }
-        BgpAggregateIpv4Network net = new BgpAggregateIpv4Network(prefix);
-        net.setAsSet(asSet);
-        net.setSummaryOnly(summaryOnly);
-        if (ctx.mapname != null) {
-          String mapName = ctx.mapname.getText();
-          net.setAttributeMap(mapName);
-          _configuration.referenceStructure(
-              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
-        }
-        proc.getAggregateNetworks().put(prefix, net);
-      } else if (ctx.ipv6_prefix != null) {
+        proc.getAggregateNetworks().put(_currentIpv4Aggregate.getPrefix(), _currentIpv4Aggregate);
+      } else {
         // ipv6
-        Prefix6 prefix6 = Prefix6.parse(ctx.ipv6_prefix.getText());
-        BgpAggregateIpv6Network net = new BgpAggregateIpv6Network(prefix6);
-        net.setAsSet(asSet);
-        net.setSummaryOnly(summaryOnly);
-        if (ctx.mapname != null) {
-          String mapName = ctx.mapname.getText();
-          net.setAttributeMap(mapName);
-          _configuration.referenceStructure(
-              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
-        }
-        proc.getAggregateIpv6Networks().put(prefix6, net);
+        assert ctx.ipv6_prefix != null;
+        proc.getAggregateIpv6Networks()
+            .put(_currentIpv6Aggregate.getPrefix6(), _currentIpv6Aggregate);
       }
     } else if (_currentIpPeerGroup != null
         || _currentIpv6PeerGroup != null
         || _currentDynamicIpPeerGroup != null
         || _currentNamedPeerGroup != null) {
       throw new BatfishException("unexpected occurrence in peer group/neighbor context");
-
-    } else if (ctx.mapname != null) {
-      String map = ctx.mapname.getText();
-      _configuration.referenceStructure(
-          ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, ctx.mapname.getStart().getLine());
     }
   }
 

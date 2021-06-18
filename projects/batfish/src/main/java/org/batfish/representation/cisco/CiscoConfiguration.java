@@ -29,6 +29,7 @@ import static org.batfish.representation.cisco.CiscoConversions.matchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
+import static org.batfish.representation.cisco.CiscoConversions.toBgpAggregate;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
@@ -116,7 +117,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Prefix6Space;
-import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
@@ -975,6 +975,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
           new BgpConfederation(confederation, proc.getConfederationMembers()));
     }
 
+    // Populate process-level BGP aggregates
+    proc.getAggregateNetworks().values().stream()
+        .map(ipv4Aggregate -> toBgpAggregate(ipv4Aggregate, c))
+        .forEach(newBgpProcess::addAggregate);
+
     /*
      * Create common BGP export policy. This policy's only function is to prevent export of
      * suppressed routes (contributors to summary-only aggregates).
@@ -1001,51 +1006,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
     RoutingPolicy.Builder redistributionPolicy =
         RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
-
-    // Redistribute the generated routes for aggregate ipv4 addresses into BGP RIB
-    for (Entry<Prefix, BgpAggregateIpv4Network> e : proc.getAggregateNetworks().entrySet()) {
-      Prefix prefix = e.getKey();
-      BgpAggregateIpv4Network aggNet = e.getValue();
-
-      // Generate a policy that matches routes to be aggregated.
-      RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix);
-
-      GeneratedRoute.Builder gr =
-          GeneratedRoute.builder()
-              .setNetwork(prefix)
-              .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
-              .setOriginType(OriginType.IGP)
-              .setGenerationPolicy(genPolicy.getName())
-              .setDiscard(true);
-
-      // Conditions to generate this route
-      List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
-      exportAggregateConditions.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(),
-              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-      exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-      // If defined, set attribute map for aggregate network
-      String attributeMapName = aggNet.getAttributeMap();
-      if (attributeMapName != null) {
-        RouteMap attributeMap = _routeMaps.get(attributeMapName);
-        if (attributeMap != null) {
-          // need to apply attribute changes if this specific route is matched
-          gr.setAttributePolicy(attributeMapName);
-        }
-      }
-
-      v.getGeneratedRoutes().add(gr.build());
-      // Do export a generated aggregate.
-      redistributionPolicy.addStatement(
-          new If(
-              "Import aggregate routes into BGP",
-              new Conjunction(exportAggregateConditions),
-              ImmutableList.of(
-                  new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                  Statements.ExitAccept.toStaticStatement())));
-    }
 
     // add generated routes for aggregate ipv6 addresses
     // TODO: merge with above to make cleaner
