@@ -12,7 +12,7 @@ import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
-import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
@@ -31,6 +31,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasM
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
@@ -168,6 +169,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -801,11 +803,72 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpRedistribution() throws IOException {
+    /*
+     * Config contains two VRFs:
+     * - VRF1 has static route 1.1.1.1/32 and redistributes static into BGP with a permit-all route-map
+     * - VRF2 has static routes 1.1.1.1/32 and 2.2.2.2/32, and redistributes static into BGP with a
+     *   route-map that only permits 1.1.1.1/32
+     * - Both VRFs' BGP RIBs should contain 1.1.1.1/32 as a local route.
+     */
+    String hostname = "bgp_redistribution";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Prefix staticPrefix1 = Prefix.parse("1.1.1.1/32");
+    Prefix staticPrefix2 = Prefix.parse("2.2.2.2/32");
+
+    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32,
+    // and VRF2 should also have 2.2.2.2/32
+    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
+        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
+        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    assertThat(
+        vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
+    assertThat(
+        vrf2Routes,
+        contains(
+            allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC)),
+            allOf(hasPrefix(staticPrefix2), hasProtocol(RoutingProtocol.STATIC))));
+
+    // Both VRFs should have 1.1.1.1/32 in BGP (and not 2.2.2.2/32)
+    int bgpAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(hostname)
+            .getVrfs()
+            .get("VRF1")
+            .getBgpProcess()
+            .getAdminCost(RoutingProtocol.BGP);
+    Bgpv4Route bgpRouteVrf1 =
+        Bgpv4Route.builder()
+            .setNetwork(staticPrefix1)
+            .setNonRouting(true)
+            .setAdmin(bgpAdmin)
+            .setLocalPreference(100)
+            .setNextHop(NextHopDiscard.instance())
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.parse("10.10.10.1"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(ZERO) // indicates local origination
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setTag(0L)
+            .build();
+    Bgpv4Route bgpRouteVrf2 =
+        bgpRouteVrf1.toBuilder().setOriginatorIp(Ip.parse("10.10.10.2")).build();
+    Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
+    Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
+    assertThat(vrf1BgpRoutes, contains(bgpRouteVrf1));
+    assertThat(vrf2BgpRoutes, contains(bgpRouteVrf2));
+  }
+
+  @Test
   public void testBgpRedistFromEigrpConversion() throws IOException {
     // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
     Configuration c = parseConfig("nxos_bgp_eigrp_redistribution");
-    RoutingPolicy bgpExportPolicy =
-        c.getRoutingPolicies().get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
+    RoutingPolicy bgpRedistPolicy =
+        c.getRoutingPolicies().get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME));
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     Prefix matchRm = Prefix.parse("5.5.5.0/24");
@@ -840,7 +903,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -863,7 +926,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
     }
     {
       // Redistribute matching EIGRP route to IBGP
@@ -871,7 +934,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -894,7 +957,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
     }
     {
       // Ensure external EIGRP route can also match routing policy
@@ -913,7 +976,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
@@ -7699,6 +7762,15 @@ public final class CiscoNxosGrammarTest {
   @Test
   public void testRouteMapMultipleChainedContinueEntriesConversion() throws IOException {
     Configuration c = parseConfig("nxos_route_map_multiple_chained_continue_entries");
+
+    // Route gets redistributed into BGP
+    RoutingPolicy redistPolicy =
+        c.getRoutingPolicies().get(c.getDefaultVrf().getBgpProcess().getRedistributionPolicy());
+    ConnectedRoute igpRoute = new ConnectedRoute(Prefix.strict("10.10.10.10/32"), "loopback0");
+    Bgpv4Route.Builder bgpRouteBuilder = Bgpv4Route.testBuilder().setNetwork(igpRoute.getNetwork());
+    assertTrue(redistPolicy.process(igpRoute, bgpRouteBuilder, Direction.OUT));
+
+    // Route gets exported from BGP RIB
     RoutingPolicy exportPolicy =
         c.getRoutingPolicies()
             .get(
@@ -7708,8 +7780,7 @@ public final class CiscoNxosGrammarTest {
                     .get(Prefix.strict("192.0.2.2/32"))
                     .getIpv4UnicastAddressFamily()
                     .getExportPolicy());
-    assertRoutingPolicyPermitsRoute(
-        exportPolicy, new ConnectedRoute(Prefix.strict("10.10.10.10/32"), "loopback0"));
+    assertRoutingPolicyPermitsRoute(exportPolicy, bgpRouteBuilder.build());
   }
 
   @Test
