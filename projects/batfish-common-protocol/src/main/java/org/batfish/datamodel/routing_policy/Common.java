@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
@@ -106,6 +107,21 @@ public final class Common {
   }
 
   /**
+   * If the given {@link Configuration} does not already have a deny-all BGP redistribution policy,
+   * creates and adds one. Returns the policy name for convenience.
+   */
+  public static @Nonnull String initDenyAllBgpRedistributionPolicy(Configuration c) {
+    if (!c.getRoutingPolicies().containsKey(DENY_ALL_BGP_REDISTRIBUTION_POLICY_NAME)) {
+      RoutingPolicy.builder()
+          .setName(DENY_ALL_BGP_REDISTRIBUTION_POLICY_NAME)
+          .setOwner(c)
+          .addStatement(Statements.ExitReject.toStaticStatement())
+          .build();
+    }
+    return DENY_ALL_BGP_REDISTRIBUTION_POLICY_NAME;
+  }
+
+  /**
    * Generates and returns a {@link Statement} that suppresses routes that are summarized by the
    * given set of {@link Prefix prefixes} configured as {@code summary-only}.
    *
@@ -149,6 +165,9 @@ public final class Common {
 
   @VisibleForTesting
   public static String SUMMARY_ONLY_SUPPRESSION_POLICY_NAME = "~suppress~rp~summary-only~";
+
+  private static String DENY_ALL_BGP_REDISTRIBUTION_POLICY_NAME =
+      "~deny~all~bgp~redistribution~policy~";
 
   // Private implementation details
   private Common() {} // prevent instantiation of utility class
