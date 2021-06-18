@@ -1832,11 +1832,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   }
 
   private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroupIpv4 group) {
-    Ip groupIp = group.getIp();
+    Optional<Ip> groupIp = Optional.ofNullable(group.getIp());
+    Set<Ip> groupIpSecondary = group.getIpSecondaries();
+    ImmutableSet.Builder<Ip> hsrpIps = ImmutableSet.builder();
+    groupIp.ifPresent(hsrpIps::add);
+    groupIpSecondary.forEach(hsrpIps::add);
+
     org.batfish.datamodel.hsrp.HsrpGroup.Builder builder =
         org.batfish.datamodel.hsrp.HsrpGroup.builder()
             .setGroupNumber(group.getGroup())
-            .setIps(groupIp == null ? ImmutableSet.of() : ImmutableSet.of(groupIp))
+            .setIps(hsrpIps.build())
             .setPreempt(group.getPreempt());
     if (group.getHelloIntervalMs() != null) {
       builder.setHelloTime(group.getHelloIntervalMs());

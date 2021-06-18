@@ -92927,7 +92927,8 @@
                 "helloTime" : 0,
                 "holdTime" : 10000,
                 "ips" : [
-                  "1.1.1.1"
+                  "1.1.1.1",
+                  "2.2.2.2"
                 ],
                 "preempt" : false,
                 "priority" : 100
