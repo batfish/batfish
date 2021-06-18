@@ -30,8 +30,8 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeOspfE
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4UnicastAddressFamily;
 import static org.batfish.representation.cumulus.CumulusConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
+import static org.batfish.representation.cumulus.CumulusConversions.generateBgpAggregates;
 import static org.batfish.representation.cumulus.CumulusConversions.generateBgpCommonPeerConfig;
-import static org.batfish.representation.cumulus.CumulusConversions.generateGeneratedRoutes;
 import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.generateRedistributeAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetMaxMedMetric;
@@ -243,7 +243,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testGenerateGeneratedRoutes() {
     Prefix prefix = Prefix.parse("1.2.3.0/24");
-    generateGeneratedRoutes(
+    generateBgpAggregates(
         _c, _v, ImmutableMap.of(prefix, new BgpVrfAddressFamilyAggregateNetworkConfiguration()));
     String policyName = computeBgpGenerationPolicyName(true, _v.getName(), prefix.toString());
 
