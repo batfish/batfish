@@ -114,13 +114,11 @@ public class If extends Statement {
       return exprResult;
     }
     boolean guardVal = exprResult.getBooleanValue();
-    boolean traceIt = guardVal && environment.getTracer() != null;
+    boolean traceIt = guardVal && environment.getTracer() != null && getComment() != null;
     if (traceIt) {
-      TraceElement traceElement =
-          getComment() == null
-              ? TraceElement.of("Matched unknown clause")
-              : TraceElement.of(String.format("Matched '%s'", getComment()));
-      environment.getTracer().setTraceElement(traceElement);
+      environment
+          .getTracer()
+          .setTraceElement(TraceElement.of(String.format("Matched '%s'", getComment())));
       environment.getTracer().newSubTrace();
     }
     List<Statement> toExecute = guardVal ? _trueStatements : _falseStatements;

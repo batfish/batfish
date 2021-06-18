@@ -12,6 +12,7 @@ import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.C
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_NODE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_OUTPUT_ROUTE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_POLICY_NAME;
+import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_TRACE;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -196,7 +197,9 @@ public class TestRoutePoliciesAnswererTest {
                 // outputRoute == inputRoute
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
                 // diff
-                hasColumn(COL_DIFF, equalTo(diff), BGP_ROUTE_DIFFS))));
+                hasColumn(COL_DIFF, equalTo(diff), BGP_ROUTE_DIFFS),
+                hasColumn(
+                    COL_TRACE, equalTo(ImmutableList.of()), Schema.list(Schema.TRACE_TREE)))));
   }
 
   @Test
