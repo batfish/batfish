@@ -324,11 +324,16 @@ public class CiscoXrConversions {
 
   static @Nonnull BgpAggregate toBgpAggregate(
       BgpAggregateIpv4Network vsAggregate, Configuration c) {
+    // undefined -> null for best effort on invalid config
+    String routePolicy =
+        Optional.ofNullable(vsAggregate.getRoutePolicy())
+            .filter(c.getRoutingPolicies()::containsKey)
+            .orElse(null);
     // TODO: handle as-set by generating generation policy wrapping route-policy
     return BgpAggregate.of(
         vsAggregate.getPrefix(),
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
-        vsAggregate.getRoutePolicy(),
+        routePolicy,
         null);
   }
 
