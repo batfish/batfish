@@ -293,6 +293,7 @@ import org.batfish.representation.cisco_nxos.BgpVrfNeighborConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosConfiguration;
 import org.batfish.representation.cisco_nxos.CiscoNxosInterfaceType;
 import org.batfish.representation.cisco_nxos.CiscoNxosStructureType;
+import org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage;
 import org.batfish.representation.cisco_nxos.DefaultVrfOspfProcess;
 import org.batfish.representation.cisco_nxos.DistributeList;
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
@@ -1588,7 +1589,12 @@ public final class CiscoNxosGrammarTest {
             hasComment(
                 "Unsupported interface type: Vlan, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
             hasComment("Expected track object-id in range 1-500, but got '0'"),
-            hasComment("Expected track object-id in range 1-500, but got '501'")));
+            hasComment("Expected track object-id in range 1-500, but got '501'"),
+            // Undefined references are not accepted by the CLI
+            // Should also generate parse warnings
+            hasComment("Cannot reference undefined track 497. This line will be ignored."),
+            hasComment("Cannot reference undefined track 498. This line will be ignored."),
+            hasComment("Cannot reference undefined track 499. This line will be ignored.")));
   }
 
   @Test
@@ -8720,5 +8726,37 @@ public final class CiscoNxosGrammarTest {
     // Confirm default costs are calculated correctly
     assertThat(ifaceEth1.getOspfCost(), equalTo(40));
     assertThat(ifaceVlan1.getOspfCost(), equalTo(40));
+  }
+
+  @Test
+  public void testTrackReferences() throws IOException {
+    String hostname = "nxos_track_refs";
+    String filename = "configs/" + hostname;
+    Batfish bf = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
+
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "1", 2));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "2", 1));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "3", 0));
+
+    assertThat(
+        ans,
+        hasUndefinedReference(
+            filename, CiscoNxosStructureType.TRACK, "497", CiscoNxosStructureUsage.IP_ROUTE_TRACK));
+    assertThat(
+        ans,
+        hasUndefinedReference(
+            filename,
+            CiscoNxosStructureType.TRACK,
+            "498",
+            CiscoNxosStructureUsage.IPV6_ROUTE_TRACK));
+    assertThat(
+        ans,
+        hasUndefinedReference(
+            filename,
+            CiscoNxosStructureType.TRACK,
+            "499",
+            CiscoNxosStructureUsage.INTERFACE_HSRP_GROUP_TRACK));
   }
 }
