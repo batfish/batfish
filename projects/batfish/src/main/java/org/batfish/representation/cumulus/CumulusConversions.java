@@ -289,6 +289,7 @@ public final class CumulusConversions {
     // TODO: handle origin
     // TODO: handle suppress-map
     // TODO: verify undefined route-map can be treated as omitted
+    // TODO: verify route-map option is same as attribute-map
     String routeMap =
         Optional.ofNullable(vsAggregate.getRouteMap())
             .filter(c.getRoutingPolicies()::containsKey)
