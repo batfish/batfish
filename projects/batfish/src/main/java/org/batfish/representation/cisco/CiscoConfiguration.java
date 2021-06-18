@@ -13,9 +13,9 @@ import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.initDenyAllPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco.CiscoConversions.DENY_ALL_REDIST_POLICY_NAME;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
 import static org.batfish.representation.cisco.CiscoConversions.convertCryptoMapSet;
 import static org.batfish.representation.cisco.CiscoConversions.convertVrfLeakingConfig;
@@ -24,7 +24,6 @@ import static org.batfish.representation.cisco.CiscoConversions.generateBgpImpor
 import static org.batfish.representation.cisco.CiscoConversions.generateEigrpPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.getIsakmpKeyGeneratedName;
 import static org.batfish.representation.cisco.CiscoConversions.getRsaPubKeyGeneratedName;
-import static org.batfish.representation.cisco.CiscoConversions.initBgpDenyAllRedistPolicy;
 import static org.batfish.representation.cisco.CiscoConversions.matchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
@@ -2878,12 +2877,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
              * Despite no BGP config this vrf is leaked into. Make a dummy BGP process.
              */
             assert newVrf.getBgpProcess() == null;
-            initBgpDenyAllRedistPolicy(c);
+            String denyAllPolicyName = initDenyAllPolicy(c);
             newVrf.setBgpProcess(
                 org.batfish.datamodel.BgpProcess.builder()
                     .setRouterId(Ip.ZERO)
                     .setAdminCostsToVendorDefaults(c.getConfigurationFormat())
-                    .setRedistributionPolicy(DENY_ALL_REDIST_POLICY_NAME)
+                    .setRedistributionPolicy(denyAllPolicyName)
                     .build());
           }
         });
