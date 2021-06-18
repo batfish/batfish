@@ -11,6 +11,8 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 
 @ParametersAreNonnullByDefault
@@ -49,9 +51,9 @@ public final class IpNextHop extends NextHopExpr {
   }
 
   @Override
-  public Ip getNextHopIp(Environment environment) {
+  public @Nonnull NextHop evaluate(Environment env) {
     if (_ips.size() == 1) {
-      return _ips.get(0);
+      return NextHopIp.of(_ips.get(0));
     } else {
       throw new BatfishException("Do not currently support setting more than 1 next-hop-ip");
     }

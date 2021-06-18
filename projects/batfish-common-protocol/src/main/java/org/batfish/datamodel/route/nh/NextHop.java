@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 
 /**
  * Represent a generic routing next hop. There are many types of next hops: IPv4 concrete address,
@@ -16,8 +15,8 @@ public interface NextHop extends Serializable {
   <T> T accept(NextHopVisitor<T> visitor);
 
   /**
-   * Returns a {@link NextHop} based on next hop interface and next hop ip, both of which can be
-   * nullable. If both are null, a {@link DiscardNextHop} is returned
+   * Returns a {@link NextHop} based on next hop interface and next hop ip, one of which must be
+   * nonnull
    */
   static NextHop legacyConverter(@Nullable String nextHopInterface, @Nullable Ip nextHopIp) {
     if (nextHopInterface != null && !Route.UNSET_NEXT_HOP_INTERFACE.equals(nextHopInterface)) {

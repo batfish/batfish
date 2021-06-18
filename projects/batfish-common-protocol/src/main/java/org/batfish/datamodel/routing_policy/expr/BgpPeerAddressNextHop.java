@@ -2,9 +2,10 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpSessionProperties;
-import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** NextHopExpr that gets the peer address of the BGP peer where the policy is being evaluated. */
@@ -23,12 +24,11 @@ public class BgpPeerAddressNextHop extends NextHopExpr {
     return this == obj || obj instanceof BgpPeerAddressNextHop;
   }
 
-  @Nullable
   @Override
-  public Ip getNextHopIp(Environment environment) {
-    BgpSessionProperties sessionProps = environment.getBgpSessionProperties();
+  public @Nonnull NextHop evaluate(Environment env) {
+    BgpSessionProperties sessionProps = env.getBgpSessionProperties();
     checkState(sessionProps != null, "Expected BGP session properties");
-    return sessionProps.getTailIp();
+    return NextHopIp.of(sessionProps.getTailIp());
   }
 
   @Override

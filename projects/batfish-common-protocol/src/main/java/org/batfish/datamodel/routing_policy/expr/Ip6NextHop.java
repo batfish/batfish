@@ -9,8 +9,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Environment;
 
 @ParametersAreNonnullByDefault
@@ -46,8 +46,8 @@ public final class Ip6NextHop extends NextHopExpr {
   }
 
   @Override
-  public Ip getNextHopIp(Environment environment) {
-    throw new UnsupportedOperationException("no implementation for generated method");
+  public @Nonnull NextHop evaluate(Environment environment) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
