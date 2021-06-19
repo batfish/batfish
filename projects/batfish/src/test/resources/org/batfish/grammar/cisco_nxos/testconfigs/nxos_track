@@ -9,7 +9,7 @@ track 1 interface port-channel1 line-protocol
 track 2 interface Ethernet1/1 ip routing
 track 500 interface loopback1 ipv6 routing
 
-! Not yet supported
+! Not yet supported in VS model, but parsed
 track 100 ip route 192.0.2.1/32 reachability hmm
   vrf member v1
 track 101 ip sla 1 reachability
