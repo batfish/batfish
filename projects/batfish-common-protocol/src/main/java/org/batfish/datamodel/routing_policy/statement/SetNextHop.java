@@ -8,9 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
@@ -39,24 +37,19 @@ public final class SetNextHop extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    Result result = new Result();
     // Do nothing for a route that is not BGP.
     if (!(environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>)) {
-      return result;
+      return new Result();
     }
 
-    // Handle "discard" next hop, where the route acts as a null route.
-    if (_expr.getDiscard()) {
-      environment.getOutputRoute().setNextHop(NextHopDiscard.instance());
+    NextHop nextHop = _expr.evaluate(environment);
+    if (nextHop != null) {
+      environment.getOutputRoute().setNextHop(nextHop);
+      if (environment.getWriteToIntermediateBgpAttributes()) {
+        environment.getIntermediateBgpAttributes().setNextHop(nextHop);
+      }
     }
-
-    // Evaluate our next hop expression. If the result is non-null, modify the next hop IP.
-    Ip nextHop = _expr.getNextHopIp(environment);
-    if (nextHop == null) {
-      return result;
-    }
-    environment.getOutputRoute().setNextHop(NextHopIp.of(nextHop));
-    return result;
+    return new Result();
   }
 
   @JsonProperty(PROP_EXPR)

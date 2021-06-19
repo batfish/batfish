@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
-import org.batfish.datamodel.Ip;
+import javax.annotation.Nonnull;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /**
@@ -14,21 +16,16 @@ public class DiscardNextHop extends NextHopExpr {
   private DiscardNextHop() {}
 
   @Override
+  public @Nonnull NextHop evaluate(Environment env) {
+    return NextHopDiscard.instance();
+  }
+
+  @Override
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
     }
     return obj instanceof DiscardNextHop;
-  }
-
-  @Override
-  public boolean getDiscard() {
-    return true;
-  }
-
-  @Override
-  public Ip getNextHopIp(Environment environment) {
-    return null;
   }
 
   @Override

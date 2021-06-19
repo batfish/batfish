@@ -9,9 +9,11 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco.CiscoConversions.computeDistributeListPolicies;
@@ -26,6 +28,7 @@ import static org.batfish.representation.cisco.CiscoConversions.matchOwnAsn;
 import static org.batfish.representation.cisco.CiscoConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveKeyringIfaceNames;
 import static org.batfish.representation.cisco.CiscoConversions.resolveTunnelIfaceNames;
+import static org.batfish.representation.cisco.CiscoConversions.toBgpAggregate;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Key;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Policy;
 import static org.batfish.representation.cisco.CiscoConversions.toIkePhase1Proposal;
@@ -52,7 +55,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -114,7 +116,6 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Prefix6Space;
-import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
@@ -168,7 +169,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -183,7 +183,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
-import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -569,21 +568,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     });
           }
         });
-  }
-
-  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
-      BooleanExpr expr, OriginType originType) {
-    WithEnvironmentExpr we = new WithEnvironmentExpr();
-    we.setExpr(expr);
-    we.setPreStatements(
-        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
-    we.setPostStatements(
-        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
-    we.setPostTrueStatements(
-        ImmutableList.of(
-            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
-            new SetOrigin(new LiteralOrigin(originType, null))));
-    return we;
   }
 
   private boolean containsIpAccessList(String eaListName, String mapName) {
@@ -990,26 +974,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
           new BgpConfederation(confederation, proc.getConfederationMembers()));
     }
 
-    /**
-     * Create BGP redistribution policy. This should only capture network statements and
-     * redistribute commands (at this time)
-     */
-    RoutingPolicy.Builder redistributionPolicyBuilder =
-        RoutingPolicy.builder()
-            .setOwner(c)
-            .setName(String.format("~BGP_REDISTRIBUTION~%s~", vrfName));
-    List<BooleanExpr> redistributeConditions = new LinkedList<>();
+    // Populate process-level BGP aggregates
+    proc.getAggregateNetworks().values().stream()
+        .map(ipv4Aggregate -> toBgpAggregate(ipv4Aggregate, c))
+        .forEach(newBgpProcess::addAggregate);
 
     /*
-     * Create common bgp export policy. This policy encompasses network
-     * statements, aggregate-address with/without summary-only, redistribution
-     * from other protocols, and default-origination
+     * Create common BGP export policy. This policy's only function is to prevent export of
+     * suppressed routes (contributors to summary-only aggregates).
      */
-    RoutingPolicy bgpCommonExportPolicy =
-        new RoutingPolicy(Names.generatedBgpCommonExportPolicyName(vrfName), c);
-    c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
-
-    List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy.getStatements();
+    RoutingPolicy.Builder bgpCommonExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(Names.generatedBgpCommonExportPolicyName(vrfName));
 
     // Never export routes suppressed because they are more specific than summary-only aggregate
     Stream<Prefix> summaryOnlyNetworks =
@@ -1018,63 +995,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .map(Entry::getKey);
     If suppressSummaryOnly = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
     if (suppressSummaryOnly != null) {
-      bgpCommonExportStatements.add(suppressSummaryOnly);
+      bgpCommonExportPolicy.addStatement(suppressSummaryOnly);
     }
 
-    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
-    Disjunction routesShouldBeExported = new Disjunction();
-    bgpCommonExportStatements.add(
-        new If(
-            routesShouldBeExported,
-            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-            ImmutableList.of()));
-    // This list of reasons to export a route will be built up over the remainder of this function.
-    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+    // Finalize common export policy
+    bgpCommonExportPolicy.addStatement(Statements.ReturnTrue.toStaticStatement()).build();
 
-    // Finally, the export policy ends with returning false: do not export unmatched routes.
-    bgpCommonExportStatements.add(Statements.ReturnFalse.toStaticStatement());
-
-    // Export the generated routes for aggregate ipv4 addresses
-    for (Entry<Prefix, BgpAggregateIpv4Network> e : proc.getAggregateNetworks().entrySet()) {
-      Prefix prefix = e.getKey();
-      BgpAggregateIpv4Network aggNet = e.getValue();
-
-      // Generate a policy that matches routes to be aggregated.
-      RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix);
-
-      GeneratedRoute.Builder gr =
-          GeneratedRoute.builder()
-              .setNetwork(prefix)
-              .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
-              .setOriginType(OriginType.IGP)
-              .setGenerationPolicy(genPolicy.getName())
-              .setDiscard(true);
-
-      // Conditions to generate this route
-      List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
-      exportAggregateConditions.add(
-          new MatchPrefixSet(
-              DestinationNetwork.instance(),
-              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-      exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-      // If defined, set attribute map for aggregate network
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      String attributeMapName = aggNet.getAttributeMap();
-      if (attributeMapName != null) {
-        RouteMap attributeMap = _routeMaps.get(attributeMapName);
-        if (attributeMap != null) {
-          // need to apply attribute changes if this specific route is matched
-          weInterior = new CallExpr(attributeMapName);
-          gr.setAttributePolicy(attributeMapName);
-        }
-      }
-      exportAggregateConditions.add(bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
-
-      v.getGeneratedRoutes().add(gr.build());
-      // Do export a generated aggregate.
-      exportConditions.add(new Conjunction(exportAggregateConditions));
-    }
+    // Create BGP redistribution policy to import main RIB routes into BGP RIB
+    String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
+    RoutingPolicy.Builder redistributionPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
 
     // add generated routes for aggregate ipv6 addresses
     // TODO: merge with above to make cleaner
@@ -1099,122 +1029,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
 
-    // Export RIP routes that should be redistributed.
-    BgpRedistributionPolicy redistributeRipPolicy =
-        proc.getRedistributionPolicies().get(RoutingProtocol.RIP);
-    if (redistributeRipPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportRipConditions = new Conjunction();
-      exportRipConditions.setComment("Redistribute RIP routes into BGP");
-      exportRipConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.RIP));
-      String mapName = redistributeRipPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeRipRouteMap = _routeMaps.get(mapName);
-        if (redistributeRipRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportRipConditions.getConjuncts().add(we);
-      exportConditions.add(exportRipConditions);
-      redistributeConditions.add(exportRipConditions);
-    }
-
-    // Export static routes that should be redistributed.
-    BgpRedistributionPolicy redistributeStaticPolicy =
-        proc.getRedistributionPolicies().get(RoutingProtocol.STATIC);
-    if (redistributeStaticPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportStaticConditions = new Conjunction();
-      exportStaticConditions.setComment("Redistribute static routes into BGP");
-      exportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
-      String mapName = redistributeStaticPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeStaticRouteMap = _routeMaps.get(mapName);
-        if (redistributeStaticRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportStaticConditions.getConjuncts().add(we);
-      exportConditions.add(exportStaticConditions);
-      redistributeConditions.add(exportStaticConditions);
-    }
-
-    // Export connected routes that should be redistributed.
-    BgpRedistributionPolicy redistributeConnectedPolicy =
-        proc.getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
-    if (redistributeConnectedPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportConnectedConditions = new Conjunction();
-      exportConnectedConditions.setComment("Redistribute connected routes into BGP");
-      exportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
-      String mapName = redistributeConnectedPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeConnectedRouteMap = _routeMaps.get(mapName);
-        if (redistributeConnectedRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportConnectedConditions.getConjuncts().add(we);
-      exportConditions.add(exportConnectedConditions);
-      redistributeConditions.add(exportConnectedConditions);
-    }
-
-    // Export OSPF routes that should be redistributed.
-    BgpRedistributionPolicy redistributeOspfPolicy =
-        proc.getRedistributionPolicies().get(RoutingProtocol.OSPF);
-    if (redistributeOspfPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      Conjunction exportOspfConditions = new Conjunction();
-      exportOspfConditions.setComment("Redistribute OSPF routes into BGP");
-      exportOspfConditions
-          .getConjuncts()
-          .add(
-              firstNonNull(
-                  (MatchProtocol)
-                      redistributeOspfPolicy
-                          .getSpecialAttributes()
-                          .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-                  // No match type means internal routes only, at least on IOS.
-                  // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
-                  new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
-      String mapName = redistributeOspfPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeOspfRouteMap = _routeMaps.get(mapName);
-        if (redistributeOspfRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportOspfConditions.getConjuncts().add(we);
-      exportConditions.add(exportOspfConditions);
-      redistributeConditions.add(exportOspfConditions);
-    }
-
-    // Export EIGRP routes that should be redistributed.
-    BgpRedistributionPolicy redistributeEigrpPolicy =
-        // key EIGRP indicates redist external too; EIGRP_EX is never used as a key
-        proc.getRedistributionPolicies().get(RoutingProtocol.EIGRP);
-    if (redistributeEigrpPolicy != null) {
-      ImmutableList.Builder<BooleanExpr> exportEigrpConditions = ImmutableList.builder();
-      BooleanExpr weInterior = BooleanExprs.TRUE;
-      exportEigrpConditions.add(new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX));
-      String mapName = redistributeEigrpPolicy.getRouteMap();
-      if (mapName != null) {
-        RouteMap redistributeEigrpRouteMap = _routeMaps.get(mapName);
-        if (redistributeEigrpRouteMap != null) {
-          weInterior = new CallExpr(mapName);
-        }
-      }
-      BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
-      exportEigrpConditions.add(we);
-      Conjunction eigrp = new Conjunction(exportEigrpConditions.build());
-      eigrp.setComment("Redistribute EIGRP routes into BGP");
-      exportConditions.add(eigrp);
-      redistributeConditions.add(eigrp);
-    }
+    // Redistribute routes
+    Stream.of(
+            RoutingProtocol.RIP,
+            RoutingProtocol.STATIC,
+            RoutingProtocol.CONNECTED,
+            RoutingProtocol.OSPF,
+            RoutingProtocol.EIGRP)
+        .map(redistProtocol -> matchRedistributedRoutes(proc, redistProtocol))
+        .filter(Objects::nonNull)
+        .forEach(redistributionPolicy::addStatement);
 
     // cause ip peer groups to inherit unset fields from owning named peer
     // group if it exists, and then always from process master peer group
@@ -1231,15 +1055,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     proc.getIpNetworks()
         .forEach(
             (prefix, bgpNetwork) -> {
-              String mapName = bgpNetwork.getRouteMapName();
-              BooleanExpr weExpr = BooleanExprs.TRUE;
-              if (mapName != null) {
-                RouteMap routeMap = _routeMaps.get(mapName);
-                if (routeMap != null) {
-                  weExpr = new CallExpr(mapName);
-                }
-              }
-              BooleanExpr we = bgpRedistributeWithEnvironmentExpr(weExpr, OriginType.IGP);
               Conjunction exportNetworkConditions = new Conjunction();
               PrefixSpace space = new PrefixSpace();
               space.addPrefix(prefix);
@@ -1257,9 +1072,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
                               RoutingProtocol.BGP,
                               RoutingProtocol.IBGP,
                               RoutingProtocol.AGGREGATE)));
-              exportNetworkConditions.getConjuncts().add(we);
-              exportConditions.add(exportNetworkConditions);
-              redistributeConditions.add(exportNetworkConditions);
+              Optional.ofNullable(bgpNetwork.getRouteMapName())
+                  .map(_routeMaps::get)
+                  .ifPresent(
+                      rm -> exportNetworkConditions.getConjuncts().add(new CallExpr(rm.getName())));
+              redistributionPolicy.addStatement(
+                  new If(
+                      "Add network statement routes to BGP",
+                      exportNetworkConditions,
+                      ImmutableList.of(
+                          new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                          Statements.ExitAccept.toStaticStatement())));
             });
     if (!proc.getIpv6Networks().isEmpty()) {
       String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
@@ -1275,8 +1098,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 if (mapName != null) {
                   RouteMap routeMap = _routeMaps.get(mapName);
                   if (routeMap != null) {
-                    BooleanExpr we =
-                        bgpRedistributeWithEnvironmentExpr(new CallExpr(mapName), OriginType.IGP);
                     Conjunction exportNetwork6Conditions = new Conjunction();
                     Prefix6Space space6 = new Prefix6Space();
                     space6.addPrefix6(prefix6);
@@ -1293,8 +1114,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                     RoutingProtocol.BGP,
                                     RoutingProtocol.IBGP,
                                     RoutingProtocol.AGGREGATE)));
-                    exportNetwork6Conditions.getConjuncts().add(we);
-                    exportConditions.add(exportNetwork6Conditions);
+                    exportNetwork6Conditions.getConjuncts().add(new CallExpr(mapName));
+                    redistributionPolicy.addStatement(
+                        new If(
+                            "Add network 6 statement routes to BGP",
+                            exportNetwork6Conditions,
+                            ImmutableList.of(
+                                new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                                Statements.ExitAccept.toStaticStatement())));
                   }
                 }
               });
@@ -1302,19 +1129,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // Finalize redistribution policy and attach to process
-    newBgpProcess.setRedistributionPolicy(
-        redistributionPolicyBuilder
-            .addStatement(
-                new If(
-                    "Redistribute routes into BGP",
-                    new Disjunction(redistributeConditions),
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))
-            .build()
-            .getName());
-
-    // Export BGP and IBGP routes.
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
+    redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
+    newBgpProcess.setRedistributionPolicy(redistPolicyName);
 
     for (LeafBgpPeerGroup lpg : leafGroups) {
       if (!lpg.getActive() || lpg.getShutdown()) {
@@ -1437,6 +1253,60 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newNeighborBuilder.build();
     }
     return newBgpProcess;
+  }
+
+  /**
+   * Creates a {@link Statement} that matches and accepts routes of the given protocol that should
+   * be redistributed into the given {@link BgpProcess}. Returns {@code null} if no routes of this
+   * protocol should be redistributed, i.e. if the BGP process is not configured to redistribute it
+   * or the redistribution route-map is undefined.
+   */
+  private @Nullable Statement matchRedistributedRoutes(
+      BgpProcess bgpProcess, RoutingProtocol srcProtocol) {
+    RedistributionPolicy redistributionPolicy =
+        bgpProcess.getRedistributionPolicies().get(srcProtocol);
+    if (redistributionPolicy == null) {
+      // Process does not redistribute this protocol
+      return null;
+    }
+    String mapName = redistributionPolicy.getRouteMap();
+    if (mapName != null && !_routeMaps.containsKey(mapName)) {
+      // Route-map is undefined. No redistribution will occur.
+      return null;
+    }
+    MatchProtocol matchProtocol;
+    switch (srcProtocol) {
+      case RIP:
+      case STATIC:
+      case CONNECTED:
+        matchProtocol = new MatchProtocol(srcProtocol);
+        break;
+      case OSPF:
+        matchProtocol =
+            firstNonNull(
+                (MatchProtocol)
+                    redistributionPolicy
+                        .getSpecialAttributes()
+                        .get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+                // No match type means internal routes only, at least on IOS.
+                // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5242-bgp-ospf-redis.html#redistributionofonlyospfinternalroutesintobgp
+                new MatchProtocol(
+                    RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA, RoutingProtocol.OSPF_IS));
+        break;
+      case EIGRP:
+        // key EIGRP indicates redist external too; EIGRP_EX is never used as a key
+        matchProtocol = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
+        break;
+      default:
+        throw new IllegalStateException(
+            String.format("Unexpected protocol for BGP redistribution: %s", srcProtocol));
+    }
+    BooleanExpr redistExpr = matchProtocol;
+    if (mapName != null) {
+      redistExpr = new Conjunction(ImmutableList.of(matchProtocol, new CallExpr(mapName)));
+    }
+    redistExpr.setComment(String.format("Redistribute %s routes into BGP", srcProtocol));
+    return new If(redistExpr, ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
   }
 
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
@@ -2488,6 +2358,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.setDnsServers(_dnsServers);
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);
+    c.setExportBgpFromBgpRib(true);
     c.setNormalVlanRange(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO));
     c.setTacacsServers(_tacacsServers);
     c.setTacacsSourceInterface(_tacacsSourceInterface);
@@ -3010,6 +2881,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 org.batfish.datamodel.BgpProcess.builder()
                     .setRouterId(Ip.ZERO)
                     .setAdminCostsToVendorDefaults(c.getConfigurationFormat())
+                    .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                     .build());
           }
         });

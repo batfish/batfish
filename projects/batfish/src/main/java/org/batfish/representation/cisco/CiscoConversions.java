@@ -10,6 +10,7 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeIcmpObjectGroupAclName;
@@ -21,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multimap;
 import java.math.BigInteger;
@@ -87,6 +89,7 @@ import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
@@ -181,6 +184,18 @@ public class CiscoConversions {
       }
     }
     return highestIp;
+  }
+
+  static @Nonnull BgpAggregate toBgpAggregate(
+      BgpAggregateIpv4Network vsAggregate, Configuration c) {
+    // TODO: handle as-set
+    // TODO: handle suppress-map
+    return BgpAggregate.of(
+        vsAggregate.getPrefix(),
+        generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
+        // TODO: put advertise-map here
+        null,
+        vsAggregate.getAttributeMap());
   }
 
   /**
@@ -591,11 +606,12 @@ public class CiscoConversions {
   }
 
   static org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroup hsrpGroup) {
+    Ip groupIp = hsrpGroup.getIp();
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
         .setHelloTime(hsrpGroup.getHelloTime())
         .setHoldTime(hsrpGroup.getHoldTime())
-        .setIp(hsrpGroup.getIp())
+        .setIps(groupIp == null ? ImmutableSet.of() : ImmutableSet.of(groupIp))
         .setGroupNumber(hsrpGroup.getGroupNumber())
         .setPreempt(hsrpGroup.getPreempt())
         .setPriority(hsrpGroup.getPriority())

@@ -63,6 +63,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warnings;
 import org.batfish.common.runtime.InterfaceRuntimeData;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
@@ -215,6 +216,7 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration.Network;
 import org.batfish.representation.cisco_nxos.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_nxos.Nve.IngressReplicationProtocol;
+import org.batfish.representation.cisco_nxos.TrackInterface.Mode;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 
@@ -452,6 +454,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private boolean _systemDefaultSwitchportShutdown;
   private final @Nonnull Map<String, TacacsServer> _tacacsServers;
   private @Nullable String _tacacsSourceInterface;
+  private @Nonnull Map<Integer, Track> _tracks;
   private @Nullable String _version;
   private final @Nonnull Map<Integer, Vlan> _vlans;
   private final @Nonnull Map<String, Vrf> _vrfs;
@@ -478,6 +481,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _snmpCommunities = new HashMap<>();
     _snmpServers = new HashMap<>();
     _tacacsServers = new HashMap<>();
+    _tracks = new HashMap<>();
     _vlans = new HashMap<>();
     _vrfs = new HashMap<>();
     // Populate the default VRFs.
@@ -1200,6 +1204,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setTacacsSourceInterface(_tacacsSourceInterface);
   }
 
+  private void convertTracks() {
+    _tracks.forEach(
+        (num, track) ->
+            toTrackMethod(track, _w).ifPresent(m -> _c.getTrackingGroups().put(num.toString(), m)));
+  }
+
   private void convertIpPrefixLists() {
     _ipPrefixLists.forEach(
         (name, ipPrefixList) ->
@@ -1700,6 +1710,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _tacacsSourceInterface;
   }
 
+  public @Nonnull Map<Integer, Track> getTracks() {
+    return _tracks;
+  }
+
   public @Nullable String getVersion() {
     return _version;
   }
@@ -1802,11 +1816,32 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
+  private static @Nonnull Optional<org.batfish.datamodel.tracking.TrackMethod> toTrackMethod(
+      @Nonnull Track track, @Nonnull Warnings w) {
+    assert track instanceof TrackInterface;
+    TrackInterface trackInterface = (TrackInterface) track;
+    if (trackInterface.getMode() == Mode.LINE_PROTOCOL) {
+      return Optional.of(
+          new org.batfish.datamodel.tracking.TrackInterface(trackInterface.getInterface()));
+    }
+    w.redFlag(
+        String.format(
+            "Interface track mode %s is not yet supported and will be ignored.",
+            trackInterface.getMode()));
+    return Optional.empty();
+  }
+
   private static @Nonnull org.batfish.datamodel.hsrp.HsrpGroup toHsrpGroup(HsrpGroupIpv4 group) {
+    Optional<Ip> groupIp = Optional.ofNullable(group.getIp());
+    Set<Ip> groupIpSecondary = group.getIpSecondaries();
+    ImmutableSet.Builder<Ip> hsrpIps = ImmutableSet.builder();
+    groupIp.ifPresent(hsrpIps::add);
+    groupIpSecondary.forEach(hsrpIps::add);
+
     org.batfish.datamodel.hsrp.HsrpGroup.Builder builder =
         org.batfish.datamodel.hsrp.HsrpGroup.builder()
             .setGroupNumber(group.getGroup())
-            .setIp(group.getIp())
+            .setIps(hsrpIps.build())
             .setPreempt(group.getPreempt());
     if (group.getHelloIntervalMs() != null) {
       builder.setHelloTime(group.getHelloIntervalMs());
@@ -3690,6 +3725,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     convertSnmp();
     convertTacacsServers();
     convertTacacsSourceInterface();
+    convertTracks();
     convertRouteMaps();
     convertStaticRoutes();
     computeImplicitOspfAreas();
