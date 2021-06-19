@@ -8773,6 +8773,7 @@ public final class CiscoNxosGrammarTest {
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "1", 2));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "2", 1));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "3", 0));
+    // Unsupported track methods should still produce correct references
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "100", 1));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "101", 1));
 
