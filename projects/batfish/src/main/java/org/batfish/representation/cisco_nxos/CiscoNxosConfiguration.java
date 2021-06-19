@@ -1818,16 +1818,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static @Nonnull Optional<org.batfish.datamodel.tracking.TrackMethod> toTrackMethod(
       @Nonnull Track track, @Nonnull Warnings w) {
-    assert track instanceof TrackInterface;
-    TrackInterface trackInterface = (TrackInterface) track;
-    if (trackInterface.getMode() == Mode.LINE_PROTOCOL) {
-      return Optional.of(
-          new org.batfish.datamodel.tracking.TrackInterface(trackInterface.getInterface()));
+    if (track instanceof TrackInterface) {
+      TrackInterface trackInterface = (TrackInterface) track;
+      if (trackInterface.getMode() == Mode.LINE_PROTOCOL) {
+        return Optional.of(
+            new org.batfish.datamodel.tracking.TrackInterface(trackInterface.getInterface()));
+      }
+      w.redFlag(
+          String.format(
+              "Interface track mode %s is not yet supported and will be ignored.",
+              trackInterface.getMode()));
     }
-    w.redFlag(
-        String.format(
-            "Interface track mode %s is not yet supported and will be ignored.",
-            trackInterface.getMode()));
+    // Warnings for unsupported track methods should be handled by parse warnings
     return Optional.empty();
   }
 
