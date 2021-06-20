@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -47,6 +48,9 @@ public final class SearchRoutePoliciesQuestion extends Question {
       @Nullable String nodes,
       @Nullable String policies,
       Action action) {
+    Preconditions.checkArgument(
+        action == Action.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
+        "Output route constraints can only be provided when the action is 'permit'");
     _nodes = nodes;
     _policies = policies;
     _inputConstraints = inputConstraints;

@@ -34,6 +34,21 @@ public class RegexConstraints {
     _regexConstraints = firstNonNull(regexConstraints, ImmutableList.of());
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (getClass() != o.getClass()) {
+      return false;
+    }
+    RegexConstraints other = (RegexConstraints) o;
+    return _regexConstraints.equals(other._regexConstraints);
+  }
+
   @JsonValue
   public List<RegexConstraint> getRegexConstraints() {
     return _regexConstraints;
@@ -55,6 +70,11 @@ public class RegexConstraints {
     return _regexConstraints.stream()
         .map(RegexConstraint::getRegex)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  @Override
+  public int hashCode() {
+    return _regexConstraints.hashCode();
   }
 
   public boolean isEmpty() {
