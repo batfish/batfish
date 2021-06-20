@@ -382,6 +382,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
@@ -2754,8 +2755,10 @@ public final class CiscoGrammarTest {
         equalTo(
             ImmutableList.of(
                 new If(
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
@@ -2800,8 +2803,10 @@ public final class CiscoGrammarTest {
         equalTo(
             ImmutableList.of(
                 new If(
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchPrefixSet(
+                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")))),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
@@ -5578,9 +5583,10 @@ public final class CiscoGrammarTest {
 
     // Ensure the converted route-map ignores the match-interface clause
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    RoutingPolicy rm = c.getRoutingPolicies().get("rm");
-    assertThat(
-        rm.getStatements(), contains(Statements.ReturnLocalDefaultAction.toStaticStatement()));
+    List<Statement> statements =
+        ((If) Iterables.getOnlyElement(c.getRoutingPolicies().get("rm").getStatements()))
+            .getTrueStatements();
+    assertThat(statements, contains(Statements.ReturnTrue.toStaticStatement()));
   }
 
   @Test
@@ -5588,7 +5594,8 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-route-map-set-metric-eigrp");
 
     assertThat(
-        c.getRoutingPolicies().get("rm_set_metric").getStatements(),
+        ((If) Iterables.getOnlyElement(c.getRoutingPolicies().get("rm_set_metric").getStatements()))
+            .getTrueStatements(),
         // Being intentionally lax here because pretty sure conversion is busted.
         // TODO: update when convinced eigrp settings have correct values
         hasItem(instanceOf(SetEigrpMetric.class)));

@@ -8,6 +8,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,12 +36,12 @@ public class BgpPeerAddressNextHopTest {
             .setTailIp(tailIp)
             .build();
     Environment env = Environment.builder(C).setBgpSessionProperties(sessionProps).build();
-    assertThat(INSTANCE.getNextHopIp(env), equalTo(tailIp));
+    assertThat(INSTANCE.evaluate(env), equalTo(NextHopIp.of(tailIp)));
   }
 
   @Test
   public void testEvaluate_noBgpSessionProperties() {
     _thrown.expectMessage("Expected BGP session properties");
-    INSTANCE.getNextHopIp(Environment.builder(C).build());
+    INSTANCE.evaluate(Environment.builder(C).build());
   }
 }

@@ -2,7 +2,8 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpSessionProperties;
-import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** Implements BGP next-hop-self semantics */
@@ -22,11 +23,10 @@ public class SelfNextHop extends NextHopExpr {
   }
 
   @Override
-  @Nullable
-  public Ip getNextHopIp(Environment environment) {
+  public @Nullable NextHop evaluate(Environment env) {
     // BgpSessionProperties are for session directed toward the node with the policy being executed
-    BgpSessionProperties sessionProperties = environment.getBgpSessionProperties();
-    return sessionProperties == null ? null : sessionProperties.getHeadIp();
+    BgpSessionProperties sessionProperties = env.getBgpSessionProperties();
+    return sessionProperties == null ? null : NextHopIp.of(sessionProperties.getHeadIp());
   }
 
   @Override
