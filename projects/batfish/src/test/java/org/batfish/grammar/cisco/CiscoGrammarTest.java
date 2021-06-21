@@ -6027,7 +6027,7 @@ public final class CiscoGrammarTest {
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
         vc.getDefaultVrf().getBgpProcess().getAggregateNetworks();
-    assertThat(aggs, aMapWithSize(8));
+    assertThat(aggs, aMapWithSize(9));
     assertThat(
         aggs,
         hasEntry(
@@ -6084,6 +6084,18 @@ public final class CiscoGrammarTest {
             equalTo(
                 new BgpAggregateIpv4Network(
                     Prefix.parse("3.3.0.0/16"), false, "sm2", null, null, true))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("4.0.0.0/16"),
+                    false,
+                    "undefined",
+                    "undefined",
+                    "undefined",
+                    false))));
   }
 
   @Test
@@ -6092,7 +6104,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     Map<Prefix, BgpAggregate> aggs = c.getDefaultVrf().getBgpProcess().getAggregates();
-    assertThat(aggs, aMapWithSize(8));
+    assertThat(aggs, aMapWithSize(9));
     assertThat(
         aggs,
         hasEntry(
@@ -6169,6 +6181,12 @@ public final class CiscoGrammarTest {
                     SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
                     null,
                     null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            // TODO: verify undefined route-map can be treated as omitted
+            equalTo(BgpAggregate.of(Prefix.parse("4.0.0.0/16"), null, null, null))));
   }
 
   @Test

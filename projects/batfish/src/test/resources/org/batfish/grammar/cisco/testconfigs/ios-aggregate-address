@@ -35,4 +35,6 @@ router bgp 1
  aggregate-address 3.2.0.0 255.255.0.0 suppress-map sm1
  ! suppress only routes passing suppress-map, completely ignoring summary-only
  aggregate-address 3.3.0.0 255.255.0.0 summary-only suppress-map sm2
+ ! undefined route-maps
+ aggregate-address 4.0.0.0 255.255.0.0 advertise-map undefined attribute-map undefined suppress-map undefined
 !
