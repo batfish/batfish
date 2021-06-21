@@ -323,12 +323,13 @@ public class CiscoXrConversions {
   }
 
   static @Nonnull BgpAggregate toBgpAggregate(
-      BgpAggregateIpv4Network vsAggregate, Configuration c) {
+      BgpAggregateIpv4Network vsAggregate, Configuration c, Warnings w) {
     // undefined -> null for best effort on invalid config
-    String routePolicy =
-        Optional.ofNullable(vsAggregate.getRoutePolicy())
-            .filter(c.getRoutingPolicies()::containsKey)
-            .orElse(null);
+    String routePolicy = vsAggregate.getRoutePolicy();
+    if (routePolicy != null && !c.getRoutingPolicies().containsKey(routePolicy)) {
+      w.redFlag(String.format("Ignoring undefined aggregate-address route-policy %s", routePolicy));
+      routePolicy = null;
+    }
     // TODO: handle as-set by generating generation policy wrapping route-policy
     return BgpAggregate.of(
         vsAggregate.getPrefix(),
