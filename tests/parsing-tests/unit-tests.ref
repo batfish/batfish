@@ -84003,6 +84003,10 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "Ignoring undefined aggregate-address route-policy AGGREGATE_POLICY"
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Ignoring undefined route-policy REDISTRIBUTE_STATIC_POLICY in static -> BGP redistribution"
             }
           ]
