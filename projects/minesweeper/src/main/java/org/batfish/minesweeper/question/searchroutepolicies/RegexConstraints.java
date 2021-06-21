@@ -32,9 +32,7 @@ public class RegexConstraints {
   @JsonCreator
   public RegexConstraints(@Nullable List<RegexConstraint> regexConstraints) {
     _regexConstraints =
-        regexConstraints == null
-            ? ImmutableSet.of()
-            : regexConstraints.stream().collect(ImmutableSet.toImmutableSet());
+        regexConstraints == null ? ImmutableSet.of() : ImmutableSet.copyOf(regexConstraints);
   }
 
   @Override
