@@ -8,6 +8,10 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.representation.cumulus_nclu.BgpProcess.BGP_UNNUMBERED_IP;
@@ -117,7 +121,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -170,25 +173,6 @@ public final class CumulusConversions {
    * value in absence of explicit information.
    */
   public static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
-
-  public static @Nonnull String computeBgpCommonExportPolicyName(String vrfName) {
-    return String.format("~BGP_COMMON_EXPORT_POLICY:%s~", vrfName);
-  }
-
-  @VisibleForTesting
-  public static @Nonnull String computeBgpPeerExportPolicyName(
-      String vrfName, String peerInterface) {
-    return String.format("~BGP_PEER_EXPORT_POLICY:%s:%s~", vrfName, peerInterface);
-  }
-
-  static String computeBgpDefaultRouteExportPolicyName(boolean ipv4, String vrf, String peer) {
-    return String.format(
-        "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:IPv%s:%s:%s~", ipv4 ? "4" : "6", vrf, peer);
-  }
-
-  public static @Nonnull String computeBgpPeerImportPolicyName(String vrf, String peer) {
-    return String.format("~BGP_PEER_IMPORT_POLICY:%s:%s~", vrf, peer);
-  }
 
   public static String computeBgpGenerationPolicyName(boolean ipv4, String vrfName, String prefix) {
     return String.format("~AGGREGATE_ROUTE%s_GEN:%s:%s~", ipv4 ? "" : "6", vrfName, prefix);
@@ -665,17 +649,16 @@ public final class CumulusConversions {
     RoutingPolicy.Builder peerExportPolicy =
         RoutingPolicy.builder()
             .setOwner(c)
-            .setName(computeBgpPeerExportPolicyName(vrfName, neighbor.getName()));
+            .setName(generatedBgpPeerExportPolicyName(vrfName, neighbor.getName()));
 
     // If default originate is set for a neighbor, we will send it a "fresh" default route is not
     // subjected to the neighbor's outgoing route map. We will drop other default routes.
     if (bgpDefaultOriginate(neighbor)) {
-      initBgpDefaultRouteExportPolicy(vrfName, neighbor.getName(), true, null, c);
+      initBgpDefaultRouteExportPolicy(c);
       peerExportPolicy.addStatement(
           new If(
               "Export default route from peer with default-originate configured",
-              new CallExpr(
-                  computeBgpDefaultRouteExportPolicyName(true, vrfName, neighbor.getName())),
+              new CallExpr(generatedBgpDefaultRouteExportPolicyName(true)),
               singletonList(Statements.ReturnTrue.toStaticStatement()),
               ImmutableList.of()));
 
@@ -696,51 +679,26 @@ public final class CumulusConversions {
   }
 
   /**
-   * Initializes export policy for IPv4 or IPv6 default routes if it doesn't already exist. This
-   * policy is the same across BGP processes, so only one is created for each configuration.
-   *
-   * @param ipv4 Whether to initialize the IPv4 or IPv6 default route export policy
-   * @param defaultOriginateExportMapName Name of route-map to apply to generated route before
-   *     export.
+   * Initializes export policy for IPv4 default routes if it doesn't already exist. This policy is
+   * the same across BGP processes, so only one is created for each configuration.
    */
-  // TODO: This function is copied verbatim from CiscoConversations. Refactor after we've verified
-  // the right behavior for default-originate.
-  private static void initBgpDefaultRouteExportPolicy(
-      String vrfName,
-      String peerName,
-      boolean ipv4,
-      @Nullable String defaultOriginateExportMapName,
-      Configuration c) {
-    SetOrigin setOrigin =
-        new SetOrigin(
-            new LiteralOrigin(
-                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
-                    ? OriginType.IGP
-                    : OriginType.INCOMPLETE,
-                null));
-    List<Statement> defaultRouteExportStatements;
-    if (defaultOriginateExportMapName == null
-        || !c.getRoutingPolicies().containsKey(defaultOriginateExportMapName)) {
-      defaultRouteExportStatements =
-          ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
-    } else {
-      defaultRouteExportStatements =
-          ImmutableList.of(
-              setOrigin,
-              new CallStatement(defaultOriginateExportMapName),
-              Statements.ReturnTrue.toStaticStatement());
+  private static void initBgpDefaultRouteExportPolicy(Configuration c) {
+    String policyName = generatedBgpDefaultRouteExportPolicyName(true);
+    if (c.getRoutingPolicies().containsKey(policyName)) {
+      return;
     }
 
+    // TODO Check if this is the correct origin type
+    SetOrigin setOrigin = new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null));
     RoutingPolicy.builder()
         .setOwner(c)
-        .setName(computeBgpDefaultRouteExportPolicyName(ipv4, vrfName, peerName))
+        .setName(policyName)
         .addStatement(
             new If(
                 new Conjunction(
                     ImmutableList.of(
-                        ipv4 ? Common.matchDefaultRoute() : Common.matchDefaultRouteV6(),
-                        new MatchProtocol(RoutingProtocol.AGGREGATE))),
-                defaultRouteExportStatements))
+                        Common.matchDefaultRoute(), new MatchProtocol(RoutingProtocol.AGGREGATE))),
+                ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement())))
         .addStatement(Statements.ReturnFalse.toStaticStatement())
         .build();
   }
@@ -759,7 +717,7 @@ public final class CumulusConversions {
     RoutingPolicy.Builder peerImportPolicy =
         RoutingPolicy.builder()
             .setOwner(c)
-            .setName(computeBgpPeerImportPolicyName(vrfName, neighbor.getName()));
+            .setName(generatedBgpPeerImportPolicyName(vrfName, neighbor.getName()));
 
     peerImportPolicy.addStatement(
         new If(
@@ -773,7 +731,7 @@ public final class CumulusConversions {
 
   private static BooleanExpr computePeerExportConditions(BgpNeighbor neighbor, BgpVrf bgpVrf) {
     BooleanExpr commonCondition =
-        new CallExpr(computeBgpCommonExportPolicyName(bgpVrf.getVrfName()));
+        new CallExpr(generatedBgpCommonExportPolicyName(bgpVrf.getVrfName()));
     BooleanExpr peerCondition = getBgpNeighborExportPolicyCallExpr(neighbor);
 
     return peerCondition == null
@@ -933,7 +891,7 @@ public final class CumulusConversions {
     RoutingPolicy bgpCommonExportPolicy =
         RoutingPolicy.builder()
             .setOwner(c)
-            .setName(computeBgpCommonExportPolicyName(vrfName))
+            .setName(generatedBgpCommonExportPolicyName(vrfName))
             .build();
 
     List<Statement> statements = new ArrayList<>();
