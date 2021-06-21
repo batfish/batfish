@@ -89,7 +89,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -277,9 +276,9 @@ public class CumulusConcatenatedGrammarTest {
         dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
     Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
         dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
-    Assert.assertThat(
+    assertThat(
         vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
-    Assert.assertThat(
+    assertThat(
         vrf2Routes,
         contains(
             allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC)),
@@ -311,8 +310,8 @@ public class CumulusConcatenatedGrammarTest {
         bgpRouteVrf1.toBuilder().setOriginatorIp(Ip.parse("10.10.10.2")).build();
     Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
     Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
-    Assert.assertThat(vrf1BgpRoutes, contains(bgpRouteVrf1));
-    Assert.assertThat(vrf2BgpRoutes, contains(bgpRouteVrf2));
+    assertThat(vrf1BgpRoutes, contains(bgpRouteVrf1));
+    assertThat(vrf2BgpRoutes, contains(bgpRouteVrf2));
   }
 
   @Test
