@@ -135,6 +135,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     c.setDeviceModel(DeviceModel.CUMULUS_UNSPECIFIED);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDefaultInboundAction(LineAction.PERMIT);
+    c.setExportBgpFromBgpRib(true);
 
     // create default VRF
     getOrCreateVrf(c, DEFAULT_VRF_NAME);

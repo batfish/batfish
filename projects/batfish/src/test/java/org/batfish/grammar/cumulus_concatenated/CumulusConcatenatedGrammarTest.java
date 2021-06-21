@@ -2,6 +2,9 @@ package org.batfish.grammar.cumulus_concatenated;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.batfish.datamodel.Ip.ZERO;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -37,6 +40,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -47,7 +51,9 @@ import org.batfish.common.Warnings;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -58,6 +64,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
@@ -73,6 +80,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.grammar.GrammarSettings;
@@ -81,6 +89,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -244,6 +253,66 @@ public class CumulusConcatenatedGrammarTest {
     assertThat(
         viConfig.getRouteFilterLists(),
         hasKey(computeMatchSuppressedSummaryOnlyPolicyName(vrf.getName())));
+  }
+
+  @Test
+  public void testBgpRedistribution() throws IOException {
+    /*
+     * Config contains two VRFs:
+     * - VRF1 has static route 1.1.1.1/32 and redistributes static into BGP unconditionally
+     * - VRF2 has static routes 1.1.1.1/32 and 2.2.2.2/32, and redistributes static into BGP with a
+     *   route-map that only permits 1.1.1.1/32
+     * - Both VRFs' BGP RIBs should contain 1.1.1.1/32 as a local route.
+     */
+    String hostname = "bgp_redistribution";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Prefix staticPrefix1 = Prefix.parse("1.1.1.1/32");
+    Prefix staticPrefix2 = Prefix.parse("2.2.2.2/32");
+
+    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32,
+    // and VRF2 should also have 2.2.2.2/32
+    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
+        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
+        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    Assert.assertThat(
+        vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
+    Assert.assertThat(
+        vrf2Routes,
+        contains(
+            allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC)),
+            allOf(hasPrefix(staticPrefix2), hasProtocol(RoutingProtocol.STATIC))));
+
+    // Both VRFs should have 1.1.1.1/32 in BGP (and not 2.2.2.2/32)
+    int bgpAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(hostname)
+            .getVrfs()
+            .get("VRF1")
+            .getBgpProcess()
+            .getAdminCost(RoutingProtocol.BGP);
+    Bgpv4Route bgpRouteVrf1 =
+        Bgpv4Route.builder()
+            .setNetwork(staticPrefix1)
+            .setNonRouting(true)
+            .setAdmin(bgpAdmin)
+            .setLocalPreference(100)
+            .setNextHop(NextHopDiscard.instance())
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.parse("10.10.10.1"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(ZERO) // indicates local origination
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .build();
+    Bgpv4Route bgpRouteVrf2 =
+        bgpRouteVrf1.toBuilder().setOriginatorIp(Ip.parse("10.10.10.2")).build();
+    Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
+    Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
+    Assert.assertThat(vrf1BgpRoutes, contains(bgpRouteVrf1));
+    Assert.assertThat(vrf2BgpRoutes, contains(bgpRouteVrf2));
   }
 
   @Test
