@@ -194,14 +194,17 @@ final class Conversions {
   static @Nonnull BgpAggregate toBgpAggregate(
       Prefix prefix,
       BgpVrfAddressFamilyAggregateNetworkConfiguration vsAggregate,
-      Configuration c) {
+      Configuration c,
+      Warnings w) {
     // TODO: handle as-set
     // TODO: handle suppress-map
     // TODO: verify undefined route-map can be treated as omitted
-    String attributeMap =
-        Optional.ofNullable(vsAggregate.getAttributeMap())
-            .filter(c.getRoutingPolicies()::containsKey)
-            .orElse(null);
+    String attributeMap = vsAggregate.getAttributeMap();
+    if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
+      w.redFlag(
+          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      attributeMap = null;
+    }
     return BgpAggregate.of(
         prefix,
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),

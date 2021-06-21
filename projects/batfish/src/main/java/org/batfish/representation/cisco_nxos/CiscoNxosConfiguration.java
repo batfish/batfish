@@ -566,7 +566,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           .map(
               aggregateByPrefixEntry ->
                   toBgpAggregate(
-                      aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c))
+                      aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c, _w))
           .forEach(newBgpProcess::addAggregate);
     }
 
