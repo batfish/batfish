@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Range;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -165,6 +166,27 @@ public class BgpRouteConstraints {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (getClass() != o.getClass()) {
+      return false;
+    }
+    BgpRouteConstraints other = (BgpRouteConstraints) o;
+    return Objects.equals(_prefix, other._prefix)
+        && _complementPrefix == other._complementPrefix
+        && Objects.equals(_localPreference, other._localPreference)
+        && Objects.equals(_med, other._med)
+        && Objects.equals(_tag, other._tag)
+        && Objects.equals(_communities, other._communities)
+        && Objects.equals(_asPath, other._asPath);
+  }
+
   @JsonProperty(PROP_PREFIX)
   @Nonnull
   public PrefixSpace getPrefix() {
@@ -204,5 +226,11 @@ public class BgpRouteConstraints {
   @Nonnull
   public RegexConstraints getAsPath() {
     return _asPath;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _prefix, _complementPrefix, _localPreference, _med, _tag, _communities, _asPath);
   }
 }

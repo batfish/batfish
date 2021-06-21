@@ -190,12 +190,17 @@ public class CiscoConversions {
       BgpAggregateIpv4Network vsAggregate, Configuration c) {
     // TODO: handle as-set
     // TODO: handle suppress-map
+    // TODO: verify undefined route-map can be treated as omitted
+    String attributeMap =
+        Optional.ofNullable(vsAggregate.getAttributeMap())
+            .filter(c.getRoutingPolicies()::containsKey)
+            .orElse(null);
     return BgpAggregate.of(
         vsAggregate.getPrefix(),
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
         // TODO: put advertise-map here
         null,
-        vsAggregate.getAttributeMap());
+        attributeMap);
   }
 
   /**
