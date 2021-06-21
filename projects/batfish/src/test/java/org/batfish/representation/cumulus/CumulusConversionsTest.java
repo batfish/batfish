@@ -7,6 +7,8 @@ import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.LOOPBACK;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.RoutingProtocol.IBGP;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
@@ -18,10 +20,8 @@ import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DE
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.addBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.addOspfInterfaces;
-import static org.batfish.representation.cumulus.CumulusConversions.computeBgpCommonExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpNeighborImportRoutingPolicy;
-import static org.batfish.representation.cumulus.CumulusConversions.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreas;
@@ -564,7 +564,7 @@ public final class CumulusConversionsTest {
     assertTrue(
         viConfig
             .getRoutingPolicies()
-            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(
                 route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
@@ -611,7 +611,7 @@ public final class CumulusConversionsTest {
     assertTrue(
         viConfig
             .getRoutingPolicies()
-            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(route, builder.setNetwork(route.getNetwork()), Direction.OUT));
     assertThat(builder, hasCommunities(community));
   }
@@ -654,7 +654,7 @@ public final class CumulusConversionsTest {
     assertFalse(
         viConfig
             .getRoutingPolicies()
-            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(
                 route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
@@ -804,7 +804,7 @@ public final class CumulusConversionsTest {
     assertThat(
         viConfig
             .getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName("vrf", neighbor.getName()))
+            .get(generatedBgpPeerExportPolicyName("vrf", neighbor.getName()))
             .getStatements()
             .get(1),
         equalTo(REJECT_DEFAULT_ROUTE));
@@ -1586,7 +1586,7 @@ public final class CumulusConversionsTest {
     assertFalse(
         viConfig
             .getRoutingPolicies()
-            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(
                 ospfExternalRouteBuilder.build(),
                 Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO),
@@ -1595,7 +1595,7 @@ public final class CumulusConversionsTest {
     assertTrue(
         viConfig
             .getRoutingPolicies()
-            .get(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
             .process(
                 ospfExternalRouteBuilder2.build(),
                 Bgpv4Route.testBuilder().setNetwork(prefix),
@@ -2224,11 +2224,11 @@ public final class CumulusConversionsTest {
     assertEquals(
         viConfig
             .getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, bgpNeighbor.getName()))
+            .get(generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, bgpNeighbor.getName()))
             .getStatements(),
         ImmutableList.of(
             new If(
-                new CallExpr(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME)),
+                new CallExpr(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME)),
                 ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                 ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
 
@@ -2240,11 +2240,11 @@ public final class CumulusConversionsTest {
     assertEquals(
         viConfig
             .getRoutingPolicies()
-            .get(computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, bgpNeighbor.getName()))
+            .get(generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, bgpNeighbor.getName()))
             .getStatements(),
         ImmutableList.of(
             new If(
-                new CallExpr(computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME)),
+                new CallExpr(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME)),
                 ImmutableList.of(
                     new SetMetric(new LiteralLong(DEFAULT_MAX_MED)),
                     Statements.ExitAccept.toStaticStatement()),

@@ -4,6 +4,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
@@ -48,8 +50,6 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
-import static org.batfish.representation.cumulus_nclu.CumulusConversions.computeBgpCommonExportPolicyName;
-import static org.batfish.representation.cumulus_nclu.CumulusConversions.computeBgpPeerExportPolicyName;
 import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -272,7 +272,7 @@ public final class CumulusNcluGrammarTest {
                                 allOf(
                                     hasAddressFamilyCapabilites(hasSendCommunity(true)),
                                     hasExportPolicy(
-                                        computeBgpPeerExportPolicyName(
+                                        generatedBgpPeerExportPolicyName(
                                             DEFAULT_VRF_NAME, iface))))))))));
     assertThat(
         configs.get(node2),
@@ -291,7 +291,7 @@ public final class CumulusNcluGrammarTest {
                                 allOf(
                                     hasAddressFamilyCapabilites(hasSendCommunity(true)),
                                     hasExportPolicy(
-                                        computeBgpPeerExportPolicyName(
+                                        generatedBgpPeerExportPolicyName(
                                             DEFAULT_VRF_NAME, iface))))))))));
 
     // Ensure reachability between nodes
@@ -308,8 +308,8 @@ public final class CumulusNcluGrammarTest {
   public void testBgpConversion() throws IOException {
     Configuration c = parseConfig("cumulus_nclu_bgp");
     String peerInterface = "swp1";
-    String peerExportPolicyName = computeBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerInterface);
-    String commonExportPolicyName = computeBgpCommonExportPolicyName(DEFAULT_VRF_NAME);
+    String peerExportPolicyName = generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerInterface);
+    String commonExportPolicyName = generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME);
 
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasRouterId(Ip.parse("192.0.2.2")))));
     assertThat(
