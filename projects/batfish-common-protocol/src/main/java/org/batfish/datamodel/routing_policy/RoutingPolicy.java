@@ -303,7 +303,7 @@ public class RoutingPolicy implements Serializable {
             .setDirection(direction)
             .setEigrpProcess(eigrpProcess)
             .setRibIntersectsPrefixSpaceEvaluator(ribIntersectsPrefixSpaceEvaluator)
-            .setTraceTree(tracer)
+            .setTracer(tracer)
             .build();
     Result result = call(environment);
     return result.getBooleanValue() && !(Boolean.TRUE.equals(environment.getSuppressed()));

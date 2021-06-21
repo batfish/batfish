@@ -1,6 +1,9 @@
 package org.batfish.datamodel.routing_policy.statement;
 
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasChildren;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -105,7 +108,7 @@ public final class IfTest {
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
 
-    Environment environment = Environment.builder(c).setTraceTree(tracer).build();
+    Environment environment = Environment.builder(c).setTracer(tracer).build();
     IF.execute(environment);
 
     tracer.endSubTrace();
@@ -114,7 +117,7 @@ public final class IfTest {
   }
 
   @Test
-  public void testExecute() {
+  public void testExecute_tracing() {
     // comment is set, guard is true -- should be traced
     assertThat(
         executeHelper(
@@ -142,13 +145,31 @@ public final class IfTest {
     assertThat(
         executeHelper(new If("comment", BooleanExprs.TRUE, ImmutableList.of(), ImmutableList.of())),
         contains(isTraceTree("Matched 'comment'")));
+
+    // nested traces
+    assertThat(
+        executeHelper(
+            new If(
+                "comment",
+                BooleanExprs.TRUE,
+                ImmutableList.of(
+                    new If(
+                        "commentInside",
+                        BooleanExprs.TRUE,
+                        ImmutableList.of(),
+                        ImmutableList.of())),
+                ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))),
+        contains(
+            allOf(
+                hasTraceElement("Matched 'comment'"),
+                hasChildren(isTraceTree("Matched 'commentInside'")))));
   }
 
   private static List<TraceTree> executeHelper(If ifStatement) {
     Configuration c = Configuration.builder().setHostname("host").build();
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
-    Environment environment = Environment.builder(c).setTraceTree(tracer).build();
+    Environment environment = Environment.builder(c).setTracer(tracer).build();
     ifStatement.execute(environment);
     tracer.endSubTrace();
     return tracer.getTrace();

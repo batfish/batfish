@@ -312,7 +312,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             permit
                 ? new BgpRouteDiffs(routeDiffs(inputRoute, toQuestionsBgpRoute(outputRoute)))
                 : null)
-        .put(COL_TRACE, result.getTraceTrees())
+        .put(COL_TRACE, result.getTrace())
         .build();
   }
 

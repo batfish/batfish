@@ -536,7 +536,7 @@ public class Environment {
       return this;
     }
 
-    public Builder setTraceTree(@Nullable Tracer tracer) {
+    public Builder setTracer(@Nullable Tracer tracer) {
       _tracer = tracer;
       return this;
     }

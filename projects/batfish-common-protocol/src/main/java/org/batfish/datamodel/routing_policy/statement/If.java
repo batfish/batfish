@@ -121,20 +121,20 @@ public class If extends Statement {
           .setTraceElement(TraceElement.of(String.format("Matched '%s'", getComment())));
       environment.getTracer().newSubTrace();
     }
-    List<Statement> toExecute = guardVal ? _trueStatements : _falseStatements;
-    for (Statement statement : toExecute) {
-      Result result = statement.execute(environment);
-      if (result.getExit() || result.getReturn()) {
-        if (traceIt) {
-          environment.getTracer().endSubTrace();
+    try {
+      List<Statement> toExecute = guardVal ? _trueStatements : _falseStatements;
+      for (Statement statement : toExecute) {
+        Result result = statement.execute(environment);
+        if (result.getExit() || result.getReturn()) {
+          return result;
         }
-        return result;
+      }
+      return Result.builder().setFallThrough(true).build();
+    } finally {
+      if (traceIt) {
+        environment.getTracer().endSubTrace();
       }
     }
-    if (traceIt) {
-      environment.getTracer().endSubTrace();
-    }
-    return Result.builder().setFallThrough(true).build();
   }
 
   @JsonProperty(PROP_FALSE_STATEMENTS)

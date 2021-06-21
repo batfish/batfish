@@ -44,7 +44,7 @@ final class Result {
   private final Bgpv4Route _inputRoute;
   private final LineAction _action;
   private final @Nullable Bgpv4Route _outputRoute;
-  private final List<TraceTree> _traceTrees;
+  private final List<TraceTree> _trace;
 
   Result(
       RoutingPolicyId policyId,
@@ -59,7 +59,7 @@ final class Result {
     _action = action;
     _inputRoute = inputRoute;
     _outputRoute = outputRoute;
-    _traceTrees = traceTrees;
+    _trace = traceTrees;
   }
 
   @Override
@@ -75,7 +75,7 @@ final class Result {
         && _action == result._action
         && Objects.equals(_inputRoute, result._inputRoute)
         && Objects.equals(_outputRoute, result._outputRoute)
-        && Objects.equals(_traceTrees, result._traceTrees);
+        && Objects.equals(_trace, result._trace);
   }
 
   public LineAction getAction() {
@@ -99,12 +99,12 @@ final class Result {
     return _policyId;
   }
 
-  public List<TraceTree> getTraceTrees() {
-    return _traceTrees;
+  public List<TraceTree> getTrace() {
+    return _trace;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_policyId, _action, _inputRoute, _outputRoute, _traceTrees);
+    return Objects.hash(_policyId, _action, _inputRoute, _outputRoute, _trace);
   }
 }
