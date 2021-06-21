@@ -907,13 +907,13 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.testBuilder()
+              Bgpv4Route.builder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.BGP)
                   .setAdmin(ebgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -938,13 +938,13 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.testBuilder()
+              Bgpv4Route.builder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.IBGP)
                   .setAdmin(ibgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -980,13 +980,13 @@ public final class CiscoNxosGrammarTest {
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.testBuilder()
+              Bgpv4Route.builder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.BGP)
                   .setAdmin(ebgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
