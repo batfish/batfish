@@ -1,11 +1,11 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -23,7 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class RegexConstraints {
 
-  @Nonnull private final List<RegexConstraint> _regexConstraints;
+  @Nonnull private final Set<RegexConstraint> _regexConstraints;
 
   public RegexConstraints() {
     this(ImmutableList.of());
@@ -31,7 +31,10 @@ public class RegexConstraints {
 
   @JsonCreator
   public RegexConstraints(@Nullable List<RegexConstraint> regexConstraints) {
-    _regexConstraints = firstNonNull(regexConstraints, ImmutableList.of());
+    _regexConstraints =
+        regexConstraints == null
+            ? ImmutableSet.of()
+            : regexConstraints.stream().collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
@@ -50,7 +53,7 @@ public class RegexConstraints {
   }
 
   @JsonValue
-  public List<RegexConstraint> getRegexConstraints() {
+  public Set<RegexConstraint> getRegexConstraints() {
     return _regexConstraints;
   }
 

@@ -5,13 +5,43 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
+import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.LongSpace.Builder;
 import org.junit.Test;
 
 /** Tests for {@link BgpRouteConstraints}. */
 public class BgpRouteConstraintsTest {
+
+  @Test
+  public void testEquals() {
+    BgpRouteConstraints c1 = BgpRouteConstraints.builder().build();
+    BgpRouteConstraints c2 =
+        BgpRouteConstraints.builder().setLocalPreference(LongSpace.of(3)).build();
+    BgpRouteConstraints c3 =
+        BgpRouteConstraints.builder()
+            .setLocalPreference(LongSpace.of(3))
+            .setMed(LongSpace.of(3))
+            .build();
+    BgpRouteConstraints c4 =
+        BgpRouteConstraints.builder()
+            .setMed(LongSpace.of(3))
+            .setLocalPreference(LongSpace.of(3))
+            .build();
+    BgpRouteConstraints c5 =
+        BgpRouteConstraints.builder()
+            .setCommunities(
+                new RegexConstraints(ImmutableList.of(new RegexConstraint("foo", true))))
+            .build();
+    new EqualsTester()
+        .addEqualityGroup(c1)
+        .addEqualityGroup(c2)
+        .addEqualityGroup(c3, c4)
+        .addEqualityGroup(c5)
+        .testEquals();
+  }
 
   @Test
   public void testProcessBuilder() {
