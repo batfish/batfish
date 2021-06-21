@@ -93400,6 +93400,12 @@
             "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
             "statements" : [
               {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                "expr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DiscardNextHop"
+                }
+              },
+              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
@@ -93463,6 +93469,10 @@
                           "ibgp"
                         ]
                       }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "True"
                     }
                   ]
                 },
@@ -93507,6 +93517,10 @@
                           "ibgp"
                         ]
                       }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                      "type" : "True"
                     }
                   ]
                 },
