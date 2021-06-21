@@ -1,0 +1,29 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname bgp_redistribution
+!
+!
+vrf context VRF1
+  ip route 1.1.1.1 255.255.255.255 null0
+!
+vrf context VRF2
+  ip route 1.1.1.1 255.255.255.255 null0
+  ip route 2.2.2.2 255.255.255.255 null0
+!
+router bgp 65000
+  vrf VRF1
+    router-id 10.10.10.1
+    address-family ipv4 unicast
+      redistribute static route-map PERMIT_ALL
+  vrf VRF2
+    router-id 10.10.10.2
+    address-family ipv4 unicast
+      redistribute static route-map RM
+!
+route-map PERMIT_ALL permit 10
+!
+route-map RM permit 10
+  match ip address prefix-list PL
+route-map RM deny 20
+!
+ip prefix-list PL seq 10 permit 1.1.1.1/32
