@@ -4827,8 +4827,11 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   private Optional<Track> toTrack(Track_definitionContext ctx) {
     // Interface tracking is the only method Batfish currently parses and extracts
-    assert ctx.track_interface() != null;
-    return toTrack(ctx.track_interface());
+    if (ctx.track_interface() != null) {
+      return toTrack(ctx.track_interface());
+    }
+    warn(ctx, "This track method is not yet supported and will be ignored.");
+    return Optional.empty();
   }
 
   private Optional<Track> toTrack(Track_interfaceContext ctx) {

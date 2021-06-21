@@ -394,6 +394,7 @@ import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.Track;
 import org.batfish.representation.cisco_nxos.TrackInterface;
 import org.batfish.representation.cisco_nxos.TrackInterface.Mode;
+import org.batfish.representation.cisco_nxos.TrackUnsupported;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
@@ -1613,7 +1614,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_track";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getTracks(), hasKeys(1, 2, 500));
+    assertThat(vc.getTracks(), hasKeys(1, 2, 100, 101, 500));
 
     {
       Track track = vc.getTracks().get(1);
@@ -1638,6 +1639,10 @@ public final class CiscoNxosGrammarTest {
       assertThat(trackInterface.getInterface(), equalTo("loopback1"));
       assertThat(trackInterface.getMode(), equalTo(Mode.IPV6_ROUTING));
     }
+
+    // Should have placeholders for unsupported track types in the VS model
+    assertThat(vc.getTracks().get(100), instanceOf(TrackUnsupported.class));
+    assertThat(vc.getTracks().get(101), instanceOf(TrackUnsupported.class));
   }
 
   @Test
@@ -1652,6 +1657,12 @@ public final class CiscoNxosGrammarTest {
                 "Unsupported interface type: mgmt, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
             hasComment(
                 "Unsupported interface type: Vlan, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
+            allOf(
+                hasComment("This track method is not yet supported and will be ignored."),
+                ParseWarningMatchers.hasText(containsString("ip route 192.0.2.1/32 reachability"))),
+            allOf(
+                hasComment("This track method is not yet supported and will be ignored."),
+                ParseWarningMatchers.hasText(containsString("ip sla 1 reachability"))),
             hasComment("Expected track object-id in range 1-500, but got '0'"),
             hasComment("Expected track object-id in range 1-500, but got '501'"),
             // Undefined references are not accepted by the CLI
@@ -8833,6 +8844,9 @@ public final class CiscoNxosGrammarTest {
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "1", 2));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "2", 1));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "3", 0));
+    // Unsupported track methods should still produce correct references
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "100", 1));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "101", 1));
 
     assertThat(
         ans,

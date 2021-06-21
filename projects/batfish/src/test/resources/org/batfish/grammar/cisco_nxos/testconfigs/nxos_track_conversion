@@ -4,3 +4,9 @@ hostname nxos_track_conversion
 !
 track 1 interface port-channel1 line-protocol
 track 500 interface Ethernet1/1 line-protocol
+
+! We don't yet convert these track types, but shouldn't crash
+track 100 ip route 192.0.2.1/32 reachability hmm
+  vrf member v1
+track 101 ip sla 1 reachability
+!
