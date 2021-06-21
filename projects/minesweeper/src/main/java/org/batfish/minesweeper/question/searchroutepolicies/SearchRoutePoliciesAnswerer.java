@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.answers.Schema.NODE;
@@ -10,7 +11,6 @@ import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePo
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
@@ -159,11 +159,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         Automaton a = apAutomata.get(i);
         // community atomic predicates should always be non-empty;
         // see RegexAtomicPredicates::initAtomicPredicates
-        Preconditions.checkState(!a.isEmpty(), "Cannot produce example string for empty automaton");
+        checkState(!a.isEmpty(), "Cannot produce example string for empty automaton");
         String str = a.getShortestExample(true);
         // community automata should only accept strings with this property;
         // see CommunityVar::toAutomaton
-        Preconditions.checkState(
+        checkState(
             str.startsWith("^") && str.endsWith("$"),
             "Community example %s has an unexpected format",
             str);
@@ -203,7 +203,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .collect(Collectors.toList());
 
     // since atomic predicates are disjoint, at most one of them should be true in the model
-    Preconditions.checkState(
+    checkState(
         trueAPs.size() <= 1,
         "Error in symbolic AS-path analysis: at most one atomic predicate should be true");
 
@@ -216,7 +216,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     String asPathStr = asPathRegexAutomaton.getShortestExample(true);
     // As-path regex automata should only accept strings with this property;
     // see SymbolicAsPathRegex::toAutomaton
-    Preconditions.checkState(
+    checkState(
         asPathStr.startsWith("^") && asPathStr.endsWith("$"),
         "AS-path example %s has an unexpected format",
         asPathStr);

@@ -1,12 +1,12 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -48,7 +48,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
       @Nullable String nodes,
       @Nullable String policies,
       Action action) {
-    Preconditions.checkArgument(
+    checkArgument(
         action == Action.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
         "Output route constraints can only be provided when the action is 'permit'");
     _nodes = nodes;
