@@ -108,7 +108,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer(NetworkSnapshot snapshot) {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
     SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
     Multiset<Row> rows =

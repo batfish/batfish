@@ -1,11 +1,7 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
-import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
-import static org.batfish.datamodel.answers.Schema.NODE;
 import static org.batfish.datamodel.answers.Schema.STRING;
-import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.PERMIT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
@@ -13,9 +9,7 @@ import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multiset;
 import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
 import java.util.Arrays;
@@ -51,14 +45,11 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
@@ -69,6 +60,8 @@ import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
+import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
+import org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoutingPolicySpecifier;
@@ -78,13 +71,8 @@ import org.batfish.specifier.SpecifierFactories;
 /** An answerer for {@link SearchRoutePoliciesQuestion}. */
 @ParametersAreNonnullByDefault
 public final class SearchRoutePoliciesAnswerer extends Answerer {
-  public static final String COL_NODE = "Node";
-  public static final String COL_POLICY_NAME = "Policy_Name";
-  public static final String COL_INPUT_ROUTE = "Input_Route";
-  public static final String COL_ACTION = "Action";
-  public static final String COL_OUTPUT_ROUTE = "Output_Route";
-  public static final String COL_DIFF = "Difference";
 
+  @Nonnull private final Environment.Direction _direction;
   @Nonnull private final BgpRouteConstraints _inputConstraints;
   @Nonnull private final BgpRouteConstraints _outputConstraints;
   @Nonnull private final NodeSpecifier _nodeSpecifier;
@@ -96,6 +84,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
+    _direction = question.getDirection();
     _inputConstraints = question.getInputConstraints();
     _outputConstraints = question.getOutputConstraints();
     _nodeSpecifier =
@@ -282,27 +271,37 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    *
    * @param constraints intersection of the input and output constraints provided as part of the
    *     question and the constraints on a solution that come from the symbolic route analysis
-   * @param outputRoute the symbolic output route that results from the route analysis
    * @param policy the route policy that was analyzed
    * @param g the Graph, which provides information about the community atomic predicates
    * @return an optional answer, which includes a concrete input route and (if the desired action is
    *     PERMIT) concrete output route
    */
-  private Optional<Result> constraintsToResult(
-      BDD constraints, BDDRoute outputRoute, RoutingPolicy policy, Graph g) {
+  private Optional<TableAnswerElement> constraintsToResult(
+      BDD constraints, RoutingPolicy policy, Graph g, NetworkSnapshot snapshot) {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
       BDD fullModel = constraints.fullSatOne();
       Bgpv4Route inRoute = satAssignmentToRoute(fullModel, new BDDRoute(g), g);
-      Bgpv4Route outRoute =
-          _action == Action.DENY ? null : satAssignmentToRoute(fullModel, outputRoute, g);
-      return Optional.of(
-          new Result(
-              new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
-              inRoute,
-              _action,
-              outRoute));
+      TestRoutePoliciesQuestion trp =
+          new TestRoutePoliciesQuestion(
+              _direction,
+              ImmutableList.of(toQuestionsBgpRoute(inRoute)),
+              policy.getOwner().getHostname(),
+              policy.getName());
+      TableAnswerElement ae = new TestRoutePoliciesAnswerer(trp, _batfish).answer(snapshot);
+      // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
+      // the same as what the user was asking for.  if this ever fails then either TRP or SRP
+      // is modeling something incorrectly (or both).
+      // TODO: We can also take this validation further by using satAssignmentToRoute to produce the
+      // output route from our fullModel and the final BDDRoute from the symbolic analysis (as we
+      // used to do) and then compare that to the TRP result.
+      assert ae.getRowsList().size() == 1
+          && ae.getRowsList()
+              .get(0)
+              .get(TestRoutePoliciesAnswerer.COL_ACTION, STRING)
+              .equals(_action.toString());
+      return Optional.of(ae);
     }
   }
 
@@ -433,7 +432,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param g a Graph object providing information about the policy's owner configuration
    * @return an optional result, if a behavior of interest was found
    */
-  private Optional<Result> searchPolicy(RoutingPolicy policy, Graph g) {
+  private Optional<TableAnswerElement> searchPolicy(
+      RoutingPolicy policy, Graph g, NetworkSnapshot snapshot) {
     TransferReturn result;
     try {
       TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
@@ -458,7 +458,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       intersection = acceptedAnnouncements.not().and(inConstraints);
     }
 
-    return constraintsToResult(intersection, outputRoute, policy, g);
+    return constraintsToResult(intersection, policy, g, snapshot);
   }
 
   /**
@@ -468,11 +468,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param policies all route policies in that node
    * @return all results from analyzing those route policies
    */
-  private Stream<Result> searchPoliciesForNode(String node, Set<RoutingPolicy> policies) {
+  private Stream<TableAnswerElement> searchPoliciesForNode(
+      String node, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
     Graph g =
         new Graph(
             _batfish,
-            _batfish.getSnapshot(),
+            snapshot,
             null,
             ImmutableSet.of(node),
             _communityRegexes.stream()
@@ -481,7 +482,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _asPathRegexes);
 
     return policies.stream()
-        .map(policy -> searchPolicy(policy, g))
+        .map(policy -> searchPolicy(policy, g, snapshot))
         .filter(Optional::isPresent)
         .map(Optional::get);
   }
@@ -489,13 +490,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
-    Multiset<Row> rows =
+    List<Row> rows =
         _nodeSpecifier.resolve(context).stream()
-            .flatMap(node -> searchPoliciesForNode(node, _policySpecifier.resolve(node, context)))
-            .map(SearchRoutePoliciesAnswerer::toRow)
-            .collect(ImmutableMultiset.toImmutableMultiset());
+            .flatMap(
+                node ->
+                    searchPoliciesForNode(node, _policySpecifier.resolve(node, context), snapshot))
+            .flatMap(ae -> ae.getRowsList().stream())
+            .collect(ImmutableList.toImmutableList());
 
-    TableAnswerElement answerElement = new TableAnswerElement(metadata());
+    TableAnswerElement answerElement = new TableAnswerElement(TestRoutePoliciesAnswerer.metadata());
     answerElement.postProcessAnswer(_question, rows);
     return answerElement;
   }
@@ -519,45 +522,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         .setNetwork(dataplaneBgpRoute.getNetwork())
         .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
         .setAsPath(dataplaneBgpRoute.getAsPath())
-        .build();
-  }
-
-  public static TableMetadata metadata() {
-    List<ColumnMetadata> columnMetadata =
-        ImmutableList.of(
-            new ColumnMetadata(COL_NODE, NODE, "The node that has the policy", true, false),
-            new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
-            new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
-            new ColumnMetadata(
-                COL_ACTION, STRING, "The action of the policy on the input route", false, true),
-            new ColumnMetadata(COL_OUTPUT_ROUTE, BGP_ROUTE, "The output route", false, false),
-            new ColumnMetadata(
-                COL_DIFF,
-                BGP_ROUTE_DIFFS,
-                "The difference between the input and output routes",
-                false,
-                true));
-    return new TableMetadata(
-        columnMetadata, String.format("Results for policy ${%s}", COL_POLICY_NAME));
-  }
-
-  private static Row toRow(Result result) {
-    org.batfish.datamodel.questions.BgpRoute inputRoute =
-        toQuestionsBgpRoute(result.getInputRoute());
-    org.batfish.datamodel.questions.BgpRoute outputRoute =
-        toQuestionsBgpRoute(result.getOutputRoute());
-
-    Action action = result.getAction();
-    RoutingPolicyId policyId = result.getPolicyId();
-    return Row.builder()
-        .put(COL_NODE, new Node(policyId.getNode()))
-        .put(COL_POLICY_NAME, policyId.getPolicy())
-        .put(COL_INPUT_ROUTE, inputRoute)
-        .put(COL_ACTION, action)
-        .put(COL_OUTPUT_ROUTE, outputRoute)
-        .put(
-            COL_DIFF,
-            action == PERMIT ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
         .build();
   }
 
