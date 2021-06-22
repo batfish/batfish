@@ -1,7 +1,9 @@
-package org.batfish.minesweeper;
+package org.batfish.minesweeper.bdd;
 
 import javax.annotation.Nullable;
+import net.sf.javabdd.BDD;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.collections.PList;
 
 public class TransferParam<T extends IDeepCopy<T>> {
@@ -28,9 +30,9 @@ public class TransferParam<T extends IDeepCopy<T>> {
 
   private ChainContext _chainContext;
 
-  private boolean _defaultAccept;
+  private BDD _defaultAccept;
 
-  private boolean _defaultAcceptLocal;
+  private BDD _defaultAcceptLocal;
 
   private SetDefaultPolicy _defaultPolicy;
 
@@ -42,8 +44,8 @@ public class TransferParam<T extends IDeepCopy<T>> {
     _chainContext = ChainContext.NONE;
     _indent = 0;
     _scopes = PList.empty();
-    _defaultAccept = false;
-    _defaultAcceptLocal = false;
+    _defaultAccept = BDDRoute.factory.zero();
+    _defaultAcceptLocal = BDDRoute.factory.zero();
     _defaultPolicy = null;
     _debug = debug;
   }
@@ -72,11 +74,11 @@ public class TransferParam<T extends IDeepCopy<T>> {
     return _chainContext;
   }
 
-  public boolean getDefaultAccept() {
+  public BDD getDefaultAccept() {
     return _defaultAccept;
   }
 
-  public boolean getDefaultAcceptLocal() {
+  public BDD getDefaultAcceptLocal() {
     return _defaultAcceptLocal;
   }
 
@@ -116,7 +118,7 @@ public class TransferParam<T extends IDeepCopy<T>> {
     return ret;
   }
 
-  public TransferParam<T> setDefaultAccept(boolean defaultAccept) {
+  public TransferParam<T> setDefaultAccept(BDD defaultAccept) {
     TransferParam<T> ret = new TransferParam<>(this);
     ret._defaultAccept = defaultAccept;
     return ret;
@@ -128,15 +130,14 @@ public class TransferParam<T extends IDeepCopy<T>> {
     return ret;
   }
 
-  public TransferParam<T> setDefaultAcceptLocal(boolean defaultAcceptLocal) {
+  public TransferParam<T> setDefaultAcceptLocal(BDD defaultAcceptLocal) {
     TransferParam<T> ret = new TransferParam<>(this);
     ret._defaultAcceptLocal = defaultAcceptLocal;
     return ret;
   }
 
-  public TransferParam<T> setDefaultsFrom(TransferParam<T> updatedParam) {
+  public TransferParam<T> setDefaultActionsFrom(TransferParam<T> updatedParam) {
     return setDefaultAccept(updatedParam._defaultAccept)
-        .setDefaultPolicy(updatedParam._defaultPolicy)
         .setDefaultAcceptLocal(updatedParam._defaultAcceptLocal);
   }
 
