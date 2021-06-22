@@ -2275,7 +2275,7 @@ public final class XrGrammarTest {
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
         vc.getDefaultVrf().getBgpProcess().getAggregateNetworks();
-    assertThat(aggs, aMapWithSize(6));
+    assertThat(aggs, aMapWithSize(7));
     assertThat(
         aggs,
         hasEntry(
@@ -2307,6 +2307,13 @@ public final class XrGrammarTest {
         hasEntry(
             equalTo(Prefix.parse("3.2.0.0/16")),
             equalTo(new BgpAggregateIpv4Network(true, Prefix.parse("3.2.0.0/16"), "gen3", false))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    false, Prefix.parse("4.0.0.0/16"), "undefined", false))));
   }
 
   @Test
@@ -2315,7 +2322,7 @@ public final class XrGrammarTest {
     Configuration c = parseConfig(hostname);
 
     Map<Prefix, BgpAggregate> aggs = c.getDefaultVrf().getBgpProcess().getAggregates();
-    assertThat(aggs, aMapWithSize(6));
+    assertThat(aggs, aMapWithSize(7));
     assertThat(
         aggs,
         hasEntry(
@@ -2367,6 +2374,17 @@ public final class XrGrammarTest {
                     null,
                     // TODO: should be generated policy when inheritance is implemented
                     "gen3",
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("4.0.0.0/16"),
+                    null,
+                    // undefined -> null for best effort on invalid config
+                    null,
                     null))));
   }
 

@@ -7,6 +7,11 @@ track 2 interface Vlan1 line-protocol
 track 0 interface port-channel1 line-protocol
 track 501 interface port-channel2 line-protocol
 !
+! Not yet supported
+track 100 ip route 192.0.2.1/32 reachability hmm
+  vrf member v1
+track 101 ip sla 1 reachability
+!
 
 ! Undefined track references are rejected by the CLI
 !

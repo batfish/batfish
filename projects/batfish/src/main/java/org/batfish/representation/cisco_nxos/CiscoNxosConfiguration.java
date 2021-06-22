@@ -7,15 +7,16 @@ import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
-import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
-import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.cisco_nxos.Conversions.getVrfForL3Vni;
 import static org.batfish.representation.cisco_nxos.Conversions.inferRouterId;
+import static org.batfish.representation.cisco_nxos.Conversions.toBgpAggregate;
 import static org.batfish.representation.cisco_nxos.Interface.BANDWIDTH_CONVERSION_FACTOR;
 import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
@@ -41,7 +42,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Streams;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -93,6 +93,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Names;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6Range;
@@ -171,6 +172,7 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork6;
+import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set;
@@ -193,7 +195,6 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
-import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
@@ -313,8 +314,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   private static final double OSPF_REFERENCE_BANDWIDTH_CONVERSION_FACTOR = 1E6D; // bps per Mbps
 
   /** Routing-related constants. */
-  private static final int AGGREGATE_ROUTE_ADMIN_COST = 200;
-
   private static final int OSPF_ADMIN_COST = 110;
 
   private static final double SPEED_CONVERSION_FACTOR = 1E6D;
@@ -328,21 +327,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           BooleanExprs.CALL_EXPR_CONTEXT,
           ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
           ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-
-  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
-      BooleanExpr expr, OriginType originType) {
-    WithEnvironmentExpr we = new WithEnvironmentExpr();
-    we.setExpr(expr);
-    we.setPreStatements(
-        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
-    we.setPostStatements(
-        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
-    we.setPostTrueStatements(
-        ImmutableList.of(
-            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
-            new SetOrigin(new LiteralOrigin(originType, null))));
-    return we;
-  }
 
   private static @Nonnull Statement call(String routingPolicyName) {
     return new If(
@@ -537,6 +521,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                 _w,
                                 "BGP process"))
                         .setAdminCostsToVendorDefaults(_c.getConfigurationFormat())
+                        .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(_c))
                         .build());
               }
             });
@@ -575,12 +560,26 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
     }
 
-    // Next we build up the BGP common export policy.
-    RoutingPolicy bgpCommonExportPolicy =
-        new RoutingPolicy(generatedBgpCommonExportPolicyName(vrfName), c);
-    c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
+    // Generate aggregate routes.
+    if (ipv4af != null) {
+      ipv4af.getAggregateNetworks().entrySet().stream()
+          .map(
+              aggregateByPrefixEntry ->
+                  toBgpAggregate(
+                      aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c, _w))
+          .forEach(newBgpProcess::addAggregate);
+    }
 
-    // 1. If there are any ipv4 summary only networks, do not export the more specific routes.
+    /*
+     * Create common BGP export policy. This policy's only function is to prevent export of
+     * suppressed routes (contributors to summary-only aggregates).
+     */
+    RoutingPolicy.Builder bgpCommonExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(Names.generatedBgpCommonExportPolicyName(vrfName));
+
+    // If there are any ipv4 summary only networks, do not export the more specific routes.
     if (ipv4af != null) {
       Stream<Prefix> summaryOnlyNetworks =
           ipv4af.getAggregateNetworks().entrySet().stream()
@@ -588,70 +587,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
               .map(Entry::getKey);
       If suppressLonger = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
       if (suppressLonger != null) {
-        bgpCommonExportPolicy.getStatements().add(suppressLonger);
+        bgpCommonExportPolicy.addStatement(suppressLonger);
       }
     }
 
-    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
-    Disjunction routesShouldBeExported = new Disjunction();
-    bgpCommonExportPolicy
-        .getStatements()
-        .add(
-            new If(
-                routesShouldBeExported,
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                ImmutableList.of()));
-    // This list of reasons to export a route will be built up over the remainder of this function.
-    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+    // Finalize common export policy
+    bgpCommonExportPolicy.addStatement(Statements.ReturnTrue.toStaticStatement()).build();
 
-    // Generate and distribute aggregate routes.
-    if (ipv4af != null) {
-      for (Entry<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> e :
-          ipv4af.getAggregateNetworks().entrySet()) {
-        Prefix prefix = e.getKey();
-        BgpVrfAddressFamilyAggregateNetworkConfiguration agg = e.getValue();
-        RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix);
+    // Create BGP redistribution policy to import main RIB routes into BGP RIB
+    String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
+    RoutingPolicy.Builder redistributionPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
 
-        GeneratedRoute.Builder gr =
-            GeneratedRoute.builder()
-                .setNetwork(prefix)
-                .setAdmin(AGGREGATE_ROUTE_ADMIN_COST)
-                .setGenerationPolicy(genPolicy.getName())
-                .setDiscard(true);
-
-        // Conditions to generate this route
-        List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
-        exportAggregateConditions.add(
-            new MatchPrefixSet(
-                DestinationNetwork.instance(),
-                new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-        exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-        // If defined, set attribute map for aggregate network
-        BooleanExpr weInterior = BooleanExprs.TRUE;
-        String attributeMapName = agg.getAttributeMap();
-        if (attributeMapName != null) {
-          RouteMap attributeMap = _routeMaps.get(attributeMapName);
-          if (attributeMap != null) {
-            // need to apply attribute changes if this specific route is matched
-            weInterior = new CallExpr(attributeMapName);
-            gr.setAttributePolicy(attributeMapName);
-          }
-        }
-        exportAggregateConditions.add(
-            bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
-
-        v.getGeneratedRoutes().add(gr.build());
-        // Do export a generated aggregate.
-        exportConditions.add(new Conjunction(exportAggregateConditions));
-      }
-    }
+    // For NX-OS, next-hop is cleared on routes redistributed into BGP (though it may be rewritten
+    // later in the policy).
+    redistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
 
     // Only redistribute default route if `default-information originate` is set.
+    @Nullable
     BooleanExpr redistributeDefaultRoute =
         ipv4af == null || !ipv4af.getDefaultInformationOriginate()
             ? Conversions.NOT_DEFAULT_ROUTE
-            : BooleanExprs.TRUE;
+            : null;
 
     // Export RIP routes that should be redistributed.
     List<RedistributionPolicy> ripPolicies =
@@ -663,14 +620,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       String routeMap = ripPolicy.getRouteMap();
       org.batfish.representation.cisco_nxos.RouteMap map = _routeMaps.get(routeMap);
       List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new MatchProtocol(RoutingProtocol.RIP),
-              redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
-      Conjunction rip = new Conjunction(conditions);
+          Stream.of(
+                  new MatchProtocol(RoutingProtocol.RIP),
+                  redistributeDefaultRoute,
+                  map == null ? null : new CallExpr(routeMap))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      BooleanExpr rip = conditions.size() == 1 ? conditions.get(0) : new Conjunction(conditions);
       rip.setComment("Redistribute RIP routes into BGP");
-      exportConditions.add(rip);
+      redistributionPolicy.addStatement(
+          new If(rip, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
 
     // Export static routes that should be redistributed.
@@ -680,14 +639,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       String routeMap = staticPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
       List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new MatchProtocol(RoutingProtocol.STATIC),
-              redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
-      Conjunction staticRedist = new Conjunction(conditions);
+          Stream.of(
+                  new MatchProtocol(RoutingProtocol.STATIC),
+                  redistributeDefaultRoute,
+                  map == null ? null : new CallExpr(routeMap))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      BooleanExpr staticRedist =
+          conditions.size() == 1 ? conditions.get(0) : new Conjunction(conditions);
       staticRedist.setComment("Redistribute static routes into BGP");
-      exportConditions.add(staticRedist);
+      redistributionPolicy.addStatement(
+          new If(staticRedist, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
 
     // Export connected routes that should be redistributed.
@@ -697,14 +659,17 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       String routeMap = connectedPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
       List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new MatchProtocol(RoutingProtocol.CONNECTED),
-              redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
-      Conjunction connected = new Conjunction(conditions);
+          Stream.of(
+                  new MatchProtocol(RoutingProtocol.CONNECTED),
+                  redistributeDefaultRoute,
+                  map == null ? null : new CallExpr(routeMap))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      BooleanExpr connected =
+          conditions.size() == 1 ? conditions.get(0) : new Conjunction(conditions);
       connected.setComment("Redistribute connected routes into BGP");
-      exportConditions.add(connected);
+      redistributionPolicy.addStatement(
+          new If(connected, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
 
     // Export OSPF routes that should be redistributed.
@@ -717,14 +682,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       String routeMap = ospfPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
       List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new MatchProtocol(RoutingProtocol.OSPF),
-              redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
-      Conjunction ospf = new Conjunction(conditions);
+          Stream.of(
+                  new MatchProtocol(RoutingProtocol.OSPF),
+                  redistributeDefaultRoute,
+                  map == null ? null : new CallExpr(routeMap))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      BooleanExpr ospf = conditions.size() == 1 ? conditions.get(0) : new Conjunction(conditions);
       ospf.setComment("Redistribute OSPF routes into BGP");
-      exportConditions.add(ospf);
+      redistributionPolicy.addStatement(
+          new If(ospf, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
 
     // Export EIGRP routes that should be redistributed.
@@ -737,16 +704,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       String routeMap = eigrpPolicy.getRouteMap();
       RouteMap map = _routeMaps.get(routeMap);
       List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new Disjunction(
-                  new MatchProtocol(RoutingProtocol.EIGRP),
-                  new MatchProtocol(RoutingProtocol.EIGRP_EX)),
-              redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
-      Conjunction eigrp = new Conjunction(conditions);
+          Stream.of(
+                  new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
+                  redistributeDefaultRoute,
+                  map == null ? null : new CallExpr(routeMap))
+              .filter(Objects::nonNull)
+              .collect(ImmutableList.toImmutableList());
+      BooleanExpr eigrp = conditions.size() == 1 ? conditions.get(0) : new Conjunction(conditions);
       eigrp.setComment("Redistribute EIGRP routes into BGP");
-      exportConditions.add(eigrp);
+      redistributionPolicy.addStatement(
+          new If(eigrp, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
 
     // Now we add all the per-network export policies.
@@ -767,13 +734,16 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                 RoutingProtocol.BGP,
                                 RoutingProtocol.IBGP,
                                 RoutingProtocol.AGGREGATE)),
-                        bgpRedistributeWithEnvironmentExpr(
-                            routeMap != null && _routeMaps.containsKey(routeMap)
-                                ? new CallExpr(routeMap)
-                                : BooleanExprs.TRUE,
-                            OriginType.IGP));
+                        routeMap != null && _routeMaps.containsKey(routeMap)
+                            ? new CallExpr(routeMap)
+                            : BooleanExprs.TRUE);
                 newBgpProcess.addToOriginationSpace(exportSpace);
-                exportConditions.add(new Conjunction(exportNetworkConditions));
+                redistributionPolicy.addStatement(
+                    new If(
+                        new Conjunction(exportNetworkConditions),
+                        ImmutableList.of(
+                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                            Statements.ExitAccept.toStaticStatement())));
               });
     }
 
@@ -795,20 +765,21 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                                 RoutingProtocol.BGP,
                                 RoutingProtocol.IBGP,
                                 RoutingProtocol.AGGREGATE)),
-                        bgpRedistributeWithEnvironmentExpr(
-                            routeMap != null && _routeMaps.containsKey(routeMap)
-                                ? new CallExpr(routeMap)
-                                : BooleanExprs.TRUE,
-                            OriginType.IGP));
-                exportConditions.add(new Conjunction(exportNetworkConditions));
+                        routeMap != null && _routeMaps.containsKey(routeMap)
+                            ? new CallExpr(routeMap)
+                            : BooleanExprs.TRUE);
+                redistributionPolicy.addStatement(
+                    new If(
+                        new Conjunction(exportNetworkConditions),
+                        ImmutableList.of(
+                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                            Statements.ExitAccept.toStaticStatement())));
               });
     }
 
-    // Always export BGP or IBGP routes.
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
-
-    // Finally, the export policy ends with returning false: do not export unmatched routes.
-    bgpCommonExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
+    // Finalize redistribution policy and attach to process
+    redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
+    newBgpProcess.setRedistributionPolicy(redistPolicyName);
 
     // Generate BGP_NETWORK6_NETWORKS filter.
     if (ipv6af != null) {
@@ -1818,16 +1789,18 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static @Nonnull Optional<org.batfish.datamodel.tracking.TrackMethod> toTrackMethod(
       @Nonnull Track track, @Nonnull Warnings w) {
-    assert track instanceof TrackInterface;
-    TrackInterface trackInterface = (TrackInterface) track;
-    if (trackInterface.getMode() == Mode.LINE_PROTOCOL) {
-      return Optional.of(
-          new org.batfish.datamodel.tracking.TrackInterface(trackInterface.getInterface()));
+    if (track instanceof TrackInterface) {
+      TrackInterface trackInterface = (TrackInterface) track;
+      if (trackInterface.getMode() == Mode.LINE_PROTOCOL) {
+        return Optional.of(
+            new org.batfish.datamodel.tracking.TrackInterface(trackInterface.getInterface()));
+      }
+      w.redFlag(
+          String.format(
+              "Interface track mode %s is not yet supported and will be ignored.",
+              trackInterface.getMode()));
     }
-    w.redFlag(
-        String.format(
-            "Interface track mode %s is not yet supported and will be ignored.",
-            trackInterface.getMode()));
+    // Warnings for unsupported track methods should be handled by parse warnings
     return Optional.empty();
   }
 
@@ -3705,6 +3678,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
+    _c.setExportBgpFromBgpRib(true);
 
     convertDomainName();
     convertObjectGroups();

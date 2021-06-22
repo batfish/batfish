@@ -773,7 +773,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
     // Populate process-level BGP aggregates
     proc.getAggregateNetworks().values().stream()
-        .map(ipv4Aggregate -> toBgpAggregate(ipv4Aggregate, c))
+        .map(ipv4Aggregate -> toBgpAggregate(ipv4Aggregate, c, _w))
         .forEach(newBgpProcess::addAggregate);
 
     /*
