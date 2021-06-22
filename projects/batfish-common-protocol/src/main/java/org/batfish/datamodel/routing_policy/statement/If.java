@@ -31,9 +31,11 @@ public class If extends Statement {
 
   private List<Statement> _trueStatements;
 
-  private TraceElement _trueTraceElement;
+  // if non-null, we record that the guard matched
+  @Nullable private TraceElement _trueTraceElement;
 
-  private TraceElement _falseTraceElement;
+  // if non-null, we record that the guard did not match
+  @Nullable private TraceElement _falseTraceElement;
 
   @JsonCreator
   public If() {
