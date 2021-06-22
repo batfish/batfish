@@ -31,6 +31,10 @@ public class If extends Statement {
 
   private List<Statement> _trueStatements;
 
+  private TraceElement _trueTraceElement;
+
+  private TraceElement _falseTraceElement;
+
   @JsonCreator
   public If() {
     this(null, null, new ArrayList<>(), new ArrayList<>());
@@ -114,11 +118,10 @@ public class If extends Statement {
       return exprResult;
     }
     boolean guardVal = exprResult.getBooleanValue();
-    boolean traceIt = guardVal && environment.getTracer() != null && getComment() != null;
-    if (traceIt) {
-      environment
-          .getTracer()
-          .setTraceElement(TraceElement.of(String.format("Matched '%s'", getComment())));
+    TraceElement traceElement =
+        environment.getTracer() == null ? null : guardVal ? _trueTraceElement : _falseTraceElement;
+    if (traceElement != null) {
+      environment.getTracer().setTraceElement(traceElement);
       environment.getTracer().newSubTrace();
     }
     try {
@@ -131,7 +134,7 @@ public class If extends Statement {
       }
       return Result.builder().setFallThrough(true).build();
     } finally {
-      if (traceIt) {
+      if (traceElement != null) {
         environment.getTracer().endSubTrace();
       }
     }

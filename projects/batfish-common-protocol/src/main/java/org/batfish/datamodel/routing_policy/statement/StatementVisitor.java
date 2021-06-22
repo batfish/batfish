@@ -47,4 +47,6 @@ public interface StatementVisitor<T, U> {
   T visitSetWeight(SetWeight setWeight, U arg);
 
   T visitStaticStatement(StaticStatement staticStatement, U arg);
+
+  T visitTraceableStatement(TraceableStatement traceableStatement, U arg);
 }
