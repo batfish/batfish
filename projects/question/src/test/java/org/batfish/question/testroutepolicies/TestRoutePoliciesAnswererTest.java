@@ -200,6 +200,45 @@ public class TestRoutePoliciesAnswererTest {
   }
 
   @Test
+  public void testTagAndWeight() {
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setTag(34)
+            .setWeight(19)
+            .build();
+
+    TestRoutePoliciesQuestion question =
+        new TestRoutePoliciesQuestion(
+            Direction.IN, ImmutableList.of(inputRoute), HOSTNAME, policy.getName());
+    TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRouteDiffs diffs = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                // outputRoute == inputRoute
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                // no diff
+                hasColumn(COL_DIFF, equalTo(diffs), BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
   public void testDiffBothDeny() {
     _policyBuilder.addStatement(new StaticStatement(Statements.ExitReject)).build();
 
