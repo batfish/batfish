@@ -42,6 +42,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/bdd",
+        "//projects/question",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:dk_brics_automaton",
