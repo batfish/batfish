@@ -1151,6 +1151,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public InitInfoAnswerElement initInfo(
       NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
+    LOGGER.info("Getting snapshot initialization info");
     ParseVendorConfigurationAnswerElement parseAnswer =
         loadParseVendorConfigurationAnswerElement(snapshot);
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
@@ -2163,23 +2164,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
 
     if (_settings.getSerializeVendor()) {
-      LOGGER.info("Serializing Vendor-Specific configurations");
       answer.append(serializeVendorConfigs(snapshot));
       action = true;
     }
 
     if (_settings.getSerializeIndependent()) {
-      LOGGER.info("Serializing Vendor-Independent configurations");
       answer.append(serializeIndependentConfigs(snapshot));
       // TODO: compute topology on initialization in cleaner way
-      LOGGER.info("Initializing topology");
       initializeTopology(snapshot);
       updateSnapshotNodeRoles(snapshot);
       action = true;
     }
 
     if (_settings.getInitInfo()) {
-      LOGGER.info("Getting snapshot initialization info");
       InitInfoAnswerElement initInfoAnswerElement = initInfo(snapshot, true, false);
       // In this context we can remove parse trees because they will be returned in preceding answer
       // element. Note that parse trees are not removed when asking initInfo as its own question.
@@ -2205,7 +2202,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getDataPlane()) {
-      LOGGER.info("Computing data-plane");
       answer.addAnswerElement(computeDataPlane(snapshot));
       action = true;
     }
@@ -2220,6 +2216,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @VisibleForTesting
   void initializeTopology(NetworkSnapshot networkSnapshot) {
     Map<String, Configuration> configurations = loadConfigurations(networkSnapshot);
+    LOGGER.info("Initializing topology");
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
@@ -2420,6 +2417,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
 
+      LOGGER.info("Serializing Vendor-Independent configurations");
       Span storeSpan = GlobalTracer.get().buildSpan("store VI configs").start();
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
         assert childScope != null; // avoid unused warning
@@ -2696,6 +2694,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     /* Assemble answer. */
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     parseResults.forEach(pvcr -> pvcr.applyTo(vendorConfigurations, _logger, answerElement));
+    LOGGER.info("Serializing Vendor-Specific configurations");
     Span serializeNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Serialize network configs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(serializeNetworkConfigsSpan)) {
