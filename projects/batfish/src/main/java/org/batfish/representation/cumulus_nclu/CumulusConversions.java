@@ -221,7 +221,7 @@ public final class CumulusConversions {
     return Optional.empty();
   }
 
-  /** Creates BGP aggregates aggregate routes for the given {@link BgpProcess}. */
+  /** Creates BGP aggregates for the given {@link BgpProcess}. */
   static void generateBgpAggregates(
       Configuration c,
       org.batfish.datamodel.BgpProcess proc,
