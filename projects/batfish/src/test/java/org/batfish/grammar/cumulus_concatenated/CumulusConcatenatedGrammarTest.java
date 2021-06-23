@@ -24,9 +24,12 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -74,6 +77,7 @@ import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -295,6 +299,27 @@ public class CumulusConcatenatedGrammarTest {
             "  vni 1000",
             "exit-vrf");
     assertThat(c.getFrrConfiguration().getVrfs().get("vrf1").getVni(), equalTo(1000));
+  }
+
+  @Test
+  public void testVniVrfBgpProcesses() throws IOException {
+    Configuration c = parseConfig("bgp_vnis");
+    Vrf vrf1 = c.getVrfs().get("vrf1");
+    Vrf vrf2 = c.getVrfs().get("vrf2");
+    Vrf vrf3 = c.getVrfs().get("vrf3");
+
+    // vrf1 has an L2 VNI, vrf2 has an L3 VNI, vrf3 has neither
+    assertFalse(vrf1.getLayer2Vnis().isEmpty());
+    assertTrue(vrf1.getLayer3Vnis().isEmpty());
+    assertTrue(vrf2.getLayer2Vnis().isEmpty());
+    assertFalse(vrf2.getLayer3Vnis().isEmpty());
+    assertTrue(vrf3.getLayer2Vnis().isEmpty());
+    assertTrue(vrf3.getLayer3Vnis().isEmpty());
+
+    // For VRFs with VNIs, BGP processes should exist and have nonnull redistribution policies
+    assertThat(vrf1.getBgpProcess(), hasProperty("redistributionPolicy", notNullValue()));
+    assertThat(vrf2.getBgpProcess(), hasProperty("redistributionPolicy", notNullValue()));
+    assertNull(vrf3.getBgpProcess());
   }
 
   @Test
