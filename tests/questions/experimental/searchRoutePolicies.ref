@@ -1,6 +1,7 @@
 {
   "class" : "org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion",
   "action" : "PERMIT",
+  "direction" : "IN",
   "inputConstraints" : {
     "asPath" : [ ],
     "communities" : [ ],
