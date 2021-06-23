@@ -8,17 +8,18 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.RoutingProtocol.IBGP;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.DEFAULT_MAX_MED;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.GENERATED_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.REJECT_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.addBgpNeighbor;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.addOspfInterfaces;
-import static org.batfish.representation.cumulus_nclu.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.computeBgpNeighborImportRoutingPolicy;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
@@ -28,9 +29,6 @@ import static org.batfish.representation.cumulus_nclu.CumulusConversions.convert
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.generateBgpCommonPeerConfig;
-import static org.batfish.representation.cumulus_nclu.CumulusConversions.generateExportAggregateConditions;
-import static org.batfish.representation.cumulus_nclu.CumulusConversions.generateGeneratedRoutes;
-import static org.batfish.representation.cumulus_nclu.CumulusConversions.generateGenerationPolicy;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.getSetMaxMedMetric;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.getSetNextHop;
 import static org.batfish.representation.cumulus_nclu.CumulusConversions.inferClusterId;
@@ -48,7 +46,6 @@ import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.L
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -82,7 +79,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -97,6 +93,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -130,7 +127,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.representation.cumulus_nclu.BgpNeighbor.RemoteAs;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -196,81 +192,6 @@ public final class CumulusConversionsTest {
                     StaticRoute.testBuilder().setAdministrativeCost(0).setNetwork(network).build())
                 .build())
         .getBooleanValue();
-  }
-
-  @Test
-  public void testGenerateExportAggregateConditions() {
-    BooleanExpr booleanExpr =
-        generateExportAggregateConditions(
-            ImmutableMap.of(
-                Prefix.parse("1.2.3.0/24"),
-                new BgpVrfAddressFamilyAggregateNetworkConfiguration()));
-
-    // longer not exported
-    {
-      Environment env =
-          Environment.builder(_c)
-              .setOriginalRoute(
-                  GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.3.4/32")).build())
-              .build();
-      assertFalse(value(booleanExpr, env));
-    }
-
-    // shorter not exported
-    {
-      Environment env =
-          Environment.builder(_c)
-              .setOriginalRoute(
-                  GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.0.0/16")).build())
-              .build();
-      assertFalse(value(booleanExpr, env));
-    }
-
-    // exact match exported
-    {
-      Environment env =
-          Environment.builder(_c)
-              .setOriginalRoute(
-                  GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.3.0/24")).build())
-              .build();
-      assertTrue(value(booleanExpr, env));
-    }
-  }
-
-  @Test
-  public void testGenerateGeneratedRoutes() {
-    Prefix prefix = Prefix.parse("1.2.3.0/24");
-    generateGeneratedRoutes(
-        _c, _v, ImmutableMap.of(prefix, new BgpVrfAddressFamilyAggregateNetworkConfiguration()));
-    String policyName = computeBgpGenerationPolicyName(true, _v.getName(), prefix.toString());
-
-    // configuration has the generation policy
-    assertThat(_c.getRoutingPolicies(), Matchers.hasKey(policyName));
-
-    // vrf has generated route
-    ImmutableList<GeneratedRoute> grs =
-        _v.getGeneratedRoutes().stream()
-            .filter(gr -> gr.getNetwork().equals(prefix))
-            .collect(ImmutableList.toImmutableList());
-    assertThat(grs, hasSize(1));
-
-    GeneratedRoute gr = grs.get(0);
-    assertTrue(gr.getDiscard());
-    assertThat(gr.getGenerationPolicy(), equalTo(policyName));
-  }
-
-  @Test
-  public void testGenerateGenerationPolicy() {
-    Prefix prefix = Prefix.parse("1.2.3.0/24");
-    generateGenerationPolicy(_c, _v.getName(), prefix);
-
-    RoutingPolicy policy =
-        _c.getRoutingPolicies()
-            .get(computeBgpGenerationPolicyName(true, _v.getName(), prefix.toString()));
-
-    assertTrue(value(policy, "1.2.3.4/32"));
-    assertFalse(value(policy, "1.2.3.0/24"));
-    assertFalse(value(policy, "1.2.0.0/16"));
   }
 
   @Test
@@ -490,26 +411,21 @@ public final class CumulusConversionsTest {
     vrf.setIpv4Unicast(ipv4Unicast);
 
     // the method under test
-    toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+    viVrf.setBgpProcess(toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf));
 
-    // generation policy exists
-    assertThat(
-        viConfig.getRoutingPolicies(),
-        hasKey(computeBgpGenerationPolicyName(true, DEFAULT_VRF_NAME, prefix.toString())));
+    // aggregate route exists with expected suppression policy (if any)
+    String suppressionPolicyName = summaryOnly ? SUMMARY_ONLY_SUPPRESSION_POLICY_NAME : null;
+    BgpAggregate viAgg = viVrf.getBgpProcess().getAggregates().get(prefix);
+    assertThat(viAgg, equalTo(BgpAggregate.of(prefix, suppressionPolicyName, null, null)));
 
-    // generated route exists
-    assertTrue(viVrf.getGeneratedRoutes().stream().anyMatch(gr -> gr.getNetwork().equals(prefix)));
-
+    String summaryOnlyRouteFilterName =
+        computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName());
     if (summaryOnly) {
       // suppress summary only filter list exists
-      assertThat(
-          viConfig.getRouteFilterLists(),
-          hasKey(computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName())));
+      assertThat(viConfig.getRouteFilterLists(), hasKey(summaryOnlyRouteFilterName));
     } else {
       // suppress summary only filter list does not exist
-      assertThat(
-          viConfig.getRouteFilterLists(),
-          not(hasKey(computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName()))));
+      assertThat(viConfig.getRouteFilterLists(), not(hasKey(summaryOnlyRouteFilterName)));
     }
   }
 
@@ -595,7 +511,7 @@ public final class CumulusConversionsTest {
     assertTrue(
         viConfig
             .getRoutingPolicies()
-            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME))
             .process(route, builder.setNetwork(route.getNetwork()), Direction.OUT));
     assertThat(builder, hasCommunities(community));
   }
@@ -637,7 +553,7 @@ public final class CumulusConversionsTest {
     assertFalse(
         viConfig
             .getRoutingPolicies()
-            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME))
             .process(
                 route, Bgpv4Route.testBuilder().setNetwork(route.getNetwork()), Direction.OUT));
   }
@@ -1518,7 +1434,7 @@ public final class CumulusConversionsTest {
     assertFalse(
         viConfig
             .getRoutingPolicies()
-            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME))
             .process(
                 ospfExternalRouteBuilder.build(),
                 Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO),
@@ -1527,7 +1443,7 @@ public final class CumulusConversionsTest {
     assertTrue(
         viConfig
             .getRoutingPolicies()
-            .get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME))
+            .get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME))
             .process(
                 ospfExternalRouteBuilder2.build(),
                 Bgpv4Route.testBuilder().setNetwork(prefix),

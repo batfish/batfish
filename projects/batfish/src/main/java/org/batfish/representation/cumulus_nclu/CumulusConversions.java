@@ -12,8 +12,11 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
+import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.representation.cumulus_nclu.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus_nclu.CumulusNcluConfiguration.LOOPBACK_INTERFACE_NAME;
@@ -30,7 +33,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -77,6 +79,7 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -107,7 +110,6 @@ import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -120,7 +122,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
-import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
@@ -135,8 +136,6 @@ import org.batfish.datamodel.vxlan.Vni;
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
 public final class CumulusConversions {
-  private static final int AGGREGATE_ROUTE_ADMIN_COST = 200; // TODO verify this
-
   private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
 
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
@@ -173,10 +172,6 @@ public final class CumulusConversions {
    * value in absence of explicit information.
    */
   public static final double DEFAULT_PORT_BANDWIDTH = 10E9D;
-
-  public static String computeBgpGenerationPolicyName(boolean ipv4, String vrfName, String prefix) {
-    return String.format("~AGGREGATE_ROUTE%s_GEN:%s:%s~", ipv4 ? "" : "6", vrfName, prefix);
-  }
 
   public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
@@ -226,94 +221,25 @@ public final class CumulusConversions {
     return Optional.empty();
   }
 
-  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
-      BooleanExpr expr, OriginType originType) {
-    WithEnvironmentExpr we = new WithEnvironmentExpr();
-    we.setExpr(expr);
-    we.setPreStatements(
-        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
-    we.setPostStatements(
-        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
-    we.setPostTrueStatements(
-        ImmutableList.of(
-            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
-            new SetOrigin(new LiteralOrigin(originType, null))));
-    return we;
-  }
-
-  static BooleanExpr generateExportAggregateConditions(
-      Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks) {
-    return new Disjunction(
-        aggregateNetworks.entrySet().stream()
-            .map(
-                entry -> {
-                  Prefix prefix = entry.getKey();
-
-                  // Conditions to generate this route
-                  List<BooleanExpr> exportAggregateConjuncts = new ArrayList<>();
-                  exportAggregateConjuncts.add(
-                      new MatchPrefixSet(
-                          DestinationNetwork.instance(),
-                          new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-                  exportAggregateConjuncts.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-                  // TODO consider attribute map
-                  BooleanExpr weInterior = BooleanExprs.TRUE;
-                  exportAggregateConjuncts.add(
-                      bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
-
-                  // Do export a generated aggregate.
-                  return new Conjunction(exportAggregateConjuncts);
-                })
-            .collect(ImmutableList.toImmutableList()));
-  }
-
-  /**
-   * Creates generated routes and route generation policies for aggregate routes for the input vrf.
-   */
-  static void generateGeneratedRoutes(
+  /** Creates BGP aggregates for the given {@link BgpProcess}. */
+  static void generateBgpAggregates(
       Configuration c,
-      org.batfish.datamodel.Vrf vrf,
+      org.batfish.datamodel.BgpProcess proc,
       Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks) {
-    aggregateNetworks.forEach(
-        (prefix, agg) -> {
-          generateGenerationPolicy(c, vrf.getName(), prefix);
-
-          // TODO generate attribute policy
-          GeneratedRoute gr =
-              GeneratedRoute.builder()
-                  .setNetwork(prefix)
-                  .setAdmin(AGGREGATE_ROUTE_ADMIN_COST)
-                  .setGenerationPolicy(
-                      computeBgpGenerationPolicyName(true, vrf.getName(), prefix.toString()))
-                  .setDiscard(true)
-                  .build();
-
-          vrf.getGeneratedRoutes().add(gr);
-        });
+    aggregateNetworks.entrySet().stream()
+        .map(
+            aggregateByPrefixEntry ->
+                toBgpAggregate(
+                    aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c))
+        .forEach(proc::addAggregate);
   }
 
-  /**
-   * Creates a generation policy for the aggregate network with the given {@link Prefix}. The
-   * generation policy matches any route with a destination more specific than {@code prefix}.
-   *
-   * @param c {@link Configuration} in which to create the generation policy
-   * @param vrfName Name of VRF in which the aggregate network exists
-   * @param prefix The aggregate network prefix
-   */
-  static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
-        .addStatement(
-            new If(
-                // Match routes with destination networks more specific than prefix.
-                new MatchPrefixSet(
-                    DestinationNetwork.instance(),
-                    new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))),
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
-        .build();
+  private static @Nonnull BgpAggregate toBgpAggregate(
+      Prefix prefix,
+      BgpVrfAddressFamilyAggregateNetworkConfiguration vsAggregate,
+      Configuration c) {
+    return BgpAggregate.of(
+        prefix, generateSuppressionPolicy(vsAggregate.isSummaryOnly(), c), null, null);
   }
 
   /**
@@ -369,14 +295,15 @@ public final class CumulusConversions {
     c.getVrfs()
         .forEach(
             (vrfName, vrf) -> {
-              if (!vrf.getLayer2Vnis().isEmpty()
-                  || !vrf.getLayer3Vnis().isEmpty() // VRF has some VNI
-                      && vrf.getBgpProcess() == null // process does not already exist
-                      && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
+              if ((!vrf.getLayer2Vnis().isEmpty()
+                      || !vrf.getLayer3Vnis().isEmpty()) // VRF has some VNI
+                  && vrf.getBgpProcess() == null // process does not already exist
+                  && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
                 vrf.setBgpProcess(
                     org.batfish.datamodel.BgpProcess.builder()
                         .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
                         .setAdminCostsToVendorDefaults(ConfigurationFormat.CUMULUS_NCLU)
+                        .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                         .build());
               }
             });
@@ -443,10 +370,12 @@ public final class CumulusConversions {
           .forEach(newProc::addToOriginationSpace);
 
       // Generate aggregate routes
-      generateGeneratedRoutes(c, c.getVrfs().get(vrfName), ipv4Unicast.getAggregateNetworks());
+      generateBgpAggregates(c, newProc, ipv4Unicast.getAggregateNetworks());
     }
 
-    generateBgpCommonExportPolicy(c, vrfName, bgpVrf, vsConfig.getRouteMaps());
+    generateBgpCommonExportPolicy(c, vrfName, bgpVrf);
+    newProc.setRedistributionPolicy(
+        generateBgpRedistributionPolicy(c, vrfName, bgpVrf, vsConfig.getRouteMaps()));
 
     return newProc;
   }
@@ -875,76 +804,71 @@ public final class CumulusConversions {
   }
 
   /**
-   * Create common BGP export policy. This policy permits:
-   *
-   * <ul>
-   *   <li>BGP and iBGP routes
-   *   <li>routes whose network matches a configured network statement
-   *   <li>routes whose protocol matches a configured protocol
-   *   <li>redistribution policy
-   * </ul>
-   *
-   * <p>all other routes are denied.
+   * Create common BGP export policy. This policy denies contributing routes to summary-only
+   * aggregates and permits everything else.
    */
   private static void generateBgpCommonExportPolicy(
-      Configuration c, String vrfName, BgpVrf bgpVrf, Map<String, RouteMap> routeMaps) {
-    RoutingPolicy bgpCommonExportPolicy =
-        RoutingPolicy.builder()
-            .setOwner(c)
-            .setName(generatedBgpCommonExportPolicyName(vrfName))
-            .build();
+      Configuration c, String vrfName, BgpVrf bgpVrf) {
+    RoutingPolicy.Builder bgpCommonExportPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(generatedBgpCommonExportPolicyName(vrfName));
 
-    List<Statement> statements = new ArrayList<>();
-
-    // 1. If there are any ipv4 summary only networks, do not export the more specific routes.
+    // If there are any ipv4 summary only networks, do not export the more specific routes.
     if (bgpVrf.getIpv4Unicast() != null) {
       Stream<Prefix> summarizedPrefixes =
           bgpVrf.getIpv4Unicast().getAggregateNetworks().entrySet().stream()
               .filter(e -> e.getValue().isSummaryOnly())
               .map(Entry::getKey);
       Optional.ofNullable(suppressSummarizedPrefixes(c, vrfName, summarizedPrefixes))
-          .ifPresent(statements::add);
+          .ifPresent(bgpCommonExportPolicy::addStatement);
     }
 
-    // 2. Setup export conditions, export if match, otherwise fall through
-    Disjunction exportConditions = new Disjunction();
-
-    // 2a. add export conditions for non-aggregate routes
-    exportConditions.getDisjuncts().addAll(getBgpExportConditions(bgpVrf, routeMaps));
-
-    // 2b. add export conditions for aggregate routes
-    if (bgpVrf.getIpv4Unicast() != null) {
-      exportConditions
-          .getDisjuncts()
-          .add(generateExportAggregateConditions(bgpVrf.getIpv4Unicast().getAggregateNetworks()));
-    }
-
-    statements.add(
-        new If(
-            exportConditions,
-            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-            ImmutableList.of(Statements.ReturnFalse.toStaticStatement())));
-
-    bgpCommonExportPolicy.setStatements(statements);
+    // Permit everything else
+    bgpCommonExportPolicy.addStatement(Statements.ReturnTrue.toStaticStatement()).build();
   }
 
-  private static List<BooleanExpr> getBgpExportConditions(
-      BgpVrf bgpVrf, Map<String, RouteMap> routeMaps) {
-    List<BooleanExpr> exportConditions = new ArrayList<>();
+  /**
+   * Create BGP redistribution policy to add main RIB routes to BGP. This policy permits:
+   *
+   * <ul>
+   *   <li>routes whose network matches a configured network statement
+   *   <li>routes that match a configured redistribution statement
+   * </ul>
+   *
+   * <p>All other routes are denied.
+   *
+   * @return Name of the generated redistribution policy
+   */
+  private static String generateBgpRedistributionPolicy(
+      Configuration c, String vrfName, BgpVrf bgpVrf, Map<String, RouteMap> routeMaps) {
+    String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
+    RoutingPolicy.Builder bgpRedistributionPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
 
-    // Always export BGP and iBGP routes
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
+    // TODO Does NCLU clear next hop info when redistributing a route into BGP? If so, do:
+    //     bgpRedistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
 
+    // Add redistribution conditions
+    addRedistributionAndNetworkStatements(bgpVrf, routeMaps, bgpRedistributionPolicy);
+
+    // Reject all other routes
+    bgpRedistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
+    return redistPolicyName;
+  }
+
+  private static void addRedistributionAndNetworkStatements(
+      BgpVrf bgpVrf, Map<String, RouteMap> routeMaps, RoutingPolicy.Builder redistributionPolicy) {
     // we don't need to process redist policies and network statements (inside v4 address family or
     // bgp-vrf-level) if v4 address family is not active
     if (!bgpVrf.isIpv4UnicastActive()) {
-      return exportConditions;
+      return;
     }
 
     BgpIpv4UnicastAddressFamily bgpIpv4UnicastAddressFamily =
         firstNonNull(bgpVrf.getIpv4Unicast(), new BgpIpv4UnicastAddressFamily());
 
-    // Add conditions to redistribute other protocols
+    // Add conditions to redistribute other protocols. Each disjunct in this list represents the
+    // conditions for exporting a different protocol.
+    ImmutableList.Builder<BooleanExpr> redistributionDisjuncts = ImmutableList.builder();
     Stream.concat(
             bgpVrf.getRedistributionPolicies().values().stream(),
             bgpIpv4UnicastAddressFamily.getRedistributionPolicies().values().stream())
@@ -954,51 +878,56 @@ public final class CumulusConversions {
               // Get a match expression for the protocol to be redistributed
               CumulusRoutingProtocol protocol = redistributeProtocolPolicy.getProtocol();
               MatchProtocol matchProtocol = new MatchProtocol(VI_PROTOCOLS_MAP.get(protocol));
+              BooleanExpr exportProtocolConditions = matchProtocol;
 
-              // Create a WithEnvironmentExpr with the redistribution route-map, if one is defined
-              BooleanExpr weInterior = BooleanExprs.TRUE;
+              // Filter by redistribution route-map, if one is defined
               String mapName = redistributeProtocolPolicy.getRouteMap();
               if (mapName != null && routeMaps.containsKey(mapName)) {
-                weInterior = new CallExpr(mapName);
+                exportProtocolConditions =
+                    new Conjunction(ImmutableList.of(matchProtocol, new CallExpr(mapName)));
               }
-              BooleanExpr we =
-                  bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.INCOMPLETE);
 
-              // Export routes that match the protocol and WithEnvironmentExpr
-              Conjunction exportProtocolConditions =
-                  new Conjunction(ImmutableList.of(matchProtocol, we));
               exportProtocolConditions.setComment(
                   String.format("Redistribute %s routes into BGP", protocol));
-              exportConditions.add(exportProtocolConditions);
+              redistributionDisjuncts.add(exportProtocolConditions);
             });
+    redistributionPolicy.addStatement(
+        new If(
+            new Disjunction(redistributionDisjuncts.build()),
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
 
-    // create origination prefilter from listed advertised networks
+    // Create origination prefilter from listed advertised networks. Each disjunct in this list
+    // represents the conditions for exporting a different network.
+    ImmutableList.Builder<BooleanExpr> networkDisjuncts = ImmutableList.builder();
     Iterables.concat(
             bgpVrf.getNetworks().values(), bgpIpv4UnicastAddressFamily.getNetworks().values())
         .forEach(
             network -> {
               @Nullable String routeMapName = network.getRouteMap();
-              Conjunction exportNetworkConditions =
-                  new Conjunction(
-                      ImmutableList.of(
-                          /* Match network prefix */
-                          new MatchPrefixSet(
-                              DestinationNetwork.instance(),
-                              new ExplicitPrefixSet(
-                                  new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))),
-                          /*
-                          Don't need to explicitly exclude BGP and iBGP routes here because those routes will
-                          already be matched earlier in exportConditions (which are disjuncts).
-                           */
-                          new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
-                          bgpRedistributeWithEnvironmentExpr(
-                              routeMapName != null && routeMaps.containsKey(routeMapName)
-                                  ? new CallExpr(routeMapName)
-                                  : BooleanExprs.TRUE,
-                              OriginType.IGP)));
-              exportConditions.add(exportNetworkConditions);
+              ImmutableList.Builder<BooleanExpr> matchNetworkConjuncts = ImmutableList.builder();
+              /* Match network prefix */
+              matchNetworkConjuncts.add(
+                  new MatchPrefixSet(
+                      DestinationNetwork.instance(),
+                      new ExplicitPrefixSet(
+                          new PrefixSpace(PrefixRange.fromPrefix(network.getNetwork())))));
+              matchNetworkConjuncts.add(
+                  new Not(
+                      new MatchProtocol(
+                          RoutingProtocol.BGP, RoutingProtocol.IBGP, RoutingProtocol.AGGREGATE)));
+              if (routeMapName != null && routeMaps.containsKey(routeMapName)) {
+                matchNetworkConjuncts.add(new CallExpr(routeMapName));
+              }
+              networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
+              networkDisjuncts.add(new Conjunction(matchNetworkConjuncts.build()));
             });
-    return exportConditions;
+    redistributionPolicy.addStatement(
+        new If(
+            "Add network statement routes to BGP",
+            new Disjunction(networkDisjuncts.build()),
+            ImmutableList.of(
+                new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                Statements.ExitAccept.toStaticStatement())));
   }
 
   /** Returns whether we originate default toward this neighbor */
