@@ -141,8 +141,6 @@ import org.batfish.vendor.VendorStructureId;
 /** Utilities that convert Cumulus-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
 public final class CumulusConversions {
-  private static final int AGGREGATE_ROUTE_ADMIN_COST = 200; // TODO verify this
-
   private static final Prefix LOOPBACK_PREFIX = Prefix.parse("127.0.0.0/8");
 
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
@@ -186,10 +184,6 @@ public final class CumulusConversions {
    * value in absence of explicit information.
    */
   public static final int DEFAULT_PORT_MTU = 1500;
-
-  public static String computeBgpGenerationPolicyName(boolean ipv4, String vrfName, String prefix) {
-    return String.format("~AGGREGATE_ROUTE%s_GEN:%s:%s~", ipv4 ? "" : "6", vrfName, prefix);
-  }
 
   public static String computeMatchSuppressedSummaryOnlyPolicyName(String vrfName) {
     return String.format("~MATCH_SUPPRESSED_SUMMARY_ONLY:%s~", vrfName);
@@ -296,29 +290,6 @@ public final class CumulusConversions {
             .orElse(null);
     return BgpAggregate.of(
         prefix, generateSuppressionPolicy(vsAggregate.isSummaryOnly(), c), null, routeMap);
-  }
-
-  /**
-   * Creates a generation policy for the aggregate network with the given {@link Prefix}. The
-   * generation policy matches any route with a destination more specific than {@code prefix}.
-   *
-   * @param c {@link Configuration} in which to create the generation policy
-   * @param vrfName Name of VRF in which the aggregate network exists
-   * @param prefix The aggregate network prefix
-   */
-  static void generateGenerationPolicy(Configuration c, String vrfName, Prefix prefix) {
-    RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(computeBgpGenerationPolicyName(true, vrfName, prefix.toString()))
-        .addStatement(
-            new If(
-                // Match routes with destination networks more specific than prefix.
-                new MatchPrefixSet(
-                    DestinationNetwork.instance(),
-                    new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))),
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                ImmutableList.of(Statements.ReturnFalse.toStaticStatement())))
-        .build();
   }
 
   /**

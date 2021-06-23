@@ -15,8 +15,6 @@ import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_MTU;
-import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
-import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
@@ -26,7 +24,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -68,7 +65,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -78,7 +74,6 @@ import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
@@ -222,40 +217,6 @@ public class CumulusConcatenatedGrammarTest {
     settings.setThrowOnParserError(false);
     CumulusConcatenatedConfiguration cfg = parseVendorConfig("ports_unrecognized", settings);
     assertThat(cfg.getHostname(), equalTo("hostname"));
-  }
-
-  @Test
-  public void testBgpAggregateAddress_e2e() {
-    CumulusConcatenatedConfiguration vsConfig = parseVendorConfig("bgp_aggregate_address");
-    Configuration viConfig = vsConfig.toVendorIndependentConfigurations().get(0);
-    Vrf vrf = viConfig.getDefaultVrf();
-
-    Prefix prefix1 = Prefix.parse("1.1.1.0/24");
-    Prefix prefix2 = Prefix.parse("2.2.0.0/16");
-
-    // Test that the expected routes maps were generated. We test their semantics elsewhere.
-    assertThat(
-        viConfig.getRoutingPolicies(),
-        hasKey(
-            computeBgpGenerationPolicyName(
-                true, Configuration.DEFAULT_VRF_NAME, prefix1.toString())));
-    assertThat(
-        viConfig.getRoutingPolicies(),
-        hasKey(
-            computeBgpGenerationPolicyName(
-                true, Configuration.DEFAULT_VRF_NAME, prefix2.toString())));
-
-    // Test that expected generated routes exist
-    assertThat(
-        vrf.getGeneratedRoutes().stream()
-            .map(GeneratedRoute::getNetwork)
-            .collect(ImmutableList.toImmutableList()),
-        containsInAnyOrder(prefix1, prefix2));
-
-    // suppression route map exists. Semantics tested elsewhere
-    assertThat(
-        viConfig.getRouteFilterLists(),
-        hasKey(computeMatchSuppressedSummaryOnlyPolicyName(vrf.getName())));
   }
 
   @Test

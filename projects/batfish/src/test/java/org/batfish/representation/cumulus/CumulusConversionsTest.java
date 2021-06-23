@@ -14,6 +14,7 @@ import static org.batfish.datamodel.RoutingProtocol.BGP;
 import static org.batfish.datamodel.RoutingProtocol.IBGP;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
+import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
@@ -21,7 +22,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.GENERATED_DE
 import static org.batfish.representation.cumulus.CumulusConversions.REJECT_DEFAULT_ROUTE;
 import static org.batfish.representation.cumulus.CumulusConversions.addBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.addOspfInterfaces;
-import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
 import static org.batfish.representation.cumulus.CumulusConversions.computeBgpNeighborImportRoutingPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.computeLocalIpForBgpNeighbor;
 import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
@@ -30,9 +30,7 @@ import static org.batfish.representation.cumulus.CumulusConversions.computeOspfE
 import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4UnicastAddressFamily;
 import static org.batfish.representation.cumulus.CumulusConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
-import static org.batfish.representation.cumulus.CumulusConversions.generateBgpAggregates;
 import static org.batfish.representation.cumulus.CumulusConversions.generateBgpCommonPeerConfig;
-import static org.batfish.representation.cumulus.CumulusConversions.generateGenerationPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.generateRedistributeAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetMaxMedMetric;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
@@ -50,7 +48,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.toRouteTarge
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -99,6 +96,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -133,7 +131,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.representation.cumulus.BgpNeighbor.RemoteAs;
 import org.batfish.vendor.VendorStructureId;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -238,42 +235,6 @@ public final class CumulusConversionsTest {
               .build();
       assertTrue(value(booleanExpr, env));
     }
-  }
-
-  @Test
-  public void testGenerateGeneratedRoutes() {
-    Prefix prefix = Prefix.parse("1.2.3.0/24");
-    generateBgpAggregates(
-        _c, _v, ImmutableMap.of(prefix, new BgpVrfAddressFamilyAggregateNetworkConfiguration()));
-    String policyName = computeBgpGenerationPolicyName(true, _v.getName(), prefix.toString());
-
-    // configuration has the generation policy
-    assertThat(_c.getRoutingPolicies(), Matchers.hasKey(policyName));
-
-    // vrf has generated route
-    ImmutableList<GeneratedRoute> grs =
-        _v.getGeneratedRoutes().stream()
-            .filter(gr -> gr.getNetwork().equals(prefix))
-            .collect(ImmutableList.toImmutableList());
-    assertThat(grs, hasSize(1));
-
-    GeneratedRoute gr = grs.get(0);
-    assertTrue(gr.getDiscard());
-    assertThat(gr.getGenerationPolicy(), equalTo(policyName));
-  }
-
-  @Test
-  public void testGenerateGenerationPolicy() {
-    Prefix prefix = Prefix.parse("1.2.3.0/24");
-    generateGenerationPolicy(_c, _v.getName(), prefix);
-
-    RoutingPolicy policy =
-        _c.getRoutingPolicies()
-            .get(computeBgpGenerationPolicyName(true, _v.getName(), prefix.toString()));
-
-    assertTrue(value(policy, "1.2.3.4/32"));
-    assertFalse(value(policy, "1.2.3.0/24"));
-    assertFalse(value(policy, "1.2.0.0/16"));
   }
 
   @Test
@@ -505,26 +466,21 @@ public final class CumulusConversionsTest {
     vrf.setIpv4Unicast(ipv4Unicast);
 
     // the method under test
-    toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf);
+    viVrf.setBgpProcess(toBgpProcess(viConfig, vsConfig, DEFAULT_VRF_NAME, vrf));
 
-    // generation policy exists
-    assertThat(
-        viConfig.getRoutingPolicies(),
-        hasKey(computeBgpGenerationPolicyName(true, DEFAULT_VRF_NAME, prefix.toString())));
+    // aggregate route exists with expected suppression policy (if any)
+    String suppressionPolicyName = summaryOnly ? SUMMARY_ONLY_SUPPRESSION_POLICY_NAME : null;
+    BgpAggregate viAgg = viVrf.getBgpProcess().getAggregates().get(prefix);
+    assertThat(viAgg, equalTo(BgpAggregate.of(prefix, suppressionPolicyName, null, null)));
 
-    // generated route exists
-    assertTrue(viVrf.getGeneratedRoutes().stream().anyMatch(gr -> gr.getNetwork().equals(prefix)));
-
+    String summaryOnlyRouteFilterName =
+        computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName());
     if (summaryOnly) {
       // suppress summary only filter list exists
-      assertThat(
-          viConfig.getRouteFilterLists(),
-          hasKey(computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName())));
+      assertThat(viConfig.getRouteFilterLists(), hasKey(summaryOnlyRouteFilterName));
     } else {
       // suppress summary only filter list does not exist
-      assertThat(
-          viConfig.getRouteFilterLists(),
-          not(hasKey(computeMatchSuppressedSummaryOnlyPolicyName(viVrf.getName()))));
+      assertThat(viConfig.getRouteFilterLists(), not(hasKey(summaryOnlyRouteFilterName)));
     }
   }
 
