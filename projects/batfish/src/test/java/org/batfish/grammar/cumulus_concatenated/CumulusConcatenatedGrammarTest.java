@@ -9,14 +9,14 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_LOOPBACK_MTU;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_PORT_MTU;
-import static org.batfish.representation.cumulus.CumulusConversions.computeBgpGenerationPolicyName;
-import static org.batfish.representation.cumulus.CumulusConversions.computeMatchSuppressedSummaryOnlyPolicyName;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -24,7 +24,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -66,7 +65,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
@@ -76,8 +74,8 @@ import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -88,6 +86,7 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.cumulus.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cumulus.CumulusConcatenatedConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
@@ -218,40 +217,6 @@ public class CumulusConcatenatedGrammarTest {
     settings.setThrowOnParserError(false);
     CumulusConcatenatedConfiguration cfg = parseVendorConfig("ports_unrecognized", settings);
     assertThat(cfg.getHostname(), equalTo("hostname"));
-  }
-
-  @Test
-  public void testBgpAggregateAddress_e2e() {
-    CumulusConcatenatedConfiguration vsConfig = parseVendorConfig("bgp_aggregate_address");
-    Configuration viConfig = vsConfig.toVendorIndependentConfigurations().get(0);
-    Vrf vrf = viConfig.getDefaultVrf();
-
-    Prefix prefix1 = Prefix.parse("1.1.1.0/24");
-    Prefix prefix2 = Prefix.parse("2.2.0.0/16");
-
-    // Test that the expected routes maps were generated. We test their semantics elsewhere.
-    assertThat(
-        viConfig.getRoutingPolicies(),
-        hasKey(
-            computeBgpGenerationPolicyName(
-                true, Configuration.DEFAULT_VRF_NAME, prefix1.toString())));
-    assertThat(
-        viConfig.getRoutingPolicies(),
-        hasKey(
-            computeBgpGenerationPolicyName(
-                true, Configuration.DEFAULT_VRF_NAME, prefix2.toString())));
-
-    // Test that expected generated routes exist
-    assertThat(
-        vrf.getGeneratedRoutes().stream()
-            .map(GeneratedRoute::getNetwork)
-            .collect(ImmutableList.toImmutableList()),
-        containsInAnyOrder(prefix1, prefix2));
-
-    // suppression route map exists. Semantics tested elsewhere
-    assertThat(
-        viConfig.getRouteFilterLists(),
-        hasKey(computeMatchSuppressedSummaryOnlyPolicyName(vrf.getName())));
   }
 
   @Test
@@ -1061,5 +1026,168 @@ public class CumulusConcatenatedGrammarTest {
     Configuration c = parseConfig("loopback");
     assertThat(c.getAllInterfaces(), hasKeys("lo"));
     assertThat(c.getAllInterfaces().get("lo").getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
+  }
+
+  @Test
+  public void testAggregateAddressExtraction() {
+    String hostname = "frr-aggregate-address";
+    CumulusConcatenatedConfiguration vc = parseVendorConfig(hostname);
+    Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggs =
+        vc.getBgpProcess().getDefaultVrf().getIpv4Unicast().getAggregateNetworks();
+    assertThat(aggs, aMapWithSize(9));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.1.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    false, false, null, null, false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.2.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    false, false, null, "rm1", false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.1.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    true, false, null, null, false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.2.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    true, false, null, "rm2", false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.1.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    false, false, null, null, true, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.2.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    false, false, null, null, false, "sm1"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.3.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    false, false, null, null, true, "sm2"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    false, false, null, "undefined", false, "undefined"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("5.0.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    false, true, OriginType.INCOMPLETE, null, false, null))));
+  }
+
+  @Test
+  public void testAggregateAddressConversion() throws IOException {
+    String hostname = "frr-aggregate-address";
+    Configuration c = parseConfig(hostname);
+
+    Map<Prefix, BgpAggregate> aggs = c.getDefaultVrf().getBgpProcess().getAggregates();
+    assertThat(aggs, aMapWithSize(9));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.1.0.0/16")),
+            equalTo(BgpAggregate.of(Prefix.parse("1.1.0.0/16"), null, null, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.2.0.0/16")),
+            equalTo(BgpAggregate.of(Prefix.parse("1.2.0.0/16"), null, null, "rm1"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.1.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.1.0.0/16"),
+                    null,
+                    // TODO: generation policy should incorporate as-set
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.2.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.2.0.0/16"),
+                    null,
+                    // TODO: generation policy should incorporate as-set
+                    null,
+                    "rm2"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.1.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.1.0.0/16"),
+                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.2.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.2.0.0/16"),
+                    // TODO: suppression policy should incorporate suppress-map
+                    null,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.3.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.3.0.0/16"),
+                    // TODO: suppression policy should incorporate suppress-map and ignore
+                    //       summary-only.
+                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("4.0.0.0/16"),
+                    // TODO: verify undefined route-map treated as omitted
+                    null,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("5.0.0.0/16")),
+            // TODO: implement matching-med-only and origin
+            equalTo(BgpAggregate.of(Prefix.parse("5.0.0.0/16"), null, null, null))));
   }
 }
