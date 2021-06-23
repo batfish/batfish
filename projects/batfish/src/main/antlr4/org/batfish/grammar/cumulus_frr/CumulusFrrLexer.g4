@@ -12,7 +12,7 @@ tokens {
 
 ACCESS_LIST
 :
-  'access-list' -> pushMode(M_Word)
+  'access-list' -> pushMode(M_AccessList)
 ;
 
 ACTIVATE: 'activate';
@@ -1104,3 +1104,29 @@ M_Update_NEWLINE
   F_Newline+ -> type ( NEWLINE ), popMode
 ;
 
+mode M_AccessList;
+
+M_AccessList_DENY
+:
+   'deny' -> type( DENY )
+;
+
+M_AccessList_PERMIT
+:
+   'permit' -> type( PERMIT )
+;
+
+M_AsPathAccessList_WORD
+:
+   F_Word -> type( WORD )
+;
+
+M_AccessList_NEWLINE
+:
+   F_Newline+ -> type ( NEWLINE ) , popMode
+;
+
+M_AccessList_WS
+:
+   F_Whitespace+ -> channel ( HIDDEN )
+;

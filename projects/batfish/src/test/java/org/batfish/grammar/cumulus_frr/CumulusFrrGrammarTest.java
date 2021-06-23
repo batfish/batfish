@@ -1447,8 +1447,8 @@ public class CumulusFrrGrammarTest {
   @Test
   public void testCumulusFrrIpAsPathAccessList() {
     String name = "NAME";
-    long as1 = 11111;
-    long as2 = 22222;
+    String as1 = "^11111$";
+    String as2 = "^22222$";
     parse(
         String.format(
             "ip as-path access-list %s permit %s\n" + "ip as-path access-list %s deny %s\n",
@@ -1465,8 +1465,8 @@ public class CumulusFrrGrammarTest {
     IpAsPathAccessListLine line1 = asPathAccessList.getLines().get(1);
     assertThat(line0.getAction(), equalTo(LineAction.PERMIT));
     assertThat(line1.getAction(), equalTo(LineAction.DENY));
-    assertThat(line0.getAsNum(), equalTo(as1));
-    assertThat(line1.getAsNum(), equalTo(as2));
+    assertThat(line0.getRegex(), equalTo(as1));
+    assertThat(line1.getRegex(), equalTo(as2));
 
     // Check that the AS-path access list definition was registered
     DefinedStructureInfo definedStructureInfo =

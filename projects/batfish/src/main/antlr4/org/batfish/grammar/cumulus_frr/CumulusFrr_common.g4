@@ -38,6 +38,12 @@ ip_prefix_length
   UINT8
 ;
 
+access_list_action
+:
+   PERMIT
+   | DENY
+;
+
 line_action
 :
   deny = DENY
