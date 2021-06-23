@@ -106,7 +106,7 @@ public class TestRoutePoliciesAnswererTest {
             Direction.IN, ImmutableList.of(inputRoute), HOSTNAME, policy.getName());
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+    TableAnswerElement answer = answerer.answer(_batfish.getSnapshot());
 
     BgpRouteDiffs diffs = new BgpRouteDiffs(ImmutableSet.of());
 
@@ -143,7 +143,7 @@ public class TestRoutePoliciesAnswererTest {
             Direction.IN, ImmutableList.of(inputRoute), HOSTNAME, policy.getName());
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+    TableAnswerElement answer = answerer.answer(_batfish.getSnapshot());
 
     assertThat(
         answer.getRows().getData(),
@@ -183,7 +183,7 @@ public class TestRoutePoliciesAnswererTest {
             Direction.IN, ImmutableList.of(inputRoute), HOSTNAME, policy.getName());
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+    TableAnswerElement answer = answerer.answer(_batfish.getSnapshot());
 
     assertThat(
         answer.getRows().getData(),
@@ -220,7 +220,7 @@ public class TestRoutePoliciesAnswererTest {
             Direction.IN, ImmutableList.of(inputRoute), HOSTNAME, policy.getName());
     TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
 
-    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+    TableAnswerElement answer = answerer.answer(_batfish.getSnapshot());
 
     BgpRouteDiffs diffs = new BgpRouteDiffs(ImmutableSet.of());
 
