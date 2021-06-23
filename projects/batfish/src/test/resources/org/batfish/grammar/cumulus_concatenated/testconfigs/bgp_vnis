@@ -20,4 +20,3 @@ vrf vrf2
 exit-vrf
 router bgp 65000
   address-family l2vpn evpn
-    advertise-all-vni
