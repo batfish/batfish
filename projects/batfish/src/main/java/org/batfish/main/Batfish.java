@@ -1151,6 +1151,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public InitInfoAnswerElement initInfo(
       NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
+    LOGGER.info("Getting snapshot initialization info");
     ParseVendorConfigurationAnswerElement parseAnswer =
         loadParseVendorConfigurationAnswerElement(snapshot);
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
@@ -2215,6 +2216,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @VisibleForTesting
   void initializeTopology(NetworkSnapshot networkSnapshot) {
     Map<String, Configuration> configurations = loadConfigurations(networkSnapshot);
+    LOGGER.info("Initializing topology");
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
@@ -2415,6 +2417,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
 
+      LOGGER.info("Serializing Vendor-Independent configurations");
       Span storeSpan = GlobalTracer.get().buildSpan("store VI configs").start();
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
         assert childScope != null; // avoid unused warning
@@ -2443,6 +2446,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ppSpan.finish();
       }
 
+      LOGGER.info("Computing completion metadata");
       Span metadataSpan =
           GlobalTracer.get().buildSpan("Compute and store completion metadata").start();
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -2690,6 +2694,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     /* Assemble answer. */
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     parseResults.forEach(pvcr -> pvcr.applyTo(vendorConfigurations, _logger, answerElement));
+    LOGGER.info("Serializing Vendor-Specific configurations");
     Span serializeNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Serialize network configs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(serializeNetworkConfigsSpan)) {
