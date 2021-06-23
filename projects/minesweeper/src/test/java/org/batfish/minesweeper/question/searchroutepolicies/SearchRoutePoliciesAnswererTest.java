@@ -27,6 +27,7 @@ import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
@@ -134,14 +135,18 @@ public class SearchRoutePoliciesAnswererTest {
             .setHostname(HOSTNAME)
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration baseConfig = cb.build();
-    baseConfig.setAsPathAccessLists(
-        ImmutableMap.of(
-            AS_PATH_1,
+
+    // AsPathAccessList only properly initializes its state upon deserialization
+    AsPathAccessList asPath1 =
+        SerializationUtils.clone(
             new AsPathAccessList(
-                AS_PATH_1, ImmutableList.of(new AsPathAccessListLine(LineAction.PERMIT, "^40$"))),
-            AS_PATH_2,
+                AS_PATH_1, ImmutableList.of(new AsPathAccessListLine(LineAction.PERMIT, "^40$"))));
+    AsPathAccessList asPath2 =
+        SerializationUtils.clone(
             new AsPathAccessList(
-                AS_PATH_2, ImmutableList.of(new AsPathAccessListLine(LineAction.PERMIT, "^50$")))));
+                AS_PATH_2, ImmutableList.of(new AsPathAccessListLine(LineAction.PERMIT, "^50$"))));
+
+    baseConfig.setAsPathAccessLists(ImmutableMap.of(AS_PATH_1, asPath1, AS_PATH_2, asPath2));
 
     nf.vrfBuilder().setOwner(baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
     _policyBuilder = nf.routingPolicyBuilder().setOwner(baseConfig).setName(POLICY_NAME);
