@@ -61,7 +61,6 @@ import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
-import org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoutingPolicySpecifier;
@@ -272,36 +271,26 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param constraints intersection of the input and output constraints provided as part of the
    *     question and the constraints on a solution that come from the symbolic route analysis
    * @param policy the route policy that was analyzed
-   * @param g the Graph, which provides information about the community atomic predicates
+   * @param g the Graph, which provides information about the community and as-path atomic
+   *     predicates
    * @return an optional answer, which includes a concrete input route and (if the desired action is
    *     PERMIT) concrete output route
    */
-  private Optional<TableAnswerElement> constraintsToResult(
-      BDD constraints, RoutingPolicy policy, Graph g, NetworkSnapshot snapshot) {
+  private Optional<Row> constraintsToResult(BDD constraints, RoutingPolicy policy, Graph g) {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
       BDD fullModel = constraints.fullSatOne();
       Bgpv4Route inRoute = satAssignmentToRoute(fullModel, new BDDRoute(g), g);
-      TestRoutePoliciesQuestion trp =
-          new TestRoutePoliciesQuestion(
-              _direction,
-              ImmutableList.of(toQuestionsBgpRoute(inRoute)),
-              policy.getOwner().getHostname(),
-              policy.getName());
-      TableAnswerElement ae = new TestRoutePoliciesAnswerer(trp, _batfish).answer(snapshot);
+      Row result = TestRoutePoliciesAnswerer.rowResultFor(policy, inRoute, _direction);
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
       // is modeling something incorrectly (or both).
       // TODO: We can also take this validation further by using satAssignmentToRoute to produce the
       // output route from our fullModel and the final BDDRoute from the symbolic analysis (as we
       // used to do) and then compare that to the TRP result.
-      assert ae.getRowsList().size() == 1
-          && ae.getRowsList()
-              .get(0)
-              .get(TestRoutePoliciesAnswerer.COL_ACTION, STRING)
-              .equals(_action.toString());
-      return Optional.of(ae);
+      assert result.get(TestRoutePoliciesAnswerer.COL_ACTION, STRING).equals(_action.toString());
+      return Optional.of(result);
     }
   }
 
@@ -432,8 +421,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param g a Graph object providing information about the policy's owner configuration
    * @return an optional result, if a behavior of interest was found
    */
-  private Optional<TableAnswerElement> searchPolicy(
-      RoutingPolicy policy, Graph g, NetworkSnapshot snapshot) {
+  private Optional<Row> searchPolicy(RoutingPolicy policy, Graph g) {
     TransferReturn result;
     try {
       TransferBDD tbdd = new TransferBDD(g, policy.getOwner(), policy.getStatements());
@@ -458,7 +446,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       intersection = acceptedAnnouncements.not().and(inConstraints);
     }
 
-    return constraintsToResult(intersection, policy, g, snapshot);
+    return constraintsToResult(intersection, policy, g);
   }
 
   /**
@@ -468,7 +456,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param policies all route policies in that node
    * @return all results from analyzing those route policies
    */
-  private Stream<TableAnswerElement> searchPoliciesForNode(
+  private Stream<Row> searchPoliciesForNode(
       String node, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
     Graph g =
         new Graph(
@@ -482,7 +470,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _asPathRegexes);
 
     return policies.stream()
-        .map(policy -> searchPolicy(policy, g, snapshot))
+        .map(policy -> searchPolicy(policy, g))
         .filter(Optional::isPresent)
         .map(Optional::get);
   }
@@ -495,7 +483,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .flatMap(
                 node ->
                     searchPoliciesForNode(node, _policySpecifier.resolve(node, context), snapshot))
-            .flatMap(ae -> ae.getRowsList().stream())
             .collect(ImmutableList.toImmutableList());
 
     TableAnswerElement answerElement = new TableAnswerElement(TestRoutePoliciesAnswerer.metadata());
