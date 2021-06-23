@@ -43657,25 +43657,6 @@
                 ]
               },
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "igp"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              },
-              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
                 "type" : "ExitReject"
               }
@@ -43715,25 +43696,6 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "comment" : "Add network statement routes to BGP",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "igp"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
                 },
