@@ -31,7 +31,6 @@ import static org.batfish.representation.cumulus.CumulusConversions.convertIpv4U
 import static org.batfish.representation.cumulus.CumulusConversions.convertOspfRedistributionPolicy;
 import static org.batfish.representation.cumulus.CumulusConversions.convertVxlans;
 import static org.batfish.representation.cumulus.CumulusConversions.generateBgpCommonPeerConfig;
-import static org.batfish.representation.cumulus.CumulusConversions.generateRedistributeAggregateConditions;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetMaxMedMetric;
 import static org.batfish.representation.cumulus.CumulusConversions.getSetNextHop;
 import static org.batfish.representation.cumulus.CumulusConversions.inferClusterId;
@@ -81,7 +80,6 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
-import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -196,45 +194,6 @@ public final class CumulusConversionsTest {
                     StaticRoute.testBuilder().setAdministrativeCost(0).setNetwork(network).build())
                 .build())
         .getBooleanValue();
-  }
-
-  @Test
-  public void testGenerateExportAggregateConditions() {
-    BooleanExpr booleanExpr =
-        generateRedistributeAggregateConditions(
-            ImmutableMap.of(
-                Prefix.parse("1.2.3.0/24"),
-                new BgpVrfAddressFamilyAggregateNetworkConfiguration()));
-
-    // longer not exported
-    {
-      Environment env =
-          Environment.builder(_c)
-              .setOriginalRoute(
-                  GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.3.4/32")).build())
-              .build();
-      assertFalse(value(booleanExpr, env));
-    }
-
-    // shorter not exported
-    {
-      Environment env =
-          Environment.builder(_c)
-              .setOriginalRoute(
-                  GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.0.0/16")).build())
-              .build();
-      assertFalse(value(booleanExpr, env));
-    }
-
-    // exact match exported
-    {
-      Environment env =
-          Environment.builder(_c)
-              .setOriginalRoute(
-                  GeneratedRoute.builder().setNetwork(Prefix.parse("1.2.3.0/24")).build())
-              .build();
-      assertTrue(value(booleanExpr, env));
-    }
   }
 
   @Test

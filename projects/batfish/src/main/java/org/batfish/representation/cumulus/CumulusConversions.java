@@ -33,7 +33,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -235,30 +234,6 @@ public final class CumulusConversions {
     }
 
     return Optional.empty();
-  }
-
-  static BooleanExpr generateRedistributeAggregateConditions(
-      Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggregateNetworks) {
-    return new Disjunction(
-        aggregateNetworks.entrySet().stream()
-            .map(
-                entry -> {
-                  Prefix prefix = entry.getKey();
-
-                  // Conditions to generate this route
-                  List<BooleanExpr> exportAggregateConjuncts = new ArrayList<>();
-                  exportAggregateConjuncts.add(
-                      new MatchPrefixSet(
-                          DestinationNetwork.instance(),
-                          new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-                  exportAggregateConjuncts.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-                  // TODO consider attribute map
-
-                  // Do export a generated aggregate.
-                  return new Conjunction(exportAggregateConjuncts);
-                })
-            .collect(ImmutableList.toImmutableList()));
   }
 
   /** Creates BGP aggregates aggregate routes for the input vrf. */
@@ -882,7 +857,6 @@ public final class CumulusConversions {
    * <ul>
    *   <li>routes whose network matches a configured network statement
    *   <li>routes that match a configured redistribution statement
-   *   <li>active BGP aggregate routes (TODO: remove this part once aggregates are in BGP process)
    * </ul>
    *
    * <p>All other routes are denied.
@@ -898,19 +872,8 @@ public final class CumulusConversions {
     // TODO Does FRR clear next hop info when redistributing a route into BGP? If so, do:
     //     bgpRedistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
 
-    // Add redistribution conditions for non-aggregate routes
+    // Add redistribution conditions
     addRedistributionAndNetworkStatements(bgpVrf, routeMaps, bgpRedistributionPolicy);
-
-    // Add redistribution conditions for aggregate routes
-    if (bgpVrf.getIpv4Unicast() != null) {
-      bgpRedistributionPolicy.addStatement(
-          new If(
-              generateRedistributeAggregateConditions(
-                  bgpVrf.getIpv4Unicast().getAggregateNetworks()),
-              ImmutableList.of(
-                  new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                  Statements.ExitAccept.toStaticStatement())));
-    }
 
     // Reject all other routes
     bgpRedistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
