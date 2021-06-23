@@ -2,6 +2,11 @@ net del all
 #
 net add hostname cumulus_nclu_bgp
 #
+# explicitly redistributed into BGP in default VRF via a network statement
+net add routing route 192.0.2.1/32 Null0
+# not redistributed into BGP in default VRF
+net add routing route 1.1.1.1/32 Null0
+#
 net add bgp autonomous-system 65500
 net add bgp bestpath as-path multipath-relax
 net add bgp ipv4 unicast network 192.0.2.1/32
