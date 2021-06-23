@@ -351,10 +351,10 @@ public final class CumulusConversions {
     c.getVrfs()
         .forEach(
             (vrfName, vrf) -> {
-              if (!vrf.getLayer2Vnis().isEmpty()
-                  || !vrf.getLayer3Vnis().isEmpty() // VRF has some VNI
-                      && vrf.getBgpProcess() == null // process does not already exist
-                      && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
+              if ((!vrf.getLayer2Vnis().isEmpty()
+                      || !vrf.getLayer3Vnis().isEmpty()) // VRF has some VNI
+                  && vrf.getBgpProcess() == null // process does not already exist
+                  && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
                 vrf.setBgpProcess(
                     org.batfish.datamodel.BgpProcess.builder()
                         .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())

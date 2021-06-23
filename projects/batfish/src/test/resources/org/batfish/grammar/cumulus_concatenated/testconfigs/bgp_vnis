@@ -1,0 +1,23 @@
+bgp_vnis
+# This file describes the network interfaces
+iface vlan1
+  vlan-id 1000
+  vrf vrf1
+iface swp1
+  vxlan-id 123
+  vxlan-local-tunnelip 1.1.1.1
+  bridge-access 1000
+iface swp2
+  vxlan-id 2000
+  vxlan-local-tunnelip 2.2.2.2
+  bridge-access 456
+iface vrf3
+  vrf-table auto
+# ports.conf --
+frr version test
+vrf vrf2
+  vni 2000
+exit-vrf
+router bgp 65000
+  address-family l2vpn evpn
+    advertise-all-vni

@@ -16,6 +16,7 @@ import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.VniConfig.importRtPatternForAnyAs;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.representation.cumulus.BgpProcess.BGP_UNNUMBERED_IP;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.CUMULUS_CLAG_DOMAIN_ID;
 import static org.batfish.representation.cumulus.CumulusConcatenatedConfiguration.LOOPBACK_INTERFACE_NAME;
@@ -321,14 +322,15 @@ public final class CumulusConversions {
     c.getVrfs()
         .forEach(
             (vrfName, vrf) -> {
-              if (!vrf.getLayer2Vnis().isEmpty()
-                  || !vrf.getLayer3Vnis().isEmpty() // VRF has some VNI
-                      && vrf.getBgpProcess() == null // process does not already exist
-                      && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
+              if ((!vrf.getLayer2Vnis().isEmpty()
+                      || !vrf.getLayer3Vnis().isEmpty()) // VRF has some VNI
+                  && vrf.getBgpProcess() == null // process does not already exist
+                  && c.getDefaultVrf().getBgpProcess() != null) { // there is a default BGP proc
                 vrf.setBgpProcess(
                     org.batfish.datamodel.BgpProcess.builder()
                         .setRouterId(c.getDefaultVrf().getBgpProcess().getRouterId())
                         .setAdminCostsToVendorDefaults(ConfigurationFormat.CUMULUS_CONCATENATED)
+                        .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                         .build());
               }
             });
