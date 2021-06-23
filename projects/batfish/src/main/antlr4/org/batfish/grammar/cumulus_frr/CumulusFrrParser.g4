@@ -39,7 +39,7 @@ statement
 
 ip_as_path
 :
-  AS_PATH ACCESS_LIST name = word action = line_action asn = uint32 NEWLINE
+  AS_PATH ACCESS_LIST name = word action = access_list_action as_path_regex = word NEWLINE
 ;
 
 s_agentx
@@ -185,5 +185,3 @@ s_username
 :
   USERNAME null_rest_of_line
 ;
-
-
