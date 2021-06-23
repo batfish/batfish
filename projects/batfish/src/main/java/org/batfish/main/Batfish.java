@@ -2163,19 +2163,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Answer answer = new Answer();
 
     if (_settings.getSerializeVendor()) {
+      LOGGER.info("Serializing Vendor-Specific configurations");
       answer.append(serializeVendorConfigs(snapshot));
       action = true;
     }
 
     if (_settings.getSerializeIndependent()) {
+      LOGGER.info("Serializing Vendor-Independent configurations");
       answer.append(serializeIndependentConfigs(snapshot));
       // TODO: compute topology on initialization in cleaner way
+      LOGGER.info("Initializing topology");
       initializeTopology(snapshot);
       updateSnapshotNodeRoles(snapshot);
       action = true;
     }
 
     if (_settings.getInitInfo()) {
+      LOGGER.info("Getting snapshot initialization info");
       InitInfoAnswerElement initInfoAnswerElement = initInfo(snapshot, true, false);
       // In this context we can remove parse trees because they will be returned in preceding answer
       // element. Note that parse trees are not removed when asking initInfo as its own question.
@@ -2201,6 +2205,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getDataPlane()) {
+      LOGGER.info("Computing data-plane");
       answer.addAnswerElement(computeDataPlane(snapshot));
       action = true;
     }
@@ -2443,6 +2448,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ppSpan.finish();
       }
 
+      LOGGER.info("Computing completion metadata");
       Span metadataSpan =
           GlobalTracer.get().buildSpan("Compute and store completion metadata").start();
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
