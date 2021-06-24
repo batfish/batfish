@@ -411,8 +411,8 @@ public class TestRoutePoliciesAnswererTest {
         _policyBuilder
             .addStatement(
                 new TraceableStatement(
-                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
-                    TraceElement.of("term")))
+                    TraceElement.of("term"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
 
     BgpRoute inputRoute =

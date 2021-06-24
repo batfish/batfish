@@ -509,6 +509,7 @@ public final class AsPathStructuresVerifier {
     @Override
     public Void visitTraceableStatement(
         TraceableStatement traceableStatement, AsPathStructuresVerifierContext arg) {
+      traceableStatement.getInnerStatements().stream().forEach(s -> s.accept(this, arg));
       return null;
     }
   }

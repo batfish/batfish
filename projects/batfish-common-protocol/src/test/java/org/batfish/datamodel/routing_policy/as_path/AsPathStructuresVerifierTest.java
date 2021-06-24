@@ -17,6 +17,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.isis.IsisMetricType;
@@ -92,6 +93,7 @@ import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -457,6 +459,23 @@ public final class AsPathStructuresVerifierTest {
     _thrown.expectMessage(containsString("Undefined reference"));
     new Not(MatchAsPath.of(InputAsPath.instance(), AsPathMatchExprReference.of("undefined")))
         .accept(BOOLEAN_EXPR_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitTraceableStatement() {
+    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
+
+    _thrown.expect(VendorConversionException.class);
+    _thrown.expectMessage(containsString("Undefined reference"));
+    new TraceableStatement(
+            TraceElement.of("text"),
+            ImmutableList.of(
+                new If(
+                    MatchAsPath.of(
+                        AsPathExprReference.of("undefined"), AsPathMatchAny.of(ImmutableList.of())),
+                    ImmutableList.of(),
+                    ImmutableList.of())))
+        .accept(STATEMENT_VERIFIER, ctx);
   }
 
   @Test

@@ -780,6 +780,7 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitTraceableStatement(
         TraceableStatement traceableStatement, CommunityStructuresVerifierContext arg) {
+      traceableStatement.getInnerStatements().stream().forEach(s -> s.accept(this, arg));
       return null;
     }
   }

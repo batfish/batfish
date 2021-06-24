@@ -158,7 +158,7 @@ public class RoutePolicyStatementVarCollector
   @Override
   public Set<CommunityVar> visitTraceableStatement(
       TraceableStatement traceableStatement, Configuration arg) {
-    return ImmutableSet.of();
+    return visitAll(traceableStatement.getInnerStatements(), arg);
   }
 
   public Set<CommunityVar> visitAll(List<Statement> statements, Configuration arg) {

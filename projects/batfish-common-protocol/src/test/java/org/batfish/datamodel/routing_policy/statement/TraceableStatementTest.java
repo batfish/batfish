@@ -24,11 +24,11 @@ public class TraceableStatementTest {
   public void testEquals() {
     new EqualsTester()
         .addEqualityGroup(
-            new TraceableStatement(ImmutableList.of(), TraceElement.of("text")),
-            new TraceableStatement(ImmutableList.of(), TraceElement.of("text")))
+            new TraceableStatement(TraceElement.of("text"), ImmutableList.of()),
+            new TraceableStatement(TraceElement.of("text"), ImmutableList.of()))
         .addEqualityGroup(
-            new TraceableStatement(ImmutableList.of(new If()), TraceElement.of("text")))
-        .addEqualityGroup(new TraceableStatement(ImmutableList.of(), TraceElement.of("other")))
+            new TraceableStatement(TraceElement.of("text"), ImmutableList.of(new If())))
+        .addEqualityGroup(new TraceableStatement(TraceElement.of("other"), ImmutableList.of()))
         .testEquals();
   }
 
@@ -49,10 +49,10 @@ public class TraceableStatementTest {
     assertThat(
         executeHelper(
             new TraceableStatement(
+                TraceElement.of("parent"),
                 ImmutableList.of(
-                    new TraceableStatement(ImmutableList.of(), TraceElement.of("child1")),
-                    new TraceableStatement(ImmutableList.of(), TraceElement.of("child2"))),
-                TraceElement.of("parent"))),
+                    new TraceableStatement(TraceElement.of("child1"), ImmutableList.of()),
+                    new TraceableStatement(TraceElement.of("child2"), ImmutableList.of())))),
         contains(
             allOf(
                 hasTraceElement("parent"),
@@ -62,15 +62,15 @@ public class TraceableStatementTest {
     assertThat(
         executeHelper(
             new TraceableStatement(
+                TraceElement.of("parent"),
                 ImmutableList.of(
                     new If(BooleanExprs.TRUE, ImmutableList.of(), ImmutableList.of()),
-                    new TraceableStatement(ImmutableList.of(), TraceElement.of("child1"))),
-                TraceElement.of("parent"))),
+                    new TraceableStatement(TraceElement.of("child1"), ImmutableList.of())))),
         contains(allOf(hasTraceElement("parent"), hasChildren(isTraceTree("child1")))));
   }
 
   private static final TraceableStatement EMPTY_STATEMENT =
-      new TraceableStatement(ImmutableList.of(), TraceElement.of("empty"));
+      new TraceableStatement(TraceElement.of("empty"), ImmutableList.of());
 
   private static List<TraceTree> executeHelper(Statement statement) {
     Configuration c = Configuration.builder().setHostname("host").build();

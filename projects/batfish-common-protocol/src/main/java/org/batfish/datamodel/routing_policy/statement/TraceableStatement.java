@@ -17,7 +17,7 @@ import org.batfish.datamodel.routing_policy.Result;
 
 /**
  * A statement to enable tracing. It attaches its traceElement when executed with environment with
- * tracing on and then executes its inner statements.
+ * tracing on and then executes its inner statements in a subtrace.
  */
 @ParametersAreNonnullByDefault
 public class TraceableStatement extends Statement {
@@ -32,10 +32,10 @@ public class TraceableStatement extends Statement {
       @Nullable @JsonProperty(PROP_INNER_STATEMENTS) List<Statement> innerStatements,
       @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
     checkArgument(traceElement != null, "Trace element cannot be null for TraceableStatement");
-    return new TraceableStatement(firstNonNull(innerStatements, ImmutableList.of()), traceElement);
+    return new TraceableStatement(traceElement, firstNonNull(innerStatements, ImmutableList.of()));
   }
 
-  public TraceableStatement(List<Statement> innerStatements, TraceElement traceElement) {
+  public TraceableStatement(TraceElement traceElement, List<Statement> innerStatements) {
     _innerStatements = ImmutableList.copyOf(innerStatements);
     _traceElement = traceElement;
   }
