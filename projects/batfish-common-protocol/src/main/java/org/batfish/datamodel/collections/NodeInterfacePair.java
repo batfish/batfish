@@ -1,6 +1,7 @@
 package org.batfish.datamodel.collections;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -66,7 +67,7 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
 
   @Override
   public String toString() {
-    return _hostname + ":" + _interfaceName;
+    return escapeNameIfNeeded(_hostname) + "[" + escapeNameIfNeeded(_interfaceName) + "]";
   }
 
   @Override
