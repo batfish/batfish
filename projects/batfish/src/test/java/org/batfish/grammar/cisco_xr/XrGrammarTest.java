@@ -258,6 +258,8 @@ import org.batfish.representation.cisco_xr.RoutePolicyElseIfBlock;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyStatement;
 import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
+import org.batfish.representation.cisco_xr.TagRewritePolicy;
+import org.batfish.representation.cisco_xr.TagRewritePop;
 import org.batfish.representation.cisco_xr.UnimplementedBoolean;
 import org.batfish.representation.cisco_xr.UniqueLengthAsPathSetElem;
 import org.batfish.representation.cisco_xr.Vrf;
@@ -3397,5 +3399,36 @@ public final class XrGrammarTest {
 
     // No other warnings, i.e. other lines are converted successfully
     assertThat(ccae.getWarnings().get(hostname).getRedFlagWarnings(), iterableWithSize(5));
+  }
+
+  @Test
+  public void testInterfaceL2transportExtraction() {
+    String hostname = "interface_l2transport";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertNotNull(vc);
+
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys("GigabitEthernet0/0/0/1", "GigabitEthernet0/0/0/1.1", "GigabitEthernet0/0/0/1.2"));
+
+    org.batfish.representation.cisco_xr.Interface ge1 =
+        vc.getInterfaces().get("GigabitEthernet0/0/0/1");
+    org.batfish.representation.cisco_xr.Interface ge11 =
+        vc.getInterfaces().get("GigabitEthernet0/0/0/1.1");
+    TagRewritePolicy ge11Policy = ge11.getRewriteIngressTag();
+    org.batfish.representation.cisco_xr.Interface ge12 =
+        vc.getInterfaces().get("GigabitEthernet0/0/0/1.2");
+    TagRewritePolicy ge12Policy = ge12.getRewriteIngressTag();
+
+    assertFalse(ge1.getL2transport());
+    assertTrue(ge11.getL2transport());
+    assertThat(ge11Policy, instanceOf(TagRewritePop.class));
+    assertThat(((TagRewritePop) ge11Policy).getCount(), equalTo(1));
+    assertFalse(((TagRewritePop) ge11Policy).getSymmetric());
+    assertTrue(ge12.getL2transport());
+    assertThat(ge12Policy, instanceOf(TagRewritePop.class));
+    assertThat(((TagRewritePop) ge12Policy).getCount(), equalTo(2));
+    assertTrue(((TagRewritePop) ge12Policy).getSymmetric());
   }
 }

@@ -1,0 +1,16 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname interface_l2transport
+!
+interface GigabitEthernet0/0/0/1
+ negotiation auto
+!
+interface GigabitEthernet0/0/0/1.1 l2transport
+ encapsulation dot1q 1
+ rewrite ingress tag pop 1
+!
+interface GigabitEthernet0/0/0/1.2 l2transport
+ encapsulation dot1q 2
+ rewrite ingress tag pop 2 symmetric
+!
+!
