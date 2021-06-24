@@ -213,7 +213,7 @@ public class IsisRoute extends AbstractRoute {
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
-  public @Nonnull Long getMetric() {
+  public @Nonnull long getMetric() {
     return _metric;
   }
 

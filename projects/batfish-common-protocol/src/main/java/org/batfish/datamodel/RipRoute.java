@@ -29,7 +29,7 @@ public abstract class RipRoute extends AbstractRoute {
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
-  public final Long getMetric() {
+  public final long getMetric() {
     return _metric;
   }
 }
