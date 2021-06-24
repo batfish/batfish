@@ -115,7 +115,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
     Tracer tracer = new Tracer();
+    tracer.newSubTrace();
     boolean permit = policy.process(inputRoute, outputRoute, direction, tracer);
+    tracer.endSubTrace();
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
         inputRoute,
