@@ -59,7 +59,7 @@ public final class LocalRoute extends AbstractRoute {
   }
 
   @Override
-  public Long getMetric() {
+  public long getMetric() {
     return 0L;
   }
 

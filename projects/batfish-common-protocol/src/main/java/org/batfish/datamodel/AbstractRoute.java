@@ -74,7 +74,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   }
 
   @JsonIgnore
-  public abstract Long getMetric();
+  public abstract long getMetric();
 
   /** IPV4 network of this route */
   @JsonProperty(PROP_NETWORK)

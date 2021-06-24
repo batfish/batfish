@@ -58,7 +58,7 @@ public final class ConnectedRoute extends AbstractRoute {
   }
 
   @Override
-  public Long getMetric() {
+  public long getMetric() {
     return 0L;
   }
 
