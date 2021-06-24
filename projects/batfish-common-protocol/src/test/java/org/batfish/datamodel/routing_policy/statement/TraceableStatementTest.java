@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.testing.EqualsTester;
 import java.util.List;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.TraceElement;
@@ -18,6 +19,18 @@ import org.batfish.datamodel.trace.Tracer;
 import org.junit.Test;
 
 public class TraceableStatementTest {
+
+  @Test
+  public void testEquals() {
+    new EqualsTester()
+        .addEqualityGroup(
+            new TraceableStatement(ImmutableList.of(), TraceElement.of("text")),
+            new TraceableStatement(ImmutableList.of(), TraceElement.of("text")))
+        .addEqualityGroup(
+            new TraceableStatement(ImmutableList.of(new If()), TraceElement.of("text")))
+        .addEqualityGroup(new TraceableStatement(ImmutableList.of(), TraceElement.of("other")))
+        .testEquals();
+  }
 
   /* Trivial test: don't barf if there is not tracer in the environment */
   @Test
