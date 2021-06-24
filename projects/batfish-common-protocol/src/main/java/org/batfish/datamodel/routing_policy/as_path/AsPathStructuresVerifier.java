@@ -63,6 +63,7 @@ import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 
 /**
  * Provides functionality to verify absence of undefined/cyclical references in as-path-related
@@ -502,6 +503,12 @@ public final class AsPathStructuresVerifier {
     @Override
     public Void visitStaticStatement(
         StaticStatement staticStatement, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitTraceableStatement(
+        TraceableStatement traceableStatement, AsPathStructuresVerifierContext arg) {
       return null;
     }
   }

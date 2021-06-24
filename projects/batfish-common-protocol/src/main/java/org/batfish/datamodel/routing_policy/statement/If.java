@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -30,12 +29,6 @@ public class If extends Statement {
   private BooleanExpr _guard;
 
   private List<Statement> _trueStatements;
-
-  // if non-null, we record that the guard matched
-  @Nullable private TraceElement _trueTraceElement;
-
-  // if non-null, we record that the guard did not match
-  @Nullable private TraceElement _falseTraceElement;
 
   @JsonCreator
   public If() {

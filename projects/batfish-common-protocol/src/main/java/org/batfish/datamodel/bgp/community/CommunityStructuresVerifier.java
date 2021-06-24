@@ -108,6 +108,7 @@ import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.visitors.RibExprVisitor;
 
 /**
@@ -773,6 +774,12 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitStaticStatement(
         StaticStatement staticStatement, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitTraceableStatement(
+        TraceableStatement traceableStatement, CommunityStructuresVerifierContext arg) {
       return null;
     }
   }
