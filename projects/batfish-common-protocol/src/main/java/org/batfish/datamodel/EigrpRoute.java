@@ -59,7 +59,7 @@ public abstract class EigrpRoute extends AbstractRoute {
   }
 
   @Override
-  public final Long getMetric() {
+  public final long getMetric() {
     return _metric.ribMetric(_metricVersion);
   }
 
