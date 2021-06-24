@@ -880,9 +880,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     redistributionPolicy.addStatement(new SetLocalPreference(new LiteralLong(0)));
     redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
 
-    // TODO Does Arista clear next hop info when redistributing a route into BGP? If so, do:
-    //     redistributionPolicy.addStatement(new SetNextHop(DiscardNextHop.INSTANCE));
-
     // Generate and distribute aggregate routes.
     if (ipv4af != null) {
       for (Entry<Prefix, AristaBgpAggregateNetwork> e : bgpVrf.getV4aggregates().entrySet()) {
