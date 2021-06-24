@@ -337,7 +337,7 @@ public final class GeneratedRoute extends AbstractRoute
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
-  public Long getMetric() {
+  public long getMetric() {
     return _metric;
   }
 
