@@ -95,7 +95,9 @@ public final class TracerouteUtils {
                     route.getProtocol(),
                     route.getNetwork(),
                     route.getNextHopIp(),
-                    AbstractRoute.NEXT_VRF_EXTRACTOR.visit(route.getNextHop())))
+                    AbstractRoute.NEXT_VRF_EXTRACTOR.visit(route.getNextHop()),
+                    route.getAdministrativeCost(),
+                    route.getMetric()))
         .sorted(
             comparing(RouteInfo::getNetwork)
                 .thenComparing(RouteInfo::getNextHopIp)

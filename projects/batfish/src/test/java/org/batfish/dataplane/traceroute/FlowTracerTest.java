@@ -1377,9 +1377,9 @@ public final class FlowTracerTest {
                 .setRoutes(
                     ImmutableList.of(
                         new RouteInfo(
-                            RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("1.2.3.4"), null),
+                            RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("1.2.3.4"), null, 0, 0),
                         new RouteInfo(
-                            RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("2.3.4.5"), null)))
+                            RoutingProtocol.STATIC, Prefix.ZERO, Ip.parse("2.3.4.5"), null, 0, 0)))
                 .build()));
   }
 
@@ -1608,7 +1608,7 @@ public final class FlowTracerTest {
         routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
-                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null))));
+                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null, 0, 0))));
     assertThat(routingStep.getDetail().getArpIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(routingStep.getDetail().getOutputInterface(), equalTo("iface1"));
   }
@@ -1635,7 +1635,7 @@ public final class FlowTracerTest {
         routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
-                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null))));
+                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null, 0, 0))));
     assertThat(routingStep.getDetail().getArpIp(), nullValue());
     assertThat(routingStep.getDetail().getOutputInterface(), nullValue());
   }
@@ -1662,7 +1662,7 @@ public final class FlowTracerTest {
         routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
-                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null))));
+                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null, 0, 0))));
     assertThat(routingStep.getDetail().getArpIp(), nullValue());
     assertThat(routingStep.getDetail().getOutputInterface(), nullValue());
   }
