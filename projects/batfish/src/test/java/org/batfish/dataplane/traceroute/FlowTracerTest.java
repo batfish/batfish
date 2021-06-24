@@ -1608,7 +1608,7 @@ public final class FlowTracerTest {
         routingStep.getDetail().getRoutes(),
         equalTo(
             ImmutableList.of(
-                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null, 0, 0))));
+                new RouteInfo(RoutingProtocol.STATIC, prefix, Ip.parse("2.2.2.2"), null, 1, 0))));
     assertThat(routingStep.getDetail().getArpIp(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(routingStep.getDetail().getOutputInterface(), equalTo("iface1"));
   }
