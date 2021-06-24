@@ -3,7 +3,6 @@
 hostname interface_l2transport
 !
 interface GigabitEthernet0/0/0/1
- negotiation auto
 !
 interface GigabitEthernet0/0/0/1.1 l2transport
  encapsulation dot1q 1

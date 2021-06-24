@@ -3422,13 +3422,18 @@ public final class XrGrammarTest {
     TagRewritePolicy ge12Policy = ge12.getRewriteIngressTag();
 
     assertFalse(ge1.getL2transport());
+    assertThat(ge1.getEncapsulationVlan(), nullValue());
+
     assertTrue(ge11.getL2transport());
     assertThat(ge11Policy, instanceOf(TagRewritePop.class));
     assertThat(((TagRewritePop) ge11Policy).getCount(), equalTo(1));
     assertFalse(((TagRewritePop) ge11Policy).getSymmetric());
+    assertThat(ge11.getEncapsulationVlan(), equalTo(1));
+
     assertTrue(ge12.getL2transport());
     assertThat(ge12Policy, instanceOf(TagRewritePop.class));
     assertThat(((TagRewritePop) ge12Policy).getCount(), equalTo(2));
     assertTrue(((TagRewritePop) ge12Policy).getSymmetric());
+    assertThat(ge12.getEncapsulationVlan(), equalTo(2));
   }
 }
