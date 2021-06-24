@@ -21,6 +21,8 @@ public final class RouteInfo {
   private static final String PROP_NETWORK = "network";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
   private static final String PROP_NEXT_VRF = "nextVrf";
+  private static final String PROP_ADMIN_DISTANCE = "admin";
+  private static final String PROP_METRIC = "metric";
 
   /** Protocol of the route like bgp, ospf etc. */
   private @Nonnull final RoutingProtocol _protocol;
@@ -34,12 +36,25 @@ public final class RouteInfo {
   /** Next VRF for this route */
   private @Nullable final String _nextVrf;
 
+  /** Administrative distance for this route */
+  private final int _adminDistance;
+
+  /** Metric for this route */
+  private final long _metric;
+
   public RouteInfo(
-      RoutingProtocol protocol, Prefix network, @Nullable Ip nextHopIp, @Nullable String nextVrf) {
+      RoutingProtocol protocol,
+      Prefix network,
+      @Nullable Ip nextHopIp,
+      @Nullable String nextVrf,
+      int adminDistance,
+      long metric) {
     _protocol = protocol;
     _network = network;
     _nextHopIp = nextHopIp;
     _nextVrf = nextVrf;
+    _adminDistance = adminDistance;
+    _metric = metric;
   }
 
   @JsonCreator
@@ -47,10 +62,14 @@ public final class RouteInfo {
       @JsonProperty(PROP_PROTOCOL) @Nullable RoutingProtocol protocol,
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
-      @JsonProperty(PROP_NEXT_VRF) @Nullable String nextVrf) {
+      @JsonProperty(PROP_NEXT_VRF) @Nullable String nextVrf,
+      @JsonProperty(PROP_ADMIN_DISTANCE) @Nullable Integer adminDistance,
+      @JsonProperty(PROP_METRIC) @Nullable Long metric) {
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
-    return new RouteInfo(protocol, network, nextHopIp, nextVrf);
+    checkArgument(adminDistance != null, "Missing %s", PROP_ADMIN_DISTANCE);
+    checkArgument(metric != null, "Missing %s", PROP_METRIC);
+    return new RouteInfo(protocol, network, nextHopIp, nextVrf, adminDistance, metric);
   }
 
   @Override
@@ -64,12 +83,14 @@ public final class RouteInfo {
     return _protocol.equals(other._protocol)
         && _network.equals(other._network)
         && Objects.equals(_nextHopIp, other._nextHopIp)
-        && Objects.equals(_nextVrf, other._nextVrf);
+        && Objects.equals(_nextVrf, other._nextVrf)
+        && _adminDistance == other._adminDistance
+        && _metric == other._metric;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_protocol, _network, _nextHopIp, _nextVrf);
+    return Objects.hash(_protocol, _network, _nextHopIp, _nextVrf, _adminDistance, _metric);
   }
 
   @JsonProperty(PROP_PROTOCOL)
@@ -94,5 +115,15 @@ public final class RouteInfo {
   @Nullable
   public String getNextVrf() {
     return _nextVrf;
+  }
+
+  @JsonProperty(PROP_ADMIN_DISTANCE)
+  public int getAdminDistance() {
+    return _adminDistance;
+  }
+
+  @JsonProperty(PROP_METRIC)
+  public long getMetric() {
+    return _metric;
   }
 }
