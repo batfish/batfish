@@ -28,6 +28,7 @@ import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
 
 /** Collect all community literals and regexes in a route-policy {@link Statement}. */
@@ -151,6 +152,12 @@ public class RoutePolicyStatementVarCollector
   @Override
   public Set<CommunityVar> visitStaticStatement(
       StaticStatement staticStatement, Configuration arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitTraceableStatement(
+      TraceableStatement traceableStatement, Configuration arg) {
     return ImmutableSet.of();
   }
 
