@@ -6,6 +6,11 @@ hostname nxos_track_refs
 track 1 interface Ethernet1/1 line-protocol
 track 2 interface Ethernet1/2 line-protocol
 track 3 interface Ethernet1/3 line-protocol
+! These are unsupported track types
+! But they should still support correct reference tracking
+track 100 ip route 192.0.2.1/32 reachability hmm
+  vrf member v1
+track 101 ip sla 1 reachability
 
 ip route 10.0.100.0/24 Ethernet1/1 10.255.1.254 track 1
 ipv6 route 1111::/24 Ethernet1/1 1110:: track 1
@@ -17,6 +22,8 @@ interface Ethernet1/1
   hsrp 2
     ip 192.0.2.1
     track 2
+    track 100
+    track 101
 
 ! Undefined track references are rejected by the CLI but should still report undefined references
 !

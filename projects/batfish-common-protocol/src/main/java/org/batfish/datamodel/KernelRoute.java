@@ -80,7 +80,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   }
 
   @Override
-  public Long getMetric() {
+  public long getMetric() {
     return 0L;
   }
 

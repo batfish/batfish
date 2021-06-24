@@ -12,7 +12,7 @@ import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpWildcard.ipWithWildcardMask;
-import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDscp;
@@ -31,6 +31,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasM
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopInterface;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
@@ -79,6 +80,7 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasSourceAddres
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasUdpPort;
 import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVni;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasL2VniSettings;
+import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_3000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_5000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_6000;
@@ -114,6 +116,7 @@ import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_L
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_HOLD_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_MAX_INTERVAL_MS;
 import static org.batfish.representation.cisco_nxos.OspfProcess.DEFAULT_TIMERS_THROTTLE_LSA_START_INTERVAL_MS;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.any;
@@ -168,6 +171,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -224,6 +228,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -284,6 +289,7 @@ import org.batfish.representation.cisco_nxos.ActionIpAccessListLine;
 import org.batfish.representation.cisco_nxos.AddrGroupIpAddressSpec;
 import org.batfish.representation.cisco_nxos.AddressFamily;
 import org.batfish.representation.cisco_nxos.BgpGlobalConfiguration;
+import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv4AddressFamilyConfiguration;
 import org.batfish.representation.cisco_nxos.BgpVrfIpv6AddressFamilyConfiguration;
@@ -392,6 +398,7 @@ import org.batfish.representation.cisco_nxos.TcpOptions;
 import org.batfish.representation.cisco_nxos.Track;
 import org.batfish.representation.cisco_nxos.TrackInterface;
 import org.batfish.representation.cisco_nxos.TrackInterface.Mode;
+import org.batfish.representation.cisco_nxos.TrackUnsupported;
 import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
@@ -801,11 +808,72 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpRedistribution() throws IOException {
+    /*
+     * Config contains two VRFs:
+     * - VRF1 has static route 1.1.1.1/32 and redistributes static into BGP with a permit-all route-map
+     * - VRF2 has static routes 1.1.1.1/32 and 2.2.2.2/32, and redistributes static into BGP with a
+     *   route-map that only permits 1.1.1.1/32
+     * - Both VRFs' BGP RIBs should contain 1.1.1.1/32 as a local route.
+     */
+    String hostname = "bgp_redistribution";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Prefix staticPrefix1 = Prefix.parse("1.1.1.1/32");
+    Prefix staticPrefix2 = Prefix.parse("2.2.2.2/32");
+
+    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32,
+    // and VRF2 should also have 2.2.2.2/32
+    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
+        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
+        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    assertThat(
+        vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
+    assertThat(
+        vrf2Routes,
+        contains(
+            allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC)),
+            allOf(hasPrefix(staticPrefix2), hasProtocol(RoutingProtocol.STATIC))));
+
+    // Both VRFs should have 1.1.1.1/32 in BGP (and not 2.2.2.2/32)
+    int bgpAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(hostname)
+            .getVrfs()
+            .get("VRF1")
+            .getBgpProcess()
+            .getAdminCost(RoutingProtocol.BGP);
+    Bgpv4Route bgpRouteVrf1 =
+        Bgpv4Route.builder()
+            .setNetwork(staticPrefix1)
+            .setNonRouting(true)
+            .setAdmin(bgpAdmin)
+            .setLocalPreference(100)
+            .setNextHop(NextHopDiscard.instance())
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.parse("10.10.10.1"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(ZERO) // indicates local origination
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setTag(0L)
+            .build();
+    Bgpv4Route bgpRouteVrf2 =
+        bgpRouteVrf1.toBuilder().setOriginatorIp(Ip.parse("10.10.10.2")).build();
+    Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
+    Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
+    assertThat(vrf1BgpRoutes, contains(bgpRouteVrf1));
+    assertThat(vrf2BgpRoutes, contains(bgpRouteVrf2));
+  }
+
+  @Test
   public void testBgpRedistFromEigrpConversion() throws IOException {
     // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
     Configuration c = parseConfig("nxos_bgp_eigrp_redistribution");
-    RoutingPolicy bgpExportPolicy =
-        c.getRoutingPolicies().get(generatedBgpCommonExportPolicyName(DEFAULT_VRF_NAME));
+    RoutingPolicy bgpRedistPolicy =
+        c.getRoutingPolicies().get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME));
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     Prefix matchRm = Prefix.parse("5.5.5.0/24");
@@ -840,17 +908,17 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.testBuilder()
+              Bgpv4Route.builder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.BGP)
                   .setAdmin(ebgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -863,7 +931,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
     }
     {
       // Redistribute matching EIGRP route to IBGP
@@ -871,17 +939,17 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.testBuilder()
+              Bgpv4Route.builder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.IBGP)
                   .setAdmin(ibgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrp.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -894,7 +962,7 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP);
       assertFalse(
-          bgpExportPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
     }
     {
       // Ensure external EIGRP route can also match routing policy
@@ -913,17 +981,17 @@ public final class CiscoNxosGrammarTest {
           BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
               matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP);
       assertTrue(
-          bgpExportPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
+          bgpRedistPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
           rb.build(),
           equalTo(
-              Bgpv4Route.testBuilder()
+              Bgpv4Route.builder()
                   .setNetwork(matchRm)
                   .setProtocol(RoutingProtocol.BGP)
                   .setAdmin(ebgpAdmin)
                   .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
                   .setMetric(matchEigrpEx.getMetric())
-                  .setNextHopIp(nextHopIp)
+                  .setNextHop(NextHopDiscard.instance())
                   .setReceivedFromIp(ZERO)
                   .setOriginatorIp(bgpRouterId)
                   .setOriginType(OriginType.INCOMPLETE)
@@ -1550,7 +1618,7 @@ public final class CiscoNxosGrammarTest {
     String hostname = "nxos_track";
     CiscoNxosConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(vc.getTracks(), hasKeys(1, 2, 500));
+    assertThat(vc.getTracks(), hasKeys(1, 2, 100, 101, 500));
 
     {
       Track track = vc.getTracks().get(1);
@@ -1575,6 +1643,10 @@ public final class CiscoNxosGrammarTest {
       assertThat(trackInterface.getInterface(), equalTo("loopback1"));
       assertThat(trackInterface.getMode(), equalTo(Mode.IPV6_ROUTING));
     }
+
+    // Should have placeholders for unsupported track types in the VS model
+    assertThat(vc.getTracks().get(100), instanceOf(TrackUnsupported.class));
+    assertThat(vc.getTracks().get(101), instanceOf(TrackUnsupported.class));
   }
 
   @Test
@@ -1589,6 +1661,12 @@ public final class CiscoNxosGrammarTest {
                 "Unsupported interface type: mgmt, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
             hasComment(
                 "Unsupported interface type: Vlan, expected [ETHERNET, PORT_CHANNEL, LOOPBACK]"),
+            allOf(
+                hasComment("This track method is not yet supported and will be ignored."),
+                ParseWarningMatchers.hasText(containsString("ip route 192.0.2.1/32 reachability"))),
+            allOf(
+                hasComment("This track method is not yet supported and will be ignored."),
+                ParseWarningMatchers.hasText(containsString("ip sla 1 reachability"))),
             hasComment("Expected track object-id in range 1-500, but got '0'"),
             hasComment("Expected track object-id in range 1-500, but got '501'"),
             // Undefined references are not accepted by the CLI
@@ -7699,6 +7777,15 @@ public final class CiscoNxosGrammarTest {
   @Test
   public void testRouteMapMultipleChainedContinueEntriesConversion() throws IOException {
     Configuration c = parseConfig("nxos_route_map_multiple_chained_continue_entries");
+
+    // Route gets redistributed into BGP
+    RoutingPolicy redistPolicy =
+        c.getRoutingPolicies().get(c.getDefaultVrf().getBgpProcess().getRedistributionPolicy());
+    ConnectedRoute igpRoute = new ConnectedRoute(Prefix.strict("10.10.10.10/32"), "loopback0");
+    Bgpv4Route.Builder bgpRouteBuilder = Bgpv4Route.testBuilder().setNetwork(igpRoute.getNetwork());
+    assertTrue(redistPolicy.process(igpRoute, bgpRouteBuilder, Direction.OUT));
+
+    // Route gets exported from BGP RIB
     RoutingPolicy exportPolicy =
         c.getRoutingPolicies()
             .get(
@@ -7708,8 +7795,7 @@ public final class CiscoNxosGrammarTest {
                     .get(Prefix.strict("192.0.2.2/32"))
                     .getIpv4UnicastAddressFamily()
                     .getExportPolicy());
-    assertRoutingPolicyPermitsRoute(
-        exportPolicy, new ConnectedRoute(Prefix.strict("10.10.10.10/32"), "loopback0"));
+    assertRoutingPolicyPermitsRoute(exportPolicy, bgpRouteBuilder.build());
   }
 
   @Test
@@ -8762,6 +8848,9 @@ public final class CiscoNxosGrammarTest {
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "1", 2));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "2", 1));
     assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "3", 0));
+    // Unsupported track methods should still produce correct references
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "100", 1));
+    assertThat(ans, hasNumReferrers(filename, CiscoNxosStructureType.TRACK, "101", 1));
 
     assertThat(
         ans,
@@ -8781,5 +8870,177 @@ public final class CiscoNxosGrammarTest {
             CiscoNxosStructureType.TRACK,
             "499",
             CiscoNxosStructureUsage.INTERFACE_HSRP_GROUP_TRACK));
+  }
+
+  @Test
+  public void testAggregateAddressExtraction() {
+    String hostname = "nxos-aggregate-address";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+    Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> aggs =
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getIpv4UnicastAddressFamily()
+            .getAggregateNetworks();
+    assertThat(aggs, aMapWithSize(9));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.1.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    null, false, null, false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.2.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    null, false, "atm1", false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.1.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    null, true, null, false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.2.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    "adm", true, null, false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.3.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    null, true, "atm2", false, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.1.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    null, false, null, true, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.2.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    null, false, null, false, "sm1"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.3.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    null, false, null, true, "sm2"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                new BgpVrfAddressFamilyAggregateNetworkConfiguration(
+                    "undefined", false, "undefined", false, "undefined"))));
+  }
+
+  @Test
+  public void testAggregateAddressConversion() throws IOException {
+    String hostname = "nxos-aggregate-address";
+    Configuration c = parseConfig(hostname);
+
+    Map<Prefix, BgpAggregate> aggs = c.getDefaultVrf().getBgpProcess().getAggregates();
+    assertThat(aggs, aMapWithSize(9));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.1.0.0/16")),
+            equalTo(BgpAggregate.of(Prefix.parse("1.1.0.0/16"), null, null, null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("1.2.0.0/16")),
+            equalTo(BgpAggregate.of(Prefix.parse("1.2.0.0/16"), null, null, "atm1"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.1.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.1.0.0/16"),
+                    null,
+                    // TODO: generation policy should incorporate as-set
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.2.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.2.0.0/16"),
+                    null,
+                    // TODO: generation policy should incorporate as-set and advertise-map
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("2.3.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.3.0.0/16"),
+                    null,
+                    // TODO: generation policy should incorporate as-set
+                    null,
+                    "atm2"))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.1.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.1.0.0/16"),
+                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.2.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.2.0.0/16"),
+                    // TODO: suppression policy should incorporate suppress-map
+                    null,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.3.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.3.0.0/16"),
+                    // TODO: suppression policy should incorporate suppress-map and ignore
+                    //       summary-only.
+                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("4.0.0.0/16"),
+                    // TODO: verify undefined route-map treated as omitted
+                    null,
+                    null,
+                    null))));
   }
 }

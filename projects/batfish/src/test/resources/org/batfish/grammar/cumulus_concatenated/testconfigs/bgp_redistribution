@@ -1,0 +1,29 @@
+bgp_redistribution
+# This file describes the network interfaces
+iface VRF1
+  vrf-table auto
+iface VRF2
+  vrf-table auto
+# ports.conf --
+frr version test
+
+ip route 1.1.1.1/32 Null0 vrf VRF1
+ip route 1.1.1.1/32 Null0 vrf VRF2
+ip route 2.2.2.2/32 Null0 vrf VRF2
+
+ip prefix-list PL permit 1.1.1.1/32
+route-map RM permit 10
+  match ip address prefix-list PL
+route-map RM deny 20
+
+router bgp 1 vrf VRF1
+  bgp router-id 10.10.10.1
+  address-family ipv4 unicast
+    redistribute static
+  exit-address-family
+
+router bgp 1 vrf VRF2
+  bgp router-id 10.10.10.2
+  address-family ipv4 unicast
+    redistribute static route-map RM
+  exit-address-family

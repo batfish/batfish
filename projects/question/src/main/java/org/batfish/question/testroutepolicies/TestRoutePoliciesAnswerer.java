@@ -94,16 +94,28 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
-  private Stream<Result> testPolicy(RoutingPolicy policy) {
-    return _inputRoutes.stream().map(route -> testPolicy(policy, route));
+  /**
+   * Produce the results of simulating the given route policy on the given input route.
+   *
+   * @param policy the route policy to simulate
+   * @param inputRoute the input route for the policy
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @return a table row containing the results of the simulation
+   */
+  public static Row rowResultFor(RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
+    return toRow(testPolicy(policy, inputRoute, direction));
   }
 
-  private Result testPolicy(RoutingPolicy policy, Bgpv4Route inputRoute) {
+  private Stream<Result> testPolicy(RoutingPolicy policy) {
+    return _inputRoutes.stream().map(route -> testPolicy(policy, route, _direction));
+  }
+
+  private static Result testPolicy(
+      RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
     Tracer tracer = new Tracer();
-    boolean permit = policy.process(inputRoute, outputRoute, _direction, tracer);
-
+    boolean permit = policy.process(inputRoute, outputRoute, direction, tracer);
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
         inputRoute,
@@ -113,13 +125,14 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer(NetworkSnapshot snapshot) {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
     SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
     Multiset<Row> rows =
         getResults(context, policies)
-            .flatMap(this::testPolicy)
-            .map(TestRoutePoliciesAnswerer::toRow)
+            .flatMap(
+                policy ->
+                    _inputRoutes.stream().map(route -> rowResultFor(policy, route, _direction)))
             .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
@@ -152,7 +165,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setOriginatorIp(questionsBgpRoute.getOriginatorIp())
         .setMetric(questionsBgpRoute.getMetric())
         .setLocalPreference(questionsBgpRoute.getLocalPreference())
-        .setWeight(questionsBgpRoute.getWeight())
+        .setTag(questionsBgpRoute.getTag())
         .setNetwork(questionsBgpRoute.getNetwork())
         .setCommunities(questionsBgpRoute.getCommunities())
         .setAsPath(questionsBgpRoute.getAsPath())
@@ -174,7 +187,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setOriginatorIp(dataplaneBgpRoute.getOriginatorIp())
         .setMetric(dataplaneBgpRoute.getMetric())
         .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
-        .setWeight(dataplaneBgpRoute.getWeight())
+        .setTag(dataplaneBgpRoute.getTag())
         .setNetwork(dataplaneBgpRoute.getNetwork())
         .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
         .setAsPath(dataplaneBgpRoute.getAsPath())

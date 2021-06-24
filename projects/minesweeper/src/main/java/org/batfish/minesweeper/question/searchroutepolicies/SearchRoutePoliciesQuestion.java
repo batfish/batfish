@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -10,10 +11,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.routing_policy.Environment;
 
 /** A question for testing routing policies. */
 @ParametersAreNonnullByDefault
 public final class SearchRoutePoliciesQuestion extends Question {
+
+  private static final String PROP_DIRECTION = "direction";
   private static final String PROP_INPUT_CONSTRAINTS = "inputConstraints";
   private static final String PROP_OUTPUT_CONSTRAINTS = "outputConstraints";
   private static final String PROP_NODES = "nodes";
@@ -26,6 +30,10 @@ public final class SearchRoutePoliciesQuestion extends Question {
 
   @VisibleForTesting static final Action DEFAULT_ACTION = Action.PERMIT;
 
+  @VisibleForTesting
+  static final Environment.Direction DEFAULT_DIRECTION = Environment.Direction.IN;
+
+  @Nonnull private final Environment.Direction _direction;
   @Nullable private final String _nodes;
   @Nullable private final String _policies;
   @Nonnull private final BgpRouteConstraints _inputConstraints;
@@ -38,15 +46,26 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   public SearchRoutePoliciesQuestion() {
-    this(DEFAULT_ROUTE_CONSTRAINTS, DEFAULT_ROUTE_CONSTRAINTS, null, null, DEFAULT_ACTION);
+    this(
+        DEFAULT_DIRECTION,
+        DEFAULT_ROUTE_CONSTRAINTS,
+        DEFAULT_ROUTE_CONSTRAINTS,
+        null,
+        null,
+        DEFAULT_ACTION);
   }
 
   public SearchRoutePoliciesQuestion(
+      Environment.Direction direction,
       BgpRouteConstraints inputConstraints,
       BgpRouteConstraints outputConstraints,
       @Nullable String nodes,
       @Nullable String policies,
       Action action) {
+    checkArgument(
+        action == Action.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
+        "Output route constraints can only be provided when the action is 'permit'");
+    _direction = direction;
     _nodes = nodes;
     _policies = policies;
     _inputConstraints = inputConstraints;
@@ -56,12 +75,14 @@ public final class SearchRoutePoliciesQuestion extends Question {
 
   @JsonCreator
   private static SearchRoutePoliciesQuestion jsonCreator(
+      @Nullable @JsonProperty(PROP_DIRECTION) Environment.Direction direction,
       @Nullable @JsonProperty(PROP_INPUT_CONSTRAINTS) BgpRouteConstraints inputConstraints,
       @Nullable @JsonProperty(PROP_OUTPUT_CONSTRAINTS) BgpRouteConstraints outputConstraints,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_POLICIES) String policies,
       @Nullable @JsonProperty(PROP_ACTION) Action action) {
     return new SearchRoutePoliciesQuestion(
+        firstNonNull(direction, DEFAULT_DIRECTION),
         firstNonNull(inputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
         firstNonNull(outputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
         nodes,
@@ -73,6 +94,12 @@ public final class SearchRoutePoliciesQuestion extends Question {
   @Override
   public boolean getDataPlane() {
     return false;
+  }
+
+  @JsonProperty(PROP_DIRECTION)
+  @Nonnull
+  public Environment.Direction getDirection() {
+    return _direction;
   }
 
   @JsonProperty(PROP_INPUT_CONSTRAINTS)
