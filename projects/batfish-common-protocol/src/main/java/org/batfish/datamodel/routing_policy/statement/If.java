@@ -120,26 +120,14 @@ public class If extends Statement {
       return exprResult;
     }
     boolean guardVal = exprResult.getBooleanValue();
-    TraceElement traceElement =
-        environment.getTracer() == null ? null : guardVal ? _trueTraceElement : _falseTraceElement;
-    if (traceElement != null) {
-      environment.getTracer().setTraceElement(traceElement);
-      environment.getTracer().newSubTrace();
-    }
-    try {
-      List<Statement> toExecute = guardVal ? _trueStatements : _falseStatements;
-      for (Statement statement : toExecute) {
-        Result result = statement.execute(environment);
-        if (result.getExit() || result.getReturn()) {
-          return result;
-        }
-      }
-      return Result.builder().setFallThrough(true).build();
-    } finally {
-      if (traceElement != null) {
-        environment.getTracer().endSubTrace();
+    List<Statement> toExecute = guardVal ? _trueStatements : _falseStatements;
+    for (Statement statement : toExecute) {
+      Result result = statement.execute(environment);
+      if (result.getExit() || result.getReturn()) {
+        return result;
       }
     }
+    return Result.builder().setFallThrough(true).build();
   }
 
   @JsonProperty(PROP_FALSE_STATEMENTS)
