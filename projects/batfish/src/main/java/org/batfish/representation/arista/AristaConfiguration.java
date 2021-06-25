@@ -9,10 +9,10 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
-import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getVrfForVlan;
+import static org.batfish.representation.arista.AristaConversions.toBgpAggregate;
 import static org.batfish.representation.arista.AristaConversions.toCommunityMatchExpr;
 import static org.batfish.representation.arista.AristaConversions.toCommunitySet;
 import static org.batfish.representation.arista.AristaConversions.toCommunitySetMatchExpr;
@@ -179,7 +179,6 @@ import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 import org.batfish.datamodel.vxlan.Layer3Vni;
 import org.batfish.representation.arista.Tunnel.TunnelMode;
-import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpBestpathTieBreaker;
 import org.batfish.representation.arista.eos.AristaBgpPeerFilter;
 import org.batfish.representation.arista.eos.AristaBgpProcess;
@@ -850,6 +849,16 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = bgpVrf.getV4UnicastAf();
 
+    // Generate aggregate routes.
+    if (ipv4af != null) {
+      bgpVrf.getV4aggregates().entrySet().stream()
+          .map(
+              aggregateByPrefixEntry ->
+                  toBgpAggregate(
+                      aggregateByPrefixEntry.getKey(), aggregateByPrefixEntry.getValue(), c, _w))
+          .forEach(newBgpProcess::addAggregate);
+    }
+
     // Next we build up the BGP common export policy.
     RoutingPolicy.Builder bgpCommonExportPolicy =
         RoutingPolicy.builder()
@@ -879,52 +888,6 @@ public final class AristaConfiguration extends VendorConfiguration {
     // Arista sets local routes' local preference to 0
     redistributionPolicy.addStatement(new SetLocalPreference(new LiteralLong(0)));
     redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
-
-    // Generate and distribute aggregate routes.
-    if (ipv4af != null) {
-      for (Entry<Prefix, AristaBgpAggregateNetwork> e : bgpVrf.getV4aggregates().entrySet()) {
-        Prefix prefix = e.getKey();
-        AristaBgpAggregateNetwork agg = e.getValue();
-
-        // TODO: add agg here for, e.g., match-map
-        RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix);
-
-        GeneratedRoute.Builder gr =
-            GeneratedRoute.builder()
-                .setNetwork(prefix)
-                .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
-                .setGenerationPolicy(genPolicy.getName())
-                .setDiscard(true);
-
-        // Conditions to generate this route
-        List<BooleanExpr> exportAggregateConditions = new ArrayList<>();
-        exportAggregateConditions.add(
-            new MatchPrefixSet(
-                DestinationNetwork.instance(),
-                new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
-        exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-
-        // If defined, set attribute map for aggregate network
-        String attributeMapName = agg.getAttributeMap();
-        if (attributeMapName != null) {
-          RouteMap attributeMap = _routeMaps.get(attributeMapName);
-          if (attributeMap != null) {
-            // need to apply attribute changes when this route is activated
-            gr.setAttributePolicy(attributeMapName);
-          }
-        }
-
-        v.getGeneratedRoutes().add(gr.build());
-        // Redistribute this aggregate if activated
-        redistributionPolicy.addStatement(
-            new If(
-                "Redistribute aggregate route into BGP",
-                new Conjunction(exportAggregateConditions),
-                ImmutableList.of(
-                    new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                    Statements.ExitAccept.toStaticStatement())));
-      }
-    }
 
     // Only redistribute default route if `default-information originate` is set.
     //    BooleanExpr redistributeDefaultRoute =
