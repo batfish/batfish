@@ -10,6 +10,8 @@ interface GigabitEthernet0/0/0/1.1 l2transport
 !
 interface GigabitEthernet0/0/0/1.2 l2transport
  encapsulation dot1q 2
- rewrite ingress tag pop 2 symmetric
 !
+! Reconfiguring the interface doesn't remove the l2transport flag
+interface GigabitEthernet0/0/0/1.2
+ rewrite ingress tag pop 2 symmetric
 !

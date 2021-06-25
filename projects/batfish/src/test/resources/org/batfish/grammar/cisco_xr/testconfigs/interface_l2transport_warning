@@ -8,3 +8,6 @@ interface GigabitEthernet0/0/0/1.1 l2transport
 interface GigabitEthernet0/0/0/1.2 l2transport
  rewrite ingress tag pop 3 symmetric
 !
+interface GigabitEthernet0/0/0/1.3
+ rewrite ingress tag pop 1 symmetric
+!

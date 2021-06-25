@@ -3453,6 +3453,11 @@ public final class XrGrammarTest {
         hasParseWarnings(
             containsInAnyOrder(
                 hasComment("Expected rewrite ingress tag pop range in range 1-2, but got '0'"),
-                hasComment("Expected rewrite ingress tag pop range in range 1-2, but got '3'"))));
+                hasComment("Expected rewrite ingress tag pop range in range 1-2, but got '3'"),
+                allOf(
+                    hasComment(
+                        "Rewrite policy can only be configured on l2transport interfaces. Ignoring"
+                            + " this line."),
+                    hasText("rewrite ingress tag pop 1 symmetric")))));
   }
 }

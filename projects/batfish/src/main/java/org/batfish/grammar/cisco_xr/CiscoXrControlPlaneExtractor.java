@@ -2735,7 +2735,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         for (int i = range.getStart(); i <= range.getEnd(); i++) {
           String name = namePrefix.toString() + i;
           Interface iface = addInterface(name, ctx.iname, true);
-          iface.setL2transport(ctx.L2TRANSPORT() != null);
+          if (ctx.L2TRANSPORT() != null) {
+            iface.setL2transport(true);
+          }
           _configuration.defineStructure(INTERFACE, name, ctx);
           _configuration.referenceStructure(
               INTERFACE, name, INTERFACE_SELF_REF, ctx.getStart().getLine());
@@ -2743,7 +2745,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       }
     } else {
       Interface iface = addInterface(namePrefix.toString(), ctx.iname, true);
-      iface.setL2transport(ctx.L2TRANSPORT() != null);
+      if (ctx.L2TRANSPORT() != null) {
+        iface.setL2transport(true);
+      }
     }
     if (ctx.MULTIPOINT() != null) {
       todo(ctx);
@@ -4277,6 +4281,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitIf_rewrite_ingress_tag(If_rewrite_ingress_tagContext ctx) {
     Optional<TagRewritePolicy> policy = toTagRewritePolicy(ctx.ifrit_policy());
     for (Interface currentInterface : _currentInterfaces) {
+      if (!currentInterface.getL2transport()) {
+        warn(
+            ctx,
+            "Rewrite policy can only be configured on l2transport interfaces. Ignoring this line.");
+        continue;
+      }
       policy.ifPresent(currentInterface::setRewriteIngressTag);
     }
   }
