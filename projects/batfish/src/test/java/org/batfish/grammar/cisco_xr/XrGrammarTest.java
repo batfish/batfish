@@ -3410,13 +3410,14 @@ public final class XrGrammarTest {
         hasKeys(
             // Routed interface associated with l2vpn
             "BVI1",
+            "BVI2",
             // Referenced but otherwise undefined interfaces
             "GigabitEthernet0/0/0/1.1",
             "GigabitEthernet0/0/0/2.1"));
 
     assertThat(vc.getBridgeGroups(), hasKeys("BG1"));
     Map<String, BridgeDomain> bridgeDomains = vc.getBridgeGroups().get("BG1").getBridgeDomains();
-    assertThat(bridgeDomains, hasKeys("BD1", "BD2"));
+    assertThat(bridgeDomains, hasKeys("BD1", "BD2", "BD3"));
 
     BridgeDomain bd1 = bridgeDomains.get("BD1");
     assertThat(bd1.getName(), equalTo("BD1"));
@@ -3428,6 +3429,11 @@ public final class XrGrammarTest {
     BridgeDomain bd2 = bridgeDomains.get("BD2");
     assertThat(bd2.getName(), equalTo("BD2"));
     assertThat(bd2.getInterfaces(), empty());
-    assertNull(bd2.getRoutedInterface());
+    assertThat(bd2.getRoutedInterface(), equalTo("BVI2"));
+
+    BridgeDomain bd3 = bridgeDomains.get("BD3");
+    assertThat(bd3.getName(), equalTo("BD3"));
+    assertThat(bd3.getInterfaces(), empty());
+    assertNull(bd3.getRoutedInterface());
   }
 }

@@ -12,8 +12,12 @@ l2vpn
    interface GigabitEthernet0/0/0/1.1
    interface GigabitEthernet0/0/0/2.1
    !
+   routed interface BVI2
    routed interface BVI1
   !
   bridge-domain BD2
+   routed interface BVI2
+  !
+  bridge-domain BD3
   !
 !
