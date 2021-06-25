@@ -3408,15 +3408,7 @@ public final class XrGrammarTest {
     String hostname = "l2vpn";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
 
-    assertThat(
-        vc.getInterfaces(),
-        hasKeys(
-            // Routed interface associated with l2vpn
-            "BVI1",
-            "BVI2",
-            // Referenced but otherwise undefined interfaces
-            "GigabitEthernet0/0/0/1.1",
-            "GigabitEthernet0/0/0/2.1"));
+    assertThat(vc.getInterfaces(), hasKeys("BVI1", "GigabitEthernet0/0/0/1.1"));
 
     assertThat(vc.getBridgeGroups(), hasKeys("BG1"));
     Map<String, BridgeDomain> bridgeDomains = vc.getBridgeGroups().get("BG1").getBridgeDomains();
