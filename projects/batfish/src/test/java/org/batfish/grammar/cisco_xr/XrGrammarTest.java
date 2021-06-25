@@ -3460,5 +3460,12 @@ public final class XrGrammarTest {
         ccae, hasReferencedStructure(filename, INTERFACE, "BVI1", BRIDGE_DOMAIN_ROUTED_INTERFACE));
     assertThat(
         ccae, hasReferencedStructure(filename, INTERFACE, "BVI2", BRIDGE_DOMAIN_ROUTED_INTERFACE));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, INTERFACE, "GigabitEthernet0/0/0/2.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae, hasUndefinedReference(filename, INTERFACE, "BVI2", BRIDGE_DOMAIN_ROUTED_INTERFACE));
   }
 }

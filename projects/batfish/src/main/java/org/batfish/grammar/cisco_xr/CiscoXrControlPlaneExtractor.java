@@ -4856,18 +4856,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitLbgbd_interface(Lbgbd_interfaceContext ctx) {
-    Interface iface = getOrAddInterface(ctx.interface_name());
-    String ifaceName = iface.getName();
-    _currentBridgeDomain.getInterfaces().add(iface.getName());
+    String ifaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
+    _currentBridgeDomain.getInterfaces().add(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, BRIDGE_DOMAIN_INTERFACE, ctx.start.getLine());
   }
 
   @Override
   public void exitLbgbd_routed_interface(Lbgbd_routed_interfaceContext ctx) {
-    Interface iface = getOrAddInterface(ctx.interface_name());
-    String ifaceName = iface.getName();
-    _currentBridgeDomain.setRoutedInterface(iface.getName());
+    String ifaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
+    _currentBridgeDomain.setRoutedInterface(ifaceName);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, BRIDGE_DOMAIN_ROUTED_INTERFACE, ctx.start.getLine());
   }
