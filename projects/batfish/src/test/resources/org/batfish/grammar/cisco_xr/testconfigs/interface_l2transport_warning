@@ -2,14 +2,9 @@
 !
 hostname interface_l2transport_warning
 !
-interface GigabitEthernet0/0/0/1
-!
 interface GigabitEthernet0/0/0/1.1 l2transport
- encapsulation dot1q 1
  rewrite ingress tag pop 0
 !
 interface GigabitEthernet0/0/0/1.2 l2transport
- encapsulation dot1q 2
  rewrite ingress tag pop 3 symmetric
-!
 !
