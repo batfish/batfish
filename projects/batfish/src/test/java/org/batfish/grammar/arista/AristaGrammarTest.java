@@ -6,14 +6,18 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
@@ -65,6 +69,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignDest
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
@@ -569,6 +574,67 @@ public class AristaGrammarTest {
 
     assertThat(aristaDisabled, hasMultipathEbgp(false));
     assertThat(aristaEnabled, hasMultipathEbgp(false));
+  }
+
+  @Test
+  public void testBgpRedistribution() throws IOException {
+    /*
+     * Config contains two VRFs:
+     * - VRF1 has static route 1.1.1.1/32 and redistributes static into BGP unconditionally
+     * - VRF2 has static routes 1.1.1.1/32 and 2.2.2.2/32, and redistributes static into BGP with a
+     *   route-map that only permits 1.1.1.1/32
+     * - Both VRFs' BGP RIBs should contain 1.1.1.1/32 as a local route.
+     */
+    String hostname = "bgp_redistribution";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Prefix staticPrefix1 = Prefix.parse("1.1.1.1/32");
+    Prefix staticPrefix2 = Prefix.parse("2.2.2.2/32");
+
+    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32,
+    // and VRF2 should also have 2.2.2.2/32
+    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
+        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
+        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    assertThat(
+        vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
+    assertThat(
+        vrf2Routes,
+        contains(
+            allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC)),
+            allOf(hasPrefix(staticPrefix2), hasProtocol(RoutingProtocol.STATIC))));
+
+    // Both VRFs should have 1.1.1.1/32 in BGP (and not 2.2.2.2/32)
+    int bgpAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(hostname)
+            .getVrfs()
+            .get("VRF1")
+            .getBgpProcess()
+            .getAdminCost(RoutingProtocol.BGP);
+    Bgpv4Route bgpRouteVrf1 =
+        Bgpv4Route.builder()
+            .setNetwork(staticPrefix1)
+            .setNonRouting(true)
+            .setAdmin(bgpAdmin)
+            .setLocalPreference(0)
+            .setNextHop(NextHopDiscard.instance())
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.parse("10.10.10.1"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(ZERO) // indicates local origination
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+            .build();
+    Bgpv4Route bgpRouteVrf2 =
+        bgpRouteVrf1.toBuilder().setOriginatorIp(Ip.parse("10.10.10.2")).build();
+    Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
+    Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
+    assertThat(vrf1BgpRoutes, contains(bgpRouteVrf1));
+    assertThat(vrf2BgpRoutes, contains(bgpRouteVrf2));
   }
 
   @Test
@@ -1758,15 +1824,7 @@ public class AristaGrammarTest {
                 .build();
     Builder builder = Bgpv4Route.testBuilder();
     {
-      String policyName =
-          config
-              .getVrfs()
-              .get("vrf1")
-              .getBgpProcess()
-              .getActiveNeighbors()
-              .get(Prefix.parse("1.1.1.1/32"))
-              .getIpv4UnicastAddressFamily()
-              .getExportPolicy();
+      String policyName = generatedBgpRedistributionPolicyName("vrf1");
       RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
       assertTrue(policy.process(intra, builder, Direction.OUT));
       assertTrue(policy.process(inter, builder, Direction.OUT));
@@ -1774,15 +1832,7 @@ public class AristaGrammarTest {
       assertTrue(policy.process(ext2, builder, Direction.OUT));
     }
     {
-      String policyName =
-          config
-              .getVrfs()
-              .get("vrf2")
-              .getBgpProcess()
-              .getActiveNeighbors()
-              .get(Prefix.parse("2.2.2.2/32"))
-              .getIpv4UnicastAddressFamily()
-              .getExportPolicy();
+      String policyName = generatedBgpRedistributionPolicyName("vrf2");
       RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
       assertTrue(policy.process(intra, builder, Direction.OUT));
       assertTrue(policy.process(inter, builder, Direction.OUT));
@@ -1790,15 +1840,7 @@ public class AristaGrammarTest {
       assertFalse(policy.process(ext2, builder, Direction.OUT));
     }
     {
-      String policyName =
-          config
-              .getVrfs()
-              .get("vrf3")
-              .getBgpProcess()
-              .getActiveNeighbors()
-              .get(Prefix.parse("3.3.3.3/32"))
-              .getIpv4UnicastAddressFamily()
-              .getExportPolicy();
+      String policyName = generatedBgpRedistributionPolicyName("vrf3");
       RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
       assertFalse(policy.process(intra, builder, Direction.OUT));
       assertFalse(policy.process(inter, builder, Direction.OUT));
