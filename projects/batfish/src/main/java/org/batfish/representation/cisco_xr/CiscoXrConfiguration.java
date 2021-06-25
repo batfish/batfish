@@ -354,6 +354,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, AsPathSet> _asPathSets;
 
+  private final Map<String, BridgeGroup> _bridgeGroups;
+
   private final CiscoXrFamily _cf;
 
   private final Map<String, CryptoMapSet> _cryptoMapSets;
@@ -427,6 +429,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public CiscoXrConfiguration() {
     _asPathSets = new TreeMap<>();
+    _bridgeGroups = new TreeMap<>();
     _cf = new CiscoXrFamily();
     _communitySets = new TreeMap<>();
     _cryptoNamedRsaPubKeys = new TreeMap<>();
@@ -495,6 +498,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public Map<String, AsPathSet> getAsPathSets() {
     return _asPathSets;
+  }
+
+  public Map<String, BridgeGroup> getBridgeGroups() {
+    return _bridgeGroups;
   }
 
   private Ip getBgpRouterId(Configuration c, String vrfName, BgpProcess proc) {

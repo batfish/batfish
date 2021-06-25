@@ -210,6 +210,7 @@ import org.batfish.representation.cisco_xr.AsPathSetExpr;
 import org.batfish.representation.cisco_xr.AsPathSetReference;
 import org.batfish.representation.cisco_xr.AsPathSetVariable;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
+import org.batfish.representation.cisco_xr.BridgeDomain;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.DfaRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.DistributeList;
@@ -3397,5 +3398,36 @@ public final class XrGrammarTest {
 
     // No other warnings, i.e. other lines are converted successfully
     assertThat(ccae.getWarnings().get(hostname).getRedFlagWarnings(), iterableWithSize(5));
+  }
+
+  @Test
+  public void testL2vpnExtraction() {
+    String hostname = "l2vpn";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys(
+            // Routed interface associated with l2vpn
+            "BVI1",
+            // Referenced but otherwise undefined interfaces
+            "GigabitEthernet0/0/0/1.1",
+            "GigabitEthernet0/0/0/2.1"));
+
+    assertThat(vc.getBridgeGroups(), hasKeys("BG1"));
+    Map<String, BridgeDomain> bridgeDomains = vc.getBridgeGroups().get("BG1").getBridgeDomains();
+    assertThat(bridgeDomains, hasKeys("BD1", "BD2"));
+
+    BridgeDomain bd1 = bridgeDomains.get("BD1");
+    assertThat(bd1.getName(), equalTo("BD1"));
+    assertThat(
+        bd1.getInterfaces(),
+        containsInAnyOrder("GigabitEthernet0/0/0/1.1", "GigabitEthernet0/0/0/2.1"));
+    assertThat(bd1.getRoutedInterface(), equalTo("BVI1"));
+
+    BridgeDomain bd2 = bridgeDomains.get("BD2");
+    assertThat(bd2.getName(), equalTo("BD2"));
+    assertThat(bd2.getInterfaces(), empty());
+    assertNull(bd2.getRoutedInterface());
   }
 }
