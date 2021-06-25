@@ -32,6 +32,7 @@ import org.batfish.datamodel.eigrp.EigrpProcess;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.expr.RibExpr;
 import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.trace.Tracer;
 
 /** A procedural routing policy used to transform and accept/reject IPV4/IPV6 routes */
 public class RoutingPolicy implements Serializable {
@@ -209,7 +210,16 @@ public class RoutingPolicy implements Serializable {
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
       Direction direction) {
-    return process(inputRoute, outputRoute, null, null, direction, null);
+    return process(inputRoute, outputRoute, null, null, direction, null, null);
+  }
+
+  /** @return True if the policy accepts the route. */
+  public boolean process(
+      AbstractRouteDecorator inputRoute,
+      AbstractRouteBuilder<?, ?> outputRoute,
+      Direction direction,
+      Tracer tracer) {
+    return process(inputRoute, outputRoute, null, null, direction, null, tracer);
   }
 
   /** @return True if the policy accepts the route. */
@@ -219,7 +229,7 @@ public class RoutingPolicy implements Serializable {
       Direction direction,
       BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
     return process(
-        inputRoute, outputRoute, null, null, direction, ribIntersectsPrefixSpaceEvaluator);
+        inputRoute, outputRoute, null, null, direction, ribIntersectsPrefixSpaceEvaluator, null);
   }
 
   public boolean process(
@@ -227,7 +237,7 @@ public class RoutingPolicy implements Serializable {
       @Nonnull AbstractRouteBuilder<?, ?> outputRoute,
       @Nonnull EigrpProcess eigrpProcess,
       Direction direction) {
-    return process(inputRoute, outputRoute, null, eigrpProcess, direction, null);
+    return process(inputRoute, outputRoute, null, eigrpProcess, direction, null, null);
   }
 
   public boolean process(
@@ -237,7 +247,13 @@ public class RoutingPolicy implements Serializable {
       Direction direction,
       BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
     return process(
-        inputRoute, outputRoute, null, eigrpProcess, direction, ribIntersectsPrefixSpaceEvaluator);
+        inputRoute,
+        outputRoute,
+        null,
+        eigrpProcess,
+        direction,
+        ribIntersectsPrefixSpaceEvaluator,
+        null);
   }
 
   /**
@@ -266,7 +282,8 @@ public class RoutingPolicy implements Serializable {
         sessionProperties,
         null,
         direction,
-        ribIntersectsPrefixSpaceEvaluator);
+        ribIntersectsPrefixSpaceEvaluator,
+        null);
   }
 
   private boolean process(
@@ -275,7 +292,8 @@ public class RoutingPolicy implements Serializable {
       @Nullable BgpSessionProperties bgpSessionProperties,
       @Nullable EigrpProcess eigrpProcess,
       Direction direction,
-      @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
+      @Nullable BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator,
+      @Nullable Tracer tracer) {
     checkState(_owner != null, "Cannot evaluate routing policy without a Configuration");
     Environment environment =
         Environment.builder(_owner)
@@ -285,6 +303,7 @@ public class RoutingPolicy implements Serializable {
             .setDirection(direction)
             .setEigrpProcess(eigrpProcess)
             .setRibIntersectsPrefixSpaceEvaluator(ribIntersectsPrefixSpaceEvaluator)
+            .setTracer(tracer)
             .build();
     Result result = call(environment);
     return result.getBooleanValue() && !(Boolean.TRUE.equals(environment.getSuppressed()));
