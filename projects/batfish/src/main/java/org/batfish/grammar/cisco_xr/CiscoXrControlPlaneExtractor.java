@@ -1374,6 +1374,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _statementCollectors.peek().accept(statement);
   }
 
+  /** Add or update an interface based on its definition. */
   private Interface addInterface(String name, S_interfaceContext ctx, boolean explicit) {
     Interface newInterface = addInterface(name, ctx.iname, explicit);
     if (ctx.L2TRANSPORT() != null) {
@@ -1382,6 +1383,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return newInterface;
   }
 
+  /**
+   * Add an interface by name. This should only be directly used in contexts where an interface is
+   * created due to a reference.
+   */
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
     Interface newInterface = _configuration.getInterfaces().get(name);
     if (newInterface == null) {

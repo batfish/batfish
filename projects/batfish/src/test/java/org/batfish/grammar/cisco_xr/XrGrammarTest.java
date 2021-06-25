@@ -3426,14 +3426,33 @@ public final class XrGrammarTest {
 
     assertTrue(ge11.getL2transport());
     assertThat(ge11Policy, instanceOf(TagRewritePop.class));
-    assertThat(((TagRewritePop) ge11Policy).getCount(), equalTo(1));
+    assertThat(((TagRewritePop) ge11Policy).getPopCount(), equalTo(1));
     assertFalse(((TagRewritePop) ge11Policy).getSymmetric());
     assertThat(ge11.getEncapsulationVlan(), equalTo(1));
 
     assertTrue(ge12.getL2transport());
     assertThat(ge12Policy, instanceOf(TagRewritePop.class));
-    assertThat(((TagRewritePop) ge12Policy).getCount(), equalTo(2));
+    assertThat(((TagRewritePop) ge12Policy).getPopCount(), equalTo(2));
     assertTrue(((TagRewritePop) ge12Policy).getSymmetric());
     assertThat(ge12.getEncapsulationVlan(), equalTo(2));
+  }
+
+  @Test
+  public void testInterfaceL2transportWarning() {
+    String hostname = "interface_l2transport_warning";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected rewrite ingress tag pop range in range 1-2, but got '0'"),
+                hasComment("Expected rewrite ingress tag pop range in range 1-2, but got '3'"))));
   }
 }
