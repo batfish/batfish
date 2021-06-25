@@ -33,6 +33,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -78,6 +79,7 @@ import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.Protocol;
@@ -1663,6 +1665,39 @@ public class TransferBDDTest {
     // no accepted routes because the callee uniformly rejects
     assertTrue(acceptedAnnouncements.isZero());
     assertEquals(tbdd.zeroedRecord(), outAnnouncements);
+  }
+
+  @Test
+  public void testTraceableStatement() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new TraceableStatement(
+                    TraceElement.of("text"),
+                    ImmutableList.of(
+                        new SetTag(new LiteralLong(42)),
+                        new SetLocalPreference(new LiteralLong(44)),
+                        new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    // the policy is applicable to all announcements
+    assertTrue(acceptedAnnouncements.isOne());
+
+    // the tag is now 42 and local pref is 44
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger tag = expected.getTag();
+    expected.setTag(BDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+    BDDInteger localPref = expected.getLocalPref();
+    expected.setLocalPref(BDDInteger.makeFromValue(localPref.getFactory(), 32, 44));
+
+    assertEquals(expected, outAnnouncements);
   }
 
   @Test
