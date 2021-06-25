@@ -25845,7 +25845,7 @@
       },
       "arista_acl" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -25984,7 +25984,7 @@
       },
       "arista_bgp" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_bgp",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26050,29 +26050,31 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "bgp",
-                        "ibgp"
-                      ]
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnTrue"
+              }
+            ]
+          },
+          "~BGP_REDISTRIBUTION_POLICY:default~" : {
+            "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                "localPreference" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                  "value" : 0
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
+                "weight" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                  "value" : 32768
+                }
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
+                "type" : "ExitReject"
               }
             ]
           },
@@ -26113,6 +26115,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 200,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
               "routerId" : "0.0.0.0",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -26125,7 +26128,7 @@
       },
       "arista_bgp_asn" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_bgp_asn",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26137,29 +26140,31 @@
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                  "disjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                      "protocols" : [
-                        "bgp",
-                        "ibgp"
-                      ]
-                    }
-                  ]
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnTrue"
+              }
+            ]
+          },
+          "~BGP_REDISTRIBUTION_POLICY:default~" : {
+            "name" : "~BGP_REDISTRIBUTION_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                "localPreference" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                  "value" : 0
+                }
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
+                "weight" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                  "value" : 32768
+                }
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
+                "type" : "ExitReject"
               }
             ]
           }
@@ -26175,6 +26180,7 @@
             "bgpProcess" : {
               "ebgpAdminCost" : 200,
               "ibgpAdminCost" : 200,
+              "redistributionPolicy" : "~BGP_REDISTRIBUTION_POLICY:default~",
               "routerId" : "1.2.3.4",
               "clusterListAsIgpCost" : false,
               "multipathEbgp" : false,
@@ -26187,7 +26193,7 @@
       },
       "arista_community_list_named" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_community_list_named",
         "communityMatchExprs" : {
           "COMM_LIST_NAME" : {
@@ -26380,7 +26386,7 @@
       },
       "arista_dhcp_relay" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_dhcp_relay",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26450,7 +26456,7 @@
       },
       "arista_interface" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26515,7 +26521,7 @@
       },
       "arista_ip_route" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_ip_route",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26614,7 +26620,7 @@
       },
       "arista_misc" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_misc",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26690,7 +26696,7 @@
       },
       "arista_nat" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26795,7 +26801,7 @@
       },
       "arista_ospf" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26841,7 +26847,7 @@
       },
       "arista_queue_monitor" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_queue_monitor",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26861,7 +26867,7 @@
       },
       "arista_username" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_username",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -26893,7 +26899,7 @@
       },
       "arista_vrf" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "arista_vrf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45656,7 +45662,7 @@
       },
       "eos_mlag" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "eos_mlag",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -45739,7 +45745,7 @@
       },
       "eos_trunk_group" : {
         "configurationFormat" : "ARISTA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "eos_trunk_group",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
