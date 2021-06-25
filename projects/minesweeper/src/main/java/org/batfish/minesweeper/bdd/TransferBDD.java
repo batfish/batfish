@@ -75,6 +75,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.IDeepCopy;
@@ -692,6 +693,8 @@ public class TransferBDD {
       // System.out.println("Warning: use of unimplemented feature SetNextHop");
       // TODO: implement me
 
+    } else if (stmt instanceof TraceableStatement) {
+      return compute(((TraceableStatement) stmt).getInnerStatements(), state);
     } else {
       throw new BatfishException("TODO: statement transfer function: " + stmt);
     }
