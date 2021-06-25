@@ -91595,6 +91595,54 @@
         "deviceModel" : "CISCO_UNSPECIFIED",
         "deviceType" : "SWITCH",
         "humanName" : "L2VPN",
+        "interfaces" : {
+          "BVI1" : {
+            "name" : "BVI1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "BVI1"
+            ],
+            "mtu" : 1500,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "UNKNOWN",
+            "vrf" : "default"
+          },
+          "Bundle-Ether9.1" : {
+            "name" : "Bundle-Ether9.1",
+            "active" : true,
+            "additionalArpIps" : {
+              "class" : "org.batfish.datamodel.EmptyIpSpace"
+            },
+            "allowedVlans" : "",
+            "autostate" : true,
+            "bandwidth" : 0.0,
+            "declaredNames" : [
+              "Bundle-Ether9.1"
+            ],
+            "mtu" : 1500,
+            "proxyArp" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchport" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "AGGREGATE_CHILD",
+            "vrf" : "default"
+          }
+        },
         "routingPolicies" : {
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",

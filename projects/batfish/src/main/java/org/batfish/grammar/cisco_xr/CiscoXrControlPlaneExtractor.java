@@ -59,6 +59,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_UPDA
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_SESSION_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_ROUTED_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
@@ -4854,12 +4856,20 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitLbgbd_interface(Lbgbd_interfaceContext ctx) {
-    _currentBridgeDomain.getInterfaces().add(getOrAddInterface(ctx.interface_name()).getName());
+    Interface iface = getOrAddInterface(ctx.interface_name());
+    String ifaceName = iface.getName();
+    _currentBridgeDomain.getInterfaces().add(iface.getName());
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, BRIDGE_DOMAIN_INTERFACE, ctx.start.getLine());
   }
 
   @Override
   public void exitLbgbd_routed_interface(Lbgbd_routed_interfaceContext ctx) {
-    _currentBridgeDomain.setRoutedInterface(getOrAddInterface(ctx.interface_name()).getName());
+    Interface iface = getOrAddInterface(ctx.interface_name());
+    String ifaceName = iface.getName();
+    _currentBridgeDomain.setRoutedInterface(iface.getName());
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, BRIDGE_DOMAIN_ROUTED_INTERFACE, ctx.start.getLine());
   }
 
   @Nonnull

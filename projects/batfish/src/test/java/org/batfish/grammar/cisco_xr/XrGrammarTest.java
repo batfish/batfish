@@ -43,6 +43,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_T
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_EXPORTER_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_MONITOR_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
@@ -50,6 +51,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SAMPLER_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_ROUTED_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FLOW_MONITOR_MAP_EXPORTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_INGRESS;
@@ -3435,5 +3438,27 @@ public final class XrGrammarTest {
     assertThat(bd3.getName(), equalTo("BD3"));
     assertThat(bd3.getInterfaces(), empty());
     assertNull(bd3.getRoutedInterface());
+  }
+
+  @Test
+  public void testL2vpnReferences() {
+    String hostname = "l2vpn";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, INTERFACE, "GigabitEthernet0/0/0/1.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, INTERFACE, "GigabitEthernet0/0/0/2.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae, hasReferencedStructure(filename, INTERFACE, "BVI1", BRIDGE_DOMAIN_ROUTED_INTERFACE));
+    assertThat(
+        ccae, hasReferencedStructure(filename, INTERFACE, "BVI2", BRIDGE_DOMAIN_ROUTED_INTERFACE));
   }
 }
