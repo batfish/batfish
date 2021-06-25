@@ -1374,19 +1374,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _statementCollectors.peek().accept(statement);
   }
 
-  /** Add or update an interface based on its definition. */
-  private Interface addInterface(String name, S_interfaceContext ctx, boolean explicit) {
-    Interface newInterface = addInterface(name, ctx.iname, explicit);
-    if (ctx.L2TRANSPORT() != null) {
-      newInterface.setL2transport(true);
-    }
-    return newInterface;
-  }
-
-  /**
-   * Add an interface by name. This should only be directly used in contexts where an interface is
-   * created due to a reference.
-   */
   private Interface addInterface(String name, Interface_nameContext ctx, boolean explicit) {
     Interface newInterface = _configuration.getInterfaces().get(name);
     if (newInterface == null) {
@@ -2747,14 +2734,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       for (SubRange range : ranges) {
         for (int i = range.getStart(); i <= range.getEnd(); i++) {
           String name = namePrefix.toString() + i;
-          addInterface(name, ctx, true);
+          Interface iface = addInterface(name, ctx.iname, true);
+          iface.setL2transport(ctx.L2TRANSPORT() != null);
           _configuration.defineStructure(INTERFACE, name, ctx);
           _configuration.referenceStructure(
               INTERFACE, name, INTERFACE_SELF_REF, ctx.getStart().getLine());
         }
       }
     } else {
-      addInterface(namePrefix.toString(), ctx, true);
+      Interface iface = addInterface(namePrefix.toString(), ctx.iname, true);
+      iface.setL2transport(ctx.L2TRANSPORT() != null);
     }
     if (ctx.MULTIPOINT() != null) {
       todo(ctx);
