@@ -38,6 +38,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -46,6 +47,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.trace.Tracer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoutingPolicySpecifier;
@@ -61,6 +63,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
   public static final String COL_DIFF = "Difference";
+  public static final String COL_TRACE = "Trace";
 
   @Nonnull private final Direction _direction;
   @Nonnull private final List<Bgpv4Route> _inputRoutes;
@@ -111,13 +114,16 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-
-    boolean permit = policy.process(inputRoute, outputRoute, direction);
+    Tracer tracer = new Tracer();
+    tracer.newSubTrace();
+    boolean permit = policy.process(inputRoute, outputRoute, direction, tracer);
+    tracer.endSubTrace();
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
         inputRoute,
         permit ? PERMIT : DENY,
-        permit ? outputRoute.build() : null);
+        permit ? outputRoute.build() : null,
+        tracer.getTrace());
   }
 
   @Override
@@ -248,6 +254,13 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
                 BGP_ROUTE_DIFFS,
                 "The difference between the input and output routes, if any",
                 false,
+                true),
+            new ColumnMetadata(
+                COL_TRACE,
+                Schema.list(Schema.TRACE_TREE),
+                "Route policy trace. This is an experimental feature whose content and format is"
+                    + " subject to change.",
+                false,
                 true));
     return new TableMetadata(
         columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
@@ -311,6 +324,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             permit
                 ? new BgpRouteDiffs(routeDiffs(inputRoute, toQuestionsBgpRoute(outputRoute)))
                 : null)
+        .put(COL_TRACE, result.getTrace())
         .build();
   }
 
