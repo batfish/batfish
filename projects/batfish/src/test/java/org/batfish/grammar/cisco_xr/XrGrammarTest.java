@@ -43,6 +43,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_T
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_EXPORTER_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_MONITOR_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
@@ -50,6 +51,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SAMPLER_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_ROUTED_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FLOW_MONITOR_MAP_EXPORTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_INGRESS;
@@ -210,6 +213,7 @@ import org.batfish.representation.cisco_xr.AsPathSetExpr;
 import org.batfish.representation.cisco_xr.AsPathSetReference;
 import org.batfish.representation.cisco_xr.AsPathSetVariable;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
+import org.batfish.representation.cisco_xr.BridgeDomain;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.DfaRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.DistributeList;
@@ -3399,6 +3403,64 @@ public final class XrGrammarTest {
 
     // No other warnings, i.e. other lines are converted successfully
     assertThat(ccae.getWarnings().get(hostname).getRedFlagWarnings(), iterableWithSize(5));
+  }
+
+  @Test
+  public void testL2vpnExtraction() {
+    String hostname = "l2vpn";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getInterfaces(), hasKeys("BVI1", "GigabitEthernet0/0/0/1.1"));
+
+    assertThat(vc.getBridgeGroups(), hasKeys("BG1"));
+    Map<String, BridgeDomain> bridgeDomains = vc.getBridgeGroups().get("BG1").getBridgeDomains();
+    assertThat(bridgeDomains, hasKeys("BD1", "BD2", "BD3"));
+
+    BridgeDomain bd1 = bridgeDomains.get("BD1");
+    assertThat(bd1.getName(), equalTo("BD1"));
+    assertThat(
+        bd1.getInterfaces(),
+        containsInAnyOrder("GigabitEthernet0/0/0/1.1", "GigabitEthernet0/0/0/2.1"));
+    assertThat(bd1.getRoutedInterface(), equalTo("BVI1"));
+
+    BridgeDomain bd2 = bridgeDomains.get("BD2");
+    assertThat(bd2.getName(), equalTo("BD2"));
+    assertThat(bd2.getInterfaces(), empty());
+    assertThat(bd2.getRoutedInterface(), equalTo("BVI2"));
+
+    BridgeDomain bd3 = bridgeDomains.get("BD3");
+    assertThat(bd3.getName(), equalTo("BD3"));
+    assertThat(bd3.getInterfaces(), empty());
+    assertNull(bd3.getRoutedInterface());
+  }
+
+  @Test
+  public void testL2vpnReferences() {
+    String hostname = "l2vpn";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, INTERFACE, "GigabitEthernet0/0/0/1.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, INTERFACE, "GigabitEthernet0/0/0/2.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae, hasReferencedStructure(filename, INTERFACE, "BVI1", BRIDGE_DOMAIN_ROUTED_INTERFACE));
+    assertThat(
+        ccae, hasReferencedStructure(filename, INTERFACE, "BVI2", BRIDGE_DOMAIN_ROUTED_INTERFACE));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, INTERFACE, "GigabitEthernet0/0/0/2.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae, hasUndefinedReference(filename, INTERFACE, "BVI2", BRIDGE_DOMAIN_ROUTED_INTERFACE));
   }
 
   @Test
