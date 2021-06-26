@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -177,6 +178,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
@@ -2781,7 +2783,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         new ExplicitPrefixSet((new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
   }
 
-  private RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
+  @VisibleForTesting
+  RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
     // Ensure map of VRFs referenced in routing policies is initialized
     if (_vrfReferencesInPolicies == null) {
       _vrfReferencesInPolicies = new TreeMap<>();
@@ -2795,6 +2798,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (hasDefaultTerm) {
       terms.add(ps.getDefaultTerm());
     }
+    VendorStructureId vendorStructureId =
+        new VendorStructureId(
+            _filename, JuniperStructureType.POLICY_STATEMENT.getDescription(), ps.getName());
     for (PsTerm term : terms) {
       List<Statement> thens = toStatements(term.getThens());
       if (term.hasAtLeastOneFrom()) {
@@ -2831,10 +2837,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .add(froms.getFromInstance().getRoutingInstanceName());
         }
         ifStatement.setGuard(toGuard(froms));
-        ifStatement.getTrueStatements().addAll(thens);
+        ifStatement
+            .getTrueStatements()
+            .add(toTraceableStatement(thens, term.getName(), vendorStructureId));
         statements.add(ifStatement);
       } else {
-        statements.addAll(thens);
+        statements.add(toTraceableStatement(thens, term.getName(), vendorStructureId));
       }
     }
     If endOfPolicy = new If();
@@ -2941,6 +2949,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
       then.applyTo(thenStatements, this, _c, _w);
     }
     return thenStatements;
+  }
+
+  @VisibleForTesting
+  static TraceableStatement toTraceableStatement(
+      List<Statement> statements, String termName, VendorStructureId vendorStructureId) {
+    return new TraceableStatement(
+        TraceElement.of(
+            String.format("Matched term %s", escapeNameIfNeeded(termName)), vendorStructureId),
+        statements);
   }
 
   private Set<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {

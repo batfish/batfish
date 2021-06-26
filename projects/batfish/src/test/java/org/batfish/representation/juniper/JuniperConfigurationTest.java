@@ -31,6 +31,7 @@ import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -70,6 +71,10 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.isis.IsisLevel;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.representation.juniper.Interface.OspfInterfaceType;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
@@ -840,5 +845,30 @@ public class JuniperConfigurationTest {
         equalTo(
             new VendorStructureId(
                 "file", JuniperStructureType.PREFIX_LIST.getDescription(), "name")));
+  }
+
+  /** Check that tracing is properly added during routing policy conversion */
+  @Test
+  public void toRoutingPolicy_trace() {
+    JuniperConfiguration vsC = new JuniperConfiguration();
+    vsC.setFilename("file");
+
+    PolicyStatement ps = new PolicyStatement("ps");
+    PsTerm term = new PsTerm("psterm");
+    term.getThens().add(new PsThenTag(234L));
+    ps.getTerms().put(term.getName(), term);
+
+    // no Froms case: expect a traceable (for the then we added) and end of policy
+    List<Statement> statements = vsC.toRoutingPolicy(ps).getStatements();
+    assertThat(statements, contains(instanceOf(TraceableStatement.class), instanceOf(If.class)));
+    TraceableStatement traceableStatement = (TraceableStatement) statements.get(0);
+    assertThat(traceableStatement.getInnerStatements(), contains(instanceOf(SetTag.class)));
+
+    // Froms case: expect an If with traceable then, and another If that is end-of-policy
+    term.getFroms().addFromTag(new PsFromTag(23L));
+    List<Statement> statementsWithFroms = vsC.toRoutingPolicy(ps).getStatements();
+    assertThat(statementsWithFroms, contains(instanceOf(If.class), instanceOf(If.class)));
+    If ifStatement = (If) statementsWithFroms.get(0);
+    assertThat(ifStatement.getTrueStatements(), contains(instanceOf(TraceableStatement.class)));
   }
 }
