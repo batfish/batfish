@@ -3,16 +3,16 @@ package org.batfish.representation.cisco;
 import static org.batfish.representation.cisco.CiscoConfiguration.getRouteMapClausePolicyName;
 
 import com.google.common.collect.Iterables;
-import junit.framework.TestCase;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
+import org.junit.Assert;
 import org.junit.Test;
 
-public class CiscoConfigurationTest extends TestCase {
+public class CiscoConfigurationTest {
 
   /** Test that trace hints are added during conversion */
   @Test
@@ -32,9 +32,9 @@ public class CiscoConfigurationTest extends TestCase {
     RoutingPolicy routingPolicy = cc.toRoutingPolicy(c, map);
 
     If ifStatement = (If) Iterables.getOnlyElement(routingPolicy.getStatements());
-    assertTrue(
+    Assert.assertTrue(
         Iterables.getOnlyElement(ifStatement.getTrueStatements()) instanceof TraceableStatement);
-    assertFalse(
+    Assert.assertFalse(
         Iterables.getOnlyElement(ifStatement.getFalseStatements()) instanceof TraceableStatement);
   }
 
@@ -54,15 +54,14 @@ public class CiscoConfigurationTest extends TestCase {
     map.getClauses().put(10, clause);
 
     cc.toRoutingPolicies(c, map);
-
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(getRouteMapClausePolicyName(map, 10));
-    ;
-    assertNotNull(routingPolicy);
+
+    Assert.assertNotNull(routingPolicy);
 
     If ifStatement = (If) Iterables.getOnlyElement(routingPolicy.getStatements());
-    assertTrue(
+    Assert.assertTrue(
         Iterables.getOnlyElement(ifStatement.getTrueStatements()) instanceof TraceableStatement);
-    assertFalse(
+    Assert.assertFalse(
         Iterables.getOnlyElement(ifStatement.getFalseStatements()) instanceof TraceableStatement);
   }
 }
