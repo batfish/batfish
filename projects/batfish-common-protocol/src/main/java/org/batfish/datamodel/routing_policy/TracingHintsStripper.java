@@ -38,7 +38,7 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
 
   @Override
   public Statement visitBufferedStatement(BufferedStatement bufferedStatement, Void arg) {
-    return new BufferedStatement(bufferedStatement.accept(this, arg));
+    return new BufferedStatement(bufferedStatement.getStatement().accept(this, arg));
   }
 
   @Override
