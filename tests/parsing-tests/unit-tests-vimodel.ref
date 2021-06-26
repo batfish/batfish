@@ -26985,20 +26985,38 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
-                      "list" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                        "expr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                          "list" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                              "as" : 1
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
                         {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                          "as" : 1
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/as_path_prepend",
+                            "structureName" : "rmap",
+                            "structureType" : "route-map"
+                          }
                         }
                       ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
                   }
                 ]
               }
@@ -32257,8 +32275,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_bgp",
+                            "structureName" : "AGGREGATE-MAP",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -32281,8 +32317,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_bgp",
+                            "structureName" : "CONNECTED-TO-BGP",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -32305,8 +32359,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_bgp",
+                            "structureName" : "UNSUPP-MAP",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -32329,8 +32401,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_bgp",
+                            "structureName" : "ospfv3_map",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -38958,8 +39048,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "MAP_NAME1",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -38995,8 +39103,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 20",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "MAP_NAME2",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -39030,8 +39156,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnFalse"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "MSDP-SA-RP-FILTER",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -39074,46 +39218,64 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "igp"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.DecrementMetric",
-                      "subtrahend" : 1
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
-                    "communitySetExpr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
-                      "exprs" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
-                          "initial" : {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
-                          },
-                          "removalCriterion" : {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
-                          "communitySet" : [
-                            "2153:65515",
-                            "2153:65535"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                        "originType" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                          "originType" : "igp"
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                        "metric" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DecrementMetric",
+                          "subtrahend" : 1
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
+                        "communitySetExpr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
+                          "exprs" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
+                              "initial" : {
+                                "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                              },
+                              "removalCriterion" : {
+                                "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
+                              }
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+                              "communitySet" : [
+                                "2153:65515",
+                                "2153:65535"
+                              ]
+                            }
                           ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "connected-to-bgp",
+                            "structureType" : "route-map"
+                          }
                         }
                       ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
                   }
                 ]
               }
@@ -39136,8 +39298,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "ijfw$%^&****(((([]grr",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -39160,8 +39340,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "mgmt",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -39184,8 +39382,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "multicaststuff",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -39208,8 +39424,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnFalse"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 15",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "next-hop-null",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -39232,15 +39466,33 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.IncrementMetric",
-                      "addend" : 5
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                        "metric" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.IncrementMetric",
+                          "addend" : 5
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 100",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "to_svl-hub-router",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
                   }
                 ]
               }
@@ -39305,29 +39557,47 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                      "value" : 0
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                        "metric" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                          "value" : 0
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                        "localPreference" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                          "value" : 100
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
+                        "weight" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                          "value" : 20
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ExitAccept"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "beeble",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                      "value" : 100
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetWeight",
-                    "weight" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 20
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
                   }
                 ]
               }
@@ -39361,29 +39631,47 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
-                    "communitySetExpr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
-                      "exprs" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
-                          "communitySet" : [
-                            "65535:65281"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
+                        "communitySetExpr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
+                          "exprs" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+                              "communitySet" : [
+                                "65535:65281"
+                              ]
+                            }
                           ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
+                        "calledPolicyName" : "~RMCLAUSE~beeble~10~"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 5",
+                          "vendorStructureId" : {
+                            "filename" : "configs/cisco_route_map",
+                            "structureName" : "beeble",
+                            "structureType" : "route-map"
+                          }
                         }
                       ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetDefaultActionAccept"
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
-                    "calledPolicyName" : "~RMCLAUSE~beeble~10~"
                   }
                 ]
               }
@@ -42437,31 +42725,49 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
-                    "communitySetExpr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
-                      "exprs" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
-                          "initial" : {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
-                          },
-                          "removalCriterion" : {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
-                          "communitySet" : [
-                            "65535:65282"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
+                        "communitySetExpr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
+                          "exprs" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
+                              "initial" : {
+                                "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                              },
+                              "removalCriterion" : {
+                                "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
+                              }
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+                              "communitySet" : [
+                                "65535:65282"
+                              ]
+                            }
                           ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 100",
+                          "vendorStructureId" : {
+                            "filename" : "configs/community_name_numbers",
+                            "structureName" : "AAA1-BBB-CCC",
+                            "structureType" : "route-map"
+                          }
                         }
                       ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
                   }
                 ]
               }
@@ -42593,31 +42899,49 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
-                    "communitySetExpr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
-                      "exprs" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
-                          "initial" : {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
-                          },
-                          "removalCriterion" : {
-                            "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
-                          }
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
-                          "communitySet" : [
-                            "65535:65282"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.communities.SetCommunities",
+                        "communitySetExpr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetUnion",
+                          "exprs" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetDifference",
+                              "initial" : {
+                                "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                              },
+                              "removalCriterion" : {
+                                "class" : "org.batfish.datamodel.routing_policy.communities.AllStandardCommunities"
+                              }
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet",
+                              "communitySet" : [
+                                "65535:65282"
+                              ]
+                            }
                           ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 100",
+                          "vendorStructureId" : {
+                            "filename" : "configs/community_name_numbers_dos",
+                            "structureName" : "AAA1-BBB-CCC",
+                            "structureType" : "route-map"
+                          }
                         }
                       ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
                   }
                 ]
               }
@@ -92175,8 +92499,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 1",
+                          "vendorStructureId" : {
+                            "filename" : "configs/named_and_numbered_lists",
+                            "structureName" : "foo",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -97982,8 +98324,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/prefix_list_ipv4",
+                            "structureName" : "to_elacc",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -104028,8 +104388,26 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched clause 100",
+                          "vendorStructureId" : {
+                            "filename" : "configs/underscore_variable",
+                            "structureName" : "JKL_MNO_PQR",
+                            "structureType" : "route-map"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }

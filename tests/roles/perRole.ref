@@ -139,83 +139,133 @@
                 },
                 {
                   "nodes" : [
-                    "as2border1",
-                    "as2border2"
+                    "as2border1"
                   ],
                   "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border2"
                 }
               ],
               "as1_to_as3" : [
                 {
                   "nodes" : [
-                    "as1border1",
-                    "as1border2"
+                    "as1border1"
                   ],
                   "representativeElement" : "as1border1"
                 },
                 {
                   "nodes" : [
-                    "as3border1",
-                    "as3border2"
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border2"
+                },
+                {
+                  "nodes" : [
+                    "as3border1"
                   ],
                   "representativeElement" : "as3border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border2"
                 }
               ],
               "as2_to_as1" : [
                 {
                   "nodes" : [
-                    "as1border1",
-                    "as1border2"
+                    "as1border1"
                   ],
                   "representativeElement" : "as1border1"
                 },
                 {
                   "nodes" : [
-                    "as2border1",
-                    "as2border2"
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border2"
+                },
+                {
+                  "nodes" : [
+                    "as2border1"
                   ],
                   "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border2"
                 }
               ],
               "as2_to_as3" : [
                 {
                   "nodes" : [
-                    "as2border1",
-                    "as2border2"
+                    "as2border1"
                   ],
                   "representativeElement" : "as2border1"
                 },
                 {
                   "nodes" : [
-                    "as3border1",
-                    "as3border2"
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border2"
+                },
+                {
+                  "nodes" : [
+                    "as3border1"
                   ],
                   "representativeElement" : "as3border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border2"
                 }
               ],
               "as3_to_as1" : [
                 {
                   "nodes" : [
-                    "as1border1",
-                    "as1border2"
+                    "as1border1"
                   ],
                   "representativeElement" : "as1border1"
                 },
                 {
                   "nodes" : [
-                    "as3border1",
-                    "as3border2"
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border2"
+                },
+                {
+                  "nodes" : [
+                    "as3border1"
                   ],
                   "representativeElement" : "as3border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border2"
                 }
               ],
               "as3_to_as2" : [
                 {
                   "nodes" : [
-                    "as2border1",
-                    "as2border2"
+                    "as2border1"
                   ],
                   "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border2"
                 },
                 {
                   "nodes" : [
@@ -397,7 +447,37 @@
             "structureClassName" : "RouteFilterList"
           },
           "RoutingPolicy" : {
-            "structureClassName" : "RoutingPolicy"
+            "structureClassName" : "RoutingPolicy",
+            "sameNamedStructures" : {
+              "as2dist_to_dept" : [
+                {
+                  "nodes" : [
+                    "as2dist1"
+                  ],
+                  "representativeElement" : "as2dist1"
+                },
+                {
+                  "nodes" : [
+                    "as2dist2"
+                  ],
+                  "representativeElement" : "as2dist2"
+                }
+              ],
+              "dept_to_as2dist" : [
+                {
+                  "nodes" : [
+                    "as2dist1"
+                  ],
+                  "representativeElement" : "as2dist1"
+                },
+                {
+                  "nodes" : [
+                    "as2dist2"
+                  ],
+                  "representativeElement" : "as2dist2"
+                }
+              ]
+            }
           },
           "Zone" : {
             "structureClassName" : "Zone"
