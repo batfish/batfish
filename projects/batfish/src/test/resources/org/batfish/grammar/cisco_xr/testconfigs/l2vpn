@@ -1,0 +1,25 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname l2vpn
+!
+interface BVI1
+ ipv4 address 10.1.1.1 255.255.255.0
+!
+interface GigabitEthernet0/0/0/1.1
+!
+!
+l2vpn
+ bridge group BG1
+  bridge-domain BD1
+   interface GigabitEthernet0/0/0/1.1
+   interface GigabitEthernet0/0/0/2.1
+   !
+   routed interface BVI2
+   routed interface BVI1
+  !
+  bridge-domain BD2
+   routed interface BVI2
+  !
+  bridge-domain BD3
+  !
+!

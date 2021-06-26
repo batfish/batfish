@@ -59,6 +59,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_UPDA
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_AF_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_NEIGHBOR_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BGP_USE_SESSION_GROUP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_ROUTED_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE;
@@ -424,6 +426,8 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_simple_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_tag_is_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Boolean_validation_state_is_rp_stanzaContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Bridge_domain_nameContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Bridge_group_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_match_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_set_isakmp_profileContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Cd_set_peerContext;
@@ -601,10 +605,14 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ipv6_prefix_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Is_type_is_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Isis_levelContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Isis_level_exprContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.L2vpn_bridge_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.L_access_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.L_exec_timeoutContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.L_login_authenticationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.L_transportContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Lbg_bridge_domainContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Lbgbd_interfaceContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Lbgbd_routed_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Literal_communityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Local_as_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Logging_addressContext;
@@ -905,6 +913,8 @@ import org.batfish.representation.cisco_xr.BgpNetwork6;
 import org.batfish.representation.cisco_xr.BgpPeerGroup;
 import org.batfish.representation.cisco_xr.BgpProcess;
 import org.batfish.representation.cisco_xr.BgpRedistributionPolicy;
+import org.batfish.representation.cisco_xr.BridgeDomain;
+import org.batfish.representation.cisco_xr.BridgeGroup;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.CiscoXrStructureType;
 import org.batfish.representation.cisco_xr.CiscoXrStructureUsage;
@@ -1224,6 +1234,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
   private final Set<String> _currentBlockNeighborAddressFamilies;
+
+  private BridgeDomain _currentBridgeDomain;
+
+  private BridgeGroup _currentBridgeGroup;
 
   private CryptoMapEntry _currentCryptoMapEntry;
 
@@ -3240,6 +3254,14 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return ctx.getText();
   }
 
+  private static @Nonnull String toString(Bridge_domain_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  private static @Nonnull String toString(Bridge_group_nameContext ctx) {
+    return ctx.getText();
+  }
+
   @Override
   public void exitAuto_summary_bgp_tail(Auto_summary_bgp_tailContext ctx) {
     todo(ctx);
@@ -4843,6 +4865,46 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitLogging_buffered_set_severity(Logging_buffered_set_severityContext ctx) {
     getOrCreateBuffered().setSeverity(toSeverity(ctx.logging_buffered_severity()));
     getOrCreateBuffered().setSeverityNum(toLoggingSeverityNum(ctx.logging_buffered_severity()));
+  }
+
+  @Override
+  public void enterL2vpn_bridge_group(L2vpn_bridge_groupContext ctx) {
+    String name = toString(ctx.bridge_group_name());
+    _currentBridgeGroup =
+        _configuration.getBridgeGroups().computeIfAbsent(name, n -> new BridgeGroup(n));
+  }
+
+  @Override
+  public void exitL2vpn_bridge_group(L2vpn_bridge_groupContext ctx) {
+    _currentBridgeGroup = null;
+  }
+
+  @Override
+  public void enterLbg_bridge_domain(Lbg_bridge_domainContext ctx) {
+    String name = toString(ctx.bridge_domain_name());
+    _currentBridgeDomain =
+        _currentBridgeGroup.getBridgeDomains().computeIfAbsent(name, n -> new BridgeDomain(n));
+  }
+
+  @Override
+  public void exitLbg_bridge_domain(Lbg_bridge_domainContext ctx) {
+    _currentBridgeDomain = null;
+  }
+
+  @Override
+  public void exitLbgbd_interface(Lbgbd_interfaceContext ctx) {
+    String ifaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
+    _currentBridgeDomain.getInterfaces().add(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, BRIDGE_DOMAIN_INTERFACE, ctx.start.getLine());
+  }
+
+  @Override
+  public void exitLbgbd_routed_interface(Lbgbd_routed_interfaceContext ctx) {
+    String ifaceName = getCanonicalInterfaceName(ctx.interface_name().getText());
+    _currentBridgeDomain.setRoutedInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, ifaceName, BRIDGE_DOMAIN_ROUTED_INTERFACE, ctx.start.getLine());
   }
 
   @Nonnull
