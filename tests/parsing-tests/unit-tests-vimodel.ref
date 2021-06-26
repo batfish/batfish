@@ -88311,110 +88311,128 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost",
-                    "admin" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
-                      "value" : 100
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
-                    "originType" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
-                      "originType" : "igp"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.IncrementMetric",
-                      "addend" : 20
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-                    "metric" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                      "value" : 10
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
-                    "metricType" : "E1"
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
-                      "list" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost",
+                        "admin" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                          "value" : 100
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                        "originType" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                          "originType" : "igp"
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                        "expr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                        "metric" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.IncrementMetric",
+                          "addend" : 20
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                        "metric" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                          "value" : 10
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                        "metricType" : "E1"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                        "expr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                          "list" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                              "as" : 456
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                              "as" : 8060929
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                              "as" : 789
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                        "expr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                          "list" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                              "as" : 456
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                              "as" : 789
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                        "expr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                          "list" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                              "as" : 8061384
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                        "expr" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                          "list" : [
+                            {
+                              "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                              "as" : 123
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionAccept"
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "SetDefaultActionReject"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
                         {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                          "as" : 456
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                          "as" : 8060929
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                          "as" : 789
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term TERM",
+                          "vendorStructureId" : {
+                            "filename" : "configs/juniper_policy_statement",
+                            "structureName" : "POLICY-NAME",
+                            "structureType" : "policy-statement"
+                          }
                         }
                       ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
-                      "list" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                          "as" : 456
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                          "as" : 789
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
-                      "list" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                          "as" : 8061384
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
-                    "expr" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
-                      "list" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
-                          "as" : 123
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetDefaultActionAccept"
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetDefaultActionReject"
                   }
                 ]
               },
@@ -88435,23 +88453,41 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitAccept"
+                        "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                        "falseStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ExitAccept"
+                          }
+                        ],
+                        "guard" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                          "type" : "CallExprContext"
+                        },
+                        "trueStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ReturnTrue"
+                          }
+                        ]
                       }
                     ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term AS_PATH",
+                          "vendorStructureId" : {
+                            "filename" : "configs/juniper_policy_statement",
+                            "structureName" : "POLICY-NAME",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               },
@@ -88463,7 +88499,25 @@
                   "protocols" : [
                     "evpn"
                   ]
-                }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term __POLICY-NAME__DEFAULT_TERM__",
+                          "vendorStructureId" : {
+                            "filename" : "configs/juniper_policy_statement",
+                            "structureName" : "POLICY-NAME",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -89416,7 +89470,25 @@
                     "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
                     "name" : "route-filter-test-v4:t1"
                   }
-                }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term t1",
+                          "vendorStructureId" : {
+                            "filename" : "configs/juniper_route_filter",
+                            "structureName" : "route-filter-test-v4",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -89448,7 +89520,25 @@
                     "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set",
                     "name" : "route-filter-test-v6:t1"
                   }
-                }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term t1",
+                          "vendorStructureId" : {
+                            "filename" : "configs/juniper_route_filter",
+                            "structureName" : "route-filter-test-v6",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -89997,23 +90087,41 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitAccept"
+                        "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                        "falseStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ExitAccept"
+                          }
+                        ],
+                        "guard" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                          "type" : "CallExprContext"
+                        },
+                        "trueStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ReturnTrue"
+                          }
+                        ]
                       }
                     ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term TERM1",
+                          "vendorStructureId" : {
+                            "filename" : "configs/juniper_routing_policy",
+                            "structureName" : "POLICY-NAME",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               },
@@ -90026,23 +90134,41 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitAccept"
+                        "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                        "falseStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ExitAccept"
+                          }
+                        ],
+                        "guard" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                          "type" : "CallExprContext"
+                        },
+                        "trueStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ReturnTrue"
+                          }
+                        ]
                       }
                     ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term TERM2",
+                          "vendorStructureId" : {
+                            "filename" : "configs/juniper_routing_policy",
+                            "structureName" : "POLICY-NAME",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               },
@@ -105147,23 +105273,41 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitAccept"
+                        "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                        "falseStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ExitAccept"
+                          }
+                        ],
+                        "guard" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                          "type" : "CallExprContext"
+                        },
+                        "trueStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ReturnTrue"
+                          }
+                        ]
                       }
                     ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term lo0",
+                          "vendorStructureId" : {
+                            "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+                            "structureName" : "export-loopback",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               },
@@ -105212,23 +105356,41 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitAccept"
+                        "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                        "falseStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ExitAccept"
+                          }
+                        ],
+                        "guard" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                          "type" : "CallExprContext"
+                        },
+                        "trueStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ReturnTrue"
+                          }
+                        ]
                       }
                     ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term fabric",
+                          "vendorStructureId" : {
+                            "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+                            "structureName" : "fabric",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               },
@@ -105247,23 +105409,41 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitAccept"
+                        "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                        "falseStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ExitAccept"
+                          }
+                        ],
+                        "guard" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                          "type" : "CallExprContext"
+                        },
+                        "trueStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ReturnTrue"
+                          }
+                        ]
                       }
                     ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term vni-100",
+                          "vendorStructureId" : {
+                            "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+                            "structureName" : "fabric",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               },
@@ -105282,23 +105462,41 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "falseStatements" : [
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ExitAccept"
+                        "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                        "falseStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ExitAccept"
+                          }
+                        ],
+                        "guard" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                          "type" : "CallExprContext"
+                        },
+                        "trueStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ReturnTrue"
+                          }
+                        ]
                       }
                     ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                      "type" : "CallExprContext"
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
-                      }
-                    ]
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "Matched term vni-101",
+                          "vendorStructureId" : {
+                            "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+                            "structureName" : "fabric",
+                            "structureType" : "policy-statement"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               },
@@ -105320,6 +105518,22 @@
           "lbpp" : {
             "name" : "lbpp",
             "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "Matched term \"1\"",
+                      "vendorStructureId" : {
+                        "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+                        "structureName" : "lbpp",
+                        "structureType" : "policy-statement"
+                      }
+                    }
+                  ]
+                }
+              },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
