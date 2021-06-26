@@ -193,8 +193,6 @@ public final class AristaConfiguration extends VendorConfiguration {
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
 
-  private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
-
   /*
    * This map is used to convert interface names to their canonical forms.
    * The entries are visited in insertion order until a key is found of which the name to convert is
