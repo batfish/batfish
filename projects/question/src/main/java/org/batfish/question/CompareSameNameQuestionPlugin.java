@@ -147,7 +147,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
           RouteFilterList.class,
           Configuration::getRouteFilterLists,
           RouteFilterList::definitionJson);
-      add(RoutingPolicy.class, Configuration::getRoutingPolicies);
+      add(RoutingPolicy.class, Configuration::getRoutingPolicies, RoutingPolicy::stripTracingHints);
       add(Vrf.class, Configuration::getVrfs);
       add(Zone.class, Configuration::getZones);
 
