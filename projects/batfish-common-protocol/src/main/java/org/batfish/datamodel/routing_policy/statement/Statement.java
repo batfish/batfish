@@ -31,7 +31,8 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
   @JsonSubTypes.Type(value = SetOspfMetricType.class),
   @JsonSubTypes.Type(value = SetTag.class),
   @JsonSubTypes.Type(value = SetVarMetricType.class),
-  @JsonSubTypes.Type(value = SetWeight.class)
+  @JsonSubTypes.Type(value = SetWeight.class),
+  @JsonSubTypes.Type(value = TraceableStatement.class)
 })
 public abstract class Statement implements Serializable {
   private static final String PROP_COMMENT = "comment";

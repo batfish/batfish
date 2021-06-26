@@ -77,6 +77,8 @@
                       "outputInterface" : "eth0",
                       "routes" : [
                         {
+                          "admin" : 1,
+                          "metric" : 0,
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
@@ -184,6 +186,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 20,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "2.34.101.3",
                           "protocol" : "bgp"
@@ -228,6 +232,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 200,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
@@ -304,6 +310,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 200,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
@@ -348,6 +356,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 20,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
@@ -451,6 +461,8 @@
                       "outputInterface" : "eth0",
                       "routes" : [
                         {
+                          "admin" : 1,
+                          "metric" : 0,
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
@@ -558,6 +570,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 20,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "2.34.101.3",
                           "protocol" : "bgp"
@@ -602,6 +616,8 @@
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
+                          "admin" : 200,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
@@ -646,6 +662,8 @@
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
+                          "admin" : 200,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
@@ -690,6 +708,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 20,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
@@ -793,6 +813,8 @@
                       "outputInterface" : "eth0",
                       "routes" : [
                         {
+                          "admin" : 1,
+                          "metric" : 0,
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
@@ -900,6 +922,8 @@
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
+                          "admin" : 20,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "2.34.201.3",
                           "protocol" : "bgp"
@@ -944,6 +968,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 200,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
@@ -988,6 +1014,8 @@
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
+                          "admin" : 200,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
@@ -1032,6 +1060,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 20,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"
@@ -1135,6 +1165,8 @@
                       "outputInterface" : "eth0",
                       "routes" : [
                         {
+                          "admin" : 1,
+                          "metric" : 0,
                           "network" : "0.0.0.0/0",
                           "nextHopIp" : "2.128.1.1",
                           "protocol" : "static"
@@ -1242,6 +1274,8 @@
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
+                          "admin" : 20,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "2.34.201.3",
                           "protocol" : "bgp"
@@ -1286,6 +1320,8 @@
                       "outputInterface" : "GigabitEthernet1/0",
                       "routes" : [
                         {
+                          "admin" : 200,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
@@ -1362,6 +1398,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 200,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "ibgp"
@@ -1406,6 +1444,8 @@
                       "outputInterface" : "GigabitEthernet0/0",
                       "routes" : [
                         {
+                          "admin" : 20,
+                          "metric" : 50,
                           "network" : "1.0.1.0/24",
                           "nextHopIp" : "10.12.11.1",
                           "protocol" : "bgp"

@@ -8,7 +8,9 @@ import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
+import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getVrfForVlan;
 import static org.batfish.representation.arista.AristaConversions.toCommunityMatchExpr;
@@ -153,6 +155,7 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -160,9 +163,11 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
+import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.TrackMethod;
@@ -255,6 +260,7 @@ public final class AristaConfiguration extends VendorConfiguration {
           .put("Wideband-Cable", "Wideband-Cable")
           .build();
 
+  @VisibleForTesting public static final int DEFAULT_LOCAL_BGP_WEIGHT = 32768;
   static final boolean DEFAULT_VRRP_PREEMPT = true;
 
   static final int DEFAULT_VRRP_PRIORITY = 100;
@@ -845,11 +851,12 @@ public final class AristaConfiguration extends VendorConfiguration {
     AristaBgpVrfIpv4UnicastAddressFamily ipv4af = bgpVrf.getV4UnicastAf();
 
     // Next we build up the BGP common export policy.
-    RoutingPolicy bgpCommonExportPolicy =
-        new RoutingPolicy(Names.generatedBgpCommonExportPolicyName(vrfName), c);
-    c.getRoutingPolicies().put(bgpCommonExportPolicy.getName(), bgpCommonExportPolicy);
+    RoutingPolicy.Builder bgpCommonExportPolicy =
+        RoutingPolicy.builder()
+            .setOwner(c)
+            .setName(Names.generatedBgpCommonExportPolicyName(vrfName));
 
-    // 1. If there are any ipv4 summary only networks, do not export the more specific routes.
+    // If there are any ipv4 summary only networks, do not export the more specific routes.
     if (ipv4af != null) {
       Stream<Prefix> summaryOnlyNetworks =
           bgpVrf.getV4aggregates().entrySet().stream()
@@ -857,21 +864,21 @@ public final class AristaConfiguration extends VendorConfiguration {
               .map(Entry::getKey);
       If suppressLonger = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
       if (suppressLonger != null) {
-        bgpCommonExportPolicy.getStatements().add(suppressLonger);
+        bgpCommonExportPolicy.addStatement(suppressLonger);
       }
     }
 
-    // The body of the export policy is a huge disjunction over many reasons routes may be exported.
-    Disjunction routesShouldBeExported = new Disjunction();
-    bgpCommonExportPolicy
-        .getStatements()
-        .add(
-            new If(
-                routesShouldBeExported,
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                ImmutableList.of()));
-    // This list of reasons to export a route will be built up over the remainder of this function.
-    List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
+    // Finalize common export policy
+    bgpCommonExportPolicy.addStatement(Statements.ReturnTrue.toStaticStatement()).build();
+
+    // Create BGP redistribution policy to import main RIB routes into BGP RIB
+    String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
+    RoutingPolicy.Builder redistributionPolicy =
+        RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
+
+    // Arista sets local routes' local preference to 0
+    redistributionPolicy.addStatement(new SetLocalPreference(new LiteralLong(0)));
+    redistributionPolicy.addStatement(new SetWeight(new LiteralInt(DEFAULT_LOCAL_BGP_WEIGHT)));
 
     // Generate and distribute aggregate routes.
     if (ipv4af != null) {
@@ -898,22 +905,24 @@ public final class AristaConfiguration extends VendorConfiguration {
         exportAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
 
         // If defined, set attribute map for aggregate network
-        BooleanExpr weInterior = BooleanExprs.TRUE;
         String attributeMapName = agg.getAttributeMap();
         if (attributeMapName != null) {
           RouteMap attributeMap = _routeMaps.get(attributeMapName);
           if (attributeMap != null) {
-            // need to apply attribute changes if this specific route is matched
-            weInterior = new CallExpr(attributeMapName);
+            // need to apply attribute changes when this route is activated
             gr.setAttributePolicy(attributeMapName);
           }
         }
-        exportAggregateConditions.add(
-            bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
 
         v.getGeneratedRoutes().add(gr.build());
-        // Do export a generated aggregate.
-        exportConditions.add(new Conjunction(exportAggregateConditions));
+        // Redistribute this aggregate if activated
+        redistributionPolicy.addStatement(
+            new If(
+                "Redistribute aggregate route into BGP",
+                new Conjunction(exportAggregateConditions),
+                ImmutableList.of(
+                    new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                    Statements.ExitAccept.toStaticStatement())));
       }
     }
 
@@ -927,37 +936,33 @@ public final class AristaConfiguration extends VendorConfiguration {
     AristaBgpRedistributionPolicy staticPolicy =
         ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(STATIC);
     if (staticPolicy != null) {
-      BooleanExpr filterByRouteMap =
-          Optional.ofNullable(staticPolicy.getRouteMap())
-              .filter(_routeMaps::containsKey)
-              .<BooleanExpr>map(CallExpr::new)
-              .orElse(BooleanExprs.TRUE);
-      List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new MatchProtocol(RoutingProtocol.STATIC),
-              // TODO redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
-      Conjunction staticRedist = new Conjunction(conditions);
+      ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
+      Optional.ofNullable(staticPolicy.getRouteMap())
+          .filter(_routeMaps::containsKey)
+          .map(CallExpr::new)
+          .ifPresent(conditions::add);
+      conditions.add(new MatchProtocol(RoutingProtocol.STATIC));
+      // TODO redistributeDefaultRoute
+      Conjunction staticRedist = new Conjunction(conditions.build());
       staticRedist.setComment("Redistribute static routes into BGP");
-      exportConditions.add(staticRedist);
+      redistributionPolicy.addStatement(
+          new If(staticRedist, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
     // Export connected routes that should be redistributed.
     AristaBgpRedistributionPolicy connectedPolicy =
         ipv4af == null ? null : bgpVrf.getRedistributionPolicies().get(CONNECTED);
     if (connectedPolicy != null) {
-      BooleanExpr filterByRouteMap =
-          Optional.ofNullable(connectedPolicy.getRouteMap())
-              .filter(_routeMaps::containsKey)
-              .<BooleanExpr>map(CallExpr::new)
-              .orElse(BooleanExprs.TRUE);
-      List<BooleanExpr> conditions =
-          ImmutableList.of(
-              new MatchProtocol(RoutingProtocol.CONNECTED),
-              // TODO redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
-      Conjunction connected = new Conjunction(conditions);
+      ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
+      Optional.ofNullable(connectedPolicy.getRouteMap())
+          .filter(_routeMaps::containsKey)
+          .map(CallExpr::new)
+          .ifPresent(conditions::add);
+      conditions.add(new MatchProtocol(RoutingProtocol.CONNECTED));
+      // TODO redistributeDefaultRoute
+      Conjunction connected = new Conjunction(conditions.build());
       connected.setComment("Redistribute connected routes into BGP");
-      exportConditions.add(connected);
+      redistributionPolicy.addStatement(
+          new If(connected, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
 
     // Export OSPF routes that should be redistributed, to the best of our abilities in VI.
@@ -993,19 +998,17 @@ public final class AristaConfiguration extends VendorConfiguration {
         _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
         continue;
       }
-      BooleanExpr filterByRouteMap =
-          Optional.ofNullable(ospfPolicy.getRouteMap())
-              .filter(_routeMaps::containsKey)
-              .<BooleanExpr>map(CallExpr::new)
-              .orElse(BooleanExprs.TRUE);
-      List<BooleanExpr> conditions =
-          ImmutableList.of(
-              protocolConversions.get(type),
-              // TODO redistributeDefaultRoute,
-              bgpRedistributeWithEnvironmentExpr(filterByRouteMap, OriginType.INCOMPLETE));
-      Conjunction ospf = new Conjunction(conditions);
+      ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
+      Optional.ofNullable(ospfPolicy.getRouteMap())
+          .filter(_routeMaps::containsKey)
+          .<BooleanExpr>map(CallExpr::new)
+          .ifPresent(conditions::add);
+      conditions.add(protocolConversions.get(type));
+      // TODO redistributeDefaultRoute
+      Conjunction ospf = new Conjunction(conditions.build());
       ospf.setComment(String.format("Redistribute %s routes into BGP", type));
-      exportConditions.add(ospf);
+      redistributionPolicy.addStatement(
+          new If(ospf, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
     }
 
     // Now we add all the per-network export policies.
@@ -1015,6 +1018,7 @@ public final class AristaConfiguration extends VendorConfiguration {
           .forEach(
               (prefix, networkConf) -> {
                 PrefixSpace exportSpace = new PrefixSpace(PrefixRange.fromPrefix(prefix));
+                @Nullable String routeMap = networkConf.getRouteMap();
                 List<BooleanExpr> exportNetworkConditions =
                     ImmutableList.of(
                         new MatchPrefixSet(
@@ -1024,22 +1028,23 @@ public final class AristaConfiguration extends VendorConfiguration {
                                 RoutingProtocol.BGP,
                                 RoutingProtocol.IBGP,
                                 RoutingProtocol.AGGREGATE)),
-                        bgpRedistributeWithEnvironmentExpr(
-                            networkConf.getRouteMap() != null
-                                    && _routeMaps.containsKey(networkConf.getRouteMap())
-                                ? new CallExpr(networkConf.getRouteMap())
-                                : BooleanExprs.TRUE,
-                            OriginType.IGP));
+                        routeMap != null && _routeMaps.containsKey(routeMap)
+                            ? new CallExpr(routeMap)
+                            : BooleanExprs.TRUE);
                 newBgpProcess.addToOriginationSpace(exportSpace);
-                exportConditions.add(new Conjunction(exportNetworkConditions));
+                redistributionPolicy.addStatement(
+                    new If(
+                        new Conjunction(exportNetworkConditions),
+                        ImmutableList.of(
+                            new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                            Statements.ExitAccept.toStaticStatement())));
               });
     }
 
-    // Always export BGP or IBGP routes.
-    exportConditions.add(new MatchProtocol(RoutingProtocol.BGP, RoutingProtocol.IBGP));
+    // Finalize redistribution policy and attach to process
+    redistributionPolicy.addStatement(Statements.ExitReject.toStaticStatement()).build();
+    newBgpProcess.setRedistributionPolicy(redistPolicyName);
 
-    // Finally, the export policy ends with returning false: do not export unmatched routes.
-    bgpCommonExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
     //
     //    // Generate BGP_NETWORK6_NETWORKS filter.
     //    if (ipv6af != null) {
@@ -2092,6 +2097,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     c.setDnsServers(_dnsServers);
     c.setDnsSourceInterface(_dnsSourceInterface);
     c.setDomainName(_domainName);
+    c.setExportBgpFromBgpRib(true);
     c.setNormalVlanRange(new SubRange(VLAN_NORMAL_MIN_CISCO, VLAN_NORMAL_MAX_CISCO));
     c.setTacacsServers(_tacacsServers);
     c.setTacacsSourceInterface(_tacacsSourceInterface);
@@ -2509,6 +2515,7 @@ public final class AristaConfiguration extends VendorConfiguration {
                       org.batfish.datamodel.BgpProcess.builder()
                           .setRouterId(Ip.ZERO)
                           .setAdminCostsToVendorDefaults(ConfigurationFormat.ARISTA)
+                          .setRedistributionPolicy(initDenyAllBgpRedistributionPolicy(c))
                           .build());
                 }
               });

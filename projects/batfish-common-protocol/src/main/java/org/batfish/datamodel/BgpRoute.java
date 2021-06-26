@@ -391,7 +391,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   @Override
-  public Long getMetric() {
+  public long getMetric() {
     return _med;
   }
 

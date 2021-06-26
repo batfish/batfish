@@ -521,9 +521,7 @@ public class VirtualRouterTest {
     // Check queuing order.
     // Note: contains complains about generics, do manual remove/check
     assertThat(q.remove(), equalTo(new RouteAdvertisement<>(sr1)));
-    assertThat(
-        q.remove(),
-        equalTo(RouteAdvertisement.builder().setRoute(sr2).setReason(Reason.WITHDRAW).build()));
+    assertThat(q.remove(), equalTo(RouteAdvertisement.withdrawing(sr2)));
     assertThat(q, empty());
   }
 

@@ -4,6 +4,7 @@ import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE_DIFFS;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.datamodel.table.TableDiff.baseColumnName;
 import static org.batfish.datamodel.table.TableDiff.deltaColumnName;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_ACTION;
@@ -12,9 +13,11 @@ import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.C
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_NODE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_OUTPUT_ROUTE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_POLICY_NAME;
+import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_TRACE;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
@@ -31,6 +34,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
@@ -42,6 +46,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.hamcrest.Matchers;
@@ -196,7 +201,9 @@ public class TestRoutePoliciesAnswererTest {
                 // outputRoute == inputRoute
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
                 // diff
-                hasColumn(COL_DIFF, equalTo(diff), BGP_ROUTE_DIFFS))));
+                hasColumn(COL_DIFF, equalTo(diff), BGP_ROUTE_DIFFS),
+                hasColumn(
+                    COL_TRACE, equalTo(ImmutableList.of()), Schema.list(Schema.TRACE_TREE)))));
   }
 
   @Test
@@ -396,5 +403,38 @@ public class TestRoutePoliciesAnswererTest {
                     deltaColumnName(COL_OUTPUT_ROUTE), equalTo(deltaOutputRoute), Schema.BGP_ROUTE),
                 // diff
                 hasColumn(COL_DIFF, equalTo(diffs), BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testTrace() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new TraceableStatement(
+                    TraceElement.of("term"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    TestRoutePoliciesQuestion question =
+        new TestRoutePoliciesQuestion(
+            Direction.IN, ImmutableList.of(inputRoute), HOSTNAME, policy.getName());
+    TestRoutePoliciesAnswerer answerer = new TestRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = answerer.answer(_batfish.getSnapshot());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(
+                    COL_TRACE, contains(isTraceTree("term")), Schema.list(Schema.TRACE_TREE)))));
   }
 }

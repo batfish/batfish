@@ -75,7 +75,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   @Override
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
-  public Long getMetric() {
+  public long getMetric() {
     return _metric;
   }
 
