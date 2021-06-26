@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
 import static org.batfish.datamodel.routing_policy.TracingHintsStripper.STRIP_TOKEN;
+import static org.batfish.datamodel.routing_policy.TracingHintsStripper.TRACING_HINTS_STRIPPER;
 import static org.batfish.datamodel.routing_policy.expr.BooleanExprs.TRUE;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -15,8 +16,6 @@ import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 public class TracingHintsStripperTest {
-
-  private static final TracingHintsStripper TRACING_HINTS_STRIPPER = new TracingHintsStripper();
 
   @Test
   public void testVisitIf() {

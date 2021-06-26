@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
+import static org.batfish.datamodel.routing_policy.TracingHintsStripper.TRACING_HINTS_STRIPPER;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -334,14 +335,13 @@ public class RoutingPolicy implements Serializable {
    * that does a blind JSON-based comparison (e.g., compareSameName).
    */
   public String stripTracingHints() {
-    TracingHintsStripper tracingHintsStripper = new TracingHintsStripper();
     // don't put owner in there
     RoutingPolicy strippedPolicy =
         RoutingPolicy.builder()
             .setName(_name)
             .setStatements(
                 _statements.stream()
-                    .map(st -> st.accept(tracingHintsStripper, null))
+                    .map(st -> st.accept(TRACING_HINTS_STRIPPER, null))
                     .collect(ImmutableList.toImmutableList()))
             .build();
     try {

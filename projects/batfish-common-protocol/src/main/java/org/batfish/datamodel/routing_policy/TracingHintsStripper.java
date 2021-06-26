@@ -27,9 +27,14 @@ import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 
-public class TracingHintsStripper implements StatementVisitor<Statement, Void> {
+public final class TracingHintsStripper implements StatementVisitor<Statement, Void> {
+
+  // one instance of this class is enough
+  public static final TracingHintsStripper TRACING_HINTS_STRIPPER = new TracingHintsStripper();
 
   static final String STRIP_TOKEN = "__stripped__tracing__";
+
+  private TracingHintsStripper() {}
 
   @Override
   public Statement visitBufferedStatement(BufferedStatement bufferedStatement, Void arg) {
