@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.representation.cisco.CiscoConfiguration.getRouteMapClausePolicyName;
+import static org.junit.Assert.assertNotNull;
 
 import com.google.common.collect.Iterables;
 import org.batfish.datamodel.Configuration;
@@ -56,7 +57,7 @@ public class CiscoConfigurationTest {
     cc.toRoutingPolicies(c, map);
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(getRouteMapClausePolicyName(map, 10));
 
-    Assert.assertNotNull(routingPolicy);
+    assertNotNull(routingPolicy);
 
     If ifStatement = (If) Iterables.getOnlyElement(routingPolicy.getStatements());
     Assert.assertTrue(
