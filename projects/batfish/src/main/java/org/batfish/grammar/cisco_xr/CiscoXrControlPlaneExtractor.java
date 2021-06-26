@@ -538,6 +538,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv6_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_isis_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_mtuContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.If_rewrite_ingress_tagContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_service_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_shutdownContext;
@@ -559,6 +560,9 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifigmpsg_aclContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifrit_policyContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifrit_popContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ifrit_pop_countContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Iftunnel_destinationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Iftunnel_modeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Iftunnel_protectionContext;
@@ -1031,6 +1035,8 @@ import org.batfish.representation.cisco_xr.RoutePolicyStatement;
 import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco_xr.StaticRoute;
 import org.batfish.representation.cisco_xr.StubSettings;
+import org.batfish.representation.cisco_xr.TagRewritePolicy;
+import org.batfish.representation.cisco_xr.TagRewritePop;
 import org.batfish.representation.cisco_xr.Tunnel;
 import org.batfish.representation.cisco_xr.Tunnel.TunnelMode;
 import org.batfish.representation.cisco_xr.Uint16RangeExpr;
@@ -1074,6 +1080,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private static final IntegerSpace LOGGING_BUFFER_SIZE_RANGE =
       IntegerSpace.of(Range.closed(2097152, 125000000));
   private static final IntegerSpace PINT16_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+  private static final IntegerSpace REWRITE_INGRESS_TAG_POP_RANGE =
+      IntegerSpace.of(Range.closed(1, 2));
 
   private static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
@@ -2726,14 +2734,20 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       for (SubRange range : ranges) {
         for (int i = range.getStart(); i <= range.getEnd(); i++) {
           String name = namePrefix.toString() + i;
-          addInterface(name, ctx.iname, true);
+          Interface iface = addInterface(name, ctx.iname, true);
+          if (ctx.L2TRANSPORT() != null) {
+            iface.setL2transport(true);
+          }
           _configuration.defineStructure(INTERFACE, name, ctx);
           _configuration.referenceStructure(
               INTERFACE, name, INTERFACE_SELF_REF, ctx.getStart().getLine());
         }
       }
     } else {
-      addInterface(namePrefix.toString(), ctx.iname, true);
+      Interface iface = addInterface(namePrefix.toString(), ctx.iname, true);
+      if (ctx.L2TRANSPORT() != null) {
+        iface.setL2transport(true);
+      }
     }
     if (ctx.MULTIPOINT() != null) {
       todo(ctx);
@@ -4261,6 +4275,29 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setMtu(mtu);
     }
+  }
+
+  @Override
+  public void exitIf_rewrite_ingress_tag(If_rewrite_ingress_tagContext ctx) {
+    Optional<TagRewritePolicy> policy = toTagRewritePolicy(ctx.ifrit_policy());
+    for (Interface currentInterface : _currentInterfaces) {
+      if (!currentInterface.getL2transport()) {
+        warn(
+            ctx,
+            "Rewrite policy can only be configured on l2transport interfaces. Ignoring this line.");
+        continue;
+      }
+      policy.ifPresent(currentInterface::setRewriteIngressTag);
+    }
+  }
+
+  private Optional<TagRewritePolicy> toTagRewritePolicy(Ifrit_policyContext ctx) {
+    // This is the only kind of policy Batfish supports so far
+    assert ctx.ifrit_pop() != null;
+
+    Ifrit_popContext pop = ctx.ifrit_pop();
+    return toInteger(ctx, pop.ifrit_pop_count())
+        .map(i -> new TagRewritePop(i, pop.SYMMETRIC() != null));
   }
 
   @Override
@@ -7096,6 +7133,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                 _currentInlineAsPathSet.addElement(
                     new UniqueLengthAsPathSetElem(
                         toIntComparator(ctx.comparator()), length, ctx.ALL() != null)));
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Ifrit_pop_countContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx, REWRITE_INGRESS_TAG_POP_RANGE, "rewrite ingress tag pop range");
   }
 
   private @Nonnull Optional<Integer> toInteger(

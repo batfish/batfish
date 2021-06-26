@@ -4044,6 +4044,8 @@ POLICY_MAP_OUTPUT: 'policy-map-output';
 
 POOL: 'pool';
 
+POP: 'pop';
+
 POP2: 'pop2';
 
 POP3: 'pop3';
