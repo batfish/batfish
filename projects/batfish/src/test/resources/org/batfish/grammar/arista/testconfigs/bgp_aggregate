@@ -1,0 +1,22 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname bgp_aggregate
+!
+ip route 1.1.1.0 255.255.255.0 Null0
+ip route 2.2.2.0 255.255.255.0 Null0
+! less specific than similar aggregate
+ip route 3.0.0.0 255.0.0.0 Null0
+! less specific than one similar aggregate, but more specific than another
+ip route 4.4.4.0 255.255.255.0 Null0
+! same length as similar aggregate
+ip route 5.5.0.0 255.255.0.0 Null0
+!
+router bgp 1
+  router-id 1.1.1.1
+  aggregate-address 1.1.0.0 255.255.0.0
+  aggregate-address 2.2.0.0 255.255.0.0 summary-only
+  aggregate-address 3.0.0.0 255.255.0.0 summary-only
+  aggregate-address 4.4.0.0 255.255.0.0 summary-only
+  aggregate-address 4.4.4.0 255.255.255.254 summary-only
+  aggregate-address 5.5.0.0 255.255.0.0 summary-only
+  redistribute static
