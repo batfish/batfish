@@ -1,10 +1,15 @@
 package org.batfish.question;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.question.TracingHintsStripper.TRACING_HINTS_STRIPPER;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
@@ -20,6 +25,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.Configuration;
@@ -147,7 +153,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
           RouteFilterList.class,
           Configuration::getRouteFilterLists,
           RouteFilterList::definitionJson);
-      add(RoutingPolicy.class, Configuration::getRoutingPolicies, RoutingPolicy::stripTracingHints);
+      add(
+          RoutingPolicy.class,
+          Configuration::getRoutingPolicies,
+          CompareSameNameAnswerer::stripTracingHints);
       add(Vrf.class, Configuration::getVrfs);
       add(Zone.class, Configuration::getZones);
 
@@ -194,6 +203,30 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     public void setAssumeAllUnique(boolean assumeAllUnique) {
       _assumeAllUnique = assumeAllUnique;
+    }
+
+    /**
+     * Returns a string version of the policy with tracing hints removed.
+     *
+     * <p>Tracing hints can make two identical policies across two devices appear different for
+     * compareSameName (which does a blind JSON-based comparison).
+     */
+    @VisibleForTesting
+    static String stripTracingHints(RoutingPolicy routingPolicy) {
+      // don't put owner in there
+      RoutingPolicy strippedPolicy =
+          RoutingPolicy.builder()
+              .setName(routingPolicy.getName())
+              .setStatements(
+                  routingPolicy.getStatements().stream()
+                      .map(st -> st.accept(TRACING_HINTS_STRIPPER, null))
+                      .collect(ImmutableList.toImmutableList()))
+              .build();
+      try {
+        return BatfishObjectMapper.writePrettyString(strippedPolicy);
+      } catch (JsonProcessingException e) {
+        throw new RuntimeJsonMappingException("Could not map lines to JSON");
+      }
     }
   }
 

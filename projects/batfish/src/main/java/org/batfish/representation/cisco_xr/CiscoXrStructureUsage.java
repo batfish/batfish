@@ -19,6 +19,8 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   BGP_USE_AF_GROUP("bgp use af-group"),
   BGP_USE_NEIGHBOR_GROUP("bgp use neighbor-group"),
   BGP_USE_SESSION_GROUP("bgp use session-group"),
+  BRIDGE_DOMAIN_INTERFACE("bridge-domain interface"),
+  BRIDGE_DOMAIN_ROUTED_INTERFACE("bridge-domain routed interface"),
   CLASS_MAP_ACCESS_GROUP("class-map access-group"),
   CLASS_MAP_ACCESS_LIST("class-map access-list"),
   CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE("class-map activate-service-template"),

@@ -45379,16 +45379,16 @@
             "      L2VPN:'l2vpn'",
             "      (null_rest_of_line*",
             "        NEWLINE:'\\n')",
-            "      (l2vpn_bridge_group*",
+            "      (l2vpn_bridge_group",
             "        BRIDGE:'bridge'",
             "        GROUP:'group'",
-            "        name = (variable*",
-            "          VARIABLE:'TEST-GROUP-1')",
+            "        (bridge_group_name*",
+            "          WORD:'TEST-GROUP-1'  <== mode:M_Word)",
             "        NEWLINE:'\\n'",
-            "        (lbg_bridge_domain*",
+            "        (lbg_bridge_domain",
             "          BRIDGE_DOMAIN:'bridge-domain'",
-            "          name = (variable*",
-            "            VARIABLE:'TEST-DOMAIN-1')",
+            "          (bridge_domain_name*",
+            "            WORD:'TEST-DOMAIN-1'  <== mode:M_Word)",
             "          NEWLINE:'\\n'",
             "          (lbgbd_mac*",
             "            MAC:'mac'",
@@ -45413,14 +45413,17 @@
             "            (null_rest_of_line*",
             "              UINT16:'9014'",
             "              NEWLINE:'\\n'))",
-            "          (lbgbd_null*",
+            "          (lbgbd_interface",
             "            INTERFACE:'interface'",
-            "            (null_rest_of_line*",
-            "              M_Interface_PREFIX:'Bundle-Ether'  <== mode:M_Interface",
+            "            (interface_name*",
+            "              name_prefix_alpha = M_Interface_PREFIX:'Bundle-Ether'  <== mode:M_Interface",
             "              UINT_BIG:'9'  <== mode:M_Interface",
             "              PERIOD:'.'  <== mode:M_Interface",
-            "              UINT_BIG:'1'  <== mode:M_Interface",
-            "              NEWLINE:'\\n'  <== mode:M_Interface))",
+            "              (range*",
+            "                (subrange*",
+            "                  low = (uint_legacy*",
+            "                    UINT_BIG:'1'  <== mode:M_Interface))))",
+            "            NEWLINE:'\\n'  <== mode:M_Interface)",
             "          (lbgbd_null*",
             "            NEIGHBOR:'neighbor'",
             "            (null_rest_of_line*",
@@ -45447,17 +45450,21 @@
             "                VARIABLE:'pw-id'",
             "                UINT16:'707'",
             "                NEWLINE:'\\n')))",
-            "          (lbgbd_null*",
+            "          (lbgbd_routed_interface",
             "            ROUTED:'routed'",
-            "            (null_rest_of_line*",
-            "              INTERFACE:'interface'",
-            "              VARIABLE:'BVI1'",
-            "              NEWLINE:'\\n'))))",
+            "            INTERFACE:'interface'",
+            "            (interface_name*",
+            "              name_prefix_alpha = M_Interface_PREFIX:'BVI'  <== mode:M_Interface",
+            "              (range*",
+            "                (subrange*",
+            "                  low = (uint_legacy*",
+            "                    UINT_BIG:'1'  <== mode:M_Interface))))",
+            "            NEWLINE:'\\n'  <== mode:M_Interface)))",
             "      (l2vpn_logging*",
             "        LOGGING:'logging'",
             "        NEWLINE:'\\n'",
             "        BRIDGE_DOMAIN:'bridge-domain'",
-            "        NEWLINE:'\\n'",
+            "        NEWLINE:'\\n'  <== mode:M_Word",
             "        PSEUDOWIRE:'pseudowire'",
             "        NEWLINE:'\\n'",
             "        VFI:'vfi'",
@@ -78817,6 +78824,20 @@
             }
           }
         },
+        "configs/ios_xr_l2vpn" : {
+          "interface" : {
+            "BVI1" : {
+              "bridge-domain routed interface" : [
+                24
+              ]
+            },
+            "Bundle-Ether9.1" : {
+              "bridge-domain interface" : [
+                15
+              ]
+            }
+          }
+        },
         "configs/ios_xr_multicast" : {
           "ipv4 access-list" : {
             "MSDP_filter" : {
@@ -82906,7 +82927,20 @@
         "configs/ios_xr_class_map" : { },
         "configs/ios_xr_community_set" : { },
         "configs/ios_xr_isis" : { },
-        "configs/ios_xr_l2vpn" : { },
+        "configs/ios_xr_l2vpn" : {
+          "interface" : {
+            "BVI1" : {
+              "bridge-domain routed interface" : [
+                24
+              ]
+            },
+            "Bundle-Ether9.1" : {
+              "bridge-domain interface" : [
+                15
+              ]
+            }
+          }
+        },
         "configs/ios_xr_logging" : { },
         "configs/ios_xr_misc" : { },
         "configs/ios_xr_multicast" : {

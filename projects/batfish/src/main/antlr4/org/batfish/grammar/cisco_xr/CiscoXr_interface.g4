@@ -990,6 +990,15 @@ if_private_vlan
    PRIVATE_VLAN MAPPING (ADD | REMOVE)? null_rest_of_line
 ;
 
+if_rewrite_ingress_tag: REWRITE INGRESS TAG ifrit_policy NEWLINE;
+
+ifrit_policy: ifrit_pop;
+
+ifrit_pop: POP ifrit_pop_count SYMMETRIC?;
+
+// 1 or 2
+ifrit_pop_count: uint8;
+
 if_routing_dynamic
 :
    ROUTING DYNAMIC NEWLINE
@@ -1653,6 +1662,7 @@ if_inner
    | if_no_routing_dynamic
    | if_port_security
    | if_private_vlan
+   | if_rewrite_ingress_tag
    | if_routing_dynamic
    | if_service_instance
    | if_service_policy
