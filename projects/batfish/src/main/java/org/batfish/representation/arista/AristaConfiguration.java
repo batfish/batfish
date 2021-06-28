@@ -161,7 +161,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -486,21 +485,6 @@ public final class AristaConfiguration extends VendorConfiguration {
                     });
           }
         });
-  }
-
-  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
-      BooleanExpr expr, OriginType originType) {
-    WithEnvironmentExpr we = new WithEnvironmentExpr();
-    we.setExpr(expr);
-    we.setPreStatements(
-        ImmutableList.of(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement()));
-    we.setPostStatements(
-        ImmutableList.of(Statements.UnsetWriteIntermediateBgpAttributes.toStaticStatement()));
-    we.setPostTrueStatements(
-        ImmutableList.of(
-            Statements.SetReadIntermediateBgpAttributes.toStaticStatement(),
-            new SetOrigin(new LiteralOrigin(originType, null))));
-    return we;
   }
 
   private boolean containsIpAccessList(String eaListName, String mapName) {
