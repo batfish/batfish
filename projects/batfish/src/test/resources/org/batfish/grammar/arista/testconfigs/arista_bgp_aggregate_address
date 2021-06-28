@@ -2,6 +2,11 @@
 !
 hostname arista_bgp_aggregate_address
 !
+vrf instance FOO
+!
+route-map ATTR_MAP permit 10
+route-map MATCH_MAP permit 10
+!
 router bgp 1
   aggregate-address 1.2.33.0/24 advertise-only as-set summary-only attribute-map ATTR_MAP match-map MATCH_MAP
   aggregate-address 1.2.44.0 255.255.255.0 summary-only
