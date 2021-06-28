@@ -1,8 +1,8 @@
-package org.batfish.datamodel.routing_policy;
+package org.batfish.question;
 
-import static org.batfish.datamodel.routing_policy.TracingHintsStripper.STRIP_TOKEN;
-import static org.batfish.datamodel.routing_policy.TracingHintsStripper.TRACING_HINTS_STRIPPER;
 import static org.batfish.datamodel.routing_policy.expr.BooleanExprs.TRUE;
+import static org.batfish.question.TracingHintsStripper.STRIP_TOKEN;
+import static org.batfish.question.TracingHintsStripper.TRACING_HINTS_STRIPPER;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -25,12 +25,13 @@ public class TracingHintsStripperTest {
     List<Statement> falseStatements =
         ImmutableList.of(new TraceableStatement(TraceElement.of("false"), ImmutableList.of()));
 
-    If ifStatement = new If(TRUE, trueStatements, falseStatements);
+    If ifStatement = new If("comment", TRUE, trueStatements, falseStatements);
 
     assertThat(
         ifStatement.accept(TRACING_HINTS_STRIPPER, null),
         equalTo(
             new If(
+                "comment", // comment is not wiped out
                 TRUE,
                 ImmutableList.of(
                     new TraceableStatement(
