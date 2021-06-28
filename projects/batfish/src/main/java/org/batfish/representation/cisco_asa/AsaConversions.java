@@ -10,6 +10,7 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeBgpDefaultRouteExportPolicyName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeBgpPeerImportPolicyName;
 import static org.batfish.representation.cisco_asa.AsaConfiguration.computeIcmpObjectGroupAclName;
@@ -88,6 +89,7 @@ import org.batfish.datamodel.VrfLeakingConfig.BgpLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
@@ -185,6 +187,23 @@ public class AsaConversions {
       }
     }
     return highestIp;
+  }
+
+  static @Nonnull BgpAggregate toBgpAggregate(
+      BgpAggregateIpv4Network vsAggregate, Configuration c, Warnings w) {
+    // TODO: handle as-set
+    String attributeMap = vsAggregate.getAttributeMap();
+    if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
+      // TODO: Confirm that an undefined attribute-map can be treated as unset
+      w.redFlag(
+          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      attributeMap = null;
+    }
+    return BgpAggregate.of(
+        vsAggregate.getPrefix(),
+        generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
+        null,
+        attributeMap);
   }
 
   /**

@@ -1,0 +1,19 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname c2
+!
+interface GigabitEthernet0/1
+  ip address 10.10.10.2 255.255.255.0
+!
+interface GigabitEthernet0/2
+  ip address 11.11.11.2 255.255.255.0
+!
+router bgp 2
+  router-id 2.2.2.2
+  address-family ipv4 unicast
+    aggregate-address 1.1.0.0/16
+    aggregate-address 2.2.0.0/16 summary-only
+  neighbor 10.10.10.1 remote-as 2
+  neighbor 11.11.11.1 remote-as 3
+!

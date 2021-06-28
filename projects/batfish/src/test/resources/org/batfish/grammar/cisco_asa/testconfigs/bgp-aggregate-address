@@ -1,0 +1,24 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname bgp-aggregate-address
+!
+route-map atm1 permit 10
+route-map atm2 permit 10
+!
+router bgp 65100
+  router-id 10.10.10.1
+  address-family ipv4 unicast
+    ! no suppression, everything more specific contributes, no inheritance
+    aggregate-address 1.1.0.0 255.255.0.0
+    ! attribute-map should transform aggregate
+    aggregate-address 1.2.0.0 255.255.0.0 attribute-map atm1
+    ! inheritance
+    aggregate-address 2.1.0.0 255.255.0.0 as-set
+    ! attribute-map applies after inheritance
+    aggregate-address 2.2.0.0 255.255.0.0 as-set attribute-map atm2
+    ! suppression everything more specific
+    aggregate-address 3.1.0.0 255.255.0.0 summary-only
+    ! undefined attribute-map
+    aggregate-address 4.0.0.0 255.255.0.0 attribute-map undefined
+ exit-address-family
