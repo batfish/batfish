@@ -12,7 +12,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.junit.Test;
 
 /** Test of {@link RouteMapSetAsPath} */
-public class RouteMapSetAsPathTest {
+public class RouteMapSetPrependAsPathTest {
 
   @Test
   public void testToStatements() {
