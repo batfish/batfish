@@ -664,8 +664,9 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c, hasInterface("Ethernet1", hasAccessVlan(1)));
-    assertThat(c, hasInterface("Ethernet2", hasAccessVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet2", hasAccessVlan(3)));
     assertThat(c, hasInterface("Ethernet3", hasAccessVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet4", hasAccessVlan(nullValue())));
   }
 
   @Test

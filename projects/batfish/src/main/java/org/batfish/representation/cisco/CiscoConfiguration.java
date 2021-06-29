@@ -1524,7 +1524,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
 
     // switch settings
-    newIface.setAccessVlan(iface.getAccessVlan());
+    if (iface.getSwitchportMode() == SwitchportMode.ACCESS) {
+      newIface.setAccessVlan(firstNonNull(iface.getAccessVlan(), 1));
+    }
 
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
