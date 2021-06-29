@@ -241,8 +241,6 @@ public final class AsaConfiguration extends VendorConfiguration {
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
 
-  private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
-
   /*
    * This map is used to convert interface names to their canonical forms.
    * The entries are visited in insertion order until a key is found of which the name to convert is
@@ -1115,7 +1113,6 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
-    org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());

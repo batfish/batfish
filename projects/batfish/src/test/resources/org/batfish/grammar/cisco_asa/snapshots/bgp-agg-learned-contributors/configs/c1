@@ -4,19 +4,18 @@ ASA Version 9.9
 hostname c1
 !
 interface GigabitEthernet0/1
+  nameif g01
   ip address 10.10.10.1 255.255.255.0
+  no shutdown
 !
-! Next hop for static routes
-interface GigabitEthernet0/2
-  nameif ifname
-  ip address 40.40.40.1 255.255.255.0
-!
-route ifname 1.1.1.0 255.255.255.0 40.40.40.2
-route ifname 2.2.2.0 255.255.255.0 40.40.40.2
+route Null0 1.1.1.0 255.255.255.0
+route Null0 2.2.2.0 255.255.255.0
 !
 router bgp 2
-  router-id 1.1.1.1
+  bgp router-id 1.1.1.1
   address-family ipv4 unicast
     redistribute static
-  neighbor 10.10.10.2 remote-as 2
+    neighbor 10.10.10.2 remote-as 2
+    neighbor 10.10.10.2 activate
+  exit-address-family
 !

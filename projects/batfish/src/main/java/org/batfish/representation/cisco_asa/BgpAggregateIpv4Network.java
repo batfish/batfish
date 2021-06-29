@@ -18,9 +18,16 @@ public class BgpAggregateIpv4Network extends BgpAggregateNetwork {
 
   @VisibleForTesting
   public BgpAggregateIpv4Network(
-      Prefix prefix, boolean asSet, @Nullable String attributeMap, boolean summaryOnly) {
-    this(prefix);
+      Prefix prefix,
+      boolean asSet,
+      @Nullable String suppressMap,
+      @Nullable String advertiseMap,
+      @Nullable String attributeMap,
+      boolean summaryOnly) {
     setAsSet(asSet);
+    _prefix = prefix;
+    setAdvertiseMap(advertiseMap);
+    setSuppressMap(suppressMap);
     setAttributeMap(attributeMap);
     setSummaryOnly(summaryOnly);
   }

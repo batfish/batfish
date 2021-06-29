@@ -35,6 +35,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPostTransformationIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPreTransformationOutgoingFilter;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
@@ -92,8 +93,12 @@ import static org.batfish.representation.cisco_asa.AsaStructureType.IP_ACCESS_LI
 import static org.batfish.representation.cisco_asa.AsaStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco_asa.AsaStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco_asa.AsaStructureType.PROTOCOL_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco_asa.AsaStructureType.SERVICE_OBJECT;
 import static org.batfish.representation.cisco_asa.AsaStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
+import static org.batfish.representation.cisco_asa.AsaStructureUsage.BGP_AGGREGATE_SUPPRESS_MAP;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT;
 import static org.batfish.representation.cisco_asa.AsaStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT;
 import static org.hamcrest.Matchers.aMapWithSize;
@@ -1014,84 +1019,190 @@ public final class CiscoAsaGrammarTest {
 
   @Test
   public void testAggregateAddressExtraction() {
-    String hostname = "bgp-aggregate-address";
+    String hostname = "asa-aggregate-address";
     AsaConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
         vc.getDefaultVrf().getBgpProcess().getAggregateNetworks();
-    assertThat(aggs, aMapWithSize(6));
+    assertThat(aggs, aMapWithSize(9));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("1.1.0.0/16"),
-            new BgpAggregateIpv4Network(Prefix.parse("1.1.0.0/16"), false, null, false)));
+            equalTo(Prefix.parse("1.1.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("1.1.0.0/16"), false, null, null, null, false))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("1.2.0.0/16"),
-            new BgpAggregateIpv4Network(Prefix.parse("1.2.0.0/16"), false, "atm1", false)));
+            equalTo(Prefix.parse("1.2.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("1.2.0.0/16"), false, null, null, "atm1", false))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("2.1.0.0/16"),
-            new BgpAggregateIpv4Network(Prefix.parse("2.1.0.0/16"), true, null, false)));
+            equalTo(Prefix.parse("2.1.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("2.1.0.0/16"), true, null, null, null, false))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("2.2.0.0/16"),
-            new BgpAggregateIpv4Network(Prefix.parse("2.2.0.0/16"), true, "atm2", false)));
+            equalTo(Prefix.parse("2.2.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("2.2.0.0/16"), true, null, "adm", null, false))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("3.1.0.0/16"),
-            new BgpAggregateIpv4Network(Prefix.parse("3.1.0.0/16"), false, null, true)));
+            equalTo(Prefix.parse("2.3.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("2.3.0.0/16"), true, null, null, "atm2", false))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("4.0.0.0/16"),
-            new BgpAggregateIpv4Network(Prefix.parse("4.0.0.0/16"), false, "undefined", false)));
+            equalTo(Prefix.parse("3.1.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("3.1.0.0/16"), false, null, null, null, true))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.2.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("3.2.0.0/16"), false, "sm1", null, null, false))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.3.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("3.3.0.0/16"), false, "sm2", null, null, true))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    Prefix.parse("4.0.0.0/16"),
+                    false,
+                    "undefined",
+                    "undefined",
+                    "undefined",
+                    false))));
   }
 
   @Test
   public void testAggregateAddressConversion() throws IOException {
-    String hostname = "bgp-aggregate-address";
+    String hostname = "asa-aggregate-address";
     Configuration c = parseConfig(hostname);
 
     Map<Prefix, BgpAggregate> aggs = c.getDefaultVrf().getBgpProcess().getAggregates();
-    assertThat(aggs, aMapWithSize(6));
+    assertThat(aggs, aMapWithSize(9));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("1.1.0.0/16"),
-            BgpAggregate.of(Prefix.parse("1.1.0.0/16"), null, null, null)));
+            equalTo(Prefix.parse("1.1.0.0/16")),
+            equalTo(BgpAggregate.of(Prefix.parse("1.1.0.0/16"), null, null, null))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("1.2.0.0/16"),
-            BgpAggregate.of(Prefix.parse("1.2.0.0/16"), null, null, "atm1")));
+            equalTo(Prefix.parse("1.2.0.0/16")),
+            equalTo(BgpAggregate.of(Prefix.parse("1.2.0.0/16"), null, null, "atm1"))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("2.1.0.0/16"),
-            // TODO: generation policy should incorporate as-set
-            BgpAggregate.of(Prefix.parse("2.1.0.0/16"), null, null, null)));
+            equalTo(Prefix.parse("2.1.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.1.0.0/16"),
+                    null,
+                    // TODO: generation policy should incorporate as-set
+                    null,
+                    null))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("2.2.0.0/16"),
-            // TODO: generation policy should incorporate as-set
-            BgpAggregate.of(Prefix.parse("2.2.0.0/16"), null, null, "atm2")));
+            equalTo(Prefix.parse("2.2.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.2.0.0/16"),
+                    null,
+                    // TODO: generation policy should incorporate as-set and advertise-map
+                    null,
+                    null))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("3.1.0.0/16"),
-            BgpAggregate.of(
-                Prefix.parse("3.1.0.0/16"), SUMMARY_ONLY_SUPPRESSION_POLICY_NAME, null, null)));
+            equalTo(Prefix.parse("2.3.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("2.3.0.0/16"),
+                    null,
+                    // TODO: generation policy should incorporate as-set
+                    null,
+                    "atm2"))));
     assertThat(
         aggs,
         hasEntry(
-            Prefix.parse("4.0.0.0/16"),
-            // TODO: verify undefined attribute-map can be treated as omitted
-            BgpAggregate.of(Prefix.parse("4.0.0.0/16"), null, null, null)));
+            equalTo(Prefix.parse("3.1.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.1.0.0/16"),
+                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.2.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.2.0.0/16"),
+                    // TODO: suppression policy should incorporate suppress-map
+                    null,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("3.3.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("3.3.0.0/16"),
+                    // TODO: suppression policy should incorporate suppress-map and ignore
+                    //       summary-only.
+                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                    null,
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            // TODO: verify undefined route-map can be treated as omitted
+            equalTo(BgpAggregate.of(Prefix.parse("4.0.0.0/16"), null, null, null))));
+  }
+
+  @Test
+  public void testAggregateAddressReferences() throws IOException {
+    String hostname = "asa-aggregate-address";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "atm1", BGP_AGGREGATE_ATTRIBUTE_MAP));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "adm", BGP_AGGREGATE_ADVERTISE_MAP));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "atm2", BGP_AGGREGATE_ATTRIBUTE_MAP));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "sm1", BGP_AGGREGATE_SUPPRESS_MAP));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "sm2", BGP_AGGREGATE_SUPPRESS_MAP));
   }
 
   @Test

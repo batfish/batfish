@@ -96,7 +96,6 @@ import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
-import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Common;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -192,6 +191,7 @@ public class AsaConversions {
   static @Nonnull BgpAggregate toBgpAggregate(
       BgpAggregateIpv4Network vsAggregate, Configuration c, Warnings w) {
     // TODO: handle as-set
+    // TODO: handle suppress-map
     String attributeMap = vsAggregate.getAttributeMap();
     if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
       // TODO: Confirm that an undefined attribute-map can be treated as unset
@@ -202,6 +202,7 @@ public class AsaConversions {
     return BgpAggregate.of(
         vsAggregate.getPrefix(),
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
+        // TODO: put advertise-map here
         null,
         attributeMap);
   }
@@ -1582,13 +1583,9 @@ public class AsaConversions {
   }
 
   static org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute staticRoute) {
-    String nextHopInterface = staticRoute.getNextHopInterface();
-    if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
-      nextHopInterface = org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
-    }
     return org.batfish.datamodel.StaticRoute.builder()
         .setNetwork(staticRoute.getPrefix())
-        .setNextHop(NextHop.legacyConverter(nextHopInterface, staticRoute.getNextHopIp()))
+        .setNextHop(staticRoute.getNextHop())
         .setAdministrativeCost(staticRoute.getDistance())
         .build();
   }

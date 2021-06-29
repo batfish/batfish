@@ -3,11 +3,11 @@ ASA Version 9.9
 !
 hostname bgp-aggregate-from-local-routes
 !
-route null0 1.1.1.0 255.255.255.0 3.3.3.3
-route null0 2.2.2.0 255.255.255.0 3.3.3.3
-route null0 3.0.0.0 255.0.0.0 3.3.3.3
-route null0 4.4.4.0 255.255.255.0 3.3.3.3
-route null0 5.5.0.0 255.255.0.0 3.3.3.3
+route null0 1.1.1.0 255.255.255.0
+route null0 2.2.2.0 255.255.255.0
+route null0 3.0.0.0 255.0.0.0
+route null0 4.4.4.0 255.255.255.0
+route null0 5.5.0.0 255.255.0.0
 !
 route-map atm1 permit 10
 route-map atm2 permit 10
