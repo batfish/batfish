@@ -2294,12 +2294,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           continueTargetPolicy = clauses.get(continueTarget);
           if (continueTargetPolicy == null) {
-            String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
-            undefined(
-                CiscoStructureType.ROUTE_MAP_CLAUSE,
-                name,
-                CiscoStructureUsage.ROUTE_MAP_CONTINUE,
-                continueStatement.getStatementLine());
             continueStatement = null;
           }
         } else {
