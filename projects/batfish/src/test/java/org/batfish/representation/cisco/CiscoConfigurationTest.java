@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import static org.batfish.representation.cisco.CiscoConfiguration.getRouteMapClausePolicyName;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
@@ -11,9 +12,11 @@ import com.google.common.collect.Iterables;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 public class CiscoConfigurationTest {
@@ -36,7 +39,17 @@ public class CiscoConfigurationTest {
     RoutingPolicy routingPolicy = cc.toRoutingPolicy(c, map);
 
     If ifStatement = (If) Iterables.getOnlyElement(routingPolicy.getStatements());
-    assertThat(ifStatement.getTrueStatements(), contains(instanceOf(TraceableStatement.class)));
+    TraceableStatement traceableStatement =
+        (TraceableStatement) Iterables.getOnlyElement(ifStatement.getTrueStatements());
+    assertThat(
+        traceableStatement.getTraceElement(),
+        equalTo(
+            TraceElement.of(
+                "Matched clause 10",
+                new VendorStructureId(
+                    "file", CiscoStructureType.ROUTE_MAP_CLAUSE.getDescription(), "10"))));
+
+    // false statements are not wrapped in traceable
     assertThat(
         ifStatement.getFalseStatements(), contains(not(instanceOf(TraceableStatement.class))));
   }
@@ -62,7 +75,16 @@ public class CiscoConfigurationTest {
     assertNotNull(routingPolicy);
 
     If ifStatement = (If) Iterables.getOnlyElement(routingPolicy.getStatements());
-    assertThat(ifStatement.getTrueStatements(), contains(instanceOf(TraceableStatement.class)));
+    TraceableStatement traceableStatement =
+        (TraceableStatement) Iterables.getOnlyElement(ifStatement.getTrueStatements());
+    assertThat(
+        traceableStatement.getTraceElement(),
+        equalTo(
+            TraceElement.of(
+                "Matched clause 10",
+                new VendorStructureId(
+                    "file", CiscoStructureType.ROUTE_MAP_CLAUSE.getDescription(), "10"))));
+
     assertThat(
         ifStatement.getFalseStatements(), contains(not(instanceOf(TraceableStatement.class))));
   }

@@ -2245,11 +2245,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         ifExpr.getFalseStatements().add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
-      ifExpr.setTrueStatements(
-          ImmutableList.of(
-              new TraceableStatement(
-                  TraceElement.of("Matched clause " + clauseNumber, vendorStructureId),
-                  matchStatements)));
+      ifExpr.setTrueStatements(makeClauseTraceable(clauseNumber, matchStatements, _filename));
       followingClause = ifExpr;
     }
     statements.add(followingClause);
@@ -2261,9 +2257,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     RoutingPolicy output = new RoutingPolicy(map.getName(), c);
     List<Statement> statements = output.getStatements();
     Map<Integer, RoutingPolicy> clauses = new HashMap<>();
-    VendorStructureId vendorStructureId =
-        new VendorStructureId(
-            _filename, CiscoStructureType.ROUTE_MAP.getDescription(), map.getName());
     // descend map so continue targets are available
     RoutingPolicy followingClause = null;
     Integer followingClauseNumber = null;
@@ -2350,15 +2343,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
       ifStatement.setTrueStatements(
-          ImmutableList.of(
-              new TraceableStatement(
-                  TraceElement.of("Matched clause " + clauseNumber, vendorStructureId),
-                  onMatchStatements)));
+          makeClauseTraceable(clauseNumber, onMatchStatements, _filename));
       followingClause = clausePolicy;
       followingClauseNumber = clauseNumber;
     }
     statements.add(new CallStatement(followingClause.getName()));
     return output;
+  }
+
+  @VisibleForTesting
+  static List<Statement> makeClauseTraceable(
+      int clauseNumber, List<Statement> matchStatements, String filename) {
+    return ImmutableList.of(
+        new TraceableStatement(
+            TraceElement.of(
+                "Matched clause " + clauseNumber,
+                new VendorStructureId(
+                    filename,
+                    CiscoStructureType.ROUTE_MAP_CLAUSE.getDescription(),
+                    Integer.toString(clauseNumber))),
+            matchStatements));
   }
 
   @Override
