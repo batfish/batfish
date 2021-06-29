@@ -10,7 +10,6 @@ import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -71,24 +70,8 @@ public class IpOwnersTest {
             .setActive(false)
             .build();
 
-    // Test with only active IPs.
     assertThat(
-        computeInterfaceHostSubnetIps(configs, true),
-        hasEntry(
-            equalTo(c1.getHostname()),
-            allOf(
-                hasEntry(
-                    equalTo(i1.getName()),
-                    allOf(
-                        not(containsIp(P1.getStartIp())),
-                        containsIp(Ip.create(P1.getStartIp().asLong() + 1)),
-                        containsIp(Ip.create(P1.getEndIp().asLong() - 1)),
-                        not(containsIp(P1.getEndIp())))),
-                not(hasKey(i2.getName())))));
-
-    // Test including inactive IPs.
-    assertThat(
-        computeInterfaceHostSubnetIps(configs, false),
+        computeInterfaceHostSubnetIps(configs),
         hasEntry(
             equalTo(c1.getHostname()),
             allOf(
@@ -121,7 +104,7 @@ public class IpOwnersTest {
                 ConcreteInterfaceAddress.create(prefix.getStartIp(), prefix.getPrefixLength()))
             .build();
     Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        computeInterfaceHostSubnetIps(configs, false);
+        computeInterfaceHostSubnetIps(configs);
 
     assertThat(
         interfaceHostSubnetIps,

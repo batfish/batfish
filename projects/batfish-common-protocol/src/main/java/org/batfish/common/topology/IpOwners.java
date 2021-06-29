@@ -45,24 +45,11 @@ public final class IpOwners {
    */
   private final Map<Ip, Map<String, Set<String>>> _allDeviceOwnedIps;
 
-  /**
-   * Mapping from a IP to hostname to set of interfaces that own that IP (for active interfaces
-   * only)
-   */
-  private final Map<Ip, Map<String, Set<String>>> _activeDeviceOwnedIps;
-
   /** Mapping from hostname to interface name to IpSpace owned by that interface */
   private final Map<String, Map<String, IpSpace>> _hostToInterfaceToIpSpace;
 
   /** Mapping from hostname to VRF name to interface name to IpSpace owned by that interface */
   private final Map<String, Map<String, Map<String, IpSpace>>> _hostToVrfToInterfaceToIpSpace;
-
-  /**
-   * Mapping from hostname to interface name to host IP subnet.
-   *
-   * @see Prefix#toHostIpSpace()
-   */
-  private final Map<String, Map<String, IpSpace>> _allInterfaceHostIps;
 
   /** Mapping from an IP to hostname to set of VRFs that own that IP. */
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
@@ -72,21 +59,22 @@ public final class IpOwners {
     Map<String, Set<Interface>> allInterfaces =
         ImmutableMap.copyOf(computeNodeInterfaces(configurations));
 
+    /* Mapping from a IP to hostname to set of interfaces that own that IP (for active interfaces only) */
+    Map<Ip, Map<String, Set<String>>> activeDeviceOwnedIps;
     {
       _allDeviceOwnedIps = ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, false));
-      _activeDeviceOwnedIps = ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, true));
+      activeDeviceOwnedIps = ImmutableMap.copyOf(computeIpInterfaceOwners(allInterfaces, true));
     }
 
     {
       Map<Ip, Map<String, Map<String, Set<String>>>> ipIfaceOwners =
-          computeIpIfaceOwners(allInterfaces, _activeDeviceOwnedIps);
+          computeIpIfaceOwners(allInterfaces, activeDeviceOwnedIps);
       _ipVrfOwners = computeIpVrfOwners(ipIfaceOwners);
       _hostToVrfToInterfaceToIpSpace = computeIfaceOwnedIpSpaces(ipIfaceOwners);
     }
 
     {
       _hostToInterfaceToIpSpace = computeInterfaceOwnedIpSpaces(_hostToVrfToInterfaceToIpSpace);
-      _allInterfaceHostIps = computeInterfaceHostSubnetIps(configurations, false);
     }
   }
 
@@ -107,7 +95,7 @@ public final class IpOwners {
 
   @VisibleForTesting
   static Map<String, Map<String, IpSpace>> computeInterfaceHostSubnetIps(
-      Map<String, Configuration> configs, boolean excludeInactive) {
+      Map<String, Configuration> configs) {
     Span span = GlobalTracer.get().buildSpan("IpOwners.computeInterfaceHostSubnetIps").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
@@ -116,9 +104,7 @@ public final class IpOwners {
           Entry::getKey, /* hostname */
           nodeEntry ->
               toImmutableMap(
-                  excludeInactive
-                      ? nodeEntry.getValue().getActiveInterfaces()
-                      : nodeEntry.getValue().getAllInterfaces(),
+                  nodeEntry.getValue().getAllInterfaces(),
                   Entry::getKey, /* interface */
                   ifaceEntry ->
                       firstNonNull(
@@ -479,29 +465,11 @@ public final class IpOwners {
   }
 
   /**
-   * Mapping from a IP to hostname to set of interfaces that own that IP (for active interfaces
-   * only)
-   */
-  public Map<Ip, Map<String, Set<String>>> getActiveDeviceOwnedIps() {
-    return _activeDeviceOwnedIps;
-  }
-
-  /**
    * Mapping from a IP to hostname to set of interfaces that own that IP (including inactive
    * interfaces)
    */
   public Map<Ip, Map<String, Set<String>>> getAllDeviceOwnedIps() {
     return _allDeviceOwnedIps;
-  }
-
-  /**
-   * Returns a mapping from hostname to interface name to the host {@link IpSpace} of that
-   * interface, including inactive interfaces.
-   *
-   * @see Prefix#toHostIpSpace()
-   */
-  public Map<String, Map<String, IpSpace>> getAllInterfaceHostIps() {
-    return _allInterfaceHostIps;
   }
 
   /**
