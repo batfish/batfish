@@ -44,6 +44,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
@@ -167,6 +168,7 @@ public class TestRoutePoliciesAnswererTest {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetMetric(new LiteralLong(500L)))
+            .addStatement(new SetTag(new LiteralLong(600L)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
@@ -178,10 +180,12 @@ public class TestRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("1.1.1.1"))
             .build();
-    BgpRoute outputRoute = inputRoute.toBuilder().setMetric(500L).build();
+    BgpRoute outputRoute = inputRoute.toBuilder().setMetric(500L).setTag(600L).build();
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
-            ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "0", "500")));
+            ImmutableSortedSet.of(
+                new BgpRouteDiff(BgpRoute.PROP_METRIC, "0", "500"),
+                new BgpRouteDiff(BgpRoute.PROP_TAG, "0", "600")));
 
     TestRoutePoliciesQuestion question =
         new TestRoutePoliciesQuestion(

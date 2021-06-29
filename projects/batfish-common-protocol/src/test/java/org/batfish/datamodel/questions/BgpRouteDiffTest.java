@@ -4,7 +4,7 @@ import static org.batfish.datamodel.AbstractRoute.PROP_METRIC;
 import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
-import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
+import static org.batfish.datamodel.questions.BgpRoute.*;
 import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -96,7 +96,11 @@ public class BgpRouteDiffTest {
             .setCommunities(ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L)))
             .setLocalPreference(1)
             .setMetric(1)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
             .setOriginType(OriginType.IGP)
+            .setTag(1)
+            .setWeight(1)
             .build();
     route2 =
         builder()
@@ -104,7 +108,11 @@ public class BgpRouteDiffTest {
             .setCommunities(ImmutableSet.of(StandardCommunity.of(2L), StandardCommunity.of(3L)))
             .setLocalPreference(2)
             .setMetric(2)
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
             .setOriginType(OriginType.EGP)
+            .setTag(2)
+            .setWeight(2)
             .build();
     assertThat(
         routeDiffs(route1, route2),
@@ -113,17 +121,21 @@ public class BgpRouteDiffTest {
             new BgpRouteDiff(PROP_COMMUNITIES, "[0:1, 0:2]", "[0:2, 0:3]"),
             new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2"),
             new BgpRouteDiff(PROP_METRIC, "1", "2"),
-            new BgpRouteDiff(PROP_ORIGIN_TYPE, "IGP", "EGP")));
+            new BgpRouteDiff(PROP_NEXT_HOP_IP, "1.1.1.1", "2.2.2.2"),
+            new BgpRouteDiff(PROP_ORIGINATOR_IP, "1.1.1.1", "2.2.2.2"),
+            new BgpRouteDiff(PROP_ORIGIN_TYPE, "IGP", "EGP"),
+            new BgpRouteDiff(PROP_TAG, "1", "2"),
+            new BgpRouteDiff(PROP_WEIGHT, "1", "2")));
   }
 
   @Test
   public void testUnsupported() {
-    BgpRoute r1 = builder().setNextHopIp(Ip.parse("1.2.3.4")).build();
-    BgpRoute r2 = builder().setNextHopIp(Ip.parse("1.2.3.5")).build();
+    BgpRoute r1 = builder().setProtocol(RoutingProtocol.BGP).build();
+    BgpRoute r2 = builder().setProtocol(RoutingProtocol.OSPF).build();
 
     _thrown.expect(IllegalArgumentException.class);
-    _thrown.expectMessage("1.2.3.4");
-    _thrown.expectMessage("1.2.3.5");
+    _thrown.expectMessage("BGP");
+    _thrown.expectMessage("OSPF");
     routeDiffs(r1, r2);
   }
 }
