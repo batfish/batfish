@@ -6,12 +6,14 @@ hostname ios-access-vlan
 !
 interface Ethernet1
   switchport mode access
-  switchport access vlan 1
 !
 interface Ethernet2
+  switchport mode access
+  switchport access vlan 3
+!
+interface Ethernet3
   ip address 1.1.1.1 255.255.255.254
   no switchport
 !
-!
-interface Ethernet3
+interface Ethernet4
   switchport mode trunk
