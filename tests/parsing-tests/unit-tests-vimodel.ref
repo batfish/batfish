@@ -27055,7 +27055,7 @@
       },
       "asa-interface-redundant" : {
         "configurationFormat" : "CISCO_ASA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "asa-interface-redundant",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -27423,7 +27423,7 @@
       },
       "asa_acl" : {
         "configurationFormat" : "CISCO_ASA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "asa_acl",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28232,7 +28232,7 @@
       },
       "asa_banner" : {
         "configurationFormat" : "CISCO_ASA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "asa_banner",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28263,7 +28263,7 @@
       },
       "asa_interface" : {
         "configurationFormat" : "CISCO_ASA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "asa_interface",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28324,7 +28324,7 @@
       },
       "asa_nat" : {
         "configurationFormat" : "CISCO_ASA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "asa_nat",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28352,7 +28352,7 @@
       },
       "asa_object_groups" : {
         "configurationFormat" : "CISCO_ASA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "asa_object_groups",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
@@ -28497,7 +28497,7 @@
       },
       "asa_ospf" : {
         "configurationFormat" : "CISCO_ASA",
-        "exportBgpFromBgpRib" : false,
+        "exportBgpFromBgpRib" : true,
         "name" : "asa_ospf",
         "defaultCrossZoneAction" : "PERMIT",
         "defaultInboundAction" : "PERMIT",
