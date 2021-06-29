@@ -1,0 +1,17 @@
+! This is an ASA device.
+ASA Version 9.9
+!
+hostname bgp-network-statements
+!
+route null0 1.1.1.1 255.255.255.255 3.3.3.3
+route null0 2.2.2.2 255.255.255.255 3.3.3.3
+!
+route-map PERMIT permit 10
+route-map DENY deny 10
+!
+router bgp 65100
+  router-id 10.10.10.1
+  address-family ipv4 unicast
+    network 1.1.1.1/32 route-map PERMIT
+    network 2.2.2.2/32 route-map DENY
+ exit-address-family
