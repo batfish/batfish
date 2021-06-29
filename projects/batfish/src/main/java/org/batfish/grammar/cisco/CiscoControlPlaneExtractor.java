@@ -7,6 +7,7 @@ import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.representation.cisco.CiscoConfiguration.DEFAULT_STATIC_ROUTE_DISTANCE;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeRouteMapClauseName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
@@ -59,6 +60,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP_CLAUSE;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE_PAIR;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
@@ -238,6 +240,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_STATIC_ROUTE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_VRRP_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_CLAUSE_PREV_REF;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_CONTINUE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
@@ -2966,6 +2970,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentRouteMapClause = clause;
     _configuration.defineStructure(ROUTE_MAP, name, ctx);
+    String clauseName = computeRouteMapClauseName(name, num);
+    _configuration.defineStructure(ROUTE_MAP_CLAUSE, clauseName, ctx);
+    _configuration.referenceStructure(
+        ROUTE_MAP_CLAUSE, clauseName, ROUTE_MAP_CLAUSE_PREV_REF, ctx.getStart().getLine());
   }
 
   @Override
@@ -4104,6 +4112,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     RouteMapContinue continueLine = new RouteMapContinue(target, statementLine);
     _currentRouteMapClause.setContinueLine(continueLine);
+    _configuration.referenceStructure(
+        ROUTE_MAP_CLAUSE,
+        computeRouteMapClauseName(_currentRouteMap.getName(), target),
+        ROUTE_MAP_CONTINUE,
+        ctx.getStart().getLine());
   }
 
   @Override

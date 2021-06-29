@@ -167,6 +167,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeCombine
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeRouteMapClauseName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborExportPolicyName;
@@ -199,6 +200,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP_CLAUSE;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
@@ -3037,8 +3039,44 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_bgp", 9));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_unused", 0));
 
+    /* Confirm that route maps clauses are defined and referred correctly */
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_if", 10), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_ospf", 10), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_bgp", 10), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_unused", 10), 1));
+
     /* Confirm undefined route-map is detected */
     assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "rm_undef"));
+  }
+
+  @Test
+  public void testIosRouteMapContinue() throws IOException {
+    String hostname = "ios-route-map-continue";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm", 0));
+
+    /* Confirm that route maps clauses are referred correctly */
+    assertThat(
+        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 10), 1));
+    assertThat(
+        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 20), 2));
+
+    /* Undefined continue */
+    assertThat(
+        ccae,
+        hasUndefinedReference(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 30)));
   }
 
   @Test

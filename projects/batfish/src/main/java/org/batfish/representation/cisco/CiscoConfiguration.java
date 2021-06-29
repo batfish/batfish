@@ -3073,6 +3073,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(CiscoStructureType.ROUTE_MAP);
 
+    // mark references to route-map clauses
+    markConcreteStructure(CiscoStructureType.ROUTE_MAP_CLAUSE);
+
     // Cable
     markConcreteStructure(CiscoStructureType.DEPI_CLASS);
     markConcreteStructure(CiscoStructureType.DEPI_TUNNEL);
@@ -3775,5 +3778,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
+  }
+
+  public static @Nonnull String computeRouteMapClauseName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
   }
 }
