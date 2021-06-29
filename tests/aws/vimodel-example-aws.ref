@@ -59050,8 +59050,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/lhr-border-02.cfg",
-                            "structureName" : "PROTECT_LOOPBACK",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -59113,8 +59113,8 @@
                               "text" : "Matched clause 20",
                               "vendorStructureId" : {
                                 "filename" : "configs/lhr-border-02.cfg",
-                                "structureName" : "SET_LOCAL_PREF",
-                                "structureType" : "route-map"
+                                "structureName" : "20",
+                                "structureType" : "route-map-clause"
                               }
                             }
                           ]
@@ -59149,8 +59149,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/lhr-border-02.cfg",
-                            "structureName" : "SET_LOCAL_PREF",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]

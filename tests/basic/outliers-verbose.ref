@@ -831,8 +831,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as2dist1.cfg",
-                          "structureName" : "as2dist_to_dept",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -906,8 +906,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as2dist1.cfg",
-                          "structureName" : "dept_to_as2dist",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -1601,8 +1601,8 @@
                         "text" : "Matched clause 2",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border2.cfg",
-                          "structureName" : "as1_to_as4",
-                          "structureType" : "route-map"
+                          "structureName" : "2",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -1675,8 +1675,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as2dept1.cfg",
-                          "structureName" : "as2_to_dept",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -1764,8 +1764,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border2.cfg",
-                          "structureName" : "as4_to_as1",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -1855,8 +1855,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as2dept1.cfg",
-                          "structureName" : "dept_to_as2",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -2315,8 +2315,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as2border1.cfg",
-                          "structureName" : "as1_to_as2",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -2415,8 +2415,8 @@
                             "text" : "Matched clause 2",
                             "vendorStructureId" : {
                               "filename" : "configs/as1border1.cfg",
-                              "structureName" : "as1_to_as3",
-                              "structureType" : "route-map"
+                              "structureName" : "2",
+                              "structureType" : "route-map-clause"
                             }
                           }
                         ]
@@ -2485,8 +2485,8 @@
                         "text" : "Matched clause 1",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border1.cfg",
-                          "structureName" : "as1_to_as3",
-                          "structureType" : "route-map"
+                          "structureName" : "1",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -2564,8 +2564,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border1.cfg",
-                          "structureName" : "as2_to_as1",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -2664,8 +2664,8 @@
                             "text" : "Matched clause 2",
                             "vendorStructureId" : {
                               "filename" : "configs/as2border1.cfg",
-                              "structureName" : "as2_to_as3",
-                              "structureType" : "route-map"
+                              "structureName" : "2",
+                              "structureType" : "route-map-clause"
                             }
                           }
                         ]
@@ -2734,8 +2734,8 @@
                         "text" : "Matched clause 1",
                         "vendorStructureId" : {
                           "filename" : "configs/as2border1.cfg",
-                          "structureName" : "as2_to_as3",
-                          "structureType" : "route-map"
+                          "structureName" : "1",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -2813,8 +2813,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border1.cfg",
-                          "structureName" : "as3_to_as1",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]
@@ -2909,8 +2909,8 @@
                         "text" : "Matched clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as2border1.cfg",
-                          "structureName" : "as3_to_as2",
-                          "structureType" : "route-map"
+                          "structureName" : "100",
+                          "structureType" : "route-map-clause"
                         }
                       }
                     ]

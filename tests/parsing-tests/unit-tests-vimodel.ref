@@ -27011,8 +27011,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/as_path_prepend",
-                            "structureName" : "rmap",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -32289,8 +32289,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_bgp",
-                            "structureName" : "AGGREGATE-MAP",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -32331,8 +32331,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_bgp",
-                            "structureName" : "CONNECTED-TO-BGP",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -32373,8 +32373,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_bgp",
-                            "structureName" : "UNSUPP-MAP",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -32415,8 +32415,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_bgp",
-                            "structureName" : "ospfv3_map",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39062,8 +39062,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "MAP_NAME1",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39117,8 +39117,8 @@
                           "text" : "Matched clause 20",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "MAP_NAME2",
-                            "structureType" : "route-map"
+                            "structureName" : "20",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39170,8 +39170,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "MSDP-SA-RP-FILTER",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39270,8 +39270,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "connected-to-bgp",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39312,8 +39312,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "ijfw$%^&****(((([]grr",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39354,8 +39354,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "mgmt",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39396,8 +39396,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "multicaststuff",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39438,8 +39438,8 @@
                           "text" : "Matched clause 15",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "next-hop-null",
-                            "structureType" : "route-map"
+                            "structureName" : "15",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39487,8 +39487,8 @@
                           "text" : "Matched clause 100",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "to_svl-hub-router",
-                            "structureType" : "route-map"
+                            "structureName" : "100",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39592,8 +39592,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "beeble",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -39666,8 +39666,8 @@
                           "text" : "Matched clause 5",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "beeble",
-                            "structureType" : "route-map"
+                            "structureName" : "5",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -42762,8 +42762,8 @@
                           "text" : "Matched clause 100",
                           "vendorStructureId" : {
                             "filename" : "configs/community_name_numbers",
-                            "structureName" : "AAA1-BBB-CCC",
-                            "structureType" : "route-map"
+                            "structureName" : "100",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -42936,8 +42936,8 @@
                           "text" : "Matched clause 100",
                           "vendorStructureId" : {
                             "filename" : "configs/community_name_numbers_dos",
-                            "structureName" : "AAA1-BBB-CCC",
-                            "structureType" : "route-map"
+                            "structureName" : "100",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -92513,8 +92513,8 @@
                           "text" : "Matched clause 1",
                           "vendorStructureId" : {
                             "filename" : "configs/named_and_numbered_lists",
-                            "structureName" : "foo",
-                            "structureType" : "route-map"
+                            "structureName" : "1",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -98338,8 +98338,8 @@
                           "text" : "Matched clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/prefix_list_ipv4",
-                            "structureName" : "to_elacc",
-                            "structureType" : "route-map"
+                            "structureName" : "10",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
@@ -104402,8 +104402,8 @@
                           "text" : "Matched clause 100",
                           "vendorStructureId" : {
                             "filename" : "configs/underscore_variable",
-                            "structureName" : "JKL_MNO_PQR",
-                            "structureType" : "route-map"
+                            "structureName" : "100",
+                            "structureType" : "route-map-clause"
                           }
                         }
                       ]
