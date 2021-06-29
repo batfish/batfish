@@ -25,7 +25,8 @@ public final class RouteMapEntry implements Serializable {
   private final int _number;
   private @Nullable String _description;
 
-  private @Nullable RouteMapSetAsPath _setAsPath;
+  private @Nullable RouteMapSetPrependAsPath _setAsPath;
+  private @Nullable RouteMapSetExcludeAsPath _setExcludeAsPath;
   private @Nullable RouteMapSetMetric _setMetric;
   private @Nullable RouteMapSetMetricType _setMetricType;
   private @Nullable RouteMapSetIpNextHopLiteral _setIpNextHop;
@@ -120,6 +121,7 @@ public final class RouteMapEntry implements Serializable {
   public @Nonnull Stream<RouteMapSet> getSets() {
     return Stream.of(
             _setAsPath,
+            _setExcludeAsPath,
             _setCommListDelete,
             _setMetric,
             _setMetricType,
@@ -131,8 +133,12 @@ public final class RouteMapEntry implements Serializable {
         .filter(Objects::nonNull);
   }
 
-  public @Nullable RouteMapSetAsPath getSetAsPath() {
+  public @Nullable RouteMapSetPrependAsPath getSetAsPath() {
     return _setAsPath;
+  }
+
+  public @Nullable RouteMapSetExcludeAsPath getSetExcludeAsPath() {
+    return _setExcludeAsPath;
   }
 
   public @Nullable RouteMapSetMetric getSetMetric() {
@@ -180,8 +186,13 @@ public final class RouteMapEntry implements Serializable {
     _description = description;
   }
 
-  public void setSetAsPath(@Nullable RouteMapSetAsPath setAsPath) {
+  // TODO: check usage
+  public void setSetAsPath(@Nullable RouteMapSetPrependAsPath setAsPath) {
     _setAsPath = setAsPath;
+  }
+
+  public void setSetExcludeAsPath(@Nullable RouteMapSetExcludeAsPath setExcludeAsPath) {
+    _setExcludeAsPath = setExcludeAsPath;
   }
 
   public void setSetIpNextHop(@Nullable RouteMapSetIpNextHopLiteral setIpNextHop) {

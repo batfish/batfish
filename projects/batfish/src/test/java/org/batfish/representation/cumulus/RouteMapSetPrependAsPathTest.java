@@ -11,12 +11,12 @@ import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.junit.Test;
 
-/** Test of {@link RouteMapSetAsPath} */
-public class RouteMapSetAsPathTest {
+/** Test of {@link RouteMapSetPrependAsPath} */
+public class RouteMapSetPrependAsPathTest {
 
   @Test
   public void testToStatements() {
-    RouteMapSetAsPath set = new RouteMapSetAsPath(ImmutableList.of(1L, 2L, 3L));
+    RouteMapSetPrependAsPath set = new RouteMapSetPrependAsPath(ImmutableList.of(1L, 2L, 3L));
     List<Statement> result =
         set.toStatements(null, null, null).collect(ImmutableList.toImmutableList());
     assertThat(
