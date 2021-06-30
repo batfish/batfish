@@ -2245,7 +2245,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         ifExpr.getFalseStatements().add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
-      ifExpr.setTrueStatements(makeClauseTraceable(clauseNumber, matchStatements, _filename));
+      ifExpr.setTrueStatements(
+          ImmutableList.of(
+              makeClauseTraceable(matchStatements, clauseNumber, map.getName(), _filename)));
       followingClause = ifExpr;
     }
     statements.add(followingClause);
@@ -2337,7 +2339,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
       ifStatement.setTrueStatements(
-          makeClauseTraceable(clauseNumber, onMatchStatements, _filename));
+          ImmutableList.of(
+              makeClauseTraceable(onMatchStatements, clauseNumber, map.getName(), _filename)));
       followingClause = clausePolicy;
       followingClauseNumber = clauseNumber;
     }
@@ -2346,17 +2349,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  static List<Statement> makeClauseTraceable(
-      int clauseNumber, List<Statement> matchStatements, String filename) {
-    return ImmutableList.of(
-        new TraceableStatement(
-            TraceElement.of(
-                "Matched clause " + clauseNumber,
+  static TraceableStatement makeClauseTraceable(
+      List<Statement> matchStatements, int clauseNumber, String mapName, String filename) {
+    return new TraceableStatement(
+        TraceElement.builder()
+            .add("Matched")
+            .add(
+                String.format("route-map %s clause %d", mapName, clauseNumber),
                 new VendorStructureId(
                     filename,
                     CiscoStructureType.ROUTE_MAP_CLAUSE.getDescription(),
-                    Integer.toString(clauseNumber))),
-            matchStatements));
+                    computeRouteMapClauseName(mapName, clauseNumber)))
+            .build(),
+        matchStatements);
   }
 
   @Override
