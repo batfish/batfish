@@ -5,6 +5,7 @@ import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
+import static org.batfish.representation.cumulus.CumulusConversions.computeRoutingPolicyName;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
@@ -12,6 +13,7 @@ import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNI
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_PREFIX_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP;
+import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP_ENTRY;
 import static org.batfish.representation.cumulus.CumulusStructureType.VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV4_IMPORT_VRF;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.BGP_ADDRESS_FAMILY_IPV6_IMPORT_VRF;
@@ -25,6 +27,7 @@ import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDI
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_MAP;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_CALL;
+import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_ENTRY_SELF_REFERENCE;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureUsage.ROUTE_MAP_SET_COMM_LIST_DELETE;
 
@@ -1368,9 +1371,16 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
         _frr.getRouteMaps()
             .computeIfAbsent(name, RouteMap::new)
             .getEntries()
-            .computeIfAbsent(
-                sequence, k -> new RouteMapEntry(Integer.parseInt(ctx.sequence.getText()), action));
+            .computeIfAbsent(sequence, k -> new RouteMapEntry(sequence, action));
     _c.defineStructure(ROUTE_MAP, name, ctx);
+
+    String routeMapEntryName = computeRoutingPolicyName(name, sequence);
+    _c.defineStructure(ROUTE_MAP_ENTRY, routeMapEntryName, ctx);
+    _c.referenceStructure(
+        ROUTE_MAP_ENTRY,
+        routeMapEntryName,
+        ROUTE_MAP_ENTRY_SELF_REFERENCE,
+        ctx.getStart().getLine());
   }
 
   @Override

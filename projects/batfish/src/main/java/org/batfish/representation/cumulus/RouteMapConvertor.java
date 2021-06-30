@@ -1,5 +1,8 @@
 package org.batfish.representation.cumulus;
 
+import static org.batfish.representation.cumulus.CumulusConversions.computeRoutingPolicyName;
+import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP_ENTRY;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -15,6 +18,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -23,6 +27,8 @@ import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
+import org.batfish.vendor.VendorStructureId;
 
 class RouteMapConvertor {
   private Configuration _c;
@@ -153,7 +159,27 @@ class RouteMapConvertor {
         noMatchNext != null && _continueTargets.contains(noMatchNext)
             ? ImmutableList.of(call(computeRoutingPolicyName(_routeMap.getName(), noMatchNext)))
             : ImmutableList.of();
-    return new If(new Conjunction(matchConjuncts), trueStatements, noMatchStatements);
+    return new If(
+        new Conjunction(matchConjuncts),
+        ImmutableList.of(
+            toTraceableStatement(
+                trueStatements, entry.getNumber(), _routeMap.getName(), _vc.getFilename())),
+        noMatchStatements);
+  }
+
+  static TraceableStatement toTraceableStatement(
+      List<Statement> statements, int sequence, String mapName, String filename) {
+    return new TraceableStatement(
+        TraceElement.builder()
+            .add("Matched ")
+            .add(
+                String.format("route-map %s entry %d", mapName, sequence),
+                new VendorStructureId(
+                    filename,
+                    ROUTE_MAP_ENTRY.getDescription(),
+                    computeRoutingPolicyName(mapName, sequence)))
+            .build(),
+        statements);
   }
 
   private static Map<Integer, Integer> computeNoMatchNextBySeq(RouteMap routeMap) {
@@ -186,9 +212,5 @@ class RouteMapConvertor {
         new CallExpr(routingPolicyName),
         ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
         ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
-  }
-
-  private static @Nonnull String computeRoutingPolicyName(String routeMapName, int sequence) {
-    return String.format("~%s~SEQ:%d~", routeMapName, sequence);
   }
 }
