@@ -89,6 +89,7 @@ import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceAddress;
@@ -1114,7 +1115,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.Interface toInterface(
-      String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
+      String ifaceName,
+      Interface iface,
+      Map<String, IpAccessList> ipAccessLists,
+      Configuration c,
+      boolean canModelL2vpn) {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
@@ -1122,7 +1127,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
             .build();
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
+      if (ifaceName.startsWith("BVI")) {
+        newIface.setVlan(CommonUtil.getInterfaceNumber("BVI", ifaceName));
+      } else {
+        newIface.setVlan(CommonUtil.getInterfaceNumber(ifaceName));
+      }
     }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
@@ -1274,6 +1283,24 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         newIface.setAllowedVlans(iface.getAllowedVlans());
       } else {
         newIface.setAllowedVlans(Interface.ALL_VLANS);
+      }
+    }
+
+    if (iface.getL2transport()) {
+      if (canModelL2vpn) {
+        // TODO
+        newIface.setSwitchportMode(SwitchportMode.TRUNK);
+        newIface.setNativeVlan(null);
+        // Guaranteed by canModelL2vpn
+        assert iface.getEncapsulationVlan() != null;
+        newIface.setAllowedVlans(IntegerSpace.of(iface.getEncapsulationVlan()));
+        newIface.setSwitchport(true);
+      } else {
+        // TODO better warning
+        _w.redFlag(
+            String.format(
+                "Batfish cannot yet model the l2vpn for this device, so disabling interface %s",
+                ifaceName));
       }
     }
 
@@ -1968,11 +1995,13 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
     }
 
+    // TODO confirm L2VPN configuration is equivalent to modeling those ifaces as trunks
+    boolean canModelL2vpn = true;
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
           org.batfish.datamodel.Interface newInterface =
-              toInterface(ifaceName, iface, c.getIpAccessLists(), c);
+              toInterface(ifaceName, iface, c.getIpAccessLists(), c, canModelL2vpn);
           String vrfName = iface.getVrf();
           if (vrfName == null) {
             throw new BatfishException("Missing vrf name for iface: '" + ifaceName + "'");

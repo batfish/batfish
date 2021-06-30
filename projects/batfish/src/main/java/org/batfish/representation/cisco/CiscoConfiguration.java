@@ -1373,7 +1373,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
             .build();
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
+      newIface.setVlan(CommonUtil.getInterfaceNumber(ifaceName));
     }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
