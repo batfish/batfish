@@ -22,31 +22,14 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
-import org.junit.Before;
 import org.junit.Test;
 
 /** Tests of {@link IpOwners}. */
 public class IpOwnersTest {
-  private Configuration.Builder _cb;
-  private Interface.Builder _ib;
-  private Vrf.Builder _vb;
-  private static final Prefix P1 = Prefix.parse("1.0.0.0/8");
-  private static final Prefix P2 = Prefix.parse("2.0.0.0/16");
-
-  @Before
-  public void setup() {
-    NetworkFactory nf = new NetworkFactory();
-    _cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _vb = nf.vrfBuilder();
-    _ib = nf.interfaceBuilder();
-  }
-
   @Test
   public void testComputeIpIfaceOwners() {
     String node = "node";
