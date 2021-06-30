@@ -199,6 +199,11 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                 "Interface %s has switchport %s but switchport mode %s",
                 name, i.getSwitchport(), i.getSwitchportMode()));
         c.getAllInterfaces().remove(name);
+        continue;
+      }
+      if (i.getSwitchport() && !i.getAllAddresses().isEmpty()) {
+        w.redFlag(String.format("Interface %s is a switchport, but it has L3 addresses", name));
+        c.getAllInterfaces().remove(name);
       }
     }
   }
