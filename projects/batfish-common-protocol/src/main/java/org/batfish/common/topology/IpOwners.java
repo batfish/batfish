@@ -1,12 +1,10 @@
 package org.batfish.common.topology;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.topology.TopologyUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -26,11 +24,9 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.tracking.HsrpPriorityEvaluator;
 import org.batfish.datamodel.tracking.PredicateTrackMethodEvaluator;
@@ -91,32 +87,6 @@ public final class IpOwners {
             hostEntry.getValue().values().stream() /* Skip VRF keys */
                 .flatMap(ifaceMap -> ifaceMap.entrySet().stream())
                 .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)));
-  }
-
-  @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeInterfaceHostSubnetIps(
-      Map<String, Configuration> configs) {
-    Span span = GlobalTracer.get().buildSpan("IpOwners.computeInterfaceHostSubnetIps").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          configs,
-          Entry::getKey, /* hostname */
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue().getAllInterfaces(),
-                  Entry::getKey, /* interface */
-                  ifaceEntry ->
-                      firstNonNull(
-                          AclIpSpace.union(
-                              ifaceEntry.getValue().getAllConcreteAddresses().stream()
-                                  .map(ConcreteInterfaceAddress::getPrefix)
-                                  .map(Prefix::toHostIpSpace)
-                                  .collect(ImmutableList.toImmutableList())),
-                          EmptyIpSpace.INSTANCE)));
-    } finally {
-      span.finish();
-    }
   }
 
   /**
