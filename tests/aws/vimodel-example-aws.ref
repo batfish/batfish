@@ -59047,7 +59047,7 @@
                       "fragments" : [
                         {
                           "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                          "text" : "Matched"
+                          "text" : "Matched "
                         },
                         {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
@@ -59114,7 +59114,7 @@
                           "fragments" : [
                             {
                               "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                              "text" : "Matched"
+                              "text" : "Matched "
                             },
                             {
                               "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
@@ -59154,7 +59154,7 @@
                       "fragments" : [
                         {
                           "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                          "text" : "Matched"
+                          "text" : "Matched "
                         },
                         {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
