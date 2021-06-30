@@ -2958,7 +2958,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       List<Statement> statements, String termName, String policyName, String fileName) {
     return new TraceableStatement(
         TraceElement.builder()
-            .add("Matched")
+            .add("Matched ")
             .add(
                 String.format(
                     "policy-statement %s term %s",

@@ -2350,7 +2350,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<Statement> matchStatements, int clauseNumber, String mapName, String filename) {
     return new TraceableStatement(
         TraceElement.builder()
-            .add("Matched")
+            .add("Matched ")
             .add(
                 String.format("route-map %s clause %d", mapName, clauseNumber),
                 new VendorStructureId(
