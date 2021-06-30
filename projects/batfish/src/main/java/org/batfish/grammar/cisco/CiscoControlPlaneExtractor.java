@@ -4109,14 +4109,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Integer target = null;
     if (ctx.dec() != null) {
       target = toInteger(ctx.dec());
+      _configuration.referenceStructure(
+          ROUTE_MAP_CLAUSE,
+          computeRouteMapClauseName(_currentRouteMap.getName(), target),
+          ROUTE_MAP_CONTINUE,
+          ctx.getStart().getLine());
     }
     RouteMapContinue continueLine = new RouteMapContinue(target, statementLine);
     _currentRouteMapClause.setContinueLine(continueLine);
-    _configuration.referenceStructure(
-        ROUTE_MAP_CLAUSE,
-        computeRouteMapClauseName(_currentRouteMap.getName(), target),
-        ROUTE_MAP_CONTINUE,
-        ctx.getStart().getLine());
   }
 
   @Override

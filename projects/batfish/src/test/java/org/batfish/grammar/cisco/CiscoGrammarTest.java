@@ -3072,6 +3072,8 @@ public final class CiscoGrammarTest {
         ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 10), 1));
     assertThat(
         ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 20), 2));
+    assertThat(
+        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 40), 1));
 
     /* Undefined continue */
     assertThat(
