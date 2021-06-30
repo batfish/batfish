@@ -1,0 +1,14 @@
+!
+hostname ios-route-map-continue
+!
+route-map rm permit 10
+  match ip address 1.2.3.4
+  continue 20
+!
+route-map rm permit 20
+  match ip address 1.2.3.4
+  continue 30
+!
+route-map rm permit 40
+  continue
+!
