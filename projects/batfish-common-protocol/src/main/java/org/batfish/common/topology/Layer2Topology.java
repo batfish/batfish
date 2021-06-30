@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -29,7 +30,7 @@ import org.jgrapht.alg.util.UnionFind;
 
 /** Tracks which interfaces are in the same layer 2 broadcast domain. */
 @ParametersAreNonnullByDefault
-public final class Layer2Topology {
+public final class Layer2Topology implements Serializable {
 
   public static final Layer2Topology EMPTY = new Layer2Topology(ImmutableMap.of());
   private static final String PROP_REPRESENTATIVE_BY_NODE = "representativeByNode";

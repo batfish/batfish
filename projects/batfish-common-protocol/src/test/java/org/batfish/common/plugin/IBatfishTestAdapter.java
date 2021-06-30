@@ -16,8 +16,8 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
@@ -103,12 +103,13 @@ public class IBatfishTestAdapter implements IBatfish {
     }
 
     @Override
-    public Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot networkSnapshot) {
+    public Topology getLayer3Topology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
+    @Nonnull
     @Override
-    public Topology getLayer3Topology(NetworkSnapshot networkSnapshot) {
+    public L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
@@ -151,12 +152,12 @@ public class IBatfishTestAdapter implements IBatfish {
     }
 
     @Override
-    public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
+    public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 

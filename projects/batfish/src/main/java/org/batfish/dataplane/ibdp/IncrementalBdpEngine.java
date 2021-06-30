@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -34,8 +33,11 @@ import org.apache.logging.log4j.Logger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.plugin.TracerouteEngine;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
+import org.batfish.common.topology.HybridL3Adjacencies;
 import org.batfish.common.topology.IpOwners;
-import org.batfish.common.topology.Layer2Topology;
+import org.batfish.common.topology.L3Adjacencies;
+import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -148,36 +150,53 @@ final class IncrementalBdpEngine {
             false,
             true,
             trEngCurrentL3Topology,
-            currentTopologyContext.getLayer2Topology().orElse(null));
+            currentTopologyContext.getL3Adjacencies());
 
-    // Update Layer-2 if necessary
-    Optional<Layer2Topology> newLayer2Topology;
+    // Update L3 adjacencies if necessary.
+    L3Adjacencies newAdjacencies;
     if (!currentTopologyContext.getVxlanTopology().equals(newVxlanTopology)) {
-      LOGGER.info("Updating Layer 2 topology");
-      newLayer2Topology =
+      LOGGER.info("Updating Layer 3 adjacencies");
+      newAdjacencies =
           initialTopologyContext // not updated across rounds
               .getLayer1LogicalTopology()
-              .map(l1 -> computeLayer2Topology(l1, newVxlanTopology, configurations));
+              .map(l1 -> computeLayer2Topology(l1, newVxlanTopology, configurations))
+              .<L3Adjacencies>map(
+                  l2 ->
+                      HybridL3Adjacencies.create(
+                          // neither L1 topology is updated across rounds
+                          initialTopologyContext
+                              .getRawLayer1PhysicalTopology()
+                              .orElse(Layer1Topology.EMPTY),
+                          initialTopologyContext
+                              .getLayer1LogicalTopology()
+                              .orElse(Layer1Topology.EMPTY),
+                          l2,
+                          configurations))
+              .orElse(GlobalBroadcastNoPointToPoint.instance());
     } else {
-      newLayer2Topology = currentTopologyContext.getLayer2Topology();
+      newAdjacencies = currentTopologyContext.getL3Adjacencies();
     }
 
     // Layer-3
-    LOGGER.info("Updating Layer 3 topology");
-    Topology newLayer3Topology =
-        computeLayer3Topology(
-            computeRawLayer3Topology(
-                initialTopologyContext.getRawLayer1PhysicalTopology(), // not updated across rounds
-                initialTopologyContext.getLayer1LogicalTopology(), // not updated across rounds
-                newLayer2Topology,
-                configurations),
-            // Overlay edges consist of "plain" tunnels and IPSec tunnels
-            Sets.union(toEdgeSet(newIpsecTopology, configurations), newTunnelTopology.asEdgeSet()));
+    Topology newLayer3Topology;
+    if (!newIpsecTopology.equals(currentTopologyContext.getIpsecTopology())
+        || !newTunnelTopology.equals(currentTopologyContext.getTunnelTopology())
+        || !newAdjacencies.equals(currentTopologyContext.getL3Adjacencies())) {
+      LOGGER.info("Updating Layer 3 topology");
+      newLayer3Topology =
+          computeLayer3Topology(
+              computeRawLayer3Topology(newAdjacencies, configurations),
+              // Overlay edges consist of "plain" tunnels and IPSec tunnels
+              Sets.union(
+                  toEdgeSet(newIpsecTopology, configurations), newTunnelTopology.asEdgeSet()));
+    } else {
+      newLayer3Topology = currentTopologyContext.getLayer3Topology();
+    }
 
     return currentTopologyContext.toBuilder()
         .setBgpTopology(newBgpTopology)
-        .setLayer2Topology(newLayer2Topology)
         .setLayer3Topology(newLayer3Topology)
+        .setL3Adjacencies(newAdjacencies)
         .setVxlanTopology(newVxlanTopology)
         .setIpsecTopology(newIpsecTopology)
         .setTunnelTopology(newTunnelTopology)
@@ -236,9 +255,17 @@ final class IncrementalBdpEngine {
        * Perform a fixed-point computation, in which every round the topology is updated based
        * on what we have learned in the previous round.
        */
+      // Since the topology iterations are incremental, clear fields that are pruned to get the real
+      // topology. They are not actually yet included in topologies.
+      TopologyContext priorTopologyContext =
+          initialTopologyContext.toBuilder()
+              .setIpsecTopology(IpsecTopology.EMPTY)
+              .setTunnelTopology(TunnelTopology.EMPTY)
+              .setVxlanTopology(VxlanTopology.EMPTY)
+              .build();
       TopologyContext currentTopologyContext =
           nextTopologyContext(
-              initialTopologyContext /* current is just initial */,
+              priorTopologyContext,
               nodes,
               vrs,
               initialTopologyContext,

@@ -187,7 +187,9 @@ public class TopologyUtilIspTest {
     Layer2Topology layer2 =
         computeLayer2Topology(logicalLayer1, VxlanTopology.EMPTY, topo._configurations);
     return computeRawLayer3Topology(
-        topo._layer1Topology, logicalLayer1, layer2, topo._configurations);
+        HybridL3Adjacencies.create(
+            topo._layer1Topology, logicalLayer1, layer2, topo._configurations),
+        topo._configurations);
   }
 
   private static SortedSet<Edge> allEdges(TopologySetup topo) {

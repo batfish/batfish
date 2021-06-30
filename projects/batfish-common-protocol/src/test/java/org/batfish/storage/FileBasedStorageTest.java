@@ -56,7 +56,6 @@ import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.UnzipUtility;
@@ -185,7 +184,7 @@ public final class FileBasedStorageTest {
     SnapshotId snapshot = new SnapshotId("snapshot");
     String workId = "workid";
     Path logFile = getWorkLogPath(_containerDir.getParent(), network, snapshot, workId);
-    final boolean mkdirs = logFile.getParent().toFile().mkdirs();
+    boolean mkdirs = logFile.getParent().toFile().mkdirs();
     assertThat(mkdirs, equalTo(true));
     CommonUtil.writeFile(logFile, "testoutput");
 
@@ -234,9 +233,9 @@ public final class FileBasedStorageTest {
     // Try many times, since false negatives are possible
     int numTries = 100;
 
-    final Path dir = _containerDir.resolve("testDir");
-    final CyclicBarrier barrier = new CyclicBarrier(numThreads);
-    final AtomicInteger exceptions = new AtomicInteger(0);
+    Path dir = _containerDir.resolve("testDir");
+    CyclicBarrier barrier = new CyclicBarrier(numThreads);
+    AtomicInteger exceptions = new AtomicInteger(0);
     List<Thread> threads = new ArrayList<>();
 
     for (int i = 0; i < numTries; i++) {
@@ -464,24 +463,6 @@ public final class FileBasedStorageTest {
     // fields empty
     assertThat(
         _storage.loadCompletionMetadata(networkId, snapshotId), equalTo(CompletionMetadata.EMPTY));
-  }
-
-  @Test
-  public void testStoreLayer2TopologyMissing() throws IOException {
-    NetworkSnapshot networkSnapshot =
-        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
-    _storage.storeLayer2Topology(Optional.empty(), networkSnapshot);
-
-    assertEquals(_storage.loadLayer2Topology(networkSnapshot), Optional.empty());
-  }
-
-  @Test
-  public void testStoreLayer2TopologyPresent() throws IOException {
-    NetworkSnapshot networkSnapshot =
-        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
-    _storage.storeLayer2Topology(Optional.of(Layer2Topology.EMPTY), networkSnapshot);
-
-    assertEquals(_storage.loadLayer2Topology(networkSnapshot), Optional.of(Layer2Topology.EMPTY));
   }
 
   @Test
