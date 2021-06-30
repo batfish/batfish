@@ -2191,9 +2191,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (hasContinue) {
       return toRoutingPolicies(c, map);
     }
-    VendorStructureId vendorStructureId =
-        new VendorStructureId(
-            _filename, CiscoStructureType.ROUTE_MAP.getDescription(), map.getName());
     RoutingPolicy output = new RoutingPolicy(map.getName(), c);
     List<Statement> statements = output.getStatements();
     Map<Integer, If> clauses = new HashMap<>();
