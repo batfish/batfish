@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.Interface.computeCiscoInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,7 +45,13 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testRealInterafceName() {
+  public void testInterfaceType() {
+    assertThat(computeCiscoInterfaceType("TenGigE0/5/0/5/8"), equalTo(InterfaceType.PHYSICAL));
+    assertThat(computeCiscoInterfaceType("TenGigE0/5/0/5/8.1"), equalTo(InterfaceType.LOGICAL));
+  }
+
+  @Test
+  public void testRealInterfaceName() {
     assertThat(isRealInterfaceName("Ethernet0"), equalTo(true));
     assertThat(isRealInterfaceName("ge-0/0/0"), equalTo(true));
     assertThat(isRealInterfaceName("asdfasdf"), equalTo(true));

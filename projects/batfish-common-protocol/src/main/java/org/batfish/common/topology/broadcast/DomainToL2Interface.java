@@ -1,5 +1,6 @@
 package org.batfish.common.topology.broadcast;
 
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
@@ -62,26 +63,23 @@ public interface DomainToL2Interface {
 
     @Override
     public Optional<Integer> receiveTag(EthernetTag tag) {
-      if (!tag.hasTag()) {
-        // Native VLAN, if set.
-        return Optional.ofNullable(_nativeVlanId);
+      if (tag.hasTag() && Objects.equals(tag.getTag(), _nativeVlanId)) {
+        // Trunks reject frames tagged with native VLAN.
+        return Optional.empty();
       }
-      int tagValue = tag.getTag();
-      if (_allowedVlans.contains(tagValue)) {
-        // Allowed vlan.
-        return Optional.of(tagValue);
-      }
-      // Disallowed vlan.
-      return Optional.empty();
+
+      // Present if 1) tag is present and allowed, or 2) no tag, native vlan is allowed.
+      Integer effectiveVlan = tag.hasTag() ? (Integer) tag.getTag() : _nativeVlanId;
+      return Optional.ofNullable(effectiveVlan).filter(_allowedVlans::contains);
     }
 
     @Override
     public Optional<EthernetTag> sendFromVlan(int vlan) {
-      if (_nativeVlanId != null && _nativeVlanId == vlan) {
-        return Optional.of(EthernetTag.untagged());
-      }
       if (!_allowedVlans.contains(vlan)) {
         return Optional.empty();
+      }
+      if (_nativeVlanId != null && _nativeVlanId == vlan) {
+        return Optional.of(EthernetTag.untagged());
       }
       return Optional.of(EthernetTag.tagged(vlan));
     }
