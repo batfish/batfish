@@ -329,6 +329,7 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -2702,10 +2703,14 @@ public final class FlatJuniperGrammarTest {
     If i = (If) policyPreference.getStatements().get(0);
 
     assertThat(i.getTrueStatements(), hasSize(1));
-    assertThat(getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
+    assertThat(getOnlyElement(i.getTrueStatements()), instanceOf(TraceableStatement.class));
+    TraceableStatement traceableStatement = (TraceableStatement) i.getTrueStatements().get(0);
+    assertThat(
+        getOnlyElement(traceableStatement.getInnerStatements()),
+        instanceOf(SetAdministrativeCost.class));
 
     assertThat(
-        getOnlyElement(i.getTrueStatements()),
+        getOnlyElement(traceableStatement.getInnerStatements()),
         isSetAdministrativeCostThat(hasAdmin(isLiteralIntThat(hasVal(123)))));
   }
 
