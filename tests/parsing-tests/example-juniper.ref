@@ -11138,6 +11138,32 @@
               "numReferrers" : 1
             }
           },
+          "policy-statement term" : {
+            "as1_to_as1 forward" : {
+              "definitionLines" : "30-31",
+              "numReferrers" : 2
+            },
+            "as1_to_as1 originate" : {
+              "definitionLines" : "32-33",
+              "numReferrers" : 2
+            },
+            "as1_to_as2 as3" : {
+              "definitionLines" : "38-41",
+              "numReferrers" : 4
+            },
+            "as1_to_as2 originate" : {
+              "definitionLines" : "34-37",
+              "numReferrers" : 4
+            },
+            "as2_to_as1 1" : {
+              "definitionLines" : "42-44",
+              "numReferrers" : 3
+            },
+            "match_original_prefixes 1" : {
+              "definitionLines" : "45-46",
+              "numReferrers" : 2
+            }
+          },
           "prefix-list" : {
             "as3_prefixes" : {
               "definitionLines" : "49-50",
@@ -11232,6 +11258,40 @@
             "ospf-redistribute-connected" : {
               "definitionLines" : "26-27",
               "numReferrers" : 1
+            }
+          },
+          "policy-statement term" : {
+            "as1_to_as1 forward" : {
+              "definitionLines" : "28-29",
+              "numReferrers" : 2
+            },
+            "as1_to_as1 originate" : {
+              "definitionLines" : "30-31",
+              "numReferrers" : 2
+            },
+            "as1_to_as3 as3" : {
+              "definitionLines" : "36-39",
+              "numReferrers" : 4
+            },
+            "as1_to_as3 originate" : {
+              "definitionLines" : "32-35",
+              "numReferrers" : 4
+            },
+            "as1_to_as4 as3" : {
+              "definitionLines" : "47-49",
+              "numReferrers" : 3
+            },
+            "as1_to_as4 originate" : {
+              "definitionLines" : "43-46",
+              "numReferrers" : 4
+            },
+            "as3_to_as1 1" : {
+              "definitionLines" : "40-42",
+              "numReferrers" : 3
+            },
+            "as4_to_as1 1" : {
+              "definitionLines" : "50-53",
+              "numReferrers" : 4
             }
           },
           "prefix-list" : {
@@ -11359,6 +11419,32 @@
               "definitionLines" : "161-163",
               "numReferrers" : 1
             }
+          },
+          "route-map-clause" : {
+            "as1_to_as2 100" : {
+              "definitionLines" : "147-149",
+              "numReferrers" : 1
+            },
+            "as2_to_as1 2" : {
+              "definitionLines" : "137-140",
+              "numReferrers" : 1
+            },
+            "as2_to_as1 3" : {
+              "definitionLines" : "142-145",
+              "numReferrers" : 1
+            },
+            "as2_to_as3 1" : {
+              "definitionLines" : "151-154",
+              "numReferrers" : 1
+            },
+            "as2_to_as3 2" : {
+              "definitionLines" : "156-159",
+              "numReferrers" : 1
+            },
+            "as3_to_as2 100" : {
+              "definitionLines" : "161-163",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/as2border2.cfg" : {
@@ -11446,6 +11532,32 @@
               "numReferrers" : 1
             },
             "as3_to_as2" : {
+              "definitionLines" : "161-164",
+              "numReferrers" : 1
+            }
+          },
+          "route-map-clause" : {
+            "as1_to_as2 100" : {
+              "definitionLines" : "146-149",
+              "numReferrers" : 1
+            },
+            "as2_to_as1 2" : {
+              "definitionLines" : "136-139",
+              "numReferrers" : 1
+            },
+            "as2_to_as1 3" : {
+              "definitionLines" : "141-144",
+              "numReferrers" : 1
+            },
+            "as2_to_as3 1" : {
+              "definitionLines" : "151-154",
+              "numReferrers" : 1
+            },
+            "as2_to_as3 2" : {
+              "definitionLines" : "156-159",
+              "numReferrers" : 1
+            },
+            "as3_to_as2 100" : {
               "definitionLines" : "161-164",
               "numReferrers" : 1
             }
@@ -11575,6 +11687,16 @@
               "definitionLines" : "115-118",
               "numReferrers" : 1
             }
+          },
+          "route-map-clause" : {
+            "as2_to_dept 100" : {
+              "definitionLines" : "120-122",
+              "numReferrers" : 1
+            },
+            "dept_to_as2 100" : {
+              "definitionLines" : "115-118",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/as2dist1.cfg" : {
@@ -11631,6 +11753,16 @@
               "definitionLines" : "128-130",
               "numReferrers" : 1
             }
+          },
+          "route-map-clause" : {
+            "as2_to_dept 100" : {
+              "definitionLines" : "123-126",
+              "numReferrers" : 1
+            },
+            "dept_to_as2 100" : {
+              "definitionLines" : "128-130",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/as2dist2.cfg" : {
@@ -11684,6 +11816,16 @@
               "numReferrers" : 1
             },
             "dept_to_as2" : {
+              "definitionLines" : "128-130",
+              "numReferrers" : 1
+            }
+          },
+          "route-map-clause" : {
+            "as2_to_dept 100" : {
+              "definitionLines" : "123-126",
+              "numReferrers" : 1
+            },
+            "dept_to_as2 100" : {
               "definitionLines" : "128-130",
               "numReferrers" : 1
             }
@@ -11785,6 +11927,32 @@
               "definitionLines" : "137-140,142-145",
               "numReferrers" : 1
             }
+          },
+          "route-map-clause" : {
+            "as1_to_as3 100" : {
+              "definitionLines" : "133-135",
+              "numReferrers" : 1
+            },
+            "as2_to_as3 100" : {
+              "definitionLines" : "147-149",
+              "numReferrers" : 1
+            },
+            "as3_to_as1 2" : {
+              "definitionLines" : "123-126",
+              "numReferrers" : 1
+            },
+            "as3_to_as1 3" : {
+              "definitionLines" : "128-131",
+              "numReferrers" : 1
+            },
+            "as3_to_as2 1" : {
+              "definitionLines" : "137-140",
+              "numReferrers" : 1
+            },
+            "as3_to_as2 3" : {
+              "definitionLines" : "142-145",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/as3border2.cfg" : {
@@ -11865,6 +12033,32 @@
             },
             "as3_to_as2" : {
               "definitionLines" : "138-141,143-146",
+              "numReferrers" : 1
+            }
+          },
+          "route-map-clause" : {
+            "as1_to_as3 100" : {
+              "definitionLines" : "134-136",
+              "numReferrers" : 1
+            },
+            "as2_to_as3 100" : {
+              "definitionLines" : "148-150",
+              "numReferrers" : 1
+            },
+            "as3_to_as1 2" : {
+              "definitionLines" : "124-127",
+              "numReferrers" : 1
+            },
+            "as3_to_as1 3" : {
+              "definitionLines" : "129-132",
+              "numReferrers" : 1
+            },
+            "as3_to_as2 1" : {
+              "definitionLines" : "138-141",
+              "numReferrers" : 1
+            },
+            "as3_to_as2 3" : {
+              "definitionLines" : "143-146",
               "numReferrers" : 1
             }
           }
@@ -12043,6 +12237,49 @@
               ]
             }
           },
+          "policy-statement term" : {
+            "as1_to_as1 forward" : {
+              "policy-statement term" : [
+                30,
+                31
+              ]
+            },
+            "as1_to_as1 originate" : {
+              "policy-statement term" : [
+                32,
+                33
+              ]
+            },
+            "as1_to_as2 as3" : {
+              "policy-statement term" : [
+                38,
+                39,
+                40,
+                41
+              ]
+            },
+            "as1_to_as2 originate" : {
+              "policy-statement term" : [
+                34,
+                35,
+                36,
+                37
+              ]
+            },
+            "as2_to_as1 1" : {
+              "policy-statement term" : [
+                42,
+                43,
+                44
+              ]
+            },
+            "match_original_prefixes 1" : {
+              "policy-statement term" : [
+                45,
+                46
+              ]
+            }
+          },
           "prefix-list" : {
             "as3_prefixes" : {
               "policy-statement prefix-list" : [
@@ -12169,6 +12406,66 @@
             "ospf-redistribute-connected" : {
               "ospf export policy-statement" : [
                 9
+              ]
+            }
+          },
+          "policy-statement term" : {
+            "as1_to_as1 forward" : {
+              "policy-statement term" : [
+                28,
+                29
+              ]
+            },
+            "as1_to_as1 originate" : {
+              "policy-statement term" : [
+                30,
+                31
+              ]
+            },
+            "as1_to_as3 as3" : {
+              "policy-statement term" : [
+                36,
+                37,
+                38,
+                39
+              ]
+            },
+            "as1_to_as3 originate" : {
+              "policy-statement term" : [
+                32,
+                33,
+                34,
+                35
+              ]
+            },
+            "as1_to_as4 as3" : {
+              "policy-statement term" : [
+                47,
+                48,
+                49
+              ]
+            },
+            "as1_to_as4 originate" : {
+              "policy-statement term" : [
+                43,
+                44,
+                45,
+                46
+              ]
+            },
+            "as3_to_as1 1" : {
+              "policy-statement term" : [
+                40,
+                41,
+                42
+              ]
+            },
+            "as4_to_as1 1" : {
+              "policy-statement term" : [
+                50,
+                51,
+                52,
+                53
               ]
             }
           },
@@ -12319,6 +12616,38 @@
                 102
               ]
             }
+          },
+          "route-map-clause" : {
+            "as1_to_as2 100" : {
+              "route-map clause" : [
+                147
+              ]
+            },
+            "as2_to_as1 2" : {
+              "route-map clause" : [
+                137
+              ]
+            },
+            "as2_to_as1 3" : {
+              "route-map clause" : [
+                142
+              ]
+            },
+            "as2_to_as3 1" : {
+              "route-map clause" : [
+                151
+              ]
+            },
+            "as2_to_as3 2" : {
+              "route-map clause" : [
+                156
+              ]
+            },
+            "as3_to_as2 100" : {
+              "route-map clause" : [
+                161
+              ]
+            }
           }
         },
         "configs/as2border2.cfg" : {
@@ -12415,6 +12744,38 @@
             "as3_to_as2" : {
               "bgp inbound route-map" : [
                 102
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "as1_to_as2 100" : {
+              "route-map clause" : [
+                146
+              ]
+            },
+            "as2_to_as1 2" : {
+              "route-map clause" : [
+                136
+              ]
+            },
+            "as2_to_as1 3" : {
+              "route-map clause" : [
+                141
+              ]
+            },
+            "as2_to_as3 1" : {
+              "route-map clause" : [
+                151
+              ]
+            },
+            "as2_to_as3 2" : {
+              "route-map clause" : [
+                156
+              ]
+            },
+            "as3_to_as2 100" : {
+              "route-map clause" : [
+                161
               ]
             }
           }
@@ -12585,6 +12946,18 @@
                 79
               ]
             }
+          },
+          "route-map-clause" : {
+            "as2_to_dept 100" : {
+              "route-map clause" : [
+                120
+              ]
+            },
+            "dept_to_as2 100" : {
+              "route-map clause" : [
+                115
+              ]
+            }
           }
         },
         "configs/as2dist1.cfg" : {
@@ -12652,6 +13025,18 @@
                 97
               ]
             }
+          },
+          "route-map-clause" : {
+            "as2_to_dept 100" : {
+              "route-map clause" : [
+                123
+              ]
+            },
+            "dept_to_as2 100" : {
+              "route-map clause" : [
+                128
+              ]
+            }
           }
         },
         "configs/as2dist2.cfg" : {
@@ -12717,6 +13102,18 @@
             "dept_to_as2" : {
               "bgp inbound route-map" : [
                 97
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "as2_to_dept 100" : {
+              "route-map clause" : [
+                123
+              ]
+            },
+            "dept_to_as2 100" : {
+              "route-map clause" : [
+                128
               ]
             }
           }
@@ -12824,6 +13221,38 @@
                 91
               ]
             }
+          },
+          "route-map-clause" : {
+            "as1_to_as3 100" : {
+              "route-map clause" : [
+                133
+              ]
+            },
+            "as2_to_as3 100" : {
+              "route-map clause" : [
+                147
+              ]
+            },
+            "as3_to_as1 2" : {
+              "route-map clause" : [
+                123
+              ]
+            },
+            "as3_to_as1 3" : {
+              "route-map clause" : [
+                128
+              ]
+            },
+            "as3_to_as2 1" : {
+              "route-map clause" : [
+                137
+              ]
+            },
+            "as3_to_as2 3" : {
+              "route-map clause" : [
+                142
+              ]
+            }
           }
         },
         "configs/as3border2.cfg" : {
@@ -12908,6 +13337,38 @@
             "as3_to_as2" : {
               "bgp outbound route-map" : [
                 92
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "as1_to_as3 100" : {
+              "route-map clause" : [
+                134
+              ]
+            },
+            "as2_to_as3 100" : {
+              "route-map clause" : [
+                148
+              ]
+            },
+            "as3_to_as1 2" : {
+              "route-map clause" : [
+                124
+              ]
+            },
+            "as3_to_as1 3" : {
+              "route-map clause" : [
+                129
+              ]
+            },
+            "as3_to_as2 1" : {
+              "route-map clause" : [
+                138
+              ]
+            },
+            "as3_to_as2 3" : {
+              "route-map clause" : [
+                143
               ]
             }
           }
