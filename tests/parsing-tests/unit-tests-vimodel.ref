@@ -27007,11 +27007,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map rmap clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/as_path_prepend",
-                            "structureName" : "10",
+                            "structureName" : "rmap 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -32285,11 +32289,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map AGGREGATE-MAP clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_bgp",
-                            "structureName" : "10",
+                            "structureName" : "AGGREGATE-MAP 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -32327,11 +32335,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map CONNECTED-TO-BGP clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_bgp",
-                            "structureName" : "10",
+                            "structureName" : "CONNECTED-TO-BGP 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -32369,11 +32381,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map UNSUPP-MAP clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_bgp",
-                            "structureName" : "10",
+                            "structureName" : "UNSUPP-MAP 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -32411,11 +32427,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map ospfv3_map clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_bgp",
-                            "structureName" : "10",
+                            "structureName" : "ospfv3_map 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39058,11 +39078,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map MAP_NAME1 clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "10",
+                            "structureName" : "MAP_NAME1 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39113,11 +39137,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 20",
+                          "text" : "route-map MAP_NAME2 clause 20",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "20",
+                            "structureName" : "MAP_NAME2 20",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39166,11 +39194,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map MSDP-SA-RP-FILTER clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "10",
+                            "structureName" : "MSDP-SA-RP-FILTER 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39266,11 +39298,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map connected-to-bgp clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "10",
+                            "structureName" : "connected-to-bgp 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39308,11 +39344,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map ijfw$%^&****(((([]grr clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "10",
+                            "structureName" : "ijfw$%^&****(((([]grr 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39350,11 +39390,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map mgmt clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "10",
+                            "structureName" : "mgmt 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39392,11 +39436,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map multicaststuff clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "10",
+                            "structureName" : "multicaststuff 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39434,11 +39482,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 15",
+                          "text" : "route-map next-hop-null clause 15",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "15",
+                            "structureName" : "next-hop-null 15",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39483,11 +39535,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 100",
+                          "text" : "route-map to_svl-hub-router clause 100",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "100",
+                            "structureName" : "to_svl-hub-router 100",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39588,11 +39644,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map beeble clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "10",
+                            "structureName" : "beeble 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -39662,11 +39722,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 5",
+                          "text" : "route-map beeble clause 5",
                           "vendorStructureId" : {
                             "filename" : "configs/cisco_route_map",
-                            "structureName" : "5",
+                            "structureName" : "beeble 5",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -42758,11 +42822,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 100",
+                          "text" : "route-map AAA1-BBB-CCC clause 100",
                           "vendorStructureId" : {
                             "filename" : "configs/community_name_numbers",
-                            "structureName" : "100",
+                            "structureName" : "AAA1-BBB-CCC 100",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -42932,11 +43000,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 100",
+                          "text" : "route-map AAA1-BBB-CCC clause 100",
                           "vendorStructureId" : {
                             "filename" : "configs/community_name_numbers_dos",
-                            "structureName" : "100",
+                            "structureName" : "AAA1-BBB-CCC 100",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -92509,11 +92581,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 1",
+                          "text" : "route-map foo clause 1",
                           "vendorStructureId" : {
                             "filename" : "configs/named_and_numbered_lists",
-                            "structureName" : "1",
+                            "structureName" : "foo 1",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -98334,11 +98410,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map to_elacc clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/prefix_list_ipv4",
-                            "structureName" : "10",
+                            "structureName" : "to_elacc 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -104398,11 +104478,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 100",
+                          "text" : "route-map JKL_MNO_PQR clause 100",
                           "vendorStructureId" : {
                             "filename" : "configs/underscore_variable",
-                            "structureName" : "100",
+                            "structureName" : "JKL_MNO_PQR 100",
                             "structureType" : "route-map-clause"
                           }
                         }

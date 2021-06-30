@@ -59046,11 +59046,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map PROTECT_LOOPBACK clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/lhr-border-02.cfg",
-                            "structureName" : "10",
+                            "structureName" : "PROTECT_LOOPBACK 10",
                             "structureType" : "route-map-clause"
                           }
                         }
@@ -59109,11 +59113,15 @@
                         "traceElement" : {
                           "fragments" : [
                             {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched"
+                            },
+                            {
                               "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                              "text" : "Matched clause 20",
+                              "text" : "route-map SET_LOCAL_PREF clause 20",
                               "vendorStructureId" : {
                                 "filename" : "configs/lhr-border-02.cfg",
-                                "structureName" : "20",
+                                "structureName" : "SET_LOCAL_PREF 20",
                                 "structureType" : "route-map-clause"
                               }
                             }
@@ -59145,11 +59153,15 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched clause 10",
+                          "text" : "route-map SET_LOCAL_PREF clause 10",
                           "vendorStructureId" : {
                             "filename" : "configs/lhr-border-02.cfg",
-                            "structureName" : "10",
+                            "structureName" : "SET_LOCAL_PREF 10",
                             "structureType" : "route-map-clause"
                           }
                         }

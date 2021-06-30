@@ -312,11 +312,15 @@
                           "traceElement" : {
                             "fragments" : [
                               {
+                                "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                                "text" : "Matched"
+                              },
+                              {
                                 "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                                "text" : "Matched clause 5",
+                                "text" : "route-map as1_to_as2 clause 5",
                                 "vendorStructureId" : {
                                   "filename" : "configs/as1border1.cfg",
-                                  "structureName" : "5",
+                                  "structureName" : "as1_to_as2 5",
                                   "structureType" : "route-map-clause"
                                 }
                               }
@@ -382,11 +386,15 @@
                       "traceElement" : {
                         "fragments" : [
                           {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched"
+                          },
+                          {
                             "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                            "text" : "Matched clause 3",
+                            "text" : "route-map as1_to_as2 clause 3",
                             "vendorStructureId" : {
                               "filename" : "configs/as1border1.cfg",
-                              "structureName" : "3",
+                              "structureName" : "as1_to_as2 3",
                               "structureType" : "route-map-clause"
                             }
                           }
@@ -452,11 +460,15 @@
                   "traceElement" : {
                     "fragments" : [
                       {
+                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                        "text" : "Matched"
+                      },
+                      {
                         "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                        "text" : "Matched clause 1",
+                        "text" : "route-map as1_to_as2 clause 1",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border1.cfg",
-                          "structureName" : "1",
+                          "structureName" : "as1_to_as2 1",
                           "structureType" : "route-map-clause"
                         }
                       }
@@ -555,11 +567,15 @@
                       "traceElement" : {
                         "fragments" : [
                           {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched"
+                          },
+                          {
                             "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                            "text" : "Matched clause 2",
+                            "text" : "route-map as1_to_as3 clause 2",
                             "vendorStructureId" : {
                               "filename" : "configs/as1border1.cfg",
-                              "structureName" : "2",
+                              "structureName" : "as1_to_as3 2",
                               "structureType" : "route-map-clause"
                             }
                           }
@@ -625,11 +641,15 @@
                   "traceElement" : {
                     "fragments" : [
                       {
+                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                        "text" : "Matched"
+                      },
+                      {
                         "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                        "text" : "Matched clause 1",
+                        "text" : "route-map as1_to_as3 clause 1",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border1.cfg",
-                          "structureName" : "1",
+                          "structureName" : "as1_to_as3 1",
                           "structureType" : "route-map-clause"
                         }
                       }
@@ -707,11 +727,15 @@
                   "traceElement" : {
                     "fragments" : [
                       {
+                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                        "text" : "Matched"
+                      },
+                      {
                         "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                        "text" : "Matched clause 100",
+                        "text" : "route-map as2_to_as1 clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border1.cfg",
-                          "structureName" : "100",
+                          "structureName" : "as2_to_as1 100",
                           "structureType" : "route-map-clause"
                         }
                       }
@@ -810,11 +834,15 @@
                       "traceElement" : {
                         "fragments" : [
                           {
+                            "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                            "text" : "Matched"
+                          },
+                          {
                             "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                            "text" : "Matched clause 2",
+                            "text" : "route-map as2_to_as3 clause 2",
                             "vendorStructureId" : {
                               "filename" : "configs/as2border1.cfg",
-                              "structureName" : "2",
+                              "structureName" : "as2_to_as3 2",
                               "structureType" : "route-map-clause"
                             }
                           }
@@ -880,11 +908,15 @@
                   "traceElement" : {
                     "fragments" : [
                       {
+                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                        "text" : "Matched"
+                      },
+                      {
                         "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                        "text" : "Matched clause 1",
+                        "text" : "route-map as2_to_as3 clause 1",
                         "vendorStructureId" : {
                           "filename" : "configs/as2border1.cfg",
-                          "structureName" : "1",
+                          "structureName" : "as2_to_as3 1",
                           "structureType" : "route-map-clause"
                         }
                       }
@@ -962,11 +994,15 @@
                   "traceElement" : {
                     "fragments" : [
                       {
+                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                        "text" : "Matched"
+                      },
+                      {
                         "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                        "text" : "Matched clause 100",
+                        "text" : "route-map as3_to_as1 clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as1border1.cfg",
-                          "structureName" : "100",
+                          "structureName" : "as3_to_as1 100",
                           "structureType" : "route-map-clause"
                         }
                       }
@@ -1061,11 +1097,15 @@
                   "traceElement" : {
                     "fragments" : [
                       {
+                        "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                        "text" : "Matched"
+                      },
+                      {
                         "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                        "text" : "Matched clause 100",
+                        "text" : "route-map as3_to_as2 clause 100",
                         "vendorStructureId" : {
                           "filename" : "configs/as2border1.cfg",
-                          "structureName" : "100",
+                          "structureName" : "as3_to_as2 100",
                           "structureType" : "route-map-clause"
                         }
                       }
