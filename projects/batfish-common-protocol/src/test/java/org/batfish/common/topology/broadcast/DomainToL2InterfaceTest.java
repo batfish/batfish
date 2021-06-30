@@ -26,7 +26,7 @@ public class DomainToL2InterfaceTest {
     Trunk testing = new Trunk(IntegerSpace.of(Range.closed(4, 5)), 5);
     assertThat(testing.receiveTag(EthernetTag.tagged(4)), equalTo(Optional.of(4)));
     assertThat(testing.receiveTag(EthernetTag.untagged()), equalTo(Optional.of(5)));
-    assertThat(testing.receiveTag(EthernetTag.tagged(5)), equalTo(Optional.of(5)));
+    assertThat(testing.receiveTag(EthernetTag.tagged(5)), equalTo(Optional.empty()));
     assertThat(testing.receiveTag(EthernetTag.tagged(6)), equalTo(Optional.empty()));
     assertThat(testing.sendFromVlan(4), equalTo(Optional.of(EthernetTag.tagged(4))));
     assertThat(testing.sendFromVlan(5), equalTo(Optional.of(EthernetTag.untagged())));
@@ -40,5 +40,14 @@ public class DomainToL2InterfaceTest {
     assertThat(noNative.sendFromVlan(4), equalTo(Optional.of(EthernetTag.tagged(4))));
     assertThat(noNative.sendFromVlan(5), equalTo(Optional.of(EthernetTag.tagged(5))));
     assertThat(noNative.sendFromVlan(6), equalTo(Optional.empty()));
+
+    Trunk nativeDisallowed = new Trunk(IntegerSpace.of(Range.closed(4, 4)), 5);
+    assertThat(nativeDisallowed.receiveTag(EthernetTag.tagged(4)), equalTo(Optional.of(4)));
+    assertThat(nativeDisallowed.receiveTag(EthernetTag.untagged()), equalTo(Optional.empty()));
+    assertThat(nativeDisallowed.receiveTag(EthernetTag.tagged(5)), equalTo(Optional.empty()));
+    assertThat(nativeDisallowed.receiveTag(EthernetTag.tagged(6)), equalTo(Optional.empty()));
+    assertThat(nativeDisallowed.sendFromVlan(4), equalTo(Optional.of(EthernetTag.tagged(4))));
+    assertThat(nativeDisallowed.sendFromVlan(5), equalTo(Optional.empty()));
+    assertThat(nativeDisallowed.sendFromVlan(6), equalTo(Optional.empty()));
   }
 }
