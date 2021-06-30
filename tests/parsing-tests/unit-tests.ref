@@ -72811,6 +72811,28 @@
               "numReferrers" : 1
             }
           },
+          "policy-statement term" : {
+            "export-loopback lo0" : {
+              "definitionLines" : "162-164",
+              "numReferrers" : 2
+            },
+            "fabric fabric" : {
+              "definitionLines" : "168-171,173",
+              "numReferrers" : 3
+            },
+            "fabric vni-100" : {
+              "definitionLines" : "175-177",
+              "numReferrers" : 2
+            },
+            "fabric vni-101" : {
+              "definitionLines" : "179-181",
+              "numReferrers" : 2
+            },
+            "lbpp 1" : {
+              "definitionLines" : "185-187",
+              "numReferrers" : 1
+            }
+          },
           "routing-instance" : {
             "fabric" : {
               "definitionLines" : "200-211,213-214,217-218,221-226,229-233",
@@ -73639,6 +73661,16 @@
               "definitionLines" : "4-37",
               "numReferrers" : 0
             }
+          },
+          "policy-statement term" : {
+            "POLICY-NAME AS_PATH" : {
+              "definitionLines" : "35-36",
+              "numReferrers" : 2
+            },
+            "POLICY-NAME TERM" : {
+              "definitionLines" : "4-34",
+              "numReferrers" : 31
+            }
           }
         },
         "configs/juniper_relay" : {
@@ -73717,6 +73749,16 @@
               "definitionLines" : "11-16",
               "numReferrers" : 0
             }
+          },
+          "policy-statement term" : {
+            "route-filter-test-v4 t1" : {
+              "definitionLines" : "4-9",
+              "numReferrers" : 6
+            },
+            "route-filter-test-v6 t1" : {
+              "definitionLines" : "11-16",
+              "numReferrers" : 6
+            }
           }
         },
         "configs/juniper_routing_options" : { },
@@ -73735,6 +73777,16 @@
             "POLICY-NAME" : {
               "definitionLines" : "7-10",
               "numReferrers" : 0
+            }
+          },
+          "policy-statement term" : {
+            "POLICY-NAME TERM1" : {
+              "definitionLines" : "7-8",
+              "numReferrers" : 2
+            },
+            "POLICY-NAME TERM2" : {
+              "definitionLines" : "9-10",
+              "numReferrers" : 2
             }
           }
         },
@@ -78522,6 +78574,33 @@
               ]
             }
           },
+          "policy-statement term" : {
+            "export-loopback lo0" : {
+              "policy-statement term" : [
+                162
+              ]
+            },
+            "fabric fabric" : {
+              "policy-statement term" : [
+                168
+              ]
+            },
+            "fabric vni-100" : {
+              "policy-statement term" : [
+                175
+              ]
+            },
+            "fabric vni-101" : {
+              "policy-statement term" : [
+                179
+              ]
+            },
+            "lbpp 1" : {
+              "policy-statement term" : [
+                185
+              ]
+            }
+          },
           "routing-instance" : {
             "fabric" : {
               "routing-instance" : [
@@ -79707,6 +79786,49 @@
               ]
             }
           },
+          "policy-statement term" : {
+            "POLICY-NAME AS_PATH" : {
+              "policy-statement term" : [
+                35,
+                36
+              ]
+            },
+            "POLICY-NAME TERM" : {
+              "policy-statement term" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          },
           "routing-instance" : {
             "FORWARDING" : {
               "policy-statement from instance" : [
@@ -79821,6 +79943,30 @@
             }
           }
         },
+        "configs/juniper_route_filter" : {
+          "policy-statement term" : {
+            "route-filter-test-v4 t1" : {
+              "policy-statement term" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ]
+            },
+            "route-filter-test-v6 t1" : {
+              "policy-statement term" : [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          }
+        },
         "configs/juniper_routing_options" : {
           "policy-statement" : {
             "AGGREGATE_ROUTE_POLICY" : {
@@ -79850,6 +79996,20 @@
             "ge-0/0/0.99" : {
               "policy-statement from interface" : [
                 9
+              ]
+            }
+          },
+          "policy-statement term" : {
+            "POLICY-NAME TERM1" : {
+              "policy-statement term" : [
+                7,
+                8
+              ]
+            },
+            "POLICY-NAME TERM2" : {
+              "policy-statement term" : [
+                9,
+                10
               ]
             }
           }
