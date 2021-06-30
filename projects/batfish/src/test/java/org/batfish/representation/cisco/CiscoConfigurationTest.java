@@ -1,10 +1,15 @@
 package org.batfish.representation.cisco;
 
 import static org.batfish.representation.cisco.CiscoConfiguration.getRouteMapClausePolicyName;
-import static org.junit.Assert.assertFalse;
+import static org.batfish.representation.cisco.CiscoConfiguration.makeClauseTraceable;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -34,10 +39,15 @@ public class CiscoConfigurationTest {
     RoutingPolicy routingPolicy = cc.toRoutingPolicy(c, map);
 
     If ifStatement = (If) Iterables.getOnlyElement(routingPolicy.getStatements());
-    assertTrue(
-        Iterables.getOnlyElement(ifStatement.getTrueStatements()) instanceof TraceableStatement);
-    assertFalse(
-        Iterables.getOnlyElement(ifStatement.getFalseStatements()) instanceof TraceableStatement);
+    TraceableStatement traceableStatement =
+        (TraceableStatement) Iterables.getOnlyElement(ifStatement.getTrueStatements());
+    assertThat(
+        traceableStatement.getTraceElement(),
+        equalTo(makeClauseTraceable(ImmutableList.of(), 10, "rm", "file").getTraceElement()));
+
+    // false statements are not wrapped in traceable
+    assertThat(
+        ifStatement.getFalseStatements(), contains(not(instanceOf(TraceableStatement.class))));
   }
 
   /** Test that trace hints are added during conversion */
@@ -61,9 +71,13 @@ public class CiscoConfigurationTest {
     assertNotNull(routingPolicy);
 
     If ifStatement = (If) Iterables.getOnlyElement(routingPolicy.getStatements());
-    assertTrue(
-        Iterables.getOnlyElement(ifStatement.getTrueStatements()) instanceof TraceableStatement);
-    assertFalse(
-        Iterables.getOnlyElement(ifStatement.getFalseStatements()) instanceof TraceableStatement);
+    TraceableStatement traceableStatement =
+        (TraceableStatement) Iterables.getOnlyElement(ifStatement.getTrueStatements());
+    assertThat(
+        traceableStatement.getTraceElement(),
+        equalTo(makeClauseTraceable(ImmutableList.of(), 10, "rm", "file").getTraceElement()));
+
+    assertThat(
+        ifStatement.getFalseStatements(), contains(not(instanceOf(TraceableStatement.class))));
   }
 }

@@ -175,10 +175,6 @@ public final class TraceElement implements Serializable {
     return TraceElement.builder().add(text).build();
   }
 
-  public static TraceElement of(String text, VendorStructureId vendorStructureId) {
-    return TraceElement.builder().add(text, vendorStructureId).build();
-  }
-
   @JsonProperty(PROP_FRAGMENTS)
   public List<Fragment> getFragments() {
     return _fragments;
