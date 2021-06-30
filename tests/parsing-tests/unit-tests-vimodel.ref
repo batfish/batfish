@@ -88495,12 +88495,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term TERM",
+                          "text" : "policy-statement POLICY-NAME term TERM",
                           "vendorStructureId" : {
                             "filename" : "configs/juniper_policy_statement",
-                            "structureName" : "POLICY-NAME",
-                            "structureType" : "policy-statement"
+                            "structureName" : "POLICY-NAME TERM",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -88550,12 +88554,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term AS_PATH",
+                          "text" : "policy-statement POLICY-NAME term AS_PATH",
                           "vendorStructureId" : {
                             "filename" : "configs/juniper_policy_statement",
-                            "structureName" : "POLICY-NAME",
-                            "structureType" : "policy-statement"
+                            "structureName" : "POLICY-NAME AS_PATH",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -88578,12 +88586,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term __POLICY-NAME__DEFAULT_TERM__",
+                          "text" : "policy-statement POLICY-NAME term __POLICY-NAME__DEFAULT_TERM__",
                           "vendorStructureId" : {
                             "filename" : "configs/juniper_policy_statement",
-                            "structureName" : "POLICY-NAME",
-                            "structureType" : "policy-statement"
+                            "structureName" : "POLICY-NAME __POLICY-NAME__DEFAULT_TERM__",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -89549,12 +89561,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term t1",
+                          "text" : "policy-statement route-filter-test-v4 term t1",
                           "vendorStructureId" : {
                             "filename" : "configs/juniper_route_filter",
-                            "structureName" : "route-filter-test-v4",
-                            "structureType" : "policy-statement"
+                            "structureName" : "route-filter-test-v4 t1",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -89599,12 +89615,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term t1",
+                          "text" : "policy-statement route-filter-test-v6 term t1",
                           "vendorStructureId" : {
                             "filename" : "configs/juniper_route_filter",
-                            "structureName" : "route-filter-test-v6",
-                            "structureType" : "policy-statement"
+                            "structureName" : "route-filter-test-v6 t1",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -90184,12 +90204,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term TERM1",
+                          "text" : "policy-statement POLICY-NAME term TERM1",
                           "vendorStructureId" : {
                             "filename" : "configs/juniper_routing_policy",
-                            "structureName" : "POLICY-NAME",
-                            "structureType" : "policy-statement"
+                            "structureName" : "POLICY-NAME TERM1",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -90231,12 +90255,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term TERM2",
+                          "text" : "policy-statement POLICY-NAME term TERM2",
                           "vendorStructureId" : {
                             "filename" : "configs/juniper_routing_policy",
-                            "structureName" : "POLICY-NAME",
-                            "structureType" : "policy-statement"
+                            "structureName" : "POLICY-NAME TERM2",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -105382,12 +105410,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term lo0",
+                          "text" : "policy-statement export-loopback term lo0",
                           "vendorStructureId" : {
                             "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
-                            "structureName" : "export-loopback",
-                            "structureType" : "policy-statement"
+                            "structureName" : "export-loopback lo0",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -105465,12 +105497,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term fabric",
+                          "text" : "policy-statement fabric term fabric",
                           "vendorStructureId" : {
                             "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
-                            "structureName" : "fabric",
-                            "structureType" : "policy-statement"
+                            "structureName" : "fabric fabric",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -105518,12 +105554,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term vni-100",
+                          "text" : "policy-statement fabric term vni-100",
                           "vendorStructureId" : {
                             "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
-                            "structureName" : "fabric",
-                            "structureType" : "policy-statement"
+                            "structureName" : "fabric vni-100",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -105571,12 +105611,16 @@
                     "traceElement" : {
                       "fragments" : [
                         {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
                           "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "Matched term vni-101",
+                          "text" : "policy-statement fabric term vni-101",
                           "vendorStructureId" : {
                             "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
-                            "structureName" : "fabric",
-                            "structureType" : "policy-statement"
+                            "structureName" : "fabric vni-101",
+                            "structureType" : "policy-statement term"
                           }
                         }
                       ]
@@ -105607,12 +105651,16 @@
                 "traceElement" : {
                   "fragments" : [
                     {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched"
+                    },
+                    {
                       "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                      "text" : "Matched term \"1\"",
+                      "text" : "policy-statement lbpp term \"1\"",
                       "vendorStructureId" : {
                         "filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
-                        "structureName" : "lbpp",
-                        "structureType" : "policy-statement"
+                        "structureName" : "lbpp 1",
+                        "structureType" : "policy-statement term"
                       }
                     }
                   ]
