@@ -258,8 +258,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             new ColumnMetadata(
                 COL_TRACE,
                 Schema.list(Schema.TRACE_TREE),
-                "Route policy trace. This is an experimental feature whose content and format is"
-                    + " subject to change.",
+                "Route policy trace that shows which clauses/terms matched the input route. If the"
+                    + " trace is empty, either nothing matched or tracing is not yet been"
+                    + " implemented for this policy type. This is an experimental feature whose"
+                    + " content and format is subject to change.",
                 false,
                 true));
     return new TableMetadata(
