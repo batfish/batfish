@@ -48,11 +48,11 @@ public final class LocationInfoUtils {
 
   /** @return the host IP space of all connected subnets. */
   @Nonnull
-  public static IpSpace connectedSubnetHostIps(Interface iface) {
+  public static IpSpace connectedSubnetIps(Interface iface) {
     return firstNonNull(
         AclIpSpace.union(
             iface.getAllConcreteAddresses().stream()
-                .map(address -> address.getPrefix().toHostIpSpace())
+                .map(address -> address.getPrefix().toIpSpace())
                 .collect(Collectors.toList())),
         EmptyIpSpace.INSTANCE);
   }
@@ -149,7 +149,7 @@ public final class LocationInfoUtils {
         true,
         firstNonNull(
             difference(connectedHostSubnetHostIps(iface), snapshotOwnedIps), EmptyIpSpace.INSTANCE),
-        connectedSubnetHostIps(iface));
+        connectedSubnetIps(iface));
   }
 
   private static LocationInfo subtractSnapshotOwnedIpsFromSourceIps(

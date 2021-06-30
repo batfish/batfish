@@ -1101,11 +1101,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
 
-    BDD insufficientInfoBdd =
-        dstToBdd
-            .toBDD(i1.getPrimaryNetwork().getStartIp())
-            .or(dstToBdd.toBDD(i1.getPrimaryNetwork().getEndIp()));
-    assertThat(transitionII.transitForward(_one), equalTo(insufficientInfoBdd));
+    assertThat(transitionII, nullValue());
   }
 
   /*
@@ -1171,12 +1167,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
 
-    BDD insufficientInfoBdd =
-        _pkt.getFactory()
-            .orAll(
-                dstToBdd.toBDD(Prefix.parse("8.8.8.0/24")),
-                dstToBdd.toBDD(i1.getPrimaryNetwork().getStartIp()),
-                dstToBdd.toBDD(i1.getPrimaryNetwork().getEndIp()));
+    BDD insufficientInfoBdd = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
 
     assertThat(transition.transitForward(_one), equalTo(insufficientInfoBdd));
 
