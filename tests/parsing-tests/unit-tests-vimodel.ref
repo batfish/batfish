@@ -36240,7 +36240,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "LOGICAL",
             "vrf" : "default"
           },
           "Loopback0" : {
@@ -51099,7 +51099,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "PHYSICAL",
+            "type" : "LOGICAL",
             "vrf" : "default"
           },
           "HundredGigE0/2/0/3" : {
