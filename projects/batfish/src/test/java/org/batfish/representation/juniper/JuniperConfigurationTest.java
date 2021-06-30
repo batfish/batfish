@@ -21,6 +21,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.toOspfDead
 import static org.batfish.representation.juniper.JuniperConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRibId;
 import static org.batfish.representation.juniper.JuniperConfiguration.toRouteFilterList;
+import static org.batfish.representation.juniper.JuniperConfiguration.toTraceableStatement;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
@@ -863,6 +864,10 @@ public class JuniperConfigurationTest {
     assertThat(statements, contains(instanceOf(TraceableStatement.class), instanceOf(If.class)));
     TraceableStatement traceableStatement = (TraceableStatement) statements.get(0);
     assertThat(traceableStatement.getInnerStatements(), contains(instanceOf(SetTag.class)));
+    assertThat(
+        traceableStatement.getTraceElement(),
+        equalTo(
+            toTraceableStatement(ImmutableList.of(), "psterm", "ps", "file").getTraceElement()));
 
     // Froms case: expect an If with traceable then, and another If that is end-of-policy
     term.getFroms().addFromTag(new PsFromTag(23L));
@@ -870,5 +875,9 @@ public class JuniperConfigurationTest {
     assertThat(statementsWithFroms, contains(instanceOf(If.class), instanceOf(If.class)));
     If ifStatement = (If) statementsWithFroms.get(0);
     assertThat(ifStatement.getTrueStatements(), contains(instanceOf(TraceableStatement.class)));
+    assertThat(
+        traceableStatement.getTraceElement(),
+        equalTo(
+            toTraceableStatement(ImmutableList.of(), "psterm", "ps", "file").getTraceElement()));
   }
 }

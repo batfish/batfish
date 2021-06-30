@@ -4,13 +4,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Objects.requireNonNull;
-import static org.batfish.datamodel.routing_policy.TracingHintsStripper.TRACING_HINTS_STRIPPER;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
@@ -24,7 +21,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.AbstractRouteBuilder;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.BgpRoute;
@@ -326,28 +322,5 @@ public class RoutingPolicy implements Serializable {
     RoutingPolicy simple = new RoutingPolicy(_name, _owner);
     simple.setStatements(simpleStatements.build());
     return simple;
-  }
-
-  /**
-   * Returns a string version of the policy with tracing hints removed.
-   *
-   * <p>Tracing hints can make two identical policies across two devices appear different for logic
-   * that does a blind JSON-based comparison (e.g., compareSameName).
-   */
-  public String stripTracingHints() {
-    // don't put owner in there
-    RoutingPolicy strippedPolicy =
-        RoutingPolicy.builder()
-            .setName(_name)
-            .setStatements(
-                _statements.stream()
-                    .map(st -> st.accept(TRACING_HINTS_STRIPPER, null))
-                    .collect(ImmutableList.toImmutableList()))
-            .build();
-    try {
-      return BatfishObjectMapper.writePrettyString(strippedPolicy);
-    } catch (JsonProcessingException e) {
-      throw new RuntimeJsonMappingException("Could not map lines to JSON");
-    }
   }
 }
