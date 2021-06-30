@@ -185,6 +185,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   QOS_ENFORCE_RULE_SERVICE_CLASS("cable qos enforce-rule service-class"),
   RIP_DISTRIBUTE_LIST("router rip distribute-list"),
   ROUTE_MAP_ADD_COMMUNITY("route-map set community additive"),
+  ROUTE_MAP_CLAUSE_PREV_REF("route-map clause"),
   ROUTE_MAP_CONTINUE("route-map continue target clause"),
   ROUTE_MAP_DELETE_COMMUNITY("route-map delete community"),
   ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST("route-map match as-path access-list"),

@@ -71086,6 +71086,12 @@
               "definitionLines" : "4-5",
               "numReferrers" : 0
             }
+          },
+          "route-map-clause" : {
+            "rmap 10" : {
+              "definitionLines" : "4-5",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/asa_acl" : {
@@ -71314,6 +71320,24 @@
               "numReferrers" : 1
             },
             "ospfv3_map" : {
+              "definitionLines" : "53",
+              "numReferrers" : 1
+            }
+          },
+          "route-map-clause" : {
+            "AGGREGATE-MAP 10" : {
+              "definitionLines" : "57",
+              "numReferrers" : 1
+            },
+            "CONNECTED-TO-BGP 10" : {
+              "definitionLines" : "55",
+              "numReferrers" : 1
+            },
+            "UNSUPP-MAP 10" : {
+              "definitionLines" : "59",
+              "numReferrers" : 1
+            },
+            "ospfv3_map 10" : {
               "definitionLines" : "53",
               "numReferrers" : 1
             }
@@ -71903,6 +71927,52 @@
               "definitionLines" : "17-18",
               "numReferrers" : 0
             }
+          },
+          "route-map-clause" : {
+            "MAP_NAME1 10" : {
+              "definitionLines" : "50-51",
+              "numReferrers" : 1
+            },
+            "MAP_NAME2 20" : {
+              "definitionLines" : "53-54,56-57",
+              "numReferrers" : 2
+            },
+            "MSDP-SA-RP-FILTER 10" : {
+              "definitionLines" : "24-26",
+              "numReferrers" : 1
+            },
+            "beeble 10" : {
+              "definitionLines" : "40-45",
+              "numReferrers" : 1
+            },
+            "beeble 5" : {
+              "definitionLines" : "35-38",
+              "numReferrers" : 1
+            },
+            "connected-to-bgp 10" : {
+              "definitionLines" : "9-15",
+              "numReferrers" : 1
+            },
+            "ijfw$%^&****(((([]grr 10" : {
+              "definitionLines" : "22",
+              "numReferrers" : 1
+            },
+            "mgmt 10" : {
+              "definitionLines" : "31-33",
+              "numReferrers" : 1
+            },
+            "multicaststuff 10" : {
+              "definitionLines" : "47-48",
+              "numReferrers" : 1
+            },
+            "next-hop-null 15" : {
+              "definitionLines" : "28-29",
+              "numReferrers" : 1
+            },
+            "to_svl-hub-router 100" : {
+              "definitionLines" : "17-18",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/cisco_sccp" : { },
@@ -71996,6 +72066,12 @@
               "numReferrers" : 0
             }
           },
+          "route-map-clause" : {
+            "AAA1-BBB-CCC 100" : {
+              "definitionLines" : "6-10",
+              "numReferrers" : 1
+            }
+          },
           "standard community-list" : {
             "9999-RRR" : {
               "definitionLines" : "4",
@@ -72008,6 +72084,12 @@
             "AAA1-BBB-CCC" : {
               "definitionLines" : "6-10",
               "numReferrers" : 0
+            }
+          },
+          "route-map-clause" : {
+            "AAA1-BBB-CCC 100" : {
+              "definitionLines" : "6-10",
+              "numReferrers" : 1
             }
           },
           "standard community-list" : {
@@ -73890,6 +73972,12 @@
               "definitionLines" : "4-5",
               "numReferrers" : 0
             }
+          },
+          "route-map-clause" : {
+            "foo 1" : {
+              "definitionLines" : "4-5",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/neighbor_mix" : { },
@@ -74678,6 +74766,12 @@
               "definitionLines" : "9-10",
               "numReferrers" : 0
             }
+          },
+          "route-map-clause" : {
+            "to_elacc 10" : {
+              "definitionLines" : "9-10",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/route_policy_as_path" : {
@@ -74767,6 +74861,12 @@
             "JKL_MNO_PQR" : {
               "definitionLines" : "4-5",
               "numReferrers" : 0
+            }
+          },
+          "route-map-clause" : {
+            "JKL_MNO_PQR 100" : {
+              "definitionLines" : "4-5",
+              "numReferrers" : 1
             }
           }
         },
@@ -75761,6 +75861,15 @@
             }
           }
         },
+        "configs/as_path_prepend" : {
+          "route-map-clause" : {
+            "rmap 10" : {
+              "route-map clause" : [
+                4
+              ]
+            }
+          }
+        },
         "configs/asa_acl" : {
           "object-group network" : {
             "drawbridge_hosts" : {
@@ -76145,6 +76254,28 @@
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
                 45
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "AGGREGATE-MAP 10" : {
+              "route-map clause" : [
+                57
+              ]
+            },
+            "CONNECTED-TO-BGP 10" : {
+              "route-map clause" : [
+                55
+              ]
+            },
+            "UNSUPP-MAP 10" : {
+              "route-map clause" : [
+                59
+              ]
+            },
+            "ospfv3_map 10" : {
+              "route-map clause" : [
+                53
               ]
             }
           },
@@ -77250,6 +77381,64 @@
                 10
               ]
             }
+          },
+          "route-map-clause" : {
+            "MAP_NAME1 10" : {
+              "route-map clause" : [
+                50
+              ]
+            },
+            "MAP_NAME2 20" : {
+              "route-map clause" : [
+                53,
+                56
+              ]
+            },
+            "MSDP-SA-RP-FILTER 10" : {
+              "route-map clause" : [
+                24
+              ]
+            },
+            "beeble 10" : {
+              "route-map clause" : [
+                40
+              ]
+            },
+            "beeble 5" : {
+              "route-map clause" : [
+                35
+              ]
+            },
+            "connected-to-bgp 10" : {
+              "route-map clause" : [
+                9
+              ]
+            },
+            "ijfw$%^&****(((([]grr 10" : {
+              "route-map clause" : [
+                22
+              ]
+            },
+            "mgmt 10" : {
+              "route-map clause" : [
+                31
+              ]
+            },
+            "multicaststuff 10" : {
+              "route-map clause" : [
+                47
+              ]
+            },
+            "next-hop-null 15" : {
+              "route-map clause" : [
+                28
+              ]
+            },
+            "to_svl-hub-router 100" : {
+              "route-map clause" : [
+                17
+              ]
+            }
           }
         },
         "configs/cisco_snmp" : {
@@ -77444,6 +77633,13 @@
                 7
               ]
             }
+          },
+          "route-map-clause" : {
+            "AAA1-BBB-CCC 100" : {
+              "route-map clause" : [
+                6
+              ]
+            }
           }
         },
         "configs/community_name_numbers_dos" : {
@@ -77451,6 +77647,13 @@
             "9999-RRR" : {
               "route-map match community-list" : [
                 7
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "AAA1-BBB-CCC 100" : {
+              "route-map clause" : [
+                6
               ]
             }
           }
@@ -80058,6 +80261,13 @@
                 5
               ]
             }
+          },
+          "route-map-clause" : {
+            "foo 1" : {
+              "route-map clause" : [
+                4
+              ]
+            }
           }
         },
         "configs/nxos/nxos_bgp" : {
@@ -81141,6 +81351,13 @@
                 10
               ]
             }
+          },
+          "route-map-clause" : {
+            "to_elacc 10" : {
+              "route-map clause" : [
+                9
+              ]
+            }
           }
         },
         "configs/route_policy_as_path" : {
@@ -81262,6 +81479,13 @@
             "_GHI" : {
               "route-map match ipv4 prefix-list" : [
                 5
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "JKL_MNO_PQR 100" : {
+              "route-map clause" : [
+                4
               ]
             }
           }
