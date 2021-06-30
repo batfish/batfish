@@ -209,6 +209,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return String.format("%s %s", policyName, termName);
   }
 
+  public static @Nonnull String computePolicyStatementTermName(
+      @Nonnull String policyStatementName, @Nonnull String termName) {
+    return String.format("%s %s", policyStatementName, termName);
+  }
+
   @VisibleForTesting
   public static @Nonnull String computeConditionRoutingPolicyName(@Nonnull String conditionName) {
     return String.format("~CONDITION~%s", conditionName);
@@ -3584,6 +3589,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT,
         JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT,
         JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT);
+    markConcreteStructure(JuniperStructureType.POLICY_STATEMENT_TERM);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,

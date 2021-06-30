@@ -71086,6 +71086,12 @@
               "definitionLines" : "4-5",
               "numReferrers" : 0
             }
+          },
+          "route-map-clause" : {
+            "rmap 10" : {
+              "definitionLines" : "4-5",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/asa_acl" : {
@@ -71314,6 +71320,24 @@
               "numReferrers" : 1
             },
             "ospfv3_map" : {
+              "definitionLines" : "53",
+              "numReferrers" : 1
+            }
+          },
+          "route-map-clause" : {
+            "AGGREGATE-MAP 10" : {
+              "definitionLines" : "57",
+              "numReferrers" : 1
+            },
+            "CONNECTED-TO-BGP 10" : {
+              "definitionLines" : "55",
+              "numReferrers" : 1
+            },
+            "UNSUPP-MAP 10" : {
+              "definitionLines" : "59",
+              "numReferrers" : 1
+            },
+            "ospfv3_map 10" : {
               "definitionLines" : "53",
               "numReferrers" : 1
             }
@@ -71903,6 +71927,52 @@
               "definitionLines" : "17-18",
               "numReferrers" : 0
             }
+          },
+          "route-map-clause" : {
+            "MAP_NAME1 10" : {
+              "definitionLines" : "50-51",
+              "numReferrers" : 1
+            },
+            "MAP_NAME2 20" : {
+              "definitionLines" : "53-54,56-57",
+              "numReferrers" : 2
+            },
+            "MSDP-SA-RP-FILTER 10" : {
+              "definitionLines" : "24-26",
+              "numReferrers" : 1
+            },
+            "beeble 10" : {
+              "definitionLines" : "40-45",
+              "numReferrers" : 1
+            },
+            "beeble 5" : {
+              "definitionLines" : "35-38",
+              "numReferrers" : 1
+            },
+            "connected-to-bgp 10" : {
+              "definitionLines" : "9-15",
+              "numReferrers" : 1
+            },
+            "ijfw$%^&****(((([]grr 10" : {
+              "definitionLines" : "22",
+              "numReferrers" : 1
+            },
+            "mgmt 10" : {
+              "definitionLines" : "31-33",
+              "numReferrers" : 1
+            },
+            "multicaststuff 10" : {
+              "definitionLines" : "47-48",
+              "numReferrers" : 1
+            },
+            "next-hop-null 15" : {
+              "definitionLines" : "28-29",
+              "numReferrers" : 1
+            },
+            "to_svl-hub-router 100" : {
+              "definitionLines" : "17-18",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/cisco_sccp" : { },
@@ -71996,6 +72066,12 @@
               "numReferrers" : 0
             }
           },
+          "route-map-clause" : {
+            "AAA1-BBB-CCC 100" : {
+              "definitionLines" : "6-10",
+              "numReferrers" : 1
+            }
+          },
           "standard community-list" : {
             "9999-RRR" : {
               "definitionLines" : "4",
@@ -72008,6 +72084,12 @@
             "AAA1-BBB-CCC" : {
               "definitionLines" : "6-10",
               "numReferrers" : 0
+            }
+          },
+          "route-map-clause" : {
+            "AAA1-BBB-CCC 100" : {
+              "definitionLines" : "6-10",
+              "numReferrers" : 1
             }
           },
           "standard community-list" : {
@@ -72808,6 +72890,28 @@
             },
             "lbpp" : {
               "definitionLines" : "184-187",
+              "numReferrers" : 1
+            }
+          },
+          "policy-statement term" : {
+            "export-loopback lo0" : {
+              "definitionLines" : "162-164",
+              "numReferrers" : 2
+            },
+            "fabric fabric" : {
+              "definitionLines" : "168-171,173",
+              "numReferrers" : 3
+            },
+            "fabric vni-100" : {
+              "definitionLines" : "175-177",
+              "numReferrers" : 2
+            },
+            "fabric vni-101" : {
+              "definitionLines" : "179-181",
+              "numReferrers" : 2
+            },
+            "lbpp 1" : {
+              "definitionLines" : "185-187",
               "numReferrers" : 1
             }
           },
@@ -73639,6 +73743,16 @@
               "definitionLines" : "4-37",
               "numReferrers" : 0
             }
+          },
+          "policy-statement term" : {
+            "POLICY-NAME AS_PATH" : {
+              "definitionLines" : "35-36",
+              "numReferrers" : 2
+            },
+            "POLICY-NAME TERM" : {
+              "definitionLines" : "4-34",
+              "numReferrers" : 31
+            }
           }
         },
         "configs/juniper_relay" : {
@@ -73717,6 +73831,16 @@
               "definitionLines" : "11-16",
               "numReferrers" : 0
             }
+          },
+          "policy-statement term" : {
+            "route-filter-test-v4 t1" : {
+              "definitionLines" : "4-9",
+              "numReferrers" : 6
+            },
+            "route-filter-test-v6 t1" : {
+              "definitionLines" : "11-16",
+              "numReferrers" : 6
+            }
           }
         },
         "configs/juniper_routing_options" : { },
@@ -73735,6 +73859,16 @@
             "POLICY-NAME" : {
               "definitionLines" : "7-10",
               "numReferrers" : 0
+            }
+          },
+          "policy-statement term" : {
+            "POLICY-NAME TERM1" : {
+              "definitionLines" : "7-8",
+              "numReferrers" : 2
+            },
+            "POLICY-NAME TERM2" : {
+              "definitionLines" : "9-10",
+              "numReferrers" : 2
             }
           }
         },
@@ -73889,6 +74023,12 @@
             "foo" : {
               "definitionLines" : "4-5",
               "numReferrers" : 0
+            }
+          },
+          "route-map-clause" : {
+            "foo 1" : {
+              "definitionLines" : "4-5",
+              "numReferrers" : 1
             }
           }
         },
@@ -74678,6 +74818,12 @@
               "definitionLines" : "9-10",
               "numReferrers" : 0
             }
+          },
+          "route-map-clause" : {
+            "to_elacc 10" : {
+              "definitionLines" : "9-10",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/route_policy_as_path" : {
@@ -74767,6 +74913,12 @@
             "JKL_MNO_PQR" : {
               "definitionLines" : "4-5",
               "numReferrers" : 0
+            }
+          },
+          "route-map-clause" : {
+            "JKL_MNO_PQR 100" : {
+              "definitionLines" : "4-5",
+              "numReferrers" : 1
             }
           }
         },
@@ -75761,6 +75913,15 @@
             }
           }
         },
+        "configs/as_path_prepend" : {
+          "route-map-clause" : {
+            "rmap 10" : {
+              "route-map clause" : [
+                4
+              ]
+            }
+          }
+        },
         "configs/asa_acl" : {
           "object-group network" : {
             "drawbridge_hosts" : {
@@ -76145,6 +76306,28 @@
             "ospfv3_map" : {
               "bgp redistribute ospfv3 route-map" : [
                 45
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "AGGREGATE-MAP 10" : {
+              "route-map clause" : [
+                57
+              ]
+            },
+            "CONNECTED-TO-BGP 10" : {
+              "route-map clause" : [
+                55
+              ]
+            },
+            "UNSUPP-MAP 10" : {
+              "route-map clause" : [
+                59
+              ]
+            },
+            "ospfv3_map 10" : {
+              "route-map clause" : [
+                53
               ]
             }
           },
@@ -77250,6 +77433,64 @@
                 10
               ]
             }
+          },
+          "route-map-clause" : {
+            "MAP_NAME1 10" : {
+              "route-map clause" : [
+                50
+              ]
+            },
+            "MAP_NAME2 20" : {
+              "route-map clause" : [
+                53,
+                56
+              ]
+            },
+            "MSDP-SA-RP-FILTER 10" : {
+              "route-map clause" : [
+                24
+              ]
+            },
+            "beeble 10" : {
+              "route-map clause" : [
+                40
+              ]
+            },
+            "beeble 5" : {
+              "route-map clause" : [
+                35
+              ]
+            },
+            "connected-to-bgp 10" : {
+              "route-map clause" : [
+                9
+              ]
+            },
+            "ijfw$%^&****(((([]grr 10" : {
+              "route-map clause" : [
+                22
+              ]
+            },
+            "mgmt 10" : {
+              "route-map clause" : [
+                31
+              ]
+            },
+            "multicaststuff 10" : {
+              "route-map clause" : [
+                47
+              ]
+            },
+            "next-hop-null 15" : {
+              "route-map clause" : [
+                28
+              ]
+            },
+            "to_svl-hub-router 100" : {
+              "route-map clause" : [
+                17
+              ]
+            }
           }
         },
         "configs/cisco_snmp" : {
@@ -77444,6 +77685,13 @@
                 7
               ]
             }
+          },
+          "route-map-clause" : {
+            "AAA1-BBB-CCC 100" : {
+              "route-map clause" : [
+                6
+              ]
+            }
           }
         },
         "configs/community_name_numbers_dos" : {
@@ -77451,6 +77699,13 @@
             "9999-RRR" : {
               "route-map match community-list" : [
                 7
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "AAA1-BBB-CCC 100" : {
+              "route-map clause" : [
+                6
               ]
             }
           }
@@ -78519,6 +78774,33 @@
             "lbpp" : {
               "forwarding-table export policy-statement" : [
                 112
+              ]
+            }
+          },
+          "policy-statement term" : {
+            "export-loopback lo0" : {
+              "policy-statement term" : [
+                162
+              ]
+            },
+            "fabric fabric" : {
+              "policy-statement term" : [
+                168
+              ]
+            },
+            "fabric vni-100" : {
+              "policy-statement term" : [
+                175
+              ]
+            },
+            "fabric vni-101" : {
+              "policy-statement term" : [
+                179
+              ]
+            },
+            "lbpp 1" : {
+              "policy-statement term" : [
+                185
               ]
             }
           },
@@ -79707,6 +79989,49 @@
               ]
             }
           },
+          "policy-statement term" : {
+            "POLICY-NAME AS_PATH" : {
+              "policy-statement term" : [
+                35,
+                36
+              ]
+            },
+            "POLICY-NAME TERM" : {
+              "policy-statement term" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34
+              ]
+            }
+          },
           "routing-instance" : {
             "FORWARDING" : {
               "policy-statement from instance" : [
@@ -79821,6 +80146,30 @@
             }
           }
         },
+        "configs/juniper_route_filter" : {
+          "policy-statement term" : {
+            "route-filter-test-v4 t1" : {
+              "policy-statement term" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ]
+            },
+            "route-filter-test-v6 t1" : {
+              "policy-statement term" : [
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ]
+            }
+          }
+        },
         "configs/juniper_routing_options" : {
           "policy-statement" : {
             "AGGREGATE_ROUTE_POLICY" : {
@@ -79850,6 +80199,20 @@
             "ge-0/0/0.99" : {
               "policy-statement from interface" : [
                 9
+              ]
+            }
+          },
+          "policy-statement term" : {
+            "POLICY-NAME TERM1" : {
+              "policy-statement term" : [
+                7,
+                8
+              ]
+            },
+            "POLICY-NAME TERM2" : {
+              "policy-statement term" : [
+                9,
+                10
               ]
             }
           }
@@ -80056,6 +80419,13 @@
             "abc123" : {
               "route-map match ipv4 access-list" : [
                 5
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "foo 1" : {
+              "route-map clause" : [
+                4
               ]
             }
           }
@@ -81141,6 +81511,13 @@
                 10
               ]
             }
+          },
+          "route-map-clause" : {
+            "to_elacc 10" : {
+              "route-map clause" : [
+                9
+              ]
+            }
           }
         },
         "configs/route_policy_as_path" : {
@@ -81262,6 +81639,13 @@
             "_GHI" : {
               "route-map match ipv4 prefix-list" : [
                 5
+              ]
+            }
+          },
+          "route-map-clause" : {
+            "JKL_MNO_PQR 100" : {
+              "route-map clause" : [
+                4
               ]
             }
           }

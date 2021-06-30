@@ -1,0 +1,5 @@
+#
+set system host-name juniper-policy-statement
+#
+set policy-options policy-statement POLICY_NAME term TERM_NAME from tag 0
+#

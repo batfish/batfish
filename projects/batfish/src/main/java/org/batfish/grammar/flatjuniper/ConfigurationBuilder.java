@@ -4,6 +4,7 @@ import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
@@ -30,6 +31,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
+import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
@@ -91,6 +93,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_SET_COMMUNITY;
@@ -2766,6 +2769,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     Map<String, PsTerm> terms = _currentPolicyStatement.getTerms();
     _currentPsTerm = terms.computeIfAbsent(name, PsTerm::new);
     _currentPsThens = _currentPsTerm.getThens();
+
+    String termName = computePolicyStatementTermName(_currentPolicyStatement.getName(), name);
+    _configuration.defineFlattenedStructure(POLICY_STATEMENT_TERM, termName, ctx, _parser);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT_TERM, termName, POLICY_STATEMENT_TERM_DEFINITION, getLine(ctx.name.start));
   }
 
   @Override

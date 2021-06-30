@@ -6379,6 +6379,12 @@
               "numReferrers" : 1
             }
           },
+          "policy-statement term" : {
+            "bgp_export 1" : {
+              "definitionLines" : "115-116",
+              "numReferrers" : 2
+            }
+          },
           "security policy" : {
             "zone~junos-host~to~zone~untrust" : {
               "definitionLines" : "68-75",
@@ -6525,6 +6531,12 @@
               "numReferrers" : 1
             }
           },
+          "policy-statement term" : {
+            "bgp_export 1" : {
+              "definitionLines" : "98-99",
+              "numReferrers" : 2
+            }
+          },
           "security policy" : {
             "zone~trust~to~zone~trust" : {
               "definitionLines" : "48-51",
@@ -6625,6 +6637,12 @@
             "bgp_export" : {
               "definitionLines" : "92-93",
               "numReferrers" : 1
+            }
+          },
+          "policy-statement term" : {
+            "bgp_export 1" : {
+              "definitionLines" : "92-93",
+              "numReferrers" : 2
             }
           },
           "security policy" : {
@@ -6797,6 +6815,14 @@
             "loadbal" : {
               "forwarding-table export policy-statement" : [
                 104
+              ]
+            }
+          },
+          "policy-statement term" : {
+            "bgp_export 1" : {
+              "policy-statement term" : [
+                115,
+                116
               ]
             }
           },
@@ -7055,6 +7081,14 @@
               ]
             }
           },
+          "policy-statement term" : {
+            "bgp_export 1" : {
+              "policy-statement term" : [
+                98,
+                99
+              ]
+            }
+          },
           "security policy" : {
             "zone~trust~to~zone~trust" : {
               "security policy" : [
@@ -7206,6 +7240,14 @@
             "bgp_export" : {
               "bgp export policy-statement" : [
                 83
+              ]
+            }
+          },
+          "policy-statement term" : {
+            "bgp_export 1" : {
+              "policy-statement term" : [
+                92,
+                93
               ]
             }
           },
