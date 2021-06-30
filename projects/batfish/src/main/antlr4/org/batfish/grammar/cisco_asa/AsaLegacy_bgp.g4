@@ -86,14 +86,23 @@ aggregate_address_rb_stanza
     | ipv6_prefix = IPV6_PREFIX
   )
   (
-    as_set = AS_SET
-    | summary_only = SUMMARY_ONLY
-    |
-    (
-      ATTRIBUTE_MAP mapname = variable
-    )
+    agg_advertise_map
+    | agg_as_set
+    | agg_attribute_map
+    | agg_summary_only
+    | agg_suppress_map
   )* NEWLINE
 ;
+
+agg_advertise_map: ADVERTISE_MAP adv_map = variable;
+
+agg_as_set: AS_SET;
+
+agg_attribute_map: ATTRIBUTE_MAP att_map = variable;
+
+agg_summary_only: SUMMARY_ONLY;
+
+agg_suppress_map: SUPPRESS_MAP sup_map = variable;
 
 additional_paths_rb_stanza
 :

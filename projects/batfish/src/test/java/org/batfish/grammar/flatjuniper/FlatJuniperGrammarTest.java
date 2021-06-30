@@ -143,6 +143,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_IS
 import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.generateInstanceImportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.generateResolutionRibImportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilterTerm;
@@ -154,6 +155,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICA
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
+import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
@@ -3713,6 +3716,24 @@ public final class FlatJuniperGrammarTest {
                     .setOriginalRoute(new ConnectedRoute(Prefix.parse("3.3.3.0/24"), "nextHop"))
                     .build());
     assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
+  @Test
+  public void testJuniperPolicyStatement() throws IOException {
+    String hostname = "juniper-policy-statement";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, POLICY_STATEMENT, "POLICY_NAME", 0));
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename,
+            POLICY_STATEMENT_TERM,
+            computePolicyStatementTermName("POLICY_NAME", "TERM_NAME"),
+            1));
   }
 
   @Test

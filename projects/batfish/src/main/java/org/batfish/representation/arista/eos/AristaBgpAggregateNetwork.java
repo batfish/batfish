@@ -54,6 +54,10 @@ public final class AristaBgpAggregateNetwork implements Serializable {
     return _summaryOnly;
   }
 
+  public boolean getSummaryOnlyEffective() {
+    return _summaryOnly != null ? _summaryOnly : false;
+  }
+
   public void setSummaryOnly(@Nullable Boolean summaryOnly) {
     _summaryOnly = summaryOnly;
   }

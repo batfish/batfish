@@ -19,6 +19,8 @@ comparator
 // structure names
 access_list_name: WORD;
 as_path_set_name: WORD;
+bridge_domain_name: WORD;
+bridge_group_name: WORD;
 community_set_name: WORD;
 flow_exporter_map_name: WORD;
 flow_monitor_map_name: WORD;

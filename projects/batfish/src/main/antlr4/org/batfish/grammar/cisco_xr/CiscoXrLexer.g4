@@ -782,7 +782,7 @@ BREAKOUT: 'breakout';
 
 BRIDGE: 'bridge';
 
-BRIDGE_DOMAIN: 'bridge-domain';
+BRIDGE_DOMAIN: 'bridge-domain' -> pushMode(M_Word);
 
 BRIDGE_GROUP: 'bridge-group';
 
@@ -2181,7 +2181,15 @@ GRE: 'gre';
 
 GREEN: 'green';
 
-GROUP: 'group';
+GROUP
+:
+  'group'
+  {
+    if (lastTokenType() == BRIDGE) {
+      pushMode(M_Word);
+    }
+  }
+;
 
 GROUP_ALIAS: 'group-alias';
 
@@ -2548,8 +2556,11 @@ INTERAREA: 'interarea';
 INTERFACE
 :
    'int' 'erface'?
-   { if (lastTokenType() == NEWLINE || lastTokenType() == -1) {pushMode(M_Interface);}}
-
+   {
+     if (lastTokenType() == NEWLINE || lastTokenType() == ROUTED || lastTokenType() == -1) {
+       pushMode(M_Interface);
+     }
+   }
 ;
 
 INTERFACE_INHERITANCE: 'interface-inheritance';
@@ -4043,6 +4054,8 @@ POLICY_MAP_INPUT: 'policy-map-input';
 POLICY_MAP_OUTPUT: 'policy-map-output';
 
 POOL: 'pool';
+
+POP: 'pop';
 
 POP2: 'pop2';
 

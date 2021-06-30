@@ -1,4 +1,4 @@
-package org.batfish.datamodel.routing_policy;
+package org.batfish.question;
 
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.TraceElement;
@@ -54,7 +54,7 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
   @Override
   public Statement visitIf(If if1, Void arg) {
     return new If(
-        STRIP_TOKEN,
+        if1.getComment(),
         if1.getGuard(), // assumes that guards do have tracing hints
         if1.getTrueStatements().stream()
             .map(st -> st.accept(this, arg))

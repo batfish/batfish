@@ -1524,7 +1524,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
 
     // switch settings
-    newIface.setAccessVlan(iface.getAccessVlan());
+    if (iface.getSwitchportMode() == SwitchportMode.ACCESS) {
+      newIface.setAccessVlan(firstNonNull(iface.getAccessVlan(), 1));
+    }
 
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
@@ -2311,12 +2313,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           continueTargetPolicy = clauses.get(continueTarget);
           if (continueTargetPolicy == null) {
-            String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
-            undefined(
-                CiscoStructureType.ROUTE_MAP_CLAUSE,
-                name,
-                CiscoStructureUsage.ROUTE_MAP_CONTINUE,
-                continueStatement.getStatementLine());
             continueStatement = null;
           }
         } else {
@@ -3095,6 +3091,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(CiscoStructureType.ROUTE_MAP);
 
+    // mark references to route-map clauses
+    markConcreteStructure(CiscoStructureType.ROUTE_MAP_CLAUSE);
+
     // Cable
     markConcreteStructure(CiscoStructureType.DEPI_CLASS);
     markConcreteStructure(CiscoStructureType.DEPI_TUNNEL);
@@ -3797,5 +3796,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
+  }
+
+  public static @Nonnull String computeRouteMapClauseName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
   }
 }

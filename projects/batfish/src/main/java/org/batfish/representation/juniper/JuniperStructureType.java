@@ -28,6 +28,7 @@ public enum JuniperStructureType implements StructureType {
   NAT_RULE("nat rule"),
   NAT_RULE_SET("nat rule set"),
   POLICY_STATEMENT("policy-statement"),
+  POLICY_STATEMENT_TERM("policy-statement term"),
   PREFIX_LIST("prefix-list"),
   RIB_GROUP("rib-group"),
   ROUTING_INSTANCE("routing-instance"),

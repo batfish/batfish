@@ -13,6 +13,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
+import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -209,6 +210,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
   public static @Nonnull String computeSecurityPolicyTermName(
       @Nonnull String policyName, @Nonnull String termName) {
     return String.format("%s %s", policyName, termName);
+  }
+
+  public static @Nonnull String computePolicyStatementTermName(
+      @Nonnull String policyStatementName, @Nonnull String termName) {
+    return String.format("%s %s", policyStatementName, termName);
   }
 
   @VisibleForTesting
@@ -2798,9 +2804,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (hasDefaultTerm) {
       terms.add(ps.getDefaultTerm());
     }
-    VendorStructureId vendorStructureId =
-        new VendorStructureId(
-            _filename, JuniperStructureType.POLICY_STATEMENT.getDescription(), ps.getName());
     for (PsTerm term : terms) {
       List<Statement> thens = toStatements(term.getThens());
       if (term.hasAtLeastOneFrom()) {
@@ -2837,12 +2840,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .add(froms.getFromInstance().getRoutingInstanceName());
         }
         ifStatement.setGuard(toGuard(froms));
-        ifStatement
-            .getTrueStatements()
-            .add(toTraceableStatement(thens, term.getName(), vendorStructureId));
+        ifStatement.setTrueStatements(
+            ImmutableList.of(toTraceableStatement(thens, term.getName(), ps.getName(), _filename)));
         statements.add(ifStatement);
       } else {
-        statements.add(toTraceableStatement(thens, term.getName(), vendorStructureId));
+        statements.add(toTraceableStatement(thens, term.getName(), ps.getName(), _filename));
       }
     }
     If endOfPolicy = new If();
@@ -2953,10 +2955,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   static TraceableStatement toTraceableStatement(
-      List<Statement> statements, String termName, VendorStructureId vendorStructureId) {
+      List<Statement> statements, String termName, String policyName, String fileName) {
     return new TraceableStatement(
-        TraceElement.of(
-            String.format("Matched term %s", escapeNameIfNeeded(termName)), vendorStructureId),
+        TraceElement.builder()
+            .add("Matched")
+            .add(
+                String.format(
+                    "policy-statement %s term %s",
+                    escapeNameIfNeeded(policyName), escapeNameIfNeeded(termName)),
+                new VendorStructureId(
+                    fileName,
+                    POLICY_STATEMENT_TERM.getDescription(),
+                    computePolicyStatementTermName(policyName, termName)))
+            .build(),
         statements);
   }
 
@@ -3601,6 +3612,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT,
         JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT,
         JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT);
+    markConcreteStructure(JuniperStructureType.POLICY_STATEMENT_TERM);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,

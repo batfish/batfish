@@ -6,6 +6,8 @@ public enum AsaStructureUsage implements StructureUsage {
   ACCESS_GROUP_GLOBAL_FILTER("access-group global filter"),
   BGP_ADVERTISE_MAP_EXIST_MAP("bgp neighbor advertise-map exist-map"),
   BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),
+  BGP_AGGREGATE_ADVERTISE_MAP("bgp vrf aggregate-address advertise-map"),
+  BGP_AGGREGATE_SUPPRESS_MAP("bgp vrf aggregate-address suppress-map"),
   BGP_DEFAULT_ORIGINATE_ROUTE_MAP("bgp default-originate route-map"),
   BGP_INBOUND_PREFIX_LIST("bgp inbound prefix-list"),
   BGP_INBOUND_PREFIX6_LIST("bgp inbound ipv6 prefix-list"),

@@ -6,6 +6,7 @@ import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.arista.AristaConfiguration.MAX_ADMINISTRATIVE_COST;
 
@@ -48,6 +49,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -84,6 +86,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.representation.arista.eos.AristaBgpAggregateNetwork;
 import org.batfish.representation.arista.eos.AristaBgpHasPeerGroup;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor;
 import org.batfish.representation.arista.eos.AristaBgpNeighbor.RemovePrivateAsMode;
@@ -208,6 +211,26 @@ final class AristaConversions {
       return false;
     }
     return true;
+  }
+
+  static @Nonnull BgpAggregate toBgpAggregate(
+      Prefix prefix, AristaBgpAggregateNetwork vsAggregate, Configuration c, Warnings w) {
+    // TODO: handle advertise-only
+    // TODO: handle as-set
+    // TODO: handle match-map
+    // TODO: verify undefined attribute-map can be treated as omitted
+    String attributeMap = vsAggregate.getAttributeMap();
+    if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
+      w.redFlag(
+          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      attributeMap = null;
+    }
+    return BgpAggregate.of(
+        prefix,
+        generateSuppressionPolicy(vsAggregate.getSummaryOnlyEffective(), c),
+        // TODO: put match-map here
+        null,
+        attributeMap);
   }
 
   @Nonnull
