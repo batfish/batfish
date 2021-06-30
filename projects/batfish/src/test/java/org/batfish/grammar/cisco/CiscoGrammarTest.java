@@ -386,6 +386,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.Transformation;
@@ -5627,16 +5628,27 @@ public final class CiscoGrammarTest {
     List<Statement> statements =
         ((If) Iterables.getOnlyElement(c.getRoutingPolicies().get("rm").getStatements()))
             .getTrueStatements();
-    assertThat(statements, contains(Statements.ReturnTrue.toStaticStatement()));
+    // get the true statements past the traceable wrapper
+    List<Statement> innerStatements =
+        ((TraceableStatement) Iterables.getOnlyElement(statements)).getInnerStatements();
+    assertThat(innerStatements, contains(Statements.ReturnTrue.toStaticStatement()));
   }
 
   @Test
   public void testSetMetricEigrp() throws IOException {
     Configuration c = parseConfig("ios-route-map-set-metric-eigrp");
 
+    // get the true statements past the traceable wrapper
+    List<Statement> trueStatements =
+        ((TraceableStatement)
+                Iterables.getOnlyElement(
+                    ((If)
+                            Iterables.getOnlyElement(
+                                c.getRoutingPolicies().get("rm_set_metric").getStatements()))
+                        .getTrueStatements()))
+            .getInnerStatements();
     assertThat(
-        ((If) Iterables.getOnlyElement(c.getRoutingPolicies().get("rm_set_metric").getStatements()))
-            .getTrueStatements(),
+        trueStatements,
         // Being intentionally lax here because pretty sure conversion is busted.
         // TODO: update when convinced eigrp settings have correct values
         hasItem(instanceOf(SetEigrpMetric.class)));

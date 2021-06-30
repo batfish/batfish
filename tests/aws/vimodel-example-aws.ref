@@ -59036,8 +59036,30 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "route-map PROTECT_LOOPBACK clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/lhr-border-02.cfg",
+                            "structureName" : "PROTECT_LOOPBACK 10",
+                            "structureType" : "route-map-clause"
+                          }
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -59081,8 +59103,30 @@
                     },
                     "trueStatements" : [
                       {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
+                        "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                        "innerStatements" : [
+                          {
+                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                            "type" : "ReturnTrue"
+                          }
+                        ],
+                        "traceElement" : {
+                          "fragments" : [
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                              "text" : "Matched"
+                            },
+                            {
+                              "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                              "text" : "route-map SET_LOCAL_PREF clause 20",
+                              "vendorStructureId" : {
+                                "filename" : "configs/lhr-border-02.cfg",
+                                "structureName" : "SET_LOCAL_PREF 20",
+                                "structureType" : "route-map-clause"
+                              }
+                            }
+                          ]
+                        }
                       }
                     ]
                   }
@@ -59092,15 +59136,37 @@
                 },
                 "trueStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                    "localPreference" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                      "value" : 50
+                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                    "innerStatements" : [
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                        "localPreference" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                          "value" : 50
+                        }
+                      },
+                      {
+                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                        "type" : "ReturnTrue"
+                      }
+                    ],
+                    "traceElement" : {
+                      "fragments" : [
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                          "text" : "Matched"
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                          "text" : "route-map SET_LOCAL_PREF clause 10",
+                          "vendorStructureId" : {
+                            "filename" : "configs/lhr-border-02.cfg",
+                            "structureName" : "SET_LOCAL_PREF 10",
+                            "structureType" : "route-map-clause"
+                          }
+                        }
+                      ]
                     }
-                  },
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
                   }
                 ]
               }
