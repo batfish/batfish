@@ -297,7 +297,14 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
+    BDD insufficientInfoIps =
+        Stream.of(
+                DST_IP,
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
+            .map(this::dstIpToBDD)
+            .reduce(_pkt.getFactory().zero(), BDD::or);
+    assertThat(reach, hasEntry(_loc, insufficientInfoIps));
   }
 
   private void setup_noNHIp_subnetNotFull_externalDstIp() {
@@ -321,14 +328,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(EXITS_NETWORK);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD exitsNetworkIps =
-        Stream.of(
-                DST_IP,
-                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
-                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
-            .map(this::dstIpToBDD)
-            .reduce(_pkt.getFactory().zero(), BDD::or);
-    assertThat(reach, hasEntry(_loc, exitsNetworkIps));
+    assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
   }
 
   private void setup_externalNHIp_subnetFull_internalDstIp() {
@@ -428,8 +428,14 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD neighborUnreachableIps = dstIpToBDD(DST_IP);
-    assertThat(reach, hasEntry(_loc, neighborUnreachableIps));
+    BDD insufficientInfoIps =
+        Stream.of(
+                DST_IP,
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
+            .map(this::dstIpToBDD)
+            .reduce(_pkt.getFactory().zero(), BDD::or);
+    assertThat(reach, hasEntry(_loc, insufficientInfoIps));
   }
 
   private void setup_externalNHIp_subnetNotFull_externalDstIp() {
@@ -454,14 +460,7 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(EXITS_NETWORK);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD exitsNetworkIps =
-        Stream.of(
-                DST_IP,
-                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
-                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
-            .map(this::dstIpToBDD)
-            .reduce(_pkt.getFactory().zero(), BDD::or);
-    assertThat(reach, hasEntry(_loc, exitsNetworkIps));
+    assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
   }
 
   private void setup_internalNHIp_subnetFull_internalDstIp() {
@@ -570,7 +569,14 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
+    BDD insufficientInfoIps =
+        Stream.of(
+                DST_IP,
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
+            .map(this::dstIpToBDD)
+            .reduce(_pkt.getFactory().zero(), BDD::or);
+    assertThat(reach, hasEntry(_loc, insufficientInfoIps));
   }
 
   private void setup_internalNHIp_subnetNotFull_externalDstIp() {
@@ -606,6 +612,13 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(INSUFFICIENT_INFO);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    assertThat(reach, hasEntry(_loc, dstIpToBDD(DST_IP)));
+    BDD insufficientInfoIps =
+        Stream.of(
+                DST_IP,
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp())
+            .map(this::dstIpToBDD)
+            .reduce(_pkt.getFactory().zero(), BDD::or);
+    assertThat(reach, hasEntry(_loc, insufficientInfoIps));
   }
 }
