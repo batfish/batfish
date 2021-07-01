@@ -3,5 +3,6 @@
 ! boot system flash:/EOS-4.19.0F.swi
 !
 interface Ethernet1/1
+    no switchport
     speed forced 100gfull
     ip address 10.20.0.3/31

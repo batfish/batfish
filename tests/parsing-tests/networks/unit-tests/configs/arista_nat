@@ -12,6 +12,7 @@ ip nat pool pool2 1.1.1.1 1.1.1.2 netmask 255.255.255.255
 ip nat pool pool3 1.1.1.1 1.1.1.2 prefix-length 32
 !
 interface Ethernet1
+ no switchport
  ip address 1.1.1.1/32
  ip nat source dynamic access-list acl1 pool pool1
 !

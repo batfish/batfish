@@ -4679,22 +4679,36 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   @Override
   public void exitIfip_address_address_eos(Ifip_address_address_eosContext ctx) {
     ConcreteInterfaceAddress addr = toAddress(ctx.addr);
-    if (ctx.SECONDARY() != null) {
-      _currentInterfaces.forEach(i -> i.getSecondaryAddresses().add(addr));
-    } else {
-      _currentInterfaces.forEach(i -> i.setAddress(addr));
-    }
+    _currentInterfaces.forEach(
+        i -> {
+          if (i.getSwitchport()) {
+            warn(ctx, String.format("Ignoring IP address for switchport %s", i.getName()));
+            return;
+          }
+          if (ctx.SECONDARY() != null) {
+            i.getSecondaryAddresses().add(addr);
+          } else {
+            i.setAddress(addr);
+          }
+        });
   }
 
   @Override
   public void exitIfip_address_virtual_eos(Ifip_address_virtual_eosContext ctx) {
     // TODO: this should be handled differently, since virtual is present.
     ConcreteInterfaceAddress addr = toAddress(ctx.addr);
-    if (ctx.SECONDARY() != null) {
-      _currentInterfaces.forEach(i -> i.getSecondaryAddresses().add(addr));
-    } else {
-      _currentInterfaces.forEach(i -> i.setAddress(addr));
-    }
+    _currentInterfaces.forEach(
+        i -> {
+          if (i.getSwitchport()) {
+            warn(ctx, String.format("Ignoring IP address for switchport %s", i.getName()));
+            return;
+          }
+          if (ctx.SECONDARY() != null) {
+            i.getSecondaryAddresses().add(addr);
+          } else {
+            i.setAddress(addr);
+          }
+        });
   }
 
   @Override
