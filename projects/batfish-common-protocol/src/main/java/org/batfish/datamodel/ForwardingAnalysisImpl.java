@@ -234,8 +234,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                           entry -> ((InterfaceLinkLocation) entry.getKey()).getInterfaceName(),
                           entry -> entry.getValue().getArpIps())));
 
+        // mapping: hostname -> interface -> ips of connected subnets (including host, network, or broadcast IPs).
+        Map<String, Map<String, IpSpace>> interfaceConnectedSubnetIps =
+              locationInfo.entrySet().stream()
+                      .filter(entry -> entry.getKey() instanceof InterfaceLinkLocation)
+                      .collect(
+                              Collectors.groupingBy(
+                                      entry -> entry.getKey().getNodeName(),
+                                      Collectors.toMap(
+                                              entry -> ((InterfaceLinkLocation) entry.getKey()).getInterfaceName(),
+                                              entry -> AclIpSpace.union(entry.getValue().getArpIps(), entry.getValue().getNetworkOrBroadcastIps()))));
+
       _deliveredToSubnet =
-          computeDeliveredToSubnet(arpFalseDestIp, interfaceExternalArpIps, ownedIps);
+          computeDeliveredToSubnet(arpFalseDestIp, interfaceConnectedSubnetIps, ownedIps);
 
       Map<String, Map<String, BDD>> interfaceExternalArpIpBDDs =
           computeInterfaceExternalArpIpBDDs(interfaceExternalArpIps, ipSpaceToBDD);
@@ -249,6 +260,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
               interfacesWithMissingDevices,
               arpFalseDestIp,
               interfaceExternalArpIps,
+              locationInfo,
               ownedIps);
 
       // ips belonging to any subnet in the network, including inactive interfaces.
@@ -256,7 +268,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
       _insufficientInfo =
           computeInsufficientInfo(
-              interfaceExternalArpIps,
+              interfaceConnectedSubnetIps,
               interfacesWithMissingDevices,
               arpFalseDestIp,
               dstIpsWithUnownedNextHopIpArpFalse,
@@ -1386,11 +1398,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * <p>An interface is full if all subnets connected to it are full.
    */
   static Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable(
-      Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
-      Map<String, Set<String>> interfacesWithMissingDevices,
-      Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
-      Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
-      IpSpace ownedIps) {
+          Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
+          Map<String, Set<String>> interfacesWithMissingDevices,
+          Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
+          Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
+          Map<Location, LocationInfo> locationInfo, IpSpace ownedIps) {
     Span span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNeighborUnreachable").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -1418,7 +1430,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                     arpFalseDestIp.get(node).get(vrf).get(iface),
                                     interfaceExternalArpIps.get(node).get(iface),
                                     ownedIps)
-                                : ifaceArpFalse;
+                                : AclIpSpace.difference(ifaceArpFalse,
+                                    locationInfo.get(new InterfaceLinkLocation(node,iface)).getNetworkOrBroadcastIps())
+                                    ;
                           })));
     } finally {
       span.finish();
@@ -1622,6 +1636,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                       IpSpace rightIpSpace = rightIfaceMap.get(iface);
                       BDD bdd = toBDD.visit(ipSpace);
                       BDD rightBDD = toBDD.visit(rightIpSpace);
+                      BDD leftOnly = bdd.diff(rightBDD);
+                      if(!leftOnly.isZero()) {
+                          System.out.println(
+                                  Ip.create(toBDD.getBDDInteger().getValueSatisfying(leftOnly).get())
+                                  );
+                          leftOnly.isZero();
+                      }
                       assert !bdd.diffSat(rightBDD)
                           : "Left BDDs larger for node "
                               + node

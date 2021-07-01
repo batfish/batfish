@@ -1377,6 +1377,7 @@ public class ForwardingAnalysisImplTest {
                 interfacesWithMissingDevices,
                 arpFalseDestIp,
                 interfaceHostSubnetIps,
+                ImmutableMap.of(),
                 ownedIps)
             .get(CONFIG1)
             .get(VRF1)
