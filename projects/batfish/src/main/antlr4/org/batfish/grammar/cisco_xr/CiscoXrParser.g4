@@ -569,7 +569,7 @@ lbgbd_interface: INTERFACE interface_name NEWLINE lbgbdi_inner*;
 
 lbgbdi_inner: lbgbdi_null;
 
-lbgbdi_null: STORM_CONTROL ~NEWLINE* NEWLINE;
+lbgbdi_null: STORM_CONTROL null_rest_of_line;
 
 lbgbd_routed_interface: ROUTED INTERFACE interface_name NEWLINE;
 
