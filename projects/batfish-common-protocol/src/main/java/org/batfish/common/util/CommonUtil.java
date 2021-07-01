@@ -178,7 +178,7 @@ public class CommonUtil {
   public static Integer getInterfaceNumber(String prefix, String ifaceName) {
     String ifaceNameLower = ifaceName.toLowerCase();
     String withoutDot = ifaceNameLower.replaceAll("\\.", "");
-    if (withoutDot.startsWith(prefix)) {
+    if (withoutDot.startsWith(prefix.toLowerCase())) {
       String vlanStr = withoutDot.substring(prefix.length());
       if (vlanStr.length() > 0) {
         return Integer.parseInt(vlanStr);
