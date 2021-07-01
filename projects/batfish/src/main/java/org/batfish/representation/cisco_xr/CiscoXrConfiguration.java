@@ -1116,12 +1116,21 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return null;
   }
 
+  /**
+   * Convert the specified interface into VI model representation.
+   *
+   * <p>If {@code modelL2vpnAsTrunk} is {@code true}, then L2 interfaces are converted as switchport
+   * interfaces with switchport mode trunk.
+   *
+   * <p>If {@code modelL2vpnAsTrunk} is {@code false}, then any L2 or BVI interfaces are set
+   * inactive.
+   */
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName,
       Interface iface,
       Map<String, IpAccessList> ipAccessLists,
       Configuration c,
-      boolean canModelL2vpn) {
+      boolean modelL2vpnAsTrunk) {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
@@ -1289,20 +1298,18 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
 
     // Handle L2 interface config
-    if (iface.getL2transport()) {
-      if (canModelL2vpn) {
-        // Guaranteed by canModelL2vpn
-        assert iface.getEncapsulationVlan() != null;
+    if (iface.getL2transport() && modelL2vpnAsTrunk) {
+      // Guaranteed by canModelL2vpn
+      assert iface.getEncapsulationVlan() != null;
 
-        newIface.setSwitchport(true);
-        newIface.setSwitchportMode(SwitchportMode.TRUNK);
-        newIface.setAllowedVlans(IntegerSpace.of(iface.getEncapsulationVlan()));
-        newIface.setNativeVlan(null);
-        newIface.setEncapsulationVlan(null);
-      }
+      newIface.setSwitchport(true);
+      newIface.setSwitchportMode(SwitchportMode.TRUNK);
+      newIface.setAllowedVlans(IntegerSpace.of(iface.getEncapsulationVlan()));
+      newIface.setNativeVlan(null);
+      newIface.setEncapsulationVlan(null);
     }
     if (iface.getL2transport() || ifaceName.startsWith("BVI")) {
-      if (!canModelL2vpn) {
+      if (!modelL2vpnAsTrunk) {
         _w.redFlag(
             String.format(
                 "Batfish cannot yet model this device's l2vpn configuration, so disabling interface"
@@ -2003,7 +2010,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
     }
 
-    boolean modelL2vpn = canModelL2vpn();
+    boolean modelL2vpn = canModelL2vpnAsTrunk();
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
@@ -2284,8 +2291,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Indicates if Batfish is capable of modeling the L2vpn configured for this device. Adds a
-   * warning if not capable.
+   * Indicates if the L2vpn configured for this device can be modeled as VLAN interfaces and L2
+   * interfaces in switchport mode trunk. Adds a warning if not.
    *
    * <p>All of the following must be satisfied in order to represent the l2vpn / l2transport
    * configuration with our simplified model:
@@ -2307,7 +2314,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
    *
    * <p>This is only needed while Batfish requires a simplified VI representation for L2 interfaces.
    */
-  private boolean canModelL2vpn() {
+  private boolean canModelL2vpnAsTrunk() {
     Set<String> ifacesInBridgeDomain = new HashSet<>();
     Set<String> routedIfaces = new HashSet<>();
     Map<Integer, BridgeDomain> vlanToBridgeDomain = new HashMap<>();
