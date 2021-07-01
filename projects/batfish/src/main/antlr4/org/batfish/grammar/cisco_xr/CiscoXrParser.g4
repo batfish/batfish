@@ -565,7 +565,11 @@ lbg_bridge_domain
    )*
 ;
 
-lbgbd_interface: INTERFACE interface_name NEWLINE;
+lbgbd_interface: INTERFACE interface_name NEWLINE lbgbdi_inner*;
+
+lbgbdi_inner: lbgbdi_null;
+
+lbgbdi_null: STORM_CONTROL ~NEWLINE* NEWLINE;
 
 lbgbd_routed_interface: ROUTED INTERFACE interface_name NEWLINE;
 
