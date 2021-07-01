@@ -1,6 +1,6 @@
 package org.batfish.representation.cumulus;
 
-import static org.batfish.representation.cumulus.CumulusConversions.computeRoutingPolicyName;
+import static org.batfish.representation.cumulus.CumulusConversions.computeRouteMapEntryName;
 import static org.batfish.representation.cumulus.CumulusStructureType.ROUTE_MAP_ENTRY;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -177,7 +177,7 @@ class RouteMapConvertor {
                 new VendorStructureId(
                     filename,
                     ROUTE_MAP_ENTRY.getDescription(),
-                    computeRoutingPolicyName(mapName, sequence)))
+                    computeRouteMapEntryName(mapName, sequence)))
             .build(),
         statements);
   }
@@ -212,5 +212,9 @@ class RouteMapConvertor {
         new CallExpr(routingPolicyName),
         ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
         ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
+  }
+
+  private static @Nonnull String computeRoutingPolicyName(String routeMapName, int sequence) {
+    return String.format("~%s~SEQ:%d~", routeMapName, sequence);
   }
 }

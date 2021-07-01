@@ -1754,7 +1754,7 @@ public final class CumulusConversions {
             });
   }
 
-  public static @Nonnull String computeRoutingPolicyName(String routeMapName, int sequence) {
-    return String.format("~%s~SEQ:%d~", routeMapName, sequence);
+  public static @Nonnull String computeRouteMapEntryName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
   }
 }

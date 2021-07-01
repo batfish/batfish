@@ -5,7 +5,7 @@ import static java.lang.Long.parseLong;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrParser.Int_exprContext;
 import static org.batfish.representation.cumulus.CumulusConversions.DEFAULT_MAX_MED;
-import static org.batfish.representation.cumulus.CumulusConversions.computeRoutingPolicyName;
+import static org.batfish.representation.cumulus.CumulusConversions.computeRouteMapEntryName;
 import static org.batfish.representation.cumulus.CumulusStructureType.ABSTRACT_INTERFACE;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cumulus.CumulusStructureType.IP_COMMUNITY_LIST;
@@ -1374,7 +1374,7 @@ public class CumulusFrrConfigurationBuilder extends CumulusFrrParserBaseListener
             .computeIfAbsent(sequence, k -> new RouteMapEntry(sequence, action));
     _c.defineStructure(ROUTE_MAP, name, ctx);
 
-    String routeMapEntryName = computeRoutingPolicyName(name, sequence);
+    String routeMapEntryName = computeRouteMapEntryName(name, sequence);
     _c.defineStructure(ROUTE_MAP_ENTRY, routeMapEntryName, ctx);
     _c.referenceStructure(
         ROUTE_MAP_ENTRY,
