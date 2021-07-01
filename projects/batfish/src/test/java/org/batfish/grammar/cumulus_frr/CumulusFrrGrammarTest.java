@@ -9,6 +9,7 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.grammar.cumulus_frr.CumulusFrrConfigurationBuilder.nextMultipleOfFive;
 import static org.batfish.representation.cumulus.CumulusConversions.computeOspfAreaRangeFilterName;
+import static org.batfish.representation.cumulus.CumulusConversions.computeRouteMapEntryName;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.CONNECTED;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.OSPF;
 import static org.batfish.representation.cumulus.CumulusRoutingProtocol.STATIC;
@@ -1076,6 +1077,18 @@ public class CumulusFrrGrammarTest {
             .getDefinitionLines()
             .enumerate(),
         equalTo(ImmutableSet.of(1, 2)));
+    assertThat(
+        getDefinedStructureInfo(
+                CumulusStructureType.ROUTE_MAP_ENTRY, computeRouteMapEntryName(name, 10))
+            .getDefinitionLines()
+            .enumerate(),
+        equalTo(ImmutableSet.of(1)));
+    assertThat(
+        getStructureReferences(
+            CumulusStructureType.ROUTE_MAP_ENTRY,
+            computeRouteMapEntryName(name, 10),
+            CumulusStructureUsage.ROUTE_MAP_ENTRY_SELF_REFERENCE),
+        contains(1));
   }
 
   @Test

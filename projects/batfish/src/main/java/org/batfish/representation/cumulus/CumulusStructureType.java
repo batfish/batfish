@@ -14,6 +14,7 @@ public enum CumulusStructureType implements StructureType {
   IP_PREFIX_LIST("ip_prefix_list"),
   LOOPBACK("loopback"),
   ROUTE_MAP("route-map"),
+  ROUTE_MAP_ENTRY("route-map entry"),
   VLAN("vlan"),
   VRF("vrf"),
   VXLAN("vxlan");
