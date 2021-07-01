@@ -691,6 +691,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
     markConcreteStructure(CumulusStructureType.LOOPBACK);
     markConcreteStructure(CumulusStructureType.ROUTE_MAP);
+    markConcreteStructure(CumulusStructureType.ROUTE_MAP_ENTRY);
     markConcreteStructure(CumulusStructureType.VLAN);
     markConcreteStructure(CumulusStructureType.VRF);
     markConcreteStructure(CumulusStructureType.VXLAN);
