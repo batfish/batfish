@@ -252,7 +252,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
               ownedIps);
 
       // ips belonging to any subnet in the network, including inactive interfaces.
-      IpSpace internalIps = computeInternalIps(configurations);
+      IpSpace internalIps = computeInternalIps(ipOwners.getAllInterfaceHostIps());
 
       _insufficientInfo =
           computeInsufficientInfo(
@@ -1175,17 +1175,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     }
   }
 
-  private static IpSpace computeInternalIps(Map<String, Configuration> configs) {
+  private static IpSpace computeInternalIps(
+      Map<String, Map<String, IpSpace>> interfaceHostSubnetIps) {
     Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeInternalIps").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return firstNonNull(
           AclIpSpace.union(
-              configs.values().stream()
-                  .flatMap(config -> config.getAllInterfaces().values().stream())
-                  .flatMap(iface -> iface.getAllConcreteAddresses().stream())
-                  .map(addr -> addr.getPrefix().toIpSpace())
-                  .toArray(IpSpace[]::new)),
+              interfaceHostSubnetIps.values().stream()
+                  .flatMap(ifaceSubnetIps -> ifaceSubnetIps.values().stream())
+                  .collect(Collectors.toList())),
           EmptyIpSpace.INSTANCE);
     } finally {
       span.finish();

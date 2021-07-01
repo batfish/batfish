@@ -124,12 +124,18 @@ final class IncrementalBdpEngine {
             computeVxlanTopology(partialDataplane.getLayer2Vnis()),
             configurations,
             trEngCurrentL3Topology);
-    // Layer-2
-    LOGGER.info("Updating Layer 2 topology");
-    Optional<Layer2Topology> newLayer2Topology =
-        initialTopologyContext // not updated across rounds
-            .getLayer1LogicalTopology()
-            .map(l1 -> computeLayer2Topology(l1, newVxlanTopology, configurations));
+
+    // Update Layer-2 if necessary
+    Optional<Layer2Topology> newLayer2Topology;
+    if (!currentTopologyContext.getVxlanTopology().equals(newVxlanTopology)) {
+      LOGGER.info("Updating Layer 2 topology");
+      newLayer2Topology =
+          initialTopologyContext // not updated across rounds
+              .getLayer1LogicalTopology()
+              .map(l1 -> computeLayer2Topology(l1, newVxlanTopology, configurations));
+    } else {
+      newLayer2Topology = currentTopologyContext.getLayer2Topology();
+    }
 
     // Tunnel topology
     LOGGER.info("Updating Tunnel topology");

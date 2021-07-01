@@ -1091,9 +1091,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
 
-    BDD exitsNetworkBdd = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
+    BDD resultBDD = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
 
-    assertThat(transition.transitForward(_one), equalTo(exitsNetworkBdd));
+    assertThat(transition.transitForward(resultBDD), equalTo(resultBDD));
 
     Transition transitionII =
         analysis
@@ -1101,11 +1101,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceInsufficientInfo(c1.getHostname(), i1.getName()));
 
-    BDD insufficientInfoBdd =
-        dstToBdd
-            .toBDD(i1.getPrimaryNetwork().getStartIp())
-            .or(dstToBdd.toBDD(i1.getPrimaryNetwork().getEndIp()));
-    assertThat(transitionII.transitForward(_one), equalTo(insufficientInfoBdd));
+    assertThat(transitionII, nullValue());
   }
 
   /*
@@ -1171,14 +1167,9 @@ public final class BDDReachabilityAnalysisFactoryTest {
     HeaderSpaceToBDD toBDD = new HeaderSpaceToBDD(_pkt, ImmutableMap.of());
     IpSpaceToBDD dstToBdd = toBDD.getDstIpSpaceToBdd();
 
-    BDD insufficientInfoBdd =
-        _pkt.getFactory()
-            .orAll(
-                dstToBdd.toBDD(Prefix.parse("8.8.8.0/24")),
-                dstToBdd.toBDD(i1.getPrimaryNetwork().getStartIp()),
-                dstToBdd.toBDD(i1.getPrimaryNetwork().getEndIp()));
+    BDD resultBDD = dstToBdd.toBDD(Prefix.parse("8.8.8.0/24"));
 
-    assertThat(transition.transitForward(_one), equalTo(insufficientInfoBdd));
+    assertThat(transition.transitForward(resultBDD), equalTo(resultBDD));
 
     Transition transitionEN =
         analysis
@@ -1186,7 +1177,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .get(new PreOutVrf(c1.getHostname(), v1.getName()))
             .get(new PreOutInterfaceExitsNetwork(c1.getHostname(), i1.getName()));
 
-    assertThat(transitionEN, nullValue());
+    assertThat(transitionEN.transitForward(resultBDD), equalTo(_pkt.getFactory().zero()));
   }
 
   @Test

@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.groupingBy;
 import static org.batfish.datamodel.BgpPeerConfig.ALL_AS_NUMBERS;
+import static org.batfish.datamodel.Names.escapeNameIfNeeded;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
@@ -12,6 +13,7 @@ import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnTrue;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
+import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -177,6 +179,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
 import org.batfish.representation.juniper.FwTerm.Field;
@@ -2786,7 +2789,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         new ExplicitPrefixSet((new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
   }
 
-  private RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
+  @VisibleForTesting
+  RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
     // Ensure map of VRFs referenced in routing policies is initialized
     if (_vrfReferencesInPolicies == null) {
       _vrfReferencesInPolicies = new TreeMap<>();
@@ -2836,10 +2840,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .add(froms.getFromInstance().getRoutingInstanceName());
         }
         ifStatement.setGuard(toGuard(froms));
-        ifStatement.getTrueStatements().addAll(thens);
+        ifStatement.setTrueStatements(
+            ImmutableList.of(toTraceableStatement(thens, term.getName(), ps.getName(), _filename)));
         statements.add(ifStatement);
       } else {
-        statements.addAll(thens);
+        statements.add(toTraceableStatement(thens, term.getName(), ps.getName(), _filename));
       }
     }
     If endOfPolicy = new If();
@@ -2946,6 +2951,24 @@ public final class JuniperConfiguration extends VendorConfiguration {
       then.applyTo(thenStatements, this, _c, _w);
     }
     return thenStatements;
+  }
+
+  @VisibleForTesting
+  static TraceableStatement toTraceableStatement(
+      List<Statement> statements, String termName, String policyName, String fileName) {
+    return new TraceableStatement(
+        TraceElement.builder()
+            .add("Matched ")
+            .add(
+                String.format(
+                    "policy-statement %s term %s",
+                    escapeNameIfNeeded(policyName), escapeNameIfNeeded(termName)),
+                new VendorStructureId(
+                    fileName,
+                    POLICY_STATEMENT_TERM.getDescription(),
+                    computePolicyStatementTermName(policyName, termName)))
+            .build(),
+        statements);
   }
 
   private Set<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {
