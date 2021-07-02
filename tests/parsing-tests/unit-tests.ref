@@ -2742,7 +2742,7 @@
             "            (if_vrf_name",
             "              name = (vrf_name*",
             "                WORD:'12345'  <== mode:M_Word)",
-            "              NEWLINE:'\\n\\n'))))))",
+            "              NEWLINE:'\\n'))))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -6405,7 +6405,7 @@
             "          ANY:'any')",
             "        dstipr = (access_list_ip_range*",
             "          ANY:'any')",
-            "        NEWLINE:'\\n\\n')))",
+            "        NEWLINE:'\\n')))",
             "  EOF:<EOF>)"
           ]
         },
