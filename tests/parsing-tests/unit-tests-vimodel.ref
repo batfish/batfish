@@ -28534,7 +28534,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "192.168.1.0/24"
+              "192.168.1.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
@@ -28562,7 +28562,7 @@
               "process" : "1"
             },
             "preTransformationOutgoingFilter" : "~COMBINED_OUTGOING_ACL~blah~",
-            "prefix" : "192.168.1.0/24",
+            "prefix" : "192.168.1.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -28697,7 +28697,7 @@
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
-                "routerId" : "192.168.1.0",
+                "routerId" : "192.168.1.1",
                 "summaryAdminCost" : 254,
                 "summaryDiscardMetric" : 0
               }
@@ -34733,7 +34733,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "1.2.3.4/30"
+              "1.2.3.1/30"
             ],
             "allowedVlans" : "1-4094",
             "autostate" : true,
@@ -34770,7 +34770,7 @@
               "networkType" : "BROADCAST",
               "passive" : false
             },
-            "prefix" : "1.2.3.4/30",
+            "prefix" : "1.2.3.1/30",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -37604,7 +37604,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "3.3.3.0/24"
+              "3.3.3.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
@@ -37624,7 +37624,7 @@
               "passive" : false,
               "process" : "1"
             },
-            "prefix" : "3.3.3.0/24",
+            "prefix" : "3.3.3.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -37643,7 +37643,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "4.4.4.0/24"
+              "4.4.4.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
@@ -37660,7 +37660,7 @@
               "networkType" : "BROADCAST",
               "passive" : false
             },
-            "prefix" : "4.4.4.0/24",
+            "prefix" : "4.4.4.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -37976,7 +37976,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "2.2.2.0/24"
+              "2.2.2.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
@@ -37993,7 +37993,7 @@
               "networkType" : "BROADCAST",
               "passive" : false
             },
-            "prefix" : "2.2.2.0/24",
+            "prefix" : "2.2.2.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -38073,7 +38073,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "2.2.2.0/24"
+              "2.2.2.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
@@ -38093,7 +38093,7 @@
               "passive" : false,
               "process" : "1"
             },
-            "prefix" : "2.2.2.0/24",
+            "prefix" : "2.2.2.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -38112,7 +38112,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "3.3.3.0/24"
+              "3.3.3.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
@@ -38132,7 +38132,7 @@
               "passive" : false,
               "process" : "ignored"
             },
-            "prefix" : "3.3.3.0/24",
+            "prefix" : "3.3.3.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -38366,7 +38366,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "2.2.2.0/24"
+              "2.2.2.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
@@ -38383,7 +38383,7 @@
               "networkType" : "BROADCAST",
               "passive" : false
             },
-            "prefix" : "2.2.2.0/24",
+            "prefix" : "2.2.2.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -40994,7 +40994,7 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "1.0.0.0/24"
+              "1.0.0.1/24"
             ],
             "allowedVlans" : "",
             "autostate" : true,
@@ -41003,7 +41003,7 @@
               "Ethernet0"
             ],
             "mtu" : 1500,
-            "prefix" : "1.0.0.0/24",
+            "prefix" : "1.0.0.1/24",
             "proxyArp" : true,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -87382,7 +87382,6 @@
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
             "allPrefixes" : [
-              "1.2.3.0/24",
               "1.2.3.1/24"
             ],
             "allowedVlans" : "",

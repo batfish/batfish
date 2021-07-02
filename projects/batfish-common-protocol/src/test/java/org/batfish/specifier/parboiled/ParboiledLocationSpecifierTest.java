@@ -44,7 +44,7 @@ public class ParboiledLocationSpecifierTest {
     nf.interfaceBuilder()
         .setOwner(n2)
         .setName(_iface1)
-        .setAddress(ConcreteInterfaceAddress.parse("3.3.3.3/30"))
+        .setAddress(ConcreteInterfaceAddress.parse("3.3.3.1/30"))
         .build();
 
     _ctxt =

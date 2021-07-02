@@ -84,8 +84,8 @@ public final class FibImplTest {
     String iface1 = "iface1";
     String iface2 = "iface2";
     String iface3 = "iface3";
-    Ip ip1 = Ip.parse("1.1.1.0");
-    Ip ip2 = Ip.parse("2.2.2.0");
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.1");
     _ib.setName(iface1).setAddress(ConcreteInterfaceAddress.create(ip1, 24)).build();
     _ib.setName(iface2).setAddress(ConcreteInterfaceAddress.create(ip2, 24)).build();
     _ib.setName(iface3).setAddress(ConcreteInterfaceAddress.create(ip2, 24)).build();
