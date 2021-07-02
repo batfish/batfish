@@ -116,8 +116,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
     if (direction == Direction.OUT) {
-      // when simulating a route policy in the OUT direction, the value for the output route's next
-      // hop must be set by default to AUTO/NONE (checked by Environment::build)
+      // when simulating a route policy in the OUT direction, the output route's next hop IP must be
+      // unset by default (checked by Environment::build)
       outputRoute.setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP);
     }
     Tracer tracer = new Tracer();
