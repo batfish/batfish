@@ -55,7 +55,7 @@ interface Ethernet0
  hold-queue 2000 in
  ip access-group ag1 in
  ip access-group ag2 out
- ip address 2.3.4.0/29
+ ip address 2.3.4.1/29
  ip address 13.9.2.2 255.255.255.255
  ip address virtual 1.2.3.4/27
  no ip address
@@ -135,7 +135,7 @@ interface Ethernet0
  ip vrf sitemap SITEMAP
  ip wccp 61 redirect in
  ipv4 access-group 310-systems egress hardware-count
- ipv4 address 1.2.3.4 255.255.255.252
+ ipv4 address 1.2.3.1 255.255.255.252
  ipv4 icmp unreachables disable
  ipv4 point-to-point
  ipv4 unnumbered Loopback100

@@ -98,13 +98,13 @@ public class ForwardingAnalysisImplTest {
     Interface i1 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength()))
             .setProxyArp(true)
             .build();
     Interface i2 =
         _ib.setOwner(c2)
             .setVrf(vrf2)
-            .setAddress(ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength()))
             .setProxyArp(false)
             .build();
     Ip additionalIp = Ip.parse("10.10.10.1");
@@ -140,17 +140,17 @@ public class ForwardingAnalysisImplTest {
         result,
         hasEntry(
             equalTo(c1.getHostname()),
-            hasEntry(equalTo(i1.getName()), containsIp(P1.getStartIp()))));
+            hasEntry(equalTo(i1.getName()), containsIp(P1.getFirstHostIp()))));
     assertThat(
         result,
         hasEntry(
             equalTo(c1.getHostname()),
-            hasEntry(equalTo(i1.getName()), not(containsIp(P1.getEndIp())))));
+            hasEntry(equalTo(i1.getName()), not(containsIp(P1.getLastHostIp())))));
     assertThat(
         result,
         hasEntry(
             equalTo(c1.getHostname()),
-            hasEntry(equalTo(i1.getName()), not(containsIp(P3.getStartIp())))));
+            hasEntry(equalTo(i1.getName()), not(containsIp(P3.getFirstHostIp())))));
     assertThat(
         result,
         hasEntry(
@@ -165,22 +165,22 @@ public class ForwardingAnalysisImplTest {
         result,
         hasEntry(
             equalTo(c2.getHostname()),
-            hasEntry(equalTo(i2.getName()), containsIp(P2.getStartIp()))));
+            hasEntry(equalTo(i2.getName()), containsIp(P2.getFirstHostIp()))));
     assertThat(
         result,
         hasEntry(
             equalTo(c2.getHostname()),
-            hasEntry(equalTo(i2.getName()), not(containsIp(P2.getEndIp())))));
+            hasEntry(equalTo(i2.getName()), not(containsIp(P2.getLastHostIp())))));
     assertThat(
         result,
         hasEntry(
             equalTo(c2.getHostname()),
-            hasEntry(equalTo(i2.getName()), not(containsIp(P3.getStartIp())))));
+            hasEntry(equalTo(i2.getName()), not(containsIp(P3.getFirstHostIp())))));
     assertThat(
         result,
         hasEntry(
             equalTo(c2.getHostname()),
-            hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp())))));
+            hasEntry(equalTo(i2.getName()), not(containsIp(P1.getFirstHostIp())))));
     assertThat(
         result,
         hasEntry(
@@ -196,12 +196,12 @@ public class ForwardingAnalysisImplTest {
     Vrf vrf2 = _vb.build();
     Interface i1 =
         _ib.setVrf(vrf1)
-            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength()))
             .setProxyArp(true)
             .build();
     Interface i2 =
         _ib.setVrf(vrf2)
-            .setAddress(ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength()))
             .setProxyArp(false)
             .build();
     Interface i3 = _ib.setAddress(null).setProxyArp(true).build();
@@ -239,16 +239,16 @@ public class ForwardingAnalysisImplTest {
             interfaces, routableIpsByVrf, ipsRoutedOutInterfaces, interfaceOwnedIps);
 
     /* Proxy-arp: Match interface IP, reject what's routed through i1, accept everything else*/
-    assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P1.getStartIp())));
-    assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P1.getEndIp()))));
-    assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P3.getStartIp()))));
+    assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P1.getFirstHostIp())));
+    assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P1.getLastHostIp()))));
+    assertThat(result, hasEntry(equalTo(i1.getName()), not(containsIp(P3.getFirstHostIp()))));
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(P2.getStartIp())));
     assertThat(result, hasEntry(equalTo(i1.getName()), containsIp(Ip.parse("10.10.10.1"))));
     /* No proxy-arp: just match interface ip and additional arp ip */
-    assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(P2.getStartIp())));
-    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P2.getEndIp()))));
-    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P3.getStartIp()))));
-    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp()))));
+    assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(P2.getFirstHostIp())));
+    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P2.getLastHostIp()))));
+    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P3.getFirstHostIp()))));
+    assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P1.getFirstHostIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), containsIp(Ip.parse("10.10.10.2"))));
     /* No interface IPs: reject everything */
     assertThat(result, hasEntry(equalTo(i3.getName()), equalTo(EmptyIpSpace.INSTANCE)));
@@ -265,7 +265,7 @@ public class ForwardingAnalysisImplTest {
     Vrf vrf2 = _vb.build();
     Interface i1 =
         _ib.setVrf(vrf1)
-            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength()))
             .setVrrpGroups(
                 ImmutableSortedMap.of(
                     1,
@@ -278,7 +278,7 @@ public class ForwardingAnalysisImplTest {
 
     Interface i2 =
         _ib.setVrf(vrf2)
-            .setAddress(ConcreteInterfaceAddress.create(P1.getEndIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getLastHostIp(), P1.getPrefixLength()))
             .setVrrpGroups(
                 ImmutableSortedMap.of(
                     1,
@@ -401,7 +401,7 @@ public class ForwardingAnalysisImplTest {
     Interface i1 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength()))
             .build();
     Ip i2Ip = Ip.create(P1.getStartIp().asLong() + 1);
     Interface i2 =
@@ -484,9 +484,9 @@ public class ForwardingAnalysisImplTest {
     Configuration config = _cb.build();
     _ib.setOwner(config);
     ConcreteInterfaceAddress primary =
-        ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength());
+        ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength());
     ConcreteInterfaceAddress secondary =
-        ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength());
+        ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength());
     Interface iNoProxyArp = _ib.setAddresses(primary, secondary).build();
     Interface iProxyArp = _ib.setProxyArp(true).build();
     IpSpace routableIpsForThisVrf = UniverseIpSpace.INSTANCE;
@@ -505,22 +505,22 @@ public class ForwardingAnalysisImplTest {
 
     /* No proxy-ARP */
     /* Accept IPs belonging to interface */
-    assertThat(noProxyArpResult, containsIp(P1.getStartIp()));
-    assertThat(noProxyArpResult, containsIp(P2.getStartIp()));
+    assertThat(noProxyArpResult, containsIp(P1.getFirstHostIp()));
+    assertThat(noProxyArpResult, containsIp(P2.getFirstHostIp()));
     /* Reject all other IPs */
-    assertThat(noProxyArpResult, not(containsIp(P1.getEndIp())));
-    assertThat(noProxyArpResult, not(containsIp(P2.getEndIp())));
-    assertThat(noProxyArpResult, not(containsIp(P3.getStartIp())));
+    assertThat(noProxyArpResult, not(containsIp(P1.getLastHostIp())));
+    assertThat(noProxyArpResult, not(containsIp(P2.getLastHostIp())));
+    assertThat(noProxyArpResult, not(containsIp(P3.getFirstHostIp())));
 
     /* Proxy-ARP */
     /* Accept IPs belonging to interface */
-    assertThat(proxyArpResult, containsIp(P1.getStartIp()));
-    assertThat(proxyArpResult, containsIp(P2.getStartIp()));
+    assertThat(proxyArpResult, containsIp(P1.getFirstHostIp()));
+    assertThat(proxyArpResult, containsIp(P2.getFirstHostIp()));
     /* Reject IPs routed through interface */
-    assertThat(proxyArpResult, not(containsIp(P1.getEndIp())));
-    assertThat(proxyArpResult, not(containsIp(P2.getEndIp())));
+    assertThat(proxyArpResult, not(containsIp(P1.getLastHostIp())));
+    assertThat(proxyArpResult, not(containsIp(P2.getLastHostIp())));
     /* Accept all other routable IPs */
-    assertThat(proxyArpResult, containsIp(P3.getStartIp()));
+    assertThat(proxyArpResult, containsIp(P3.getFirstHostIp()));
   }
 
   @Test
@@ -529,17 +529,17 @@ public class ForwardingAnalysisImplTest {
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     _ib.setOwner(config);
     ConcreteInterfaceAddress primary =
-        ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength());
+        ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength());
     InterfaceAddress secondary =
-        ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength());
+        ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength());
     Interface i = _ib.setAddresses(primary, secondary).build();
     Map<String, Map<String, Set<Ip>>> interfaceOwnedIps =
         IpOwners.computeInterfaceOwnedIps(configs, false);
     IpSpace result = computeIpsAssignedToThisInterfaceForArpReplies(i, interfaceOwnedIps);
 
-    assertThat(result, containsIp(P1.getStartIp()));
-    assertThat(result, containsIp(P2.getStartIp()));
-    assertThat(result, not(containsIp(P2.getEndIp())));
+    assertThat(result, containsIp(P1.getFirstHostIp()));
+    assertThat(result, containsIp(P2.getFirstHostIp()));
+    assertThat(result, not(containsIp(P2.getLastHostIp())));
 
     Ip linkLocalIp = Ip.parse("169.254.0.1");
     Interface i2 = _ib.setAddresses(LinkLocalAddress.of(linkLocalIp)).build();

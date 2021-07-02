@@ -157,7 +157,7 @@ public final class CompletionMetadataUtilsTest {
     String int1 = "int1";
     String int2 = "int2";
 
-    Ip ip1 = Ip.parse("10.1.3.7");
+    Ip ip1 = Ip.parse("10.1.3.1");
     Ip ip2 = Ip.parse("128.212.155.30");
     Ip ip3 = Ip.parse("124.51.32.2");
 
@@ -298,7 +298,7 @@ public final class CompletionMetadataUtilsTest {
     assertTrue("Test assumes that 8.8.8.8 is a well-known IP", WELL_KNOWN_IPS.containsKey(ip1));
     String nodeName = "nodeName";
     String int1 = "int1";
-    String address1 = ip1 + "/30";
+    String address1 = ip1 + "/24";
     InterfaceAddress interfaceAddress1 = ConcreteInterfaceAddress.parse(address1);
 
     Map<String, Configuration> configs = new HashMap<>();
@@ -378,7 +378,7 @@ public final class CompletionMetadataUtilsTest {
     String int1 = "int1";
     String int2 = "int2";
 
-    String address1 = "10.1.3.7/30";
+    String address1 = "10.1.3.1/30";
     String address2 = "128.212.155.30/24";
     String address3 = "124.51.32.2/20";
 

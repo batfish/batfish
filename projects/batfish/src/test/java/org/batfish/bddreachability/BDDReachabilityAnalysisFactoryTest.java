@@ -642,7 +642,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/8"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/8"))
             .setIncomingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
@@ -703,7 +703,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
             .setOwner(config)
             .setVrf(vrf)
             .setActive(true)
-            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/8"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/8"))
             .setIncomingFilter(
                 nf.aclBuilder()
                     .setOwner(config)
@@ -1355,10 +1355,10 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
     Interface ingressIface =
-        ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24")).build();
+        ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     ingressIface.setPacketPolicy(packetPolicyName);
     Interface i1 =
-        ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24")).build();
+        ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("2.2.2.1/24")).build();
 
     StaticRoute sb =
         StaticRoute.testBuilder()
@@ -1468,7 +1468,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     BDD routableFromLookupVrf = ipSpaceToBDD.toBDD(Prefix.parse("8.8.8.0/24"));
     BDD acceptedInIngressVrf =
         // These are the concrete addresses of the two interfaces in the ingress vrf
-        ipSpaceToBDD.toBDD(Ip.parse("1.1.1.0")).or(ipSpaceToBDD.toBDD(Ip.parse("2.2.2.0")));
+        ipSpaceToBDD.toBDD(Ip.parse("1.1.1.1")).or(ipSpaceToBDD.toBDD(Ip.parse("2.2.2.1")));
     assertThat(
         analysis.getForwardEdgeMap(),
         hasEntry(
@@ -1674,7 +1674,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
 
     Interface.Builder ib = nf.interfaceBuilder().setOwner(config).setVrf(vrf).setActive(true);
     Interface ingressIface =
-        ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("10.0.0.0/24")).build();
+        ib.setName(INGRESS_IFACE).setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24")).build();
     ingressIface.setPacketPolicy(packetPolicyName);
     ib.setName("i1").setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).build();
     ib.setName("i2").setAddress(ConcreteInterfaceAddress.parse("2.2.2.1/24")).build();

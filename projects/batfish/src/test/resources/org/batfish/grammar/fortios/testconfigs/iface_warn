@@ -56,12 +56,12 @@ config system interface
             next
             # Valid
             edit 4294967295
-                set ip 10.0.0.3/24
+                set ip 10.0.0.2/24
             next
             # Conflict with primary and secondary addresses
             edit 1
                 set ip 10.0.0.1/30
-                set ip 10.0.0.3/30
+                set ip 10.0.0.2/30
             next
         end
     next

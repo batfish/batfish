@@ -2,7 +2,7 @@
 hostname cisco_vrrp
 !
 interface Ethernet0
- ip address 1.0.0.0/24
+ ip address 1.0.0.1/24
  vrrp 123 authentication text bleep
  vrrp 123 description 123desc
  vrrp 123 ip 1.0.0.1

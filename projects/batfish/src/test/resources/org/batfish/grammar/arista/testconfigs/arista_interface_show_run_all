@@ -44,7 +44,7 @@ interface Ethernet1/1
    no ip arp inspection trust
    no ip proxy-arp
    no ip local-proxy-arp
-   ip address 192.0.2.0/24
+   ip address 192.0.2.1/24
    no ip attached-hosts route export
    no ip verify unicast
    no ip directed-broadcast

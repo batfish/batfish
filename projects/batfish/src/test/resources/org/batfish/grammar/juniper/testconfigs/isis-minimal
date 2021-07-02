@@ -3,7 +3,7 @@ set system host-name isis-minimal
 #
 set interfaces lo0 unit 0 family inet address 1.1.1.1/32 
 set interfaces lo0 unit 0 family iso address 12.1234.1234.1234.1234.00 
-set interfaces ge-0/0/1 unit 0 family inet address 2.2.2.0/30 
+set interfaces ge-0/0/1 unit 0 family inet address 2.2.2.1/30
 set interfaces ge-0/0/1 unit 0 family iso
 #
 set protocols isis interface lo0
