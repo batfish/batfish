@@ -144,12 +144,6 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
                   if (disposition1 == disposition2) {
                     return;
                   }
-                  BDD bdd = bdd1.and(bdd2);
-                  if (!bdd.isZero()) {
-                    System.out.println(
-                        Ip.create(_dstToBdd.getBDDInteger().getValueSatisfying(bdd).get()));
-                    bdd.isZero();
-                  }
                   assertFalse(
                       String.format(
                           "dispositions %s and %s should not intersect",
