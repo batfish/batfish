@@ -1238,8 +1238,8 @@ public class OspfRoutingProcessTest {
 
   @Test
   public void testGetIfaceAddressesForIARoutes() {
-    ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.0/24");
-    ConcreteInterfaceAddress secondary = ConcreteInterfaceAddress.parse("2.2.2.0/24");
+    ConcreteInterfaceAddress primary = ConcreteInterfaceAddress.parse("1.1.1.1/24");
+    ConcreteInterfaceAddress secondary = ConcreteInterfaceAddress.parse("2.2.2.1/24");
     Interface.Builder ifaceBuilder =
         Interface.builder().setName("iface").setAddresses(primary, secondary);
 

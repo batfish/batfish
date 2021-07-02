@@ -1832,7 +1832,7 @@ public final class TopologyUtilTest {
     Interface i1sub =
         _ib.setOwner(c1)
             .setName("ae1.1")
-            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
             .setType(InterfaceType.AGGREGATE_CHILD)
             .build();
     Interface i2 = _ib.setOwner(c2).setName("ae2").setType(InterfaceType.AGGREGATED).build();
@@ -1840,7 +1840,7 @@ public final class TopologyUtilTest {
         _ib.setOwner(c2)
             .setName("ae2.2")
             .setType(InterfaceType.AGGREGATE_CHILD)
-            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.1/24"))
             .build();
 
     Layer1Topology layer1Topology =

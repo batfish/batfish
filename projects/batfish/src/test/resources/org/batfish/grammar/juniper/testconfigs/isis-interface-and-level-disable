@@ -4,13 +4,13 @@ set system host-name isis-interface-and-level-disable
 set interfaces lo0 unit 0 family inet address 1.1.1.1/32 
 set interfaces lo0 unit 0 family iso address 12.1234.1234.1234.1234.00
 #
-set interfaces ge-0/0/0 unit 0 family inet address 2.2.2.0/24 
+set interfaces ge-0/0/0 unit 0 family inet address 2.2.2.1/24
 set interfaces ge-0/0/0 unit 0 family iso address 12.1234.1234.1234.1234.01
 #
-set interfaces ge-0/0/1 unit 0 family inet address 3.3.3.0/24 
+set interfaces ge-0/0/1 unit 0 family inet address 3.3.3.1/24
 set interfaces ge-0/0/1 unit 0 family iso address 12.1234.1234.1234.1234.02
 #
-set interfaces ge-0/0/2 unit 0 family inet address 4.4.4.0/24 
+set interfaces ge-0/0/2 unit 0 family inet address 4.4.4.1/24
 set interfaces ge-0/0/2 unit 0 family iso address 12.1234.1234.1234.1234.03
 #
 set protocols isis interface ge-0/0/0.0 disable

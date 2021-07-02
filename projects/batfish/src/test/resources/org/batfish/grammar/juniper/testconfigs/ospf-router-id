@@ -1,8 +1,8 @@
 #
 set system host-name ospf-router-id
 #
-set interfaces lo0 unit 0 family inet address 1.0.0.0/24
-set interfaces lo1 unit 0 family inet address 2.0.0.0/24
+set interfaces lo0 unit 0 family inet address 1.0.0.1/24
+set interfaces lo1 unit 0 family inet address 2.0.0.1/24
 
 #
 set protocols ospf area 0.0.0.0 interface lo0.0 passive

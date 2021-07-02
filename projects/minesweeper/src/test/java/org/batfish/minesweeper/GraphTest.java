@@ -67,7 +67,7 @@ public class GraphTest {
         .setBgpProcess(bp1)
         .build();
     bnb.setLocalIp(Ip.parse("1.1.3.1"))
-        .setPeerAddress(Ip.parse("1.1.3.3"))
+        .setPeerAddress(Ip.parse("1.1.3.2"))
         .setBgpProcess(bp1)
         .build();
 
@@ -82,9 +82,9 @@ public class GraphTest {
 
     Configuration c3 = cb.setHostname("r3").build();
     Vrf v3 = vb.setOwner(c3).build();
-    ib.setOwner(c3).setVrf(v3).setAddress(ConcreteInterfaceAddress.parse("1.1.3.3/30"));
+    ib.setOwner(c3).setVrf(v3).setAddress(ConcreteInterfaceAddress.parse("1.1.3.2/30"));
     BgpProcess bp3 = bpb.setVrf(v3).setRouterId(Ip.parse("3.3.3.3")).build();
-    bnb.setLocalIp(Ip.parse("1.1.3.3"))
+    bnb.setLocalIp(Ip.parse("1.1.3.2"))
         .setPeerAddress(Ip.parse("1.1.3.1"))
         .setBgpProcess(bp3)
         .build();

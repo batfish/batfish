@@ -157,7 +157,7 @@ public class RegionTest {
     Interface iface =
         nf.interfaceBuilder()
             .setOwner(c)
-            .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("12.12.12.1/24"))
             .setVrf(nf.vrfBuilder().setOwner(c).build())
             .build();
     Region region = createTestRegion();
@@ -167,7 +167,7 @@ public class RegionTest {
             "subnet",
             "vpc",
             ImmutableList.of("sg-001", "sg-002"),
-            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("12.12.12.0"), null)),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("12.12.12.1"), null)),
             "desc",
             c.getHostname(),
             ImmutableMap.of());
@@ -215,7 +215,7 @@ public class RegionTest {
     Interface i =
         nf.interfaceBuilder()
             .setOwner(c)
-            .setAddress(ConcreteInterfaceAddress.parse("12.12.12.0/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("12.12.12.1/24"))
             .setVrf(nf.vrfBuilder().setOwner(c).build())
             .build();
     Region region = createTestRegion();
@@ -225,7 +225,7 @@ public class RegionTest {
             "subnet",
             "vpc",
             ImmutableList.of("sg-001", "sg-002"),
-            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("12.12.12.0"), null)),
+            ImmutableList.of(new PrivateIpAddress(true, Ip.parse("12.12.12.1"), null)),
             "desc",
             c.getHostname(),
             ImmutableMap.of());
