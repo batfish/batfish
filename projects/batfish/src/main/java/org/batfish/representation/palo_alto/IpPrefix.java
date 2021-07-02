@@ -1,8 +1,9 @@
 package org.batfish.representation.palo_alto;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.Serializable;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
@@ -15,8 +16,8 @@ public class IpPrefix implements Serializable {
   /** A "0.0.0.0/0" prefix */
   public static final IpPrefix ZERO = new IpPrefix(Ip.ZERO, 0);
 
-  private Prefix _prefix;
-  private Ip _ip;
+  private final @Nonnull Prefix _prefix;
+  private final @Nonnull Ip _ip;
 
   IpPrefix(Ip ip, int prefixLength) {
     _prefix = Prefix.create(ip, prefixLength);
@@ -26,9 +27,12 @@ public class IpPrefix implements Serializable {
   /** Parse a {@link Prefix} from a string. */
   @Nonnull
   public static IpPrefix parse(@Nonnull String text) {
-    ConcreteInterfaceAddress concreteInterfaceAddress = ConcreteInterfaceAddress.parse(text);
-    return new IpPrefix(
-        concreteInterfaceAddress.getIp(), concreteInterfaceAddress.getNetworkBits());
+    String[] parts = text.split("/");
+    checkArgument(
+        parts.length == 2, "Invalid %s string: \"%s\"", IpPrefix.class.getSimpleName(), text);
+    Ip ip = Ip.parse(parts[0]);
+    int prefixLength = Integer.parseUnsignedInt(parts[1]);
+    return new IpPrefix(ip, prefixLength);
   }
 
   public Ip getIp() {
