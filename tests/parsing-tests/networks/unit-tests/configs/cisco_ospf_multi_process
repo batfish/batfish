@@ -2,11 +2,11 @@
 hostname cisco_ospf_multi_process
 !
 interface ethernet0/0
- ip address 2.2.2.0 255.255.255.0
+ ip address 2.2.2.1 255.255.255.0
  ip router ospf 1 area 0.0.0.0
 !
 interface ethernet1/0
- ip address 3.3.3.0 255.255.255.0
+ ip address 3.3.3.1 255.255.255.0
  ip router ospf ignored area 0.0.0.0
 !
 interface loopback0

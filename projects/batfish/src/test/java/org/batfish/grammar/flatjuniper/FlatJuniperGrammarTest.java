@@ -2956,7 +2956,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasInterface(
-            "vtnet0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.1.2.3/30")))));
+            "vtnet0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.1.2.1/30")))));
   }
 
   @Test
@@ -4271,7 +4271,7 @@ public final class FlatJuniperGrammarTest {
     LocalRoute localRoutePtp =
         new LocalRoute(ConcreteInterfaceAddress.parse("10.0.0.0/31"), "ge-0/0/0.0");
     LocalRoute localRouteLan =
-        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.0/30"), "ge-0/0/1.0");
+        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.1/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
@@ -4353,7 +4353,7 @@ public final class FlatJuniperGrammarTest {
     LocalRoute localRoutePtp =
         new LocalRoute(ConcreteInterfaceAddress.parse("10.0.0.0/31"), "ge-0/0/0.0");
     LocalRoute localRouteLan =
-        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.0/30"), "ge-0/0/1.0");
+        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.1/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
@@ -4799,7 +4799,7 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         c,
-        hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasRouterId(equalTo(Ip.parse("1.0.0.0"))))));
+        hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasRouterId(equalTo(Ip.parse("1.0.0.1"))))));
   }
 
   @Test

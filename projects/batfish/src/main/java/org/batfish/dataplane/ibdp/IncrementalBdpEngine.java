@@ -125,6 +125,31 @@ final class IncrementalBdpEngine {
             configurations,
             trEngCurrentL3Topology);
 
+    // Tunnel topology
+    LOGGER.info("Updating Tunnel topology");
+    TunnelTopology newTunnelTopology =
+        pruneUnreachableTunnelEdges(
+            initialTopologyContext.getTunnelTopology(), // like IPsec, pruning initial tunnels
+            networkConfigurations,
+            trEngCurrentL3Topology);
+
+    // EIGRP topology
+    LOGGER.info("Updating EIGRP topology");
+    EigrpTopology newEigrpTopology =
+        EigrpTopologyUtils.initEigrpTopology(
+            configurations, currentTopologyContext.getLayer3Topology());
+
+    // Initialize BGP topology
+    LOGGER.info("Updating BGP topology");
+    BgpTopology newBgpTopology =
+        initBgpTopology(
+            configurations,
+            ipVrfOwners,
+            false,
+            true,
+            trEngCurrentL3Topology,
+            currentTopologyContext.getLayer2Topology().orElse(null));
+
     // Update Layer-2 if necessary
     Optional<Layer2Topology> newLayer2Topology;
     if (!currentTopologyContext.getVxlanTopology().equals(newVxlanTopology)) {
@@ -136,14 +161,6 @@ final class IncrementalBdpEngine {
     } else {
       newLayer2Topology = currentTopologyContext.getLayer2Topology();
     }
-
-    // Tunnel topology
-    LOGGER.info("Updating Tunnel topology");
-    TunnelTopology newTunnelTopology =
-        pruneUnreachableTunnelEdges(
-            initialTopologyContext.getTunnelTopology(), // like IPsec, pruning initial tunnels
-            networkConfigurations,
-            trEngCurrentL3Topology);
 
     // Layer-3
     LOGGER.info("Updating Layer 3 topology");
@@ -157,21 +174,6 @@ final class IncrementalBdpEngine {
             // Overlay edges consist of "plain" tunnels and IPSec tunnels
             Sets.union(toEdgeSet(newIpsecTopology, configurations), newTunnelTopology.asEdgeSet()));
 
-    // EIGRP topology
-    LOGGER.info("Updating EIGRP topology");
-    EigrpTopology newEigrpTopology =
-        EigrpTopologyUtils.initEigrpTopology(configurations, newLayer3Topology);
-
-    // Initialize BGP topology
-    LOGGER.info("Updating BGP topology");
-    BgpTopology newBgpTopology =
-        initBgpTopology(
-            configurations,
-            ipVrfOwners,
-            false,
-            true,
-            new TracerouteEngineImpl(partialDataplane, newLayer3Topology, configurations),
-            newLayer2Topology.orElse(null));
     return currentTopologyContext.toBuilder()
         .setBgpTopology(newBgpTopology)
         .setLayer2Topology(newLayer2Topology)

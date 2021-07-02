@@ -170,7 +170,7 @@ public class RoutesAnswererTest {
                             .setNextHopInterface("Null")
                             .setAdministrativeCost(1)
                             .build(),
-                        new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.0/24"), "Null")))));
+                        new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.1/24"), "Null")))));
 
     Multiset<Row> actual =
         getMainRibRoutes(

@@ -350,13 +350,13 @@ public class IncrementalDataPlanePluginTest {
         nf.interfaceBuilder()
             .setOwner(c)
             .setVrf(vrf)
-            .setAddress(ConcreteInterfaceAddress.parse("10.0.0.0/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
             .build();
     StaticRoute srBoth =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("10.0.1.0/24"))
             .setNextHopInterface(i.getName())
-            .setNextHopIp(Ip.parse("10.0.0.1"))
+            .setNextHopIp(Ip.parse("10.0.0.2"))
             .setAdministrativeCost(1)
             .build();
     vrf.getStaticRoutes().add(srBoth);

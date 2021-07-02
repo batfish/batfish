@@ -12,7 +12,7 @@ route-map RM6 permit 110
   match ipv6 address v6list
 !
 interface Ethernet1
- ip address 10.1.1.0 255.255.255.0
+ ip address 10.1.1.1 255.255.255.0
  ip access-group 10 in
 !
 router bgp 1

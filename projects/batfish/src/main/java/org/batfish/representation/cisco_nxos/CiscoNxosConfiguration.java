@@ -108,6 +108,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -208,6 +209,7 @@ import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform;
@@ -3057,7 +3059,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         new Return(new FibLookup(IngressInterfaceVrf.instance())));
   }
 
-  private @Nonnull Statement toStatement(
+  @VisibleForTesting
+  @Nonnull
+  Statement toStatement(
       String routeMapName,
       RouteMapEntry entry,
       Map<Integer, Integer> noMatchNextBySeq,
@@ -3105,7 +3109,28 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         noMatchNext != null && continueTargets.contains(noMatchNext)
             ? ImmutableList.of(call(computeRoutingPolicyName(routeMapName, noMatchNext)))
             : ImmutableList.of();
-    return new If(new Conjunction(conjuncts.build()), trueStatements.build(), noMatchStatements);
+    return new If(
+        new Conjunction(conjuncts.build()),
+        ImmutableList.of(
+            toTraceableStatement(
+                trueStatements.build(), entry.getSequence(), routeMapName, _filename)),
+        noMatchStatements);
+  }
+
+  @VisibleForTesting
+  static TraceableStatement toTraceableStatement(
+      ImmutableList<Statement> statements, int sequence, String routeMapName, String filename) {
+    return new TraceableStatement(
+        TraceElement.builder()
+            .add("Matched ")
+            .add(
+                String.format("route-map %s entry %d", routeMapName, sequence),
+                new VendorStructureId(
+                    filename,
+                    CiscoNxosStructureType.ROUTE_MAP_ENTRY.getDescription(),
+                    computeRouteMapEntryName(routeMapName, sequence)))
+            .build(),
+        statements);
   }
 
   @Nonnull
