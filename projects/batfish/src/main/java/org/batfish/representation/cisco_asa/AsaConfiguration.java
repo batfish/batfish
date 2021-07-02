@@ -1680,7 +1680,7 @@ public final class AsaConfiguration extends VendorConfiguration {
             .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
             .build();
     if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceNumber(ifaceName));
+      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
     }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);

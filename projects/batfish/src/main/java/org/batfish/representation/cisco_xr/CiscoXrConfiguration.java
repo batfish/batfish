@@ -1141,7 +1141,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       if (ifaceName.startsWith("BVI")) {
         newIface.setVlan(CommonUtil.getInterfaceNumber("BVI", ifaceName));
       } else {
-        newIface.setVlan(CommonUtil.getInterfaceNumber(ifaceName));
+        newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
       }
     }
     String vrfName = iface.getVrf();

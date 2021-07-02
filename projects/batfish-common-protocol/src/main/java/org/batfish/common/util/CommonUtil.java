@@ -169,7 +169,7 @@ public class CommonUtil {
   }
 
   @Nullable
-  public static Integer getInterfaceNumber(String ifaceName) {
+  public static Integer getInterfaceVlanNumber(String ifaceName) {
     String prefix = "vlan";
     return getInterfaceNumber(prefix, ifaceName);
   }
