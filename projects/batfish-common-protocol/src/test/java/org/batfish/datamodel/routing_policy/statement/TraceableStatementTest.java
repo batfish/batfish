@@ -5,6 +5,7 @@ import static org.batfish.datamodel.matchers.TraceTreeMatchers.hasTraceElement;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -67,6 +68,25 @@ public class TraceableStatementTest {
                     new If(BooleanExprs.TRUE, ImmutableList.of(), ImmutableList.of()),
                     new TraceableStatement(TraceElement.of("child1"), ImmutableList.of())))),
         contains(allOf(hasTraceElement("parent"), hasChildren(isTraceTree("child1")))));
+  }
+
+  @Test
+  public void testSimplify() {
+    Statement simplifiable =
+        new If(
+            BooleanExprs.TRUE,
+            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+            ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
+    Statement simplified = Statements.ReturnTrue.toStaticStatement();
+
+    assertThat(
+        new TraceableStatement(
+                TraceElement.of("text"), ImmutableList.of(simplifiable, simplifiable))
+            .simplify(),
+        equalTo(
+            ImmutableList.of(
+                new TraceableStatement(
+                    TraceElement.of("text"), ImmutableList.of(simplified, simplified)))));
   }
 
   private static final TraceableStatement EMPTY_STATEMENT =
