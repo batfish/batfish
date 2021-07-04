@@ -130,8 +130,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       throw new BatfishException(
           "Implementation error: missing default inbound action for host: '" + hostname + "'");
     }
-    // Simplification does not work with tracing for route maps
-    // c.simplifyRoutingPolicies();
+    c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
 
