@@ -257,24 +257,14 @@
                         }
                       ],
                       "guard" : {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                        "conjuncts" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                            "disjuncts" : [
-                              {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                                "prefix" : {
-                                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                                },
-                                "prefixSet" : {
-                                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                                  "name" : "default_list"
-                                }
-                              }
-                            ]
-                          }
-                        ]
+                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "prefix" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                        },
+                        "prefixSet" : {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                          "name" : "default_list"
+                        }
                       },
                       "trueStatements" : [
                         {
@@ -331,24 +321,14 @@
                     }
                   ],
                   "guard" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                    "conjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                        "disjuncts" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                            "prefix" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                            },
-                            "prefixSet" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                              "name" : "103"
-                            }
-                          }
-                        ]
-                      }
-                    ]
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "103"
+                    }
                   },
                   "trueStatements" : [
                     {
@@ -405,24 +385,14 @@
                 }
               ],
               "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                "conjuncts" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                    "disjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "prefix" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                        },
-                        "prefixSet" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                          "name" : "101"
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                "prefix" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                },
+                "prefixSet" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                  "name" : "101"
+                }
               },
               "trueStatements" : [
                 {
@@ -512,24 +482,14 @@
                     }
                   ],
                   "guard" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                    "conjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                        "disjuncts" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                            "prefix" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                            },
-                            "prefixSet" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                              "name" : "102"
-                            }
-                          }
-                        ]
-                      }
-                    ]
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "102"
+                    }
                   },
                   "trueStatements" : [
                     {
@@ -586,24 +546,14 @@
                 }
               ],
               "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                "conjuncts" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                    "disjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "prefix" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                        },
-                        "prefixSet" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                          "name" : "101"
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                "prefix" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                },
+                "prefixSet" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                  "name" : "101"
+                }
               },
               "trueStatements" : [
                 {
@@ -689,24 +639,14 @@
                 }
               ],
               "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                "conjuncts" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                    "disjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.communities.MatchCommunities",
-                        "communitySetExpr" : {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
-                        },
-                        "communitySetMatchExpr" : {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference",
-                          "name" : "as2_community"
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.communities.MatchCommunities",
+                "communitySetExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                },
+                "communitySetMatchExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference",
+                  "name" : "as2_community"
+                }
               },
               "trueStatements" : [
                 {
@@ -779,24 +719,14 @@
                     }
                   ],
                   "guard" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                    "conjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                        "disjuncts" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                            "prefix" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                            },
-                            "prefixSet" : {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                              "name" : "outbound_routes"
-                            }
-                          }
-                        ]
-                      }
-                    ]
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                    "prefix" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                    },
+                    "prefixSet" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                      "name" : "outbound_routes"
+                    }
                   },
                   "trueStatements" : [
                     {
@@ -853,24 +783,14 @@
                 }
               ],
               "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                "conjuncts" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                    "disjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                        "prefix" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                        },
-                        "prefixSet" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                          "name" : "101"
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                "prefix" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                },
+                "prefixSet" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                  "name" : "101"
+                }
               },
               "trueStatements" : [
                 {
@@ -956,24 +876,14 @@
                 }
               ],
               "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                "conjuncts" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                    "disjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.communities.MatchCommunities",
-                        "communitySetExpr" : {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
-                        },
-                        "communitySetMatchExpr" : {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference",
-                          "name" : "as3_community"
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.communities.MatchCommunities",
+                "communitySetExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                },
+                "communitySetMatchExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference",
+                  "name" : "as3_community"
+                }
               },
               "trueStatements" : [
                 {
@@ -1042,24 +952,14 @@
                 }
               ],
               "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                "conjuncts" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                    "disjuncts" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.communities.MatchCommunities",
-                        "communitySetExpr" : {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
-                        },
-                        "communitySetMatchExpr" : {
-                          "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference",
-                          "name" : "as3_community"
-                        }
-                      }
-                    ]
-                  }
-                ]
+                "class" : "org.batfish.datamodel.routing_policy.communities.MatchCommunities",
+                "communitySetExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.InputCommunities"
+                },
+                "communitySetMatchExpr" : {
+                  "class" : "org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference",
+                  "name" : "as3_community"
+                }
               },
               "trueStatements" : [
                 {
