@@ -1,6 +1,5 @@
 parser grammar CheckPointGatewayParser;
 
-/* This is only needed if parser grammar is spread across files */
 import
 CheckPointGateway_common;
 

@@ -1,18 +1,21 @@
 package org.batfish.grammar.check_point_gateway;
 
 import javax.annotation.Nonnull;
-import org.antlr.v4.runtime.ParserRuleContext;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
+import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.check_point_gateway.CheckPointGatewayParser.Check_point_gateway_configurationContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.check_point_gateway.CheckPointGatewayConfiguration;
 
-public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayParserBaseListener {
+@ParametersAreNonnullByDefault
+public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayParserBaseListener
+    implements SilentSyntaxListener {
 
   public CheckPointGatewayConfigurationBuilder(
       CheckPointGatewayCombinedParser parser,
@@ -41,30 +44,40 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
               new ParseWarning(
                   line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+      _w.redFlag(
+          String.format(
+              "Unrecognized Line: %d: %s SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
+              line, lineText));
     }
   }
 
-  private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
-    String typeName = type.getSimpleName();
-    String txt = getFullText(ctx);
-    return new BatfishException("Could not convert to " + typeName + ": " + txt);
+  @Nonnull
+  @Override
+  public String getInputText() {
+    return _text;
   }
 
-  private String getFullText(ParserRuleContext ctx) {
-    int start = ctx.getStart().getStartIndex();
-    int end = ctx.getStop().getStopIndex();
-    String text = _text.substring(start, end + 1);
-    return text;
+  @Nonnull
+  @Override
+  public BatfishCombinedParser<?, ?> getParser() {
+    return _parser;
+  }
+
+  @Nonnull
+  @Override
+  public SilentSyntaxCollection getSilentSyntax() {
+    return _silentSyntax;
+  }
+
+  @Nonnull
+  @Override
+  public Warnings getWarnings() {
+    return _w;
   }
 
   @Override
-  public void enterCheck_point_gateway_configuration(Check_point_gateway_configurationContext ctx) {
-    // avoid unused warning
-    assert _parser != null;
-    assert _silentSyntax != null;
-  }
+  public void enterCheck_point_gateway_configuration(
+      Check_point_gateway_configurationContext ctx) {}
 
   @Nonnull
   public CheckPointGatewayConfiguration getConfiguration() {

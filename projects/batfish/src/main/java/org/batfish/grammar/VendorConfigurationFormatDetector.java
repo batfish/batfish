@@ -401,7 +401,6 @@ public final class VendorConfigurationFormatDetector {
 
   private ConfigurationFormat identifyConfigurationFormat() {
     ConfigurationFormat format;
-
     format = checkEmpty();
     if (format != null) {
       return format;

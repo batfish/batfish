@@ -8,17 +8,11 @@ tokens {
   WORD
 }
 
-@members {
-// Java code to end up in CheckPointGatewayLexer.java goes here
-}
-
 // CheckPointGateway keywords
-// This section includes keywords that are literally the same as their tokens (except for potential variation in case and punctuation)
 HOSTNAME: 'hostname' -> pushMode(M_Word);
 SET: 'set';
 
 // Complex tokens
-
 COMMENT_LINE
 :
   F_Whitespace* '#'

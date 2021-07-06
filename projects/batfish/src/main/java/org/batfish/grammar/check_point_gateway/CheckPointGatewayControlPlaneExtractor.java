@@ -28,6 +28,7 @@ public class CheckPointGatewayControlPlaneExtractor extends CheckPointGatewayPar
     _silentSyntax = silentSyntax;
   }
 
+  @Nonnull
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
