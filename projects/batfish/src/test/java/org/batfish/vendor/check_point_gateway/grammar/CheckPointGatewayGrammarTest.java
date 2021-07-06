@@ -26,6 +26,7 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -91,6 +92,14 @@ public class CheckPointGatewayGrammarTest {
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
     assertThat(c.getHostname(), equalTo(hostname));
+  }
+
+  @Test
+  public void testDeviceModel() {
+    String hostname = "hostname";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, notNullValue());
+    assertThat(c.getDeviceModel(), equalTo(DeviceModel.CHECK_POINT_GATEWAY));
   }
 
   @Test

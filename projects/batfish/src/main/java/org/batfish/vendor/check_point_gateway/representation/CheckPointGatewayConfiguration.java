@@ -5,6 +5,7 @@ import java.util.List;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -31,6 +32,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
+    _c.setDeviceModel(DeviceModel.CHECK_POINT_GATEWAY);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
     return ImmutableList.of(_c);
