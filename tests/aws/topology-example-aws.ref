@@ -309,6 +309,20 @@
       "properties" : null
     },
     {
+      "id" : "interface-node-isp_16509-To-igw-fac5839d-backbone",
+      "name" : "To-igw-fac5839d-backbone",
+      "nodeId" : "node-isp_16509",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-__aws-services-gateway__-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-__aws-services-gateway__",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
       "id" : "interface-node-vpc-b390fad5-subnet-1641fa70",
       "name" : "subnet-1641fa70",
       "nodeId" : "node-vpc-b390fad5",
@@ -351,6 +365,13 @@
       "properties" : null
     },
     {
+      "id" : "interface-node-isp_16509-To-__aws-services-gateway__-backbone",
+      "name" : "To-__aws-services-gateway__-backbone",
+      "nodeId" : "node-isp_16509",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
       "id" : "interface-node-vgw-81fd279f-vpc-815775e7",
       "name" : "vpc-815775e7",
       "nodeId" : "node-vgw-81fd279f",
@@ -379,10 +400,10 @@
       "properties" : null
     },
     {
-      "id" : "interface-node-isp_16509-To-__aws-services-gateway__-backbone",
-      "name" : "To-__aws-services-gateway__-backbone",
+      "id" : "interface-node-isp_16509-To-vgw-81fd279f-backbone",
+      "name" : "To-vgw-81fd279f-backbone",
       "nodeId" : "node-isp_16509",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -393,10 +414,10 @@
       "properties" : null
     },
     {
-      "id" : "interface-node-isp_16509-To-vgw-81fd279f-backbone",
-      "name" : "To-vgw-81fd279f-backbone",
-      "nodeId" : "node-isp_16509",
-      "type" : "UNKNOWN",
+      "id" : "interface-node-internet-To-isp_16509",
+      "name" : "To-isp_16509",
+      "nodeId" : "node-internet",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -404,20 +425,6 @@
       "name" : "subnet-30398256-vrf-igw-9b93ddfc",
       "nodeId" : "node-vpc-b390fad5",
       "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
-      "id" : "interface-node-internet-To-isp_16509",
-      "name" : "To-isp_16509",
-      "nodeId" : "node-internet",
-      "type" : "UNKNOWN",
-      "properties" : null
-    },
-    {
-      "id" : "interface-node-isp_16509-To-igw-fac5839d-backbone",
-      "name" : "To-igw-fac5839d-backbone",
-      "nodeId" : "node-isp_16509",
-      "type" : "UNKNOWN",
       "properties" : null
     },
     {
@@ -442,13 +449,6 @@
       "properties" : null
     },
     {
-      "id" : "interface-node-isp_16509-To-igw-068fee63-backbone",
-      "name" : "To-igw-068fee63-backbone",
-      "nodeId" : "node-isp_16509",
-      "type" : "UNKNOWN",
-      "properties" : null
-    },
-    {
       "id" : "interface-node-vpc-925131f4-igw-fac5839d",
       "name" : "igw-fac5839d",
       "nodeId" : "node-vpc-925131f4",
@@ -456,16 +456,23 @@
       "properties" : null
     },
     {
-      "id" : "interface-node-isp_16509-To-igw-9b93ddfc-backbone",
-      "name" : "To-igw-9b93ddfc-backbone",
-      "nodeId" : "node-isp_16509",
-      "type" : "UNKNOWN",
-      "properties" : null
-    },
-    {
       "id" : "interface-node-vpc-b390fad5-subnet-073b8061-vrf-igw-9b93ddfc",
       "name" : "subnet-073b8061-vrf-igw-9b93ddfc",
       "nodeId" : "node-vpc-b390fad5",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_16509-To-igw-068fee63-backbone",
+      "name" : "To-igw-068fee63-backbone",
+      "nodeId" : "node-isp_16509",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_16509-To-igw-9b93ddfc-backbone",
+      "name" : "To-igw-9b93ddfc-backbone",
+      "nodeId" : "node-isp_16509",
       "type" : "PHYSICAL",
       "properties" : null
     },
@@ -509,13 +516,6 @@
       "name" : "backbone",
       "nodeId" : "node-vgw-81fd279f",
       "type" : "PHYSICAL",
-      "properties" : null
-    },
-    {
-      "id" : "interface-node-__aws-services-gateway__-backbone",
-      "name" : "backbone",
-      "nodeId" : "node-__aws-services-gateway__",
-      "type" : "UNKNOWN",
       "properties" : null
     },
     {
@@ -575,13 +575,6 @@
       "properties" : null
     },
     {
-      "id" : "interface-node-isp_16509-To-Internet",
-      "name" : "To-Internet",
-      "nodeId" : "node-isp_16509",
-      "type" : "UNKNOWN",
-      "properties" : null
-    },
-    {
       "id" : "interface-node-subnet-30398256-vpc-b390fad5-vrf-igw-9b93ddfc",
       "name" : "vpc-b390fad5-vrf-igw-9b93ddfc",
       "nodeId" : "node-subnet-30398256",
@@ -599,6 +592,13 @@
       "id" : "interface-node-vpc-f8fad69d-subnet-d9cafabc-vrf-igw-068fee63",
       "name" : "subnet-d9cafabc-vrf-igw-068fee63",
       "nodeId" : "node-vpc-f8fad69d",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_16509-To-Internet",
+      "name" : "To-Internet",
+      "nodeId" : "node-isp_16509",
       "type" : "PHYSICAL",
       "properties" : null
     },
@@ -629,21 +629,21 @@
       "dstId" : "interface-node-igw-9b93ddfc-backbone",
       "id" : "link-interface-node-isp_16509-To-igw-9b93ddfc-backbone-interface-node-igw-9b93ddfc-backbone",
       "srcId" : "interface-node-isp_16509-To-igw-9b93ddfc-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
       "dstId" : "interface-node-isp_16509-To-vgw-81fd279f-backbone",
       "id" : "link-interface-node-vgw-81fd279f-backbone-interface-node-isp_16509-To-vgw-81fd279f-backbone",
       "srcId" : "interface-node-vgw-81fd279f-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
       "dstId" : "interface-node-isp_16509-To-igw-fac5839d-backbone",
       "id" : "link-interface-node-igw-fac5839d-backbone-interface-node-isp_16509-To-igw-fac5839d-backbone",
       "srcId" : "interface-node-igw-fac5839d-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -657,7 +657,7 @@
       "dstId" : "interface-node-__aws-services-gateway__-backbone",
       "id" : "link-interface-node-isp_16509-To-__aws-services-gateway__-backbone-interface-node-__aws-services-gateway__-backbone",
       "srcId" : "interface-node-isp_16509-To-__aws-services-gateway__-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -678,7 +678,7 @@
       "dstId" : "interface-node-vgw-81fd279f-backbone",
       "id" : "link-interface-node-isp_16509-To-vgw-81fd279f-backbone-interface-node-vgw-81fd279f-backbone",
       "srcId" : "interface-node-isp_16509-To-vgw-81fd279f-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -706,7 +706,7 @@
       "dstId" : "interface-node-isp_16509-To-igw-9b93ddfc-backbone",
       "id" : "link-interface-node-igw-9b93ddfc-backbone-interface-node-isp_16509-To-igw-9b93ddfc-backbone",
       "srcId" : "interface-node-igw-9b93ddfc-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -727,7 +727,7 @@
       "dstId" : "interface-node-isp_16509-To-igw-068fee63-backbone",
       "id" : "link-interface-node-igw-068fee63-backbone-interface-node-isp_16509-To-igw-068fee63-backbone",
       "srcId" : "interface-node-igw-068fee63-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -797,14 +797,14 @@
       "dstId" : "interface-node-isp_16509-To-Internet",
       "id" : "link-interface-node-internet-To-isp_16509-interface-node-isp_16509-To-Internet",
       "srcId" : "interface-node-internet-To-isp_16509",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
       "dstId" : "interface-node-isp_16509-To-__aws-services-gateway__-backbone",
       "id" : "link-interface-node-__aws-services-gateway__-backbone-interface-node-isp_16509-To-__aws-services-gateway__-backbone",
       "srcId" : "interface-node-__aws-services-gateway__-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -986,7 +986,7 @@
       "dstId" : "interface-node-internet-To-isp_16509",
       "id" : "link-interface-node-isp_16509-To-Internet-interface-node-internet-To-isp_16509",
       "srcId" : "interface-node-isp_16509-To-Internet",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -1070,7 +1070,7 @@
       "dstId" : "interface-node-igw-fac5839d-backbone",
       "id" : "link-interface-node-isp_16509-To-igw-fac5839d-backbone-interface-node-igw-fac5839d-backbone",
       "srcId" : "interface-node-isp_16509-To-igw-fac5839d-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {
@@ -1091,7 +1091,7 @@
       "dstId" : "interface-node-igw-068fee63-backbone",
       "id" : "link-interface-node-isp_16509-To-igw-068fee63-backbone-interface-node-igw-068fee63-backbone",
       "srcId" : "interface-node-isp_16509-To-igw-068fee63-backbone",
-      "type" : "UNKNOWN",
+      "type" : "PHYSICAL",
       "properties" : null
     },
     {

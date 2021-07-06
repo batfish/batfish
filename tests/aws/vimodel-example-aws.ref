@@ -518,7 +518,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "backbone" : {
@@ -546,7 +546,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           }
         },
@@ -26155,7 +26155,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "out" : {
@@ -26337,7 +26337,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-__aws-services-gateway__-backbone" : {
@@ -26357,7 +26357,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-igw-068fee63-backbone" : {
@@ -26377,7 +26377,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-igw-9b93ddfc-backbone" : {
@@ -26397,7 +26397,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-igw-fac5839d-backbone" : {
@@ -26417,7 +26417,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-vgw-81fd279f-backbone" : {
@@ -26437,7 +26437,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           }
         },

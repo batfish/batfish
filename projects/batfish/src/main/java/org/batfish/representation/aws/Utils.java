@@ -31,6 +31,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
@@ -492,12 +493,14 @@ public final class Utils {
    * separately.
    */
   static void createBackboneConnection(Configuration cfgNode, Vrf vrf, String exportPolicyName) {
-    Utils.newInterface(
-        BACKBONE_FACING_INTERFACE_NAME,
-        cfgNode,
-        vrf.getName(),
-        LinkLocalAddress.of(LINK_LOCAL_IP),
-        "To AWS backbone");
+    Interface toBackbone =
+        Utils.newInterface(
+            BACKBONE_FACING_INTERFACE_NAME,
+            cfgNode,
+            vrf.getName(),
+            LinkLocalAddress.of(LINK_LOCAL_IP),
+            "To AWS backbone");
+    toBackbone.setInterfaceType(InterfaceType.PHYSICAL);
     BgpProcess bgpProcess =
         BgpProcess.builder()
             .setRouterId(LINK_LOCAL_IP)

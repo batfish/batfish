@@ -37,7 +37,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "backbone" : {
@@ -65,7 +65,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           }
         },
@@ -48411,7 +48411,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "out" : {
@@ -51405,7 +51405,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-__aws-services-gateway__-backbone" : {
@@ -51425,7 +51425,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           }
         },
