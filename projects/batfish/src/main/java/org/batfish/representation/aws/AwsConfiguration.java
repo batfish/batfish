@@ -39,6 +39,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -354,6 +355,7 @@ public class AwsConfiguration extends VendorConfiguration {
             cfgNode,
             LinkLocalAddress.of(LINK_LOCAL_IP),
             "To AWS services");
+    outInterface.setInterfaceType(InterfaceType.PHYSICAL);
 
     Set<Prefix> awsServicesPrefixes = AwsPrefixes.getAwsServicesPrefixes();
 
