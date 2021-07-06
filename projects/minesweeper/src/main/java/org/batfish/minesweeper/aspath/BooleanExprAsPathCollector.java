@@ -7,13 +7,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.expr.*;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 
-/** Collect all community literals and regexes in a {@link BooleanExpr}. */
+/** Collect all AS-path regexes in a {@link BooleanExpr}. */
 @ParametersAreNonnullByDefault
 public class BooleanExprAsPathCollector
     implements BooleanExprVisitor<Set<SymbolicAsPathRegex>, Configuration> {
@@ -70,8 +71,8 @@ public class BooleanExprAsPathCollector
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchAsPath(MatchAsPath matchAsPath, Configuration arg) {
-    // TODO
-    return ImmutableSet.of();
+    AsPathMatchExpr matchExpr = matchAsPath.getAsPathMatchExpr();
+    return matchExpr.accept(new AsPathMatchExprAsPathCollector(), arg);
   }
 
   @Override
