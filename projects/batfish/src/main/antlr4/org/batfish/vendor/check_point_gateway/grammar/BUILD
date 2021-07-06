@@ -3,7 +3,7 @@ load("@rules_java//java:defs.bzl", "java_library")
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "check_point_gateway",
+    name = "grammar",
     srcs = [
         ":CheckPointGatewayLexer.java",
         ":CheckPointGatewayParser.java",
@@ -12,14 +12,14 @@ java_library(
     ],
     javacopts = ["-XepDisableAllChecks"],
     deps = [
-        "//projects/batfish/src/main/java/org/batfish/grammar/check_point_gateway/parsing:check_point_gateway_base_parser",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/grammar:check_point_gateway_base",
         "//projects/batfish-common-protocol:parser_common",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )
 
 genrule(
-    name = "check_point_gateway_generated",
+    name = "grammar_generated",
     srcs = glob([
         "*.g4",
     ]),
@@ -36,7 +36,7 @@ java -cp $(location @antlr4_tool//jar) \
     -Xexact-output-dir \
        $(location CheckPointGatewayLexer.g4) \
        $(location CheckPointGatewayParser.g4) \
-    -package org.batfish.grammar.check_point_gateway \
+    -package org.batfish.vendor.check_point_gateway.grammar \
     -encoding UTF-8 \
     -Werror \
     -o $(@D)""",

@@ -289,7 +289,8 @@
             </goals>
             <configuration>
               <includes>**/CheckPointGatewayLexer.g4,**/CheckPointGatewayParser.g4</includes>
-              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/check_point_gateway
+              <libDirectory>
+                ${basedir}/src/main/antlr4/org/batfish/vendor/check_point_gateway/grammar
               </libDirectory>
               <statusDirectory>${project.build.directory}/maven-status/antlr4-check-point-gateway
               </statusDirectory>

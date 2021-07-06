@@ -1,7 +1,7 @@
 lexer grammar CheckPointGatewayLexer;
 
 options {
-   superClass = 'org.batfish.grammar.check_point_gateway.parsing.CheckPointGatewayBaseLexer';
+   superClass = 'CheckPointGatewayBaseLexer';
 }
 
 tokens {

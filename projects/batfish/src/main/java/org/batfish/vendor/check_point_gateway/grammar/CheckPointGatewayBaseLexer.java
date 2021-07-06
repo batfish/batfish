@@ -1,4 +1,4 @@
-package org.batfish.grammar.check_point_gateway.parsing;
+package org.batfish.vendor.check_point_gateway.grammar;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.CharStream;

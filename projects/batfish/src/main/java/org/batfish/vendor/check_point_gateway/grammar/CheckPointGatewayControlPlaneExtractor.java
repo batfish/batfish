@@ -1,4 +1,4 @@
-package org.batfish.grammar.check_point_gateway;
+package org.batfish.vendor.check_point_gateway.grammar;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -9,8 +9,8 @@ import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.representation.check_point_gateway.CheckPointGatewayConfiguration;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration;
 
 @ParametersAreNonnullByDefault
 public class CheckPointGatewayControlPlaneExtractor extends CheckPointGatewayParserBaseListener

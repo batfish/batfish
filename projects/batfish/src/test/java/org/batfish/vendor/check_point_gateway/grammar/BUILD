@@ -12,7 +12,7 @@ junit_tests(
     ]),
     resources = [
         "//projects/batfish/src/test/resources:log4j_config",
-        "//projects/batfish/src/test/resources/org/batfish/grammar/check_point_gateway/testconfigs",
+        "//projects/batfish/src/test/resources/org/batfish/vendor/check_point_gateway/grammar/testconfigs",
     ],
     tags = ["cpu:4"],
     runtime_deps = [
@@ -25,8 +25,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/batfish/src/main/java/org/batfish/grammar/check_point_gateway",
-        "//projects/batfish/src/main/java/org/batfish/representation/check_point_gateway",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/grammar",
+        "//projects/batfish/src/main/java/org/batfish/vendor/check_point_gateway/representation",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",

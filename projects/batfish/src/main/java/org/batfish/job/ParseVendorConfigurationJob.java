@@ -30,8 +30,6 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.arista.AristaCombinedParser;
 import org.batfish.grammar.arista.AristaControlPlaneExtractor;
-import org.batfish.grammar.check_point_gateway.CheckPointGatewayCombinedParser;
-import org.batfish.grammar.check_point_gateway.CheckPointGatewayControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.cisco_asa.AsaCombinedParser;
@@ -64,6 +62,8 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
 

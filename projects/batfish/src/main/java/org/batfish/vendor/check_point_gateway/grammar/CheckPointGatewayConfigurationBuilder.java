@@ -1,4 +1,4 @@
-package org.batfish.grammar.check_point_gateway;
+package org.batfish.vendor.check_point_gateway.grammar;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -9,9 +9,9 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
-import org.batfish.grammar.check_point_gateway.CheckPointGatewayParser.Check_point_gateway_configurationContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
-import org.batfish.representation.check_point_gateway.CheckPointGatewayConfiguration;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Check_point_gateway_configurationContext;
+import org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration;
 
 @ParametersAreNonnullByDefault
 public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayParserBaseListener

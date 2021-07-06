@@ -1,11 +1,11 @@
-package org.batfish.grammar.check_point_gateway;
+package org.batfish.vendor.check_point_gateway.grammar;
 
 import org.batfish.grammar.BatfishANTLRErrorStrategy;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
 import org.batfish.grammar.GrammarSettings;
-import org.batfish.grammar.check_point_gateway.CheckPointGatewayParser.Check_point_gateway_configurationContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Check_point_gateway_configurationContext;
 
 public class CheckPointGatewayCombinedParser
     extends BatfishCombinedParser<CheckPointGatewayParser, CheckPointGatewayLexer> {

@@ -1,4 +1,4 @@
-package org.batfish.grammar.check_point_gateway;
+package org.batfish.vendor.check_point_gateway.grammar;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
@@ -25,7 +25,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.representation.check_point_gateway.CheckPointGatewayConfiguration;
+import org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -33,7 +33,7 @@ import org.junit.rules.TemporaryFolder;
 @ParametersAreNonnullByDefault
 public class CheckPointGatewayGrammarTest {
   private static final String TESTCONFIGS_PREFIX =
-      "org/batfish/grammar/check_point_gateway/testconfigs/";
+      "org/batfish/vendor/check_point_gateway/grammar/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

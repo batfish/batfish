@@ -1,4 +1,4 @@
-package org.batfish.representation.check_point_gateway;
+package org.batfish.vendor.check_point_gateway.representation;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;

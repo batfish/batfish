@@ -4,22 +4,19 @@ load("@batfish//skylark:pmd_test.bzl", "pmd_test")
 package(default_visibility = ["//visibility:public"])
 
 java_library(
-    name = "check_point_gateway",
+    name = "representation",
     srcs = glob(
-        ["**/*.java"],
+        ["*.java"],
         exclude = ["BUILD"],
     ),
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/check_point_gateway",
-        "//projects/batfish/src/main/java/org/batfish/representation/check_point_gateway",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
-        "@maven//:org_antlr_antlr4_runtime",
     ],
 )
 
 pmd_test(
     name = "pmd",
-    lib = ":check_point_gateway",
+    lib = ":representation",
 )
