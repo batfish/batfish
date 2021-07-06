@@ -30,6 +30,8 @@ import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.arista.AristaCombinedParser;
 import org.batfish.grammar.arista.AristaControlPlaneExtractor;
+import org.batfish.grammar.check_point_gateway.CheckPointGatewayCombinedParser;
+import org.batfish.grammar.check_point_gateway.CheckPointGatewayControlPlaneExtractor;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.cisco_asa.AsaCombinedParser;
@@ -219,6 +221,18 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileText, ciscoXrParser, format, _warnings, _silentSyntax);
             break;
           }
+
+        case CHECK_POINT_GATEWAY:
+          {
+            CheckPointGatewayCombinedParser checkPointParser =
+                new CheckPointGatewayCombinedParser(_fileText, _settings);
+            combinedParser = checkPointParser;
+            extractor =
+                new CheckPointGatewayControlPlaneExtractor(
+                    _fileText, checkPointParser, _warnings, _silentSyntax);
+            break;
+          }
+
         case CUMULUS_CONCATENATED:
           {
             CumulusConcatenatedCombinedParser parser =

@@ -2,6 +2,7 @@ package org.batfish.grammar;
 
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.CADANT;
+import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS_XR;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
@@ -56,6 +57,17 @@ public class VendorConfigurationFormatDetectorTest {
             + "configure\n"
             + "shelfname \"Arris CER CMTS\"\n";
     assertThat(identifyConfigurationFormat(fileText), equalTo(CADANT));
+  }
+
+  @Test
+  public void testCheckPoint() {
+    String fileText =
+        "#\n"
+            + "# Configuration of host_name\n"
+            + "# Language version: 13.4v1\n"
+            + "set installer policy check-for-updates-period 3\n"
+            + "set hostname check_point\n";
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CHECK_POINT_GATEWAY));
   }
 
   @Test

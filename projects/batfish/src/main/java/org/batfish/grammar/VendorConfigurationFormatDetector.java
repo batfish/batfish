@@ -25,6 +25,8 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
+  private static final Pattern CHECK_POINT_GATEWAY_PATTERN =
+      Pattern.compile("(?m)^# Configuration of \\w+\n# Language version: ");
   private static final Pattern CUMULUS_CONCATENATED_PATTERN =
       Pattern.compile("(?m)^# This file describes the network interfaces");
   private static final Pattern CUMULUS_NCLU_PATTERN = Pattern.compile("(?m)^net del all$");
@@ -137,6 +139,14 @@ public final class VendorConfigurationFormatDetector {
   private ConfigurationFormat checkCadant() {
     if (fileTextMatches(CADANT_NETWORK_PATTERN)) {
       return ConfigurationFormat.CADANT;
+    }
+    return null;
+  }
+
+  @Nullable
+  private ConfigurationFormat checkCheckPoint() {
+    if (fileTextMatches(CHECK_POINT_GATEWAY_PATTERN)) {
+      return ConfigurationFormat.CHECK_POINT_GATEWAY;
     }
     return null;
   }
@@ -391,6 +401,7 @@ public final class VendorConfigurationFormatDetector {
 
   private ConfigurationFormat identifyConfigurationFormat() {
     ConfigurationFormat format;
+
     format = checkEmpty();
     if (format != null) {
       return format;
@@ -404,6 +415,10 @@ public final class VendorConfigurationFormatDetector {
     // formats we know this file does not match.
     configureHeuristicBlacklist();
 
+    format = checkCheckPoint();
+    if (format != null) {
+      return format;
+    }
     format = checkFortios();
     if (format != null) {
       return format;
