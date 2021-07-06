@@ -8,6 +8,7 @@ public enum ConfigurationFormat {
   AWS("aws"),
   BLADENETWORK("bladenetwork"),
   CADANT("cadant"),
+  CHECK_POINT_GATEWAY("check_point_gateway"),
   CISCO_ASA("cisco"),
   CISCO_IOS("cisco"),
   CISCO_IOS_XR("cisco"),
