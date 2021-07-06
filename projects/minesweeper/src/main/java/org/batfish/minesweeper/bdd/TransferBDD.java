@@ -33,35 +33,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.CallExpr;
-import org.batfish.datamodel.routing_policy.expr.Conjunction;
-import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
-import org.batfish.datamodel.routing_policy.expr.Disjunction;
-import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
-import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
-import org.batfish.datamodel.routing_policy.expr.LiteralLong;
-import org.batfish.datamodel.routing_policy.expr.LongExpr;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
-import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
-import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.MatchTag;
-import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
-import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
-import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
+import org.batfish.datamodel.routing_policy.expr.*;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -179,6 +151,17 @@ public class TransferBDD {
       return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
      */
+  }
+
+  // produce a BDD that represents the disjunction of all atomic predicates associated with any of
+  // the given
+  // as-path regexes
+  private BDD asPathRegexesToBDD(Set<SymbolicAsPathRegex> asPathRegexes, BDDRoute route) {
+    Set<Integer> asPathAPs = atomicPredicatesFor(asPathRegexes, _asPathRegexAtomicPredicates);
+    BDD[] apBDDs = route.getAsPathRegexAtomicPredicates();
+    return route
+        .getFactory()
+        .orAll(asPathAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
   }
 
   // produce the union of all atomic predicates associated with any of the given symbolic regexes
@@ -885,6 +868,14 @@ public class TransferBDD {
       AsPathAccessList accessList = conf.getAsPathAccessLists().get(namedAsPathSet.getName());
       p.debug("Named As Path Set: " + namedAsPathSet.getName());
       return matchAsPathAccessList(accessList, other);
+    } else if (e instanceof ExplicitAsPathSet) {
+      ExplicitAsPathSet explicitAsPathSet = (ExplicitAsPathSet) e;
+      Set<SymbolicAsPathRegex> asPathRegexes =
+          explicitAsPathSet.getElems().stream()
+              .map(AsPathSetElem::regex)
+              .map(SymbolicAsPathRegex::new)
+              .collect(ImmutableSet.toImmutableSet());
+      return asPathRegexesToBDD(asPathRegexes, other);
     }
     // TODO: handle other kinds of AsPathSetExprs
     throw new BatfishException("Unhandled match as-path expression " + e);
@@ -900,12 +891,7 @@ public class TransferBDD {
       // each line's regex is represented as the disjunction of all of the regex's
       // corresponding atomic predicates
       SymbolicAsPathRegex regex = new SymbolicAsPathRegex(line.getRegex());
-      Set<Integer> aps = atomicPredicatesFor(ImmutableSet.of(regex), _asPathRegexAtomicPredicates);
-      BDD regexAPBdd =
-          factory.orAll(
-              aps.stream()
-                  .map(ap -> other.getAsPathRegexAtomicPredicates()[ap])
-                  .collect(Collectors.toList()));
+      BDD regexAPBdd = asPathRegexesToBDD(ImmutableSet.of(regex), other);
       acc = ite(regexAPBdd, mkBDD(action), acc);
     }
     return acc;
