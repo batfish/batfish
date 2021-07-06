@@ -1,5 +1,7 @@
 package org.batfish.grammar;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -414,98 +416,30 @@ public final class VendorConfigurationFormatDetector {
     // formats we know this file does not match.
     configureHeuristicBlacklist();
 
-    format = checkCheckPoint();
-    if (format != null) {
-      return format;
-    }
-    format = checkFortios();
-    if (format != null) {
-      return format;
-    }
-    format = checkRuckusIcx();
-    if (format != null) {
-      return format;
-    }
-    format = checkCadant();
-    if (format != null) {
-      return format;
-    }
-    format = checkCumulusConcatenated();
-    if (format != null) {
-      return format;
-    }
-    format = checkCumulusNclu();
-    if (format != null) {
-      return format;
-    }
-    format = checkF5();
-    if (format != null) {
-      return format;
-    }
-    format = checkCiscoXr();
-    if (format != null) {
-      return format;
-    }
-    format = checkFlatVyos();
-    if (format != null) {
-      return format;
-    }
-    format = checkIpTables();
-    if (format != null) {
-      return format;
-    }
-    format = checkMetamako();
-    if (format != null) {
-      return format;
-    }
-    format = checkMrv();
-    if (format != null) {
-      return format;
-    }
-    format = checkMrvCommands();
-    if (format != null) {
-      return format;
-    }
-    format = checkPaloAlto(false);
-    if (format != null) {
-      return format;
-    }
-    format = checkVyos();
-    if (format != null) {
-      return format;
-    }
-    format = checkArista();
-    if (format != null) {
-      return format;
-    }
-    format = checkBlade();
-    if (format != null) {
-      return format;
-    }
-    format = checkVxWorks();
-    if (format != null) {
-      return format;
-    }
-    format = checkJuniper(false);
-    if (format != null) {
-      return format;
-    }
-    format = checkAlcatelAos();
-    if (format != null) {
-      return format;
-    }
-    format = checkMss();
-    if (format != null) {
-      return format;
-    }
-    format = checkArubaOS();
-    if (format != null) {
-      return format;
-    }
-    format = checkCisco();
-    if (format != null) {
-      return format;
-    }
-    return ConfigurationFormat.UNKNOWN;
+    return firstNonNull(
+        checkCheckPoint(),
+        checkFortios(),
+        checkRuckusIcx(),
+        checkCadant(),
+        checkCumulusConcatenated(),
+        checkCumulusNclu(),
+        checkF5(),
+        checkCiscoXr(),
+        checkFlatVyos(),
+        checkIpTables(),
+        checkMetamako(),
+        checkMrv(),
+        checkMrvCommands(),
+        checkPaloAlto(false),
+        checkVyos(),
+        checkArista(),
+        checkBlade(),
+        checkVxWorks(),
+        checkJuniper(false),
+        checkAlcatelAos(),
+        checkMss(),
+        checkArubaOS(),
+        checkCisco(),
+        ConfigurationFormat.UNKNOWN);
   }
 }
