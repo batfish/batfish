@@ -22,6 +22,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkFactory;
@@ -41,7 +42,7 @@ public class TopologyUtilIspTest {
   public void setup() {
     NetworkFactory nf = new NetworkFactory();
     _cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _ib = nf.interfaceBuilder();
+    _ib = nf.interfaceBuilder().setType(InterfaceType.PHYSICAL);
   }
 
   private static class TopologySetup {
