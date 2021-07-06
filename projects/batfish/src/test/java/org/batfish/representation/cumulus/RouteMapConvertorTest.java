@@ -1,5 +1,6 @@
 package org.batfish.representation.cumulus;
 
+import static org.batfish.representation.cumulus.RouteMapConvertor.toTraceableStatement;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -84,6 +85,7 @@ public class RouteMapConvertorTest {
     VC = new CumulusConcatenatedConfiguration();
     VC.setHostname(HOSTNAME);
     VC.setWarnings(W);
+    VC.setFilename("file");
     C = new Configuration(HOSTNAME, ConfigurationFormat.CUMULUS_CONCATENATED);
     initRouteMap();
     _originalRouteBuilder =
@@ -167,11 +169,16 @@ public class RouteMapConvertorTest {
                 match,
                 // true branch
                 ImmutableList.of(
-                    new SetMetric(new LiteralLong(10)),
-                    new If(
-                        new CallExpr(String.format("~%s~SEQ:%d~", "routeMap", 30)),
-                        ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                        ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))),
+                    toTraceableStatement(
+                        ImmutableList.of(
+                            new SetMetric(new LiteralLong(10)),
+                            new If(
+                                new CallExpr(String.format("~%s~SEQ:%d~", "routeMap", 30)),
+                                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                                ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))),
+                        ENTRY1.getNumber(),
+                        ROUTEMAP.getName(),
+                        VC.getFilename())),
                 // false branch
                 ImmutableList.of())));
   }
@@ -191,11 +198,16 @@ public class RouteMapConvertorTest {
                 match,
                 // true branch
                 ImmutableList.of(
-                    new SetMetric(new LiteralLong(20)),
-                    new If(
-                        BooleanExprs.CALL_EXPR_CONTEXT,
-                        ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
-                        ImmutableList.of(Statements.ExitReject.toStaticStatement()))),
+                    toTraceableStatement(
+                        ImmutableList.of(
+                            new SetMetric(new LiteralLong(20)),
+                            new If(
+                                BooleanExprs.CALL_EXPR_CONTEXT,
+                                ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+                                ImmutableList.of(Statements.ExitReject.toStaticStatement()))),
+                        ENTRY2.getNumber(),
+                        ROUTEMAP.getName(),
+                        VC.getFilename())),
 
                 // false branch
                 ImmutableList.of(
@@ -220,11 +232,16 @@ public class RouteMapConvertorTest {
                 match,
                 // true branch
                 ImmutableList.of(
-                    new SetMetric(new LiteralLong(30)),
-                    new If(
-                        BooleanExprs.CALL_EXPR_CONTEXT,
-                        ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                        ImmutableList.of(Statements.ExitAccept.toStaticStatement()))),
+                    toTraceableStatement(
+                        ImmutableList.of(
+                            new SetMetric(new LiteralLong(30)),
+                            new If(
+                                BooleanExprs.CALL_EXPR_CONTEXT,
+                                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+                                ImmutableList.of(Statements.ExitAccept.toStaticStatement()))),
+                        ENTRY3.getNumber(),
+                        ROUTEMAP.getName(),
+                        VC.getFilename())),
                 // false branch
                 ImmutableList.of())));
   }

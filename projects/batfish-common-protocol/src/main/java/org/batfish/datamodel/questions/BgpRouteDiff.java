@@ -8,7 +8,11 @@ import static org.batfish.datamodel.questions.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_METRIC;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP_IP;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_WEIGHT;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,7 +39,15 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
    */
   private static final Set<String> ROUTE_DIFF_FIELD_NAMES =
       ImmutableSet.of(
-          PROP_AS_PATH, PROP_COMMUNITIES, PROP_LOCAL_PREFERENCE, PROP_METRIC, PROP_ORIGIN_TYPE);
+          PROP_AS_PATH,
+          PROP_COMMUNITIES,
+          PROP_LOCAL_PREFERENCE,
+          PROP_METRIC,
+          PROP_NEXT_HOP_IP,
+          PROP_ORIGINATOR_IP,
+          PROP_ORIGIN_TYPE,
+          PROP_TAG,
+          PROP_WEIGHT);
 
   private final String _fieldName;
   private final String _oldValue;
@@ -109,7 +121,11 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             .setCommunities(route2.getCommunities())
             .setLocalPreference(route2.getLocalPreference())
             .setMetric(route2.getMetric())
+            .setNextHopIp(route2.getNextHopIp())
+            .setOriginatorIp(route2.getOriginatorIp())
             .setOriginType(route2.getOriginType())
+            .setTag(route2.getTag())
+            .setWeight(route2.getWeight())
             .build()
             .equals(route2),
         "routeDiffs only supports differences of fields: %s, not %s vs %s",
@@ -122,7 +138,11 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             routeDiff(route1, route2, PROP_COMMUNITIES, BgpRoute::getCommunities),
             routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
             routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
-            routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType))
+            routeDiff(route1, route2, PROP_NEXT_HOP_IP, BgpRoute::getNextHopIp),
+            routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
+            routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
+            routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),
+            routeDiff(route1, route2, PROP_WEIGHT, BgpRoute::getWeight))
         .filter(Optional::isPresent)
         .map(Optional::get)
         .collect(ImmutableSortedSet.toImmutableSortedSet(natural()));

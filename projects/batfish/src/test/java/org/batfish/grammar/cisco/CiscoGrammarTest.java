@@ -167,6 +167,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeCombine
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeRouteMapClauseName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborExportPolicyName;
@@ -199,6 +200,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP_CLAUSE;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
@@ -384,6 +386,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetEigrpMetric;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackInterface;
 import org.batfish.datamodel.transformation.Transformation;
@@ -663,8 +666,9 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(c, hasInterface("Ethernet1", hasAccessVlan(1)));
-    assertThat(c, hasInterface("Ethernet2", hasAccessVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet2", hasAccessVlan(3)));
     assertThat(c, hasInterface("Ethernet3", hasAccessVlan(nullValue())));
+    assertThat(c, hasInterface("Ethernet4", hasAccessVlan(nullValue())));
   }
 
   @Test
@@ -2755,10 +2759,8 @@ public final class CiscoGrammarTest {
         equalTo(
             ImmutableList.of(
                 new If(
-                    new Conjunction(
-                        ImmutableList.of(
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
@@ -2803,10 +2805,8 @@ public final class CiscoGrammarTest {
         equalTo(
             ImmutableList.of(
                 new If(
-                    new Conjunction(
-                        ImmutableList.of(
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")))),
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
@@ -3036,8 +3036,46 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_bgp", 9));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_unused", 0));
 
+    /* Confirm that route maps clauses are defined and referred correctly */
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_if", 10), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_ospf", 10), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_bgp", 10), 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_unused", 10), 1));
+
     /* Confirm undefined route-map is detected */
     assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "rm_undef"));
+  }
+
+  @Test
+  public void testIosRouteMapContinue() throws IOException {
+    String hostname = "ios-route-map-continue";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm", 0));
+
+    /* Confirm that route maps clauses are referred correctly */
+    assertThat(
+        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 10), 1));
+    assertThat(
+        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 20), 2));
+    assertThat(
+        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 40), 1));
+
+    /* Undefined continue */
+    assertThat(
+        ccae,
+        hasUndefinedReference(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 30)));
   }
 
   @Test
@@ -5583,19 +5621,23 @@ public final class CiscoGrammarTest {
 
     // Ensure the converted route-map ignores the match-interface clause
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    List<Statement> statements =
-        ((If) Iterables.getOnlyElement(c.getRoutingPolicies().get("rm").getStatements()))
-            .getTrueStatements();
-    assertThat(statements, contains(Statements.ReturnTrue.toStaticStatement()));
+    RoutingPolicy rm = c.getRoutingPolicies().get("rm");
+    assertThat(
+        rm.getStatements(), contains(Statements.ReturnLocalDefaultAction.toStaticStatement()));
   }
 
   @Test
   public void testSetMetricEigrp() throws IOException {
     Configuration c = parseConfig("ios-route-map-set-metric-eigrp");
 
+    // get the real statements past the traceable wrapper
+    List<Statement> statements =
+        ((TraceableStatement)
+                Iterables.getOnlyElement(
+                    c.getRoutingPolicies().get("rm_set_metric").getStatements()))
+            .getInnerStatements();
     assertThat(
-        ((If) Iterables.getOnlyElement(c.getRoutingPolicies().get("rm_set_metric").getStatements()))
-            .getTrueStatements(),
+        statements,
         // Being intentionally lax here because pretty sure conversion is busted.
         // TODO: update when convinced eigrp settings have correct values
         hasItem(instanceOf(SetEigrpMetric.class)));

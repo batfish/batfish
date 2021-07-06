@@ -64,7 +64,7 @@ net self /Common/self3 {
 }
 
 net self /Common/self5 {
-    address 10.255.255.255/24
+    address 10.255.255.254/24
     allow-service all
     vlan /Common/vlan5
 }

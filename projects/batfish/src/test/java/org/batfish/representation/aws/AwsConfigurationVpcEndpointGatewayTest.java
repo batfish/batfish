@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder;
  * E2e tests for VPC endpoints of type gateway. There is a single VPC with two subnets, one public
  * and one private. Both subnets have one instance each.
  *
- * <p>The configuration was pulled * manually after deployment using the setup.tf file in {@link
+ * <p>The configuration was pulled manually after deployment using the setup.tf file in {@link
  * #TESTCONFIGS_DIR}.
  */
 public class AwsConfigurationVpcEndpointGatewayTest {

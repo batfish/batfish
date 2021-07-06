@@ -42,6 +42,7 @@ import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInter
 import static org.batfish.representation.cisco.CiscoConversions.toOspfNetworkType;
 import static org.batfish.representation.cisco.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -55,6 +56,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -126,6 +128,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -190,6 +193,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
@@ -198,6 +202,7 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public final class CiscoConfiguration extends VendorConfiguration {
   public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
@@ -372,7 +377,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     throw new BatfishException("Invalid interface name prefix: '" + prefix + "'");
   }
 
-  private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
+  @VisibleForTesting
+  static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
     String mapName = map.getName();
     String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
     return clausePolicyName;
@@ -1518,7 +1524,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
 
     // switch settings
-    newIface.setAccessVlan(iface.getAccessVlan());
+    if (iface.getSwitchportMode() == SwitchportMode.ACCESS) {
+      newIface.setAccessVlan(firstNonNull(iface.getAccessVlan(), 1));
+    }
 
     if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
       newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
@@ -2176,7 +2184,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newProcess;
   }
 
-  private RoutingPolicy toRoutingPolicy(Configuration c, RouteMap map) {
+  @VisibleForTesting
+  RoutingPolicy toRoutingPolicy(Configuration c, RouteMap map) {
     boolean hasContinue =
         map.getClauses().values().stream().anyMatch(clause -> clause.getContinueLine() != null);
     if (hasContinue) {
@@ -2212,7 +2221,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       clauses.put(clauseNumber, ifExpr);
       ifExpr.setComment(clausePolicyName);
       ifExpr.setGuard(conj);
-      List<Statement> matchStatements = ifExpr.getTrueStatements();
+      List<Statement> matchStatements = new LinkedList<>();
       for (RouteMapSetLine rmSet : rmClause.getSetList()) {
         rmSet.applyTo(matchStatements, this, c, _w);
       }
@@ -2233,13 +2242,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         ifExpr.getFalseStatements().add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
+      ifExpr.setTrueStatements(
+          ImmutableList.of(
+              makeClauseTraceable(matchStatements, clauseNumber, map.getName(), _filename)));
       followingClause = ifExpr;
     }
     statements.add(followingClause);
     return output;
   }
 
-  private RoutingPolicy toRoutingPolicies(Configuration c, RouteMap map) {
+  @VisibleForTesting
+  RoutingPolicy toRoutingPolicies(Configuration c, RouteMap map) {
     RoutingPolicy output = new RoutingPolicy(map.getName(), c);
     List<Statement> statements = output.getStatements();
     Map<Integer, RoutingPolicy> clauses = new HashMap<>();
@@ -2292,12 +2305,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           continueTargetPolicy = clauses.get(continueTarget);
           if (continueTargetPolicy == null) {
-            String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
-            undefined(
-                CiscoStructureType.ROUTE_MAP_CLAUSE,
-                name,
-                CiscoStructureUsage.ROUTE_MAP_CONTINUE,
-                continueStatement.getStatementLine());
             continueStatement = null;
           }
         } else {
@@ -2328,11 +2335,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .getFalseStatements()
             .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
+      ifStatement.setTrueStatements(
+          ImmutableList.of(
+              makeClauseTraceable(onMatchStatements, clauseNumber, map.getName(), _filename)));
       followingClause = clausePolicy;
       followingClauseNumber = clauseNumber;
     }
     statements.add(new CallStatement(followingClause.getName()));
     return output;
+  }
+
+  @VisibleForTesting
+  static TraceableStatement makeClauseTraceable(
+      List<Statement> matchStatements, int clauseNumber, String mapName, String filename) {
+    return new TraceableStatement(
+        TraceElement.builder()
+            .add("Matched ")
+            .add(
+                String.format("route-map %s clause %d", mapName, clauseNumber),
+                new VendorStructureId(
+                    filename,
+                    CiscoStructureType.ROUTE_MAP_CLAUSE.getDescription(),
+                    computeRouteMapClauseName(mapName, clauseNumber)))
+            .build(),
+        matchStatements);
   }
 
   @Override
@@ -3071,6 +3097,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(CiscoStructureType.ROUTE_MAP);
 
+    // mark references to route-map clauses
+    markConcreteStructure(CiscoStructureType.ROUTE_MAP_CLAUSE);
+
     // Cable
     markConcreteStructure(CiscoStructureType.DEPI_CLASS);
     markConcreteStructure(CiscoStructureType.DEPI_TUNNEL);
@@ -3773,5 +3802,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
+  }
+
+  public static @Nonnull String computeRouteMapClauseName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
   }
 }

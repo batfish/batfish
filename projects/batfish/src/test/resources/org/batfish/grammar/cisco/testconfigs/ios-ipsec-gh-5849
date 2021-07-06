@@ -10,7 +10,7 @@ crypto isakmp profile PROFILE
   local-address Ethernet1
 !
 interface Tunnel1
- ip address 3.3.3.3 255.255.255.252
+ ip address 3.3.3.1 255.255.255.252
  tunnel source Ethernet1
  tunnel mode ipsec ipv4
  tunnel destination 4.4.4.4

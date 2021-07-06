@@ -199,6 +199,20 @@
             "definitionLines" : "254-255,257-258",
             "numReferrers" : 1
           }
+        },
+        "route-map-clause" : {
+          "PROTECT_LOOPBACK 10" : {
+            "definitionLines" : "251-252",
+            "numReferrers" : 1
+          },
+          "SET_LOCAL_PREF 10" : {
+            "definitionLines" : "254-255",
+            "numReferrers" : 1
+          },
+          "SET_LOCAL_PREF 20" : {
+            "definitionLines" : "257-258",
+            "numReferrers" : 1
+          }
         }
       }
     },
@@ -411,6 +425,23 @@
           "SET_LOCAL_PREF" : {
             "bgp inbound route-map" : [
               214
+            ]
+          }
+        },
+        "route-map-clause" : {
+          "PROTECT_LOOPBACK 10" : {
+            "route-map clause" : [
+              251
+            ]
+          },
+          "SET_LOCAL_PREF 10" : {
+            "route-map clause" : [
+              254
+            ]
+          },
+          "SET_LOCAL_PREF 20" : {
+            "route-map clause" : [
+              257
             ]
           }
         }

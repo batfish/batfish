@@ -1914,13 +1914,6 @@ public final class CumulusConversionsTest {
     assertEquals(
         inferPeerIp(
             org.batfish.datamodel.Interface.builder()
-                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/30")) // first address (network)
-                .setName("iface")
-                .build()),
-        Optional.empty());
-    assertEquals(
-        inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")) // second address
                 .setName("iface")
                 .build()),
@@ -1932,13 +1925,6 @@ public final class CumulusConversionsTest {
                 .setName("iface")
                 .build()),
         Optional.of(Ip.parse("1.1.1.1")));
-    assertEquals(
-        inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
-                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/30")) // fourth address (bcast)
-                .setName("iface")
-                .build()),
-        Optional.empty());
   }
 
   @Test
@@ -1953,7 +1939,7 @@ public final class CumulusConversionsTest {
     assertEquals(
         inferPeerIp(
             org.batfish.datamodel.Interface.builder()
-                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/29"))
+                .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/29"))
                 .setName("iface")
                 .build()),
         Optional.empty());

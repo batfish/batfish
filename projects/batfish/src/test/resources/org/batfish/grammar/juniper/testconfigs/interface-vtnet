@@ -5,7 +5,7 @@ interfaces {
     vtnet0 {
         unit 0 {
             family inet {
-                address 10.1.2.3/30;
+                address 10.1.2.1/30;
             }
         }
     }

@@ -62,12 +62,12 @@ public class IpOwnersTest {
     Interface i1 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(ConcreteInterfaceAddress.create(P1.getStartIp(), P1.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P1.getFirstHostIp(), P1.getPrefixLength()))
             .build();
     Interface i2 =
         _ib.setOwner(c1)
             .setVrf(vrf1)
-            .setAddress(ConcreteInterfaceAddress.create(P2.getStartIp(), P2.getPrefixLength()))
+            .setAddress(ConcreteInterfaceAddress.create(P2.getFirstHostIp(), P2.getPrefixLength()))
             .setActive(false)
             .build();
 

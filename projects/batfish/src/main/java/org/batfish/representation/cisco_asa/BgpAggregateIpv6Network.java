@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco_asa;
 
+import java.util.Objects;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix6;
 
 public class BgpAggregateIpv6Network extends BgpAggregateNetwork {
@@ -11,14 +13,14 @@ public class BgpAggregateIpv6Network extends BgpAggregateNetwork {
   }
 
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
     } else if (!(o instanceof BgpAggregateIpv6Network)) {
       return false;
     }
     BgpAggregateIpv6Network rhs = (BgpAggregateIpv6Network) o;
-    return _prefix6.equals(rhs._prefix6);
+    return baseEquals(rhs) && _prefix6.equals(rhs._prefix6);
   }
 
   public Prefix6 getPrefix6() {
@@ -27,6 +29,6 @@ public class BgpAggregateIpv6Network extends BgpAggregateNetwork {
 
   @Override
   public int hashCode() {
-    return _prefix6.hashCode();
+    return Objects.hash(baseHashcode(), _prefix6.hashCode());
   }
 }

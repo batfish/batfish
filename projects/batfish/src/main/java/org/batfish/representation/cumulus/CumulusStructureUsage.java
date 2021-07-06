@@ -40,6 +40,7 @@ public enum CumulusStructureUsage implements StructureUsage {
   PORT_SPEED("port speed"),
   STATIC_ROUTE_VRF("static route vrf"),
   ROUTE_MAP_CALL("route map call"),
+  ROUTE_MAP_ENTRY_SELF_REFERENCE("route-map entry self-reference"),
   ROUTE_MAP_MATCH_COMMUNITY_LIST("route-map match community"),
   ROUTE_MAP_MATCH_INTERFACE("route-map match interface"),
   ROUTE_MAP_MATCH_AS_PATH("route-map match as-path"),

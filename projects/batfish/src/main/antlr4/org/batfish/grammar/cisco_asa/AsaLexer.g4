@@ -5436,6 +5436,8 @@ SUPPRESS_ARP: 'suppress-arp';
 
 SUPPRESS_FIB_PENDING: 'suppress-fib-pending';
 
+SUPPRESS_MAP: 'suppress-map';
+
 SUPPRESSED: 'suppressed';
 
 SUSPECT_ROGUE_CONF_LEVEL: 'suspect-rogue-conf-level';
