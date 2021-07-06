@@ -1,11 +1,15 @@
 package org.batfish.vendor.check_point_gateway.grammar;
 
+import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
+import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -83,7 +87,22 @@ public class CheckPointGatewayGrammarTest {
 
   @Test
   public void testHostname() {
-    CheckPointGatewayConfiguration c = parseVendorConfig("hostname");
+    String hostname = "hostname";
+    CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
+    assertThat(c.getHostname(), equalTo(hostname));
+  }
+
+  @Test
+  public void testHostnameInvalid() throws IOException {
+    String filename = "hostname_invalid";
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(warnings, hasParseWarning(hasComment("Illegal value for device hostname")));
   }
 }

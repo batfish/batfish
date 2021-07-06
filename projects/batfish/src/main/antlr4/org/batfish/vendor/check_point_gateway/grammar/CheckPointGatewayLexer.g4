@@ -5,11 +5,12 @@ options {
 }
 
 tokens {
+  STR_SEPARATOR,
   WORD
 }
 
 // CheckPointGateway keywords
-HOSTNAME: 'hostname' -> pushMode(M_Word);
+HOSTNAME: 'hostname' -> pushMode(M_SingleStr);
 SET: 'set';
 
 // Complex tokens
@@ -20,32 +21,17 @@ COMMENT_LINE
   F_NonNewlineChar* (F_Newline | EOF) -> channel(HIDDEN)
 ;
 
-IP_ADDRESS
-:
-    F_IpAddress
-;
+IP_ADDRESS: F_IpAddress;
 
-IP_PREFIX
-:
-    F_IpPrefix
-;
+IP_PREFIX: F_IpPrefix;
 
 NEWLINE: F_Newline+;
 
-UINT8
-:
-    F_Uint8
-;
+UINT8: F_Uint8;
 
-UINT16
-:
-    F_Uint16
-;
+UINT16: F_Uint16;
 
-UINT32
-:
-    F_Uint32
-;
+UINT32: F_Uint32;
 
 WS: F_Whitespace+ -> channel(HIDDEN);
 
@@ -62,22 +48,13 @@ F_DecByte
 ;
 
 fragment
-F_Digit
-:
-    [0-9]
-;
+F_Digit: [0-9];
 
 fragment
-F_IpAddress
-:
-    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
-;
+F_IpAddress: F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte;
 
 fragment
-F_IpPrefix
-:
-    F_IpAddress '/' F_IpPrefixLength
-;
+F_IpPrefix: F_IpAddress '/' F_IpPrefixLength;
 
 fragment
 F_IpPrefixLength
@@ -100,10 +77,7 @@ F_NonNewlineChar
 ;
 
 fragment
-F_PositiveDigit
-:
-    [1-9]
-;
+F_PositiveDigit: [1-9];
 
 fragment
 F_Uint8
@@ -160,10 +134,16 @@ fragment
 F_Word: F_WordChar+;
 
 // Modes
-mode M_Word;
+mode M_SingleStr;
 
-M_Word_WORD: F_Word -> type(WORD), popMode;
+M_SingleStr_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_SingleStrValue);
 
-M_Word_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+M_SingleStr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
-M_Word_WS: F_Whitespace+ -> channel(HIDDEN);
+mode M_SingleStrValue;
+
+M_SingleStrValue_WORD: F_Word -> type(WORD);
+
+M_SingleStrValue_WS: F_Whitespace+ -> skip, popMode;
+
+M_SingleStrValue_NEWLINE: F_Newline -> type(NEWLINE), popMode;
