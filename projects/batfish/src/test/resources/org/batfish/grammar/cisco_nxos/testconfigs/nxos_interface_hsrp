@@ -22,7 +22,6 @@ interface Ethernet1/1
   hsrp delay minimum 59 reload 60
   hsrp 2
     authentication md5 key-chain hsrp-keys
-    # BFD is not handled yet, but make sure Batfish doesn't lose context
     bfd
     no bfd
     ip 192.0.2.1
