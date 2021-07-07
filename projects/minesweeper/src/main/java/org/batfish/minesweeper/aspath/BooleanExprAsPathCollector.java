@@ -87,8 +87,9 @@ public class BooleanExprAsPathCollector
           .collect(ImmutableSet.toImmutableSet());
     } else if (expr instanceof NamedAsPathSet) {
       NamedAsPathSet namedSet = (NamedAsPathSet) expr;
-      // collect up all regexes in the AsPathAccessList of the specified name
       AsPathAccessList list = arg.getAsPathAccessLists().get(namedSet.getName());
+      // conversion to VI should guarantee list is not null
+      assert list != null;
       return list.getLines().stream()
           .map(AsPathAccessListLine::getRegex)
           .map(SymbolicAsPathRegex::new)

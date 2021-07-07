@@ -38,6 +38,10 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
@@ -1192,7 +1196,7 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchAsPath() {
+  public void testLegacyMatchAsPath() {
     _baseConfig.setAsPathAccessLists(
         ImmutableMap.of(
             AS_PATH_NAME,
@@ -1238,6 +1242,40 @@ public class TransferBDDTest {
                 new ExplicitAsPathSet(
                     ImmutableList.of(
                         new RegexAsPathSetElem(" 40$"), new RegexAsPathSetElem("^$")))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDDRoute anyRouteWithAPs = new BDDRoute(_g);
+    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+
+    assertEquals(3, _g.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+
+    Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
+        _g.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    // get the unique atomic predicates that correspond to " 40$" and "^$"
+    Integer ap1 = regexMap.get(new SymbolicAsPathRegex(" 40$")).iterator().next();
+    Integer ap2 = regexMap.get(new SymbolicAsPathRegex("^$")).iterator().next();
+
+    BDD expectedBDD = aps[ap1].or(aps[ap2]);
+    assertEquals(expectedBDD, acceptedAnnouncements);
+
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRouteWithAPs), outAnnouncements);
+  }
+
+  @Test
+  public void testMatchAsPath() {
+    _policyBuilder.addStatement(
+        new If(
+            MatchAsPath.of(
+                InputAsPath.instance(),
+                AsPathMatchAny.of(
+                    ImmutableList.of(AsPathMatchRegex.of(" 40$"), AsPathMatchRegex.of("^$")))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _g = new Graph(_batfish, _batfish.getSnapshot());

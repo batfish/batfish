@@ -4,9 +4,16 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.as_path.*;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprVisitor;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 
+/** Collect all AS-path regexes in a {@link AsPathMatchExpr}. */
 @ParametersAreNonnullByDefault
 public class AsPathMatchExprAsPathCollector
     implements AsPathMatchExprVisitor<Set<SymbolicAsPathRegex>, Configuration> {

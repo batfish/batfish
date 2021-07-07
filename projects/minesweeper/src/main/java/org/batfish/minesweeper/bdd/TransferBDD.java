@@ -30,10 +30,42 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.expr.*;
+import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
+import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
+import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -154,9 +186,8 @@ public class TransferBDD {
   }
 
   // produce a BDD that represents the disjunction of all atomic predicates associated with any of
-  // the given
-  // as-path regexes
-  private BDD asPathRegexesToBDD(Set<SymbolicAsPathRegex> asPathRegexes, BDDRoute route) {
+  // the given as-path regexes
+  BDD asPathRegexesToBDD(Set<SymbolicAsPathRegex> asPathRegexes, BDDRoute route) {
     Set<Integer> asPathAPs = atomicPredicatesFor(asPathRegexes, _asPathRegexAtomicPredicates);
     BDD[] apBDDs = route.getAsPathRegexAtomicPredicates();
     return route
@@ -382,7 +413,18 @@ public class TransferBDD {
       p.debug("MatchAsPath");
       LegacyMatchAsPath legacyMatchAsPathNode = (LegacyMatchAsPath) expr;
       BDD asPathPredicate =
-          matchAsPath(p.indent(), _conf, legacyMatchAsPathNode.getExpr(), p.getData());
+          matchAsPathSetExpr(p.indent(), _conf, legacyMatchAsPathNode.getExpr(), p.getData());
+      return result.setReturnValueBDD(asPathPredicate);
+
+    } else if (expr instanceof MatchAsPath) {
+      MatchAsPath matchAsPath = (MatchAsPath) expr;
+      checkArgument(
+          matchAsPath.getAsPathExpr().equals(InputAsPath.instance()),
+          "Currently only supporting matching on the original AS path");
+      BDD asPathPredicate =
+          matchAsPath
+              .getAsPathMatchExpr()
+              .accept(new AsPathMatchExprToBDD(), new Arg(this, _initialRoute));
       return result.setReturnValueBDD(asPathPredicate);
 
     } else {
@@ -861,7 +903,7 @@ public class TransferBDD {
   }
 
   // Produce a BDD that is the symbolic representation of the given AsPathSetExpr predicate.
-  private BDD matchAsPath(
+  private BDD matchAsPathSetExpr(
       TransferParam<BDDRoute> p, Configuration conf, AsPathSetExpr e, BDDRoute other) {
     if (e instanceof NamedAsPathSet) {
       NamedAsPathSet namedAsPathSet = (NamedAsPathSet) e;
