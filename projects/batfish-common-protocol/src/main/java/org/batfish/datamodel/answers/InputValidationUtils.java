@@ -56,6 +56,13 @@ public final class InputValidationUtils {
             completionMetadata,
             nodeRolesData,
             referenceLibrary);
+      case BGP_ROUTE_STATUS_SPEC:
+        return ParboiledInputValidator.validate(
+            Grammar.BGP_ROUTE_STATUS_SPECIFIER,
+            query,
+            completionMetadata,
+            nodeRolesData,
+            referenceLibrary);
       case BGP_SESSION_COMPAT_STATUS_SPEC:
         return ParboiledInputValidator.validate(
             Grammar.BGP_SESSION_COMPAT_STATUS_SPECIFIER,

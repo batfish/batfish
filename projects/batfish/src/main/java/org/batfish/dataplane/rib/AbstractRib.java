@@ -2,7 +2,9 @@ package org.batfish.dataplane.rib;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -153,6 +155,15 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
       _allRoutes = ImmutableSet.copyOf(_tree.getRoutes());
     }
     return _allRoutes;
+  }
+
+  @Override
+  @Nonnull
+  public Set<R> getTypedBackupRoutes() {
+    return Optional.ofNullable(_backupRoutes)
+        .map(Multimap::values)
+        .map(ImmutableSet::copyOf)
+        .orElse(ImmutableSet.of());
   }
 
   /**

@@ -56,9 +56,21 @@ public final class PartialDataplane implements DataPlane {
     throw new UnsupportedOperationException();
   }
 
+  @Nonnull
+  @Override
+  public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+    throw new UnsupportedOperationException();
+  }
+
   @Override
   @Nonnull
   public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  @Nonnull
+  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
     throw new UnsupportedOperationException();
   }
 

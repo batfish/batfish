@@ -52,10 +52,22 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     return _bgpRoutes;
   }
 
+  @Nonnull
+  @Override
+  public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+    return _bgpBackupRoutes;
+  }
+
   @Override
   @Nonnull
   public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
     return _evpnRoutes;
+  }
+
+  @Override
+  @Nonnull
+  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
+    return _evpnBackupRoutes;
   }
 
   @Override
@@ -102,9 +114,11 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   /////////////////////////
 
   @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+  @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
   @Nonnull private final Map<String, Map<String, Fib>> _fibs;
   @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
   @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
+  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
   @Nonnull private final Table<String, String, Set<Layer2Vni>> _vniSettings;
 
   @Nonnull
@@ -123,7 +137,9 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     Map<String, Configuration> configs = DataplaneUtil.computeConfigurations(nodes);
     // Order of initialization matters:
     _bgpRoutes = DataplaneUtil.computeBgpRoutes(nodes);
+    _bgpBackupRoutes = DataplaneUtil.computeBgpBackupRoutes(nodes);
     _evpnRoutes = DataplaneUtil.computeEvpnRoutes(nodes);
+    _evpnBackupRoutes = DataplaneUtil.computeEvpnBackupRoutes(nodes);
     _ribs = DataplaneUtil.computeRibs(nodes);
     _fibs = DataplaneUtil.computeFibs(nodes);
     _forwardingAnalysis =
