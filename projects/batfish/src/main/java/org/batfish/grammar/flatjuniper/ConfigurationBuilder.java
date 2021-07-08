@@ -438,14 +438,18 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metric_addContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_hopContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_hop_selfContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_discardContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_ipv4Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_ipv6Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_peer_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_rejectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_selfContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.PortContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.ProposalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_listContext;
@@ -793,7 +797,10 @@ import org.batfish.representation.juniper.PsThenExternal;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetricAdd;
+import org.batfish.representation.juniper.PsThenNextHopDiscard;
 import org.batfish.representation.juniper.PsThenNextHopIp;
+import org.batfish.representation.juniper.PsThenNextHopPeerAddress;
+import org.batfish.representation.juniper.PsThenNextHopReject;
 import org.batfish.representation.juniper.PsThenNextHopSelf;
 import org.batfish.representation.juniper.PsThenNextPolicy;
 import org.batfish.representation.juniper.PsThenOrigin;
@@ -5177,20 +5184,34 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitPopst_next_hop(Popst_next_hopContext ctx) {
-    PsThen then;
-    if (ctx.IP_ADDRESS() != null) {
-      Ip nextHopIp = Ip.parse(ctx.IP_ADDRESS().getText());
-      then = new PsThenNextHopIp(nextHopIp);
-    } else {
-      todo(ctx);
-      return;
-    }
+  public void exitPopstnh_discard(Popstnh_discardContext ctx) {
+    _currentPsThens.add(PsThenNextHopDiscard.INSTANCE);
+  }
+
+  @Override
+  public void exitPopstnh_ipv4(Popstnh_ipv4Context ctx) {
+    Ip nextHopIp = Ip.parse(ctx.IP_ADDRESS().getText());
+    PsThen then = new PsThenNextHopIp(nextHopIp);
     _currentPsThens.add(then);
   }
 
   @Override
-  public void exitPopst_next_hop_self(Popst_next_hop_selfContext ctx) {
+  public void exitPopstnh_ipv6(Popstnh_ipv6Context ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitPopstnh_peer_address(Popstnh_peer_addressContext ctx) {
+    _currentPsThens.add(PsThenNextHopPeerAddress.INSTANCE);
+  }
+
+  @Override
+  public void exitPopstnh_reject(Popstnh_rejectContext ctx) {
+    _currentPsThens.add(PsThenNextHopReject.INSTANCE);
+  }
+
+  @Override
+  public void exitPopstnh_self(Popstnh_selfContext ctx) {
     _currentPsThens.add(PsThenNextHopSelf.INSTANCE);
   }
 
