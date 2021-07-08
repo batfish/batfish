@@ -24,7 +24,6 @@ tokens {
    CONFIG_SAVE,
    DSA1024,
    HEX_FRAGMENT,
-   IS_LOCAL,
    ISO_ADDRESS,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
@@ -3668,8 +3667,6 @@ NEIGHBOR_FILTER: 'neighbor-filter';
 
 NEIGHBOR_GROUP: 'neighbor-group';
 
-NEIGHBOR_IS: 'neighbor-is';
-
 NEQ: 'neq';
 
 NESTED: 'nested';
@@ -3952,8 +3949,6 @@ ORIGIN_ID: 'origin-id';
 
 ORIGINATE: 'originate';
 
-ORIGINATES_FROM: 'originates-from';
-
 ORIGINATOR_ID: 'originator-id';
 
 OSPF: 'ospf';
@@ -4036,8 +4031,6 @@ PARSER: 'parser';
 PARTICIPATE: 'participate';
 
 PASS: 'pass';
-
-PASSES_THROUGH: 'passes-through';
 
 PASSIVE: 'passive';
 
@@ -7219,39 +7212,14 @@ M_AsPath_DEC
    F_Digit+ -> type ( DEC ) , popMode
 ;
 
-M_AsPath_IN
-:
-   'in' -> type ( IN ) , popMode
-;
-
-M_AsPath_IS_LOCAL
-:
-   'is-local' -> type ( IS_LOCAL ) , popMode
-;
-
 M_AsPath_MULTIPATH_RELAX
 :
    'multipath-relax' -> type ( MULTIPATH_RELAX ) , popMode
 ;
 
-M_AsPath_NEIGHBOR_IS
-:
-   'neighbor-is' -> type ( NEIGHBOR_IS ) , popMode
-;
-
-M_AsPath_PASSES_THROUGH
-:
-   'passes-through' -> type ( PASSES_THROUGH ) , popMode
-;
-
 M_AsPath_PREPEND
 :
    'prepend' -> type ( PREPEND ) , popMode
-;
-
-M_AsPath_ORIGINATES_FROM
-:
-   'originates-from' -> type ( ORIGINATES_FROM ) , popMode
 ;
 
 M_AsPath_REGEX_MODE
