@@ -9,6 +9,7 @@ import static org.batfish.storage.FileBasedStorage.objectKeyToRelativePath;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -17,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -55,6 +57,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.autocomplete.IpCompletionMetadata;
 import org.batfish.common.autocomplete.LocationCompletionMetadata;
 import org.batfish.common.autocomplete.NodeCompletionMetadata;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
@@ -463,6 +466,24 @@ public final class FileBasedStorageTest {
     // fields empty
     assertThat(
         _storage.loadCompletionMetadata(networkId, snapshotId), equalTo(CompletionMetadata.EMPTY));
+  }
+
+  @Test
+  public void testStoreL3Adjacencies() throws IOException {
+    NetworkSnapshot networkSnapshot =
+        new NetworkSnapshot(new NetworkId("network"), new SnapshotId("snapshot"));
+
+    try {
+      _storage.loadL3Adjacencies(networkSnapshot);
+      fail();
+    } catch (BatfishException e) {
+      assertThat(e.getMessage(), containsString("Failed to deserialize object"));
+      assertThat(e.getCause(), instanceOf(FileNotFoundException.class));
+    }
+
+    _storage.storeL3Adjacencies(GlobalBroadcastNoPointToPoint.instance(), networkSnapshot);
+    assertEquals(
+        _storage.loadL3Adjacencies(networkSnapshot), GlobalBroadcastNoPointToPoint.instance());
   }
 
   @Test
