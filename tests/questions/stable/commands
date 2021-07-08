@@ -22,7 +22,7 @@ test -raw tests/questions/stable/edges.ref validate-template edges edgeType="bgp
 test -raw tests/questions/stable/bgpEdges.ref validate-template bgpEdges nodes=".*", remoteNodes=".*"
 
 # validate bgpRib
-test -raw tests/questions/stable/bgpRib.ref validate-template bgpRib network="1.1.1.1/24", nodes="n1", vrfs="default"
+test -raw tests/questions/stable/bgpRib.ref validate-template bgpRib network="1.1.1.1/24", nodes="n1", vrfs="default", status="backup"
 
 # validate eigrpEdges
 test -raw tests/questions/stable/eigrpEdges.ref validate-template eigrpEdges nodes=".*", remoteNodes=".*"

@@ -5,7 +5,9 @@ import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.specifier.LocationInfoUtils.computeLocationInfo;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -77,6 +79,25 @@ public final class DataplaneUtil {
   }
 
   @Nonnull
+  static Table<String, String, Set<Bgpv4Route>> computeBgpBackupRoutes(Map<String, Node> nodes) {
+    ImmutableTable.Builder<String, String, Set<Bgpv4Route>> table = ImmutableTable.builder();
+    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB backup routes should
+    //       not store best routes to begin with.
+    nodes.forEach(
+        (hostname, node) ->
+            node.getVirtualRouters()
+                .forEach(
+                    vr -> {
+                      table.put(
+                          hostname,
+                          vr.getName(),
+                          ImmutableSet.copyOf(
+                              Sets.difference(vr.getBgpBackupRoutes(), vr.getBgpRoutes())));
+                    }));
+    return table.build();
+  }
+
+  @Nonnull
   static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnRoutes(Map<String, Node> nodes) {
     ImmutableTable.Builder<String, String, Set<EvpnRoute<?, ?>>> table = ImmutableTable.builder();
     nodes.forEach(
@@ -85,6 +106,26 @@ public final class DataplaneUtil {
                 .forEach(
                     vr -> {
                       table.put(hostname, vr.getName(), vr.getEvpnRoutes());
+                    }));
+    return table.build();
+  }
+
+  @Nonnull
+  static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnBackupRoutes(
+      Map<String, Node> nodes) {
+    ImmutableTable.Builder<String, String, Set<EvpnRoute<?, ?>>> table = ImmutableTable.builder();
+    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB backup routes should
+    //       not store best routes to begin with.
+    nodes.forEach(
+        (hostname, node) ->
+            node.getVirtualRouters()
+                .forEach(
+                    vr -> {
+                      table.put(
+                          hostname,
+                          vr.getName(),
+                          ImmutableSet.copyOf(
+                              Sets.difference(vr.getEvpnBackupRoutes(), vr.getEvpnRoutes())));
                     }));
     return table.build();
   }

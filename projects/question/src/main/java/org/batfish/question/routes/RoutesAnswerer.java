@@ -1,6 +1,8 @@
 package org.batfish.question.routes;
 
 import static org.batfish.common.topology.IpOwners.computeIpNodeOwners;
+import static org.batfish.datamodel.questions.BgpRouteStatus.BACKUP;
+import static org.batfish.datamodel.questions.BgpRouteStatus.BEST;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.datamodel.table.TableDiff.COL_DELTA_PREFIX;
 import static org.batfish.question.routes.RoutesAnswererUtil.getAbstractRouteRowsDiff;
@@ -13,7 +15,9 @@ import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
@@ -28,13 +32,17 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.BgpRouteStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /** Answerer for {@link RoutesQuestion} */
 @ParametersAreNonnullByDefault
@@ -63,6 +71,7 @@ public class RoutesAnswerer extends Answerer {
   static final String COL_ORIGIN_TYPE = "Origin_Type";
   static final String COL_CLUSTER_LIST = "Cluster_List";
   static final String COL_ORIGINATOR_ID = "Originator_Id";
+  static final String COL_STATUS = "Status";
 
   // EVPN BGP only
   static final String COL_ROUTE_DISTINGUISHER = "Route_Distinguisher";
@@ -77,6 +86,13 @@ public class RoutesAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     RoutesQuestion question = (RoutesQuestion) _question;
+    Set<BgpRouteStatus> expandedBgpRouteStatuses =
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                question.getBgpRouteStatus(),
+                Grammar.BGP_ROUTE_STATUS_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(ImmutableSet.of(BgpRouteStatus.BEST)))
+            .resolve();
+
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getRib()));
 
     DataPlane dp = _batfish.loadDataPlane(snapshot);
@@ -87,24 +103,60 @@ public class RoutesAnswerer extends Answerer {
     String vrfRegex = question.getVrfs();
     Map<Ip, Set<String>> ipOwners =
         computeIpNodeOwners(_batfish.loadConfigurations(snapshot), true);
-
+    boolean bgpMultipathBest = expandedBgpRouteStatuses.contains(BEST);
+    boolean bgpBackup = expandedBgpRouteStatuses.contains(BACKUP);
     Multiset<Row> rows;
 
     switch (question.getRib()) {
       case BGP:
-        rows =
-            getBgpRibRoutes(
-                dp.getBgpRoutes(), RibProtocol.BGP, matchingNodes, network, protocolSpec, vrfRegex);
+        rows = HashMultiset.create();
+        if (bgpBackup) {
+          rows.addAll(
+              getBgpRibRoutes(
+                  dp.getBgpBackupRoutes(),
+                  RibProtocol.BGP,
+                  matchingNodes,
+                  network,
+                  protocolSpec,
+                  vrfRegex,
+                  ImmutableSet.of(BACKUP)));
+        }
+        if (bgpMultipathBest) {
+          rows.addAll(
+              getBgpRibRoutes(
+                  dp.getBgpRoutes(),
+                  RibProtocol.BGP,
+                  matchingNodes,
+                  network,
+                  protocolSpec,
+                  vrfRegex,
+                  ImmutableSet.of(BEST)));
+        }
         break;
       case EVPN:
-        rows =
-            getEvpnRoutes(
-                dp.getEvpnRoutes(),
-                RibProtocol.EVPN,
-                matchingNodes,
-                network,
-                protocolSpec,
-                vrfRegex);
+        rows = HashMultiset.create();
+        if (bgpBackup) {
+          rows.addAll(
+              getEvpnRoutes(
+                  dp.getEvpnBackupRoutes(),
+                  RibProtocol.EVPN,
+                  matchingNodes,
+                  network,
+                  protocolSpec,
+                  vrfRegex,
+                  ImmutableSet.of(BACKUP)));
+        }
+        if (bgpMultipathBest) {
+          rows.addAll(
+              getEvpnRoutes(
+                  dp.getEvpnRoutes(),
+                  RibProtocol.EVPN,
+                  matchingNodes,
+                  network,
+                  protocolSpec,
+                  vrfRegex,
+                  ImmutableSet.of(BEST)));
+        }
         break;
       case MAIN:
       default:
@@ -181,6 +233,13 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder
             .add(
                 new ColumnMetadata(
+                    COL_STATUS,
+                    Schema.list(Schema.STRING),
+                    "Route's statuses",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
                     COL_ROUTE_DISTINGUISHER,
                     Schema.STRING,
                     "Route distinguisher",
@@ -250,6 +309,13 @@ public class RoutesAnswerer extends Answerer {
         break;
       case BGP:
         columnBuilder
+            .add(
+                new ColumnMetadata(
+                    COL_STATUS,
+                    Schema.list(Schema.STRING),
+                    "Route's statuses",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
             .add(
                 new ColumnMetadata(
                     COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))

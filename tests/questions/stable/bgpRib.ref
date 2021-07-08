@@ -1,5 +1,6 @@
 {
   "class" : "org.batfish.question.routes.RoutesQuestion",
+  "bgpRouteStatus" : "backup",
   "network" : "1.1.1.0/24",
   "nodes" : "n1",
   "protocols" : "all",
@@ -14,7 +15,8 @@
     "orderedVariableNames" : [
       "nodes",
       "network",
-      "vrfs"
+      "vrfs",
+      "status"
     ],
     "tags" : [
       "dataplane",
@@ -34,6 +36,13 @@
         "optional" : true,
         "type" : "nodeSpec",
         "value" : "n1"
+      },
+      "status" : {
+        "description" : "Examine routes whose status matches this specifier",
+        "displayName" : "Status",
+        "optional" : true,
+        "type" : "bgpRouteStatusSpec",
+        "value" : "backup"
       },
       "vrfs" : {
         "description" : "Examine routes on VRFs matching this name or regex",
