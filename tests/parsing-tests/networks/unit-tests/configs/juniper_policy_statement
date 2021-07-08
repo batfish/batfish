@@ -28,6 +28,11 @@ set policy-options policy-statement POLICY-NAME term TERM then default-action re
 set policy-options policy-statement POLICY-NAME term TERM then external type 1
 set policy-options policy-statement POLICY-NAME term TERM then metric 10
 set policy-options policy-statement POLICY-NAME term TERM then metric add 20
+set policy-options policy-statement POLICY-NAME term TERM then next-hop 1.2.3.4
+set policy-options policy-statement POLICY-NAME term TERM then next-hop 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+set policy-options policy-statement POLICY-NAME term TERM then next-hop discard
+set policy-options policy-statement POLICY-NAME term TERM then next-hop peer-address
+set policy-options policy-statement POLICY-NAME term TERM then next-hop reject
 set policy-options policy-statement POLICY-NAME term TERM then next-hop self
 set policy-options policy-statement POLICY-NAME term TERM then next term
 set policy-options policy-statement POLICY-NAME term TERM then origin igp

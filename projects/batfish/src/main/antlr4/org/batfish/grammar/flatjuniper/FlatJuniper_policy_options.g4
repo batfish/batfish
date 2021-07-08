@@ -484,7 +484,6 @@ popst_common
    | popst_metric2
    | popst_metric2_expression
    | popst_next_hop
-   | popst_next_hop_self
    | popst_next_policy
    | popst_next_term
    | popst_null
@@ -587,15 +586,43 @@ popst_next_hop
 :
    NEXT_HOP
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
-      | PEER_ADDRESS
+      popstnh_discard
+      | popstnh_ipv4
+      | popstnh_ipv6
+      | popstnh_peer_address
+      | popstnh_reject
+      | popstnh_self
    )
 ;
 
-popst_next_hop_self
+popstnh_discard
 :
-   NEXT_HOP SELF
+   DISCARD
+;
+
+popstnh_ipv4
+:
+   addr = IP_ADDRESS
+;
+
+popstnh_ipv6
+:
+   addr6 = IPV6_ADDRESS
+;
+
+popstnh_peer_address
+:
+   PEER_ADDRESS
+;
+
+popstnh_reject
+:
+   REJECT
+;
+
+popstnh_self
+:
+   SELF
 ;
 
 popst_next_policy
