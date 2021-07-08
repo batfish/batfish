@@ -14,9 +14,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /**
  * A physical Ethernet interface sends possibly-tagged frames.
  *
- * <p>Can have one edge to {@link L3Interface} when receiving frames tagged for a dot1q encapsulated
- * subinterface/untagged frames directly, or to {@link DeviceBroadcastDomain} when this interface is
- * a switchport. These are mutually exclusive.
+ * <p>Can have edges to any number of {@link L3Interface L3 interfaces} when receiving frames tagged
+ * for a dot1q encapsulated subinterface/untagged frames directly, or to {@link
+ * DeviceBroadcastDomain} when this interface is a switchport. These are mutually exclusive.
  *
  * <p>Can have one edge to an {@link EthernetHub}.
  */
@@ -35,8 +35,8 @@ public final class PhysicalInterface extends Node<EthernetTag> {
     if (_switch != null) {
       throw new IllegalStateException(
           String.format(
-              "Physical interface %s is already connected the device switch: cannot also connect to"
-                  + " L3 interface %s",
+              "Physical interface %s is already connected to the device switch: cannot also connect"
+                  + " to L3 interface %s",
               _iface, iface.getIface()));
     }
     Edge<EthernetTag, Unit> previous = _l3Interfaces.putIfAbsent(iface, edge);
