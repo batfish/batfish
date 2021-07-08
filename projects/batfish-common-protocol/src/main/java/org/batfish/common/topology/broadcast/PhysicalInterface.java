@@ -1,7 +1,10 @@
 package org.batfish.common.topology.broadcast;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,6 +24,7 @@ public final class PhysicalInterface extends Node<EthernetTag> {
 
   public PhysicalInterface(NodeInterfacePair iface) {
     _iface = iface;
+    _l3Interfaces = new HashMap<>();
   }
 
   public @Nonnull NodeInterfacePair getIface() {
@@ -28,19 +32,32 @@ public final class PhysicalInterface extends Node<EthernetTag> {
   }
 
   public void deliverDirectlyToInterface(L3Interface iface, Edge<EthernetTag, Unit> edge) {
-    checkState(
-        _interface == null && _switch == null,
-        "Cannot connect a physical interface to multiple of L3 interface or device broadcast"
-            + " domain");
-    _interface = iface;
-    _deliverToInterface = edge;
+    if (_switch != null) {
+      throw new IllegalStateException(
+          String.format(
+              "Physical interface %s is already connected the device switch: cannot also connect to"
+                  + " L3 interface %s",
+              _iface, iface.getIface()));
+    }
+    Edge<EthernetTag, Unit> previous = _l3Interfaces.putIfAbsent(iface, edge);
+    checkArgument(previous == null, "Cannot connect the same interface %s twice", iface.getIface());
   }
 
   public void deliverToSwitch(DeviceBroadcastDomain sw, Edge<EthernetTag, Integer> edge) {
-    checkState(
-        _interface == null && _switch == null,
-        "Cannot connect a physical interface to multiple of L3 interface or device broadcast"
-            + " domain");
+    if (!_l3Interfaces.isEmpty()) {
+      throw new IllegalStateException(
+          String.format(
+              "Physical interface %s is already connected to L3 interfaces: cannot also connect"
+                  + " device switch %s",
+              _iface, sw.getHostname()));
+    }
+    if (_switch != null) {
+      throw new IllegalStateException(
+          String.format(
+              "Physical interface %s is already connected to the device switch %s: cannot also"
+                  + " connect to %s",
+              _iface, _switch.getHostname(), sw.getHostname()));
+    }
     _switch = sw;
     _deliverToSwitch = edge;
   }
@@ -62,10 +79,10 @@ public final class PhysicalInterface extends Node<EthernetTag> {
   }
 
   public void receive(EthernetTag tag, Set<L3Interface> domain, Set<NodeAndData<?, ?>> visited) {
-    assert _interface == null || _switch == null; // mutually exclusive.
-    if (_interface != null) {
-      assert _deliverToInterface != null; // contract
-      _deliverToInterface.traverse(tag).ifPresent(unit -> _interface.reached(domain, visited));
+    assert _l3Interfaces.isEmpty() || _switch == null; // mutually exclusive.
+    if (!_l3Interfaces.isEmpty()) {
+      _l3Interfaces.forEach(
+          (iface, edge) -> edge.traverse(tag).ifPresent(unit -> iface.reached(domain, visited)));
     } else if (_switch != null) {
       assert _deliverToSwitch != null; // contract
       _deliverToSwitch.traverse(tag).ifPresent(vlan -> _switch.broadcast(vlan, domain, visited));
@@ -94,8 +111,7 @@ public final class PhysicalInterface extends Node<EthernetTag> {
 
   private @Nullable EthernetHub _attachedHub;
   private @Nullable Edge<EthernetTag, EthernetTag> _transmitToHub;
-  private @Nullable L3Interface _interface;
-  private @Nullable Edge<EthernetTag, Unit> _deliverToInterface;
+  private final @Nonnull Map<L3Interface, Edge<EthernetTag, Unit>> _l3Interfaces;
   private @Nullable DeviceBroadcastDomain _switch;
   private @Nullable Edge<EthernetTag, Integer> _deliverToSwitch;
 }
