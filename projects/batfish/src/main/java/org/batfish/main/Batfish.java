@@ -2673,6 +2673,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     return result;
                   })
               .collect(ImmutableList.toImmutableList());
+      LOGGER.info("Done parsing {} configuration files", jobs.size());
     } finally {
       parseNetworkConfigsSpan.finish();
     }
