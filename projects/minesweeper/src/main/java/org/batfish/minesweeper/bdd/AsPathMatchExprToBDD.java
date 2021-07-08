@@ -3,7 +3,14 @@ package org.batfish.minesweeper.bdd;
 import com.google.common.collect.ImmutableSet;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.datamodel.routing_policy.as_path.*;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprVisitor;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 
 /**
