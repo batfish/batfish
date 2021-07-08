@@ -6986,16 +6986,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspse_dfa_regex(Aspse_dfa_regexContext ctx) {
-    todo(ctx);
-    // For now, just treat like ios-regex
     String regex = toString(ctx.as_path_regex());
     _currentAsPathSet.addElement(new DfaRegexAsPathSetElem(regex));
   }
 
   @Override
   public void exitAspsee_dfa_regex(Aspsee_dfa_regexContext ctx) {
-    todo(ctx);
-    // For now, just treat like ios-regex
     String regex = toString(ctx.as_path_regex());
     _currentInlineAsPathSet.addElement(new DfaRegexAsPathSetElem(regex));
   }
@@ -7014,7 +7010,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspse_length(Aspse_lengthContext ctx) {
-    todo(ctx);
     toInteger(ctx, ctx.as_path_length())
         .ifPresent(
             length ->
@@ -7025,7 +7020,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspsee_length(Aspsee_lengthContext ctx) {
-    todo(ctx);
     toInteger(ctx, ctx.as_path_length_expr())
         .ifPresent(
             length ->
@@ -7036,7 +7030,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspse_neighbor_is(Aspse_neighbor_isContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_list())
         .ifPresent(
             ranges ->
@@ -7093,7 +7086,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspsee_neighbor_is(Aspsee_neighbor_isContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_expr_list())
         .ifPresent(
             ranges ->
@@ -7139,7 +7131,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspse_originates_from(Aspse_originates_fromContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_list())
         .ifPresent(
             ranges ->
@@ -7149,7 +7140,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspsee_originates_from(Aspsee_originates_fromContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_expr_list())
         .ifPresent(
             ranges ->
@@ -7159,7 +7149,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspse_passes_through(Aspse_passes_throughContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_list())
         .ifPresent(
             ranges ->
@@ -7169,7 +7158,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspsee_passes_through(Aspsee_passes_throughContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_expr_list())
         .ifPresent(
             ranges ->
@@ -7179,7 +7167,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspse_unique_length(Aspse_unique_lengthContext ctx) {
-    todo(ctx);
     toInteger(ctx, ctx.as_path_length())
         .ifPresent(
             length ->
@@ -7190,7 +7177,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitAspsee_unique_length(Aspsee_unique_lengthContext ctx) {
-    todo(ctx);
     toInteger(ctx, ctx.as_path_length_expr())
         .ifPresent(
             length ->
@@ -8448,7 +8434,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitBoolean_as_path_length(Boolean_as_path_lengthContext ctx) {
-    todo(ctx);
     toInteger(ctx, ctx.as_path_length_expr())
         .ifPresent(
             length ->
@@ -8459,7 +8444,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitBoolean_as_path_neighbor_is(Boolean_as_path_neighbor_isContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_expr_list())
         .ifPresent(
             ranges ->
@@ -8469,7 +8453,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitBoolean_as_path_originates_from(Boolean_as_path_originates_fromContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_expr_list())
         .ifPresent(
             ranges ->
@@ -8479,7 +8462,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitBoolean_as_path_passes_through(Boolean_as_path_passes_throughContext ctx) {
-    todo(ctx);
     toRanges(ctx, ctx.as_range_expr_list())
         .ifPresent(
             ranges ->
@@ -8489,7 +8471,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitBoolean_as_path_unique_length(Boolean_as_path_unique_lengthContext ctx) {
-    todo(ctx);
     toInteger(ctx, ctx.as_path_length_expr())
         .ifPresent(
             length ->
