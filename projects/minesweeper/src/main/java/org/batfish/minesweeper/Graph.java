@@ -6,7 +6,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,8 +21,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -51,6 +48,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.minesweeper.aspath.RoutePolicyStatementAsPathCollector;
 import org.batfish.minesweeper.collections.Table2;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
 
@@ -874,22 +872,19 @@ public class Graph {
   /**
    * Collect up all AS-path regexes that appear in the given router's configuration.
    *
-   * <p>Currently we only collect up AS-path regexes that appear in an AS-path access list. As other
-   * features are supported by symbolic route analysis, notably the {@link
-   * org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet} class, this method will have to be
-   * extended accordingly.
-   *
    * @param router the router
    * @return a set of all AS-path regexes that appear
    */
   private Set<SymbolicAsPathRegex> findAsPathRegexes(String router) {
+    Set<SymbolicAsPathRegex> asPathRegexes = new HashSet<>();
     Configuration conf = getConfigurations().get(router);
-    Collection<AsPathAccessList> asPathAccessLists = conf.getAsPathAccessLists().values();
-    return asPathAccessLists.stream()
-        .flatMap(lst -> lst.getLines().stream())
-        .map(AsPathAccessListLine::getRegex)
-        .map(SymbolicAsPathRegex::new)
-        .collect(ImmutableSet.toImmutableSet());
+    // walk through every statement of every route policy
+    for (RoutingPolicy pol : conf.getRoutingPolicies().values()) {
+      for (Statement stmt : pol.getStatements()) {
+        asPathRegexes.addAll(stmt.accept(new RoutePolicyStatementAsPathCollector(), conf));
+      }
+    }
+    return asPathRegexes;
   }
 
   /*
