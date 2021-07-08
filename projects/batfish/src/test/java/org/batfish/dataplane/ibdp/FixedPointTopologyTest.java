@@ -28,9 +28,10 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
+import org.batfish.common.topology.HybridL3Adjacencies;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Node;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TopologyUtil;
@@ -167,14 +168,14 @@ public final class FixedPointTopologyTest {
   private TopologyContext getCallerTopologyContext(Map<String, Configuration> configs) {
     Layer1Topology l1 = generateVxlanLayer1Topology();
     Layer2Topology l2 = computeLayer2Topology(l1, VxlanTopology.EMPTY, configs);
+    L3Adjacencies adjacencies = HybridL3Adjacencies.create(l1, l1, l2, configs);
     return TopologyContext.builder()
         .setLayer1LogicalTopology(Optional.of(l1))
-        .setLayer2Topology(Optional.of(l2))
         .setLayer3Topology(
             computeLayer3Topology(
-                computeRawLayer3Topology(
-                    Optional.of(l1), Optional.of(l1), Optional.of(l2), configs),
+                computeRawLayer3Topology(HybridL3Adjacencies.create(l1, l1, l2, configs), configs),
                 ImmutableSet.of()))
+        .setL3Adjacencies(adjacencies)
         .setOspfTopology(OspfTopology.EMPTY)
         .setRawLayer1PhysicalTopology(Optional.of(l1))
         .build();
@@ -192,10 +193,9 @@ public final class FixedPointTopologyTest {
     // Initially, the two host interfaces should NOT be layer-2 adjacent
     assertFalse(
         callerTopologyContext
-            .getLayer2Topology()
-            .get()
+            .getL3Adjacencies()
             .inSameBroadcastDomain(
-                new Layer2Node(H1_NAME, E1_NAME, null), new Layer2Node(H2_NAME, E2_NAME, null)));
+                NodeInterfacePair.of(H1_NAME, E1_NAME), NodeInterfacePair.of(H2_NAME, E2_NAME)));
 
     // Initially, the two host-interfaces should NOT be layer-3 adjacent
     // The two host interfaces should be layer-3 adjacent
@@ -215,10 +215,9 @@ public final class FixedPointTopologyTest {
     // The two host interfaces should be in the same broadcast domain due to VXLAN tunnel
     assertTrue(
         topologies
-            .getLayer2Topology()
-            .get()
+            .getL3Adjacencies()
             .inSameBroadcastDomain(
-                new Layer2Node(H1_NAME, E1_NAME, null), new Layer2Node(H2_NAME, E2_NAME, null)));
+                NodeInterfacePair.of(H1_NAME, E1_NAME), NodeInterfacePair.of(H2_NAME, E2_NAME)));
 
     // The two host interfaces should be layer-3 adjacent
     assertThat(

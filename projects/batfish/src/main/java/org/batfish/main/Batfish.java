@@ -837,8 +837,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _storage.storeBgpTopology(topologies.getBgpTopology(), snapshot);
       LOGGER.info("Storing EIGRP Topology");
       _storage.storeEigrpTopology(topologies.getEigrpTopology(), snapshot);
-      LOGGER.info("Storing Layer2 Topology");
-      _storage.storeLayer2Topology(topologies.getLayer2Topology(), snapshot);
+      LOGGER.info("Storing L3 Adjacencies");
+      _storage.storeL3Adjacencies(topologies.getL3Adjacencies(), snapshot);
       LOGGER.info("Storing Layer3 Topology");
       _storage.storeLayer3Topology(topologies.getLayer3Topology(), snapshot);
       LOGGER.info("Storing OSPF Topology");

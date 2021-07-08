@@ -67,8 +67,8 @@ import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.ZipUtility;
 import org.batfish.datamodel.AnalysisMetadata;
@@ -113,8 +113,8 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_EIGRP_TOPOLOGY = "eigrp_topology.json";
   private static final String RELPATH_SYNTHESIZED_LAYER1_TOPOLOGY =
       "synthesized_layer1_topology.json";
-  private static final String RELPATH_LAYER2_TOPOLOGY = "layer2_topology.json";
   private static final String RELPATH_LAYER3_TOPOLOGY = "layer3_topology.json";
+  private static final String RELPATH_L3_ADJACENCIES = "l3_adjacencies";
   private static final String RELPATH_OSPF_TOPOLOGY = "ospf_topology.json";
   private static final String RELPATH_VXLAN_TOPOLOGY = "vxlan_topology.json";
   private static final String RELPATH_VENDOR_INDEPENDENT_CONFIG_DIR = "indep";
@@ -988,14 +988,14 @@ public class FileBasedStorage implements StorageProvider {
         .resolve(RELPATH_EIGRP_TOPOLOGY);
   }
 
-  private @Nonnull Path getLayer2TopologyPath(NetworkSnapshot snapshot) {
-    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
-        .resolve(RELPATH_LAYER2_TOPOLOGY);
-  }
-
   private @Nonnull Path getLayer3TopologyPath(NetworkSnapshot snapshot) {
     return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
         .resolve(RELPATH_LAYER3_TOPOLOGY);
+  }
+
+  private @Nonnull Path getL3AdjacenciesPath(NetworkSnapshot snapshot) {
+    return getSnapshotOutputDir(snapshot.getNetwork(), snapshot.getSnapshot())
+        .resolve(RELPATH_L3_ADJACENCIES);
   }
 
   private @Nonnull Path getOspfTopologyPath(NetworkSnapshot snapshot) {
@@ -1210,7 +1210,7 @@ public class FileBasedStorage implements StorageProvider {
     Path tmpFile = Files.createTempFile(null, null);
     try (OutputStream fileOutputStream = Files.newOutputStream(tmpFile)) {
       int read = 0;
-      final byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
+      byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
       while ((read = inputStream.read(bytes)) != -1) {
         fileOutputStream.write(bytes, 0, read);
       }
@@ -1248,17 +1248,15 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public @Nonnull Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot)
-      throws IOException {
-    return Optional.ofNullable(
-        BatfishObjectMapper.mapper()
-            .readValue(getLayer2TopologyPath(networkSnapshot).toFile(), Layer2Topology.class));
-  }
-
-  @Override
   public @Nonnull Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) throws IOException {
     return BatfishObjectMapper.mapper()
         .readValue(getLayer3TopologyPath(networkSnapshot).toFile(), Topology.class);
+  }
+
+  @Nonnull
+  @Override
+  public L3Adjacencies loadL3Adjacencies(NetworkSnapshot networkSnapshot) throws IOException {
+    return deserializeObject(getL3AdjacenciesPath(networkSnapshot), L3Adjacencies.class);
   }
 
   @Override
@@ -1292,11 +1290,11 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  public void storeLayer2Topology(
-      Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot) throws IOException {
-    Path path = getLayer2TopologyPath(networkSnapshot);
+  public void storeL3Adjacencies(L3Adjacencies l3Adjacencies, NetworkSnapshot networkSnapshot)
+      throws IOException {
+    Path path = getL3AdjacenciesPath(networkSnapshot);
     mkdirs(path.getParent());
-    writeJsonFile(path, layer2Topology.orElse(null));
+    serializeObject(l3Adjacencies, path);
   }
 
   @Override
