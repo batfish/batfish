@@ -763,49 +763,49 @@ public class Batfish extends PluginConsumer implements IBatfish {
       new DataPlane() {
         @Override
         public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Map<String, Map<String, Fib>> getFibs() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public ForwardingAnalysis getForwardingAnalysis() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
             getRibs() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
             getPrefixTracingInfoSummary() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
-          return null;
+          throw new UnsupportedOperationException();
         }
       };
 
