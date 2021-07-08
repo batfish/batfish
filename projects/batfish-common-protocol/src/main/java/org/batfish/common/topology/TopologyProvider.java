@@ -32,22 +32,19 @@ public interface TopologyProvider {
   IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot);
 
   /**
-   * Computes the {@link Layer2Topology} for a given {@link NetworkSnapshot}. The layer-2 topology
-   * is constructed from the layer-1 logical topology and switching information in the
-   * configurations.
-   *
-   * @return computed topology, or {@link Optional#empty()} if layer-1 logical topology is absent.
-   */
-  @Nonnull
-  Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot);
-
-  /**
    * Return the layer-3 {@link Topology} for a given {@link NetworkSnapshot} that is a subset of the
    * raw layer-3 topology such that edges corresponding to blacklisted entities or failed tunnels
    * have been pruned.
    */
   @Nonnull
   Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot);
+
+  /**
+   * Computes the {@link L3Adjacencies} for a given {@link NetworkSnapshot}, using only the
+   * information known before the dataplane is computed.
+   */
+  @Nonnull
+  L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot);
 
   /** Return the topology representing OSPF adjacencies. */
   @Nonnull
@@ -93,19 +90,15 @@ public interface TopologyProvider {
   Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
 
   /**
-   * Returns the {@link Layer2Topology} corresponding to the converged {@link
-   * org.batfish.datamodel.DataPlane}, or {@link Optional#empty()} if raw layer-1 physical topology
-   * is absent.
-   */
-  @Nonnull
-  Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot snapshot);
-
-  /**
    * Returns the layer-3 {@link Topology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane}.
    */
   @Nonnull
   Topology getLayer3Topology(NetworkSnapshot snapshot);
+
+  /** Returns the {@link L3Adjacencies} for the given snapshot. */
+  @Nonnull
+  L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot);
 
   @Nonnull
   OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot);

@@ -15,8 +15,8 @@ import javax.annotation.Nullable;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -336,12 +336,12 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot) {
+  public Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) {
+  public @Nonnull L3Adjacencies loadL3Adjacencies(NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 
@@ -366,13 +366,12 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
-  public void storeLayer2Topology(
-      Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot) {
+  public void storeLayer3Topology(Topology layer3Topology, NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void storeLayer3Topology(Topology layer3Topology, NetworkSnapshot networkSnapshot) {
+  public void storeL3Adjacencies(L3Adjacencies adjacencies, NetworkSnapshot networkSnapshot) {
     throw new UnsupportedOperationException();
   }
 
