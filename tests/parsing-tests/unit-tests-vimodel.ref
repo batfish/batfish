@@ -26724,8 +26724,8 @@
             "ripPassive" : false,
             "spanningTreePortfast" : false,
             "speed" : 1.0E9,
-            "switchport" : true,
-            "switchportMode" : "ACCESS",
+            "switchport" : false,
+            "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"
@@ -34593,9 +34593,6 @@
             "additionalArpIps" : {
               "class" : "org.batfish.datamodel.EmptyIpSpace"
             },
-            "allPrefixes" : [
-              "1.2.3.1/30"
-            ],
             "allowedVlans" : "1-4094",
             "autostate" : true,
             "bandwidth" : 2.0E10,
@@ -34631,7 +34628,6 @@
               "networkType" : "BROADCAST",
               "passive" : false
             },
-            "prefix" : "1.2.3.1/30",
             "proxyArp" : false,
             "ripEnabled" : false,
             "ripPassive" : false,
@@ -45407,8 +45403,8 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchport" : true,
-            "switchportMode" : "ACCESS",
+            "switchport" : false,
+            "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "AGGREGATED",
             "vrf" : "default"

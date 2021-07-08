@@ -1888,42 +1888,6 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             _systemDefaultSwitchportShutdown,
             _nonSwitchportDefaultShutdown));
 
-    if (!iface.getIpAddressDhcp()) {
-      Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata =
-          ImmutableSortedMap.naturalOrder();
-      InterfaceAddressWithAttributes addrWithAttr = iface.getAddress();
-      if (addrWithAttr != null) {
-        newIfaceBuilder.setAddress(addrWithAttr.getAddress());
-        if (addrWithAttr.getAddress() instanceof ConcreteInterfaceAddress) {
-          // convert any connected route metadata
-          addressMetadata.put(
-              (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
-              ConnectedRouteMetadata.builder()
-                  .setAdmin(addrWithAttr.getRoutePreference())
-                  .setGenerateLocalRoute(true)
-                  .setTag(addrWithAttr.getTag())
-                  .build());
-        }
-      }
-      newIfaceBuilder.setSecondaryAddresses(
-          iface.getSecondaryAddresses().stream()
-              .map(InterfaceAddressWithAttributes::getAddress)
-              .collect(ImmutableSet.toImmutableSet()));
-      iface.getSecondaryAddresses().stream()
-          .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
-          .forEach(
-              addr ->
-                  addressMetadata.put(
-                      (ConcreteInterfaceAddress) addr.getAddress(),
-                      ConnectedRouteMetadata.builder()
-                          .setAdmin(addr.getRoutePreference())
-                          .setGenerateLocalRoute(true)
-                          .setTag(addr.getTag())
-                          .build()));
-      newIfaceBuilder.setAddressMetadata(addressMetadata.build());
-    }
-    // TODO: handle DHCP
-
     newIfaceBuilder.setDescription(iface.getDescription());
 
     newIfaceBuilder.setDhcpRelayAddresses(iface.getDhcpRelayAddresses());
@@ -1966,8 +1930,47 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         // unsupported
         break;
     }
-    newIfaceBuilder.setVlan(iface.getVlan());
-    newIfaceBuilder.setAutoState(iface.getAutostate());
+
+    if (switchportMode == SwitchportMode.NONE) {
+      if (!iface.getIpAddressDhcp()) {
+        Builder<ConcreteInterfaceAddress, ConnectedRouteMetadata> addressMetadata =
+            ImmutableSortedMap.naturalOrder();
+        InterfaceAddressWithAttributes addrWithAttr = iface.getAddress();
+        if (addrWithAttr != null) {
+          newIfaceBuilder.setAddress(addrWithAttr.getAddress());
+          if (addrWithAttr.getAddress() instanceof ConcreteInterfaceAddress) {
+            // convert any connected route metadata
+            addressMetadata.put(
+                (ConcreteInterfaceAddress) addrWithAttr.getAddress(),
+                ConnectedRouteMetadata.builder()
+                    .setAdmin(addrWithAttr.getRoutePreference())
+                    .setGenerateLocalRoute(true)
+                    .setTag(addrWithAttr.getTag())
+                    .build());
+          }
+        }
+        newIfaceBuilder.setSecondaryAddresses(
+            iface.getSecondaryAddresses().stream()
+                .map(InterfaceAddressWithAttributes::getAddress)
+                .collect(ImmutableSet.toImmutableSet()));
+        iface.getSecondaryAddresses().stream()
+            .filter(addr -> addr.getAddress() instanceof ConcreteInterfaceAddress)
+            .forEach(
+                addr ->
+                    addressMetadata.put(
+                        (ConcreteInterfaceAddress) addr.getAddress(),
+                        ConnectedRouteMetadata.builder()
+                            .setAdmin(addr.getRoutePreference())
+                            .setGenerateLocalRoute(true)
+                            .setTag(addr.getTag())
+                            .build()));
+        newIfaceBuilder.setAddressMetadata(addressMetadata.build());
+      }
+      // TODO: handle DHCP
+
+      newIfaceBuilder.setVlan(iface.getVlan());
+      newIfaceBuilder.setAutoState(iface.getAutostate());
+    }
 
     CiscoNxosInterfaceType type = iface.getType();
     InterfaceType viType = toInterfaceType(type, parent != null);

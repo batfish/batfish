@@ -2478,6 +2478,13 @@
             "              DEC:'1'  <== mode:M_Interface))))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner*",
+            "        (if_no*",
+            "          NO:'no'",
+            "          (if_no_switchport*",
+            "            SWITCHPORT:'switchport'",
+            "            (if_no_switchport_switchport",
+            "              NEWLINE:'\\n'))))",
+            "      (if_inner*",
             "        (if_ip*",
             "          IP:'ip'",
             "          (ifip_address_eos*",
@@ -34843,6 +34850,13 @@
             "            low = (dec*",
             "              DEC:'2'  <== mode:M_Interface))))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
+            "      (if_inner*",
+            "        (if_no*",
+            "          NO:'no'",
+            "          (if_no_switchport*",
+            "            SWITCHPORT:'switchport'",
+            "            (if_no_switchport_switchport",
+            "              NEWLINE:'\\n'))))",
             "      (if_inner*",
             "        (if_eos_mlag",
             "          MLAG:'mlag'",
@@ -71003,7 +71017,7 @@
           },
           "interface" : {
             "Ethernet1" : {
-              "definitionLines" : "14-16",
+              "definitionLines" : "14-17",
               "numReferrers" : 1
             }
           },
@@ -72362,7 +72376,7 @@
               "numReferrers" : 2
             },
             "Port-Channel2" : {
-              "definitionLines" : "13-15",
+              "definitionLines" : "13-16",
               "numReferrers" : 1
             }
           }
@@ -75843,14 +75857,14 @@
           "ipv4 acl" : {
             "acl1" : {
               "ip nat source dynamic access-list" : [
-                16
+                17
               ]
             }
           },
           "nat pool" : {
             "pool1" : {
               "ip nat source pool" : [
-                16
+                17
               ]
             }
           }
@@ -78098,7 +78112,7 @@
                 9
               ],
               "mlag configuration peer-link" : [
-                21
+                22
               ]
             },
             "Port-Channel2" : {
@@ -78108,7 +78122,7 @@
             },
             "Vlan4094" : {
               "mlag configuration local-interface" : [
-                19
+                20
               ]
             }
           }
@@ -82912,7 +82926,7 @@
           "interface" : {
             "Vlan4094" : {
               "mlag configuration local-interface" : [
-                19
+                20
               ]
             }
           }

@@ -2,6 +2,7 @@
 hostname r3
 !
 interface Ethernet1
+ no switchport
  ip address 2.3.0.3/24
 !
 interface Loopback0
