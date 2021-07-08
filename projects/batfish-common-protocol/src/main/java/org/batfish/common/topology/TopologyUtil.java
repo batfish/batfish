@@ -392,6 +392,10 @@ public final class TopologyUtil {
       @Nonnull Layer1Topology layer1LogicalTopology,
       VxlanTopology vxlanTopology,
       @Nonnull Map<String, Configuration> configurations) {
+    if (layer1LogicalTopology.getGraph().edges().isEmpty()
+        && vxlanTopology.getGraph().edges().isEmpty()) {
+      return Layer2Topology.EMPTY;
+    }
     Layer2Topology.Builder l2TopologyBuilder = Layer2Topology.builder();
 
     // Compute mapping from parent interface -> child interfaces
