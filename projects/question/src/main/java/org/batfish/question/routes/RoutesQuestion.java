@@ -8,23 +8,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.questions.BgpRouteStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.AllNodesNodeSpecifier;
-import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
 import org.batfish.specifier.SpecifierFactories;
-import org.batfish.specifier.parboiled.Grammar;
 
 /** Returns computed routes after dataplane computation. */
 @ParametersAreNonnullByDefault
@@ -66,7 +61,6 @@ public class RoutesQuestion extends Question {
   private static final String QUESTION_NAME = "routes";
 
   private final @Nullable String _bgpRouteStatus;
-  private final @Nonnull Set<BgpRouteStatus> _expandedBgpRouteStatuses;
 
   @Nullable private Prefix _network;
 
@@ -85,27 +79,31 @@ public class RoutesQuestion extends Question {
    * @param vrfs a regex pattern indicating which VRFs should be considered
    * @param rib a specific protocol RIB to return routes from.
    */
-  @JsonCreator
   @VisibleForTesting
   public RoutesQuestion(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_VRFS) String vrfs,
-      @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
-      @Nullable @JsonProperty(PROP_BGP_ROUTE_STATUS) String bgpRouteStatus,
-      @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
+      @Nullable Prefix network,
+      @Nullable String nodes,
+      @Nullable String vrfs,
+      @Nullable String protocols,
+      @Nullable String bgpRouteStatus,
+      @Nullable RibProtocol rib) {
     _network = network;
     _nodes = nodes;
     _protocols = firstNonNull(protocols, RoutingProtocolSpecifier.ALL);
     _rib = firstNonNull(rib, MAIN);
     _vrfs = firstNonNull(vrfs, ".*");
     _bgpRouteStatus = bgpRouteStatus;
-    _expandedBgpRouteStatuses =
-        SpecifierFactories.getEnumSetSpecifierOrDefault(
-                bgpRouteStatus,
-                Grammar.BGP_ROUTE_STATUS_SPECIFIER,
-                new ConstantEnumSetSpecifier<>(ImmutableSet.of(BgpRouteStatus.BEST)))
-            .resolve();
+  }
+
+  @JsonCreator
+  private static @Nonnull RoutesQuestion create(
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_VRFS) String vrfs,
+      @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
+      @Nullable @JsonProperty(PROP_BGP_ROUTE_STATUS) String bgpRouteStatus,
+      @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
+    return new RoutesQuestion(network, nodes, vrfs, protocols, bgpRouteStatus, rib);
   }
 
   /** Create new routes question with default parameters. */
@@ -167,9 +165,5 @@ public class RoutesQuestion extends Question {
   @Nonnull
   public String getVrfs() {
     return _vrfs;
-  }
-
-  boolean matchesBgpRouteStatus(BgpRouteStatus status) {
-    return _expandedBgpRouteStatuses.contains(status);
   }
 }

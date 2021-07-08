@@ -262,6 +262,7 @@ public class RoutesAnswererTest {
         ImmutableList.of(
             COL_NODE,
             COL_VRF_NAME,
+            COL_STATUS,
             COL_NETWORK,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
@@ -275,7 +276,6 @@ public class RoutesAnswererTest {
             COL_ORIGIN_TYPE,
             COL_ORIGINATOR_ID,
             COL_CLUSTER_LIST,
-            COL_STATUS,
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.BGP).getColumnMetadata();
@@ -292,6 +292,7 @@ public class RoutesAnswererTest {
         ImmutableList.of(
             COL_NODE,
             COL_VRF_NAME,
+            COL_STATUS,
             COL_NETWORK,
             COL_ROUTE_DISTINGUISHER,
             COL_NEXT_HOP_IP,
@@ -306,7 +307,6 @@ public class RoutesAnswererTest {
             COL_ORIGIN_TYPE,
             COL_ORIGINATOR_ID,
             COL_CLUSTER_LIST,
-            COL_STATUS,
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.EVPN).getColumnMetadata();

@@ -1231,11 +1231,13 @@ public final class VirtualRouter {
   }
 
   /** Get current BGP routes. To be used during dataplane computation only */
+  @Nonnull
   Set<Bgpv4Route> getBgpRoutes() {
     return _bgpRoutingProcess == null ? ImmutableSet.of() : _bgpRoutingProcess.getV4Routes();
   }
 
   /** Get current BGP backup routes. To be used during dataplane computation only */
+  @Nonnull
   Set<Bgpv4Route> getBgpBackupRoutes() {
     return _bgpRoutingProcess == null ? ImmutableSet.of() : _bgpRoutingProcess.getV4BackupRoutes();
   }
@@ -1545,19 +1547,17 @@ public final class VirtualRouter {
   }
 
   /** Return all EVPN routes in this VRF */
+  @Nonnull
   Set<EvpnRoute<?, ?>> getEvpnRoutes() {
-    if (_bgpRoutingProcess == null) {
-      return ImmutableSet.of();
-    }
-    return _bgpRoutingProcess._evpnRib.getTypedRoutes();
+    return _bgpRoutingProcess == null ? ImmutableSet.of() : _bgpRoutingProcess.getEvpnRoutes();
   }
 
   /** Return all EVPN backup routes in this VRF */
+  @Nonnull
   Set<EvpnRoute<?, ?>> getEvpnBackupRoutes() {
-    if (_bgpRoutingProcess == null) {
-      return ImmutableSet.of();
-    }
-    return _bgpRoutingProcess._evpnRib.getTypedBackupRoutes();
+    return _bgpRoutingProcess == null
+        ? ImmutableSet.of()
+        : _bgpRoutingProcess.getEvpnBackupRoutes();
   }
 
   /** Return the VRF name */

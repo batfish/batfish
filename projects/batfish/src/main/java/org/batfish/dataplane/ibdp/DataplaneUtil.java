@@ -81,7 +81,8 @@ public final class DataplaneUtil {
   @Nonnull
   static Table<String, String, Set<Bgpv4Route>> computeBgpBackupRoutes(Map<String, Node> nodes) {
     ImmutableTable.Builder<String, String, Set<Bgpv4Route>> table = ImmutableTable.builder();
-
+    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB backup routes should
+    //       not store best routes to begin with.
     nodes.forEach(
         (hostname, node) ->
             node.getVirtualRouters()
@@ -113,6 +114,8 @@ public final class DataplaneUtil {
   static Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnBackupRoutes(
       Map<String, Node> nodes) {
     ImmutableTable.Builder<String, String, Set<EvpnRoute<?, ?>>> table = ImmutableTable.builder();
+    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB backup routes should
+    //       not store best routes to begin with.
     nodes.forEach(
         (hostname, node) ->
             node.getVirtualRouters()

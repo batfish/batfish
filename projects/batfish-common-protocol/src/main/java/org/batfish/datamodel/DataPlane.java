@@ -5,34 +5,43 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.vxlan.Layer2Vni;
 
 public interface DataPlane extends Serializable {
 
   /** Return routes in the BGP rib for each node/VRF */
+  @Nonnull
   Table<String, String, Set<Bgpv4Route>> getBgpRoutes();
 
   /** Return backup routes in the BGP rib for each node/VRF */
+  @Nonnull
   Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes();
 
   /** Return routes in the EVPN RIB on each node/VRF */
+  @Nonnull
   Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes();
 
   /** Return backup routes in the EVPN RIB on each node/VRF */
+  @Nonnull
   Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes();
 
   /** Return a {@link Fib} for each node/VRF */
+  @Nonnull
   Map<String, Map<String, Fib>> getFibs();
 
+  @Nonnull
   ForwardingAnalysis getForwardingAnalysis();
 
   /** Return the set of all (main) RIBs. Map structure: hostname -&gt; VRF name -&gt; GenericRib */
+  @Nonnull
   SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> getRibs();
 
   /**
    * Return the summary of route prefix propagation. Map structure: Hostname -&gt; VRF name -&gt;
    * Prefix -&gt; action taken -&gt; set of hostnames (peers).
    */
+  @Nonnull
   SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       getPrefixTracingInfoSummary();
 
@@ -41,5 +50,6 @@ public interface DataPlane extends Serializable {
    * a {@link Vrf}, but may include additional information obtained during dataplane computation,
    * such as updated flood lists due to EVPN route exchange.
    */
+  @Nonnull
   Table<String, String, Set<Layer2Vni>> getLayer2Vnis();
 }

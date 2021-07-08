@@ -32,13 +32,17 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.BgpRouteStatus;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.routes.RoutesQuestion.RibProtocol;
+import org.batfish.specifier.ConstantEnumSetSpecifier;
 import org.batfish.specifier.RoutingProtocolSpecifier;
+import org.batfish.specifier.SpecifierFactories;
+import org.batfish.specifier.parboiled.Grammar;
 
 /** Answerer for {@link RoutesQuestion} */
 @ParametersAreNonnullByDefault
@@ -82,6 +86,13 @@ public class RoutesAnswerer extends Answerer {
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     RoutesQuestion question = (RoutesQuestion) _question;
+    Set<BgpRouteStatus> expandedBgpRouteStatuses =
+        SpecifierFactories.getEnumSetSpecifierOrDefault(
+                question.getBgpRouteStatus(),
+                Grammar.BGP_ROUTE_STATUS_SPECIFIER,
+                new ConstantEnumSetSpecifier<>(ImmutableSet.of(BgpRouteStatus.BEST)))
+            .resolve();
+
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata(question.getRib()));
 
     DataPlane dp = _batfish.loadDataPlane(snapshot);
@@ -92,8 +103,8 @@ public class RoutesAnswerer extends Answerer {
     String vrfRegex = question.getVrfs();
     Map<Ip, Set<String>> ipOwners =
         computeIpNodeOwners(_batfish.loadConfigurations(snapshot), true);
-    boolean bgpMultipathBest = question.matchesBgpRouteStatus(BEST);
-    boolean bgpBackup = question.matchesBgpRouteStatus(BACKUP);
+    boolean bgpMultipathBest = expandedBgpRouteStatuses.contains(BEST);
+    boolean bgpBackup = expandedBgpRouteStatuses.contains(BACKUP);
     Multiset<Row> rows;
 
     switch (question.getRib()) {
@@ -222,6 +233,13 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder
             .add(
                 new ColumnMetadata(
+                    COL_STATUS,
+                    Schema.list(Schema.STRING),
+                    "Route's statuses",
+                    Boolean.FALSE,
+                    Boolean.TRUE))
+            .add(
+                new ColumnMetadata(
                     COL_ROUTE_DISTINGUISHER,
                     Schema.STRING,
                     "Route distinguisher",
@@ -287,17 +305,17 @@ public class RoutesAnswerer extends Answerer {
                     Schema.list(Schema.LONG),
                     "Route's Cluster List",
                     Boolean.FALSE,
-                    Boolean.TRUE))
+                    Boolean.TRUE));
+        break;
+      case BGP:
+        columnBuilder
             .add(
                 new ColumnMetadata(
                     COL_STATUS,
                     Schema.list(Schema.STRING),
                     "Route's statuses",
                     Boolean.FALSE,
-                    Boolean.TRUE));
-        break;
-      case BGP:
-        columnBuilder
+                    Boolean.TRUE))
             .add(
                 new ColumnMetadata(
                     COL_NEXT_HOP_IP, Schema.IP, "Route's Next Hop IP", Boolean.FALSE, Boolean.TRUE))
@@ -357,13 +375,6 @@ public class RoutesAnswerer extends Answerer {
                     COL_CLUSTER_LIST,
                     Schema.list(Schema.LONG),
                     "Route's Cluster List",
-                    Boolean.FALSE,
-                    Boolean.TRUE))
-            .add(
-                new ColumnMetadata(
-                    COL_STATUS,
-                    Schema.list(Schema.STRING),
-                    "Route's statuses",
                     Boolean.FALSE,
                     Boolean.TRUE));
         break;
