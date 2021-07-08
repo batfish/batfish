@@ -4,10 +4,12 @@ boot system flash this-is-an-arista-device.swi
 hostname as2-no-advertise-inactive
 !
 interface Ethernet0/0
+ no switchport
  ip address 10.0.12.2 255.255.255.0
  no shutdown
 !
 interface Ethernet0/1
+ no switchport
  ip address 10.0.23.2 255.255.255.0
  no shutdown
 !

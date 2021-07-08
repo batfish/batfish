@@ -1378,9 +1378,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .setOwner(c)
             .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
             .build();
-    if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
-    }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
@@ -1391,7 +1388,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CollectionUtil.toImmutableMap(
             iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
-    newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(
         firstNonNull(
@@ -1410,18 +1406,57 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setMlagId(iface.getMlagId());
     newIface.setMtu(iface.getMtu());
     newIface.setProxyArp(iface.getProxyArp());
-    newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
-    newIface.setSwitchport(iface.getSwitchport());
     newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
+    newIface.setSwitchport(iface.getSwitchport());
 
-    // All prefixes is the combination of the interface prefix + any secondary prefixes.
-    ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
-    if (iface.getAddress() != null) {
-      newIface.setAddress(iface.getAddress());
-      allPrefixes.add(iface.getAddress());
+    if (newIface.getSwitchport()) {
+      newIface.setSwitchportMode(iface.getSwitchportMode());
+
+      // switch settings
+      if (iface.getSwitchportMode() == SwitchportMode.ACCESS) {
+        newIface.setAccessVlan(firstNonNull(iface.getAccessVlan(), 1));
+      }
+
+      if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+        SwitchportEncapsulationType encapsulation =
+            firstNonNull(
+                // TODO: check if this is OK
+                iface.getSwitchportTrunkEncapsulation(), SwitchportEncapsulationType.DOT1Q);
+        newIface.setSwitchportTrunkEncapsulation(encapsulation);
+        if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+          /*
+           * Compute allowed VLANs:
+           * - If allowed VLANs are set, honor them;
+           */
+          if (iface.getAllowedVlans() != null) {
+            newIface.setAllowedVlans(iface.getAllowedVlans());
+          } else {
+            newIface.setAllowedVlans(Interface.ALL_VLANS);
+          }
+        }
+        newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
+      }
+
+      newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
+    } else {
+      newIface.setSwitchportMode(SwitchportMode.NONE);
+      if (newIface.getInterfaceType() == InterfaceType.VLAN) {
+        newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
+        newIface.setAutoState(iface.getAutoState());
+      }
+
+      // All prefixes is the combination of the interface prefix + any secondary prefixes.
+      ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
+      if (iface.getAddress() != null) {
+        newIface.setAddress(iface.getAddress());
+        allPrefixes.add(iface.getAddress());
+      }
+      allPrefixes.addAll(iface.getSecondaryAddresses());
+      newIface.setAllAddresses(allPrefixes.build());
+
+      // subinterface settings
+      newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
     }
-    allPrefixes.addAll(iface.getSecondaryAddresses());
-    newIface.setAllAddresses(allPrefixes.build());
 
     EigrpProcess eigrpProcess = null;
     if (iface.getAddress() != null) {
@@ -1518,37 +1553,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         isisInterfaceSettingsBuilder.setLevel2(levelSettings);
       }
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
-    }
-
-    // subinterface settings
-    newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
-
-    // switch settings
-    if (iface.getSwitchportMode() == SwitchportMode.ACCESS) {
-      newIface.setAccessVlan(firstNonNull(iface.getAccessVlan(), 1));
-    }
-
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
-    }
-
-    newIface.setSwitchportMode(iface.getSwitchportMode());
-    SwitchportEncapsulationType encapsulation = iface.getSwitchportTrunkEncapsulation();
-    if (encapsulation == null) { // no encapsulation set, so use default..
-      // TODO: check if this is OK
-      encapsulation = SwitchportEncapsulationType.DOT1Q;
-    }
-    newIface.setSwitchportTrunkEncapsulation(encapsulation);
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      /*
-       * Compute allowed VLANs:
-       * - If allowed VLANs are set, honor them;
-       */
-      if (iface.getAllowedVlans() != null) {
-        newIface.setAllowedVlans(iface.getAllowedVlans());
-      } else {
-        newIface.setAllowedVlans(Interface.ALL_VLANS);
-      }
     }
 
     String incomingFilterName = iface.getIncomingFilter();

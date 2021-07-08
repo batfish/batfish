@@ -4,6 +4,7 @@ boot system flash this-is-an-arista-device.swi
 hostname as1
 !
 interface Ethernet0/0
+ no switchport
  ip address 10.0.12.1 255.255.255.0
  no shutdown
 !
