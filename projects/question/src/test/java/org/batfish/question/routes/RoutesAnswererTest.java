@@ -262,8 +262,8 @@ public class RoutesAnswererTest {
         ImmutableList.of(
             COL_NODE,
             COL_VRF_NAME,
-            COL_STATUS,
             COL_NETWORK,
+            COL_STATUS,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
@@ -292,8 +292,8 @@ public class RoutesAnswererTest {
         ImmutableList.of(
             COL_NODE,
             COL_VRF_NAME,
-            COL_STATUS,
             COL_NETWORK,
+            COL_STATUS,
             COL_ROUTE_DISTINGUISHER,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
