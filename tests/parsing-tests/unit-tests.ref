@@ -57681,9 +57681,130 @@
             "                  (pops_then*",
             "                    THEN:'then'",
             "                    (popst_common*",
-            "                      (popst_next_hop_self",
+            "                      (popst_next_hop*",
             "                        NEXT_HOP:'next-hop'",
-            "                        SELF:'self'  <== mode:M_Interface))))))))))",
+            "                        (popstnh_ipv4",
+            "                          addr = IP_ADDRESS:'1.2.3.4')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_ipv6",
+            "                          addr6 = IPV6_ADDRESS:'2001:0db8:85a3:0000:0000:8a2e:0370:7334')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_discard",
+            "                          DISCARD:'discard')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_peer_address",
+            "                          PEER_ADDRESS:'peer-address')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_reject",
+            "                          REJECT:'reject')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_self",
+            "                          SELF:'self')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -70510,6 +70631,12 @@
               "Line" : 18,
               "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "protocol access-internal"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 32,
+              "Parser_Context" : "[popstnh_ipv6 popst_next_hop popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
             }
           ],
           "Red flags" : [
@@ -73690,28 +73817,28 @@
         "configs/juniper_policy_statement" : {
           "as-path" : {
             "ORIGINATED_IN_65535" : {
-              "definitionLines" : "39",
+              "definitionLines" : "44",
               "numReferrers" : 1
             },
             "UNUSED_ORIGINATED_IN_65535" : {
-              "definitionLines" : "40",
+              "definitionLines" : "45",
               "numReferrers" : 0
             }
           },
           "policy-statement" : {
             "POLICY-NAME" : {
-              "definitionLines" : "4-37",
+              "definitionLines" : "4-42",
               "numReferrers" : 0
             }
           },
           "policy-statement term" : {
             "POLICY-NAME AS_PATH" : {
-              "definitionLines" : "35-36",
+              "definitionLines" : "40-41",
               "numReferrers" : 2
             },
             "POLICY-NAME TERM" : {
-              "definitionLines" : "4-34",
-              "numReferrers" : 31
+              "definitionLines" : "4-39",
+              "numReferrers" : 36
             }
           }
         },
@@ -79938,7 +80065,7 @@
           "as-path" : {
             "ORIGINATED_IN_65535" : {
               "policy-statement from as-path" : [
-                35
+                40
               ]
             }
           },
@@ -79952,8 +80079,8 @@
           "policy-statement term" : {
             "POLICY-NAME AS_PATH" : {
               "policy-statement term" : [
-                35,
-                36
+                40,
+                41
               ]
             },
             "POLICY-NAME TERM" : {
@@ -79988,7 +80115,12 @@
                 31,
                 32,
                 33,
-                34
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
               ]
             }
           },
