@@ -22,6 +22,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
@@ -274,6 +275,7 @@ public class RoutesAnswererTest {
             COL_ORIGIN_TYPE,
             COL_ORIGINATOR_ID,
             COL_CLUSTER_LIST,
+            COL_STATUS,
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.BGP).getColumnMetadata();
@@ -304,6 +306,7 @@ public class RoutesAnswererTest {
             COL_ORIGIN_TYPE,
             COL_ORIGINATOR_ID,
             COL_CLUSTER_LIST,
+            COL_STATUS,
             COL_TAG);
 
     List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.EVPN).getColumnMetadata();
@@ -547,6 +550,11 @@ public class RoutesAnswererTest {
     @Override
     public Set<R> getTypedRoutes() {
       return _routes;
+    }
+
+    @Override
+    public Set<R> getTypedBackupRoutes() {
+      throw new UnsupportedOperationException();
     }
 
     @Override

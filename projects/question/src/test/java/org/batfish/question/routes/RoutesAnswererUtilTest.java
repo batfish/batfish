@@ -1,6 +1,7 @@
 package org.batfish.question.routes;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.questions.BgpRouteStatus.BEST;
 import static org.batfish.datamodel.table.TableDiff.COL_BASE_PREFIX;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ADMIN_DISTANCE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_AS_PATH;
@@ -240,7 +241,8 @@ public class RoutesAnswererUtilTest {
             ImmutableSet.of("node"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*");
+            ".*",
+            ImmutableSet.of(BEST));
 
     // Both routes should have the same values for these columns
     Matcher<Row> commonMatcher =
@@ -297,7 +299,8 @@ public class RoutesAnswererUtilTest {
             ImmutableSet.of("node"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*");
+            ".*",
+            ImmutableSet.of(BEST));
     assertThat(
         rows.iterator().next().get(COL_COMMUNITIES, Schema.list(Schema.STRING)),
         equalTo(ImmutableList.of("1:1")));
@@ -328,7 +331,8 @@ public class RoutesAnswererUtilTest {
             ImmutableSet.of("node"),
             null,
             RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER,
-            ".*");
+            ".*",
+            ImmutableSet.of(BEST));
 
     assertThat(
         rows,

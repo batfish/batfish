@@ -1,0 +1,23 @@
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname r2
+!
+interface Loopback0
+ ip address 10.1.0.1 255.255.255.255
+!
+interface GigabitEthernet0/0
+ ip address 10.0.0.1 255.255.255.254
+ no shutdown
+!
+ip route 5.5.5.5 255.255.255.255 null0
+ip route 10.1.0.0 255.255.255.255 GigabitEthernet0/0
+!
+router bgp 1
+ bgp router-id 10.1.0.1
+ neighbor 10.1.0.0 remote-as 1
+ address-family ipv4 unicast
+  redistribute static
+  neighbor 10.1.0.0 activate
+  neighbor 10.1.0.0 update-source Loopback0
+ !
+!
