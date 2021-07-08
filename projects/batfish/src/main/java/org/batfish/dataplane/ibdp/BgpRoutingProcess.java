@@ -2048,6 +2048,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return _bgpv4Rib.getTypedRoutes();
   }
 
+  public Set<Bgpv4Route> getV4BackupRoutes() {
+    return _bgpv4Rib.getTypedBackupRoutes();
+  }
+
   /** Return a set of all bgpv4 bestpath routes */
   public Set<Bgpv4Route> getBestPathRoutes() {
     return _bgpv4Rib.getBestPathRoutes();

@@ -767,7 +767,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
 
         @Override
+        public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+          return null;
+        }
+
+        @Override
         public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+          return null;
+        }
+
+        @Override
+        public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
           return null;
         }
 

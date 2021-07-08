@@ -15,7 +15,9 @@ public class MockDataPlane implements DataPlane {
 
   public static class Builder {
     @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+    @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
     @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
+    @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
     @Nonnull private Map<String, Map<String, Fib>> _fibs;
     @Nullable private ForwardingAnalysis _forwardingAnalysis;
 
@@ -41,8 +43,20 @@ public class MockDataPlane implements DataPlane {
       return this;
     }
 
+    public Builder setBgpBackupRoutes(
+        @Nonnull Table<String, String, Set<Bgpv4Route>> bgpBackupRoutes) {
+      _bgpBackupRoutes = bgpBackupRoutes;
+      return this;
+    }
+
     public Builder setEvpnRoutes(@Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> evpnRoutes) {
       _evpnRoutes = evpnRoutes;
+      return this;
+    }
+
+    public Builder setEvpnBackupRoutes(
+        @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> evpnBackupRoutes) {
+      _evpnBackupRoutes = evpnBackupRoutes;
       return this;
     }
 
@@ -73,7 +87,9 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+  @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
   @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
+  @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
   @Nonnull private final Map<String, Map<String, Fib>> _fibs;
   @Nullable private final ForwardingAnalysis _forwardingAnalysis;
 
@@ -85,7 +101,9 @@ public class MockDataPlane implements DataPlane {
 
   private MockDataPlane(Builder builder) {
     _bgpRoutes = builder._bgpRoutes;
+    _bgpBackupRoutes = builder._bgpBackupRoutes;
     _evpnRoutes = builder._evpnRoutes;
+    _evpnBackupRoutes = builder._evpnBackupRoutes;
     _fibs = builder._fibs;
     _forwardingAnalysis = builder._forwardingAnalysis;
     _ribs = ImmutableSortedMap.copyOf(builder._ribs);
@@ -100,8 +118,20 @@ public class MockDataPlane implements DataPlane {
 
   @Nonnull
   @Override
+  public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+    return _bgpBackupRoutes;
+  }
+
+  @Nonnull
+  @Override
   public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
     return _evpnRoutes;
+  }
+
+  @Nonnull
+  @Override
+  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
+    return _evpnBackupRoutes;
   }
 
   @Nonnull
