@@ -7,7 +7,7 @@ ipv4 access-list acl
  20 permit udp any any
  30 permit tcp host 1.1.1.1 host 2.2.2.2
  40 permit udp 3.3.3.0 0.0.0.255 any
- 50 permit icmp any any
+ 50 permit icmp any any capture
  60 deny tcp any 4.4.4.0/24 eq ssh
  70 deny udp 5.5.5.5/32 any eq domain
  80 permit udp 6.6.6.0/23 any eq 9999

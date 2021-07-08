@@ -3720,6 +3720,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           icmpCode = IcmpCode.COMMUNICATION_ADMINISTRATIVELY_PROHIBITED;
         } else if (feature.ALTERNATE_ADDRESS() != null) {
           icmpType = IcmpType.ALTERNATE_ADDRESS;
+        } else if (feature.CAPTURE() != null) {
+          // Do nothing.
         } else if (feature.CWR() != null) {
           tcpFlags.add(
               TcpFlagsMatchConditions.builder()
