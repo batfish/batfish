@@ -39,10 +39,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
-import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -219,28 +216,8 @@ public class BooleanExprAsPathCollector
   }
 
   @Override
-  public Set<SymbolicAsPathRegex> visitNeighborIsAsPath(
-      NeighborIsAsPath neighborIsAsPath, Configuration arg) {
-    return ImmutableSet.of();
-  }
-
-  @Override
   public Set<SymbolicAsPathRegex> visitNot(Not not, Configuration arg) {
     return not.getExpr().accept(this, arg);
-  }
-
-  @Override
-  public Set<SymbolicAsPathRegex> visitOriginatesFromAsPath(
-      OriginatesFromAsPath originatesFromAsPath, Configuration arg) {
-    // if/when OriginatesFromAsPath is supported by TransferBDD this will need to be updated
-    return ImmutableSet.of();
-  }
-
-  @Override
-  public Set<SymbolicAsPathRegex> visitPassesThroughAsPath(
-      PassesThroughAsPath passesThroughAsPath, Configuration arg) {
-    // if/when OriginatesFromAsPath is supported by TransferBDD this will need to be updated
-    return ImmutableSet.of();
   }
 
   @Override
