@@ -8,7 +8,6 @@ tokens {
    BANNER_DELIMITER_EOS,
    BANNER_BODY,
    HEX_FRAGMENT,
-   IS_LOCAL,
    ISO_ADDRESS,
    PAREN_LEFT_LITERAL,
    PAREN_RIGHT_LITERAL,
@@ -2885,8 +2884,6 @@ NEIGHBOR
 
 NEIGHBOR_FILTER: 'neighbor-filter';
 
-NEIGHBOR_IS: 'neighbor-is';
-
 NEQ: 'neq';
 
 NESTED: 'nested';
@@ -3112,8 +3109,6 @@ ORIGIN_ID: 'origin-id';
 
 ORIGINATE: 'originate';
 
-ORIGINATES_FROM: 'originates-from';
-
 ORIGINATOR_ID: 'originator-id';
 
 OSPF: 'ospf';
@@ -3169,8 +3164,6 @@ PARAMETERS: 'parameters';
 PARTICIPATE: 'participate';
 
 PASS: 'pass';
-
-PASSES_THROUGH: 'passes-through';
 
 PASSIVE: 'passive';
 
@@ -5626,29 +5619,9 @@ M_AsPath_IGNORE
    'ignore' -> type ( IGNORE ) , popMode
 ;
 
-M_AsPath_IN
-:
-   'in' -> type ( IN ) , popMode
-;
-
-M_AsPath_IS_LOCAL
-:
-   'is-local' -> type ( IS_LOCAL ) , popMode
-;
-
 M_AsPath_MULTIPATH_RELAX
 :
    'multipath-relax' -> type ( MULTIPATH_RELAX ) , popMode
-;
-
-M_AsPath_NEIGHBOR_IS
-:
-   'neighbor-is' -> type ( NEIGHBOR_IS ) , popMode
-;
-
-M_AsPath_PASSES_THROUGH
-:
-   'passes-through' -> type ( PASSES_THROUGH ) , popMode
 ;
 
 M_AsPath_PREPEND
@@ -5659,11 +5632,6 @@ M_AsPath_PREPEND
 M_AsPath_PREPEND_OWN
 :
    'prepend-own' -> type ( PREPEND_OWN ) , popMode
-;
-
-M_AsPath_ORIGINATES_FROM
-:
-   'originates-from' -> type ( ORIGINATES_FROM ) , popMode
 ;
 
 M_AsPath_REGEX_MODE
