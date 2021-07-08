@@ -70363,30 +70363,6 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 77,
-              "Parser_Context" : "[boolean_as_path_passes_through boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "passes-through '[65412..65535]'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 101,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '17369'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 133,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '17369'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 148,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '12345  6360'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 161,
               "Parser_Context" : "[community_set_expr_elem_half community_set_expr_elem community_set_expr set_community_rp_stanza set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
               "Text" : "$hub_comm"
@@ -70624,22 +70600,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "apply-groups statement at path: 'system tacplus-server 1.2.3.4' refers to non-existent group: 'bippety'\n"
-            }
-          ]
-        },
-        "configs/route_policy_as_path" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 17,
-              "Parser_Context" : "[boolean_as_path_passes_through boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "passes-through '5556'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 23,
-              "Parser_Context" : "[boolean_as_path_originates_from boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "originates-from '64527'"
             }
           ]
         },
