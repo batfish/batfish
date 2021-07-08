@@ -54,7 +54,7 @@ public class IpSpaceSpecifierTest {
     _i1 =
         ib.setAddresses(
                 ConcreteInterfaceAddress.parse("1.0.0.1/24"),
-                ConcreteInterfaceAddress.parse("2.0.0.0/30"))
+                ConcreteInterfaceAddress.parse("2.0.0.1/30"))
             .build();
 
     // another interface on _i1's subnet

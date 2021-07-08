@@ -62,6 +62,8 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 
 public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigurationResult> {
 
@@ -219,6 +221,18 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _fileText, ciscoXrParser, format, _warnings, _silentSyntax);
             break;
           }
+
+        case CHECK_POINT_GATEWAY:
+          {
+            CheckPointGatewayCombinedParser checkPointParser =
+                new CheckPointGatewayCombinedParser(_fileText, _settings);
+            combinedParser = checkPointParser;
+            extractor =
+                new CheckPointGatewayControlPlaneExtractor(
+                    _fileText, checkPointParser, _warnings, _silentSyntax);
+            break;
+          }
+
         case CUMULUS_CONCATENATED:
           {
             CumulusConcatenatedCombinedParser parser =

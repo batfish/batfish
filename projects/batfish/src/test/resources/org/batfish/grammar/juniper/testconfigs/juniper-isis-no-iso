@@ -3,7 +3,7 @@ set system host-name juniper-isis-no-iso
 #
 set interfaces lo0 unit 0 family inet address 1.1.1.1/32 
 #
-set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.0/24 
+set interfaces ge-0/0/0 unit 0 family inet address 10.0.0.1/24
 #
 set protocols isis interface ge-0/0/0.0 bfd-liveness-detection minimum-interval 250
 set protocols isis interface ge-0/0/0.0 bfd-liveness-detection multiplier 3

@@ -3,13 +3,21 @@ package org.batfish.representation.cisco_nxos;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toOspfDeadInterval;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toOspfHelloInterval;
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toRouteFilterList;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toTraceableStatement;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_DEAD_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.DEFAULT_HELLO_INTERVAL_S;
 import static org.batfish.representation.cisco_nxos.OspfInterface.OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
@@ -66,5 +74,26 @@ public class CiscoNxosConfigurationTest {
         equalTo(
             new VendorStructureId(
                 "file", CiscoNxosStructureType.IP_PREFIX_LIST.getDescription(), "name")));
+  }
+
+  /** Check that tracing is added to route map entries */
+  @Test
+  public void testToStatement_tracing() {
+    CiscoNxosConfiguration cc = new CiscoNxosConfiguration();
+    cc.setFilename("file");
+
+    RouteMap map = new RouteMap("rm");
+    RouteMapEntry entry = new RouteMapEntry(10);
+    entry.setAction(LineAction.DENY);
+    map.getEntries().put(10, entry);
+
+    If statement = (If) cc.toStatement(map.getName(), entry, ImmutableMap.of(), ImmutableSet.of());
+
+    TraceableStatement traceableStatement =
+        (TraceableStatement) Iterables.getOnlyElement(statement.getTrueStatements());
+    assertThat(
+        traceableStatement.getTraceElement(),
+        equalTo(toTraceableStatement(ImmutableList.of(), 10, "rm", "file").getTraceElement()));
+    assertThat(statement.getFalseStatements(), equalTo(ImmutableList.of()));
   }
 }

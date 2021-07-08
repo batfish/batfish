@@ -41,8 +41,8 @@ public final class IncrementalDataPlanePlugin extends DataPlanePlugin {
                 IsisTopology.initIsisTopology(
                     configurations, topologyProvider.getInitialLayer3Topology(snapshot)))
             .setLayer1LogicalTopology(topologyProvider.getLayer1LogicalTopology(snapshot))
-            .setLayer2Topology(topologyProvider.getInitialLayer2Topology(snapshot))
             .setLayer3Topology(topologyProvider.getInitialLayer3Topology(snapshot))
+            .setL3Adjacencies(topologyProvider.getInitialL3Adjacencies(snapshot))
             .setOspfTopology(topologyProvider.getInitialOspfTopology(snapshot))
             .setRawLayer1PhysicalTopology(topologyProvider.getRawLayer1PhysicalTopology(snapshot))
             .setTunnelTopology(topologyProvider.getInitialTunnelTopology(snapshot))

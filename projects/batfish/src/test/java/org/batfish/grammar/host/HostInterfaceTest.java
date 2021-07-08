@@ -20,7 +20,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.Prefix;
 import org.batfish.representation.host.HostInterface;
 import org.hamcrest.FeatureMatcher;
 import org.junit.Before;
@@ -77,8 +76,8 @@ public class HostInterfaceTest {
   public void testShared() throws IOException {
     Ip sharedIp = Ip.parse("1.0.0.1");
     InterfaceAddress sharedAddress = ConcreteInterfaceAddress.create(sharedIp, 24);
-    Prefix nonShared1Prefix = Prefix.parse("2.0.0.2/24");
-    Prefix nonShared2Prefix = Prefix.parse("3.0.0.2/24");
+    String nonShared1Prefix = "2.0.0.2/24";
+    String nonShared2Prefix = "3.0.0.2/24";
     String ifaceSharedText =
         "{\"name\":\"shared_interface\", \"prefix\":\"" + sharedAddress + "\", \"shared\":true}";
     String ifaceNonShared1Text =

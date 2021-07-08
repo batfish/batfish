@@ -198,6 +198,7 @@ ihg_ipv6
 ihg_common
 :
   ihg_authentication
+  | ihg_bfd
   | ihg_mac_address
   | ihg_name
   | ihg_no
@@ -243,6 +244,8 @@ ihgam_key_chain
   KEY_CHAIN name = key_chain_name NEWLINE
 ;
 
+ihg_bfd: BFD NEWLINE;
+
 ihg_mac_address
 :
   MAC_ADDRESS mac = mac_address_literal NEWLINE
@@ -255,13 +258,15 @@ ihg_name
 
 ihg_no
 :
-  NO ihg_no_preempt
+  NO (
+    ihg_no_bfd
+    | ihg_no_preempt
+  )
 ;
 
-ihg_no_preempt
-:
-  PREEMPT NEWLINE
-;
+ihg_no_bfd: BFD NEWLINE;
+
+ihg_no_preempt: PREEMPT NEWLINE;
 
 ihg_preempt
 :

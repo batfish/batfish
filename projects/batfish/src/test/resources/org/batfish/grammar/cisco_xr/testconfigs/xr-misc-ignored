@@ -47,6 +47,16 @@ vty-pool default 0 15 line-template default
 
 end
 
+l2vpn
+ bridge group BG1
+  bridge-domain BD1
+   interface GigabitEthernet0/0/0/1.123
+    storm-control multicast pps 1000
+   !
+  !
+ !
+!
+
 ############ MultiConfigPart END
 
 ############ MultiConfigPart admin configuration

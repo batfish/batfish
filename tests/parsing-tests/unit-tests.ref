@@ -3717,7 +3717,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'192.168.1.0'",
+            "          ip = IP_ADDRESS:'192.168.1.1'",
             "          subnet = IP_ADDRESS:'255.255.255.0'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -14834,7 +14834,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          prefix = IP_PREFIX:'2.3.4.0/29'",
+            "          prefix = IP_PREFIX:'2.3.4.1/29'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
             "        (if_ip_address",
@@ -15482,7 +15482,7 @@
             "        (if_ip_address",
             "          IPV4:'ipv4'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'1.2.3.4'",
+            "          ip = IP_ADDRESS:'1.2.3.1'",
             "          subnet = IP_ADDRESS:'255.255.255.252'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -23157,7 +23157,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'2.2.2.0'",
+            "          ip = IP_ADDRESS:'2.2.2.1'",
             "          subnet = IP_ADDRESS:'255.255.255.0'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -23430,7 +23430,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'2.2.2.0'",
+            "          ip = IP_ADDRESS:'2.2.2.1'",
             "          subnet = IP_ADDRESS:'255.255.255.0'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -23466,7 +23466,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'3.3.3.0'",
+            "          ip = IP_ADDRESS:'3.3.3.1'",
             "          subnet = IP_ADDRESS:'255.255.255.0'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -23503,7 +23503,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'4.4.4.0'",
+            "          ip = IP_ADDRESS:'4.4.4.1'",
             "          subnet = IP_ADDRESS:'255.255.255.0'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -24074,7 +24074,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'2.2.2.0'",
+            "          ip = IP_ADDRESS:'2.2.2.1'",
             "          subnet = IP_ADDRESS:'255.255.255.0'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -24180,7 +24180,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'2.2.2.0'",
+            "          ip = IP_ADDRESS:'2.2.2.1'",
             "          subnet = IP_ADDRESS:'255.255.255.0'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -24210,7 +24210,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          ip = IP_ADDRESS:'3.3.3.0'",
+            "          ip = IP_ADDRESS:'3.3.3.1'",
             "          subnet = IP_ADDRESS:'255.255.255.0'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
@@ -30732,7 +30732,7 @@
             "        (if_ip_address",
             "          IP:'ip'",
             "          ADDRESS:'address'",
-            "          prefix = IP_PREFIX:'1.0.0.0/24'",
+            "          prefix = IP_PREFIX:'1.0.0.1/24'",
             "          NEWLINE:'\\n'))",
             "      (if_inner*",
             "        (if_vrrp",
@@ -55011,7 +55011,7 @@
             "                      INET:'inet'",
             "                      (ifi_address",
             "                        ADDRESS:'address'",
-            "                        IP_PREFIX:'1.2.3.0/24'",
+            "                        IP_PREFIX:'1.2.3.1/24'",
             "                        (ifia_vrrp_group",
             "                          VRRP_GROUP:'vrrp-group'",
             "                          number = (dec*",
@@ -55043,7 +55043,7 @@
             "                      INET:'inet'",
             "                      (ifi_address",
             "                        ADDRESS:'address'",
-            "                        IP_PREFIX:'1.2.3.0/24'",
+            "                        IP_PREFIX:'1.2.3.1/24'",
             "                        (ifia_vrrp_group",
             "                          VRRP_GROUP:'vrrp-group'",
             "                          number = (dec*",
@@ -66411,7 +66411,7 @@
             "                (sa_ip_netmask",
             "                  IP_NETMASK:'ip-netmask'",
             "                  (ip_prefix*",
-            "                    IP_PREFIX:'10.0.0.0/8'))))))))",
+            "                    IP_PREFIX:'10.0.0.1/8'))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -70377,30 +70377,6 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 77,
-              "Parser_Context" : "[boolean_as_path_passes_through boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "passes-through '[65412..65535]'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 101,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '17369'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 133,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '17369'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 148,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '12345  6360'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 161,
               "Parser_Context" : "[community_set_expr_elem_half community_set_expr_elem community_set_expr set_community_rp_stanza set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
               "Text" : "$hub_comm"
@@ -70638,22 +70614,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "apply-groups statement at path: 'system tacplus-server 1.2.3.4' refers to non-existent group: 'bippety'\n"
-            }
-          ]
-        },
-        "configs/route_policy_as_path" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 17,
-              "Parser_Context" : "[boolean_as_path_passes_through boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "passes-through '5556'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 23,
-              "Parser_Context" : "[boolean_as_path_originates_from boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "originates-from '64527'"
             }
           ]
         },

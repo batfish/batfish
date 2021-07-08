@@ -79,10 +79,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
-import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
@@ -150,11 +147,6 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new MatchSourceVrf("a").accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(
         new MatchTag(IntComparator.EQ, new LiteralLong(1L)).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(new NeighborIsAsPath(ImmutableList.of(), true).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(
-        new OriginatesFromAsPath(ImmutableList.of(), true).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(
-        new PassesThroughAsPath(ImmutableList.of(), true).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(RouteIsClassful.instance().accept(BOOLEAN_EXPR_VERIFIER, ctx));
   }
 

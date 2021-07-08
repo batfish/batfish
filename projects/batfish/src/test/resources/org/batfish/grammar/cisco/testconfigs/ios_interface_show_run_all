@@ -148,7 +148,7 @@ interface Port-channel1
 interface Port-channel1.10
  encapsulation dot1Q 10
  vrf forwarding SOME_VRF
- ip address 1.2.3.4 255.255.255.252
+ ip address 1.2.3.5 255.255.255.252
  ip redirects
  ip unreachables
  ip proxy-arp

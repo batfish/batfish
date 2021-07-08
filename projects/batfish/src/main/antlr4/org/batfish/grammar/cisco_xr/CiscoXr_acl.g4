@@ -101,6 +101,7 @@ extended_access_list_additional_feature
    | ALTERNATE_ADDRESS
    | BEYOND_SCOPE
    | BFD_ECHO
+   | CAPTURE
    | CONVERSION_ERROR
    | COUNT
    | CWR

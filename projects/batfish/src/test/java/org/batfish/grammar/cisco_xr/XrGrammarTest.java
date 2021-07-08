@@ -1709,8 +1709,16 @@ public final class XrGrammarTest {
   @Test
   public void testMiscIgnoredParsing() {
     String hostname = "xr-misc-ignored";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
     // Do not crash
-    assertNotNull(parseVendorConfig(hostname));
+    assertNotNull(vc);
+
+    // Also make sure context isn't lost when hitting ignored lines, specifically:
+    // Interface is still associated with bridge-domain, not interpreted as top-level
+    assertThat(
+        vc.getBridgeGroups().get("BG1").getBridgeDomains().get("BD1").getInterfaces(),
+        contains("GigabitEthernet0/0/0/1.123"));
   }
 
   @Test

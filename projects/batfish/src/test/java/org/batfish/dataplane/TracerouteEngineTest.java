@@ -200,11 +200,11 @@ public class TracerouteEngineTest {
     Interface.Builder ib = nf.interfaceBuilder();
 
     Interface i1 =
-        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24")).setProxyArp(true).build();
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24")).setProxyArp(true).build();
     Interface i2 =
-        ib.setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24")).setProxyArp(true).build();
+        ib.setAddress(ConcreteInterfaceAddress.parse("2.2.2.1/24")).setProxyArp(true).build();
     Interface i3 =
-        ib.setAddress(ConcreteInterfaceAddress.parse("3.3.3.0/24")).setProxyArp(false).build();
+        ib.setAddress(ConcreteInterfaceAddress.parse("3.3.3.1/24")).setProxyArp(false).build();
     Interface i4 =
         ib.setAddress(ConcreteInterfaceAddress.parse("4.4.4.4/24")).setProxyArp(false).build();
     Interface i5 = ib.setAddress(null).setProxyArp(true).build();
@@ -288,13 +288,13 @@ public class TracerouteEngineTest {
     nf.interfaceBuilder()
         .setOwner(c)
         .setVrf(v)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
         .setOutgoingFilter(outgoingFilter)
         .build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     NetworkSnapshot snapshot = b.getSnapshot();
-    Flow flow = builder().setIngressNode(c.getHostname()).setDstIp(Ip.parse("1.0.0.1")).build();
+    Flow flow = builder().setIngressNode(c.getHostname()).setDstIp(Ip.parse("1.0.0.2")).build();
     b.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(b.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
@@ -320,7 +320,7 @@ public class TracerouteEngineTest {
     ib.setOwner(c1)
         .setVrf(v1)
         .setOutgoingFilter(outgoingFilter)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
         .build();
 
     // c2
@@ -336,7 +336,7 @@ public class TracerouteEngineTest {
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     NetworkSnapshot snapshot = b.getSnapshot();
-    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.1")).build();
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.2")).build();
     b.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(b.buildFlows(snapshot, ImmutableSet.of(flow), false).get(flow));
@@ -379,14 +379,14 @@ public class TracerouteEngineTest {
     ib.setName("i1")
         .setOwner(c1)
         .setVrf(v1)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
         .build();
 
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c1.getHostname(), c1);
 
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
-    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.1")).build();
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.2")).build();
     batfish.computeDataPlane(snapshot);
     Trace trace =
         Iterables.getOnlyElement(
@@ -402,7 +402,7 @@ public class TracerouteEngineTest {
     assertThat(lastStep, instanceOf(DeliveredStep.class));
     DeliveredStep deliveredStep = (DeliveredStep) lastStep;
     assertThat(deliveredStep.getAction(), equalTo(StepAction.DELIVERED_TO_SUBNET));
-    assertThat(deliveredStep.getDetail().getResolvedNexthopIp(), equalTo(Ip.parse("1.0.0.1")));
+    assertThat(deliveredStep.getDetail().getResolvedNexthopIp(), equalTo(Ip.parse("1.0.0.2")));
     assertThat(
         deliveredStep.getDetail().getOutputInterface(), equalTo(NodeInterfacePair.of("c1", "i1")));
   }

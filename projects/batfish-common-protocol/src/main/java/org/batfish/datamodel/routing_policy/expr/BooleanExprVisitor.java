@@ -60,13 +60,7 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitMatchTag(MatchTag matchTag, U arg);
 
-  T visitNeighborIsAsPath(NeighborIsAsPath neighborIsAsPath, U arg);
-
   T visitNot(Not not, U arg);
-
-  T visitOriginatesFromAsPath(OriginatesFromAsPath originatesFromAsPath, U arg);
-
-  T visitPassesThroughAsPath(PassesThroughAsPath passesThroughAsPath, U arg);
 
   T visitRouteIsClassful(RouteIsClassful routeIsClassful, U arg);
 

@@ -12,12 +12,12 @@ iface swp2
 
 auto swp3
 iface swp3
-  address 3.3.3.0/24
+  address 3.3.3.1/24
 
 auto swp4
 iface swp4
   address 4.4.4.0/31
-  address 4.4.5.0/24
+  address 4.4.5.1/24
 
 auto swp5
 iface swp5
@@ -25,12 +25,12 @@ iface swp5
 
 auto swp6
 iface swp6
-  address 6.6.6.0/24
+  address 6.6.6.1/24
 
 auto swp7
 iface swp7
   address 7.7.7.0/31
-  address 7.7.7.0/24
+  address 7.7.7.1/24
 
 auto swp8
 iface swp8
@@ -38,7 +38,7 @@ iface swp8
 
 auto swp9
 iface swp9
-  address 9.9.9.0/24
+  address 9.9.9.1/24
 
 auto swp10
 iface swp10

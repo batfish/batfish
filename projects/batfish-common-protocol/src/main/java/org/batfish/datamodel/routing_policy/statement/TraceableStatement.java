@@ -88,6 +88,20 @@ public class TraceableStatement extends Statement {
   }
 
   @Override
+  public List<Statement> simplify() {
+    if (_simplified != null) {
+      return _simplified;
+    }
+    ImmutableList.Builder<Statement> simplifiedInnerStatements = ImmutableList.builder();
+    for (Statement innerStatement : _innerStatements) {
+      simplifiedInnerStatements.addAll(innerStatement.simplify());
+    }
+    _simplified =
+        ImmutableList.of(new TraceableStatement(_traceElement, simplifiedInnerStatements.build()));
+    return _simplified;
+  }
+
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;

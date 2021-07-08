@@ -186,7 +186,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     SFL_INGRESS_LOCATION = new InterfaceLinkLocation(SFL_INGRESS_NODE, SFL_INGRESS_IFACE);
     SFL_DST_IP_SPACE_SINGLE_NODE =
         AclIpSpace.difference(
-            SFL_EGRESS_IFACE_ADDRESS.getPrefix().toHostIpSpace(),
+            SFL_EGRESS_IFACE_ADDRESS.getPrefix().toIpSpace(),
             SFL_EGRESS_IFACE_ADDRESS.getIp().toIpSpace());
     SFL_DST_IP_SPACE_DUAL_NODE = SFL_NEIGHBOR_IFACE_ADDRESS.getIp().toIpSpace();
   }
@@ -303,7 +303,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration fw = cb.build();
     ib.setOwner(fw).setVrf(nf.vrfBuilder().setOwner(fw).build());
     Interface fwI1 = ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.3/29")).build();
-    Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.0/24")).build();
+    Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.1/24")).build();
 
     fwI2.setFirewallSessionInterfaceInfo(
         new FirewallSessionInterfaceInfo(
@@ -340,7 +340,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     BDDReachabilityAnalysis analysis =
         factory.bddReachabilityAnalysis(
             assignment,
-            matchDst(Ip.parse("255.255.255.1")),
+            matchDst(Ip.parse("255.255.255.2")),
             ImmutableSet.of(),
             ImmutableSet.of(),
             configurations.keySet(),
@@ -426,15 +426,15 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     BDD source1SessionFlows =
         PKT.getSrcIp()
-            .value(Ip.parse("255.255.255.1").asLong())
+            .value(Ip.parse("255.255.255.2").asLong())
             .and(PKT.getDstIp().value(Ip.parse("10.0.0.1").asLong()));
     BDD source2SessionFlows =
         PKT.getSrcIp()
-            .value(Ip.parse("255.255.255.1").asLong())
+            .value(Ip.parse("255.255.255.2").asLong())
             .and(PKT.getDstIp().value(Ip.parse("10.0.0.2").asLong()));
     BDD enterFlows =
         PKT.getSrcIp()
-            .value(Ip.parse("255.255.255.1").asLong())
+            .value(Ip.parse("255.255.255.2").asLong())
             .and(PKT.getDstIp().value(Ip.parse("10.0.0.3").asLong()));
 
     assertThat(
@@ -559,7 +559,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Configuration fw = cb.build();
     ib.setOwner(fw).setVrf(nf.vrfBuilder().setOwner(fw).build());
     Interface fwI1 = ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.3/29")).build();
-    Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.0/24")).build();
+    Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.1/24")).build();
     // transform source IP before setting up session on fwI2
     Ip poolIp = Ip.parse("5.5.5.5");
     fwI2.setOutgoingTransformation(always().apply(assignSourceIp(poolIp, poolIp)).build());
@@ -595,7 +595,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     BDD source2LocIpBdd = PKT.getSrcIp().value(source2LocIp.asLong());
     BDD fwLocIpBdd = PKT.getSrcIp().value(fwLocIp.asLong());
 
-    Ip dstIp = Ip.parse("255.255.255.1");
+    Ip dstIp = Ip.parse("255.255.255.2");
     BDD dstIpBdd = PKT.getDstIp().value(dstIp.asLong());
 
     DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
@@ -739,7 +739,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     ib.setOwner(fw).setVrf(nf.vrfBuilder().setOwner(fw).build());
     ib.setAddress(ConcreteInterfaceAddress.parse("2.0.0.3/29")).build();
     Interface fwI2 = ib.setAddress(ConcreteInterfaceAddress.parse("3.0.0.1/29")).build();
-    Interface fwI3 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.0/24")).build();
+    Interface fwI3 = ib.setAddress(ConcreteInterfaceAddress.parse("255.255.255.1/24")).build();
 
     IpAccessList permitUdpAcl =
         nf.aclBuilder().setOwner(fw).setLines(ImmutableList.of(permitUdpLine)).build();
@@ -799,7 +799,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     BDD fwI2LocSuccessBdd = fwI2LocIpBdd.and(headerSpaceToBDD.toBDD(udpHeaderSpace));
     BDD fwLocFailBdd = fwI2LocIpBdd.and(headerSpaceToBDD.toBDD(udpHeaderSpace).not());
 
-    Ip dstIp = Ip.parse("255.255.255.1");
+    Ip dstIp = Ip.parse("255.255.255.2");
     BDD dstIpBdd = PKT.getDstIp().value(dstIp.asLong());
 
     DataPlane dataPlane = batfish.loadDataPlane(batfish.getSnapshot());
@@ -914,7 +914,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
         FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
         AclIpSpace.difference(
-            FPFN_END_EXIT_ADDRESS.getPrefix().toHostIpSpace(),
+            FPFN_END_EXIT_ADDRESS.getPrefix().toIpSpace(),
             FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
   }
 
@@ -926,7 +926,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             FPFN_START_INGRESS_ADDRESS.getPrefix().toIpSpace(),
             FPFN_START_INGRESS_ADDRESS.getIp().toIpSpace()),
         AclIpSpace.difference(
-            FPFN_END_EXIT_ADDRESS.getPrefix().toHostIpSpace(),
+            FPFN_END_EXIT_ADDRESS.getPrefix().toIpSpace(),
             FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
   }
 
