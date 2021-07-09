@@ -763,39 +763,49 @@ public class Batfish extends PluginConsumer implements IBatfish {
       new DataPlane() {
         @Override
         public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
-          return null;
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
-          return null;
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Map<String, Map<String, Fib>> getFibs() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public ForwardingAnalysis getForwardingAnalysis() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
             getRibs() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
             getPrefixTracingInfoSummary() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
-          return null;
+          throw new UnsupportedOperationException();
         }
       };
 
@@ -837,8 +847,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _storage.storeBgpTopology(topologies.getBgpTopology(), snapshot);
       LOGGER.info("Storing EIGRP Topology");
       _storage.storeEigrpTopology(topologies.getEigrpTopology(), snapshot);
-      LOGGER.info("Storing Layer2 Topology");
-      _storage.storeLayer2Topology(topologies.getLayer2Topology(), snapshot);
+      LOGGER.info("Storing L3 Adjacencies");
+      _storage.storeL3Adjacencies(topologies.getL3Adjacencies(), snapshot);
       LOGGER.info("Storing Layer3 Topology");
       _storage.storeLayer3Topology(topologies.getLayer3Topology(), snapshot);
       LOGGER.info("Storing OSPF Topology");
@@ -2673,6 +2683,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     return result;
                   })
               .collect(ImmutableList.toImmutableList());
+      LOGGER.info("Done parsing {} configuration files", jobs.size());
     } finally {
       parseNetworkConfigsSpan.finish();
     }

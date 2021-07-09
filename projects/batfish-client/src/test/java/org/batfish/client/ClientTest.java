@@ -29,6 +29,7 @@ import static org.batfish.client.Command.TEST;
 import static org.batfish.common.CoordConsts.DEFAULT_API_KEY;
 import static org.batfish.datamodel.questions.Variable.Type.ADDRESS_GROUP_NAME;
 import static org.batfish.datamodel.questions.Variable.Type.APPLICATION_SPEC;
+import static org.batfish.datamodel.questions.Variable.Type.BGP_ROUTE_STATUS_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_COMPAT_STATUS_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_STATUS_SPEC;
 import static org.batfish.datamodel.questions.Variable.Type.BGP_SESSION_TYPE_SPEC;
@@ -363,6 +364,15 @@ public final class ClientTest {
     Type expectedType = APPLICATION_SPEC;
     String expectedMessage =
         String.format("It is not a valid JSON %s value", APPLICATION_SPEC.getName());
+    validateTypeWithInvalidInput(input, expectedMessage, expectedType);
+  }
+
+  @Test
+  public void testInvalidBgpRouteStatusSpecValue() throws IOException {
+    String input = "5";
+    Type expectedType = BGP_ROUTE_STATUS_SPEC;
+    String expectedMessage =
+        String.format("A Batfish %s must be a JSON string", expectedType.getName());
     validateTypeWithInvalidInput(input, expectedMessage, expectedType);
   }
 
@@ -1392,6 +1402,14 @@ public final class ClientTest {
     Variable variable = new Variable();
     variable.setType(BOOLEAN);
     Client.validateType(booleanNode, variable);
+  }
+
+  @Test
+  public void testValidBgpRouteStatusSpecValue() throws IOException {
+    JsonNode sessionStatusNode = _mapper.readTree("\"valid\"");
+    Variable variable = new Variable();
+    variable.setType(BGP_ROUTE_STATUS_SPEC);
+    Client.validateType(sessionStatusNode, variable);
   }
 
   @Test

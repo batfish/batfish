@@ -14,6 +14,9 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Se
   /** Return set of {@link R typed routes} this RIB contains. */
   Set<R> getTypedRoutes();
 
+  /** Return set of backup {@link R typed routes} this RIB contains. */
+  Set<R> getTypedBackupRoutes();
+
   /**
    * Execute the longest prefix match for a given IP address.
    *

@@ -2759,10 +2759,8 @@ public final class CiscoGrammarTest {
         equalTo(
             ImmutableList.of(
                 new If(
-                    new Conjunction(
-                        ImmutableList.of(
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
@@ -2807,10 +2805,8 @@ public final class CiscoGrammarTest {
         equalTo(
             ImmutableList.of(
                 new If(
-                    new Conjunction(
-                        ImmutableList.of(
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")))),
+                    new MatchPrefixSet(
+                        DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
@@ -5625,30 +5621,23 @@ public final class CiscoGrammarTest {
 
     // Ensure the converted route-map ignores the match-interface clause
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
-    List<Statement> statements =
-        ((If) Iterables.getOnlyElement(c.getRoutingPolicies().get("rm").getStatements()))
-            .getTrueStatements();
-    // get the true statements past the traceable wrapper
-    List<Statement> innerStatements =
-        ((TraceableStatement) Iterables.getOnlyElement(statements)).getInnerStatements();
-    assertThat(innerStatements, contains(Statements.ReturnTrue.toStaticStatement()));
+    RoutingPolicy rm = c.getRoutingPolicies().get("rm");
+    assertThat(
+        rm.getStatements(), contains(Statements.ReturnLocalDefaultAction.toStaticStatement()));
   }
 
   @Test
   public void testSetMetricEigrp() throws IOException {
     Configuration c = parseConfig("ios-route-map-set-metric-eigrp");
 
-    // get the true statements past the traceable wrapper
-    List<Statement> trueStatements =
+    // get the real statements past the traceable wrapper
+    List<Statement> statements =
         ((TraceableStatement)
                 Iterables.getOnlyElement(
-                    ((If)
-                            Iterables.getOnlyElement(
-                                c.getRoutingPolicies().get("rm_set_metric").getStatements()))
-                        .getTrueStatements()))
+                    c.getRoutingPolicies().get("rm_set_metric").getStatements()))
             .getInnerStatements();
     assertThat(
-        trueStatements,
+        statements,
         // Being intentionally lax here because pretty sure conversion is busted.
         // TODO: update when convinced eigrp settings have correct values
         hasItem(instanceOf(SetEigrpMetric.class)));

@@ -5,8 +5,9 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.Topology;
@@ -28,8 +29,8 @@ public final class TopologyContext implements TopologyContainer {
     private @Nonnull IpsecTopology _ipsecTopology;
     private @Nonnull IsisTopology _isisTopology;
     private @Nonnull Optional<Layer1Topology> _layer1LogicalTopology;
-    private @Nonnull Optional<Layer2Topology> _layer2Topology;
     private @Nonnull Topology _layer3Topology;
+    private @Nonnull L3Adjacencies _l3Adjacencies;
     private @Nonnull OspfTopology _ospfTopology;
     private @Nonnull Optional<Layer1Topology> _rawLayer1PhysicalTopology;
     @Nonnull private TunnelTopology _tunnelTopology;
@@ -42,8 +43,8 @@ public final class TopologyContext implements TopologyContainer {
           _ipsecTopology,
           _isisTopology,
           _layer1LogicalTopology,
-          _layer2Topology,
           _layer3Topology,
+          _l3Adjacencies,
           _ospfTopology,
           _rawLayer1PhysicalTopology,
           _tunnelTopology,
@@ -56,8 +57,8 @@ public final class TopologyContext implements TopologyContainer {
       _ipsecTopology = IpsecTopology.EMPTY;
       _isisTopology = IsisTopology.EMPTY;
       _layer1LogicalTopology = Optional.empty();
-      _layer2Topology = Optional.empty();
       _layer3Topology = Topology.EMPTY;
+      _l3Adjacencies = GlobalBroadcastNoPointToPoint.instance();
       _ospfTopology = OspfTopology.EMPTY;
       _rawLayer1PhysicalTopology = Optional.empty();
       _tunnelTopology = TunnelTopology.EMPTY;
@@ -90,13 +91,13 @@ public final class TopologyContext implements TopologyContainer {
       return this;
     }
 
-    public @Nonnull Builder setLayer2Topology(Optional<Layer2Topology> layer2Topology) {
-      _layer2Topology = layer2Topology;
+    public @Nonnull Builder setLayer3Topology(Topology layer3Topology) {
+      _layer3Topology = layer3Topology;
       return this;
     }
 
-    public @Nonnull Builder setLayer3Topology(Topology layer3Topology) {
-      _layer3Topology = layer3Topology;
+    public @Nonnull Builder setL3Adjacencies(L3Adjacencies l3Adjacencies) {
+      _l3Adjacencies = l3Adjacencies;
       return this;
     }
 
@@ -131,8 +132,8 @@ public final class TopologyContext implements TopologyContainer {
   private final @Nonnull IpsecTopology _ipsecTopology;
   private final @Nonnull IsisTopology _isisTopology;
   private final @Nonnull Optional<Layer1Topology> _layer1LogicalTopology;
-  private final @Nonnull Optional<Layer2Topology> _layer2Topology;
   private final @Nonnull Topology _layer3Topology;
+  private final @Nonnull L3Adjacencies _l3Adjacencies;
   private final @Nonnull OspfTopology _ospfTopology;
   private final @Nonnull Optional<Layer1Topology> _rawLayer1PhysicalTopology;
   @Nonnull private final TunnelTopology _tunnelTopology;
@@ -144,8 +145,8 @@ public final class TopologyContext implements TopologyContainer {
       IpsecTopology ipsecTopology,
       IsisTopology isisTopology,
       Optional<Layer1Topology> layer1LogicalTopology,
-      Optional<Layer2Topology> layer2Topology,
       Topology layer3Topology,
+      L3Adjacencies l3Adjacencies,
       OspfTopology ospfTopology,
       Optional<Layer1Topology> rawLayer1PhysicalTopology,
       TunnelTopology tunnelTopology,
@@ -155,8 +156,8 @@ public final class TopologyContext implements TopologyContainer {
     _ipsecTopology = ipsecTopology;
     _isisTopology = isisTopology;
     _layer1LogicalTopology = layer1LogicalTopology;
-    _layer2Topology = layer2Topology;
     _layer3Topology = layer3Topology;
+    _l3Adjacencies = l3Adjacencies;
     _ospfTopology = ospfTopology;
     _rawLayer1PhysicalTopology = rawLayer1PhysicalTopology;
     _vxlanTopology = vxlanTopology;
@@ -187,13 +188,13 @@ public final class TopologyContext implements TopologyContainer {
   }
 
   @Override
-  public @Nonnull Optional<Layer2Topology> getLayer2Topology() {
-    return _layer2Topology;
+  public @Nonnull Topology getLayer3Topology() {
+    return _layer3Topology;
   }
 
   @Override
-  public @Nonnull Topology getLayer3Topology() {
-    return _layer3Topology;
+  public @Nonnull L3Adjacencies getL3Adjacencies() {
+    return _l3Adjacencies;
   }
 
   @Override
@@ -230,8 +231,8 @@ public final class TopologyContext implements TopologyContainer {
         && _ipsecTopology.equals(rhs._ipsecTopology)
         && _isisTopology.equals(rhs._isisTopology)
         && _layer1LogicalTopology.equals(rhs._layer1LogicalTopology)
-        && _layer2Topology.equals(rhs._layer2Topology)
         && _layer3Topology.equals(rhs._layer3Topology)
+        && _l3Adjacencies.equals(rhs._l3Adjacencies)
         && _ospfTopology.equals(rhs._ospfTopology)
         && _rawLayer1PhysicalTopology.equals(rhs._rawLayer1PhysicalTopology)
         && _tunnelTopology.equals(rhs._tunnelTopology)
@@ -246,8 +247,8 @@ public final class TopologyContext implements TopologyContainer {
         _ipsecTopology,
         _isisTopology,
         _layer1LogicalTopology,
-        _layer2Topology,
         _layer3Topology,
+        _l3Adjacencies,
         _ospfTopology,
         _rawLayer1PhysicalTopology,
         _tunnelTopology,
@@ -261,8 +262,8 @@ public final class TopologyContext implements TopologyContainer {
         .setIpsecTopology(_ipsecTopology)
         .setIsisTopology(_isisTopology)
         .setLayer1LogicalTopology(_layer1LogicalTopology)
-        .setLayer2Topology(_layer2Topology)
         .setLayer3Topology(_layer3Topology)
+        .setL3Adjacencies(_l3Adjacencies)
         .setOspfTopology(_ospfTopology)
         .setRawLayer1PhysicalTopology(_rawLayer1PhysicalTopology)
         .setTunnelTopology(_tunnelTopology)

@@ -16,8 +16,8 @@ junit_tests(
     ],
     tags = ["cpu:4"],
     deps = [
-        "//projects/batfish-common-protocol:common",
         "//projects/batfish",
+        "//projects/batfish-common-protocol:common",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",

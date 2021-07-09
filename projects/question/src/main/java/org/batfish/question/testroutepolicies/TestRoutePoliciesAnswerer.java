@@ -37,6 +37,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -114,6 +115,11 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+    if (direction == Direction.OUT) {
+      // when simulating a route policy in the OUT direction, the output route's next hop IP must be
+      // unset by default (checked by Environment::build)
+      outputRoute.setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP);
+    }
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
     boolean permit = policy.process(inputRoute, outputRoute, direction, tracer);
@@ -182,6 +188,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     }
     return org.batfish.datamodel.questions.BgpRoute.builder()
         .setWeight(dataplaneBgpRoute.getWeight())
+        // TODO: The next-hop IP AUTO/NONE (Ip.AUTO) is used to denote multiple different things;
+        // we should distinguish these uses clearly from one another in the results returned by this
+        // question. If the simulated route map has direction OUT, AUTO/NONE indicates that the
+        // route map does not explicitly set the next hop.  If the simulated route map has direction
+        // IN, AUTO/NONE can indicate that the route is explicitly discarded by the route map, but
+        // it is also used in other situations (see AbstractRoute::NEXT_HOP_IP_EXTRACTOR).
         .setNextHopIp(dataplaneBgpRoute.getNextHopIp())
         .setProtocol(dataplaneBgpRoute.getProtocol())
         .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())

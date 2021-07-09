@@ -518,7 +518,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "backbone" : {
@@ -546,7 +546,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           }
         },
@@ -26155,7 +26155,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "out" : {
@@ -26337,7 +26337,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-__aws-services-gateway__-backbone" : {
@@ -26357,7 +26357,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-igw-068fee63-backbone" : {
@@ -26377,7 +26377,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-igw-9b93ddfc-backbone" : {
@@ -26397,7 +26397,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-igw-fac5839d-backbone" : {
@@ -26417,7 +26417,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           },
           "To-vgw-81fd279f-backbone" : {
@@ -26437,7 +26437,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "UNKNOWN",
+            "type" : "PHYSICAL",
             "vrf" : "default"
           }
         },
@@ -59015,24 +59015,14 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                      "disjuncts" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                          "prefix" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                          },
-                          "prefixSet" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                            "name" : "PROTECT_LOOPBACK"
-                          }
-                        }
-                      ]
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "PROTECT_LOOPBACK"
+                  }
                 },
                 "trueStatements" : [
                   {
@@ -59069,106 +59059,37 @@
             "name" : "SET_LOCAL_PREF",
             "statements" : [
               {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "~RMCLAUSE~SET_LOCAL_PREF~10~",
-                "falseStatements" : [
+                "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
+                "innerStatements" : [
                   {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                    "comment" : "~RMCLAUSE~SET_LOCAL_PREF~20~",
-                    "falseStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnLocalDefaultAction"
-                      }
-                    ],
-                    "guard" : {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                      "conjuncts" : [
-                        {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction",
-                          "disjuncts" : [
-                            {
-                              "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
-                              "prefix" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
-                              },
-                              "prefixSet" : {
-                                "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
-                                "name" : "MATCH_ALL_BGP"
-                              }
-                            }
-                          ]
-                        }
-                      ]
-                    },
-                    "trueStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
-                        "innerStatements" : [
-                          {
-                            "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                            "type" : "ReturnTrue"
-                          }
-                        ],
-                        "traceElement" : {
-                          "fragments" : [
-                            {
-                              "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                              "text" : "Matched "
-                            },
-                            {
-                              "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                              "text" : "route-map SET_LOCAL_PREF clause 20",
-                              "vendorStructureId" : {
-                                "filename" : "configs/lhr-border-02.cfg",
-                                "structureName" : "SET_LOCAL_PREF 20",
-                                "structureType" : "route-map-clause"
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    ]
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
+                    "localPreference" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                      "value" : 50
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
                   }
                 ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.TraceableStatement",
-                    "innerStatements" : [
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.SetLocalPreference",
-                        "localPreference" : {
-                          "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                          "value" : 50
-                        }
-                      },
-                      {
-                        "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                        "type" : "ReturnTrue"
+                "traceElement" : {
+                  "fragments" : [
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$TextFragment",
+                      "text" : "Matched "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "route-map SET_LOCAL_PREF clause 10",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "SET_LOCAL_PREF 10",
+                        "structureType" : "route-map-clause"
                       }
-                    ],
-                    "traceElement" : {
-                      "fragments" : [
-                        {
-                          "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                          "text" : "Matched "
-                        },
-                        {
-                          "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
-                          "text" : "route-map SET_LOCAL_PREF clause 10",
-                          "vendorStructureId" : {
-                            "filename" : "configs/lhr-border-02.cfg",
-                            "structureName" : "SET_LOCAL_PREF 10",
-                            "structureType" : "route-map-clause"
-                          }
-                        }
-                      ]
                     }
-                  }
-                ]
+                  ]
+                }
               }
             ]
           },
@@ -59292,13 +59213,8 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                 },
                 "trueStatements" : [
                   {
@@ -59322,13 +59238,8 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                 },
                 "trueStatements" : [
                   {
@@ -59358,13 +59269,8 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                 },
                 "trueStatements" : [
                   {
@@ -59388,13 +59294,8 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                 },
                 "trueStatements" : [
                   {
@@ -59432,13 +59333,8 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                 },
                 "trueStatements" : [
                   {
@@ -59476,13 +59372,8 @@
                   }
                 ],
                 "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
-                  "conjuncts" : [
-                    {
-                      "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
-                      "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
-                    }
-                  ]
+                  "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                  "calledPolicyName" : "~BGP_COMMON_EXPORT_POLICY:default~"
                 },
                 "trueStatements" : [
                   {

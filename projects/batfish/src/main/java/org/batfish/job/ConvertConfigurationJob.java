@@ -130,8 +130,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       throw new BatfishException(
           "Implementation error: missing default inbound action for host: '" + hostname + "'");
     }
-    // Simplification does not work with tracing for route maps
-    // c.simplifyRoutingPolicies();
+    c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
 
@@ -198,6 +197,11 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             String.format(
                 "Interface %s has switchport %s but switchport mode %s",
                 name, i.getSwitchport(), i.getSwitchportMode()));
+        c.getAllInterfaces().remove(name);
+        continue;
+      }
+      if (i.getSwitchport() && !i.getAllAddresses().isEmpty()) {
+        w.redFlag(String.format("Interface %s is a switchport, but it has L3 addresses", name));
         c.getAllInterfaces().remove(name);
       }
     }

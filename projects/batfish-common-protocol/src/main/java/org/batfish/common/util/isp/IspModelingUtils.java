@@ -42,6 +42,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LinkLocalAddress;
@@ -360,6 +361,7 @@ public final class IspModelingUtils {
               .setName(internetToIspInterfaceName(ispConfiguration.getHostname()))
               .setVrf(internet.getDefaultVrf())
               .setAddress(LINK_LOCAL_ADDRESS)
+              .setType(InterfaceType.PHYSICAL)
               .build();
       Interface ispIface = ispConfiguration.getAllInterfaces().get(ISP_TO_INTERNET_INTERFACE_NAME);
 
@@ -602,6 +604,7 @@ public final class IspModelingUtils {
         .setAddress(LINK_LOCAL_ADDRESS)
         .setIncomingFilter(fromInternet)
         .setOutgoingFilter(toInternet)
+        .setType(InterfaceType.PHYSICAL)
         .build();
 
     ispInfo
@@ -618,6 +621,7 @@ public final class IspModelingUtils {
                       .setAddress(remote.getIspIfaceAddress())
                       .setIncomingFilter(fromNetwork)
                       .setOutgoingFilter(toNetwork)
+                      .setType(InterfaceType.PHYSICAL)
                       .build();
               modeledNodes.addLayer1Edge(
                   ispConfiguration.getHostname(),

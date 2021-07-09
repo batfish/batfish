@@ -22,6 +22,8 @@ interface Ethernet1/1
   hsrp delay minimum 59 reload 60
   hsrp 2
     authentication md5 key-chain hsrp-keys
+    bfd
+    no bfd
     ip 192.0.2.1
     ip 192.168.0.1 secondary
     ip 192.168.1.1 secondary

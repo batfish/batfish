@@ -2044,8 +2044,23 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /**
    * Return a set of all bgpv4 routes. Excludes locally-generated (redistributed) routes for now.
    */
-  public Set<Bgpv4Route> getV4Routes() {
+  public @Nonnull Set<Bgpv4Route> getV4Routes() {
     return _bgpv4Rib.getTypedRoutes();
+  }
+
+  /** Return a set of all bgpv4 backup routes */
+  public @Nonnull Set<Bgpv4Route> getV4BackupRoutes() {
+    return _bgpv4Rib.getTypedBackupRoutes();
+  }
+
+  /** Return a set of all multipath-best evpn routes. */
+  public @Nonnull Set<EvpnRoute<?, ?>> getEvpnRoutes() {
+    return _evpnRib.getTypedRoutes();
+  }
+
+  /** Return a set of all evpn backup routes. */
+  public @Nonnull Set<EvpnRoute<?, ?>> getEvpnBackupRoutes() {
+    return _evpnRib.getTypedBackupRoutes();
   }
 
   /** Return a set of all bgpv4 bestpath routes */

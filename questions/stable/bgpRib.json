@@ -8,7 +8,8 @@
         "orderedVariableNames": [
             "nodes",
             "network",
-            "vrfs"
+            "vrfs",
+            "status"
         ],
         "tags": [
             "dataplane",
@@ -32,11 +33,18 @@
                 "type": "prefix",
                 "optional": true,
                 "displayName": "Network"
+            },
+            "status": {
+               "description": "Examine routes whose status matches this specifier",
+               "type": "bgpRouteStatusSpec",
+               "optional": true,
+               "displayName": "Status"
             }
         }
     },
     "network": "${network}",
     "nodes": "${nodes}",
     "vrfs": "${vrfs}",
-    "rib": "bgp"
+    "rib": "bgp",
+    "bgpRouteStatus": "${status}"
 }

@@ -6,6 +6,7 @@ import static org.batfish.question.routes.RoutesQuestion.RibProtocol.MAIN;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Map;
@@ -50,6 +51,7 @@ public class RoutesQuestion extends Question {
     }
   }
 
+  private static final String PROP_BGP_ROUTE_STATUS = "bgpRouteStatus";
   private static final String PROP_NETWORK = "network";
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROTOCOLS = "protocols";
@@ -57,6 +59,8 @@ public class RoutesQuestion extends Question {
   private static final String PROP_VRFS = "vrfs";
 
   private static final String QUESTION_NAME = "routes";
+
+  private final @Nullable String _bgpRouteStatus;
 
   @Nullable private Prefix _network;
 
@@ -75,23 +79,41 @@ public class RoutesQuestion extends Question {
    * @param vrfs a regex pattern indicating which VRFs should be considered
    * @param rib a specific protocol RIB to return routes from.
    */
-  @JsonCreator
-  private RoutesQuestion(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_VRFS) String vrfs,
-      @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
-      @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
+  @VisibleForTesting
+  public RoutesQuestion(
+      @Nullable Prefix network,
+      @Nullable String nodes,
+      @Nullable String vrfs,
+      @Nullable String protocols,
+      @Nullable String bgpRouteStatus,
+      @Nullable RibProtocol rib) {
     _network = network;
     _nodes = nodes;
     _protocols = firstNonNull(protocols, RoutingProtocolSpecifier.ALL);
     _rib = firstNonNull(rib, MAIN);
     _vrfs = firstNonNull(vrfs, ".*");
+    _bgpRouteStatus = bgpRouteStatus;
+  }
+
+  @JsonCreator
+  private static @Nonnull RoutesQuestion create(
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
+      @Nullable @JsonProperty(PROP_NODES) String nodes,
+      @Nullable @JsonProperty(PROP_VRFS) String vrfs,
+      @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
+      @Nullable @JsonProperty(PROP_BGP_ROUTE_STATUS) String bgpRouteStatus,
+      @Nullable @JsonProperty(PROP_RIB) RibProtocol rib) {
+    return new RoutesQuestion(network, nodes, vrfs, protocols, bgpRouteStatus, rib);
   }
 
   /** Create new routes question with default parameters. */
   public RoutesQuestion() {
-    this(null, null, null, null, null);
+    this(null, null, null, null, null, null);
+  }
+
+  @JsonProperty(PROP_BGP_ROUTE_STATUS)
+  public @Nullable String getBgpRouteStatus() {
+    return _bgpRouteStatus;
   }
 
   @Override

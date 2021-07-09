@@ -11,6 +11,7 @@ interface Port-Channel1
    switchport mode trunk
 !
 interface Port-Channel2
+   no switchport
    mlag 2
    ip address 2.2.2.2/32
 !

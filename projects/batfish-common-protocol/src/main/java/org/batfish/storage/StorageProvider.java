@@ -18,8 +18,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.CompletionMetadata;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.runtime.SnapshotRuntimeData;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -521,15 +521,6 @@ public interface StorageProvider {
       throws IOException;
 
   /**
-   * Loads the optional {@link Layer2Topology} corresponding to the converged {@link
-   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
-   *
-   * @throws IOException if there is an error reading the {@link Layer2Topology}
-   */
-  @Nonnull
-  Optional<Layer2Topology> loadLayer2Topology(NetworkSnapshot networkSnapshot) throws IOException;
-
-  /**
    * Loads the layer-3 {@link Topology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
    *
@@ -537,6 +528,15 @@ public interface StorageProvider {
    */
   @Nonnull
   Topology loadLayer3Topology(NetworkSnapshot networkSnapshot) throws IOException;
+
+  /**
+   * Loads the {@link L3Adjacencies} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error reading the {@link L3Adjacencies}
+   */
+  @Nonnull
+  L3Adjacencies loadL3Adjacencies(NetworkSnapshot networkSnapshot) throws IOException;
 
   /**
    * Loads the {@link OspfTopology} corresponding to the converged {@link
@@ -575,21 +575,21 @@ public interface StorageProvider {
       throws IOException;
 
   /**
-   * Stores the provided optional {@code layer2Topology} corresponding to the converged {@link
-   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
-   *
-   * @throws IOException if there is an error writing the {@code layer2Topology}
-   */
-  void storeLayer2Topology(Optional<Layer2Topology> layer2Topology, NetworkSnapshot networkSnapshot)
-      throws IOException;
-
-  /**
    * Stores the provided {@code layer3Topology} corresponding to the converged {@link
    * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
    *
    * @throws IOException if there is an error writing the {@code layer3Topology}
    */
   void storeLayer3Topology(Topology layer3Topology, NetworkSnapshot networkSnapshot)
+      throws IOException;
+
+  /**
+   * Stores the provided {@link L3Adjacencies} corresponding to the converged {@link
+   * org.batfish.datamodel.DataPlane} for the provided {@link NetworkSnapshot}.
+   *
+   * @throws IOException if there is an error writing the {@code layer3Topology}
+   */
+  void storeL3Adjacencies(L3Adjacencies l3Adjacencies, NetworkSnapshot networkSnapshot)
       throws IOException;
 
   /**

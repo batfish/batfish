@@ -295,6 +295,20 @@ public final class AutoCompleteUtils {
                     referenceLibrary);
             break;
           }
+        case BGP_ROUTE_STATUS_SPEC:
+          {
+            suggestions =
+                ParboiledAutoComplete.autoComplete(
+                    Grammar.BGP_ROUTE_STATUS_SPECIFIER,
+                    network,
+                    snapshot,
+                    query,
+                    maxSuggestions,
+                    completionMetadata,
+                    nodeRolesData,
+                    referenceLibrary);
+            break;
+          }
         case BGP_SESSION_COMPAT_STATUS_SPEC:
           {
             suggestions =
