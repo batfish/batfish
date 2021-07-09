@@ -3,7 +3,6 @@ package org.batfish.specifier;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
-
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 
@@ -15,10 +14,11 @@ public final class LocationInfo implements Serializable {
   private final IpSpace _networkOrBroadcastIps;
 
   public LocationInfo(boolean isSource, IpSpace sourceIps, IpSpace arpIps) {
-      this(isSource, sourceIps, arpIps, EmptyIpSpace.INSTANCE);
+    this(isSource, sourceIps, arpIps, EmptyIpSpace.INSTANCE);
   }
 
-  public LocationInfo(boolean isSource, IpSpace sourceIps, IpSpace arpIps, IpSpace networkOrBroadcastIps) {
+  public LocationInfo(
+      boolean isSource, IpSpace sourceIps, IpSpace arpIps, IpSpace networkOrBroadcastIps) {
     _isSource = isSource;
     _sourceIps = sourceIps;
     _arpIps = arpIps;
@@ -35,9 +35,9 @@ public final class LocationInfo implements Serializable {
     }
     LocationInfo other = (LocationInfo) o;
     return _isSource == other._isSource
-            && _sourceIps.equals(other._sourceIps)
-            && _arpIps.equals(other._arpIps)
-            && _networkOrBroadcastIps.equals(other._networkOrBroadcastIps);
+        && _sourceIps.equals(other._sourceIps)
+        && _arpIps.equals(other._arpIps)
+        && _networkOrBroadcastIps.equals(other._networkOrBroadcastIps);
   }
 
   @Override
@@ -80,7 +80,8 @@ public final class LocationInfo implements Serializable {
   /**
    * For {@link InterfaceLinkLocation} only. Used for disposition assignment when a flow is
    * terminates at the network or broadcast IP of an {@link InterfaceLinkLocation}. Batfish will
-   * give disposition {@link org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET} for these IPs.
+   * give disposition {@link org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET} for these
+   * IPs.
    */
   public IpSpace getNetworkOrBroadcastIps() {
     return _networkOrBroadcastIps;

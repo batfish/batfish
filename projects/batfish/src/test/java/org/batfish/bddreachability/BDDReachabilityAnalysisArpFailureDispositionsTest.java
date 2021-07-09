@@ -198,11 +198,12 @@ public class BDDReachabilityAnalysisArpFailureDispositionsTest {
     checkDispositionsDisjoint();
     BDDReachabilityAnalysis analysis = initAnalysis(DELIVERED_TO_SUBNET);
     Map<IngressLocation, BDD> reach = analysis.getIngressLocationReachableBDDs();
-    BDD dstIps = dstIpToBDD(AclIpSpace.union(
-        NEXT_HOP_INTERFACE_NEIGHBOR_ADDR.getIp().toIpSpace(),
-            NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp().toIpSpace(),
-            NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp().toIpSpace()
-    ));
+    BDD dstIps =
+        dstIpToBDD(
+            AclIpSpace.union(
+                NEXT_HOP_INTERFACE_NEIGHBOR_ADDR.getIp().toIpSpace(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getStartIp().toIpSpace(),
+                NEXT_HOP_INTERFACE_NOT_FULL_ADDR.getPrefix().getEndIp().toIpSpace()));
     assertThat(reach, hasEntry(_loc, dstIps));
   }
 

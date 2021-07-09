@@ -57,21 +57,18 @@ public final class LocationInfoUtils {
         EmptyIpSpace.INSTANCE);
   }
 
-    /** @return the network or broadcast IPs of all connected subnets. */
+  /** @return the network or broadcast IPs of all connected subnets. */
   @Nonnull
   public static IpSpace connectedSubnetNetworkOrBroadcastIps(Interface iface) {
-      return firstNonNull(
-              AclIpSpace.union(
-                      iface.getAllConcreteAddresses()
-                      .stream()
-                              .map(ConcreteInterfaceAddress::getPrefix)
-                      .filter(pfx -> pfx.getPrefixLength() < 31)
-                      .flatMap(pfx -> Stream.of(pfx.getStartIp(), pfx.getEndIp()))
-                      .map(Ip::toIpSpace)
-                      .toArray(IpSpace[]::new)
-              ),
-              EmptyIpSpace.INSTANCE
-      );
+    return firstNonNull(
+        AclIpSpace.union(
+            iface.getAllConcreteAddresses().stream()
+                .map(ConcreteInterfaceAddress::getPrefix)
+                .filter(pfx -> pfx.getPrefixLength() < 31)
+                .flatMap(pfx -> Stream.of(pfx.getStartIp(), pfx.getEndIp()))
+                .map(Ip::toIpSpace)
+                .toArray(IpSpace[]::new)),
+        EmptyIpSpace.INSTANCE);
   }
 
   public static Map<Location, LocationInfo> computeLocationInfo(
@@ -164,11 +161,10 @@ public final class LocationInfoUtils {
     }
     return new LocationInfo(
         true,
-            firstNonNull(
-                    difference(connectedHostSubnetHostIps(iface), snapshotOwnedIps), EmptyIpSpace.INSTANCE),
-            connectedSubnetHostIps(iface),
-            connectedSubnetNetworkOrBroadcastIps(iface)
-    );
+        firstNonNull(
+            difference(connectedHostSubnetHostIps(iface), snapshotOwnedIps), EmptyIpSpace.INSTANCE),
+        connectedSubnetHostIps(iface),
+        connectedSubnetNetworkOrBroadcastIps(iface));
   }
 
   private static LocationInfo subtractSnapshotOwnedIpsFromSourceIps(
