@@ -29,6 +29,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
@@ -113,14 +114,17 @@ public class TransferBDD {
 
   private final List<Statement> _statements;
 
-  private final BDDRoute _initialRoute;
+  private final BDDRoute _originalRoute;
+
+  private final boolean _useOutputAttributes;
 
   public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
     _graph = g;
     _conf = conf;
     _statements = statements;
 
-    _initialRoute = new BDDRoute(g);
+    _originalRoute = new BDDRoute(g);
+    _useOutputAttributes = Environment.useOutputAttributes(_conf);
     _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     _asPathRegexAtomicPredicates =
         _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
@@ -324,14 +328,17 @@ public class TransferBDD {
       }
       RoutingProtocol rp = Iterables.getOnlyElement(rps);
       Protocol proto = Protocol.fromRoutingProtocol(rp);
-      BDD protBDD = proto == null ? factory.zero() : p.getData().getProtocolHistory().value(proto);
+      // MatchProtocol::evaluate looks up the protocol of the original route,
+      // so we do the same here
+      BDD protBDD =
+          proto == null ? factory.zero() : _originalRoute.getProtocolHistory().value(proto);
       return result.setReturnValueBDD(protBDD);
 
     } else if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
 
-      BDD prefixSet = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), p.getData());
+      BDD prefixSet = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), _originalRoute);
       return result.setReturnValueBDD(prefixSet);
 
       // TODO: implement me
@@ -374,17 +381,16 @@ public class TransferBDD {
         throw new BatfishException(
             "Matching for communities other than the input communities is not supported: " + mc);
       }
-      // TODO: Once we model static statements like SetReadIntermediateBgpAttributes, that will
-      // determine which BDDRoute to use in this visitor.  For now we only handle the case when
-      // we are looking at the original input route attributes.
       BDD mcPredicate =
           mc.getCommunitySetMatchExpr()
-              .accept(new CommunitySetMatchExprToBDD(), new Arg(this, _initialRoute));
+              .accept(
+                  new CommunitySetMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
       return result.setReturnValueBDD(mcPredicate);
 
     } else if (expr instanceof MatchTag) {
       MatchTag mt = (MatchTag) expr;
-      BDD mtBDD = matchIntComparison(mt.getCmp(), mt.getTag(), p.getData().getTag());
+      BDD mtBDD =
+          matchIntComparison(mt.getCmp(), mt.getTag(), routeForMatching(p.getData()).getTag());
       return result.setReturnValueBDD(mtBDD);
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
@@ -413,7 +419,8 @@ public class TransferBDD {
       p.debug("MatchAsPath");
       LegacyMatchAsPath legacyMatchAsPathNode = (LegacyMatchAsPath) expr;
       BDD asPathPredicate =
-          matchAsPathSetExpr(p.indent(), _conf, legacyMatchAsPathNode.getExpr(), p.getData());
+          matchAsPathSetExpr(
+              p.indent(), _conf, legacyMatchAsPathNode.getExpr(), routeForMatching(p.getData()));
       return result.setReturnValueBDD(asPathPredicate);
 
     } else if (expr instanceof MatchAsPath) {
@@ -424,7 +431,7 @@ public class TransferBDD {
       BDD asPathPredicate =
           matchAsPath
               .getAsPathMatchExpr()
-              .accept(new AsPathMatchExprToBDD(), new Arg(this, _initialRoute));
+              .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
       return result.setReturnValueBDD(asPathPredicate);
 
     } else {
@@ -659,7 +666,7 @@ public class TransferBDD {
       org.batfish.datamodel.routing_policy.communities.CommunitySetExpr setExpr =
           sc.getCommunitySetExpr();
       CommunityAPDispositions dispositions =
-          setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _initialRoute));
+          setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _originalRoute));
       updateCommunities(dispositions, curP, result);
     } else if (stmt instanceof CallStatement) {
       /*
@@ -1109,6 +1116,11 @@ public class TransferBDD {
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);
     BDD exitAsgn = ite(notReached, r.getExitAssignedValue(), factory.one());
     return r.setReturnValue(ret).setExitAssignedValue(exitAsgn);
+  }
+
+  // Returns the appropriate route to use for matching on attributes.
+  private BDDRoute routeForMatching(BDDRoute current) {
+    return _useOutputAttributes ? current : _originalRoute;
   }
 
   /*
