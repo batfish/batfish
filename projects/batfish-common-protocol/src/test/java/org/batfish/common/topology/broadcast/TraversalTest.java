@@ -42,21 +42,29 @@ public class TraversalTest {
   @Test
   public void testSimpleTagged() {
     NodeInterfacePair i1 = NodeInterfacePair.of("h1", "i1");
+    NodeInterfacePair i1_5 = NodeInterfacePair.of("h1", "i1.5");
+    NodeInterfacePair i1_10 = NodeInterfacePair.of("h1", "i1.10");
     NodeInterfacePair i2 = NodeInterfacePair.of("h2", "i2");
+    NodeInterfacePair i2_5 = NodeInterfacePair.of("h2", "i2.5");
+    NodeInterfacePair i2_10 = NodeInterfacePair.of("h2", "i2.10");
 
-    L3Interface l31 = new L3Interface(i1);
+    L3Interface l31_5 = new L3Interface(i1_5);
+    L3Interface l31_10 = new L3Interface(i1_10);
     PhysicalInterface p1 = new PhysicalInterface(i1);
     EthernetHub hub = new EthernetHub("hub");
     PhysicalInterface p2 = new PhysicalInterface(i2);
-    L3Interface l32 = new L3Interface(i2);
+    L3Interface l32_5 = new L3Interface(i2_5);
+    L3Interface l32_10 = new L3Interface(i2_10);
 
-    Edges.connectL3Dot1q(l31, p1, 5);
+    Edges.connectL3Dot1q(l31_5, p1, 5);
+    Edges.connectL3Dot1q(l31_10, p1, 10);
     Edges.connectToHub(hub, p1);
     Edges.connectToHub(hub, p2);
-    Edges.connectL3Dot1q(l32, p2, 5);
+    Edges.connectL3Dot1q(l32_5, p2, 5);
+    Edges.connectL3Dot1q(l32_10, p2, 10);
 
-    assertThat(getDomain(l31), containsInAnyOrder(l31, l32));
-    assertThat(getDomain(l32), containsInAnyOrder(l31, l32));
+    assertThat(getDomain(l31_5), containsInAnyOrder(l31_5, l32_5));
+    assertThat(getDomain(l32_10), containsInAnyOrder(l31_10, l32_10));
   }
 
   /** Untagged L3 interface, connected to an IRB through a switchport in access mode. */

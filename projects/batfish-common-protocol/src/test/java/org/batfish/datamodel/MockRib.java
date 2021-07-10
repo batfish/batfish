@@ -14,12 +14,14 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
     private Set<AnnotatedRoute<AbstractRoute>> _mergeRouteTrues;
     private Comparator<AnnotatedRoute<AbstractRoute>> _routePreferenceComparator;
     private Set<AnnotatedRoute<AbstractRoute>> _routes;
+    private Set<AnnotatedRoute<AbstractRoute>> _backupRoutes;
 
     private Builder() {
       _longestPrefixMatchResults = ImmutableMap.of();
       _mergeRouteTrues = ImmutableSet.of();
       _routePreferenceComparator = (a, b) -> 0;
       _routes = ImmutableSet.of();
+      _backupRoutes = ImmutableSet.of();
     }
 
     public MockRib build() {
@@ -47,6 +49,11 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
       _routes = routes;
       return this;
     }
+
+    public Builder setBackupRoutes(Set<AnnotatedRoute<AbstractRoute>> backupRoutes) {
+      _backupRoutes = backupRoutes;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -57,12 +64,14 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
   private final Set<AnnotatedRoute<AbstractRoute>> _mergeRouteTrues;
   private final Comparator<AnnotatedRoute<AbstractRoute>> _routePreferenceComparator;
   private final Set<AnnotatedRoute<AbstractRoute>> _routes;
+  private final Set<AnnotatedRoute<AbstractRoute>> _backupRoutes;
 
   private MockRib(Builder builder) {
     _longestPrefixMatchResults = builder._longestPrefixMatchResults;
     _mergeRouteTrues = builder._mergeRouteTrues;
     _routePreferenceComparator = builder._routePreferenceComparator;
     _routes = builder._routes;
+    _backupRoutes = builder._backupRoutes;
   }
 
   @Override
@@ -91,6 +100,11 @@ public class MockRib implements GenericRib<AnnotatedRoute<AbstractRoute>> {
   @Override
   public Set<AnnotatedRoute<AbstractRoute>> getTypedRoutes() {
     return _routes;
+  }
+
+  @Override
+  public Set<AnnotatedRoute<AbstractRoute>> getTypedBackupRoutes() {
+    return _backupRoutes;
   }
 
   @Override

@@ -2478,6 +2478,13 @@
             "              DEC:'1'  <== mode:M_Interface))))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner*",
+            "        (if_no*",
+            "          NO:'no'",
+            "          (if_no_switchport*",
+            "            SWITCHPORT:'switchport'",
+            "            (if_no_switchport_switchport",
+            "              NEWLINE:'\\n'))))",
+            "      (if_inner*",
             "        (if_ip*",
             "          IP:'ip'",
             "          (ifip_address_eos*",
@@ -34844,6 +34851,13 @@
             "              DEC:'2'  <== mode:M_Interface))))",
             "      NEWLINE:'\\n'  <== mode:M_Interface",
             "      (if_inner*",
+            "        (if_no*",
+            "          NO:'no'",
+            "          (if_no_switchport*",
+            "            SWITCHPORT:'switchport'",
+            "            (if_no_switchport_switchport",
+            "              NEWLINE:'\\n'))))",
+            "      (if_inner*",
             "        (if_eos_mlag",
             "          MLAG:'mlag'",
             "          id = (dec*",
@@ -57681,9 +57695,130 @@
             "                  (pops_then*",
             "                    THEN:'then'",
             "                    (popst_common*",
-            "                      (popst_next_hop_self",
+            "                      (popst_next_hop*",
             "                        NEXT_HOP:'next-hop'",
-            "                        SELF:'self'  <== mode:M_Interface))))))))))",
+            "                        (popstnh_ipv4",
+            "                          addr = IP_ADDRESS:'1.2.3.4')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_ipv6",
+            "                          addr6 = IPV6_ADDRESS:'2001:0db8:85a3:0000:0000:8a2e:0370:7334')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_discard",
+            "                          DISCARD:'discard')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_peer_address",
+            "                          PEER_ADDRESS:'peer-address')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_reject",
+            "                          REJECT:'reject')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (variable*",
+            "                text = VARIABLE:'POLICY-NAME')",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'TERM'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_next_hop*",
+            "                        NEXT_HOP:'next-hop'",
+            "                        (popstnh_self",
+            "                          SELF:'self')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -70363,30 +70498,6 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 77,
-              "Parser_Context" : "[boolean_as_path_passes_through boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "passes-through '[65412..65535]'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 101,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '17369'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 133,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '17369'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 148,
-              "Parser_Context" : "[boolean_as_path_neighbor_is boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "neighbor-is '12345  6360'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
               "Line" : 161,
               "Parser_Context" : "[community_set_expr_elem_half community_set_expr_elem community_set_expr set_community_rp_stanza set_rp_stanza rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
               "Text" : "$hub_comm"
@@ -70534,6 +70645,12 @@
               "Line" : 18,
               "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "protocol access-internal"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 32,
+              "Parser_Context" : "[popstnh_ipv6 popst_next_hop popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
             }
           ],
           "Red flags" : [
@@ -70624,22 +70741,6 @@
             {
               "tag" : "MISCELLANEOUS",
               "text" : "apply-groups statement at path: 'system tacplus-server 1.2.3.4' refers to non-existent group: 'bippety'\n"
-            }
-          ]
-        },
-        "configs/route_policy_as_path" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 17,
-              "Parser_Context" : "[boolean_as_path_passes_through boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "passes-through '5556'"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 23,
-              "Parser_Context" : "[boolean_as_path_originates_from boolean_as_path boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza boolean_simple_rp_stanza boolean_not_rp_stanza boolean_and_rp_stanza boolean_rp_stanza elseif_rp_stanza if_rp_stanza rp_stanza route_policy_stanza stanza cisco_xr_configuration]",
-              "Text" : "originates-from '64527'"
             }
           ]
         },
@@ -71043,7 +71144,7 @@
           },
           "interface" : {
             "Ethernet1" : {
-              "definitionLines" : "14-16",
+              "definitionLines" : "14-17",
               "numReferrers" : 1
             }
           },
@@ -72402,7 +72503,7 @@
               "numReferrers" : 2
             },
             "Port-Channel2" : {
-              "definitionLines" : "13-15",
+              "definitionLines" : "13-16",
               "numReferrers" : 1
             }
           }
@@ -73730,28 +73831,28 @@
         "configs/juniper_policy_statement" : {
           "as-path" : {
             "ORIGINATED_IN_65535" : {
-              "definitionLines" : "39",
+              "definitionLines" : "44",
               "numReferrers" : 1
             },
             "UNUSED_ORIGINATED_IN_65535" : {
-              "definitionLines" : "40",
+              "definitionLines" : "45",
               "numReferrers" : 0
             }
           },
           "policy-statement" : {
             "POLICY-NAME" : {
-              "definitionLines" : "4-37",
+              "definitionLines" : "4-42",
               "numReferrers" : 0
             }
           },
           "policy-statement term" : {
             "POLICY-NAME AS_PATH" : {
-              "definitionLines" : "35-36",
+              "definitionLines" : "40-41",
               "numReferrers" : 2
             },
             "POLICY-NAME TERM" : {
-              "definitionLines" : "4-34",
-              "numReferrers" : 31
+              "definitionLines" : "4-39",
+              "numReferrers" : 36
             }
           }
         },
@@ -75883,14 +75984,14 @@
           "ipv4 acl" : {
             "acl1" : {
               "ip nat source dynamic access-list" : [
-                16
+                17
               ]
             }
           },
           "nat pool" : {
             "pool1" : {
               "ip nat source pool" : [
-                16
+                17
               ]
             }
           }
@@ -78138,7 +78239,7 @@
                 9
               ],
               "mlag configuration peer-link" : [
-                21
+                22
               ]
             },
             "Port-Channel2" : {
@@ -78148,7 +78249,7 @@
             },
             "Vlan4094" : {
               "mlag configuration local-interface" : [
-                19
+                20
               ]
             }
           }
@@ -79978,7 +80079,7 @@
           "as-path" : {
             "ORIGINATED_IN_65535" : {
               "policy-statement from as-path" : [
-                35
+                40
               ]
             }
           },
@@ -79992,8 +80093,8 @@
           "policy-statement term" : {
             "POLICY-NAME AS_PATH" : {
               "policy-statement term" : [
-                35,
-                36
+                40,
+                41
               ]
             },
             "POLICY-NAME TERM" : {
@@ -80028,7 +80129,12 @@
                 31,
                 32,
                 33,
-                34
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
               ]
             }
           },
@@ -82952,7 +83058,7 @@
           "interface" : {
             "Vlan4094" : {
               "mlag configuration local-interface" : [
-                19
+                20
               ]
             }
           }

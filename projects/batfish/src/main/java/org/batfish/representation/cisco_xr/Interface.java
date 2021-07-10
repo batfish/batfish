@@ -421,7 +421,7 @@ public class Interface implements Serializable {
     return _standbyAddress;
   }
 
-  public Boolean getSwitchport() {
+  public boolean getSwitchport() {
     return _switchport;
   }
 
