@@ -1,7 +1,9 @@
 package org.batfish.vendor.check_point_gateway.representation;
 
 import com.google.common.collect.ImmutableList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -11,11 +13,17 @@ import org.batfish.vendor.VendorConfiguration;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
-  public CheckPointGatewayConfiguration() {}
+  public CheckPointGatewayConfiguration() {
+    _interfaces = new HashMap<>();
+  }
 
   @Override
   public String getHostname() {
     return _hostname;
+  }
+
+  public Map<String, Interface> getInterfaces() {
+    return _interfaces;
   }
 
   @Override
@@ -40,5 +48,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   private Configuration _c;
   private String _hostname;
+  private Map<String, Interface> _interfaces;
   private ConfigurationFormat _vendor;
 }
