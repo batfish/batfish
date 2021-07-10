@@ -5,13 +5,35 @@ options {
 }
 
 tokens {
+  DOUBLE_QUOTE,
+  QUOTED_TEXT,
+  SINGLE_QUOTE,
   STR_SEPARATOR,
   WORD
 }
 
 // CheckPointGateway keywords
+AUTO_NEGOTIATION: 'auto-negotiation';
+COMMENTS: 'comments' -> pushMode(M_SingleStr);
+FORCE: 'force';
 HOSTNAME: 'hostname' -> pushMode(M_SingleStr);
+INTERFACE: 'interface' -> pushMode(M_SingleStr);
+IPV4_ADDRESS: 'ipv4-address';
+LINK_SPEED: 'link-speed';
+MASK_LENGTH: 'mask-length';
+MTU: 'mtu';
+OFF: 'off';
+ON: 'on';
 SET: 'set';
+STATE: 'state';
+SUBNET_MASK: 'subnet-mask';
+
+// Numeric tokens
+HUNDRED_M_FULL: '100M/full';
+HUNDRED_M_HALF: '100M/half';
+TEN_M_FULL: '10M/full';
+TEN_M_HALF: '10M/half';
+THOUSAND_M_FULL: '1000M/full';
 
 // Complex tokens
 COMMENT_LINE
@@ -122,6 +144,12 @@ F_Uint32
 ;
 
 fragment
+F_EscapedDoubleQuote: '\\"';
+
+fragment
+F_EscapedSingleQuote: '\\' ['];
+
+fragment
 F_Whitespace
 :
     [ \t\u000C] // tab or space or unicode 0x000C
@@ -134,6 +162,18 @@ fragment
 F_Word: F_WordChar+;
 
 // Modes
+mode M_DoubleQuote;
+
+M_DoubleQuote_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), popMode;
+
+M_DoubleQuote_QUOTED_TEXT: (F_EscapedDoubleQuote | ~'"')+ -> type(QUOTED_TEXT);
+
+mode M_SingleQuote;
+
+M_SingleQuote_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), popMode;
+
+M_SingleQuote_QUOTED_TEXT: (F_EscapedSingleQuote | ~['])+ -> type(QUOTED_TEXT);
+
 mode M_SingleStr;
 
 M_SingleStr_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_SingleStrValue);
@@ -141,6 +181,10 @@ M_SingleStr_WS: F_Whitespace+ -> type(STR_SEPARATOR), mode(M_SingleStrValue);
 M_SingleStr_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_SingleStrValue;
+
+M_SingleStrValue_DOUBLE_QUOTE: '"' -> type(DOUBLE_QUOTE), pushMode(M_DoubleQuote);
+
+M_SingleStrValue_SINGLE_QUOTE: ['] -> type(SINGLE_QUOTE), pushMode(M_SingleQuote);
 
 M_SingleStrValue_WORD: F_Word -> type(WORD);
 

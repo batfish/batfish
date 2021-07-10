@@ -1,0 +1,14 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname interface_warn
+#
+set interface eth0 ipv4-address 192.168.1.1 mask-length 0
+set interface eth0 ipv4-address 192.168.1.1 mask-length 33
+set interface eth0 ipv4-address 192.168.1.1 subnet-mask 250.255.255.0
+set interface eth0 mtu 67
+set interface eth0 mtu 16001
+set interface invalid+name mtu 1500
