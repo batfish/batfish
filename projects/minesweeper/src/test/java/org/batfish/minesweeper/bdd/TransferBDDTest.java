@@ -2,6 +2,7 @@ package org.batfish.minesweeper.bdd;
 
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -143,11 +144,13 @@ public class TransferBDDTest {
 
   @Before
   public void setup() {
+    setup(ConfigurationFormat.CISCO_IOS);
+  }
+
+  public void setup(ConfigurationFormat format) {
     _nf = new NetworkFactory();
     Configuration.Builder cb =
-        _nf.configurationBuilder()
-            .setHostname(HOSTNAME)
-            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        _nf.configurationBuilder().setHostname(HOSTNAME).setConfigurationFormat(format);
     _baseConfig = cb.build();
     _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
     _policyBuilder = _nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME);
@@ -1067,7 +1070,7 @@ public class TransferBDDTest {
             .build();
     _g = new Graph(_batfish, _batfish.getSnapshot());
 
-    // by default we use the original route for matching during the analysis
+    // the analysis will use the original route for matching
     TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
     TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
     BDD acceptedAnnouncements = result.getSecond();
@@ -1539,57 +1542,6 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testSetThenMatchCommunities() {
-    Community comm = StandardCommunity.parse("30:40");
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(
-                new SetCommunities(
-                    CommunitySetUnion.of(
-                        InputCommunities.instance(),
-                        new LiteralCommunitySet(CommunitySet.of(comm)))))
-            .addStatement(
-                new If(
-                    new MatchCommunities(
-                        InputCommunities.instance(), new HasCommunity(new CommunityIs(comm))),
-                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
-            .build();
-    _g = new Graph(_batfish, _batfish.getSnapshot());
-
-    BDDRoute anyRoute = new BDDRoute(_g);
-    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
-    // get the atomic predicates that correspond to 30:40
-    Set<Integer> ap3040 =
-        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(comm));
-
-    // by default we use the original route for matching during the analysis
-    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
-    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    BDD acceptedAnnouncements = result.getSecond();
-    BDDRoute outAnnouncements = result.getFirst();
-    // the original route must have the community 30:40
-    BDD expectedBDD =
-        BDDRoute.factory.orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
-    assertEquals(expectedBDD, acceptedAnnouncements);
-    BDDRoute expected = tbdd.iteZero(acceptedAnnouncements, anyRoute);
-    assertEquals(expected, outAnnouncements);
-
-    // now do the analysis again but use the output attributes for matching
-    tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), true);
-    result = tbdd.compute(ImmutableSet.of()).getReturnValue();
-    acceptedAnnouncements = result.getSecond();
-    outAnnouncements = result.getFirst();
-    // the original route is now unconstrained
-    assertTrue(acceptedAnnouncements.isOne());
-    for (int i = 0; i < _g.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
-      // each atomic predicate for 30:40 has the 1 BDD; all others have their original values
-      assertEquals(
-          ap3040.contains(i) ? outAnnouncements.getFactory().one() : aps[i],
-          outAnnouncements.getCommunityAtomicPredicates()[i]);
-    }
-  }
-
-  @Test
   public void testMatchCommunities() {
     RoutingPolicy policy =
         _policyBuilder
@@ -1665,6 +1617,57 @@ public class TransferBDDTest {
     assertEquals(expectedBDD, acceptedAnnouncements);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testSetThenMatchCommunities() {
+    Community comm = StandardCommunity.parse("30:40");
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(comm)))))
+            .addStatement(
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(), new HasCommunity(new CommunityIs(comm))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    BDDRoute anyRoute = new BDDRoute(_g);
+    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
+    // get the atomic predicates that correspond to 30:40
+    Set<Integer> ap3040 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(comm));
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+    // the original route must have the community 30:40
+    BDD expectedBDD =
+        BDDRoute.factory.orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
+    assertEquals(expectedBDD, acceptedAnnouncements);
+    BDDRoute expected = tbdd.iteZero(acceptedAnnouncements, anyRoute);
+    assertEquals(expected, outAnnouncements);
+
+    // now do the analysis again but use the output attributes for matching
+    tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), true);
+    result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    acceptedAnnouncements = result.getSecond();
+    outAnnouncements = result.getFirst();
+    // the original route is now unconstrained
+    assertTrue(acceptedAnnouncements.isOne());
+    for (int i = 0; i < _g.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
+      // each atomic predicate for 30:40 has the 1 BDD; all others have their original values
+      assertEquals(
+          ap3040.contains(i) ? outAnnouncements.getFactory().one() : aps[i],
+          outAnnouncements.getCommunityAtomicPredicates()[i]);
+    }
   }
 
   @Test
@@ -1893,5 +1896,20 @@ public class TransferBDDTest {
 
     assertTrue(len0.imp(rangeBdd.not()).isOne());
     assertTrue(len32.imp(rangeBdd).isOne());
+  }
+
+  @Test
+  public void testUseOutputAttributes() {
+    // useOutputAttributes is false for CISCO_IOS
+    setup(ConfigurationFormat.CISCO_IOS);
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    assertFalse(tbdd.getUseOutputAttributes());
+
+    // useOutputAttributes is true for JUNIPER
+    setup(ConfigurationFormat.JUNIPER);
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+    tbdd = new TransferBDD(_g, _baseConfig, ImmutableList.of());
+    assertTrue(tbdd.getUseOutputAttributes());
   }
 }

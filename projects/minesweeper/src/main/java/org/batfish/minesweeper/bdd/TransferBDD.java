@@ -1179,4 +1179,8 @@ public class TransferBDD {
   public Graph getGraph() {
     return _graph;
   }
+
+  public boolean getUseOutputAttributes() {
+    return _useOutputAttributes;
+  }
 }
