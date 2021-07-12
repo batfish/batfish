@@ -12,7 +12,6 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENG
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
-import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -984,6 +983,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     proc.getAggregateNetworks().values().stream()
         .map(ipv4Aggregate -> toBgpAggregate(ipv4Aggregate, c))
         .forEach(newBgpProcess::addAggregate);
+    // TODO Handle IPv6 aggregates
 
     /*
      * Create common BGP export policy. This policy's only function is to prevent export of
@@ -1011,29 +1011,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
     RoutingPolicy.Builder redistributionPolicy =
         RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
-
-    // add generated routes for aggregate ipv6 addresses
-    // TODO: merge with above to make cleaner
-    for (Entry<Prefix6, BgpAggregateIpv6Network> e : proc.getAggregateIpv6Networks().entrySet()) {
-      Prefix6 prefix6 = e.getKey();
-      BgpAggregateIpv6Network aggNet = e.getValue();
-
-      // create generation policy for aggregate network
-      RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix6);
-      GeneratedRoute6 gr = new GeneratedRoute6(prefix6, CISCO_AGGREGATE_ROUTE_ADMIN_COST);
-      gr.setGenerationPolicy(genPolicy.getName());
-      gr.setDiscard(true);
-      v.getGeneratedIpv6Routes().add(gr);
-
-      // set attribute map for aggregate network
-      String attributeMapName = aggNet.getAttributeMap();
-      if (attributeMapName != null) {
-        RouteMap attributeMap = _routeMaps.get(attributeMapName);
-        if (attributeMap != null) {
-          gr.setAttributePolicy(attributeMapName);
-        }
-      }
-    }
 
     // Redistribute routes
     Stream.of(
