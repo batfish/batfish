@@ -34,6 +34,7 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -1055,6 +1056,41 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testSetThenMatchTag() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetTag(new LiteralLong(42)))
+            .addStatement(
+                new If(
+                    new MatchTag(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    // by default we use the original route for matching during the analysis
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+    // the original route's tag must be 42
+    assertEquals(acceptedAnnouncements, _anyRoute.getTag().value(42));
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+
+    // now do the analysis again but use the output attributes for matching
+    tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), true);
+    result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    acceptedAnnouncements = result.getSecond();
+    outAnnouncements = result.getFirst();
+    // the original route's tag is irrelevant
+    assertTrue(acceptedAnnouncements.isOne());
+    // the tag is now 42
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    BDDInteger tag = expected.getTag();
+    expected.setTag(BDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+    assertEquals(expected, outAnnouncements);
+  }
+
+  @Test
   public void testMatchTagLT() {
     RoutingPolicy policy =
         _policyBuilder
@@ -1498,6 +1534,57 @@ public class TransferBDDTest {
           aps3040.contains(i) || aps4040.contains(i)
               ? outAnnouncements.getFactory().one()
               : outAnnouncements.getFactory().zero(),
+          outAnnouncements.getCommunityAtomicPredicates()[i]);
+    }
+  }
+
+  @Test
+  public void testSetThenMatchCommunities() {
+    Community comm = StandardCommunity.parse("30:40");
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetCommunities(
+                    CommunitySetUnion.of(
+                        InputCommunities.instance(),
+                        new LiteralCommunitySet(CommunitySet.of(comm)))))
+            .addStatement(
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(), new HasCommunity(new CommunityIs(comm))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    BDDRoute anyRoute = new BDDRoute(_g);
+    BDD[] aps = anyRoute.getCommunityAtomicPredicates();
+    // get the atomic predicates that correspond to 30:40
+    Set<Integer> ap3040 =
+        _g.getCommunityAtomicPredicates().getRegexAtomicPredicates().get(CommunityVar.from(comm));
+
+    // by default we use the original route for matching during the analysis
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+    // the original route must have the community 30:40
+    BDD expectedBDD =
+        BDDRoute.factory.orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
+    assertEquals(expectedBDD, acceptedAnnouncements);
+    BDDRoute expected = tbdd.iteZero(acceptedAnnouncements, anyRoute);
+    assertEquals(expected, outAnnouncements);
+
+    // now do the analysis again but use the output attributes for matching
+    tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements(), true);
+    result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    acceptedAnnouncements = result.getSecond();
+    outAnnouncements = result.getFirst();
+    // the original route is now unconstrained
+    assertTrue(acceptedAnnouncements.isOne());
+    for (int i = 0; i < _g.getCommunityAtomicPredicates().getNumAtomicPredicates(); i++) {
+      // each atomic predicate for 30:40 has the 1 BDD; all others have their original values
+      assertEquals(
+          ap3040.contains(i) ? outAnnouncements.getFactory().one() : aps[i],
           outAnnouncements.getCommunityAtomicPredicates()[i]);
     }
   }

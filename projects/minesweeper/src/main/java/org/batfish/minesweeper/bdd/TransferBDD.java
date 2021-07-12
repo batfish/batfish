@@ -119,15 +119,21 @@ public class TransferBDD {
   private final boolean _useOutputAttributes;
 
   public TransferBDD(Graph g, Configuration conf, List<Statement> statements) {
+    this(g, conf, statements, Environment.useOutputAttributesFor(conf));
+  }
+
+  @VisibleForTesting
+  TransferBDD(
+      Graph g, Configuration conf, List<Statement> statements, boolean useOutputAttributes) {
     _graph = g;
     _conf = conf;
     _statements = statements;
 
     _originalRoute = new BDDRoute(g);
-    _useOutputAttributes = Environment.useOutputAttributes(_conf);
     _communityAtomicPredicates = _graph.getCommunityAtomicPredicates().getRegexAtomicPredicates();
     _asPathRegexAtomicPredicates =
         _graph.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    _useOutputAttributes = useOutputAttributes;
   }
 
   /*
@@ -328,10 +334,7 @@ public class TransferBDD {
       }
       RoutingProtocol rp = Iterables.getOnlyElement(rps);
       Protocol proto = Protocol.fromRoutingProtocol(rp);
-      // MatchProtocol::evaluate looks up the protocol of the original route,
-      // so we do the same here
-      BDD protBDD =
-          proto == null ? factory.zero() : _originalRoute.getProtocolHistory().value(proto);
+      BDD protBDD = proto == null ? factory.zero() : p.getData().getProtocolHistory().value(proto);
       return result.setReturnValueBDD(protBDD);
 
     } else if (expr instanceof MatchPrefixSet) {

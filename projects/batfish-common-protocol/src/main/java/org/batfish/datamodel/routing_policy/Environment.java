@@ -53,15 +53,15 @@ public class Environment {
         .setRouteFilterLists(c.getRouteFilterLists())
         .setRoute6FilterLists(c.getRoute6FilterLists())
         .setRoutingPolicies(c.getRoutingPolicies())
-        .setUseOutputAttributes(useOutputAttributes(c));
+        .setUseOutputAttributes(useOutputAttributesFor(c));
   }
 
   /**
-   * Indicates whether the given {@link Configuration} should use the output route attributes
-   * instead of the original route attributes during route-policy evaluation, based on the
+   * Indicates whether simulation of route policies in the given {@link Configuration} should match
+   * on the output route attributes instead of the original route attributes, based on the
    * configuration's format.
    */
-  public static boolean useOutputAttributes(@Nonnull Configuration c) {
+  public static boolean useOutputAttributesFor(@Nonnull Configuration c) {
     ConfigurationFormat format = c.getConfigurationFormat();
     return format == ConfigurationFormat.JUNIPER
         || format == ConfigurationFormat.JUNIPER_SWITCH
