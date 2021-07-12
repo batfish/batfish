@@ -120,6 +120,9 @@ bgp_asn
     | asn4b = asn_dotted
 ;
 
+// 1-65535
+eigrp_asn: uint16;
+
 literal_community
 :
    ACCEPT_OWN
