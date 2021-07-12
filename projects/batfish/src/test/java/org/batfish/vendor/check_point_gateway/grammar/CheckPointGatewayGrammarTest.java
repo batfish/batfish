@@ -37,6 +37,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -167,6 +168,30 @@ public class CheckPointGatewayGrammarTest {
     assertFalse(eth1.getState());
     assertNull(eth2.getMtu());
     assertThat(eth2.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
+  }
+
+  @Test
+  public void testInterfaceConversion() {
+    String hostname = "interface_conversion";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, notNullValue());
+    assertThat(c.getAllInterfaces(), hasKeys("eth0", "eth1", "lo"));
+
+    org.batfish.datamodel.Interface eth0 = c.getAllInterfaces().get("eth0");
+    org.batfish.datamodel.Interface eth1 = c.getAllInterfaces().get("eth1");
+    org.batfish.datamodel.Interface lo = c.getAllInterfaces().get("lo");
+
+    assertTrue(eth0.getActive());
+    assertThat(eth0.getAddress(), equalTo(ConcreteInterfaceAddress.parse("192.168.1.1/24")));
+    assertThat(eth0.getMtu(), equalTo(1234));
+    assertThat(eth0.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+
+    assertFalse(eth1.getActive());
+    assertNull(eth1.getAddress());
+    assertThat(eth1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+
+    assertThat(lo.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.10/32")));
+    assertThat(lo.getInterfaceType(), equalTo(InterfaceType.LOOPBACK));
   }
 
   @Test
