@@ -108,6 +108,7 @@ public enum CiscoXrStructureUsage implements StructureUsage {
   OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN("router ospf distribute-list in"),
   OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT("router ospf distribute-list out"),
   OSPF_DISTRIBUTE_LIST_ROUTE_POLICY_IN("router ospf distribute-list route-policy in"),
+  OSPF_REDISTRIBUTE_BGP_ROUTE_POLICY("router ospf redistribute bgp route-policy"),
   OSPF_REDISTRIBUTE_CONNECTED_ROUTE_POLICY("router ospf redistribute connected route-policy"),
   OSPF_REDISTRIBUTE_STATIC_ROUTE_POLICY("router ospf redistribute static route-policy"),
   ROUTER_PIM_ACCEPT_REGISTER("router pim accept-register"),

@@ -278,44 +278,25 @@ ro_passive_interface
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
-ro_redistribute_bgp_cisco_xr
+ro_redistribute_bgp
 :
    REDISTRIBUTE BGP bgp_asn
    (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE type = uint_legacy
-      )
-      |
-      (
-         TAG tag = uint_legacy
-      )
+      METRIC metric = uint_legacy
+      | METRIC_TYPE type = uint_legacy
+      | ROUTE_POLICY policy = route_policy_name
+      | TAG tag = uint_legacy
    )* NEWLINE
 ;
 
 ro_redistribute_connected
 :
-   REDISTRIBUTE
+   REDISTRIBUTE CONNECTED
    (
-      CONNECTED
-      | DIRECT
-   )
-   (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE type = uint_legacy
-      )
+      METRIC metric = uint_legacy
+      | METRIC_TYPE type = uint_legacy
       | ROUTE_POLICY policy = route_policy_name
-      |
-      (
-         TAG tag = uint_legacy
-      )
+      | TAG tag = uint_legacy
    )* NEWLINE
 ;
 
@@ -325,6 +306,7 @@ ro_redistribute_eigrp
    (
       METRIC metric = uint_legacy
       | METRIC_TYPE type = uint_legacy
+      | ROUTE_POLICY policy = route_policy_name
    )* NEWLINE
 ;
 
@@ -342,18 +324,10 @@ ro_redistribute_static
 :
    REDISTRIBUTE STATIC
    (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE type = uint_legacy
-      )
+      METRIC metric = uint_legacy
+      | METRIC_TYPE type = uint_legacy
       | ROUTE_POLICY policy = route_policy_name
-      |
-      (
-         TAG tag = uint_legacy
-      )
+      | TAG tag = uint_legacy
    )* NEWLINE
 ;
 
@@ -518,7 +492,7 @@ s_router_ospf
       | ro_network
       | ro_passive_interface_default
       | ro_passive_interface
-      | ro_redistribute_bgp_cisco_xr
+      | ro_redistribute_bgp
       | ro_redistribute_connected
       | ro_redistribute_eigrp
       | ro_redistribute_ospf_null

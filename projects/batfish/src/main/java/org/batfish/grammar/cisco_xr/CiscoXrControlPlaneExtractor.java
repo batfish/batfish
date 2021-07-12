@@ -126,6 +126,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DEF
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_POLICY_IN;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_BGP_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_STATIC_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS;
@@ -747,7 +748,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passive_interface_defaultContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_bgp_cisco_xrContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_bgpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_connectedContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_eigrpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistribute_ripContext;
@@ -6159,7 +6160,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_redistribute_bgp_cisco_xr(Ro_redistribute_bgp_cisco_xrContext ctx) {
+  public void exitRo_redistribute_bgp(Ro_redistribute_bgpContext ctx) {
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocol sourceProtocol = RoutingProtocol.BGP;
     OspfRedistributionPolicy r = new OspfRedistributionPolicy(sourceProtocol);
@@ -6176,6 +6177,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       r.setOspfMetricType(type);
     } else {
       r.setOspfMetricType(OspfRedistributionPolicy.DEFAULT_METRIC_TYPE);
+    }
+    if (ctx.policy != null) {
+      String name = toString(ctx.policy);
+      r.setRouteMap(name);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, OSPF_REDISTRIBUTE_BGP_ROUTE_POLICY, ctx.start.getLine());
     }
     if (ctx.tag != null) {
       long tag = toLong(ctx.tag);
