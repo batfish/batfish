@@ -2,6 +2,7 @@ package org.batfish.common.topology.broadcast;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,6 +77,18 @@ public final class L3Interface extends Node<L3Interface.Unit> {
   private @Nullable Edge<Unit, EthernetTag> _sendToInterfaceEdge;
   private @Nullable DeviceBroadcastDomain _sendToSwitch;
   private @Nullable Edge<Unit, Integer> _sendToSwitchEdge;
+
+  @VisibleForTesting
+  @Nullable
+  PhysicalInterface getSendToInterfaceForTesting() {
+    return _sendToInterface;
+  }
+
+  @VisibleForTesting
+  @Nullable
+  DeviceBroadcastDomain getSendToSwitchForTesting() {
+    return _sendToSwitch;
+  }
 
   @Override
   public boolean equals(Object o) {
