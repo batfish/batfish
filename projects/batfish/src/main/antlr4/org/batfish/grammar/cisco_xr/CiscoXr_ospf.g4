@@ -281,19 +281,22 @@ ro_passive_interface
 ro_redistribute
 :
    REDISTRIBUTE (
-      (
-         routing_instance_v4 (
-            METRIC metric = ospf_metric
-            | METRIC_TYPE type = ospf_metric_type
-            | ROUTE_POLICY policy = route_policy_name
-            | TAG tag = ospf_tag
-         )* NEWLINE
-      )
-      | routing_instance_v4_null null_rest_of_line
+      ror_routing_instance
+      | ror_routing_instance_null
    )
 ;
 
-routing_instance_v4
+ror_routing_instance
+:
+   rorri_protocol (
+      METRIC metric = ospf_metric
+      | METRIC_TYPE type = ospf_metric_type
+      | ROUTE_POLICY policy = route_policy_name
+      | TAG tag = route_tag_from_0
+   )* NEWLINE
+;
+
+rorri_protocol
 :
    BGP bgp_asn
    | CONNECTED
@@ -301,10 +304,9 @@ routing_instance_v4
    | STATIC
 ;
 
-routing_instance_v4_null
+ror_routing_instance_null
 :
-   OSPF
-   | RIP
+   (OSPF | RIP) null_rest_of_line
 ;
 
 ro_router_id
@@ -529,6 +531,3 @@ ospf_metric: metric = uint32;
 
 // 1 or 2
 ospf_metric_type: type = uint8;
-
-// 0-4294967295
-ospf_tag: type = uint32;

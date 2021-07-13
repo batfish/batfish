@@ -662,7 +662,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ospf_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ospf_metric_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ospf_network_typeContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ospf_tagContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.ParameterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Passive_interface_default_is_stanzaContext;
@@ -750,7 +749,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passive_interface_defaultContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_redistributeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_rfc1583_compatibilityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_router_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_vrfContext;
@@ -762,16 +760,19 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_costContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_passiveContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instanceContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_nullContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rorri_protocolContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_distinguisherContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_policy_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_reflector_client_bgp_tailContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_tag_from_0Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Route_targetContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_bgp_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_id_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Router_isis_stanzaContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Routing_instance_v4Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_extcommunity_set_rtContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_isis_metric_typeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rp_metric_typeContext;
@@ -1092,7 +1093,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       IntegerSpace.of(Range.closed(2097152, 125000000));
   private static final IntegerSpace OSPF_METRIC_RANGE = IntegerSpace.of(Range.closed(1, 16777214));
   private static final IntegerSpace OSPF_METRIC_TYPE_RANGE = IntegerSpace.of(Range.closed(1, 2));
-  private static final LongSpace OSPF_TAG_RANGE = LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final LongSpace ROUTE_TAG_FROM_0_RANGE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace PINT16_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace REWRITE_INGRESS_TAG_POP_RANGE =
       IntegerSpace.of(Range.closed(1, 2));
@@ -6163,13 +6165,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_redistribute(Ro_redistributeContext ctx) {
-    if (ctx.routing_instance_v4_null() != null) {
-      // Redistributed protocol is not supported
-      todo(ctx);
-      return;
-    }
-    OspfRedistributionPolicy r = initOspfRedistributionPolicy(ctx.routing_instance_v4());
+  public void exitRor_routing_instance(Ror_routing_instanceContext ctx) {
+    OspfRedistributionPolicy r = initOspfRedistributionPolicy(ctx.rorri_protocol());
     OspfProcess proc = _currentOspfProcess;
     proc.getRedistributionPolicies().put(r.getSourceProtocol(), r);
     if (ctx.metric != null) {
@@ -6191,7 +6188,13 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  private OspfRedistributionPolicy initOspfRedistributionPolicy(Routing_instance_v4Context ctx) {
+  @Override
+  public void exitRor_routing_instance_null(Ror_routing_instance_nullContext ctx) {
+    todo(ctx);
+  }
+
+  private @Nonnull OspfRedistributionPolicy initOspfRedistributionPolicy(
+      Rorri_protocolContext ctx) {
     if (ctx.BGP() != null) {
       OspfRedistributionPolicy r = new OspfRedistributionPolicy(RoutingProtocol.BGP);
       assert ctx.bgp_asn() != null;
@@ -7144,8 +7147,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return toIntegerInSpace(messageCtx, ctx, OSPF_METRIC_TYPE_RANGE, "OSPF metric type");
   }
 
-  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Ospf_tagContext ctx) {
-    return toLongInSpace(messageCtx, ctx, OSPF_TAG_RANGE, "OSPF redistribute with tag");
+  private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, Route_tag_from_0Context ctx) {
+    return toLongInSpace(messageCtx, ctx, ROUTE_TAG_FROM_0_RANGE, "route tag");
   }
 
   private @Nonnull Optional<Integer> toInteger(

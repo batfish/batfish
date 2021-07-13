@@ -617,6 +617,9 @@ route_tag
   uint32
 ;
 
+// 0-4294967295
+route_tag_from_0: type = uint32;
+
 route_target
 :
    (IP_ADDRESS | bgp_asn) COLON uint_legacy
