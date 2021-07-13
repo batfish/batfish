@@ -169,22 +169,19 @@ public class HybridL3AdjacenciesTest {
     NodeInterfacePair nip3 = NodeInterfacePair.of("e", "f");
     // One-sided
     assertThat(
-        computePhysicalPointToPoint(
-            new Layer1Topology(ImmutableSet.of(new Layer1Edge(l1(nip1), l1(nip2))))),
+        computePhysicalPointToPoint(new Layer1Topology(new Layer1Edge(l1(nip1), l1(nip2)))),
         equalTo(ImmutableMap.of(nip1, nip2, nip2, nip1)));
     // Bidir
     assertThat(
         computePhysicalPointToPoint(
             new Layer1Topology(
-                ImmutableSet.of(
-                    new Layer1Edge(l1(nip1), l1(nip2)), new Layer1Edge(l1(nip2), l1(nip1))))),
+                new Layer1Edge(l1(nip1), l1(nip2)), new Layer1Edge(l1(nip2), l1(nip1)))),
         equalTo(ImmutableMap.of(nip1, nip2, nip2, nip1)));
     // 3 nodes
     assertThat(
         computePhysicalPointToPoint(
             new Layer1Topology(
-                ImmutableSet.of(
-                    new Layer1Edge(l1(nip1), l1(nip2)), new Layer1Edge(l1(nip2), l1(nip3))))),
+                new Layer1Edge(l1(nip1), l1(nip2)), new Layer1Edge(l1(nip2), l1(nip3)))),
         equalTo(ImmutableMap.of()));
   }
 

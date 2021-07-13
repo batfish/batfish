@@ -96,13 +96,12 @@ public final class FixedPointTopologyTest {
 
   private static @Nonnull Layer1Topology generateVxlanLayer1Topology() {
     return new Layer1Topology(
-        ImmutableList.of(
-            new Layer1Edge(H1_NAME, E1_NAME, S1_NAME, SWP1_NAME),
-            new Layer1Edge(S1_NAME, SWP1_NAME, H1_NAME, E1_NAME),
-            new Layer1Edge(S1_NAME, E12_NAME, S2_NAME, E21_NAME),
-            new Layer1Edge(S2_NAME, E21_NAME, S1_NAME, E12_NAME),
-            new Layer1Edge(H2_NAME, E2_NAME, S2_NAME, SWP2_NAME),
-            new Layer1Edge(S2_NAME, SWP2_NAME, H2_NAME, E2_NAME)));
+        new Layer1Edge(H1_NAME, E1_NAME, S1_NAME, SWP1_NAME),
+        new Layer1Edge(S1_NAME, SWP1_NAME, H1_NAME, E1_NAME),
+        new Layer1Edge(S1_NAME, E12_NAME, S2_NAME, E21_NAME),
+        new Layer1Edge(S2_NAME, E21_NAME, S1_NAME, E12_NAME),
+        new Layer1Edge(H2_NAME, E2_NAME, S2_NAME, SWP2_NAME),
+        new Layer1Edge(S2_NAME, SWP2_NAME, H2_NAME, E2_NAME));
   }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
