@@ -26,9 +26,7 @@ ip_route_network
   (
     VRF nhvrf = vrf_name
   )?
-  (
-    TRACK track = track_object_id
-  )?
+  ip_route_network_track?
   (
     NAME name = static_route_name
   )?
@@ -37,6 +35,8 @@ ip_route_network
     | pref = protocol_distance (TAG tag = uint32)?
   )? NEWLINE
 ;
+
+ip_route_network_track: TRACK track = track_object_id;
 
 static_route_name
 :
