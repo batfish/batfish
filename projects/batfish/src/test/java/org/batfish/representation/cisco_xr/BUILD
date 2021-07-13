@@ -13,6 +13,7 @@ junit_tests(
     deps = [
         "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco_xr",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",

@@ -11,9 +11,12 @@ import static org.batfish.datamodel.Names.generatedBgpCommonExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpDefaultRouteExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ExitReject;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
@@ -144,6 +147,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
@@ -157,8 +161,10 @@ import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.LongMatchAll;
 import org.batfish.datamodel.routing_policy.expr.LongMatchExpr;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.Uint32HighLowExpr;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
@@ -1390,6 +1396,58 @@ public class CiscoXrConversions {
     }
 
     return IpAccessList.builder().setName(ipAccessList.getName()).setLines(aclLines).build();
+  }
+
+  /**
+   * Checks if the given {@link DistributeList} is nonnull and successfully converted, and if so,
+   * returns the name of the VI {@link RoutingPolicy} that represents it.
+   */
+  static @Nullable String getOspfInboundDistributeListPolicy(
+      @Nullable DistributeList distributeList,
+      String vrfName,
+      String procName,
+      Configuration c,
+      Warnings w) {
+    if (distributeList == null) {
+      return null;
+    }
+    String filterName = distributeList.getFilterName();
+    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST) {
+      if (c.getRouteFilterLists().containsKey(filterName)) {
+        String rpName = generatedOspfInboundDistributeListName(vrfName, procName);
+        if (!c.getRoutingPolicies().containsKey(rpName)) {
+          RoutingPolicy.builder()
+              .setName(rpName)
+              .setOwner(c)
+              .addStatement(
+                  new If(
+                      new MatchPrefixSet(
+                          DestinationNetwork.instance(), new NamedPrefixSet(filterName)),
+                      ImmutableList.of(ExitAccept.toStaticStatement()),
+                      ImmutableList.of(ExitReject.toStaticStatement())))
+              .build();
+        }
+        return rpName;
+      } else {
+        w.redFlag(
+            String.format(
+                "Ignoring OSPF distribute-list %s: access-list is not defined or failed to convert",
+                filterName));
+        return null;
+      }
+    } else {
+      assert distributeList.getFilterType() == DistributeListFilterType.ROUTE_POLICY;
+      if (c.getRoutingPolicies().containsKey(filterName)) {
+        return filterName;
+      } else {
+        w.redFlag(
+            String.format(
+                "Ignoring OSPF distribute-list %s: route-policy is not defined or failed to"
+                    + " convert",
+                filterName));
+        return null;
+      }
+    }
   }
 
   /**
