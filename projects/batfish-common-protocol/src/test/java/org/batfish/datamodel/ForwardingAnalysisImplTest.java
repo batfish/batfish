@@ -47,6 +47,8 @@ import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -1377,6 +1379,9 @@ public class ForwardingAnalysisImplTest {
                 interfacesWithMissingDevices,
                 arpFalseDestIp,
                 interfaceHostSubnetIps,
+                ImmutableMap.of(
+                    new InterfaceLinkLocation(CONFIG1, INTERFACE1),
+                    new LocationInfo(false, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE)),
                 ownedIps)
             .get(CONFIG1)
             .get(VRF1)
