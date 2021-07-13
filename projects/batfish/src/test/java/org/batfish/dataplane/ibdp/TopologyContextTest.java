@@ -3,7 +3,6 @@ package org.batfish.dataplane.ibdp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.GraphBuilder;
@@ -83,8 +82,7 @@ public final class TopologyContextTest {
         .addEqualityGroup(
             builder
                 .setLayer1LogicalTopology(
-                    Optional.of(
-                        new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+                    Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
                 .build())
         .addEqualityGroup(
             builder
@@ -103,8 +101,7 @@ public final class TopologyContextTest {
         .addEqualityGroup(
             builder
                 .setRawLayer1PhysicalTopology(
-                    Optional.of(
-                        new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+                    Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
                 .build())
         .addEqualityGroup(
             builder
@@ -148,12 +145,12 @@ public final class TopologyContextTest {
         .setIsisTopology(new IsisTopology(isisTopology))
         .setIpsecTopology(new IpsecTopology(ipsecTopology))
         .setLayer1LogicalTopology(
-            Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+            Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
         .setL3Adjacencies(GlobalBroadcastNoPointToPoint.instance())
         .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
         .setOspfTopology(new OspfTopology(ospfTopology))
         .setRawLayer1PhysicalTopology(
-            Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+            Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
         .setTunnelTopology(
             TunnelTopology.builder()
                 .add(NodeInterfacePair.of("n1", "i1"), NodeInterfacePair.of("n2", "i2"))

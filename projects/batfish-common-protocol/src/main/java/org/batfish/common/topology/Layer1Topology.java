@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.NetworkBuilder;
+import java.util.Arrays;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,6 +27,10 @@ public final class Layer1Topology {
   }
 
   private final ImmutableNetwork<Layer1Node, Layer1Edge> _graph;
+
+  public Layer1Topology(@Nonnull Layer1Edge... edges) {
+    this(Arrays.asList(edges));
+  }
 
   public Layer1Topology(@Nonnull Iterable<Layer1Edge> edges) {
     MutableNetwork<Layer1Node, Layer1Edge> graph =

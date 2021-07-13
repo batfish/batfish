@@ -40,7 +40,6 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -134,15 +133,10 @@ public final class TopologyUtilTest {
     Map<String, Configuration> configurations = ImmutableMap.of(c1Name, c1, c2Name, c2);
     Layer1Topology layer1PhysicalTopology =
         new Layer1Topology(
-            ImmutableSet.of(
-                new Layer1Edge(
-                    new Layer1Node(c1Name, c1i1aName), new Layer1Node(c2Name, c2i1aName)),
-                new Layer1Edge(
-                    new Layer1Node(c2Name, c2i1aName), new Layer1Node(c1Name, c1i1aName)),
-                new Layer1Edge(
-                    new Layer1Node(c1Name, c1i1bName), new Layer1Node(c2Name, c2i1bName)),
-                new Layer1Edge(
-                    new Layer1Node(c2Name, c2i1bName), new Layer1Node(c1Name, c1i1bName))));
+            new Layer1Edge(new Layer1Node(c1Name, c1i1aName), new Layer1Node(c2Name, c2i1aName)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i1aName), new Layer1Node(c1Name, c1i1aName)),
+            new Layer1Edge(new Layer1Node(c1Name, c1i1bName), new Layer1Node(c2Name, c2i1bName)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i1bName), new Layer1Node(c1Name, c1i1bName)));
 
     // Test that physical interface edges where the interfaces are members of aggregates get
     // aggregated in the layer-1 logical topology.
@@ -179,12 +173,10 @@ public final class TopologyUtilTest {
     Map<String, Configuration> configurations = ImmutableMap.of(c1Name, c1, c2Name, c2);
     Layer1Topology rawLayer1Topology =
         new Layer1Topology(
-            ImmutableSet.of(
-                new Layer1Edge(new Layer1Node(c1Name, c1i1Name), new Layer1Node(c2Name, c2i1Name)),
-                new Layer1Edge(new Layer1Node(c2Name, c2i1Name), new Layer1Node(c1Name, c1i1Name)),
-                new Layer1Edge(new Layer1Node(c1Name, c1i2Name), new Layer1Node(c2Name, c2i2Name)),
-                new Layer1Edge(
-                    new Layer1Node(c2Name, c2i2Name), new Layer1Node(c1Name, c1i2Name))));
+            new Layer1Edge(new Layer1Node(c1Name, c1i1Name), new Layer1Node(c2Name, c2i1Name)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i1Name), new Layer1Node(c1Name, c1i1Name)),
+            new Layer1Edge(new Layer1Node(c1Name, c1i2Name), new Layer1Node(c2Name, c2i2Name)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i2Name), new Layer1Node(c1Name, c1i2Name)));
 
     // inactive c2i2 should break c1i2<=>c2i2 link
     assertThat(
@@ -258,7 +250,7 @@ public final class TopologyUtilTest {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     graph.putEdge(new VxlanNode(s1Name, vni), new VxlanNode(s2Name, vni));
     VxlanTopology vxlanTopology = new VxlanTopology(graph);
-    Layer1Topology layer1Topology = new Layer1Topology(ImmutableList.of());
+    Layer1Topology layer1Topology = Layer1Topology.EMPTY;
 
     assertTrue(
         computeLayer2Topology(
@@ -1088,9 +1080,8 @@ public final class TopologyUtilTest {
     ConcreteInterfaceAddress p2Addr1 = ConcreteInterfaceAddress.parse("2.0.0.1/24");
 
     Layer1Topology rawL1AllPresent =
-        new Layer1Topology(
-            ImmutableList.of(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1)));
-    Layer1Topology rawL1NonePresent = new Layer1Topology(ImmutableList.of());
+        new Layer1Topology(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1));
+    Layer1Topology rawL1NonePresent = Layer1Topology.EMPTY;
 
     Layer2Topology sameDomain =
         Layer2Topology.fromDomains(ImmutableList.of(ImmutableSet.of(c1i1, c2i1)));
@@ -1233,11 +1224,10 @@ public final class TopologyUtilTest {
     // c1-c2 and c3-c4 are connected
     Layer1Topology logicalL1 =
         new Layer1Topology(
-            ImmutableSet.of(
-                new Layer1Edge(l1c1i1, l1c2i1),
-                new Layer1Edge(l1c2i1, l1c1i1),
-                new Layer1Edge(l1c3i1, l1c4i1),
-                new Layer1Edge(l1c4i1, l1c3i1)));
+            new Layer1Edge(l1c1i1, l1c2i1),
+            new Layer1Edge(l1c2i1, l1c1i1),
+            new Layer1Edge(l1c3i1, l1c4i1),
+            new Layer1Edge(l1c4i1, l1c3i1));
 
     Topology layer3Topology =
         computeRawLayer3Topology(
@@ -1310,8 +1300,7 @@ public final class TopologyUtilTest {
 
     // c1-c2 are connected
     Layer1Topology logicalL1 =
-        new Layer1Topology(
-            ImmutableSet.of(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1)));
+        new Layer1Topology(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1));
 
     Topology layer3Topology =
         computeRawLayer3Topology(
@@ -1403,11 +1392,10 @@ public final class TopologyUtilTest {
 
     Layer1Topology rawLayer1Topology =
         new Layer1Topology(
-            ImmutableList.of(
-                new Layer1Edge(l1B1, l1H1),
-                new Layer1Edge(l1H1, l1B1),
-                new Layer1Edge(l1B2, l1H2),
-                new Layer1Edge(l1H2, l1B2)));
+            new Layer1Edge(l1B1, l1H1),
+            new Layer1Edge(l1H1, l1B1),
+            new Layer1Edge(l1B2, l1H2),
+            new Layer1Edge(l1H2, l1B2));
     Map<String, Configuration> explicitConfigurations =
         ImmutableMap.of(h1Name, cH1, h2Name, cH2, b1Name, cB1, b2Name, cB2);
     IspConfiguration ispConfiguration =
@@ -1514,7 +1502,7 @@ public final class TopologyUtilTest {
     Vrf v2 = _vb.setOwner(c2).build();
     _ib.setOwner(c2).setVrf(v2).build();
 
-    Layer1Topology rawLayer1Topology = new Layer1Topology(ImmutableList.of(new Layer1Edge(n1, n2)));
+    Layer1Topology rawLayer1Topology = new Layer1Topology(new Layer1Edge(n1, n2));
     Map<String, Configuration> configurations = ImmutableMap.of(n1Name, c1, n2Name, c2);
     Layer1Topology layer1PhysicalTopology =
         TopologyUtil.cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
@@ -1575,8 +1563,7 @@ public final class TopologyUtilTest {
     _ib.setOwner(c4).setVrf(v4).setName(i1Name).setAddress(n4n3Address).build(); // n4=>n3
 
     Layer1Topology rawLayer1Topology =
-        new Layer1Topology(
-            ImmutableList.of(new Layer1Edge(l1n1, l1n2), new Layer1Edge(l1n2, l1n1)));
+        new Layer1Topology(new Layer1Edge(l1n1, l1n2), new Layer1Edge(l1n2, l1n1));
     Map<String, Configuration> configurations =
         ImmutableMap.of(n1Name, c1, n2Name, c2, n3Name, c3, n4Name, c4);
     Layer1Topology layer1PhysicalTopology =
@@ -1637,7 +1624,7 @@ public final class TopologyUtilTest {
     _ib.setOwner(c2).setVrf(v2).build();
 
     Layer1Topology rawLayer1Topology =
-        new Layer1Topology(ImmutableList.of(new Layer1Edge(n1, n2), new Layer1Edge(n2, nCorrupt)));
+        new Layer1Topology(new Layer1Edge(n1, n2), new Layer1Edge(n2, nCorrupt));
     Map<String, Configuration> configurations = ImmutableMap.of(n1Name, c1, n2Name, c2);
     Layer1Topology layer1PhysicalTopology =
         TopologyUtil.cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
@@ -1785,10 +1772,9 @@ public final class TopologyUtilTest {
 
     Layer1Topology layer1Topology =
         new Layer1Topology(
-            Collections.singleton(
-                new Layer1Edge(
-                    new Layer1Node(c1.getHostname(), i1.getName()),
-                    new Layer1Node(c2.getHostname(), i2.getName()))));
+            new Layer1Edge(
+                new Layer1Node(c1.getHostname(), i1.getName()),
+                new Layer1Node(c2.getHostname(), i2.getName())));
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Topology t =
@@ -1851,10 +1837,9 @@ public final class TopologyUtilTest {
 
     Layer1Topology layer1Topology =
         new Layer1Topology(
-            Collections.singleton(
-                new Layer1Edge(
-                    new Layer1Node(c1.getHostname(), i1.getName()),
-                    new Layer1Node(c2.getHostname(), i2.getName()))));
+            new Layer1Edge(
+                new Layer1Node(c1.getHostname(), i1.getName()),
+                new Layer1Node(c2.getHostname(), i2.getName())));
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Topology t =
@@ -1902,10 +1887,9 @@ public final class TopologyUtilTest {
 
     Layer1Topology layer1Topology =
         new Layer1Topology(
-            Collections.singleton(
-                new Layer1Edge(
-                    new Layer1Node(c1.getHostname(), i1.getName()),
-                    new Layer1Node(c2.getHostname(), i2.getName()))));
+            new Layer1Edge(
+                new Layer1Node(c1.getHostname(), i1.getName()),
+                new Layer1Node(c2.getHostname(), i2.getName())));
     Map<String, Configuration> configs =
         ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Topology t =
@@ -1988,9 +1972,8 @@ public final class TopologyUtilTest {
   public void testUnionLayer1PhysicalTopologiesOneMissing() {
     Layer1Edge edge1 = new Layer1Edge("n1", "i1", "n2", "i2");
     assertThat(
-        unionLayer1PhysicalTopologies(
-            Optional.empty(), Optional.of(new Layer1Topology(ImmutableSet.of(edge1)))),
-        equalTo(Optional.of(new Layer1Topology(ImmutableSet.of(edge1)))));
+        unionLayer1PhysicalTopologies(Optional.empty(), Optional.of(new Layer1Topology(edge1))),
+        equalTo(Optional.of(new Layer1Topology(edge1))));
   }
 
   @Test
@@ -1999,12 +1982,12 @@ public final class TopologyUtilTest {
     Layer1Edge edge2 = new Layer1Edge("n1", "i1", "n3", "i3");
     Layer1Edge edge3 = new Layer1Edge("n3", "i3", "n1", "i1");
 
-    Layer1Topology topology1 = new Layer1Topology(ImmutableSet.of(edge1, edge2));
-    Layer1Topology topology2 = new Layer1Topology(ImmutableSet.of(edge1, edge3));
+    Layer1Topology topology1 = new Layer1Topology(edge1, edge2);
+    Layer1Topology topology2 = new Layer1Topology(edge1, edge3);
 
     assertThat(
         unionLayer1PhysicalTopologies(Optional.of(topology1), Optional.of(topology2)),
-        equalTo(Optional.of(new Layer1Topology(ImmutableSet.of(edge1, edge2, edge3)))));
+        equalTo(Optional.of(new Layer1Topology(edge1, edge2, edge3))));
   }
 
   @Test
