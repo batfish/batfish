@@ -96,15 +96,10 @@ public final class EdgesTest {
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c1Name, c1, c2Name, c2);
     Layer1Topology layer1PhysicalTopology =
         new Layer1Topology(
-            ImmutableSet.of(
-                new Layer1Edge(
-                    new Layer1Node(c1Name, c1i1aName), new Layer1Node(c2Name, c2i1aName)),
-                new Layer1Edge(
-                    new Layer1Node(c2Name, c2i1aName), new Layer1Node(c1Name, c1i1aName)),
-                new Layer1Edge(
-                    new Layer1Node(c1Name, c1i1bName), new Layer1Node(c2Name, c2i1bName)),
-                new Layer1Edge(
-                    new Layer1Node(c2Name, c2i1bName), new Layer1Node(c1Name, c1i1bName))));
+            new Layer1Edge(new Layer1Node(c1Name, c1i1aName), new Layer1Node(c2Name, c2i1aName)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i1aName), new Layer1Node(c1Name, c1i1aName)),
+            new Layer1Edge(new Layer1Node(c1Name, c1i1bName), new Layer1Node(c2Name, c2i1bName)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i1bName), new Layer1Node(c1Name, c1i1bName)));
 
     IBatfishTestAdapter batfish =
         new IBatfishTestAdapter() {
