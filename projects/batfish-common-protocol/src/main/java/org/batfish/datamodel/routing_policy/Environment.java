@@ -40,7 +40,6 @@ public class Environment {
    * several fields.
    */
   public static Builder builder(@Nonnull Configuration c) {
-    ConfigurationFormat format = c.getConfigurationFormat();
     return new Builder()
         .setAsPathAccessLists(c.getAsPathAccessLists())
         .setAsPathExprs(c.getAsPathExprs())
@@ -54,10 +53,19 @@ public class Environment {
         .setRouteFilterLists(c.getRouteFilterLists())
         .setRoute6FilterLists(c.getRoute6FilterLists())
         .setRoutingPolicies(c.getRoutingPolicies())
-        .setUseOutputAttributes(
-            format == ConfigurationFormat.JUNIPER
-                || format == ConfigurationFormat.JUNIPER_SWITCH
-                || format == ConfigurationFormat.FLAT_JUNIPER);
+        .setUseOutputAttributes(useOutputAttributesFor(c));
+  }
+
+  /**
+   * Indicates whether simulation of route policies in the given {@link Configuration} should match
+   * on the output route attributes instead of the original route attributes, based on the
+   * configuration's format.
+   */
+  public static boolean useOutputAttributesFor(@Nonnull Configuration c) {
+    ConfigurationFormat format = c.getConfigurationFormat();
+    return format == ConfigurationFormat.JUNIPER
+        || format == ConfigurationFormat.JUNIPER_SWITCH
+        || format == ConfigurationFormat.FLAT_JUNIPER;
   }
 
   public enum Direction {
