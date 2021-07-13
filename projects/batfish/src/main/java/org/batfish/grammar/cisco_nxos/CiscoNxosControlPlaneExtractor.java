@@ -2077,7 +2077,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.decrement != null) {
       Optional<Integer> decrementOrErr =
           toIntegerInSpace(
-              ctx, ctx.decrement, HSRP_TRACK_DECREMENT_RANGE, "hspr group track decrement");
+              ctx, ctx.decrement, HSRP_TRACK_DECREMENT_RANGE, "hsrp group track decrement");
       if (!decrementOrErr.isPresent()) {
         return;
       }
@@ -5906,33 +5906,34 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.tag != null) {
       builder.setTag(toLong(ctx.tag));
     }
-    if (ctx.track != null) {
-      Optional<Integer> track = toInteger(ctx, ctx.track);
+    CiscoNxosParser.Ip_route_network_trackContext track_ctx = ctx.ip_route_network_track();
+    if (track_ctx != null) {
+      Optional<Integer> track = toInteger(track_ctx, track_ctx.track);
       if (!track.isPresent()) {
         return;
       }
       Integer trackNumber = track.get();
       if (!_c.getTracks().containsKey(trackNumber)) {
         warn(
-            ctx,
+            track_ctx,
             String.format(
                 "Cannot reference undefined track %s. This line will be ignored.", trackNumber));
         _c.undefined(
             CiscoNxosStructureType.TRACK,
             trackNumber.toString(),
             CiscoNxosStructureUsage.IP_ROUTE_TRACK,
-            ctx.start.getLine());
+            track_ctx.start.getLine());
         return;
       }
       _c.referenceStructure(
           CiscoNxosStructureType.TRACK,
           trackNumber.toString(),
           CiscoNxosStructureUsage.IP_ROUTE_TRACK,
-          ctx.start.getLine());
+          track_ctx.start.getLine());
 
       builder.setTrack(trackNumber);
       // TODO: support track object number
-      todo(ctx);
+      todo(track_ctx);
     }
     StaticRoute route = builder.build();
     _currentVrf.getStaticRoutes().put(route.getPrefix(), route);
