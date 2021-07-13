@@ -1093,8 +1093,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       IntegerSpace.of(Range.closed(2097152, 125000000));
   private static final IntegerSpace OSPF_METRIC_RANGE = IntegerSpace.of(Range.closed(1, 16777214));
   private static final IntegerSpace OSPF_METRIC_TYPE_RANGE = IntegerSpace.of(Range.closed(1, 2));
-  private static final LongSpace ROUTE_TAG_FROM_0_RANGE =
-      LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace PINT16_RANGE = IntegerSpace.of(Range.closed(1, 65535));
   private static final IntegerSpace REWRITE_INGRESS_TAG_POP_RANGE =
       IntegerSpace.of(Range.closed(1, 2));
@@ -6184,7 +6182,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           ROUTE_POLICY, name, OSPF_REDISTRIBUTE_ROUTE_POLICY, ctx.start.getLine());
     }
     if (ctx.tag != null) {
-      toLong(ctx, ctx.tag).ifPresent(r::setTag);
+      r.setTag(toLong(ctx.tag));
     }
   }
 
@@ -7147,11 +7145,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return toIntegerInSpace(messageCtx, ctx, OSPF_METRIC_TYPE_RANGE, "OSPF metric type");
   }
 
-  private @Nonnull Optional<Long> toLong(
-      ParserRuleContext messageCtx, Route_tag_from_0Context ctx) {
-    return toLongInSpace(messageCtx, ctx, ROUTE_TAG_FROM_0_RANGE, "route tag");
-  }
-
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Ifrit_pop_countContext ctx) {
     return toIntegerInSpace(
@@ -7837,6 +7830,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       assert ctx.NO_EXPORT() != null;
       return WellKnownCommunity.NO_EXPORT;
     }
+  }
+
+  private static long toLong(Route_tag_from_0Context ctx) {
+    // All values in uint32 range are valid
+    return toLong(ctx.uint32());
   }
 
   private static long toLong(Uint32Context ctx) {
