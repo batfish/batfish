@@ -25570,32 +25570,6 @@
           }
         },
         "routingPolicies" : {
-          "~AGGREGATE_ROUTE6_GEN:default:2607:f010:3f9:8000:0:0:0:0/52~" : {
-            "name" : "~AGGREGATE_ROUTE6_GEN:default:2607:f010:3f9:8000:0:0:0:0/52~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set",
-                  "prefix" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork6"
-                  },
-                  "prefixSet" : {
-                    "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set",
-                    "prefix6Space" : [
-                      "2607:f010:3f9:8000:0:0:0:0/52;53-128"
-                    ]
-                  }
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnTrue"
-                  }
-                ]
-              }
-            ]
-          },
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
             "statements" : [
@@ -25766,15 +25740,6 @@
               "multipathIbgp" : false,
               "tieBreaker" : "ARRIVAL_ORDER"
             },
-            "generatedIpv6Routes" : [
-              {
-                "class" : "org.batfish.datamodel.GeneratedRoute6",
-                "network" : "2607:f010:3f9:8000:0:0:0:0/52",
-                "administrativeCost" : 200,
-                "discard" : true,
-                "generationPolicy" : "~AGGREGATE_ROUTE6_GEN:default:2607:f010:3f9:8000:0:0:0:0/52~"
-              }
-            ],
             "resolutionPolicy" : "~RESOLUTION_POLICY~"
           }
         }
