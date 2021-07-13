@@ -12,6 +12,7 @@ import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.clearFalseStatementsAndAddMatchOwnAsn;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeDedupedAsPathMatchExprName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.computeOriginalAsPathMatchExprName;
@@ -23,6 +24,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConversions.eigrpRedist
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpExportPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.generateBgpImportPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getIsakmpKeyGeneratedName;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.getOspfInboundDistributeListPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getRsaPubKeyGeneratedName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveIsakmpProfileIfaceNames;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.resolveKeyringIfaceNames;
@@ -824,7 +826,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         // TODO update to route-policy if valid, or delete grammar and VS
       }
       redistributionPolicy.addStatement(
-          new If(exportRipConditions, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+          new If(exportRipConditions, ImmutableList.of(ExitAccept.toStaticStatement())));
     }
 
     // Export static routes that should be redistributed.
@@ -845,8 +847,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         }
       }
       redistributionPolicy.addStatement(
-          new If(
-              exportStaticConditions, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+          new If(exportStaticConditions, ImmutableList.of(ExitAccept.toStaticStatement())));
     }
 
     // Export connected routes that should be redistributed.
@@ -868,9 +869,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         }
       }
       redistributionPolicy.addStatement(
-          new If(
-              exportConnectedConditions,
-              ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+          new If(exportConnectedConditions, ImmutableList.of(ExitAccept.toStaticStatement())));
     }
 
     // Export OSPF routes that should be redistributed.
@@ -885,8 +884,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         // TODO update to route-policy if valid, or delete grammar and VS
       }
       redistributionPolicy.addStatement(
-          new If(
-              exportOspfConditions, ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+          new If(exportOspfConditions, ImmutableList.of(ExitAccept.toStaticStatement())));
     }
 
     // cause ip peer groups to inherit unset fields from owning named peer
@@ -931,7 +929,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                       exportNetworkConditions,
                       ImmutableList.of(
                           new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                          Statements.ExitAccept.toStaticStatement())));
+                          ExitAccept.toStaticStatement())));
             });
     if (!proc.getIpv6Networks().isEmpty()) {
       String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
@@ -1383,7 +1381,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
     }
 
-    ospfExportStatements.add(Statements.ExitAccept.toStaticStatement());
+    ospfExportStatements.add(ExitAccept.toStaticStatement());
 
     // Construct the policy and add it before returning.
     return new If(
@@ -1461,7 +1459,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
           areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
       newAreaInterfacesBuilder.add(ifaceName);
-      finalizeInterfaceOspfSettings(iface, vsIface, proc, areaNum);
+      finalizeInterfaceOspfSettings(iface, vsIface, proc, areaNum, vrfName, c);
     }
     areaInterfacesBuilders.forEach(
         (areaNum, interfacesBuilder) ->
@@ -1572,7 +1570,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         route.setGenerationPolicy(defaultRouteGenerationPolicyName);
         newProcess.addGeneratedRoute(route.build());
       }
-      ospfExportDefaultStatements.add(Statements.ExitAccept.toStaticStatement());
+      ospfExportDefaultStatements.add(ExitAccept.toStaticStatement());
       ospfExportDefault.setGuard(
           new Conjunction(
               ImmutableList.of(matchDefaultRoute(), new MatchProtocol(RoutingProtocol.AGGREGATE))));
@@ -1596,7 +1594,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Interface iface,
       Interface vsIface,
       @Nullable OspfProcess proc,
-      @Nullable Long areaNum) {
+      @Nullable Long areaNum,
+      String vrfName,
+      Configuration c) {
     String ifaceName = vsIface.getName();
     OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder().setPassive(false);
     if (proc != null) {
@@ -1608,6 +1608,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                   ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
         proc.getPassiveInterfaces().add(ifaceName);
         ospfSettings.setPassive(true);
+      }
+      String inboundFilterName =
+          getOspfInboundDistributeListPolicy(
+              proc.getInboundGlobalDistributeList(), vrfName, proc.getName(), c, _w);
+      if (inboundFilterName != null) {
+        ospfSettings.setInboundDistributeListPolicy(inboundFilterName);
       }
     }
     ospfSettings.setHelloMultiplier(vsIface.getOspfHelloMultiplier());
@@ -1714,7 +1720,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         newProcess.getGeneratedRoutes().add(route.build());
       }
       ripExportDefaultConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-      ripExportDefaultStatements.add(Statements.ExitAccept.toStaticStatement());
+      ripExportDefaultStatements.add(ExitAccept.toStaticStatement());
       ripExportDefault.setGuard(ripExportDefaultConditions);
     }
 
@@ -1739,7 +1745,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       if (exportConnectedRouteMapName != null) {
         // TODO update to route-policy if valid, or delete grammar and VS
       }
-      ripExportConnectedStatements.add(Statements.ExitAccept.toStaticStatement());
+      ripExportConnectedStatements.add(ExitAccept.toStaticStatement());
       ripExportConnected.setGuard(ripExportConnectedConditions);
     }
 
@@ -1765,7 +1771,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       if (exportStaticRouteMapName != null) {
         // TODO update to route-policy if valid, or delete grammar and VS
       }
-      ripExportStaticStatements.add(Statements.ExitAccept.toStaticStatement());
+      ripExportStaticStatements.add(ExitAccept.toStaticStatement());
       ripExportStatic.setGuard(ripExportStaticConditions);
     }
 
@@ -1791,7 +1797,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       if (exportBgpRouteMapName != null) {
         // TODO update to route-policy if valid, or delete grammar and VS
       }
-      ripExportBgpStatements.add(Statements.ExitAccept.toStaticStatement());
+      ripExportBgpStatements.add(ExitAccept.toStaticStatement());
       ripExportBgp.setGuard(ripExportBgpConditions);
     }
     return newProcess;
@@ -2228,7 +2234,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
               || vsIface.getOspfNetworkType() != null
               || vsIface.getOspfDeadInterval() != null
               || vsIface.getOspfHelloInterval() != null) {
-            finalizeInterfaceOspfSettings(iface, vsIface, null, null);
+            finalizeInterfaceOspfSettings(iface, vsIface, null, null, iface.getVrfName(), c);
           }
         });
 
@@ -2285,10 +2291,18 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         });
   }
 
-  @SuppressWarnings("unused")
   private boolean isAclUsedForRouting(@Nonnull String aclName) {
-    // TODO: implement OSPF acl distribute-list
-    return false;
+    // TODO Include OSPF processes' outbound global distribute lists when conversion supports them
+    // TODO Check distribute lists assigned to specific areas and interfaces once that's extracted
+    return _vrfs.values().stream()
+        .flatMap(vrf -> vrf.getOspfProcesses().values().stream())
+        .map(OspfProcess::getInboundGlobalDistributeList)
+        .filter(Objects::nonNull)
+        .anyMatch(
+            distList ->
+                distList.getFilterName().equals(aclName)
+                    && distList.getFilterType()
+                        == DistributeList.DistributeListFilterType.ACCESS_LIST);
   }
 
   /** Indicates if any line in the specified ipv4 ACL is used for ACL based forwarding. */
