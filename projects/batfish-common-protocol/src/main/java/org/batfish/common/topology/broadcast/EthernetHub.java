@@ -1,5 +1,6 @@
 package org.batfish.common.topology.broadcast;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,12 @@ public final class EthernetHub extends Node<EthernetTag> {
   }
 
   // Internal implementation details.
+
+  @VisibleForTesting
+  @Nonnull
+  Map<PhysicalInterface, Edge<EthernetTag, EthernetTag>> getAttachedInterfacesForTesting() {
+    return _attachedInterfaces;
+  }
 
   @Override
   public boolean equals(Object o) {

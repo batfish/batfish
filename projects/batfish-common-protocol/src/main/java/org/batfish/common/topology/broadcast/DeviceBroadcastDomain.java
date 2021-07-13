@@ -2,6 +2,7 @@ package org.batfish.common.topology.broadcast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +66,16 @@ public final class DeviceBroadcastDomain extends Node<Integer> {
   @Override
   public int hashCode() {
     return 31 * DeviceBroadcastDomain.class.hashCode() + _hostname.hashCode();
+  }
+
+  @VisibleForTesting
+  Map<L3Interface, Edge<Integer, Unit>> getL3InterfacesForTest() {
+    return _l3Interfaces;
+  }
+
+  @VisibleForTesting
+  Map<PhysicalInterface, Edge<Integer, EthernetTag>> getPhysicalInterfacesForTest() {
+    return _physicalInterfaces;
   }
 
   private final @Nonnull String _hostname;

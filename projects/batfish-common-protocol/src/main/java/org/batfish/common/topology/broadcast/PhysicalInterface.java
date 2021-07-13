@@ -3,6 +3,7 @@ package org.batfish.common.topology.broadcast;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -105,6 +106,21 @@ public final class PhysicalInterface extends Node<EthernetTag> {
   @Override
   public int hashCode() {
     return 31 * PhysicalInterface.class.hashCode() + _iface.hashCode();
+  }
+
+  @VisibleForTesting
+  EthernetHub getAttachedHubForTest() {
+    return _attachedHub;
+  }
+
+  @VisibleForTesting
+  Map<L3Interface, Edge<EthernetTag, Unit>> getL3InterfacesForTest() {
+    return _l3Interfaces;
+  }
+
+  @VisibleForTesting
+  DeviceBroadcastDomain getSwitchForTest() {
+    return _switch;
   }
 
   private final @Nonnull NodeInterfacePair _iface;
