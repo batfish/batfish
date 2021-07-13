@@ -668,6 +668,8 @@ public class TransferBDD {
       SetCommunities sc = (SetCommunities) stmt;
       org.batfish.datamodel.routing_policy.communities.CommunitySetExpr setExpr =
           sc.getCommunitySetExpr();
+      // SetCommunitiesVisitor requires a BDDRoute that maps each community atomic predicate BDD
+      // to its corresponding BDD variable, so we use the original route here
       CommunityAPDispositions dispositions =
           setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _originalRoute));
       updateCommunities(dispositions, curP, result);
