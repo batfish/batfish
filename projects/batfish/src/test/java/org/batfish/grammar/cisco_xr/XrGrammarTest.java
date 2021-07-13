@@ -8,6 +8,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -185,6 +186,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
@@ -1228,6 +1230,28 @@ public final class XrGrammarTest {
         p2.getInboundGlobalDistributeList(),
         equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
     assertThat(p2.getOutboundGlobalDistributeList(), nullValue());
+  }
+
+  @Test
+  public void testOspfDistributeListConversion() {
+    Configuration c = parseConfig("ospf-distribute-list");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2"));
+
+    String iface1Name = "GigabitEthernet0/0/0/1";
+    String iface2Name = "GigabitEthernet0/0/0/2";
+    OspfInterfaceSettings settings1 = c.getActiveInterfaces().get(iface1Name).getOspfSettings();
+    OspfInterfaceSettings settings2 = c.getActiveInterfaces().get(iface2Name).getOspfSettings();
+    assert settings1 != null && settings2 != null;
+
+    // First OSPF process uses a routing policy called RP for inbound distribute-list
+    assertThat(settings1.getInboundDistributeListPolicy(), equalTo("RP"));
+    assertThat(c.getRoutingPolicies(), hasKey("RP"));
+
+    // Second OSPF process uses an ACL for inbound distribute-list.
+    // Semantics of the generated routing policy are tested elsewhere.
+    String generatedRpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "2");
+    assertThat(settings2.getInboundDistributeListPolicy(), equalTo(generatedRpName));
+    assertThat(c.getRoutingPolicies(), hasKey(generatedRpName));
   }
 
   @Test

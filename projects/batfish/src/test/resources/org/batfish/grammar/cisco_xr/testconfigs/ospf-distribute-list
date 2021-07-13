@@ -2,16 +2,30 @@
 !
 hostname ospf-distribute-list
 !
+interface GigabitEthernet0/0/0/1
+ no shutdown
+!
+interface GigabitEthernet0/0/0/2
+ no shutdown
+!
+ipv4 access-list ACL2
+ipv4 access-list ACL3
+!
 route-policy RP
-  # RP must be defined or else config will not commit
 end-policy
 !
 router ospf 1
+  router-id 1.1.1.1
   ! ACL in will get overridden.
   distribute-list ACL in
   distribute-list route-policy RP in
   distribute-list ACL2 out
+  area 1
+    interface GigabitEthernet0/0/0/1
 !
 router ospf 2
+  router-id 2.2.2.2
   distribute-list ACL3 in
+  area 2
+    interface GigabitEthernet0/0/0/2
 !

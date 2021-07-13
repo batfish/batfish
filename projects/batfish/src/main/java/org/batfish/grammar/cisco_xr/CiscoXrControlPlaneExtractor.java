@@ -6113,8 +6113,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _configuration.referenceStructure(
           IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT, ctx.acl.getStart().getLine());
       _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
+      todo(ctx);
     }
-    todo(ctx);
   }
 
   @Override
@@ -6125,7 +6125,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
     DistributeList distributeList = new DistributeList(name, DistributeListFilterType.ROUTE_POLICY);
     _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
-    todo(ctx);
   }
 
   @Override
