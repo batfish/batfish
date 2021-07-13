@@ -36,10 +36,7 @@ ip_route_network
   )? NEWLINE
 ;
 
-ip_route_network_track
-:
-    TRACK track = track_object_id
-;
+ip_route_network_track: TRACK track = track_object_id;
 
 static_route_name
 :

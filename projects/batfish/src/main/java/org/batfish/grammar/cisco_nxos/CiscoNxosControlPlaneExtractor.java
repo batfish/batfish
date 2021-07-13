@@ -5915,7 +5915,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       Integer trackNumber = track.get();
       if (!_c.getTracks().containsKey(trackNumber)) {
         warn(
-            track_ctx,
+            ctx,
             String.format(
                 "Cannot reference undefined track %s. This line will be ignored.", trackNumber));
         _c.undefined(
