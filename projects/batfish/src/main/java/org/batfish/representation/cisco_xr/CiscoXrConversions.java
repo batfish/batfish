@@ -1412,45 +1412,41 @@ public class CiscoXrConversions {
       return null;
     }
     String filterName = distributeList.getFilterName();
-    switch (distributeList.getFilterType()) {
-      case ACCESS_LIST:
-        if (c.getRouteFilterLists().containsKey(filterName)) {
-          String rpName = generatedOspfInboundDistributeListName(vrfName, procName);
-          if (!c.getRoutingPolicies().containsKey(rpName)) {
-            RoutingPolicy.builder()
-                .setName(rpName)
-                .setOwner(c)
-                .addStatement(
-                    new If(
-                        new MatchPrefixSet(
-                            DestinationNetwork.instance(), new NamedPrefixSet(filterName)),
-                        ImmutableList.of(ExitAccept.toStaticStatement()),
-                        ImmutableList.of(ExitReject.toStaticStatement())))
-                .build();
-          }
-          return rpName;
-        } else {
-          w.redFlag(
-              String.format(
-                  "Ignoring OSPF distribute-list %s: access-list is not defined or failed to"
-                      + " convert",
-                  filterName));
-          return null;
+    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST) {
+      if (c.getRouteFilterLists().containsKey(filterName)) {
+        String rpName = generatedOspfInboundDistributeListName(vrfName, procName);
+        if (!c.getRoutingPolicies().containsKey(rpName)) {
+          RoutingPolicy.builder()
+              .setName(rpName)
+              .setOwner(c)
+              .addStatement(
+                  new If(
+                      new MatchPrefixSet(
+                          DestinationNetwork.instance(), new NamedPrefixSet(filterName)),
+                      ImmutableList.of(ExitAccept.toStaticStatement()),
+                      ImmutableList.of(ExitReject.toStaticStatement())))
+              .build();
         }
-      case ROUTE_POLICY:
-        if (c.getRoutingPolicies().containsKey(filterName)) {
-          return filterName;
-        } else {
-          w.redFlag(
-              String.format(
-                  "Ignoring OSPF distribute-list %s: route-policy is not defined or failed to"
-                      + " convert",
-                  filterName));
-          return null;
-        }
-      default:
-        throw new UnsupportedOperationException(
-            String.format("Unhandled distribute list type %s", distributeList.getFilterType()));
+        return rpName;
+      } else {
+        w.redFlag(
+            String.format(
+                "Ignoring OSPF distribute-list %s: access-list is not defined or failed to convert",
+                filterName));
+        return null;
+      }
+    } else {
+      assert distributeList.getFilterType() == DistributeListFilterType.ROUTE_POLICY;
+      if (c.getRoutingPolicies().containsKey(filterName)) {
+        return filterName;
+      } else {
+        w.redFlag(
+            String.format(
+                "Ignoring OSPF distribute-list %s: route-policy is not defined or failed to"
+                    + " convert",
+                filterName));
+        return null;
+      }
     }
   }
 

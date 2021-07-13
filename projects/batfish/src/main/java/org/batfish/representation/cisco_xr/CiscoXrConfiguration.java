@@ -1609,12 +1609,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         proc.getPassiveInterfaces().add(ifaceName);
         ospfSettings.setPassive(true);
       }
-      String inboundFilterName =
-          getOspfInboundDistributeListPolicy(
-              proc.getInboundGlobalDistributeList(), vrfName, proc.getName(), c, _w);
-      if (inboundFilterName != null) {
-        ospfSettings.setInboundDistributeListPolicy(inboundFilterName);
-      }
+      Optional.ofNullable(
+              getOspfInboundDistributeListPolicy(
+                  proc.getInboundGlobalDistributeList(), vrfName, proc.getName(), c, _w))
+          .ifPresent(ospfSettings::setInboundDistributeListPolicy);
     }
     ospfSettings.setHelloMultiplier(vsIface.getOspfHelloMultiplier());
 
