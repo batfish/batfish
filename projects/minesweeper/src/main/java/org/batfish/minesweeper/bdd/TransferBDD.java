@@ -345,6 +345,8 @@ public class TransferBDD {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
 
+      // MatchPrefixSet::evaluate obtains the prefix to match (either the destination network or
+      // next-hop IP) from the original route, so we do the same here
       BDD prefixSet = matchPrefixSet(p.indent(), _conf, m, _originalRoute);
       return result.setReturnValueBDD(prefixSet);
 
@@ -790,14 +792,8 @@ public class TransferBDD {
     return new TransferBDDState(curP.setData(result.getReturnValue().getFirst()), result);
   }
 
-  /*
-   * Check if a prefix range match is applicable for the packet destination
-   * Ip address, given the prefix length variable.
-   *
-   * Since aggregation is modelled separately, we assume that prefixLen
-   * is not modified, and thus will contain only the underlying variables:
-   * [var(0), ..., var(n)]
-   */
+  // Produce a BDD representing conditions under which the route's destination IP is within a
+  // given prefix range.
   public static BDD isRelevantForDestination(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
     int pLen = p.getPrefixLength();
@@ -820,8 +816,8 @@ public class TransferBDD {
     return firstBitsEqual(record.getNextHop().getBitvec(), p, pLen);
   }
 
-  // Produce a BDD representing conditions under which a particular prefix in the route is within a
-  // given prefix range.
+  // Produce a BDD representing conditions under which a particular prefix in the route (either the
+  // destination network or the next-hop IP) is within a given prefix range.
   private static BDD isRelevantFor(BDDRoute record, PrefixRange range, PrefixType type) {
     switch (type) {
       case DESTINATION:
@@ -1014,6 +1010,7 @@ public class TransferBDD {
     NEXTHOP
   }
 
+  // Determine whether we are matching on the destination or on the next-hop IP
   private PrefixType toPrefixType(PrefixExpr pe) {
     if (pe.equals(DestinationNetwork.instance())) {
       return PrefixType.DESTINATION;
@@ -1038,11 +1035,6 @@ public class TransferBDD {
       ExplicitPrefixSet x = (ExplicitPrefixSet) e;
 
       Set<PrefixRange> ranges = x.getPrefixSpace().getPrefixRanges();
-      if (ranges.isEmpty()) {
-        p.debug("empty");
-        return factory.one();
-      }
-
       BDD acc = factory.zero();
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: " + range);

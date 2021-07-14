@@ -32,6 +32,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
@@ -76,6 +78,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv6;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
@@ -981,6 +984,56 @@ public class TransferBDDTest {
     BDD expectedBDD =
         isRelevantForDestination(
             _anyRoute, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 24)));
+    assertEquals(acceptedAnnouncements, expectedBDD);
+
+    assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testMatchEmptyPrefixSet() {
+    _policyBuilder.addStatement(
+        new If(
+            matchPrefixSet(ImmutableList.of()),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isZero());
+    assertEquals(tbdd.zeroedRecord(), outAnnouncements);
+  }
+
+  @Test
+  public void testMatchNamedPrefixSet() {
+    String name = "name";
+    _baseConfig.setRouteFilterLists(
+        ImmutableMap.of(
+            name,
+            new RouteFilterList(
+                name,
+                ImmutableList.of(
+                    new RouteFilterLine(LineAction.DENY, Prefix.ZERO, new SubRange(32, 32)),
+                    new RouteFilterLine(
+                        LineAction.PERMIT, Prefix.parse("1.0.0.0/8"), new SubRange(31, 32))))));
+    _policyBuilder.addStatement(
+        new If(
+            new MatchPrefixSet(DestinationNetwork.instance(), new NamedPrefixSet(name)),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    BDD expectedBDD =
+        isRelevantForDestination(
+            _anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
