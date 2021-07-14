@@ -4223,7 +4223,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitDefault_information_originate_rb_stanza(
       Default_information_originate_rb_stanzaContext ctx) {
-    _currentPeerGroup.setDefaultOriginate(true);
+    BgpProcess proc = currentVrf().getBgpProcess();
+    proc.setDefaultInformationOriginate(true);
   }
 
   @Override

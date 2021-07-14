@@ -467,6 +467,7 @@ vrf_block_rb_stanza
       | as_path_multipath_relax_rb_stanza
       | bgp_listen_range_rb_stanza
       | bgp_tail
+      | default_information_originate_rb_stanza
       | neighbor_flat_rb_stanza
       | no_neighbor_activate_rb_stanza
       | no_neighbor_shutdown_rb_stanza
