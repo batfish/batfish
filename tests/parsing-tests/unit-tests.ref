@@ -229,7 +229,6 @@
         "configs/mos_misc" : "CISCO_IOS",
         "configs/msdp_originator_id" : "CISCO_IOS",
         "configs/named_and_numbered_lists" : "CISCO_IOS",
-        "configs/neighbor_mix" : "CISCO_IOS",
         "configs/network6" : "CISCO_IOS",
         "configs/nexus" : "CISCO_IOS",
         "configs/no_aaa_group_server" : "CISCO_IOS",
@@ -942,9 +941,6 @@
         "named_and_numbered_lists" : [
           "configs/named_and_numbered_lists"
         ],
-        "neighbor_mix" : [
-          "configs/neighbor_mix"
-        ],
         "network6" : [
           "configs/network6"
         ],
@@ -1320,7 +1316,6 @@
         "configs/mos_misc" : "PASSED",
         "configs/msdp_originator_id" : "PASSED",
         "configs/named_and_numbered_lists" : "PASSED",
-        "configs/neighbor_mix" : "PASSED",
         "configs/network6" : "PASSED",
         "configs/nexus" : "PASSED",
         "configs/no_aaa_group_server" : "PASSED",
@@ -1550,9 +1545,8 @@
             "                asn = (dec*",
             "                  UINT8:'1'))",
             "              NEWLINE:'\\n'))",
-            "          (address_family_footer*",
-            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "            NEWLINE:'\\n')))))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_null*",
             "      (null_single*",
@@ -4089,9 +4083,8 @@
             "              MASK:'mask'",
             "              mask = IP_ADDRESS:'255.255.255.0'",
             "              NEWLINE:'\\n'))",
-            "          (address_family_footer*",
-            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "            NEWLINE:'\\n')))))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_null*",
             "      (null_single*",
@@ -7099,12 +7092,17 @@
             "              map = (variable*",
             "                VARIABLE:'ospfv3_map'  <== mode:M_RouteMap)",
             "              NEWLINE:'\\n'))",
-            "          (address_family_footer*)))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))",
             "      (router_bgp_stanza_tail*",
-            "        (vrf_block_rb_stanza",
-            "          VRF:'vrf'",
-            "          name = VARIABLE:'aVrfWithInnerStatements'",
-            "          NEWLINE:'\\n'",
+            "        (address_family_rb_stanza",
+            "          (address_family_header",
+            "            ADDRESS_FAMILY:'address-family'",
+            "            af = (bgp_address_family*",
+            "              IPV4:'ipv4'",
+            "              VRF:'vrf'",
+            "              vrf_name = VARIABLE:'aVrfWithInnerStatements')",
+            "            NEWLINE:'\\n')",
             "          (neighbor_flat_rb_stanza",
             "            NEIGHBOR:'neighbor'",
             "            ip = IP_ADDRESS:'10.0.1.2'  <== mode:M_NEIGHBOR",
@@ -7140,7 +7138,9 @@
             "          (bgp_tail*",
             "            (default_originate_bgp_tail",
             "              DEFAULT_ORIGINATE:'default-originate'",
-            "              NEWLINE:'\\n'))))))",
+            "              NEWLINE:'\\n'))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (route_map_stanza",
             "      ROUTE_MAP:'route-map'",
@@ -31419,9 +31419,8 @@
             "              SYNCHRONIZATION:'synchronization'",
             "              (null_rest_of_line*",
             "                NEWLINE:'\\n')))",
-            "          (address_family_footer*",
-            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "            NEWLINE:'\\n')))))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_null*",
             "      (null_single*",
@@ -43543,7 +43542,8 @@
             "                num = (dec*",
             "                  UINT8:'3')",
             "                NEWLINE:'\\n')))",
-            "          (address_family_footer*)))))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -43700,7 +43700,8 @@
             "              (activate_bgp_tail",
             "                ACTIVATE:'activate'",
             "                NEWLINE:'\\n')))",
-            "          (address_family_footer*)))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))",
             "      (router_bgp_stanza_tail*",
             "        (address_family_rb_stanza",
             "          (address_family_header",
@@ -43724,9 +43725,8 @@
             "                list_name = VARIABLE:'VPNV6_PL'  <== mode:M_Name",
             "                IN:'in'",
             "                NEWLINE:'\\n')))",
-            "          (address_family_footer*",
-            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "            NEWLINE:'\\n')))))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -44373,9 +44373,8 @@
             "              ROUTER_ID:'router-id'",
             "              routerid = IP_ADDRESS:'10.10.10.10'",
             "              NEWLINE:'\\n'))",
-            "          (address_family_footer*",
-            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "            NEWLINE:'\\n\\n')))))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -62946,137 +62945,6 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/neighbor_mix" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza*",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'neighbor_mix'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza*",
-            "    (router_bgp_stanza",
-            "      ROUTER:'router'",
-            "      BGP:'bgp'",
-            "      procnum = (bgp_asn*",
-            "        asn = (dec*",
-            "          UINT8:'1'))",
-            "      NEWLINE:'\\n'",
-            "      (router_bgp_stanza_tail*",
-            "        (router_id_rb_stanza*",
-            "          BGP:'bgp'",
-            "          (router_id_bgp_tail",
-            "            ROUTER_ID:'router-id'",
-            "            routerid = IP_ADDRESS:'10.10.10.10'",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_stanza_tail*",
-            "        (neighbor_flat_rb_stanza",
-            "          NEIGHBOR:'neighbor'",
-            "          ip = IP_ADDRESS:'1.1.1.1'  <== mode:M_NEIGHBOR",
-            "          (remote_as_bgp_tail",
-            "            REMOTE_AS:'remote-as'",
-            "            remote = (bgp_asn*",
-            "              asn = (dec*",
-            "                UINT8:'1'))",
-            "            NEWLINE:'\\n')))",
-            "      (router_bgp_stanza_tail*",
-            "        (address_family_rb_stanza",
-            "          (address_family_header",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            af = (bgp_address_family*",
-            "              IPV4:'ipv4')",
-            "            NEWLINE:'\\n')",
-            "          (bgp_tail*",
-            "            (description_bgp_tail",
-            "              (description_line*",
-            "                DESCRIPTION:'description'",
-            "                text = RAW_TEXT:' neighbor-1-1-1-1-remote-as-1-af-ipv4-desc !nexus'  <== mode:M_Description",
-            "                NEWLINE:'\\n'  <== mode:M_Description)))",
-            "          (neighbor_flat_rb_stanza",
-            "            NEIGHBOR:'neighbor'",
-            "            ip = IP_ADDRESS:'3.3.3.3'  <== mode:M_NEIGHBOR",
-            "            (remote_as_bgp_tail",
-            "              REMOTE_AS:'remote-as'",
-            "              remote = (bgp_asn*",
-            "                asn = (dec*",
-            "                  UINT8:'3'))",
-            "              NEWLINE:'\\n'))",
-            "          (address_family_footer*)))",
-            "      (router_bgp_stanza_tail*",
-            "        (address_family_rb_stanza",
-            "          (address_family_header",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            af = (bgp_address_family*",
-            "              IPV4:'ipv4')",
-            "            NEWLINE:'\\n')",
-            "          (bgp_tail*",
-            "            (description_bgp_tail",
-            "              (description_line*",
-            "                DESCRIPTION:'description'",
-            "                text = RAW_TEXT:' neighbor-3-3-3-3-remote-as-3-af-ipv4-desc !nexus'  <== mode:M_Description",
-            "                NEWLINE:'\\n'  <== mode:M_Description)))",
-            "          (address_family_footer*)))",
-            "      (router_bgp_stanza_tail*",
-            "        (address_family_rb_stanza",
-            "          (address_family_header",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            af = (bgp_address_family*",
-            "              IPV6:'ipv6')",
-            "            NEWLINE:'\\n')",
-            "          (bgp_tail*",
-            "            (description_bgp_tail",
-            "              (description_line*",
-            "                DESCRIPTION:'description'",
-            "                text = RAW_TEXT:' neighbor-3-3-3-3-remote-as-3-af-ipv6-desc !nexus'  <== mode:M_Description",
-            "                NEWLINE:'\\n'  <== mode:M_Description)))",
-            "          (address_family_footer*)))",
-            "      (router_bgp_stanza_tail*",
-            "        (address_family_rb_stanza",
-            "          (address_family_header",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            af = (bgp_address_family*",
-            "              IPV4:'ipv4')",
-            "            NEWLINE:'\\n')",
-            "          (bgp_tail*",
-            "            (network_bgp_tail",
-            "              NETWORK:'network'",
-            "              ip = IP_ADDRESS:'5.5.5.5'",
-            "              MASK:'mask'",
-            "              mask = IP_ADDRESS:'255.255.255.255'",
-            "              NEWLINE:'\\n'))",
-            "          (router_id_rb_stanza*",
-            "            BGP:'bgp'",
-            "            (router_id_bgp_tail",
-            "              ROUTER_ID:'router-id'",
-            "              routerid = IP_ADDRESS:'10.10.10.10'",
-            "              NEWLINE:'\\n'))",
-            "          (neighbor_flat_rb_stanza",
-            "            NEIGHBOR:'neighbor'",
-            "            ip = IP_ADDRESS:'4.4.4.4'  <== mode:M_NEIGHBOR",
-            "            (remote_as_bgp_tail",
-            "              REMOTE_AS:'remote-as'",
-            "              remote = (bgp_asn*",
-            "                asn = (dec*",
-            "                  UINT8:'4'))",
-            "              NEWLINE:'\\n'))",
-            "          (address_family_footer*)))",
-            "      (router_bgp_stanza_tail*",
-            "        (address_family_rb_stanza",
-            "          (address_family_header",
-            "            ADDRESS_FAMILY:'address-family'",
-            "            af = (bgp_address_family*",
-            "              IPV6:'ipv6')",
-            "            NEWLINE:'\\n')",
-            "          (bgp_tail*",
-            "            (description_bgp_tail",
-            "              (description_line*",
-            "                DESCRIPTION:'description'",
-            "                text = RAW_TEXT:' neighbor-4-4-4-4-remote-as-4-af-ipv6-desc !nexus'  <== mode:M_Description",
-            "                NEWLINE:'\\n'  <== mode:M_Description)))",
-            "          (address_family_footer*)))))",
-            "  EOF:<EOF>)"
-          ]
-        },
         "configs/network6" : {
           "sentences" : [
             "(cisco_configuration",
@@ -63105,9 +62973,8 @@
             "              NETWORK:'network'",
             "              prefix = IPV6_PREFIX:'1A01:111:A100:1001::/64'",
             "              NEWLINE:'\\n'))",
-            "          (address_family_footer*",
-            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "            NEWLINE:'\\n')))))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_null*",
             "      (null_single*",
@@ -63237,9 +63104,8 @@
             "              MASK:'mask'",
             "              mask = IP_ADDRESS:'255.255.255.255'",
             "              NEWLINE:'\\n'))",
-            "          (address_family_footer*",
-            "            EXIT_ADDRESS_FAMILY:'exit-address-family'",
-            "            NEWLINE:'\\n')))))",
+            "          EXIT_ADDRESS_FAMILY:'exit-address-family'",
+            "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
         },
@@ -70990,7 +70856,6 @@
         "mos_misc" : "PASSED",
         "msdp_originator_id" : "PASSED",
         "named_and_numbered_lists" : "PASSED",
-        "neighbor_mix" : "WARNINGS",
         "network6" : "PASSED",
         "nexus" : "PASSED",
         "no_aaa_group_server" : "PASSED",
@@ -71409,43 +71274,43 @@
           },
           "route-map" : {
             "AGGREGATE-MAP" : {
-              "definitionLines" : "57",
-              "numReferrers" : 1
-            },
-            "CONNECTED-TO-BGP" : {
-              "definitionLines" : "55",
-              "numReferrers" : 1
-            },
-            "UNSUPP-MAP" : {
               "definitionLines" : "59",
               "numReferrers" : 1
             },
+            "CONNECTED-TO-BGP" : {
+              "definitionLines" : "57",
+              "numReferrers" : 1
+            },
+            "UNSUPP-MAP" : {
+              "definitionLines" : "61",
+              "numReferrers" : 1
+            },
             "ospfv3_map" : {
-              "definitionLines" : "53",
+              "definitionLines" : "55",
               "numReferrers" : 1
             }
           },
           "route-map-clause" : {
             "AGGREGATE-MAP 10" : {
-              "definitionLines" : "57",
-              "numReferrers" : 1
-            },
-            "CONNECTED-TO-BGP 10" : {
-              "definitionLines" : "55",
-              "numReferrers" : 1
-            },
-            "UNSUPP-MAP 10" : {
               "definitionLines" : "59",
               "numReferrers" : 1
             },
+            "CONNECTED-TO-BGP 10" : {
+              "definitionLines" : "57",
+              "numReferrers" : 1
+            },
+            "UNSUPP-MAP 10" : {
+              "definitionLines" : "61",
+              "numReferrers" : 1
+            },
             "ospfv3_map 10" : {
-              "definitionLines" : "53",
+              "definitionLines" : "55",
               "numReferrers" : 1
             }
           },
           "standard ipv4 access-list" : {
             "5" : {
-              "definitionLines" : "61",
+              "definitionLines" : "63",
               "numReferrers" : 2
             }
           }
@@ -74133,7 +73998,6 @@
             }
           }
         },
-        "configs/neighbor_mix" : { },
         "configs/network6" : { },
         "configs/nexus" : { },
         "configs/no_aaa_group_server" : { },
@@ -75726,9 +75590,6 @@
         "configs/named_and_numbered_lists" : [
           "named_and_numbered_lists"
         ],
-        "configs/neighbor_mix" : [
-          "neighbor_mix"
-        ],
         "configs/network6" : [
           "network6"
         ],
@@ -76376,12 +76237,12 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "bgp vrf aggregate-address attribute-map" : [
-                49
+                50
               ]
             },
             "CONNECTED-TO-BGP" : {
               "bgp redistribute connected route-map" : [
-                50
+                51
               ]
             },
             "UNSUPP-MAP" : {
@@ -76413,22 +76274,22 @@
           "route-map-clause" : {
             "AGGREGATE-MAP 10" : {
               "route-map clause" : [
-                57
+                59
               ]
             },
             "CONNECTED-TO-BGP 10" : {
               "route-map clause" : [
-                55
+                57
               ]
             },
             "UNSUPP-MAP 10" : {
               "route-map clause" : [
-                59
+                61
               ]
             },
             "ospfv3_map 10" : {
               "route-map clause" : [
-                53
+                55
               ]
             }
           },
@@ -78992,7 +78853,7 @@
           "ipv6 prefix-list" : {
             "VPNV6_PL" : {
               "bgp inbound ipv6 prefix-list" : [
-                11
+                12
               ]
             }
           },
@@ -83257,7 +83118,7 @@
           "ipv6 prefix-list" : {
             "VPNV6_PL" : {
               "bgp inbound ipv6 prefix-list" : [
-                11
+                12
               ]
             }
           },
@@ -84012,7 +83873,6 @@
             }
           }
         },
-        "configs/neighbor_mix" : { },
         "configs/network6" : { },
         "configs/nexus" : { },
         "configs/no_aaa_group_server" : { },
@@ -84687,22 +84547,6 @@
             }
           ]
         },
-        "neighbor_mix" : {
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '1.1.1.1'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '3.3.3.3'"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Could not determine update source for BGP neighbor: '4.4.4.4'"
-            }
-          ]
-        },
         "non_nexus_neighbor_af" : {
           "Red flags" : [
             {
@@ -85018,7 +84862,6 @@
         "configs/mos_misc" : "PASSED",
         "configs/msdp_originator_id" : "PASSED",
         "configs/named_and_numbered_lists" : "PASSED",
-        "configs/neighbor_mix" : "PASSED",
         "configs/network6" : "PASSED",
         "configs/nexus" : "PASSED",
         "configs/no_aaa_group_server" : "PASSED",

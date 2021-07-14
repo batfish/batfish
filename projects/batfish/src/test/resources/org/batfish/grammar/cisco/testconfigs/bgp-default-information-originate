@@ -26,15 +26,19 @@ ip route vrf VRF4 0.0.0.0 0.0.0.0 Null0
 router bgp 1
  bgp router-id 1.1.1.1
  !
- vrf VRF1
+ address-family ipv4 vrf VRF1
   default-information originate
   redistribute static
+ exit-address-family
  !
- vrf VRF2
+ address-family ipv4 vrf VRF2
   redistribute static
+ exit-address-family
  !
- vrf VRF3
+ address-family ipv4 vrf VRF3
   default-information originate
+ exit-address-family
  !
- vrf VRF4
+ address-family ipv4 vrf VRF4
   network 0.0.0.0/0
+ exit-address-family
