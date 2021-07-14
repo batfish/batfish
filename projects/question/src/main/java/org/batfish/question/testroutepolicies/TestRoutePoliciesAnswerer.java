@@ -37,7 +37,9 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -46,6 +48,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.trace.Tracer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoutingPolicySpecifier;
@@ -61,6 +64,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
   public static final String COL_DIFF = "Difference";
+  public static final String COL_TRACE = "Trace";
 
   @Nonnull private final Direction _direction;
   @Nonnull private final List<Bgpv4Route> _inputRoutes;
@@ -91,30 +95,52 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
-  private Stream<Result> testPolicy(RoutingPolicy policy) {
-    return _inputRoutes.stream().map(route -> testPolicy(policy, route));
+  /**
+   * Produce the results of simulating the given route policy on the given input route.
+   *
+   * @param policy the route policy to simulate
+   * @param inputRoute the input route for the policy
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @return a table row containing the results of the simulation
+   */
+  public static Row rowResultFor(RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
+    return toRow(testPolicy(policy, inputRoute, direction));
   }
 
-  private Result testPolicy(RoutingPolicy policy, Bgpv4Route inputRoute) {
+  private Stream<Result> testPolicy(RoutingPolicy policy) {
+    return _inputRoutes.stream().map(route -> testPolicy(policy, route, _direction));
+  }
+
+  private static Result testPolicy(
+      RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-
-    boolean permit = policy.process(inputRoute, outputRoute, _direction);
+    if (direction == Direction.OUT) {
+      // when simulating a route policy in the OUT direction, the output route's next hop IP must be
+      // unset by default (checked by Environment::build)
+      outputRoute.setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP);
+    }
+    Tracer tracer = new Tracer();
+    tracer.newSubTrace();
+    boolean permit = policy.process(inputRoute, outputRoute, direction, tracer);
+    tracer.endSubTrace();
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
         inputRoute,
         permit ? PERMIT : DENY,
-        permit ? outputRoute.build() : null);
+        permit ? outputRoute.build() : null,
+        tracer.getTrace());
   }
 
   @Override
-  public AnswerElement answer(NetworkSnapshot snapshot) {
+  public TableAnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
     SortedSet<RoutingPolicyId> policies = resolvePolicies(context);
     Multiset<Row> rows =
         getResults(context, policies)
-            .flatMap(this::testPolicy)
-            .map(TestRoutePoliciesAnswerer::toRow)
+            .flatMap(
+                policy ->
+                    _inputRoutes.stream().map(route -> rowResultFor(policy, route, _direction)))
             .collect(ImmutableMultiset.toImmutableMultiset());
 
     TableAnswerElement answerElement = new TableAnswerElement(metadata());
@@ -147,7 +173,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setOriginatorIp(questionsBgpRoute.getOriginatorIp())
         .setMetric(questionsBgpRoute.getMetric())
         .setLocalPreference(questionsBgpRoute.getLocalPreference())
-        .setWeight(questionsBgpRoute.getWeight())
+        .setTag(questionsBgpRoute.getTag())
         .setNetwork(questionsBgpRoute.getNetwork())
         .setCommunities(questionsBgpRoute.getCommunities())
         .setAsPath(questionsBgpRoute.getAsPath())
@@ -162,6 +188,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     }
     return org.batfish.datamodel.questions.BgpRoute.builder()
         .setWeight(dataplaneBgpRoute.getWeight())
+        // TODO: The next-hop IP AUTO/NONE (Ip.AUTO) is used to denote multiple different things;
+        // we should distinguish these uses clearly from one another in the results returned by this
+        // question. If the simulated route map has direction OUT, AUTO/NONE indicates that the
+        // route map does not explicitly set the next hop.  If the simulated route map has direction
+        // IN, AUTO/NONE can indicate that the route is explicitly discarded by the route map, but
+        // it is also used in other situations (see AbstractRoute::NEXT_HOP_IP_EXTRACTOR).
         .setNextHopIp(dataplaneBgpRoute.getNextHopIp())
         .setProtocol(dataplaneBgpRoute.getProtocol())
         .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
@@ -169,7 +201,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setOriginatorIp(dataplaneBgpRoute.getOriginatorIp())
         .setMetric(dataplaneBgpRoute.getMetric())
         .setLocalPreference(dataplaneBgpRoute.getLocalPreference())
-        .setWeight(dataplaneBgpRoute.getWeight())
+        .setTag(dataplaneBgpRoute.getTag())
         .setNetwork(dataplaneBgpRoute.getNetwork())
         .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
         .setAsPath(dataplaneBgpRoute.getAsPath())
@@ -234,6 +266,15 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
                 BGP_ROUTE_DIFFS,
                 "The difference between the input and output routes, if any",
                 false,
+                true),
+            new ColumnMetadata(
+                COL_TRACE,
+                Schema.list(Schema.TRACE_TREE),
+                "Route policy trace that shows which clauses/terms matched the input route. If the"
+                    + " trace is empty, either nothing matched or tracing is not yet been"
+                    + " implemented for this policy type. This is an experimental feature whose"
+                    + " content and format is subject to change.",
+                false,
                 true));
     return new TableMetadata(
         columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
@@ -297,6 +338,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             permit
                 ? new BgpRouteDiffs(routeDiffs(inputRoute, toQuestionsBgpRoute(outputRoute)))
                 : null)
+        .put(COL_TRACE, result.getTrace())
         .build();
   }
 

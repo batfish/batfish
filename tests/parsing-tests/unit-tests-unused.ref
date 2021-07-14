@@ -2754,7 +2754,7 @@
         "Source_Lines" : {
           "filename" : "configs/juniper_policy_statement",
           "lines" : [
-            40
+            45
           ]
         }
       },
@@ -2797,7 +2797,12 @@
             34,
             35,
             36,
-            37
+            37,
+            38,
+            39,
+            40,
+            41,
+            42
           ]
         }
       },

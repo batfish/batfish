@@ -1690,7 +1690,12 @@ NEXT_HEADER: 'next-header';
 
 NEXT_HOP
 :
-   'next-hop' -> pushMode(M_Interface)
+   'next-hop'
+   {
+     if (lastTokenType() != THEN) {
+       pushMode(M_Interface);
+     }
+   }
 ;
 
 NEXT_IP: 'next-ip';
@@ -3643,11 +3648,6 @@ M_Interface_PORT_OVERLOADING_FACTOR
 M_Interface_QUOTE
 :
    '"' -> channel ( HIDDEN ) , mode ( M_InterfaceQuote )
-;
-
-M_Interface_SELF
-:
-    'self' -> type ( SELF ), popMode
 ;
 
 M_Interface_TRACEOPTIONS

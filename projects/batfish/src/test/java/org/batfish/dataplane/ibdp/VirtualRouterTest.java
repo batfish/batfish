@@ -99,9 +99,9 @@ public class VirtualRouterTest {
   /** Make a CISCO IOS router with 3 interfaces named Eth1-Eth3, /16 prefixes on each interface */
   private static final Map<String, ConcreteInterfaceAddress> exampleInterfaceAddresses =
       ImmutableMap.<String, ConcreteInterfaceAddress>builder()
-          .put("Ethernet1", ConcreteInterfaceAddress.parse("10.1.0.0/16"))
-          .put("Ethernet2", ConcreteInterfaceAddress.parse("10.2.0.0/16"))
-          .put("Ethernet3", ConcreteInterfaceAddress.parse("10.3.0.0/16"))
+          .put("Ethernet1", ConcreteInterfaceAddress.parse("10.1.0.1/16"))
+          .put("Ethernet2", ConcreteInterfaceAddress.parse("10.2.0.1/16"))
+          .put("Ethernet3", ConcreteInterfaceAddress.parse("10.3.0.1/16"))
           .build();
 
   private static void addInterfaces(
@@ -521,9 +521,7 @@ public class VirtualRouterTest {
     // Check queuing order.
     // Note: contains complains about generics, do manual remove/check
     assertThat(q.remove(), equalTo(new RouteAdvertisement<>(sr1)));
-    assertThat(
-        q.remove(),
-        equalTo(RouteAdvertisement.builder().setRoute(sr2).setReason(Reason.WITHDRAW).build()));
+    assertThat(q.remove(), equalTo(RouteAdvertisement.withdrawing(sr2)));
     assertThat(q, empty());
   }
 

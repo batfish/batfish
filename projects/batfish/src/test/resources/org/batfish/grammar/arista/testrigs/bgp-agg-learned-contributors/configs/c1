@@ -1,0 +1,20 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname c1
+!
+interface Ethernet1
+ no switchport
+ ip address 10.10.10.1 255.255.255.0
+!
+route-map ALLOW-ALL permit 10
+!
+ip route 1.1.1.0 255.255.255.0 Null0
+ip route 2.2.2.0 255.255.255.0 Null0
+!
+router bgp 2
+  router-id 1.1.1.1
+  redistribute static
+  neighbor 10.10.10.2 remote-as 2
+  neighbor 10.10.10.2 route-map ALLOW-ALL in
+  neighbor 10.10.10.2 route-map ALLOW-ALL out
+!

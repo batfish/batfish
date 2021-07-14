@@ -12,7 +12,6 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENG
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
-import static org.batfish.datamodel.routing_policy.Common.generateGenerationPolicy;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -42,6 +41,7 @@ import static org.batfish.representation.cisco.CiscoConversions.toOspfHelloInter
 import static org.batfish.representation.cisco.CiscoConversions.toOspfNetworkType;
 import static org.batfish.representation.cisco.OspfProcess.DEFAULT_LOOPBACK_OSPF_COST;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -55,6 +55,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -126,6 +127,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -190,6 +192,7 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.vendor_family.cisco.Aaa;
@@ -198,14 +201,13 @@ import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.VendorStructureId;
 
 public final class CiscoConfiguration extends VendorConfiguration {
   public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(matchDefaultRoute());
-
-  private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
   /*
    * This map is used to convert interface names to their canonical forms.
@@ -372,7 +374,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     throw new BatfishException("Invalid interface name prefix: '" + prefix + "'");
   }
 
-  private static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
+  @VisibleForTesting
+  static String getRouteMapClausePolicyName(RouteMap map, int continueTarget) {
     String mapName = map.getName();
     String clausePolicyName = "~RMCLAUSE~" + mapName + "~" + continueTarget + "~";
     return clausePolicyName;
@@ -939,7 +942,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, BgpProcess proc, String vrfName) {
-    org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
@@ -978,6 +980,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     proc.getAggregateNetworks().values().stream()
         .map(ipv4Aggregate -> toBgpAggregate(ipv4Aggregate, c))
         .forEach(newBgpProcess::addAggregate);
+    // TODO Handle IPv6 aggregates
 
     /*
      * Create common BGP export policy. This policy's only function is to prevent export of
@@ -1005,29 +1008,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String redistPolicyName = generatedBgpRedistributionPolicyName(vrfName);
     RoutingPolicy.Builder redistributionPolicy =
         RoutingPolicy.builder().setOwner(c).setName(redistPolicyName);
-
-    // add generated routes for aggregate ipv6 addresses
-    // TODO: merge with above to make cleaner
-    for (Entry<Prefix6, BgpAggregateIpv6Network> e : proc.getAggregateIpv6Networks().entrySet()) {
-      Prefix6 prefix6 = e.getKey();
-      BgpAggregateIpv6Network aggNet = e.getValue();
-
-      // create generation policy for aggregate network
-      RoutingPolicy genPolicy = generateGenerationPolicy(c, vrfName, prefix6);
-      GeneratedRoute6 gr = new GeneratedRoute6(prefix6, CISCO_AGGREGATE_ROUTE_ADMIN_COST);
-      gr.setGenerationPolicy(genPolicy.getName());
-      gr.setDiscard(true);
-      v.getGeneratedIpv6Routes().add(gr);
-
-      // set attribute map for aggregate network
-      String attributeMapName = aggNet.getAttributeMap();
-      if (attributeMapName != null) {
-        RouteMap attributeMap = _routeMaps.get(attributeMapName);
-        if (attributeMap != null) {
-          gr.setAttributePolicy(attributeMapName);
-        }
-      }
-    }
 
     // Redistribute routes
     Stream.of(
@@ -1372,9 +1352,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .setOwner(c)
             .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
             .build();
-    if (newIface.getInterfaceType() == InterfaceType.VLAN) {
-      newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
-    }
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
@@ -1385,7 +1362,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CollectionUtil.toImmutableMap(
             iface.getHsrpGroups(), Entry::getKey, e -> CiscoConversions.toHsrpGroup(e.getValue())));
     newIface.setHsrpVersion(iface.getHsrpVersion());
-    newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setSpeed(
         firstNonNull(
@@ -1404,18 +1380,57 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setMlagId(iface.getMlagId());
     newIface.setMtu(iface.getMtu());
     newIface.setProxyArp(iface.getProxyArp());
-    newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
-    newIface.setSwitchport(iface.getSwitchport());
     newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
+    newIface.setSwitchport(iface.getSwitchport());
 
-    // All prefixes is the combination of the interface prefix + any secondary prefixes.
-    ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
-    if (iface.getAddress() != null) {
-      newIface.setAddress(iface.getAddress());
-      allPrefixes.add(iface.getAddress());
+    if (newIface.getSwitchport()) {
+      newIface.setSwitchportMode(iface.getSwitchportMode());
+
+      // switch settings
+      if (iface.getSwitchportMode() == SwitchportMode.ACCESS) {
+        newIface.setAccessVlan(firstNonNull(iface.getAccessVlan(), 1));
+      }
+
+      if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+        SwitchportEncapsulationType encapsulation =
+            firstNonNull(
+                // TODO: check if this is OK
+                iface.getSwitchportTrunkEncapsulation(), SwitchportEncapsulationType.DOT1Q);
+        newIface.setSwitchportTrunkEncapsulation(encapsulation);
+        if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
+          /*
+           * Compute allowed VLANs:
+           * - If allowed VLANs are set, honor them;
+           */
+          if (iface.getAllowedVlans() != null) {
+            newIface.setAllowedVlans(iface.getAllowedVlans());
+          } else {
+            newIface.setAllowedVlans(Interface.ALL_VLANS);
+          }
+        }
+        newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
+      }
+
+      newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
+    } else {
+      newIface.setSwitchportMode(SwitchportMode.NONE);
+      if (newIface.getInterfaceType() == InterfaceType.VLAN) {
+        newIface.setVlan(CommonUtil.getInterfaceVlanNumber(ifaceName));
+        newIface.setAutoState(iface.getAutoState());
+      }
+
+      // All prefixes is the combination of the interface prefix + any secondary prefixes.
+      ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
+      if (iface.getAddress() != null) {
+        newIface.setAddress(iface.getAddress());
+        allPrefixes.add(iface.getAddress());
+      }
+      allPrefixes.addAll(iface.getSecondaryAddresses());
+      newIface.setAllAddresses(allPrefixes.build());
+
+      // subinterface settings
+      newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
     }
-    allPrefixes.addAll(iface.getSecondaryAddresses());
-    newIface.setAllAddresses(allPrefixes.build());
 
     EigrpProcess eigrpProcess = null;
     if (iface.getAddress() != null) {
@@ -1512,35 +1527,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         isisInterfaceSettingsBuilder.setLevel2(levelSettings);
       }
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
-    }
-
-    // subinterface settings
-    newIface.setEncapsulationVlan(iface.getEncapsulationVlan());
-
-    // switch settings
-    newIface.setAccessVlan(iface.getAccessVlan());
-
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      newIface.setNativeVlan(firstNonNull(iface.getNativeVlan(), 1));
-    }
-
-    newIface.setSwitchportMode(iface.getSwitchportMode());
-    SwitchportEncapsulationType encapsulation = iface.getSwitchportTrunkEncapsulation();
-    if (encapsulation == null) { // no encapsulation set, so use default..
-      // TODO: check if this is OK
-      encapsulation = SwitchportEncapsulationType.DOT1Q;
-    }
-    newIface.setSwitchportTrunkEncapsulation(encapsulation);
-    if (iface.getSwitchportMode() == SwitchportMode.TRUNK) {
-      /*
-       * Compute allowed VLANs:
-       * - If allowed VLANs are set, honor them;
-       */
-      if (iface.getAllowedVlans() != null) {
-        newIface.setAllowedVlans(iface.getAllowedVlans());
-      } else {
-        newIface.setAllowedVlans(Interface.ALL_VLANS);
-      }
     }
 
     String incomingFilterName = iface.getIncomingFilter();
@@ -2176,7 +2162,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newProcess;
   }
 
-  private RoutingPolicy toRoutingPolicy(Configuration c, RouteMap map) {
+  @VisibleForTesting
+  RoutingPolicy toRoutingPolicy(Configuration c, RouteMap map) {
     boolean hasContinue =
         map.getClauses().values().stream().anyMatch(clause -> clause.getContinueLine() != null);
     if (hasContinue) {
@@ -2212,7 +2199,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       clauses.put(clauseNumber, ifExpr);
       ifExpr.setComment(clausePolicyName);
       ifExpr.setGuard(conj);
-      List<Statement> matchStatements = ifExpr.getTrueStatements();
+      List<Statement> matchStatements = new LinkedList<>();
       for (RouteMapSetLine rmSet : rmClause.getSetList()) {
         rmSet.applyTo(matchStatements, this, c, _w);
       }
@@ -2233,13 +2220,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       } else {
         ifExpr.getFalseStatements().add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
+      ifExpr.setTrueStatements(
+          ImmutableList.of(
+              makeClauseTraceable(matchStatements, clauseNumber, map.getName(), _filename)));
       followingClause = ifExpr;
     }
     statements.add(followingClause);
     return output;
   }
 
-  private RoutingPolicy toRoutingPolicies(Configuration c, RouteMap map) {
+  @VisibleForTesting
+  RoutingPolicy toRoutingPolicies(Configuration c, RouteMap map) {
     RoutingPolicy output = new RoutingPolicy(map.getName(), c);
     List<Statement> statements = output.getStatements();
     Map<Integer, RoutingPolicy> clauses = new HashMap<>();
@@ -2292,12 +2283,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           }
           continueTargetPolicy = clauses.get(continueTarget);
           if (continueTargetPolicy == null) {
-            String name = "clause: '" + continueTarget + "' in route-map: '" + map.getName() + "'";
-            undefined(
-                CiscoStructureType.ROUTE_MAP_CLAUSE,
-                name,
-                CiscoStructureUsage.ROUTE_MAP_CONTINUE,
-                continueStatement.getStatementLine());
             continueStatement = null;
           }
         } else {
@@ -2328,11 +2313,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
             .getFalseStatements()
             .add(Statements.ReturnLocalDefaultAction.toStaticStatement());
       }
+      ifStatement.setTrueStatements(
+          ImmutableList.of(
+              makeClauseTraceable(onMatchStatements, clauseNumber, map.getName(), _filename)));
       followingClause = clausePolicy;
       followingClauseNumber = clauseNumber;
     }
     statements.add(new CallStatement(followingClause.getName()));
     return output;
+  }
+
+  @VisibleForTesting
+  static TraceableStatement makeClauseTraceable(
+      List<Statement> matchStatements, int clauseNumber, String mapName, String filename) {
+    return new TraceableStatement(
+        TraceElement.builder()
+            .add("Matched ")
+            .add(
+                String.format("route-map %s clause %d", mapName, clauseNumber),
+                new VendorStructureId(
+                    filename,
+                    CiscoStructureType.ROUTE_MAP_CLAUSE.getDescription(),
+                    computeRouteMapClauseName(mapName, clauseNumber)))
+            .build(),
+        matchStatements);
   }
 
   @Override
@@ -3071,6 +3075,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(CiscoStructureType.ROUTE_MAP);
 
+    // mark references to route-map clauses
+    markConcreteStructure(CiscoStructureType.ROUTE_MAP_CLAUSE);
+
     // Cable
     markConcreteStructure(CiscoStructureType.DEPI_CLASS);
     markConcreteStructure(CiscoStructureType.DEPI_TUNNEL);
@@ -3773,5 +3780,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
+  }
+
+  public static @Nonnull String computeRouteMapClauseName(String routeMapName, int sequence) {
+    return String.format("%s %d", routeMapName, sequence);
   }
 }

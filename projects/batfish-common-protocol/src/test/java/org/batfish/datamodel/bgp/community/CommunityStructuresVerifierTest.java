@@ -19,6 +19,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.bgp.community.CommunityStructuresVerifier.CommunityStructuresVerifierContext;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.isis.IsisLevel;
@@ -78,10 +79,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
-import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
@@ -105,6 +103,7 @@ import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -148,11 +147,6 @@ public final class CommunityStructuresVerifierTest {
     assertNull(new MatchSourceVrf("a").accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(
         new MatchTag(IntComparator.EQ, new LiteralLong(1L)).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(new NeighborIsAsPath(ImmutableList.of(), true).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(
-        new OriginatesFromAsPath(ImmutableList.of(), true).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(
-        new PassesThroughAsPath(ImmutableList.of(), true).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(RouteIsClassful.instance().accept(BOOLEAN_EXPR_VERIFIER, ctx));
   }
 
@@ -593,6 +587,18 @@ public final class CommunityStructuresVerifierTest {
     _thrown.expect(VendorConversionException.class);
     _thrown.expectMessage(containsString("Undefined reference"));
     new SetCommunities(new CommunitySetExprReference("undefined")).accept(STATEMENT_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitTraceableStatement() {
+    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
+
+    _thrown.expect(VendorConversionException.class);
+    _thrown.expectMessage(containsString("Undefined reference"));
+    new TraceableStatement(
+            TraceElement.of("text"),
+            ImmutableList.of(new SetCommunities(new CommunitySetExprReference("undefined"))))
+        .accept(STATEMENT_VERIFIER, ctx);
   }
 
   @Test

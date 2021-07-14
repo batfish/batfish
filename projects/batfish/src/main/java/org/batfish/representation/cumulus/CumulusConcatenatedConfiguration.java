@@ -135,6 +135,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     c.setDeviceModel(DeviceModel.CUMULUS_UNSPECIFIED);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
     c.setDefaultInboundAction(LineAction.PERMIT);
+    c.setExportBgpFromBgpRib(true);
 
     // create default VRF
     getOrCreateVrf(c, DEFAULT_VRF_NAME);
@@ -690,6 +691,7 @@ public class CumulusConcatenatedConfiguration extends VendorConfiguration {
     markConcreteStructure(CumulusStructureType.IP_PREFIX_LIST);
     markConcreteStructure(CumulusStructureType.LOOPBACK);
     markConcreteStructure(CumulusStructureType.ROUTE_MAP);
+    markConcreteStructure(CumulusStructureType.ROUTE_MAP_ENTRY);
     markConcreteStructure(CumulusStructureType.VLAN);
     markConcreteStructure(CumulusStructureType.VRF);
     markConcreteStructure(CumulusStructureType.VXLAN);

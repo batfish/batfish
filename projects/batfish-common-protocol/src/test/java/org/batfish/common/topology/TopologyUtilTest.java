@@ -40,7 +40,6 @@ import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -134,15 +133,10 @@ public final class TopologyUtilTest {
     Map<String, Configuration> configurations = ImmutableMap.of(c1Name, c1, c2Name, c2);
     Layer1Topology layer1PhysicalTopology =
         new Layer1Topology(
-            ImmutableSet.of(
-                new Layer1Edge(
-                    new Layer1Node(c1Name, c1i1aName), new Layer1Node(c2Name, c2i1aName)),
-                new Layer1Edge(
-                    new Layer1Node(c2Name, c2i1aName), new Layer1Node(c1Name, c1i1aName)),
-                new Layer1Edge(
-                    new Layer1Node(c1Name, c1i1bName), new Layer1Node(c2Name, c2i1bName)),
-                new Layer1Edge(
-                    new Layer1Node(c2Name, c2i1bName), new Layer1Node(c1Name, c1i1bName))));
+            new Layer1Edge(new Layer1Node(c1Name, c1i1aName), new Layer1Node(c2Name, c2i1aName)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i1aName), new Layer1Node(c1Name, c1i1aName)),
+            new Layer1Edge(new Layer1Node(c1Name, c1i1bName), new Layer1Node(c2Name, c2i1bName)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i1bName), new Layer1Node(c1Name, c1i1bName)));
 
     // Test that physical interface edges where the interfaces are members of aggregates get
     // aggregated in the layer-1 logical topology.
@@ -179,12 +173,10 @@ public final class TopologyUtilTest {
     Map<String, Configuration> configurations = ImmutableMap.of(c1Name, c1, c2Name, c2);
     Layer1Topology rawLayer1Topology =
         new Layer1Topology(
-            ImmutableSet.of(
-                new Layer1Edge(new Layer1Node(c1Name, c1i1Name), new Layer1Node(c2Name, c2i1Name)),
-                new Layer1Edge(new Layer1Node(c2Name, c2i1Name), new Layer1Node(c1Name, c1i1Name)),
-                new Layer1Edge(new Layer1Node(c1Name, c1i2Name), new Layer1Node(c2Name, c2i2Name)),
-                new Layer1Edge(
-                    new Layer1Node(c2Name, c2i2Name), new Layer1Node(c1Name, c1i2Name))));
+            new Layer1Edge(new Layer1Node(c1Name, c1i1Name), new Layer1Node(c2Name, c2i1Name)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i1Name), new Layer1Node(c1Name, c1i1Name)),
+            new Layer1Edge(new Layer1Node(c1Name, c1i2Name), new Layer1Node(c2Name, c2i2Name)),
+            new Layer1Edge(new Layer1Node(c2Name, c2i2Name), new Layer1Node(c1Name, c1i2Name)));
 
     // inactive c2i2 should break c1i2<=>c2i2 link
     assertThat(
@@ -258,7 +250,7 @@ public final class TopologyUtilTest {
     MutableGraph<VxlanNode> graph = GraphBuilder.undirected().allowsSelfLoops(false).build();
     graph.putEdge(new VxlanNode(s1Name, vni), new VxlanNode(s2Name, vni));
     VxlanTopology vxlanTopology = new VxlanTopology(graph);
-    Layer1Topology layer1Topology = new Layer1Topology(ImmutableList.of());
+    Layer1Topology layer1Topology = Layer1Topology.EMPTY;
 
     assertTrue(
         computeLayer2Topology(
@@ -673,7 +665,10 @@ public final class TopologyUtilTest {
     Layer2Topology layer2Topology =
         computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
     Topology layer3Topology =
-        computeRawLayer3Topology(layer1Topology, Layer1Topology.EMPTY, layer2Topology, configs);
+        computeRawLayer3Topology(
+            HybridL3Adjacencies.create(
+                layer1Topology, Layer1Topology.EMPTY, layer2Topology, configs),
+            configs);
 
     // Pin down L2 topology: should have broadcast domains for VLANs 1 and 2.
     // TODO: Why do L3 ifaces have entries both with and without a VLAN range? Is that necessary?
@@ -1085,9 +1080,8 @@ public final class TopologyUtilTest {
     ConcreteInterfaceAddress p2Addr1 = ConcreteInterfaceAddress.parse("2.0.0.1/24");
 
     Layer1Topology rawL1AllPresent =
-        new Layer1Topology(
-            ImmutableList.of(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1)));
-    Layer1Topology rawL1NonePresent = new Layer1Topology(ImmutableList.of());
+        new Layer1Topology(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1));
+    Layer1Topology rawL1NonePresent = Layer1Topology.EMPTY;
 
     Layer2Topology sameDomain =
         Layer2Topology.fromDomains(ImmutableList.of(ImmutableSet.of(c1i1, c2i1)));
@@ -1101,7 +1095,10 @@ public final class TopologyUtilTest {
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
-          computeRawLayer3Topology(rawL1AllPresent, Layer1Topology.EMPTY, sameDomain, configs);
+          computeRawLayer3Topology(
+              HybridL3Adjacencies.create(
+                  rawL1AllPresent, Layer1Topology.EMPTY, sameDomain, configs),
+              configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
 
@@ -1113,7 +1110,9 @@ public final class TopologyUtilTest {
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
           computeRawLayer3Topology(
-              rawL1AllPresent, Layer1Topology.EMPTY, differentDomains, configs);
+              HybridL3Adjacencies.create(
+                  rawL1AllPresent, Layer1Topology.EMPTY, differentDomains, configs),
+              configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -1124,7 +1123,10 @@ public final class TopologyUtilTest {
 
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
-          computeRawLayer3Topology(rawL1AllPresent, Layer1Topology.EMPTY, sameDomain, configs);
+          computeRawLayer3Topology(
+              HybridL3Adjacencies.create(
+                  rawL1AllPresent, Layer1Topology.EMPTY, sameDomain, configs),
+              configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -1136,7 +1138,9 @@ public final class TopologyUtilTest {
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
           computeRawLayer3Topology(
-              rawL1AllPresent, Layer1Topology.EMPTY, differentDomains, configs);
+              HybridL3Adjacencies.create(
+                  rawL1AllPresent, Layer1Topology.EMPTY, differentDomains, configs),
+              configs);
       assertThat(layer3Topology.getEdges(), empty());
     }
 
@@ -1149,7 +1153,9 @@ public final class TopologyUtilTest {
       Map<String, Configuration> configs = ImmutableMap.of(c1Name, c1, c2Name, c2);
       Topology layer3Topology =
           computeRawLayer3Topology(
-              rawL1NonePresent, Layer1Topology.EMPTY, differentDomains, configs);
+              HybridL3Adjacencies.create(
+                  rawL1NonePresent, Layer1Topology.EMPTY, differentDomains, configs),
+              configs);
       assertThat(layer3Topology.getEdges(), containsInAnyOrder(c1i1c2i1, c2i1c1i1));
     }
   }
@@ -1218,17 +1224,18 @@ public final class TopologyUtilTest {
     // c1-c2 and c3-c4 are connected
     Layer1Topology logicalL1 =
         new Layer1Topology(
-            ImmutableSet.of(
-                new Layer1Edge(l1c1i1, l1c2i1),
-                new Layer1Edge(l1c2i1, l1c1i1),
-                new Layer1Edge(l1c3i1, l1c4i1),
-                new Layer1Edge(l1c4i1, l1c3i1)));
+            new Layer1Edge(l1c1i1, l1c2i1),
+            new Layer1Edge(l1c2i1, l1c1i1),
+            new Layer1Edge(l1c3i1, l1c4i1),
+            new Layer1Edge(l1c4i1, l1c3i1));
 
     Topology layer3Topology =
         computeRawLayer3Topology(
-            Layer1Topology.EMPTY,
-            logicalL1,
-            TopologyUtil.computeLayer2Topology(logicalL1, VxlanTopology.EMPTY, configs),
+            HybridL3Adjacencies.create(
+                Layer1Topology.EMPTY,
+                logicalL1,
+                TopologyUtil.computeLayer2Topology(logicalL1, VxlanTopology.EMPTY, configs),
+                configs),
             configs);
     assertThat(
         layer3Topology.getEdges(),
@@ -1293,14 +1300,15 @@ public final class TopologyUtilTest {
 
     // c1-c2 are connected
     Layer1Topology logicalL1 =
-        new Layer1Topology(
-            ImmutableSet.of(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1)));
+        new Layer1Topology(new Layer1Edge(l1c1i1, l1c2i1), new Layer1Edge(l1c2i1, l1c1i1));
 
     Topology layer3Topology =
         computeRawLayer3Topology(
-            Layer1Topology.EMPTY,
-            logicalL1,
-            TopologyUtil.computeLayer2Topology(logicalL1, VxlanTopology.EMPTY, configs),
+            HybridL3Adjacencies.create(
+                Layer1Topology.EMPTY,
+                logicalL1,
+                TopologyUtil.computeLayer2Topology(logicalL1, VxlanTopology.EMPTY, configs),
+                configs),
             configs);
     assertThat(
         layer3Topology.getEdges(),
@@ -1384,11 +1392,10 @@ public final class TopologyUtilTest {
 
     Layer1Topology rawLayer1Topology =
         new Layer1Topology(
-            ImmutableList.of(
-                new Layer1Edge(l1B1, l1H1),
-                new Layer1Edge(l1H1, l1B1),
-                new Layer1Edge(l1B2, l1H2),
-                new Layer1Edge(l1H2, l1B2)));
+            new Layer1Edge(l1B1, l1H1),
+            new Layer1Edge(l1H1, l1B1),
+            new Layer1Edge(l1B2, l1H2),
+            new Layer1Edge(l1H2, l1B2));
     Map<String, Configuration> explicitConfigurations =
         ImmutableMap.of(h1Name, cH1, h2Name, cH2, b1Name, cB1, b2Name, cB2);
     IspConfiguration ispConfiguration =
@@ -1433,9 +1440,11 @@ public final class TopologyUtilTest {
 
     Topology layer3Topology =
         computeRawLayer3Topology(
-            rawLayer1Topology,
-            layer1LogicalTopology,
-            computeLayer2Topology(layer1LogicalTopology, VxlanTopology.EMPTY, configurations),
+            HybridL3Adjacencies.create(
+                rawLayer1Topology,
+                layer1LogicalTopology,
+                computeLayer2Topology(layer1LogicalTopology, VxlanTopology.EMPTY, configurations),
+                configurations),
             configurations);
 
     NodeInterfacePair l3B1 = NodeInterfacePair.of(b1Name, i2Name);
@@ -1493,7 +1502,7 @@ public final class TopologyUtilTest {
     Vrf v2 = _vb.setOwner(c2).build();
     _ib.setOwner(c2).setVrf(v2).build();
 
-    Layer1Topology rawLayer1Topology = new Layer1Topology(ImmutableList.of(new Layer1Edge(n1, n2)));
+    Layer1Topology rawLayer1Topology = new Layer1Topology(new Layer1Edge(n1, n2));
     Map<String, Configuration> configurations = ImmutableMap.of(n1Name, c1, n2Name, c2);
     Layer1Topology layer1PhysicalTopology =
         TopologyUtil.cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
@@ -1554,8 +1563,7 @@ public final class TopologyUtilTest {
     _ib.setOwner(c4).setVrf(v4).setName(i1Name).setAddress(n4n3Address).build(); // n4=>n3
 
     Layer1Topology rawLayer1Topology =
-        new Layer1Topology(
-            ImmutableList.of(new Layer1Edge(l1n1, l1n2), new Layer1Edge(l1n2, l1n1)));
+        new Layer1Topology(new Layer1Edge(l1n1, l1n2), new Layer1Edge(l1n2, l1n1));
     Map<String, Configuration> configurations =
         ImmutableMap.of(n1Name, c1, n2Name, c2, n3Name, c3, n4Name, c4);
     Layer1Topology layer1PhysicalTopology =
@@ -1568,11 +1576,13 @@ public final class TopologyUtilTest {
 
     Topology layer3Topology =
         computeRawLayer3Topology(
-            rawLayer1Topology,
-            Layer1Topology.EMPTY,
-            computeLayer2Topology(
-                computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
-                VxlanTopology.EMPTY,
+            HybridL3Adjacencies.create(
+                rawLayer1Topology,
+                Layer1Topology.EMPTY,
+                computeLayer2Topology(
+                    computeLayer1LogicalTopology(layer1PhysicalTopology, configurations),
+                    VxlanTopology.EMPTY,
+                    configurations),
                 configurations),
             configurations);
 
@@ -1614,7 +1624,7 @@ public final class TopologyUtilTest {
     _ib.setOwner(c2).setVrf(v2).build();
 
     Layer1Topology rawLayer1Topology =
-        new Layer1Topology(ImmutableList.of(new Layer1Edge(n1, n2), new Layer1Edge(n2, nCorrupt)));
+        new Layer1Topology(new Layer1Edge(n1, n2), new Layer1Edge(n2, nCorrupt));
     Map<String, Configuration> configurations = ImmutableMap.of(n1Name, c1, n2Name, c2);
     Layer1Topology layer1PhysicalTopology =
         TopologyUtil.cleanLayer1PhysicalTopology(rawLayer1Topology, configurations);
@@ -1749,21 +1759,36 @@ public final class TopologyUtilTest {
     Configuration c1 = _cb.setHostname("c1").build();
     Configuration c2 = _cb.setHostname("c2").build();
     Ip ip = Ip.parse("169.254.0.1");
-    Interface i1 = _ib.setOwner(c1).setAddress(LinkLocalAddress.of(ip)).build();
-    Interface i2 = _ib.setOwner(c2).setAddress(LinkLocalAddress.of(ip)).build();
+    Interface i1 =
+        _ib.setOwner(c1)
+            .setAddress(LinkLocalAddress.of(ip))
+            .setType(InterfaceType.PHYSICAL)
+            .build();
+    Interface i2 =
+        _ib.setOwner(c2)
+            .setAddress(LinkLocalAddress.of(ip))
+            .setType(InterfaceType.PHYSICAL)
+            .build();
 
     Layer1Topology layer1Topology =
         new Layer1Topology(
-            Collections.singleton(
-                new Layer1Edge(
-                    new Layer1Node(c1.getHostname(), i1.getName()),
-                    new Layer1Node(c2.getHostname(), i2.getName()))));
+            new Layer1Edge(
+                new Layer1Node(c1.getHostname(), i1.getName()),
+                new Layer1Node(c2.getHostname(), i2.getName())));
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Topology t =
         computeRawLayer3Topology(
-            layer1Topology,
-            layer1Topology,
-            Layer2Topology.EMPTY,
-            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+            HybridL3Adjacencies.create(
+                layer1Topology,
+                layer1Topology,
+                Layer2Topology.fromDomains(
+                    ImmutableSet.of(
+                        ImmutableSet.of(
+                            new Layer2Node(c1.getHostname(), i1.getName(), null),
+                            new Layer2Node(c2.getHostname(), i2.getName(), null)))),
+                configs),
+            configs);
     Edge edge =
         new Edge(
             NodeInterfacePair.of(c1.getHostname(), i1.getName()),
@@ -1781,37 +1806,54 @@ public final class TopologyUtilTest {
     Configuration c1 = _cb.setHostname("c1").build();
     Configuration c2 = _cb.setHostname("c2").build();
     Ip ip = Ip.parse("169.254.0.1");
-    Interface i1 = _ib.setOwner(c1).setName("ae1").setType(InterfaceType.AGGREGATED).build();
+    Interface i1 =
+        _nf.interfaceBuilder()
+            .setOwner(c1)
+            .setName("ae1")
+            .setType(InterfaceType.AGGREGATED)
+            .build();
     Interface i1sub =
-        _ib.setOwner(c1)
+        _nf.interfaceBuilder()
+            .setOwner(c1)
             .setName("ae1.1")
             .setAddress(LinkLocalAddress.of(ip))
             .setType(InterfaceType.AGGREGATE_CHILD)
+            .setDependencies(ImmutableSet.of(new Dependency("ae1", DependencyType.BIND)))
             .build();
-    Interface i2 = _ib.setOwner(c2).setName("ae2").setType(InterfaceType.AGGREGATED).build();
+    Interface i2 =
+        _nf.interfaceBuilder()
+            .setOwner(c2)
+            .setName("ae2")
+            .setType(InterfaceType.AGGREGATED)
+            .build();
     Interface i2sub =
-        _ib.setOwner(c2)
+        _nf.interfaceBuilder()
+            .setOwner(c2)
             .setName("ae2.2")
             .setType(InterfaceType.AGGREGATE_CHILD)
             .setAddress(LinkLocalAddress.of(ip))
+            .setDependencies(ImmutableSet.of(new Dependency("ae2", DependencyType.BIND)))
             .build();
 
     Layer1Topology layer1Topology =
         new Layer1Topology(
-            Collections.singleton(
-                new Layer1Edge(
-                    new Layer1Node(c1.getHostname(), i1.getName()),
-                    new Layer1Node(c2.getHostname(), i2.getName()))));
+            new Layer1Edge(
+                new Layer1Node(c1.getHostname(), i1.getName()),
+                new Layer1Node(c2.getHostname(), i2.getName())));
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Topology t =
         computeRawLayer3Topology(
-            layer1Topology,
-            layer1Topology,
-            Layer2Topology.fromDomains(
-                ImmutableList.of(
-                    ImmutableSet.of(
-                        new Layer2Node(c1.getHostname(), i1sub.getName(), null),
-                        new Layer2Node(c2.getHostname(), i2sub.getName(), null)))),
-            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+            HybridL3Adjacencies.create(
+                layer1Topology,
+                layer1Topology,
+                Layer2Topology.fromDomains(
+                    ImmutableList.of(
+                        ImmutableSet.of(
+                            new Layer2Node(c1.getHostname(), i1sub.getName(), null),
+                            new Layer2Node(c2.getHostname(), i2sub.getName(), null)))),
+                configs),
+            configs);
     Edge edge =
         new Edge(
             NodeInterfacePair.of(c1.getHostname(), i1sub.getName()),
@@ -1832,7 +1874,7 @@ public final class TopologyUtilTest {
     Interface i1sub =
         _ib.setOwner(c1)
             .setName("ae1.1")
-            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
             .setType(InterfaceType.AGGREGATE_CHILD)
             .build();
     Interface i2 = _ib.setOwner(c2).setName("ae2").setType(InterfaceType.AGGREGATED).build();
@@ -1840,25 +1882,28 @@ public final class TopologyUtilTest {
         _ib.setOwner(c2)
             .setName("ae2.2")
             .setType(InterfaceType.AGGREGATE_CHILD)
-            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.0/24"))
+            .setAddress(ConcreteInterfaceAddress.parse("2.2.2.1/24"))
             .build();
 
     Layer1Topology layer1Topology =
         new Layer1Topology(
-            Collections.singleton(
-                new Layer1Edge(
-                    new Layer1Node(c1.getHostname(), i1.getName()),
-                    new Layer1Node(c2.getHostname(), i2.getName()))));
+            new Layer1Edge(
+                new Layer1Node(c1.getHostname(), i1.getName()),
+                new Layer1Node(c2.getHostname(), i2.getName())));
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Topology t =
         computeRawLayer3Topology(
-            layer1Topology,
-            layer1Topology,
-            Layer2Topology.fromDomains(
-                ImmutableList.of(
-                    ImmutableSet.of(
-                        new Layer2Node(c1.getHostname(), i1sub.getName(), null),
-                        new Layer2Node(c2.getHostname(), i2sub.getName(), null)))),
-            ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2));
+            HybridL3Adjacencies.create(
+                layer1Topology,
+                layer1Topology,
+                Layer2Topology.fromDomains(
+                    ImmutableList.of(
+                        ImmutableSet.of(
+                            new Layer2Node(c1.getHostname(), i1sub.getName(), null),
+                            new Layer2Node(c2.getHostname(), i2sub.getName(), null)))),
+                configs),
+            configs);
     assertThat(t.getEdges(), empty());
   }
 
@@ -1927,9 +1972,8 @@ public final class TopologyUtilTest {
   public void testUnionLayer1PhysicalTopologiesOneMissing() {
     Layer1Edge edge1 = new Layer1Edge("n1", "i1", "n2", "i2");
     assertThat(
-        unionLayer1PhysicalTopologies(
-            Optional.empty(), Optional.of(new Layer1Topology(ImmutableSet.of(edge1)))),
-        equalTo(Optional.of(new Layer1Topology(ImmutableSet.of(edge1)))));
+        unionLayer1PhysicalTopologies(Optional.empty(), Optional.of(new Layer1Topology(edge1))),
+        equalTo(Optional.of(new Layer1Topology(edge1))));
   }
 
   @Test
@@ -1938,12 +1982,12 @@ public final class TopologyUtilTest {
     Layer1Edge edge2 = new Layer1Edge("n1", "i1", "n3", "i3");
     Layer1Edge edge3 = new Layer1Edge("n3", "i3", "n1", "i1");
 
-    Layer1Topology topology1 = new Layer1Topology(ImmutableSet.of(edge1, edge2));
-    Layer1Topology topology2 = new Layer1Topology(ImmutableSet.of(edge1, edge3));
+    Layer1Topology topology1 = new Layer1Topology(edge1, edge2);
+    Layer1Topology topology2 = new Layer1Topology(edge1, edge3);
 
     assertThat(
         unionLayer1PhysicalTopologies(Optional.of(topology1), Optional.of(topology2)),
-        equalTo(Optional.of(new Layer1Topology(ImmutableSet.of(edge1, edge2, edge3)))));
+        equalTo(Optional.of(new Layer1Topology(edge1, edge2, edge3))));
   }
 
   @Test

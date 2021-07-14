@@ -440,7 +440,7 @@ public class OspfTest {
     // R0
     Configuration r0 = cb.setHostname(r0Name).build();
     Vrf v0 = vb.setOwner(r0).build();
-    OspfProcess op0 = opb.setVrf(v0).setRouterId(Ip.parse("10.0.0.0")).build();
+    OspfProcess op0 = opb.setVrf(v0).setRouterId(Ip.parse("10.0.0.1")).build();
     oab.setOspfProcess(op0);
     OspfArea oaR0A0 = oab.setNumber(0L).setNonStub().build();
     OspfArea oaR0A1 =
@@ -460,39 +460,39 @@ public class OspfTest {
     // i01
     ib.setName(i01Name)
         .setOspfSettings(ospf.setAreaName(oaR0A0.getAreaNumber()).build())
-        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
         .build();
     oaR0A0.addInterface(i01Name);
     // i02
     ib.setName(i02Name)
         .setOspfSettings(ospf.setAreaName(oaR0A1.getAreaNumber()).build())
-        .setAddress(ConcreteInterfaceAddress.parse("10.0.2.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.2.1/24"))
         .build();
     oaR0A1.addInterface(i02Name);
     // i04
     ib.setName(i04Name)
         .setOspfSettings(ospf.setAreaName(oaR0A2.getAreaNumber()).build())
-        .setAddress(ConcreteInterfaceAddress.parse("10.0.4.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.4.1/24"))
         .build();
     oaR0A2.addInterface(i04Name);
     // i06
     ib.setName(i06Name)
         .setOspfSettings(ospf.setAreaName(oaR0A3.getAreaNumber()).build())
-        .setAddress(ConcreteInterfaceAddress.parse("10.0.6.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.6.1/24"))
         .build();
     oaR0A3.addInterface(i06Name);
 
     // R1
     Configuration r1 = cb.setHostname(r1Name).build();
     Vrf v1 = vb.setOwner(r1).build();
-    OspfProcess op1 = opb.setVrf(v1).setRouterId(Ip.parse("10.0.1.1")).build();
+    OspfProcess op1 = opb.setVrf(v1).setRouterId(Ip.parse("10.0.1.2")).build();
     oab.setOspfProcess(op1);
     OspfArea oaR1A0 = oab.setNumber(0L).setNonStub().build();
     ib.setOwner(r1).setVrf(v1);
     // i10
     ib.setName(i10Name)
         .setOspfSettings(ospf.setAreaName(oaR1A0.getAreaNumber()).build())
-        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.1/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("10.0.1.2/24"))
         .build();
     oaR1A0.addInterface(i10Name);
 

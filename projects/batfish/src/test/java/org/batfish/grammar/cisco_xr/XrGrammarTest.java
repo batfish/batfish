@@ -8,6 +8,7 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -43,6 +44,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_T
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_EXPORTER_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.FLOW_MONITOR_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.POLICY_MAP;
@@ -50,6 +52,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_SE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.RD_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.SAMPLER_MAP;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_INTERFACE;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.BRIDGE_DOMAIN_ROUTED_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.FLOW_MONITOR_MAP_EXPORTER;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_EGRESS;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_FLOW_IPV4_MONITOR_INGRESS;
@@ -182,6 +186,7 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
@@ -210,6 +215,7 @@ import org.batfish.representation.cisco_xr.AsPathSetExpr;
 import org.batfish.representation.cisco_xr.AsPathSetReference;
 import org.batfish.representation.cisco_xr.AsPathSetVariable;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
+import org.batfish.representation.cisco_xr.BridgeDomain;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
 import org.batfish.representation.cisco_xr.DfaRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.DistributeList;
@@ -258,6 +264,8 @@ import org.batfish.representation.cisco_xr.RoutePolicyElseIfBlock;
 import org.batfish.representation.cisco_xr.RoutePolicyIfStatement;
 import org.batfish.representation.cisco_xr.RoutePolicyStatement;
 import org.batfish.representation.cisco_xr.SimpleExtendedAccessListServiceSpecifier;
+import org.batfish.representation.cisco_xr.TagRewritePolicy;
+import org.batfish.representation.cisco_xr.TagRewritePop;
 import org.batfish.representation.cisco_xr.UnimplementedBoolean;
 import org.batfish.representation.cisco_xr.UniqueLengthAsPathSetElem;
 import org.batfish.representation.cisco_xr.Vrf;
@@ -1225,6 +1233,28 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testOspfDistributeListConversion() {
+    Configuration c = parseConfig("ospf-distribute-list");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2"));
+
+    String iface1Name = "GigabitEthernet0/0/0/1";
+    String iface2Name = "GigabitEthernet0/0/0/2";
+    OspfInterfaceSettings settings1 = c.getActiveInterfaces().get(iface1Name).getOspfSettings();
+    OspfInterfaceSettings settings2 = c.getActiveInterfaces().get(iface2Name).getOspfSettings();
+    assert settings1 != null && settings2 != null;
+
+    // First OSPF process uses a routing policy called RP for inbound distribute-list
+    assertThat(settings1.getInboundDistributeListPolicy(), equalTo("RP"));
+    assertThat(c.getRoutingPolicies(), hasKey("RP"));
+
+    // Second OSPF process uses an ACL for inbound distribute-list.
+    // Semantics of the generated routing policy are tested elsewhere.
+    String generatedRpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "2");
+    assertThat(settings2.getInboundDistributeListPolicy(), equalTo(generatedRpName));
+    assertThat(c.getRoutingPolicies(), hasKey(generatedRpName));
+  }
+
+  @Test
   public void testOspfRedistributionRoutePolicy() {
     String hostname = "ospf-redist-policy";
     Configuration c = parseConfig(hostname);
@@ -1703,8 +1733,16 @@ public final class XrGrammarTest {
   @Test
   public void testMiscIgnoredParsing() {
     String hostname = "xr-misc-ignored";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
     // Do not crash
-    assertNotNull(parseVendorConfig(hostname));
+    assertNotNull(vc);
+
+    // Also make sure context isn't lost when hitting ignored lines, specifically:
+    // Interface is still associated with bridge-domain, not interpreted as top-level
+    assertThat(
+        vc.getBridgeGroups().get("BG1").getBridgeDomains().get("BD1").getInterfaces(),
+        contains("GigabitEthernet0/0/0/1.123"));
   }
 
   @Test
@@ -2275,7 +2313,7 @@ public final class XrGrammarTest {
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
         vc.getDefaultVrf().getBgpProcess().getAggregateNetworks();
-    assertThat(aggs, aMapWithSize(6));
+    assertThat(aggs, aMapWithSize(7));
     assertThat(
         aggs,
         hasEntry(
@@ -2307,6 +2345,13 @@ public final class XrGrammarTest {
         hasEntry(
             equalTo(Prefix.parse("3.2.0.0/16")),
             equalTo(new BgpAggregateIpv4Network(true, Prefix.parse("3.2.0.0/16"), "gen3", false))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                new BgpAggregateIpv4Network(
+                    false, Prefix.parse("4.0.0.0/16"), "undefined", false))));
   }
 
   @Test
@@ -2315,7 +2360,7 @@ public final class XrGrammarTest {
     Configuration c = parseConfig(hostname);
 
     Map<Prefix, BgpAggregate> aggs = c.getDefaultVrf().getBgpProcess().getAggregates();
-    assertThat(aggs, aMapWithSize(6));
+    assertThat(aggs, aMapWithSize(7));
     assertThat(
         aggs,
         hasEntry(
@@ -2367,6 +2412,17 @@ public final class XrGrammarTest {
                     null,
                     // TODO: should be generated policy when inheritance is implemented
                     "gen3",
+                    null))));
+    assertThat(
+        aggs,
+        hasEntry(
+            equalTo(Prefix.parse("4.0.0.0/16")),
+            equalTo(
+                BgpAggregate.of(
+                    Prefix.parse("4.0.0.0/16"),
+                    null,
+                    // undefined -> null for best effort on invalid config
+                    null,
                     null))));
   }
 
@@ -3379,5 +3435,123 @@ public final class XrGrammarTest {
 
     // No other warnings, i.e. other lines are converted successfully
     assertThat(ccae.getWarnings().get(hostname).getRedFlagWarnings(), iterableWithSize(5));
+  }
+
+  @Test
+  public void testL2vpnExtraction() {
+    String hostname = "l2vpn";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(vc.getInterfaces(), hasKeys("BVI1", "GigabitEthernet0/0/0/1.1"));
+
+    assertThat(vc.getBridgeGroups(), hasKeys("BG1"));
+    Map<String, BridgeDomain> bridgeDomains = vc.getBridgeGroups().get("BG1").getBridgeDomains();
+    assertThat(bridgeDomains, hasKeys("BD1", "BD2", "BD3"));
+
+    BridgeDomain bd1 = bridgeDomains.get("BD1");
+    assertThat(bd1.getName(), equalTo("BD1"));
+    assertThat(
+        bd1.getInterfaces(),
+        containsInAnyOrder("GigabitEthernet0/0/0/1.1", "GigabitEthernet0/0/0/2.1"));
+    assertThat(bd1.getRoutedInterface(), equalTo("BVI1"));
+
+    BridgeDomain bd2 = bridgeDomains.get("BD2");
+    assertThat(bd2.getName(), equalTo("BD2"));
+    assertThat(bd2.getInterfaces(), empty());
+    assertThat(bd2.getRoutedInterface(), equalTo("BVI2"));
+
+    BridgeDomain bd3 = bridgeDomains.get("BD3");
+    assertThat(bd3.getName(), equalTo("BD3"));
+    assertThat(bd3.getInterfaces(), empty());
+    assertNull(bd3.getRoutedInterface());
+  }
+
+  @Test
+  public void testL2vpnReferences() {
+    String hostname = "l2vpn";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, INTERFACE, "GigabitEthernet0/0/0/1.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, INTERFACE, "GigabitEthernet0/0/0/2.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae, hasReferencedStructure(filename, INTERFACE, "BVI1", BRIDGE_DOMAIN_ROUTED_INTERFACE));
+    assertThat(
+        ccae, hasReferencedStructure(filename, INTERFACE, "BVI2", BRIDGE_DOMAIN_ROUTED_INTERFACE));
+
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, INTERFACE, "GigabitEthernet0/0/0/2.1", BRIDGE_DOMAIN_INTERFACE));
+    assertThat(
+        ccae, hasUndefinedReference(filename, INTERFACE, "BVI2", BRIDGE_DOMAIN_ROUTED_INTERFACE));
+  }
+
+  @Test
+  public void testInterfaceL2transportExtraction() {
+    String hostname = "interface_l2transport";
+    CiscoXrConfiguration vc = parseVendorConfig(hostname);
+
+    assertNotNull(vc);
+
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys("GigabitEthernet0/0/0/1", "GigabitEthernet0/0/0/1.1", "GigabitEthernet0/0/0/1.2"));
+
+    org.batfish.representation.cisco_xr.Interface ge1 =
+        vc.getInterfaces().get("GigabitEthernet0/0/0/1");
+    org.batfish.representation.cisco_xr.Interface ge11 =
+        vc.getInterfaces().get("GigabitEthernet0/0/0/1.1");
+    TagRewritePolicy ge11Policy = ge11.getRewriteIngressTag();
+    org.batfish.representation.cisco_xr.Interface ge12 =
+        vc.getInterfaces().get("GigabitEthernet0/0/0/1.2");
+    TagRewritePolicy ge12Policy = ge12.getRewriteIngressTag();
+
+    assertFalse(ge1.getL2transport());
+    assertThat(ge1.getEncapsulationVlan(), nullValue());
+
+    assertTrue(ge11.getL2transport());
+    assertThat(ge11Policy, instanceOf(TagRewritePop.class));
+    assertThat(((TagRewritePop) ge11Policy).getPopCount(), equalTo(1));
+    assertFalse(((TagRewritePop) ge11Policy).getSymmetric());
+    assertThat(ge11.getEncapsulationVlan(), equalTo(1));
+
+    assertTrue(ge12.getL2transport());
+    assertThat(ge12Policy, instanceOf(TagRewritePop.class));
+    assertThat(((TagRewritePop) ge12Policy).getPopCount(), equalTo(2));
+    assertTrue(((TagRewritePop) ge12Policy).getSymmetric());
+    assertThat(ge12.getEncapsulationVlan(), equalTo(2));
+  }
+
+  @Test
+  public void testInterfaceL2transportWarning() {
+    String hostname = "interface_l2transport_warning";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected rewrite ingress tag pop range in range 1-2, but got '0'"),
+                hasComment("Expected rewrite ingress tag pop range in range 1-2, but got '3'"),
+                allOf(
+                    hasComment(
+                        "Rewrite policy can only be configured on l2transport interfaces. Ignoring"
+                            + " this line."),
+                    hasText("rewrite ingress tag pop 1 symmetric")))));
   }
 }

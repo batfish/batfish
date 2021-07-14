@@ -35,10 +35,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
-import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
-import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -63,6 +60,7 @@ import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 
 /**
  * Provides functionality to verify absence of undefined/cyclical references in as-path-related
@@ -243,26 +241,8 @@ public final class AsPathStructuresVerifier {
     }
 
     @Override
-    public Void visitNeighborIsAsPath(
-        NeighborIsAsPath neighborIsAsPath, AsPathStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
     public Void visitNot(Not not, AsPathStructuresVerifierContext arg) {
       return not.getExpr().accept(this, arg);
-    }
-
-    @Override
-    public Void visitOriginatesFromAsPath(
-        OriginatesFromAsPath originatesFromAsPath, AsPathStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
-    public Void visitPassesThroughAsPath(
-        PassesThroughAsPath passesThroughAsPath, AsPathStructuresVerifierContext arg) {
-      return null;
     }
 
     @Override
@@ -502,6 +482,13 @@ public final class AsPathStructuresVerifier {
     @Override
     public Void visitStaticStatement(
         StaticStatement staticStatement, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitTraceableStatement(
+        TraceableStatement traceableStatement, AsPathStructuresVerifierContext arg) {
+      traceableStatement.getInnerStatements().stream().forEach(s -> s.accept(this, arg));
       return null;
     }
   }

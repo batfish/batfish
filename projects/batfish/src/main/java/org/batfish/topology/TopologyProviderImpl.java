@@ -1,5 +1,7 @@
 package org.batfish.topology;
 
+import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
+
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -15,9 +17,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
+import org.batfish.common.topology.HybridL3Adjacencies;
 import org.batfish.common.topology.IpOwners;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
@@ -62,13 +66,13 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public Optional<Layer2Topology> getInitialLayer2Topology(NetworkSnapshot networkSnapshot) {
-    return _initialLayer2Topologies.getUnchecked(networkSnapshot);
+  public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+    return _initialLayer3Topologies.getUnchecked(networkSnapshot);
   }
 
   @Override
-  public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
-    return _initialLayer3Topologies.getUnchecked(networkSnapshot);
+  public @Nonnull L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
+    return _initialL3Adjacencies.getUnchecked(networkSnapshot);
   }
 
   @Override
@@ -120,20 +124,20 @@ public final class TopologyProviderImpl implements TopologyProvider {
   }
 
   @Override
-  public @Nonnull Optional<Layer2Topology> getLayer2Topology(NetworkSnapshot snapshot) {
-    try {
-      return _storage.loadLayer2Topology(snapshot);
-    } catch (IOException e) {
-      throw new BatfishException("Could not load layer-2 topology", e);
-    }
-  }
-
-  @Override
   public @Nonnull Topology getLayer3Topology(NetworkSnapshot snapshot) {
     try {
       return _storage.loadLayer3Topology(snapshot);
     } catch (IOException e) {
       throw new BatfishException("Could not load layer-3 topology", e);
+    }
+  }
+
+  @Override
+  public @Nonnull L3Adjacencies getL3Adjacencies(@Nonnull NetworkSnapshot snapshot) {
+    try {
+      return _storage.loadL3Adjacencies(snapshot);
+    } catch (IOException e) {
+      throw new BatfishException("Could not load L3 Adjacencies", e);
     }
   }
 
@@ -188,11 +192,11 @@ public final class TopologyProviderImpl implements TopologyProvider {
           .maximumSize(MAX_CACHED_SNAPSHOTS)
           .build(CacheLoader.from(this::computeLayer1PhysicalTopology));
 
-  private final LoadingCache<NetworkSnapshot, Optional<Layer2Topology>> _initialLayer2Topologies =
+  private final LoadingCache<NetworkSnapshot, L3Adjacencies> _initialL3Adjacencies =
       CacheBuilder.newBuilder()
           .maximumSize(MAX_CACHED_SNAPSHOTS)
           .softValues()
-          .build(CacheLoader.from(this::computeInitialLayer2Topology));
+          .build(CacheLoader.from(this::computeInitialL3Adjacencies));
 
   private final LoadingCache<NetworkSnapshot, Topology> _rawLayer3Topologies =
       CacheBuilder.newBuilder()
@@ -280,24 +284,6 @@ public final class TopologyProviderImpl implements TopologyProvider {
     }
   }
 
-  private @Nonnull Optional<Layer2Topology> computeInitialLayer2Topology(
-      NetworkSnapshot networkSnapshot) {
-    Span span =
-        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialLayer2Topology").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return getLayer1LogicalTopology(networkSnapshot)
-          .map(
-              layer1LogicalTopology ->
-                  TopologyUtil.computeLayer2Topology(
-                      layer1LogicalTopology,
-                      VxlanTopology.EMPTY,
-                      _batfish.loadConfigurations(networkSnapshot)));
-    } finally {
-      span.finish();
-    }
-  }
-
   private Topology computeInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
     Span span =
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialLayer3Topology").start();
@@ -305,6 +291,27 @@ public final class TopologyProviderImpl implements TopologyProvider {
       assert scope != null; // avoid unused warning
       return TopologyUtil.computeLayer3Topology(
           getRawLayer3Topology(networkSnapshot), ImmutableSet.of());
+    } finally {
+      span.finish();
+    }
+  }
+
+  private @Nonnull L3Adjacencies computeInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
+    Span span =
+        GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialL3Adjacencies").start();
+    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
+      assert scope != null; // avoid unused warning
+      return getLayer1LogicalTopology(networkSnapshot)
+          .<L3Adjacencies>map(
+              l1 -> {
+                Map<String, Configuration> configs = _batfish.loadConfigurations(networkSnapshot);
+                return HybridL3Adjacencies.create(
+                    getRawLayer1PhysicalTopology(networkSnapshot).orElse(Layer1Topology.EMPTY),
+                    l1,
+                    computeLayer2Topology(l1, VxlanTopology.EMPTY, configs),
+                    configs);
+              })
+          .orElse(GlobalBroadcastNoPointToPoint.instance());
     } finally {
       span.finish();
     }
@@ -331,11 +338,8 @@ public final class TopologyProviderImpl implements TopologyProvider {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       Map<String, Configuration> configurations = _batfish.loadConfigurations(networkSnapshot);
-      return TopologyUtil.computeRawLayer3Topology(
-          getRawLayer1PhysicalTopology(networkSnapshot),
-          getLayer1LogicalTopology(networkSnapshot),
-          getInitialLayer2Topology(networkSnapshot),
-          configurations);
+      L3Adjacencies adjacencies = getInitialL3Adjacencies(networkSnapshot);
+      return TopologyUtil.computeRawLayer3Topology(adjacencies, configurations);
     } finally {
       span.finish();
     }

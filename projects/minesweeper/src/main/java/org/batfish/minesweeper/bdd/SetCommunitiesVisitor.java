@@ -22,7 +22,9 @@ import org.batfish.minesweeper.communities.CommunitySetExprVarCollector;
 /**
  * Collect the sets of community variables that should be set to true / false during the symbolic
  * route analysis of a {@link org.batfish.datamodel.routing_policy.communities.SetCommunities}
- * statement.
+ * statement. Note: The {@link BDDRoute} component of the {@link Arg} should always be a fresh
+ * BDDRoute rather than the current one, since it is used to map community regexes to their
+ * corresponding BDD variables.
  */
 @ParametersAreNonnullByDefault
 public class SetCommunitiesVisitor

@@ -573,7 +573,7 @@ public class EdgesAnswererTest {
         getLayer1Edges(
             _includeNodes,
             _includeRemoteNodes,
-            new Layer1Topology(ImmutableSortedSet.of(new Layer1Edge(layer1Node1, layer1Node2))));
+            new Layer1Topology(new Layer1Edge(layer1Node1, layer1Node2)));
     assertThat(
         rows,
         contains(

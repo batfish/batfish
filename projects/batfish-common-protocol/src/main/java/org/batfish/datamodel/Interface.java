@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -633,7 +634,8 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  private static InterfaceType computeCiscoInterfaceType(String name) {
+  @VisibleForTesting
+  static InterfaceType computeCiscoInterfaceType(String name) {
     if (name.startsWith("Async")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("ATM")) {
@@ -655,30 +657,27 @@ public final class Interface extends ComparableStructure<String> {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Embedded-Service-Engine")) {
       return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Ethernet")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("FastEthernet")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("FortyGigabitEthernet")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("GigabitEthernet")) {
-      return InterfaceType.PHYSICAL;
     } else if (name.startsWith("GMPLS")) {
       return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("HundredGigabitEthernet")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("HundredGigE")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("FortyGigE")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("FiftyGigE")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("FourHundredGigE")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("TwentyFiveGigE")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("TwoHundredGigE")) {
-      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Ethernet")
+        || name.startsWith("FastEthernet")
+        || name.startsWith("FortyGigabitEthernet")
+        || name.startsWith("GigabitEthernet")
+        || name.startsWith("HundredGigabitEthernet")
+        || name.startsWith("HundredGigE")
+        || name.startsWith("FiftyGigE")
+        || name.startsWith("FortyGigE")
+        || name.startsWith("FourHundredGigE")
+        || name.startsWith("TenGigabitEthernet")
+        || name.startsWith("TenGigE")
+        || name.startsWith("TwentyFiveGigE")
+        || name.startsWith("TwoHundredGigE")) {
+      if (name.contains(".")) {
+        // Subinterface
+        return InterfaceType.LOGICAL;
+      } else {
+        return InterfaceType.PHYSICAL;
+      }
     } else if (name.startsWith("Group-Async")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Loopback")) {
@@ -707,10 +706,6 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("Redundant")) {
       return InterfaceType.REDUNDANT;
     } else if (name.startsWith("Serial")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("TenGigabitEthernet")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("TenGigE")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Tunnel")) {
       return InterfaceType.TUNNEL;

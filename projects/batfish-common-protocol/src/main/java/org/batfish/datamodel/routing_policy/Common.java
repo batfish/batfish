@@ -4,7 +4,6 @@ import static java.util.Collections.singletonList;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -54,31 +53,6 @@ public final class Common {
                     DestinationNetwork.instance(),
                     new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))),
                 singletonList(Statements.ReturnTrue.toStaticStatement())))
-        .build();
-  }
-
-  /**
-   * Creates a generation policy for the aggregate network with the given {@link Prefix6}. The
-   * generation policy matches any route with a destination more specific than {@code prefix}.
-   *
-   * @param c {@link Configuration} in which to create the generation policy
-   * @param vrfName Name of VRF in which the aggregate network exists
-   * @param prefix The aggregate network prefix
-   */
-  public static RoutingPolicy generateGenerationPolicy(
-      Configuration c, String vrfName, Prefix6 prefix) {
-    SubRange prefixRange = new SubRange(prefix.getPrefixLength() + 1, Prefix6.MAX_PREFIX_LENGTH);
-    return RoutingPolicy.builder()
-        .setOwner(c)
-        .setName(generatedBgpGenerationPolicyName(false, vrfName, prefix.toString()))
-        .addStatement(
-            new If(
-                new MatchPrefix6Set(
-                    new DestinationNetwork6(),
-                    new ExplicitPrefix6Set(
-                        new Prefix6Space(
-                            Collections.singleton(new Prefix6Range(prefix, prefixRange))))),
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
         .build();
   }
 

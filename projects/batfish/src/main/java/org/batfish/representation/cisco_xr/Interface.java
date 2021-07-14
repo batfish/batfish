@@ -144,6 +144,8 @@ public class Interface implements Serializable {
 
   @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
+  private boolean _l2transport = false;
+
   private int _mtu;
 
   private final String _name;
@@ -187,6 +189,8 @@ public class Interface implements Serializable {
   private SwitchportMode _switchportMode;
 
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
+
+  @Nullable private TagRewritePolicy _rewriteIngressTagPolicy;
 
   private Tunnel _tunnel;
 
@@ -318,6 +322,11 @@ public class Interface implements Serializable {
     return _isisInterfaceMode;
   }
 
+  /** Indicates if this interface is an l2transport interface. */
+  public boolean getL2transport() {
+    return _l2transport;
+  }
+
   public int getMtu() {
     return _mtu;
   }
@@ -376,6 +385,12 @@ public class Interface implements Serializable {
     return _outgoingFilter;
   }
 
+  /** Configured policy for rewriting ingress tags. */
+  @Nullable
+  public TagRewritePolicy getRewriteIngressTag() {
+    return _rewriteIngressTagPolicy;
+  }
+
   public ConcreteInterfaceAddress getAddress() {
     return _address;
   }
@@ -406,7 +421,7 @@ public class Interface implements Serializable {
     return _standbyAddress;
   }
 
-  public Boolean getSwitchport() {
+  public boolean getSwitchport() {
     return _switchport;
   }
 
@@ -489,6 +504,10 @@ public class Interface implements Serializable {
     _isisInterfaceMode = mode;
   }
 
+  public void setL2transport(boolean l2transport) {
+    _l2transport = l2transport;
+  }
+
   public void setMtu(int mtu) {
     _mtu = mtu;
   }
@@ -535,6 +554,10 @@ public class Interface implements Serializable {
 
   public void setOutgoingFilter(String accessListName) {
     _outgoingFilter = accessListName;
+  }
+
+  public void setRewriteIngressTag(TagRewritePolicy tagRewritePolicy) {
+    _rewriteIngressTagPolicy = tagRewritePolicy;
   }
 
   public void setAddress(ConcreteInterfaceAddress address) {

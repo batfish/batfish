@@ -32,6 +32,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.expr.RibExpr;
+import org.batfish.datamodel.trace.Tracer;
 
 public class Environment {
   /**
@@ -39,7 +40,6 @@ public class Environment {
    * several fields.
    */
   public static Builder builder(@Nonnull Configuration c) {
-    ConfigurationFormat format = c.getConfigurationFormat();
     return new Builder()
         .setAsPathAccessLists(c.getAsPathAccessLists())
         .setAsPathExprs(c.getAsPathExprs())
@@ -53,10 +53,19 @@ public class Environment {
         .setRouteFilterLists(c.getRouteFilterLists())
         .setRoute6FilterLists(c.getRoute6FilterLists())
         .setRoutingPolicies(c.getRoutingPolicies())
-        .setUseOutputAttributes(
-            format == ConfigurationFormat.JUNIPER
-                || format == ConfigurationFormat.JUNIPER_SWITCH
-                || format == ConfigurationFormat.FLAT_JUNIPER);
+        .setUseOutputAttributes(useOutputAttributesFor(c));
+  }
+
+  /**
+   * Indicates whether simulation of route policies in the given {@link Configuration} should match
+   * on the output route attributes instead of the original route attributes, based on the
+   * configuration's format.
+   */
+  public static boolean useOutputAttributesFor(@Nonnull Configuration c) {
+    ConfigurationFormat format = c.getConfigurationFormat();
+    return format == ConfigurationFormat.JUNIPER
+        || format == ConfigurationFormat.JUNIPER_SWITCH
+        || format == ConfigurationFormat.FLAT_JUNIPER;
   }
 
   public enum Direction {
@@ -100,6 +109,7 @@ public class Environment {
   private final boolean _useOutputAttributes;
   private boolean _writeToIntermediateBgpAttributes;
   private Boolean _suppressed;
+  @Nullable private final Tracer _tracer;
 
   private Environment(
       Map<String, AsPathAccessList> asPathAccessLists,
@@ -131,7 +141,8 @@ public class Environment {
       Map<String, Route6FilterList> route6FilterLists,
       Map<String, RouteFilterList> routeFilterLists,
       boolean useOutputAttributes,
-      boolean writeToIntermediateBgpAttributes) {
+      boolean writeToIntermediateBgpAttributes,
+      @Nullable Tracer tracer) {
     _asPathAccessLists = asPathAccessLists;
     _asPathExprs = asPathExprs;
     _asPathMatchExprs = asPathMatchExprs;
@@ -166,6 +177,7 @@ public class Environment {
             : null;
     _useOutputAttributes = useOutputAttributes;
     _writeToIntermediateBgpAttributes = writeToIntermediateBgpAttributes;
+    _tracer = tracer;
   }
 
   public Map<String, AsPathAccessList> getAsPathAccessLists() {
@@ -310,6 +322,11 @@ public class Environment {
     return _writeToIntermediateBgpAttributes;
   }
 
+  @Nullable
+  public Tracer getTracer() {
+    return _tracer;
+  }
+
   public void setBuffered(boolean buffered) {
     _buffered = buffered;
   }
@@ -385,6 +402,7 @@ public class Environment {
     private Map<String, RouteFilterList> _routeFilterLists;
     private boolean _useOutputAttributes;
     private boolean _writeToIntermediateBgpAttributes;
+    @Nullable Tracer _tracer;
 
     private Builder() {}
 
@@ -526,6 +544,11 @@ public class Environment {
       return this;
     }
 
+    public Builder setTracer(@Nullable Tracer tracer) {
+      _tracer = tracer;
+      return this;
+    }
+
     public Environment build() {
       if (_originalRoute instanceof BgpRoute<?, ?>
           && _outputRoute instanceof BgpRoute.Builder<?, ?>
@@ -562,7 +585,8 @@ public class Environment {
           firstNonNull(_route6FilterLists, ImmutableMap.of()),
           firstNonNull(_routeFilterLists, ImmutableMap.of()),
           _useOutputAttributes,
-          _writeToIntermediateBgpAttributes);
+          _writeToIntermediateBgpAttributes,
+          _tracer);
     }
 
     public Builder setRoute6FilterLists(Map<String, Route6FilterList> route6FilterLists) {

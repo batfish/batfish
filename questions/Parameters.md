@@ -10,6 +10,8 @@ For many parameters types, there is a "resolver" question that may be used to le
 
 * [`bgpProcessPropertySpec`](#bgp-process-property-specifier)
 
+* [`bgpRouteStatusSpec`](#bgp-route-status-specifier)
+
 * [`bgpSessionCompatStatusSpec`](#bgp-session-compat-status-specifier)
 
 * [`bgpSessionStatusSpec`](#bgp-session-status-specifier)
@@ -149,6 +151,15 @@ A BGP peer property property specifier follows the [enum set grammar](#set-of-en
 A specification for a set of BGP process properties (e.g., those returned by the `bgpProcessConfiguration` question).
 
 A BGP process property specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values: `Multipath_Match_Mode`, `Multipath_EBGP`, `Multipath_IBGP`, `Neighbors`, `Route_Reflector`, `Tie_Breaker`.
+
+### BGP Route Status Specifier
+
+A specification for a set of BGP route statuses.
+
+A BGP route status specifier follows the [enum set grammar](#set-of-enums-or-names) over the following values:
+
+* `BEST` - a route that is the unique best route for an NLRI (e.g. an IP prefix for IPv4 unicast) in the BGP RIB, or a route that is equivalent to the unique best route for the purpose of ECMP routing. A `BEST` route may be installed in the main RIB.
+* `BACKUP` - a route that is inferior to all `BEST` routes in the BGP RIB for the same NLRI. Such a route will not be installed in the main RIB. However, it may be advertised on a BGP ADD-PATH-enabled session and the route matches the add-path policy.
 
 ### BGP Session Compat Status Specifier
 

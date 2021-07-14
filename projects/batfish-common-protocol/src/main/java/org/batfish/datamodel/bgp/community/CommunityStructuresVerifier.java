@@ -80,10 +80,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
-import org.batfish.datamodel.routing_policy.expr.NeighborIsAsPath;
 import org.batfish.datamodel.routing_policy.expr.Not;
-import org.batfish.datamodel.routing_policy.expr.OriginatesFromAsPath;
-import org.batfish.datamodel.routing_policy.expr.PassesThroughAsPath;
 import org.batfish.datamodel.routing_policy.expr.RibIntersectsPrefixSpace;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
@@ -108,6 +105,7 @@ import org.batfish.datamodel.routing_policy.statement.SetVarMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.StatementVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.visitors.RibExprVisitor;
 
 /**
@@ -290,26 +288,8 @@ public final class CommunityStructuresVerifier {
     }
 
     @Override
-    public Void visitNeighborIsAsPath(
-        NeighborIsAsPath neighborIsAsPath, CommunityStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
     public Void visitNot(Not not, CommunityStructuresVerifierContext arg) {
       return not.getExpr().accept(this, arg);
-    }
-
-    @Override
-    public Void visitOriginatesFromAsPath(
-        OriginatesFromAsPath originatesFromAsPath, CommunityStructuresVerifierContext arg) {
-      return null;
-    }
-
-    @Override
-    public Void visitPassesThroughAsPath(
-        PassesThroughAsPath passesThroughAsPath, CommunityStructuresVerifierContext arg) {
-      return null;
     }
 
     @Override
@@ -773,6 +753,13 @@ public final class CommunityStructuresVerifier {
     @Override
     public Void visitStaticStatement(
         StaticStatement staticStatement, CommunityStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitTraceableStatement(
+        TraceableStatement traceableStatement, CommunityStructuresVerifierContext arg) {
+      traceableStatement.getInnerStatements().stream().forEach(s -> s.accept(this, arg));
       return null;
     }
   }

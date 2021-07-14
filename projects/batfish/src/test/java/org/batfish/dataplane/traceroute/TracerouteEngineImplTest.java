@@ -325,13 +325,13 @@ public class TracerouteEngineImplTest {
     nf.interfaceBuilder()
         .setOwner(c)
         .setVrf(v)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
         .setOutgoingFilter(outgoingFilter)
         .build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     b.computeDataPlane(b.getSnapshot());
-    Flow flow = builder().setIngressNode(c.getHostname()).setDstIp(parse("1.0.0.1")).build();
+    Flow flow = builder().setIngressNode(c.getHostname()).setDstIp(parse("1.0.0.2")).build();
     SortedMap<Flow, List<Trace>> flowTraces =
         b.buildFlows(b.getSnapshot(), ImmutableSet.of(flow), false);
     Trace trace = flowTraces.get(flow).iterator().next();
@@ -357,7 +357,7 @@ public class TracerouteEngineImplTest {
     ib.setOwner(c1)
         .setVrf(v1)
         .setOutgoingFilter(outgoingFilter)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
         .build();
 
     // c2
@@ -373,7 +373,7 @@ public class TracerouteEngineImplTest {
         ImmutableSortedMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
     Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
     b.computeDataPlane(b.getSnapshot());
-    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.1")).build();
+    Flow flow = builder().setIngressNode(c1.getHostname()).setDstIp(Ip.parse("1.0.0.2")).build();
     SortedMap<Flow, List<Trace>> flowTraces =
         b.buildFlows(b.getSnapshot(), ImmutableSet.of(flow), false);
     Trace trace = flowTraces.get(flow).iterator().next();
@@ -647,7 +647,8 @@ public class TracerouteEngineImplTest {
     assertThat(step1.getDetail().getRoutes(), hasSize(1));
     assertThat(
         step1.getDetail().getRoutes(),
-        contains(new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO, null)));
+        contains(
+            new RouteInfo(RoutingProtocol.STATIC, Prefix.parse("0.0.0.0/0"), Ip.AUTO, null, 1, 0)));
 
     FilterStep step2 = (FilterStep) steps.get(2);
     assertThat(step2.getAction(), equalTo(StepAction.PERMITTED));
@@ -777,11 +778,11 @@ public class TracerouteEngineImplTest {
     Ip ip21 = Ip.parse("2.0.0.1");
     Ip ip22 = Ip.parse("2.0.0.2");
     Ip ip33 = Ip.parse("3.0.0.3");
-    Ip ip41 = Ip.parse("4.0.0.1");
+    Ip ip41 = Ip.parse("4.0.0.2");
     Prefix prefix2 = Prefix.parse("2.0.0.0/24");
     Interface.Builder ib = nf.interfaceBuilder().setOwner(c).setVrf(vrf).setActive(true);
     Interface inInterface =
-        ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        ib.setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
             .setIncomingTransformation(
                 when(matchDst(ip21))
                     .apply(NOOP_DEST_NAT)
@@ -789,7 +790,7 @@ public class TracerouteEngineImplTest {
                         when(matchDst(prefix2)).apply(assignDestinationIp(ip33, ip33)).build())
                     .build())
             .build();
-    ib.setAddress(ConcreteInterfaceAddress.parse("4.0.0.0/24"))
+    ib.setAddress(ConcreteInterfaceAddress.parse("4.0.0.1/24"))
         .setOutgoingTransformation(
             when(matchSrc(ip21))
                 .apply(NOOP_SOURCE_NAT)
@@ -2426,7 +2427,7 @@ public class TracerouteEngineImplTest {
     ib.setOwner(c1)
         .setVrf(v1)
         .setOutgoingFilter(outgoingFilter)
-        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.0/24"))
+        .setAddress(ConcreteInterfaceAddress.parse("1.0.0.1/24"))
         .build();
 
     // c2

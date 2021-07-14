@@ -621,6 +621,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _c.setDeviceModel(DeviceModel.CUMULUS_UNSPECIFIED);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setDefaultInboundAction(LineAction.PERMIT);
+    _c.setExportBgpFromBgpRib(true);
 
     convertPhysicalInterfaces();
     convertBondInterfaces();

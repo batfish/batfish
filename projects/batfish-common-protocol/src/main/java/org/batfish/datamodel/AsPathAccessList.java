@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.PatternProvider;
 
 /** An AsPathAccessList is used to filter e/iBGP routes according to their AS-path attribute. */
 public final class AsPathAccessList implements Serializable {
@@ -71,12 +72,9 @@ public final class AsPathAccessList implements Serializable {
   private boolean newPermits(AsPath asPath) {
     boolean accept = false;
     for (AsPathAccessListLine line : _lines) {
-      String regex = line.getRegex();
-      Pattern p = Pattern.compile(regex);
-      String asPathString = asPath.getAsPathString();
-      Matcher matcher = p.matcher(asPathString);
-      boolean match = matcher.find();
-      if (match) {
+      Pattern p = PatternProvider.fromString(line.getRegex());
+      Matcher matcher = p.matcher(asPath.getAsPathString());
+      if (matcher.find()) {
         accept = line.getAction() == LineAction.PERMIT;
         break;
       }

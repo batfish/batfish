@@ -125,6 +125,7 @@ public class Parser extends CommonParser {
         return input(AppSpec());
       case BGP_PEER_PROPERTY_SPECIFIER:
       case BGP_PROCESS_PROPERTY_SPECIFIER:
+      case BGP_ROUTE_STATUS_SPECIFIER:
       case BGP_SESSION_COMPAT_STATUS_SPECIFIER:
       case BGP_SESSION_STATUS_SPECIFIER:
       case BGP_SESSION_TYPE_SPECIFIER:

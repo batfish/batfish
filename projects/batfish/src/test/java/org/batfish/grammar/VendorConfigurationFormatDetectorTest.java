@@ -2,6 +2,7 @@ package org.batfish.grammar;
 
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
 import static org.batfish.datamodel.ConfigurationFormat.CADANT;
+import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS_XR;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
@@ -31,12 +32,33 @@ public class VendorConfigurationFormatDetectorTest {
   @Test
   public void testArista() {
     String eosFlash = "! boot system flash:/vEOS-lab.swi\n";
+    String aristaBatfish = "!BATFISH_FORMAT: arista\n";
     String aristaRancid = "!RANCID-CONTENT-TYPE: arista\n";
     String aristaEos = "! device: some-host (DCS-7250QX-64, EOS-4.14.9M)\n";
 
-    for (String fileText : ImmutableList.of(eosFlash, aristaRancid, aristaEos)) {
+    for (String fileText : ImmutableList.of(eosFlash, aristaBatfish, aristaRancid, aristaEos)) {
       assertThat(identifyConfigurationFormat(fileText), equalTo(ARISTA));
     }
+  }
+
+  @Test
+  public void testBatfishFormatIsGenerous() {
+    for (String s :
+        new String[] {
+          "!BATFISH-FORMAT: cisco_ios",
+          "!BATFISH_FORMAT: cisco_ios",
+          "#BATFISH_FORMAT: cisco_ios",
+          "#   BATFISH_FORMAT: cisco_ios",
+          "#   BATFISH_FORMAT:cisco_ios",
+          "#   BATFISH_FORMAT :cisco_ios",
+        }) {
+      assertThat(s, identifyConfigurationFormat(s), equalTo(CISCO_IOS));
+    }
+  }
+
+  @Test
+  public void testBatfishFormatUnknown() {
+    assertThat(identifyConfigurationFormat("!BATFISH-FORMAT: deep_thought"), equalTo(UNKNOWN));
   }
 
   @Test
@@ -59,10 +81,23 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
+  public void testCheckPoint() {
+    String fileText =
+        "#\n"
+            + "# Configuration of host_name\n"
+            + "# Language version: 13.4v1\n"
+            + "set installer policy check-for-updates-period 3\n"
+            + "set hostname check_point\n";
+    assertThat(identifyConfigurationFormat(fileText), equalTo(CHECK_POINT_GATEWAY));
+  }
+
+  @Test
   public void testF5BigipStructured() {
+    String batfish = "#BATFISH_FORMAT: f5_bigip_structured\n";
     String withRancid = "#RANCID-CONTENT-TYPE: bigip\n";
     String withoutRancid = "#TMSH-VERSION: 1.0\nsys global-settings { }\n";
 
+    assertThat(identifyConfigurationFormat(batfish), equalTo(F5_BIGIP_STRUCTURED));
     assertThat(identifyConfigurationFormat(withRancid), equalTo(F5_BIGIP_STRUCTURED));
     assertThat(identifyConfigurationFormat(withoutRancid), equalTo(F5_BIGIP_STRUCTURED));
   }
@@ -87,6 +122,7 @@ public class VendorConfigurationFormatDetectorTest {
 
   @Test
   public void testIosXr() {
+    String batfish = "!BATFISH-FORMAT: cisco_ios_xr\n";
     String rancidGeneric = "!RANCID-CONTENT-TYPE: cisco\n";
     String xr = "!! IOS XR Configuration 5.2.4\n";
     String xrRancid = "!RANCID-CONTENT-TYPE: cisco-xr\n";
@@ -100,6 +136,7 @@ public class VendorConfigurationFormatDetectorTest {
 
     for (String fileText :
         ImmutableList.of(
+            batfish,
             xr,
             xrRancid,
             xrRancidGeneric,

@@ -1,11 +1,17 @@
 package org.batfish.grammar;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.ConfigurationFormat;
 
 public final class VendorConfigurationFormatDetector {
+  private static final Logger LOGGER =
+      LogManager.getLogger(VendorConfigurationFormatDetector.class);
 
   public static final String BATFISH_FLATTENED_JUNIPER_HEADER =
       "####BATFISH FLATTENED JUNIPER CONFIG####\n";
@@ -20,11 +26,16 @@ public final class VendorConfigurationFormatDetector {
     return new VendorConfigurationFormatDetector(fileText).identifyConfigurationFormat();
   }
 
+  private static final Pattern BATFISH_CONFIG_FORMAT_PATTERN =
+      Pattern.compile("(?m)^[!#] *BATFISH[-_]FORMAT *: *([a-zA-Z0-9_-]+)");
+
   private static final Pattern BANNER_PATTERN = Pattern.compile("(?m)^banner ");
   private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
   private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
+  private static final Pattern CHECK_POINT_GATEWAY_PATTERN =
+      Pattern.compile("(?m)^# Configuration of \\w+\n# Language version: ");
   private static final Pattern CUMULUS_CONCATENATED_PATTERN =
       Pattern.compile("(?m)^# This file describes the network interfaces");
   private static final Pattern CUMULUS_NCLU_PATTERN = Pattern.compile("(?m)^net del all$");
@@ -137,6 +148,14 @@ public final class VendorConfigurationFormatDetector {
   private ConfigurationFormat checkCadant() {
     if (fileTextMatches(CADANT_NETWORK_PATTERN)) {
       return ConfigurationFormat.CADANT;
+    }
+    return null;
+  }
+
+  @Nullable
+  private ConfigurationFormat checkCheckPoint() {
+    if (fileTextMatches(CHECK_POINT_GATEWAY_PATTERN)) {
+      return ConfigurationFormat.CHECK_POINT_GATEWAY;
     }
     return null;
   }
@@ -313,6 +332,22 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
+  private ConfigurationFormat checkBatfish() {
+    Matcher m = BATFISH_CONFIG_FORMAT_PATTERN.matcher(_fileText);
+    if (!m.find()) {
+      return null;
+    }
+    String format = m.group(1);
+    try {
+      return ConfigurationFormat.valueOf(format.toUpperCase());
+    } catch (IllegalArgumentException e) {
+      LOGGER.warn("Unknown Batfish configuration format: {}", format);
+      // This is not a known enum value, force unknown.
+      return ConfigurationFormat.UNKNOWN;
+    }
+  }
+
+  @Nullable
   private ConfigurationFormat checkRancid() {
     Matcher m = RANCID_BASE_PATTERN.matcher(_fileText);
     if (!m.find()) {
@@ -395,6 +430,10 @@ public final class VendorConfigurationFormatDetector {
     if (format != null) {
       return format;
     }
+    format = checkBatfish();
+    if (format != null) {
+      return format;
+    }
     format = checkRancid();
     if (format != null) {
       return format;
@@ -404,94 +443,30 @@ public final class VendorConfigurationFormatDetector {
     // formats we know this file does not match.
     configureHeuristicBlacklist();
 
-    format = checkFortios();
-    if (format != null) {
-      return format;
-    }
-    format = checkRuckusIcx();
-    if (format != null) {
-      return format;
-    }
-    format = checkCadant();
-    if (format != null) {
-      return format;
-    }
-    format = checkCumulusConcatenated();
-    if (format != null) {
-      return format;
-    }
-    format = checkCumulusNclu();
-    if (format != null) {
-      return format;
-    }
-    format = checkF5();
-    if (format != null) {
-      return format;
-    }
-    format = checkCiscoXr();
-    if (format != null) {
-      return format;
-    }
-    format = checkFlatVyos();
-    if (format != null) {
-      return format;
-    }
-    format = checkIpTables();
-    if (format != null) {
-      return format;
-    }
-    format = checkMetamako();
-    if (format != null) {
-      return format;
-    }
-    format = checkMrv();
-    if (format != null) {
-      return format;
-    }
-    format = checkMrvCommands();
-    if (format != null) {
-      return format;
-    }
-    format = checkPaloAlto(false);
-    if (format != null) {
-      return format;
-    }
-    format = checkVyos();
-    if (format != null) {
-      return format;
-    }
-    format = checkArista();
-    if (format != null) {
-      return format;
-    }
-    format = checkBlade();
-    if (format != null) {
-      return format;
-    }
-    format = checkVxWorks();
-    if (format != null) {
-      return format;
-    }
-    format = checkJuniper(false);
-    if (format != null) {
-      return format;
-    }
-    format = checkAlcatelAos();
-    if (format != null) {
-      return format;
-    }
-    format = checkMss();
-    if (format != null) {
-      return format;
-    }
-    format = checkArubaOS();
-    if (format != null) {
-      return format;
-    }
-    format = checkCisco();
-    if (format != null) {
-      return format;
-    }
-    return ConfigurationFormat.UNKNOWN;
+    return firstNonNull(
+        checkCheckPoint(),
+        checkFortios(),
+        checkRuckusIcx(),
+        checkCadant(),
+        checkCumulusConcatenated(),
+        checkCumulusNclu(),
+        checkF5(),
+        checkCiscoXr(),
+        checkFlatVyos(),
+        checkIpTables(),
+        checkMetamako(),
+        checkMrv(),
+        checkMrvCommands(),
+        checkPaloAlto(false),
+        checkVyos(),
+        checkArista(),
+        checkBlade(),
+        checkVxWorks(),
+        checkJuniper(false),
+        checkAlcatelAos(),
+        checkMss(),
+        checkArubaOS(),
+        checkCisco(),
+        ConfigurationFormat.UNKNOWN);
   }
 }

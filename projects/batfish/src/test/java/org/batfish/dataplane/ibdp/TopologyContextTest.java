@@ -3,8 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
@@ -14,9 +13,10 @@ import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
 import java.util.Optional;
+import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
+import org.batfish.common.topology.HybridL3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Node;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.BgpPeerConfigId;
@@ -82,15 +82,16 @@ public final class TopologyContextTest {
         .addEqualityGroup(
             builder
                 .setLayer1LogicalTopology(
-                    Optional.of(
-                        new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+                    Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
                 .build())
         .addEqualityGroup(
             builder
-                .setLayer2Topology(
-                    Optional.of(
-                        Layer2Topology.fromDomains(
-                            ImmutableList.of(ImmutableSet.of(new Layer2Node("a", "b", 5))))))
+                .setL3Adjacencies(
+                    HybridL3Adjacencies.create(
+                        Layer1Topology.EMPTY,
+                        Layer1Topology.EMPTY,
+                        Layer2Topology.EMPTY,
+                        ImmutableMap.of()))
                 .build())
         .addEqualityGroup(
             builder
@@ -100,8 +101,7 @@ public final class TopologyContextTest {
         .addEqualityGroup(
             builder
                 .setRawLayer1PhysicalTopology(
-                    Optional.of(
-                        new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+                    Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
                 .build())
         .addEqualityGroup(
             builder
@@ -145,15 +145,12 @@ public final class TopologyContextTest {
         .setIsisTopology(new IsisTopology(isisTopology))
         .setIpsecTopology(new IpsecTopology(ipsecTopology))
         .setLayer1LogicalTopology(
-            Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
-        .setLayer2Topology(
-            Optional.of(
-                Layer2Topology.fromDomains(
-                    ImmutableList.of(ImmutableSet.of(new Layer2Node("a", "b", 5))))))
+            Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
+        .setL3Adjacencies(GlobalBroadcastNoPointToPoint.instance())
         .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
         .setOspfTopology(new OspfTopology(ospfTopology))
         .setRawLayer1PhysicalTopology(
-            Optional.of(new Layer1Topology(ImmutableList.of(new Layer1Edge("a", "b", "c", "d")))))
+            Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
         .setTunnelTopology(
             TunnelTopology.builder()
                 .add(NodeInterfacePair.of("n1", "i1"), NodeInterfacePair.of("n2", "i2"))

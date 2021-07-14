@@ -11,6 +11,7 @@ junit_tests(
         "**/*Test.java",
     ]),
     resources = [
+        "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_asa/snapshots",
         "//projects/batfish/src/test/resources/org/batfish/grammar/cisco_asa/testconfigs",
     ],
     tags = ["cpu:4"],

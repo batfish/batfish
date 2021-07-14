@@ -603,39 +603,27 @@ public class EdgesAnswerer extends Answerer {
       case VXLAN:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_VNI,
-                Schema.INTEGER,
-                "VNI of the VXLAN tunnel edge",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                COL_VNI, Schema.INTEGER, "VNI of the VXLAN tunnel edge", true, false));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NODE,
-                Schema.NODE,
-                "Node from which the edge originates",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                COL_NODE, Schema.NODE, "Node from which the edge originates", true, false));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_REMOTE_NODE,
-                Schema.NODE,
-                "Node at which the edge terminates",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                COL_REMOTE_NODE, Schema.NODE, "Node at which the edge terminates", true, false));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_VTEP_ADDRESS,
                 Schema.IP,
                 "VTEP IP of node from which the edge originates",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                true,
+                false));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_REMOTE_VTEP_ADDRESS,
                 Schema.IP,
                 "VTEP IP of node at which the edge terminates",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                true,
+                false));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_VLAN,

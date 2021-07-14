@@ -20,6 +20,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
@@ -59,6 +60,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRouteStatus;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
@@ -183,6 +185,7 @@ public class RoutesAnswererUtil {
    * @param network {@link Prefix} of the network used to filter the routes
    * @param protocolSpec {@link RoutingProtocolSpecifier} used to filter the {@link Bgpv4Route}s
    * @param vrfRegex Regex used to filter the routes based on {@link org.batfish.datamodel.Vrf}
+   * @param statuses BGP route statuses that correspond to routes in {code bgpRoutes}.
    * @return {@link Multiset} of {@link Row}s representing the routes
    */
   static Multiset<Row> getBgpRibRoutes(
@@ -191,7 +194,8 @@ public class RoutesAnswererUtil {
       Set<String> matchingNodes,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
-      String vrfRegex) {
+      String vrfRegex,
+      Set<BgpRouteStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
@@ -213,7 +217,11 @@ public class RoutesAnswererUtil {
                                 route ->
                                     rows.add(
                                         bgpRouteToRow(
-                                            hostname, vrfName, route, columnMetadataMap)));
+                                            hostname,
+                                            vrfName,
+                                            route,
+                                            statuses,
+                                            columnMetadataMap)));
                       }
                     }));
     return rows;
@@ -225,7 +233,8 @@ public class RoutesAnswererUtil {
       Set<String> matchingNodes,
       @Nullable Prefix network,
       RoutingProtocolSpecifier protocolSpec,
-      String vrfRegex) {
+      String vrfRegex,
+      Set<BgpRouteStatus> statuses) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, ColumnMetadata> columnMetadataMap = getTableMetadata(ribProtocol).toColumnMap();
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
@@ -247,7 +256,11 @@ public class RoutesAnswererUtil {
                                 route ->
                                     rows.add(
                                         evpnRouteToRow(
-                                            hostname, vrfName, route, columnMetadataMap)));
+                                            hostname,
+                                            vrfName,
+                                            route,
+                                            statuses,
+                                            columnMetadataMap)));
                       }
                     }));
     return rows;
@@ -295,6 +308,7 @@ public class RoutesAnswererUtil {
    * @param hostName {@link String} host-name of the node containing the bgpv4Route
    * @param vrfName {@link String} name of the VRF containing the bgpv4Route
    * @param bgpv4Route {@link Bgpv4Route} BGP route to convert
+   * @param statuses BGP route statuses applicable to the route
    * @param columnMetadataMap Column metadata of the columns for this {@link Row}
    * @return {@link Row} representing the {@link Bgpv4Route}
    */
@@ -302,6 +316,7 @@ public class RoutesAnswererUtil {
       String hostName,
       String vrfName,
       Bgpv4Route bgpv4Route,
+      Set<BgpRouteStatus> statuses,
       Map<String, ColumnMetadata> columnMetadataMap) {
     // If the route's next hop IP is for internal use, do not show it in the row
     Ip nextHopIp =
@@ -328,6 +343,7 @@ public class RoutesAnswererUtil {
             COL_CLUSTER_LIST,
             bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
+        .put(COL_STATUS, statuses)
         .build();
   }
 
@@ -335,6 +351,7 @@ public class RoutesAnswererUtil {
       String hostName,
       String vrfName,
       EvpnRoute<?, ?> evpnRoute,
+      Set<BgpRouteStatus> statuses,
       Map<String, ColumnMetadata> columnMetadataMap) {
     // If the route's next hop IP is for internal use, do not show it in the row
     Ip nextHopIp =
@@ -362,6 +379,7 @@ public class RoutesAnswererUtil {
             evpnRoute.getClusterList().isEmpty() ? null : evpnRoute.getClusterList())
         .put(COL_TAG, evpnRoute.getTag() == Route.UNSET_ROUTE_TAG ? null : evpnRoute.getTag())
         .put(COL_ROUTE_DISTINGUISHER, evpnRoute.getRouteDistinguisher())
+        .put(COL_STATUS, statuses)
         .build();
   }
 

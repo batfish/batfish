@@ -278,83 +278,35 @@ ro_passive_interface
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
 
-ro_redistribute_bgp_cisco_xr
+ro_redistribute
 :
-   REDISTRIBUTE BGP bgp_asn
-   (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE type = uint_legacy
-      )
-      |
-      (
-         TAG tag = uint_legacy
-      )
-   )* NEWLINE
-;
-
-ro_redistribute_connected
-:
-   REDISTRIBUTE
-   (
-      CONNECTED
-      | DIRECT
+   REDISTRIBUTE (
+      ror_routing_instance
+      | ror_routing_instance_null
    )
-   (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE type = uint_legacy
-      )
+;
+
+ror_routing_instance
+:
+   rorri_protocol (
+      METRIC metric = ospf_metric
+      | METRIC_TYPE type = ospf_metric_type
       | ROUTE_POLICY policy = route_policy_name
-      |
-      (
-         TAG tag = uint_legacy
-      )
+      | TAG tag = route_tag_from_0
    )* NEWLINE
 ;
 
-ro_redistribute_eigrp
+rorri_protocol
 :
-   REDISTRIBUTE EIGRP tag = uint_legacy
-   (
-      METRIC metric = uint_legacy
-      | METRIC_TYPE type = uint_legacy
-   )* NEWLINE
+   BGP bgp_asn
+   | CONNECTED
+   | EIGRP eigrp_asn
+   | STATIC
 ;
 
-ro_redistribute_ospf_null
+ror_routing_instance_null
 :
-   REDISTRIBUTE OSPF null_rest_of_line
-;
-
-ro_redistribute_rip
-:
-   REDISTRIBUTE RIP null_rest_of_line
-;
-
-ro_redistribute_static
-:
-   REDISTRIBUTE STATIC
-   (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE type = uint_legacy
-      )
-      | ROUTE_POLICY policy = route_policy_name
-      |
-      (
-         TAG tag = uint_legacy
-      )
-   )* NEWLINE
+   (OSPF | RIP) null_rest_of_line
 ;
 
 ro_router_id
@@ -373,8 +325,7 @@ ro_vrf
    VRF name = variable NEWLINE
    (
       ro_max_metric
-      | ro_redistribute_connected
-      | ro_redistribute_static
+      | ro_redistribute
    )*
 ;
 
@@ -518,12 +469,7 @@ s_router_ospf
       | ro_network
       | ro_passive_interface_default
       | ro_passive_interface
-      | ro_redistribute_bgp_cisco_xr
-      | ro_redistribute_connected
-      | ro_redistribute_eigrp
-      | ro_redistribute_ospf_null
-      | ro_redistribute_rip
-      | ro_redistribute_static
+      | ro_redistribute
       | ro_router_id
       | ro_summary_address
       | ro_vrf
@@ -579,3 +525,9 @@ rompls_traffic_eng_null
 ;
 
 ospf_area: ip = IP_ADDRESS | num = uint32;
+
+// 1-16777214
+ospf_metric: metric = uint32;
+
+// 1 or 2
+ospf_metric_type: type = uint8;

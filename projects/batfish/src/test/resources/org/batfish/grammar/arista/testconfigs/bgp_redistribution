@@ -1,0 +1,21 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname bgp_redistribution
+!
+ip route vrf VRF1 1.1.1.1 255.255.255.255 null0
+ip route vrf VRF2 1.1.1.1 255.255.255.255 null0
+ip route vrf VRF2 2.2.2.2 255.255.255.255 null0
+!
+router bgp 1
+  vrf VRF1
+    router-id 10.10.10.1
+    redistribute static
+  vrf VRF2
+    router-id 10.10.10.2
+    redistribute static route-map RM
+!
+ip prefix-list PL seq 10 permit 1.1.1.1/32
+!
+route-map RM permit 10
+   match ip address prefix-list PL
+!

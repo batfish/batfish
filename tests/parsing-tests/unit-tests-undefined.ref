@@ -2315,7 +2315,7 @@
         "Lines" : {
           "filename" : "configs/eos_mlag",
           "lines" : [
-            19
+            20
           ]
         }
       },
@@ -2900,6 +2900,30 @@
           "filename" : "configs/ios_xr_bgp_neighbor_group",
           "lines" : [
             61
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_l2vpn",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "BVI1",
+        "Context" : "bridge-domain routed interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_l2vpn",
+          "lines" : [
+            24
+          ]
+        }
+      },
+      {
+        "File_Name" : "configs/ios_xr_l2vpn",
+        "Struct_Type" : "interface",
+        "Ref_Name" : "Bundle-Ether9.1",
+        "Context" : "bridge-domain interface",
+        "Lines" : {
+          "filename" : "configs/ios_xr_l2vpn",
+          "lines" : [
+            15
           ]
         }
       },
@@ -4363,10 +4387,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 354 results",
+      "notes" : "Found 356 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 354
+      "numResults" : 356
     }
   }
 ]

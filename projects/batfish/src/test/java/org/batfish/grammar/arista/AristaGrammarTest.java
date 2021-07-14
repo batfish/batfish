@@ -6,14 +6,18 @@ import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.Names.generatedBgpPeerEvpnExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowRemoteAsOut;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendCommunity;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasSendExtendedCommunity;
@@ -60,11 +64,13 @@ import static org.batfish.datamodel.matchers.VniSettingsMatchers.hasVlan;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasL2VniSettings;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasName;
+import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourceIp;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.arista.AristaConfiguration.DEFAULT_LOCAL_BGP_WEIGHT;
 import static org.batfish.representation.arista.AristaStructureType.INTERFACE;
 import static org.batfish.representation.arista.AristaStructureType.POLICY_MAP;
 import static org.batfish.representation.arista.AristaStructureType.VXLAN;
@@ -77,6 +83,7 @@ import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_1;
 import static org.batfish.representation.arista.eos.AristaRedistributeType.OSPF_NSSA_EXTERNAL_TYPE_2;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -167,6 +174,7 @@ import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -572,6 +580,67 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testBgpRedistribution() throws IOException {
+    /*
+     * Config contains two VRFs:
+     * - VRF1 has static route 1.1.1.1/32 and redistributes static into BGP unconditionally
+     * - VRF2 has static routes 1.1.1.1/32 and 2.2.2.2/32, and redistributes static into BGP with a
+     *   route-map that only permits 1.1.1.1/32
+     * - Both VRFs' BGP RIBs should contain 1.1.1.1/32 as a local route.
+     */
+    String hostname = "bgp_redistribution";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    Prefix staticPrefix1 = Prefix.parse("1.1.1.1/32");
+    Prefix staticPrefix2 = Prefix.parse("2.2.2.2/32");
+
+    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32,
+    // and VRF2 should also have 2.2.2.2/32
+    Set<AnnotatedRoute<AbstractRoute>> vrf1Routes =
+        dp.getRibs().get(hostname).get("VRF1").getTypedRoutes();
+    Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
+        dp.getRibs().get(hostname).get("VRF2").getTypedRoutes();
+    assertThat(
+        vrf1Routes, contains(allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC))));
+    assertThat(
+        vrf2Routes,
+        contains(
+            allOf(hasPrefix(staticPrefix1), hasProtocol(RoutingProtocol.STATIC)),
+            allOf(hasPrefix(staticPrefix2), hasProtocol(RoutingProtocol.STATIC))));
+
+    // Both VRFs should have 1.1.1.1/32 in BGP (and not 2.2.2.2/32)
+    int bgpAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(hostname)
+            .getVrfs()
+            .get("VRF1")
+            .getBgpProcess()
+            .getAdminCost(RoutingProtocol.BGP);
+    Bgpv4Route bgpRouteVrf1 =
+        Bgpv4Route.builder()
+            .setNetwork(staticPrefix1)
+            .setNonRouting(true)
+            .setAdmin(bgpAdmin)
+            .setLocalPreference(0)
+            .setNextHop(NextHopDiscard.instance())
+            .setOriginType(OriginType.INCOMPLETE)
+            .setOriginatorIp(Ip.parse("10.10.10.1"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(ZERO) // indicates local origination
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+            .build();
+    Bgpv4Route bgpRouteVrf2 =
+        bgpRouteVrf1.toBuilder().setOriginatorIp(Ip.parse("10.10.10.2")).build();
+    Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
+    Set<Bgpv4Route> vrf2BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF2");
+    assertThat(vrf1BgpRoutes, contains(bgpRouteVrf1));
+    assertThat(vrf2BgpRoutes, contains(bgpRouteVrf2));
+  }
+
+  @Test
   public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "arista-bgp-remove-private-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
@@ -954,8 +1023,232 @@ public class AristaGrammarTest {
 
   @Test
   public void testAggregateAddressConversion() {
-    // Don't crash.
-    parseConfig("arista_bgp_aggregate_address");
+    Configuration c = parseConfig("arista_bgp_aggregate_address");
+
+    // default vrf
+    Map<Prefix, BgpAggregate> defaultVrfAggs = c.getDefaultVrf().getBgpProcess().getAggregates();
+    assertThat(defaultVrfAggs, aMapWithSize(3)); // ipv6 aggregate is not converted
+    assertThat(
+        defaultVrfAggs,
+        hasEntry(
+            Prefix.parse("1.2.33.0/24"),
+            // TODO: Support advertise-only, as-set, and match-map
+            BgpAggregate.of(
+                Prefix.parse("1.2.33.0/24"),
+                SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                null,
+                "ATTR_MAP")));
+    assertThat(
+        defaultVrfAggs,
+        hasEntry(
+            Prefix.parse("1.2.44.0/24"),
+            BgpAggregate.of(
+                Prefix.parse("1.2.44.0/24"), SUMMARY_ONLY_SUPPRESSION_POLICY_NAME, null, null)));
+    assertThat(
+        defaultVrfAggs,
+        hasEntry(
+            Prefix.parse("1.2.55.0/24"),
+            BgpAggregate.of(Prefix.parse("1.2.55.0/24"), null, null, null)));
+
+    // vrf FOO
+    Map<Prefix, BgpAggregate> vrfFooAggs = c.getVrfs().get("FOO").getBgpProcess().getAggregates();
+    assertThat(vrfFooAggs, aMapWithSize(1)); // ipv6 aggregate is not converted
+    assertThat(
+        vrfFooAggs,
+        hasEntry(
+            Prefix.parse("5.6.7.0/24"),
+            // TODO Support as-set
+            BgpAggregate.of(Prefix.parse("5.6.7.0/24"), null, null, null)));
+  }
+
+  @Test
+  public void testBgpAggregateWithLocalSuppressedRoutes() throws IOException {
+    /*
+     * Config has static routes:
+     * - 1.1.1.0/24
+     * - 2.2.2.0/24
+     * - 3.0.0.0/8
+     * - 4.4.4.0/24
+     * - 5.5.0.0/16
+     *
+     * BGP is configured to unconditionally redistribute static routes,
+     * and has aggregates:
+     * 1.1.0.0/16 (not summary-only)
+     * 2.2.0.0/16 (summary-only)
+     * 3.0.0.0/16 (summary-only)
+     * 4.4.0.0/16 (summary-only)
+     * 4.4.4.0/31 (summary-only)
+     * 5.5.0.0/16 (summary-only)
+     *
+     * In the BGP RIB, we should see:
+     * - all local routes
+     * - the 3 aggregate routes with more specific local routes:
+     *   - 1.1.0/0/16
+     *   - 2.2.0.0/16
+     *   - 4.4.0.0/16
+     *
+     * In the main RIB, we should see the static routes and the 3 aggregates activated in the BGP RIB.
+     */
+    String hostname = "bgp_aggregate";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    int localAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(hostname)
+            .getDefaultVrf()
+            .getBgpProcess()
+            // TODO: change to local bgp cost once supported
+            .getAdminCost(RoutingProtocol.IBGP);
+    Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, Configuration.DEFAULT_VRF_NAME);
+    Ip routerId = Ip.parse("1.1.1.1");
+    Prefix staticPrefix1 = Prefix.parse("1.1.1.0/24");
+    Prefix staticPrefix2 = Prefix.parse("2.2.2.0/24");
+    Prefix staticPrefix3 = Prefix.parse("3.0.0.0/8");
+    Prefix staticPrefix4 = Prefix.parse("4.4.4.0/24");
+    Prefix staticPrefix5 = Prefix.parse("5.5.0.0/16");
+    Prefix aggPrefix1 = Prefix.parse("1.1.0.0/16");
+    Prefix aggPrefix2 = Prefix.parse("2.2.0.0/16");
+    Prefix aggPrefix4General = Prefix.parse("4.4.0.0/16");
+    Bgpv4Route localRoute1 =
+        Bgpv4Route.builder()
+            .setNetwork(staticPrefix1)
+            .setNonRouting(true)
+            .setAdmin(localAdmin)
+            .setLocalPreference(0)
+            .setNextHop(NextHopDiscard.instance())
+            .setOriginatorIp(routerId)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+            .build();
+    Bgpv4Route localRoute2 = localRoute1.toBuilder().setNetwork(staticPrefix2).build();
+    Bgpv4Route localRoute3 = localRoute1.toBuilder().setNetwork(staticPrefix3).build();
+    Bgpv4Route localRoute4 = localRoute1.toBuilder().setNetwork(staticPrefix4).build();
+    Bgpv4Route localRoute5 = localRoute1.toBuilder().setNetwork(staticPrefix5).build();
+    Bgpv4Route aggRoute1 =
+        Bgpv4Route.builder()
+            .setNetwork(aggPrefix1)
+            .setAdmin(localAdmin)
+            .setLocalPreference(100)
+            .setNextHop(NextHopDiscard.instance())
+            .setOriginatorIp(routerId)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.AGGREGATE)
+            .setReceivedFromIp(Ip.ZERO) // indicates local origination
+            .setSrcProtocol(RoutingProtocol.AGGREGATE)
+            .build();
+    Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
+    Bgpv4Route aggRoute4General = aggRoute1.toBuilder().setNetwork(aggPrefix4General).build();
+    assertThat(
+        bgpRibRoutes,
+        containsInAnyOrder(
+            localRoute1,
+            localRoute2,
+            localRoute3,
+            localRoute4,
+            localRoute5,
+            aggRoute1,
+            aggRoute2,
+            aggRoute4General));
+
+    Set<AbstractRoute> mainRibRoutes =
+        dp.getRibs().get(hostname).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+    assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
+    assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
+    assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix4General)));
+  }
+
+  @Test
+  public void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
+    /*
+     * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16 and 2.2.2.0/16
+     * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not summary-only) and
+     * 2.2.0.0/16 (summary-only). c2 advertises both aggregates and 1.1.1.0/16 to c3 (not
+     * 2.2.2.0/16, which is suppressed by the summary-only aggregate).
+     *
+     * c1 should also receive c2's aggregate routes. Worth checking in addition to c3's routes
+     * because the c1-c2 peering is IBGP, whereas the c2-c3 peering is EBGP.
+     */
+    String snapshotName = "bgp-agg-learned-contributors";
+    String c1 = "c1";
+    String c2 = "c2";
+    String c3 = "c3";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
+                .build(),
+            _folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    // TODO: change to local bgp cost once supported
+    int aggAdmin =
+        batfish
+            .loadConfigurations(batfish.getSnapshot())
+            .get(c1)
+            .getDefaultVrf()
+            .getBgpProcess()
+            .getAdminCost(RoutingProtocol.IBGP);
+
+    Prefix learnedPrefix1 = Prefix.parse("1.1.1.0/24");
+    Prefix learnedPrefix2 = Prefix.parse("2.2.2.0/24");
+    Prefix aggPrefix1 = Prefix.parse("1.1.0.0/16");
+    Prefix aggPrefix2 = Prefix.parse("2.2.0.0/16");
+    {
+      // Check c2 routes.
+      Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c2, Configuration.DEFAULT_VRF_NAME);
+      Bgpv4Route aggRoute1 =
+          Bgpv4Route.builder()
+              .setNetwork(aggPrefix1)
+              .setAdmin(aggAdmin)
+              .setLocalPreference(100)
+              .setNextHop(NextHopDiscard.instance())
+              .setOriginatorIp(Ip.parse("2.2.2.2"))
+              .setOriginType(OriginType.IGP)
+              .setProtocol(RoutingProtocol.AGGREGATE)
+              .setReceivedFromIp(Ip.ZERO) // indicates local origination
+              .setSrcProtocol(RoutingProtocol.AGGREGATE)
+              .build();
+      Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
+      assertThat(
+          bgpRibRoutes,
+          containsInAnyOrder(
+              hasPrefix(learnedPrefix1),
+              // TODO Once we mark routes as suppressed, assert this one is suppressed
+              hasPrefix(learnedPrefix2),
+              equalTo(aggRoute1),
+              equalTo(aggRoute2)));
+      Set<AbstractRoute> mainRibRoutes =
+          dp.getRibs().get(c2).get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+      assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix1)));
+      // Suppressed routes still go in the main RIB and are used for forwarding
+      assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix2)));
+      assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
+      assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
+    }
+    {
+      // Check c1 routes. (Has both learned routes because it originates them itself.)
+      Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c1, Configuration.DEFAULT_VRF_NAME);
+      assertThat(
+          bgpRibRoutes,
+          containsInAnyOrder(
+              hasPrefix(learnedPrefix1),
+              hasPrefix(learnedPrefix2),
+              hasPrefix(aggPrefix1),
+              hasPrefix(aggPrefix2)));
+    }
+    {
+      // Check c3 routes.
+      Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c3, Configuration.DEFAULT_VRF_NAME);
+      assertThat(
+          bgpRibRoutes,
+          containsInAnyOrder(
+              hasPrefix(learnedPrefix1), hasPrefix(aggPrefix1), hasPrefix(aggPrefix2)));
+    }
   }
 
   @Test
@@ -1758,15 +2051,7 @@ public class AristaGrammarTest {
                 .build();
     Builder builder = Bgpv4Route.testBuilder();
     {
-      String policyName =
-          config
-              .getVrfs()
-              .get("vrf1")
-              .getBgpProcess()
-              .getActiveNeighbors()
-              .get(Prefix.parse("1.1.1.1/32"))
-              .getIpv4UnicastAddressFamily()
-              .getExportPolicy();
+      String policyName = generatedBgpRedistributionPolicyName("vrf1");
       RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
       assertTrue(policy.process(intra, builder, Direction.OUT));
       assertTrue(policy.process(inter, builder, Direction.OUT));
@@ -1774,15 +2059,7 @@ public class AristaGrammarTest {
       assertTrue(policy.process(ext2, builder, Direction.OUT));
     }
     {
-      String policyName =
-          config
-              .getVrfs()
-              .get("vrf2")
-              .getBgpProcess()
-              .getActiveNeighbors()
-              .get(Prefix.parse("2.2.2.2/32"))
-              .getIpv4UnicastAddressFamily()
-              .getExportPolicy();
+      String policyName = generatedBgpRedistributionPolicyName("vrf2");
       RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
       assertTrue(policy.process(intra, builder, Direction.OUT));
       assertTrue(policy.process(inter, builder, Direction.OUT));
@@ -1790,15 +2067,7 @@ public class AristaGrammarTest {
       assertFalse(policy.process(ext2, builder, Direction.OUT));
     }
     {
-      String policyName =
-          config
-              .getVrfs()
-              .get("vrf3")
-              .getBgpProcess()
-              .getActiveNeighbors()
-              .get(Prefix.parse("3.3.3.3/32"))
-              .getIpv4UnicastAddressFamily()
-              .getExportPolicy();
+      String policyName = generatedBgpRedistributionPolicyName("vrf3");
       RoutingPolicy policy = config.getRoutingPolicies().get(policyName);
       assertFalse(policy.process(intra, builder, Direction.OUT));
       assertFalse(policy.process(inter, builder, Direction.OUT));

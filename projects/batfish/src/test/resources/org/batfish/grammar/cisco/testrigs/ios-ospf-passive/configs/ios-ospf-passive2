@@ -2,11 +2,11 @@
 hostname ios-ospf-passive2
 !
 interface Ethernet1
- ip address 10.0.1.0 255.255.255.0
+ ip address 10.0.1.2 255.255.255.0
  no shutdown
 !
 interface Ethernet2
- ip address 10.0.2.0 255.255.255.0
+ ip address 10.0.2.2 255.255.255.0
  no shutdown
 !
 router ospf 1

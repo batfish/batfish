@@ -15,6 +15,8 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.REMOTE_AS
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EBGP;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.MULTIPATH_IBGP;
+import static org.batfish.datamodel.questions.BgpRouteStatus.BACKUP;
+import static org.batfish.datamodel.questions.BgpRouteStatus.BEST;
 import static org.batfish.datamodel.questions.BgpSessionStatus.ESTABLISHED;
 import static org.batfish.datamodel.questions.BgpSessionStatus.NOT_ESTABLISHED;
 import static org.batfish.datamodel.questions.ConfiguredSessionStatus.DYNAMIC_MATCH;
@@ -197,6 +199,15 @@ public class AutoCompleteUtilsTest {
         equalTo(
             ImmutableSet.of(
                 MULTIPATH_EQUIVALENT_AS_PATH_MATCH_MODE, MULTIPATH_EBGP, MULTIPATH_IBGP)));
+  }
+
+  @Test
+  public void testBgpRouteStatusSpecAutocomplete() {
+    assertThat(
+        AutoCompleteUtils.autoComplete(Type.BGP_ROUTE_STATUS_SPEC, "b", 5).stream()
+            .map(AutocompleteSuggestion::getText)
+            .collect(Collectors.toSet()),
+        equalTo(ImmutableSet.of(BACKUP.toString(), BEST.toString())));
   }
 
   @Test

@@ -40,8 +40,6 @@ import org.batfish.specifier.SpecifierFactories;
 
 /** An {@link Answerer} for {@link DifferentialReachabilityQuestion}. */
 public class DifferentialReachabilityAnswerer extends Answerer {
-  public static final String COL_FLOW = "flow";
-
   public DifferentialReachabilityAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }

@@ -763,39 +763,49 @@ public class Batfish extends PluginConsumer implements IBatfish {
       new DataPlane() {
         @Override
         public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
-          return null;
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
-          return null;
+          throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Map<String, Map<String, Fib>> getFibs() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public ForwardingAnalysis getForwardingAnalysis() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
             getRibs() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
             getPrefixTracingInfoSummary() {
-          return null;
+          throw new UnsupportedOperationException();
         }
 
         @Override
         public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
-          return null;
+          throw new UnsupportedOperationException();
         }
       };
 
@@ -837,8 +847,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       _storage.storeBgpTopology(topologies.getBgpTopology(), snapshot);
       LOGGER.info("Storing EIGRP Topology");
       _storage.storeEigrpTopology(topologies.getEigrpTopology(), snapshot);
-      LOGGER.info("Storing Layer2 Topology");
-      _storage.storeLayer2Topology(topologies.getLayer2Topology(), snapshot);
+      LOGGER.info("Storing L3 Adjacencies");
+      _storage.storeL3Adjacencies(topologies.getL3Adjacencies(), snapshot);
       LOGGER.info("Storing Layer3 Topology");
       _storage.storeLayer3Topology(topologies.getLayer3Topology(), snapshot);
       LOGGER.info("Storing OSPF Topology");
@@ -1151,6 +1161,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public InitInfoAnswerElement initInfo(
       NetworkSnapshot snapshot, boolean summary, boolean verboseError) {
+    LOGGER.info("Getting snapshot initialization info");
     ParseVendorConfigurationAnswerElement parseAnswer =
         loadParseVendorConfigurationAnswerElement(snapshot);
     InitInfoAnswerElement answerElement = mergeParseAnswer(summary, verboseError, parseAnswer);
@@ -2215,6 +2226,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @VisibleForTesting
   void initializeTopology(NetworkSnapshot networkSnapshot) {
     Map<String, Configuration> configurations = loadConfigurations(networkSnapshot);
+    LOGGER.info("Initializing topology");
     Topology rawLayer3Topology = _topologyProvider.getRawLayer3Topology(networkSnapshot);
     checkTopology(configurations, rawLayer3Topology);
     org.batfish.datamodel.pojo.Topology pojoTopology =
@@ -2415,6 +2427,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       mergeInternetAndIspNodes(modeledNodes, configurations, layer1Edges, internetWarnings);
 
+      LOGGER.info("Serializing Vendor-Independent configurations");
       Span storeSpan = GlobalTracer.get().buildSpan("store VI configs").start();
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
         assert childScope != null; // avoid unused warning
@@ -2443,6 +2456,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ppSpan.finish();
       }
 
+      LOGGER.info("Computing completion metadata");
       Span metadataSpan =
           GlobalTracer.get().buildSpan("Compute and store completion metadata").start();
       try (Scope childScope = GlobalTracer.get().scopeManager().activate(span)) {
@@ -2669,6 +2683,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     return result;
                   })
               .collect(ImmutableList.toImmutableList());
+      LOGGER.info("Done parsing {} configuration files", jobs.size());
     } finally {
       parseNetworkConfigsSpan.finish();
     }
@@ -2690,6 +2705,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     /* Assemble answer. */
     SortedMap<String, VendorConfiguration> vendorConfigurations = new TreeMap<>();
     parseResults.forEach(pvcr -> pvcr.applyTo(vendorConfigurations, _logger, answerElement));
+    LOGGER.info("Serializing Vendor-Specific configurations");
     Span serializeNetworkConfigsSpan =
         GlobalTracer.get().buildSpan("Serialize network configs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(serializeNetworkConfigsSpan)) {

@@ -10,6 +10,8 @@ public enum CumulusStructureUsage implements StructureUsage {
       "bgp address-family l2vpn advertise ipv4 unicast"),
   BGP_ADDRESS_FAMILY_L2VPN_ADVERTISE_IPV6_UNICAST(
       "bgp address-family l2vpn advertise ipv6 unicast"),
+  BGP_AGGREGATE_ADDRESS_ROUTE_MAP("bgp address-family aggregate-address route-map"),
+  BGP_AGGREGATE_ADDRESS_SUPPRESS_MAP("bgp address-family aggregate-address suppress-map"),
   BGP_IPV4_UNICAST_REDISTRIBUTE_CONNECTED_ROUTE_MAP(
       "bgp ipv4 unicast redistribute connected route-map"),
   BGP_IPV4_UNICAST_REDISTRIBUTE_STATIC_ROUTE_MAP("bgp ipv4 unicast redistribute static route-map"),
@@ -38,6 +40,7 @@ public enum CumulusStructureUsage implements StructureUsage {
   PORT_SPEED("port speed"),
   STATIC_ROUTE_VRF("static route vrf"),
   ROUTE_MAP_CALL("route map call"),
+  ROUTE_MAP_ENTRY_SELF_REFERENCE("route-map entry self-reference"),
   ROUTE_MAP_MATCH_COMMUNITY_LIST("route-map match community"),
   ROUTE_MAP_MATCH_INTERFACE("route-map match interface"),
   ROUTE_MAP_MATCH_AS_PATH("route-map match as-path"),

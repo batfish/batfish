@@ -1266,7 +1266,7 @@ public final class FortiosGrammarTest {
                     hasComment(
                         "This secondaryip will be ignored; must use a secondaryip other than"
                             + " existing secondaryip addresses"),
-                    hasText("ip 10.0.0.3/30")))));
+                    hasText("ip 10.0.0.2/30")))));
 
     // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
     // object is created when the name conflicts

@@ -8,6 +8,7 @@ import java.util.Set;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -20,6 +21,7 @@ import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.CommunityVar;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,5 +85,17 @@ public class RoutePolicyStatementVarCollectorTest {
     Set<CommunityVar> result = _varCollector.visitSetCommunities(sc, _baseConfig);
 
     assertEquals(ImmutableSet.of(CommunityVar.from(COMM1)), result);
+  }
+
+  @Test
+  public void testVisitTraceableStatement() {
+    TraceableStatement traceableStatement =
+        new TraceableStatement(
+            TraceElement.of("statement"),
+            ImmutableList.of(new SetCommunities(new LiteralCommunitySet(CommunitySet.of(COMM1)))));
+
+    assertEquals(
+        _varCollector.visitTraceableStatement(traceableStatement, _baseConfig),
+        ImmutableSet.of(CommunityVar.from(COMM1)));
   }
 }

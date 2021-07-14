@@ -22,6 +22,7 @@ import static org.batfish.question.routes.RoutesAnswerer.COL_ORIGIN_TYPE;
 import static org.batfish.question.routes.RoutesAnswerer.COL_PROTOCOL;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_DISTINGUISHER;
 import static org.batfish.question.routes.RoutesAnswerer.COL_ROUTE_ENTRY_PRESENCE;
+import static org.batfish.question.routes.RoutesAnswerer.COL_STATUS;
 import static org.batfish.question.routes.RoutesAnswerer.COL_TAG;
 import static org.batfish.question.routes.RoutesAnswerer.COL_VRF_NAME;
 import static org.batfish.question.routes.RoutesAnswerer.getDiffTableMetadata;
@@ -170,7 +171,7 @@ public class RoutesAnswererTest {
                             .setNextHopInterface("Null")
                             .setAdministrativeCost(1)
                             .build(),
-                        new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.0/24"), "Null")))));
+                        new LocalRoute(ConcreteInterfaceAddress.parse("2.2.2.1/24"), "Null")))));
 
     Multiset<Row> actual =
         getMainRibRoutes(
@@ -262,6 +263,7 @@ public class RoutesAnswererTest {
             COL_NODE,
             COL_VRF_NAME,
             COL_NETWORK,
+            COL_STATUS,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
             COL_PROTOCOL,
@@ -291,6 +293,7 @@ public class RoutesAnswererTest {
             COL_NODE,
             COL_VRF_NAME,
             COL_NETWORK,
+            COL_STATUS,
             COL_ROUTE_DISTINGUISHER,
             COL_NEXT_HOP_IP,
             COL_NEXT_HOP_INTERFACE,
@@ -547,6 +550,11 @@ public class RoutesAnswererTest {
     @Override
     public Set<R> getTypedRoutes() {
       return _routes;
+    }
+
+    @Override
+    public Set<R> getTypedBackupRoutes() {
+      throw new UnsupportedOperationException();
     }
 
     @Override

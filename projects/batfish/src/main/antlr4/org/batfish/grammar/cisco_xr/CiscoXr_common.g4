@@ -19,6 +19,8 @@ comparator
 // structure names
 access_list_name: WORD;
 as_path_set_name: WORD;
+bridge_domain_name: WORD;
+bridge_group_name: WORD;
 community_set_name: WORD;
 flow_exporter_map_name: WORD;
 flow_monitor_map_name: WORD;
@@ -117,6 +119,9 @@ bgp_asn
     asn = uint_legacy
     | asn4b = asn_dotted
 ;
+
+// 1-65535
+eigrp_asn: uint16;
 
 literal_community
 :
@@ -611,6 +616,9 @@ route_tag
   // 1-4294967295
   uint32
 ;
+
+// 0-4294967295
+route_tag_from_0: type = uint32;
 
 route_target
 :

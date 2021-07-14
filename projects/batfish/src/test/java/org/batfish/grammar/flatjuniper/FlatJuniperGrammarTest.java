@@ -2,7 +2,6 @@ package org.batfish.grammar.flatjuniper;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.batfish.common.matchers.Layer2TopologyMatchers.inSameBroadcastDomain;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
 import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
@@ -143,6 +142,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_IS
 import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.generateInstanceImportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.generateResolutionRibImportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilterTerm;
@@ -154,6 +154,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICA
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
+import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
@@ -212,10 +214,9 @@ import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.matchers.WarningMatchers;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topology;
-import org.batfish.common.topology.Layer2Node;
-import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
@@ -294,6 +295,7 @@ import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisInterfaceSettings;
@@ -326,6 +328,7 @@ import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
 import org.batfish.datamodel.transformation.AssignPortFromPool;
 import org.batfish.datamodel.transformation.IpField;
@@ -893,45 +896,21 @@ public final class FlatJuniperGrammarTest {
                 .build(),
             _folder);
 
-    // check layer-2 adjacencies
-    Layer2Topology layer2Topology =
-        batfish.getTopologyProvider().getInitialLayer2Topology(batfish.getSnapshot()).get();
-    {
-      // Broadcast domain containing VLANs 10 and 20. Arbitrarily choose r1[xe-0/0/0.10] as
-      // representative and test that all other members are in its broadcast domain.
-      Layer2Node repNode = new Layer2Node(r1, "xe-0/0/0.10", null);
-      Set<Layer2Node> otherMembers =
-          ImmutableSet.of(
-              new Layer2Node(r2, "xe-0/0/1.20", null),
-              new Layer2Node(sw, "xe-0/0/0.0", 10),
-              new Layer2Node(sw, "xe-0/0/1.0", 20),
-              new Layer2Node(sw, "xe-0/0/3.0", 10),
-              new Layer2Node(sw, "xe-0/0/3.0", 20),
-              new Layer2Node(fw, "xe-0/0/3.0", 10),
-              new Layer2Node(fw, "xe-0/0/3.0", 20),
-              new Layer2Node(fw, "xe-0/0/10.0", 10),
-              new Layer2Node(fw, "xe-0/0/20.0", 20));
-      otherMembers.forEach(
-          other -> assertThat(layer2Topology, inSameBroadcastDomain(repNode, other)));
-    }
-    {
-      // Broadcast domain containing VLANs 11 and 21. Arbitrarily choose r1[xe-0/0/0.11] as
-      // representative and test that all other members are in its broadcast domain.
-      Layer2Node repNode = new Layer2Node(r1, "xe-0/0/0.11", null);
-      Set<Layer2Node> otherMembers =
-          ImmutableSet.of(
-              new Layer2Node(r2, "xe-0/0/1.21", null),
-              new Layer2Node(sw, "xe-0/0/0.0", 11),
-              new Layer2Node(sw, "xe-0/0/1.0", 21),
-              new Layer2Node(sw, "xe-0/0/3.0", 11),
-              new Layer2Node(sw, "xe-0/0/3.0", 21),
-              new Layer2Node(fw, "xe-0/0/3.0", 11),
-              new Layer2Node(fw, "xe-0/0/3.0", 21),
-              new Layer2Node(fw, "xe-0/0/11.0", 11),
-              new Layer2Node(fw, "xe-0/0/21.0", 21));
-      otherMembers.forEach(
-          other -> assertThat(layer2Topology, inSameBroadcastDomain(repNode, other)));
-    }
+    // check layer-2 adjacencies for L3 interfaces
+    L3Adjacencies adjacencies =
+        batfish.getTopologyProvider().getInitialL3Adjacencies(batfish.getSnapshot());
+    assertTrue(
+        adjacencies.inSameBroadcastDomain(
+            NodeInterfacePair.of(r1, "xe-0/0/0.10"), NodeInterfacePair.of(r2, "xe-0/0/1.20")));
+    assertFalse(
+        adjacencies.inSameBroadcastDomain(
+            NodeInterfacePair.of(r1, "xe-0/0/0.10"), NodeInterfacePair.of(r2, "xe-0/0/1.21")));
+    assertTrue(
+        adjacencies.inSameBroadcastDomain(
+            NodeInterfacePair.of(r1, "xe-0/0/0.11"), NodeInterfacePair.of(r2, "xe-0/0/1.21")));
+    assertFalse(
+        adjacencies.inSameBroadcastDomain(
+            NodeInterfacePair.of(r1, "xe-0/0/0.11"), NodeInterfacePair.of(r2, "xe-0/0/1.20")));
 
     // check layer-3 adjacencies
     Topology layer3Topology =
@@ -956,8 +935,8 @@ public final class FlatJuniperGrammarTest {
 
     Layer1Topology layer1LogicalTopology =
         batfish.getTopologyProvider().getLayer1LogicalTopology(batfish.getSnapshot()).get();
-    Layer2Topology layer2Topology =
-        batfish.getTopologyProvider().getInitialLayer2Topology(batfish.getSnapshot()).get();
+    L3Adjacencies adjacencies =
+        batfish.getTopologyProvider().getInitialL3Adjacencies(batfish.getSnapshot());
     Topology layer3Topology =
         batfish.getTopologyProvider().getInitialLayer3Topology(batfish.getSnapshot());
 
@@ -968,12 +947,17 @@ public final class FlatJuniperGrammarTest {
 
     // check layer-2 adjacencies
     assertThat(
-        layer2Topology.inSameBroadcastDomain("r1", "ge-0/0/0.0", "r2", "ge-0/0/0.0"),
+        adjacencies.inSameBroadcastDomain(
+            NodeInterfacePair.of("r1", "ge-0/0/0.0"), NodeInterfacePair.of("r2", "ge-0/0/0.0")),
         equalTo(true));
     assertThat(
-        layer2Topology.inSameBroadcastDomain("r1", "ge-0/0/1.0", "r2", "ge-0/0/1.0"),
+        adjacencies.inSameBroadcastDomain(
+            NodeInterfacePair.of("r1", "ge-0/0/1.0"), NodeInterfacePair.of("r2", "ge-0/0/1.0")),
         equalTo(true));
-    assertThat(layer2Topology.inSameBroadcastDomain("r1", "ae0.0", "r2", "ae0.0"), equalTo(true));
+    assertThat(
+        adjacencies.inSameBroadcastDomain(
+            NodeInterfacePair.of("r1", "ae0.0"), NodeInterfacePair.of("r2", "ae0.0")),
+        equalTo(true));
 
     // check layer-3 adjacencies
     assertThat(
@@ -2699,10 +2683,14 @@ public final class FlatJuniperGrammarTest {
     If i = (If) policyPreference.getStatements().get(0);
 
     assertThat(i.getTrueStatements(), hasSize(1));
-    assertThat(getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
+    assertThat(getOnlyElement(i.getTrueStatements()), instanceOf(TraceableStatement.class));
+    TraceableStatement traceableStatement = (TraceableStatement) i.getTrueStatements().get(0);
+    assertThat(
+        getOnlyElement(traceableStatement.getInnerStatements()),
+        instanceOf(SetAdministrativeCost.class));
 
     assertThat(
-        getOnlyElement(i.getTrueStatements()),
+        getOnlyElement(traceableStatement.getInnerStatements()),
         isSetAdministrativeCostThat(hasAdmin(isLiteralIntThat(hasVal(123)))));
   }
 
@@ -2948,7 +2936,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasInterface(
-            "vtnet0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.1.2.3/30")))));
+            "vtnet0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.1.2.1/30")))));
   }
 
   @Test
@@ -3711,6 +3699,24 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperPolicyStatement() throws IOException {
+    String hostname = "juniper-policy-statement";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasNumReferrers(filename, POLICY_STATEMENT, "POLICY_NAME", 0));
+    assertThat(
+        ccae,
+        hasNumReferrers(
+            filename,
+            POLICY_STATEMENT_TERM,
+            computePolicyStatementTermName("POLICY_NAME", "TERM_NAME"),
+            1));
+  }
+
+  @Test
   public void testJuniperPolicyStatementTermFromExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-from");
     {
@@ -4245,7 +4251,7 @@ public final class FlatJuniperGrammarTest {
     LocalRoute localRoutePtp =
         new LocalRoute(ConcreteInterfaceAddress.parse("10.0.0.0/31"), "ge-0/0/0.0");
     LocalRoute localRouteLan =
-        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.0/30"), "ge-0/0/1.0");
+        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.1/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
@@ -4327,7 +4333,7 @@ public final class FlatJuniperGrammarTest {
     LocalRoute localRoutePtp =
         new LocalRoute(ConcreteInterfaceAddress.parse("10.0.0.0/31"), "ge-0/0/0.0");
     LocalRoute localRouteLan =
-        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.0/30"), "ge-0/0/1.0");
+        new LocalRoute(ConcreteInterfaceAddress.parse("10.0.1.1/30"), "ge-0/0/1.0");
 
     // Peer policies should reject local routes not exported by their VRFs
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
@@ -4773,7 +4779,7 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         c,
-        hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasRouterId(equalTo(Ip.parse("1.0.0.0"))))));
+        hasDefaultVrf(hasOspfProcess(DEFAULT_VRF_NAME, hasRouterId(equalTo(Ip.parse("1.0.0.1"))))));
   }
 
   @Test

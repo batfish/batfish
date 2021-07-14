@@ -120,6 +120,10 @@ public final class Names {
     return String.format("~BGP_PEER_IMPORT_POLICY_EVPN:%s:%s~", vrf, peer);
   }
 
+  public static String generatedOspfInboundDistributeListName(String vrf, String procName) {
+    return String.format("~OSPF_INBOUND_DISTRIBUTE_LIST:%s:%s~", vrf, procName);
+  }
+
   public static String generatedReferenceBook(String hostname, String source) {
     return String.format("%s~on~%s", source, hostname);
   }

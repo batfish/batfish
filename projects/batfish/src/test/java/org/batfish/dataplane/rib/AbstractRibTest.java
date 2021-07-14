@@ -502,7 +502,6 @@ public class AbstractRibTest {
     assertThat(bestPathRib.getTypedRoutes(), contains(route1));
     assertThat(
         delta.getActions().collect(Collectors.toList()),
-        contains(
-            new RouteAdvertisement<>(route2, Reason.WITHDRAW), new RouteAdvertisement<>(route1)));
+        contains(RouteAdvertisement.withdrawing(route2), new RouteAdvertisement<>(route1)));
   }
 }

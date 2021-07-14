@@ -518,7 +518,7 @@ l2tpc_null
 
 l2vpn_bridge_group
 :
-   BRIDGE GROUP name = variable NEWLINE
+   BRIDGE GROUP bridge_group_name NEWLINE
    (
       lbg_bridge_domain
    )*
@@ -555,13 +555,23 @@ l2vpn_xconnect_p2p
 
 lbg_bridge_domain
 :
-   BRIDGE_DOMAIN name = variable NEWLINE
+   BRIDGE_DOMAIN bridge_domain_name NEWLINE
    (
       lbgbd_mac
+      | lbgbd_interface
+      | lbgbd_routed_interface
       | lbgbd_null
       | lbgbd_vfi
    )*
 ;
+
+lbgbd_interface: INTERFACE interface_name NEWLINE lbgbdi_inner*;
+
+lbgbdi_inner: lbgbdi_null;
+
+lbgbdi_null: STORM_CONTROL null_rest_of_line;
+
+lbgbd_routed_interface: ROUTED INTERFACE interface_name NEWLINE;
 
 lbgbd_mac
 :
@@ -575,10 +585,8 @@ lbgbd_null
 :
    NO?
    (
-      INTERFACE
-      | MTU
+      MTU
       | NEIGHBOR
-      | ROUTED
    ) null_rest_of_line
 ;
 
