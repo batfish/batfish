@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -38,12 +39,21 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.Interface;
 import org.batfish.vendor.check_point_gateway.representation.Interface.LinkSpeed;
+import org.batfish.vendor.check_point_gateway.representation.Nexthop;
+import org.batfish.vendor.check_point_gateway.representation.NexthopAddress;
+import org.batfish.vendor.check_point_gateway.representation.NexthopBlackhole;
+import org.batfish.vendor.check_point_gateway.representation.NexthopLogical;
+import org.batfish.vendor.check_point_gateway.representation.NexthopReject;
+import org.batfish.vendor.check_point_gateway.representation.NexthopTarget;
+import org.batfish.vendor.check_point_gateway.representation.StaticRoute;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -216,5 +226,99 @@ public class CheckPointGatewayGrammarTest {
                 allOf(
                     hasComment("Illegal value for interface name"),
                     hasText(containsString("interface invalid+name"))))));
+  }
+
+  @Test
+  public void testStaticRouteExtraction() {
+    String hostname = "static_route";
+    CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
+
+    Prefix defPrefix = Prefix.ZERO;
+    Prefix addrPrefix = Prefix.parse("10.10.0.0/16");
+    Prefix blackholePrefix = Prefix.parse("10.11.0.0/16");
+    Prefix rejectPrefix = Prefix.parse("10.12.0.0/16");
+
+    NexthopTarget defTarget = new NexthopLogical("eth0");
+    NexthopTarget addrTarget1 = new NexthopAddress(Ip.parse("10.10.10.11"));
+    NexthopTarget addrTarget2 = new NexthopAddress(Ip.parse("10.10.10.12"));
+
+    assertThat(c.getStaticRoutes(), hasKeys(defPrefix, addrPrefix, blackholePrefix, rejectPrefix));
+    assertThat(
+        c.getStaticRoutes().keySet(),
+        containsInAnyOrder(defPrefix, blackholePrefix, rejectPrefix, addrPrefix));
+
+    // Logical nexthop
+    {
+      StaticRoute def = c.getStaticRoutes().get(defPrefix);
+      assertThat(def.getDestination(), equalTo(defPrefix));
+      assertThat(def.getComment(), equalTo("this is a default route"));
+      assertThat(def.getNexthops().keySet(), contains(defTarget));
+
+      Nexthop nexthop = def.getNexthops().get(defTarget);
+      assertNull(nexthop.getPriority());
+      assertThat(nexthop.getNexthopTarget(), equalTo(defTarget));
+    }
+
+    // Blackhole nexthop
+    {
+      StaticRoute blackhole = c.getStaticRoutes().get(blackholePrefix);
+      assertThat(blackhole.getDestination(), equalTo(blackholePrefix));
+      assertThat(blackhole.getNexthops().keySet(), contains(NexthopBlackhole.INSTANCE));
+
+      Nexthop nexthop = blackhole.getNexthops().get(NexthopBlackhole.INSTANCE);
+      assertNull(nexthop.getPriority());
+      assertThat(nexthop.getNexthopTarget(), equalTo(NexthopBlackhole.INSTANCE));
+    }
+
+    // Reject nexthop
+    {
+      StaticRoute reject = c.getStaticRoutes().get(rejectPrefix);
+      assertThat(reject.getDestination(), equalTo(rejectPrefix));
+      assertThat(reject.getNexthops().keySet(), contains(NexthopReject.INSTANCE));
+
+      Nexthop nexthop = reject.getNexthops().get(NexthopReject.INSTANCE);
+      assertNull(nexthop.getPriority());
+      assertThat(nexthop.getNexthopTarget(), equalTo(NexthopReject.INSTANCE));
+    }
+
+    // Address nexthops
+    {
+      StaticRoute addr = c.getStaticRoutes().get(addrPrefix);
+      assertThat(addr.getDestination(), equalTo(addrPrefix));
+      assertThat(addr.getNexthops().keySet(), containsInAnyOrder(addrTarget1, addrTarget2));
+
+      Nexthop nexthop1 = addr.getNexthops().get(addrTarget1);
+      assertThat(nexthop1.getPriority(), equalTo(7));
+      assertThat(nexthop1.getNexthopTarget(), equalTo(addrTarget1));
+
+      Nexthop nexthop2 = addr.getNexthops().get(addrTarget2);
+      assertNull(nexthop2.getPriority());
+      assertThat(nexthop2.getNexthopTarget(), equalTo(addrTarget2));
+    }
+  }
+
+  @Test
+  public void testStaticRouteWarning() throws IOException {
+    String hostname = "static_route_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected static-route nexthop priority in range 1-8, but got '0'"),
+                hasComment("Expected static-route nexthop priority in range 1-8, but got '9'"),
+                allOf(
+                    hasComment("Cannot set nexthop gateway to non-existent interface"),
+                    hasText(containsString("eth0"))),
+                hasComment(
+                    "Static-route prefix 0.0.0.0/0 is not valid, use the 'default' keyword"
+                        + " instead."),
+                hasComment("Illegal value for static-route comment"))));
   }
 }
