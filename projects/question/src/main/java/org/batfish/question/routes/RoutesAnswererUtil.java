@@ -661,7 +661,7 @@ public class RoutesAnswererUtil {
    * @param matchingNodes {@link Set} of nodes to be matched
    * @param vrfRegex Regex to filter the VRF
    * @param network {@link Prefix}
-   * @param protocolRegex Regex to filter the protocols of the routes
+   * @param protocolSpec {@link RoutingProtocolSpecifier} to filter the protocols of the routes
    * @return {@link Map} of {@link RouteRowKey}s to corresponding sub{@link Map}s of {@link
    *     RouteRowSecondaryKey} to {@link SortedSet} of {@link RouteRowAttribute}s
    */
@@ -670,10 +670,9 @@ public class RoutesAnswererUtil {
       Set<String> matchingNodes,
       String vrfRegex,
       @Nullable Prefix network,
-      String protocolRegex) {
+      RoutingProtocolSpecifier protocolSpec) {
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> routesGroups =
         new HashMap<>();
-    Pattern compiledProtocolRegex = Pattern.compile(protocolRegex, Pattern.CASE_INSENSITIVE);
     Pattern compiledVrfRegex = Pattern.compile(vrfRegex);
     matchingNodes.forEach(
         hostname ->
@@ -686,9 +685,9 @@ public class RoutesAnswererUtil {
                             .filter(
                                 route ->
                                     (network == null || network.equals(route.getNetwork()))
-                                        && compiledProtocolRegex
-                                            .matcher(route.getProtocol().protocolName())
-                                            .matches())
+                                        && protocolSpec
+                                            .getProtocols()
+                                            .contains(route.getProtocol()))
                             .forEach(
                                 route ->
                                     routesGroups
