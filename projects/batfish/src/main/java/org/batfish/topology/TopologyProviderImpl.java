@@ -25,6 +25,7 @@ import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyProvider;
 import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
+import org.batfish.common.topology.broadcast.BroadcastL3Adjacencies;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.Topology;
@@ -301,6 +302,12 @@ public final class TopologyProviderImpl implements TopologyProvider {
         GlobalTracer.get().buildSpan("TopologyProviderImpl::computeInitialL3Adjacencies").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
+      if (L3Adjacencies.USE_NEW_METHOD) {
+        return BroadcastL3Adjacencies.create(
+            getLayer1LogicalTopology(networkSnapshot).orElse(Layer1Topology.EMPTY),
+            VxlanTopology.EMPTY,
+            _batfish.loadConfigurations(networkSnapshot));
+      }
       return getLayer1LogicalTopology(networkSnapshot)
           .<L3Adjacencies>map(
               l1 -> {
