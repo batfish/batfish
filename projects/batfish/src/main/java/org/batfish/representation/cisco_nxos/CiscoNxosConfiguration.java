@@ -2000,7 +2000,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       speed = getDefaultSpeed(type);
     }
     newIfaceBuilder.setSpeed(speed);
-    Integer nxosBandwidth = iface.getBandwidth();
+    Long nxosBandwidth = iface.getBandwidth();
     Double finalBandwidth;
     if (nxosBandwidth != null) {
       finalBandwidth = nxosBandwidth * BANDWIDTH_CONVERSION_FACTOR;
@@ -2217,12 +2217,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   @Nonnull
   private EigrpMetric computeEigrpMetricForInterface(Interface iface) {
     // configuredBw is in kb/s
-    Integer configuredBw =
-        Optional.ofNullable(iface.getEigrpBandwidth()).orElse(iface.getBandwidth());
-    Long bw = null;
-    if (configuredBw != null) {
-      bw = configuredBw.longValue();
-    } else {
+    Long bw = Optional.ofNullable(iface.getEigrpBandwidth()).orElse(iface.getBandwidth());
+    if (bw == null) {
       Double defaultBw = getDefaultBandwidth(iface.getType());
       if (defaultBw != null) {
         // default bandwidth is in bits per second

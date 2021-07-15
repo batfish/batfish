@@ -6,4 +6,5 @@ feature lacp
 !
 interface port-channel1
   lacp suspend-individual
+  bandwidth 3200000000
 !

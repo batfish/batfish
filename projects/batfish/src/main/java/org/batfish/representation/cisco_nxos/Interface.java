@@ -143,14 +143,14 @@ public final class Interface implements Serializable {
   private @Nullable InterfaceAddressWithAttributes _address;
   private @Nullable IntegerSpace _allowedVlans;
   private boolean _autostate;
-  private @Nullable Integer _bandwidth;
+  private @Nullable Long _bandwidth;
   private @Nullable String _channelGroup;
   private final @Nonnull Set<String> _declaredNames;
   private @Nullable Integer _delayTensOfMicroseconds;
   private @Nullable String _description;
   private final @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
   private @Nullable String _eigrp;
-  private @Nullable Integer _eigrpBandwidth;
+  private @Nullable Long _eigrpBandwidth;
   private @Nullable Integer _eigrpDelay;
   private boolean _eigrpPassive;
   private @Nullable DistributeList _eigrpInboundDistributeList;
@@ -221,7 +221,7 @@ public final class Interface implements Serializable {
   }
 
   /** Bandwidth in kbits */
-  public @Nullable Integer getBandwidth() {
+  public @Nullable Long getBandwidth() {
     return _bandwidth;
   }
 
@@ -254,7 +254,7 @@ public final class Interface implements Serializable {
   }
 
   /** Configured bandwidth for EIGRP, in kb/s */
-  public @Nullable Integer getEigrpBandwidth() {
+  public @Nullable Long getEigrpBandwidth() {
     return _eigrpBandwidth;
   }
 
@@ -476,7 +476,7 @@ public final class Interface implements Serializable {
     _autostate = autostate;
   }
 
-  public void setBandwidth(@Nullable Integer bandwidth) {
+  public void setBandwidth(@Nullable Long bandwidth) {
     _bandwidth = bandwidth;
   }
 
@@ -492,7 +492,7 @@ public final class Interface implements Serializable {
     _description = description;
   }
 
-  public void setEigrpBandwidth(@Nullable Integer eigrpBandwidth) {
+  public void setEigrpBandwidth(@Nullable Long eigrpBandwidth) {
     _eigrpBandwidth = eigrpBandwidth;
   }
 
