@@ -49,21 +49,23 @@ bgp_address_family
 
 address_family_rb_stanza
 :
-   address_family_header
-   (
-      additional_paths_rb_stanza
-      | aggregate_address_rb_stanza
-      | bgp_af_import
-      | bgp_tail
-      | default_information_originate_rb_stanza
-      | neighbor_flat_rb_stanza
-      | no_neighbor_activate_rb_stanza
-      | no_neighbor_shutdown_rb_stanza
-      | null_no_neighbor_rb_stanza
-      | peer_group_assignment_rb_stanza
-      | peer_group_creation_rb_stanza
-      | router_id_rb_stanza
-   )* EXIT_ADDRESS_FAMILY NEWLINE
+   address_family_header address_family_inner* ( EXIT |  EXIT_ADDRESS_FAMILY ) NEWLINE
+;
+
+address_family_inner
+:
+   additional_paths_rb_stanza
+   | aggregate_address_rb_stanza
+   | bgp_af_import
+   | bgp_tail
+   | default_information_originate_rb_stanza
+   | neighbor_flat_rb_stanza
+   | no_neighbor_activate_rb_stanza
+   | no_neighbor_shutdown_rb_stanza
+   | null_no_neighbor_rb_stanza
+   | peer_group_assignment_rb_stanza
+   | peer_group_creation_rb_stanza
+   | router_id_rb_stanza
 ;
 
 address_family_enable_rb_stanza
