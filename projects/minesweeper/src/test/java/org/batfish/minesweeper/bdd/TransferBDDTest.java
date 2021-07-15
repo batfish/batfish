@@ -64,11 +64,13 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -88,6 +90,7 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -1210,6 +1213,49 @@ public class TransferBDDTest {
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
+  }
+
+  @Test
+  public void testDiscardNextHop() {
+    _policyBuilder
+        .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    expected.setNextHopDiscarded(expected.getFactory().one());
+    expected.setNextHopSet(expected.getFactory().one());
+    assertEquals(expected, outAnnouncements);
+  }
+
+  @Test
+  public void testSetNextHop() {
+    _policyBuilder
+        .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+    TransferReturn result = tbdd.compute(ImmutableSet.of()).getReturnValue();
+    BDD acceptedAnnouncements = result.getSecond();
+    BDDRoute outAnnouncements = result.getFirst();
+
+    assertTrue(acceptedAnnouncements.isOne());
+
+    BDDRoute expected = new BDDRoute(_anyRoute);
+    expected.setNextHopSet(expected.getFactory().one());
+    expected.setNextHop(
+        BDDInteger.makeFromValue(expected.getFactory(), 32, Ip.parse("1.1.1.1").asLong()));
+    assertEquals(expected, outAnnouncements);
   }
 
   @Test

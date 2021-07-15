@@ -45,12 +45,14 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
@@ -66,6 +68,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.MultipliedAs;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
@@ -679,6 +682,7 @@ public class TransferBDD {
       CommunityAPDispositions dispositions =
           setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _originalRoute));
       updateCommunities(dispositions, curP, result);
+
     } else if (stmt instanceof CallStatement) {
       /*
        this code is based on the concrete semantics defined by CallStatement::execute, which also
@@ -733,8 +737,7 @@ public class TransferBDD {
 
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
-      // System.out.println("Warning: use of unimplemented feature SetNextHop");
-      // TODO: implement me
+      setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
 
     } else if (stmt instanceof TraceableStatement) {
       return compute(((TraceableStatement) stmt).getInnerStatements(), state);
@@ -897,6 +900,7 @@ public class TransferBDD {
     y = r2.getNextHop();
     ret.getNextHop().setValue(ite(guard, x, y));
 
+    ret.setNextHopDiscarded(ite(guard, r1.getNextHopDiscarded(), r2.getNextHopDiscarded()));
     ret.setNextHopSet(ite(guard, r1.getNextHopSet(), r2.getNextHopSet()));
 
     x = r1.getTag();
@@ -1104,6 +1108,21 @@ public class TransferBDD {
     throw new BatfishException("Error[prependLength]: unreachable");
   }
 
+  private void setNextHop(NextHopExpr expr, BDDRoute route) {
+    // record the fact that the next-hop has been explicitly set by the route-map
+    route.setNextHopSet(factory.one());
+    if (expr instanceof DiscardNextHop) {
+      route.setNextHopDiscarded(factory.one());
+    } else if (expr instanceof IpNextHop) {
+      List<Ip> ips = ((IpNextHop) expr).getIps();
+      checkArgument(ips.size() == 1, "Currently not allowing multiple next-hop IPs to be set");
+      Ip ip = ips.get(0);
+      route.setNextHop(BDDInteger.makeFromValue(factory, 32, ip.asLong()));
+    } else {
+      throw new UnsupportedOperationException("Unsupported next-hop expression: " + expr);
+    }
+  }
+
   // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
   // depending on the value of the boolean parameter.
   private void addOrRemoveCommunityAPs(
@@ -1189,6 +1208,7 @@ public class TransferBDD {
     rec.getPrefixLength().setValue(0);
     rec.getMed().setValue(0);
     rec.getNextHop().setValue(0);
+    rec.setNextHopDiscarded(factory.zero());
     rec.setNextHopSet(factory.zero());
     rec.getTag().setValue(0);
     rec.getPrefix().setValue(0);
