@@ -75,7 +75,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return answer;
   }
 
-  public FilterLineReachabilityRows computeAnswer(
+  public static FilterLineReachabilityRows computeAnswer(
       SortedMap<String, Configuration> configurations,
       Map<String, Set<IpAccessList>> specifiedAcls) {
     FilterLineReachabilityRows answerRows = new FilterLineReachabilityRows();
