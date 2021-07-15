@@ -259,6 +259,20 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
     return !removeRouteGetDelta(route, Reason.WITHDRAW).isEmpty();
   }
 
+  /** Apply a delta, then return the actual resulting delta excluding NOPs */
+  public @Nonnull RibDelta<R> applyDeltaGetDelta(RibDelta<R> delta) {
+    RibDelta.Builder<R> result = RibDelta.builder();
+    delta
+        .getActions()
+        .forEach(
+            action ->
+                result.from(
+                    action.isWithdrawn()
+                        ? removeRouteGetDelta(action.getRoute(), action.getReason())
+                        : mergeRouteGetDelta(action.getRoute())));
+    return result.build();
+  }
+
   /**
    * Extract routes stored for this exact prefix, if any.
    *

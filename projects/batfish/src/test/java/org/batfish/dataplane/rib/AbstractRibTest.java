@@ -2,6 +2,7 @@ package org.batfish.dataplane.rib;
 
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -12,13 +13,17 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -503,5 +508,48 @@ public class AbstractRibTest {
     assertThat(
         delta.getActions().collect(Collectors.toList()),
         contains(RouteAdvertisement.withdrawing(route2), new RouteAdvertisement<>(route1)));
+  }
+
+  @Test
+  public void testApplyDeltaGetDelta() {
+    Rib rib = new Rib();
+
+    AnnotatedRoute<AbstractRoute> routeToAdd =
+        annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.1/32"), "i1"));
+    AnnotatedRoute<AbstractRoute> routeToWithdraw =
+        annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.2/32"), "i2"));
+    AnnotatedRoute<AbstractRoute> routeToReplace =
+        annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.3/32"), "i3"));
+
+    // Only the add should appear in the delta, since the routes to remove are not present in the
+    // RIB.
+    assertThat(
+        rib.applyDeltaGetDelta(
+                RibDelta.of(
+                    ImmutableList.of(
+                        RouteAdvertisement.adding(routeToAdd),
+                        RouteAdvertisement.withdrawing(routeToWithdraw),
+                        RouteAdvertisement.replacing(routeToReplace))))
+            .getActions()
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(RouteAdvertisement.adding(routeToAdd)));
+
+    rib.mergeRoute(routeToWithdraw);
+    rib.mergeRoute(routeToReplace);
+
+    // Only the withdraw and replace should appear in the delta, since the add is already present in
+    // the RIB.
+    assertThat(
+        rib.applyDeltaGetDelta(
+                RibDelta.of(
+                    ImmutableList.of(
+                        RouteAdvertisement.adding(routeToAdd),
+                        RouteAdvertisement.withdrawing(routeToWithdraw),
+                        RouteAdvertisement.replacing(routeToReplace))))
+            .getActions()
+            .collect(ImmutableList.toImmutableList()),
+        containsInAnyOrder(
+            RouteAdvertisement.withdrawing(routeToWithdraw),
+            RouteAdvertisement.replacing(routeToReplace)));
   }
 }
