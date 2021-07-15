@@ -3,6 +3,7 @@ package org.batfish.specifier;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpSpace;
 
 /** Information about whether/how to treat a location as a source or sink of traffic. */
@@ -10,11 +11,18 @@ public final class LocationInfo implements Serializable {
   private final boolean _isSource;
   private final IpSpace _sourceIps;
   private final IpSpace _arpIps;
+  private final IpSpace _networkOrBroadcastIps;
 
   public LocationInfo(boolean isSource, IpSpace sourceIps, IpSpace arpIps) {
+    this(isSource, sourceIps, arpIps, EmptyIpSpace.INSTANCE);
+  }
+
+  public LocationInfo(
+      boolean isSource, IpSpace sourceIps, IpSpace arpIps, IpSpace networkOrBroadcastIps) {
     _isSource = isSource;
     _sourceIps = sourceIps;
     _arpIps = arpIps;
+    _networkOrBroadcastIps = networkOrBroadcastIps;
   }
 
   @Override
@@ -28,12 +36,13 @@ public final class LocationInfo implements Serializable {
     LocationInfo other = (LocationInfo) o;
     return _isSource == other._isSource
         && _sourceIps.equals(other._sourceIps)
-        && _arpIps.equals(other._arpIps);
+        && _arpIps.equals(other._arpIps)
+        && _networkOrBroadcastIps.equals(other._networkOrBroadcastIps);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_isSource, _sourceIps, _arpIps);
+    return Objects.hash(_isSource, _sourceIps, _arpIps, _networkOrBroadcastIps);
   }
 
   /**
@@ -66,5 +75,15 @@ public final class LocationInfo implements Serializable {
    */
   public IpSpace getArpIps() {
     return _arpIps;
+  }
+
+  /**
+   * For {@link InterfaceLinkLocation} only. Used for disposition assignment when a flow is
+   * terminates at the network or broadcast IP of an {@link InterfaceLinkLocation}. Batfish will
+   * give disposition {@link org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET} for these
+   * IPs.
+   */
+  public IpSpace getNetworkOrBroadcastIps() {
+    return _networkOrBroadcastIps;
   }
 }

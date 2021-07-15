@@ -234,8 +234,23 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                           entry -> ((InterfaceLinkLocation) entry.getKey()).getInterfaceName(),
                           entry -> entry.getValue().getArpIps())));
 
+      // mapping: hostname -> interface -> ips of connected subnets (including host, network, or
+      // broadcast IPs).
+      Map<String, Map<String, IpSpace>> interfaceConnectedSubnetIps =
+          locationInfo.entrySet().stream()
+              .filter(entry -> entry.getKey() instanceof InterfaceLinkLocation)
+              .collect(
+                  Collectors.groupingBy(
+                      entry -> entry.getKey().getNodeName(),
+                      Collectors.toMap(
+                          entry -> ((InterfaceLinkLocation) entry.getKey()).getInterfaceName(),
+                          entry ->
+                              AclIpSpace.union(
+                                  entry.getValue().getArpIps(),
+                                  entry.getValue().getNetworkOrBroadcastIps()))));
+
       _deliveredToSubnet =
-          computeDeliveredToSubnet(arpFalseDestIp, interfaceExternalArpIps, ownedIps);
+          computeDeliveredToSubnet(arpFalseDestIp, interfaceConnectedSubnetIps, ownedIps);
 
       Map<String, Map<String, BDD>> interfaceExternalArpIpBDDs =
           computeInterfaceExternalArpIpBDDs(interfaceExternalArpIps, ipSpaceToBDD);
@@ -249,14 +264,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
               interfacesWithMissingDevices,
               arpFalseDestIp,
               interfaceExternalArpIps,
+              locationInfo,
               ownedIps);
 
       // ips belonging to any subnet in the network, including inactive interfaces.
-      IpSpace internalIps = computeInternalIps(ipOwners.getAllInterfaceHostIps());
+      IpSpace internalIps = computeInternalIps(configurations);
 
       _insufficientInfo =
           computeInsufficientInfo(
-              interfaceExternalArpIps,
+              interfaceConnectedSubnetIps,
               interfacesWithMissingDevices,
               arpFalseDestIp,
               dstIpsWithUnownedNextHopIpArpFalse,
@@ -1175,16 +1191,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     }
   }
 
-  private static IpSpace computeInternalIps(
-      Map<String, Map<String, IpSpace>> interfaceHostSubnetIps) {
+  private static IpSpace computeInternalIps(Map<String, Configuration> configs) {
     Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeInternalIps").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return firstNonNull(
           AclIpSpace.union(
-              interfaceHostSubnetIps.values().stream()
-                  .flatMap(ifaceSubnetIps -> ifaceSubnetIps.values().stream())
-                  .collect(Collectors.toList())),
+              configs.values().stream()
+                  .flatMap(config -> config.getAllInterfaces().values().stream())
+                  .flatMap(iface -> iface.getAllConcreteAddresses().stream())
+                  .map(addr -> addr.getPrefix().toIpSpace())
+                  .toArray(IpSpace[]::new)),
           EmptyIpSpace.INSTANCE);
     } finally {
       span.finish();
@@ -1198,7 +1215,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet(
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
-      Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
+      Map<String, Map<String, IpSpace>> interfaceConnectedSubnetIps,
       IpSpace ownedIps) {
     Span span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeDeliveredToSubnet").start();
@@ -1219,7 +1236,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                               AclIpSpace.difference(
                                   AclIpSpace.intersection(
                                       ifaceEntry.getValue(),
-                                      interfaceExternalArpIps
+                                      interfaceConnectedSubnetIps
                                           .get(nodeEntry.getKey())
                                           .get(ifaceEntry.getKey())),
                                   ownedIps))));
@@ -1291,8 +1308,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * is internal but not in the interface subnet, when arping for next hop ip, either next hop ip is
    * owned by interfaces or dst ip is internal.
    *
-   * @param interfaceExternalArpIps Set of IPs for which some external device (not modeled by
-   *     Batfish) would reply to ARP in the real world.
+   * @param interfaceConnectedSubnetIps Set of subnet IPs connected to each interface.
    * @param interfacesWithMissingDevices Interfaces whose attached subnets are not full -- there may
    *     be other devices connected to the subnet for which we don't have a config.
    * @param arpFalseDestIp For each interface, dst IPs that can be ARP IPs and that we will not
@@ -1305,7 +1321,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    */
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeInsufficientInfo(
-      Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
+      Map<String, Map<String, IpSpace>> interfaceConnectedSubnetIps,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse,
@@ -1340,7 +1356,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                             IpSpace ipSpaceElsewhere =
                                 AclIpSpace.difference(
                                     internalIps,
-                                    interfaceExternalArpIps.get(hostname).get(ifaceName));
+                                    interfaceConnectedSubnetIps.get(hostname).get(ifaceName));
 
                             // case 1: arp for dst ip, dst ip is internal but not in any subnet of
                             // the interface
@@ -1389,6 +1405,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
+      Map<Location, LocationInfo> locationInfo,
       IpSpace ownedIps) {
     Span span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNeighborUnreachable").start();
@@ -1417,7 +1434,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                     arpFalseDestIp.get(node).get(vrf).get(iface),
                                     interfaceExternalArpIps.get(node).get(iface),
                                     ownedIps)
-                                : ifaceArpFalse;
+                                : AclIpSpace.difference(
+                                    ifaceArpFalse,
+                                    locationInfo
+                                        .get(new InterfaceLinkLocation(node, iface))
+                                        .getNetworkOrBroadcastIps());
                           })));
     } finally {
       span.finish();
@@ -1621,6 +1642,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                       IpSpace rightIpSpace = rightIfaceMap.get(iface);
                       BDD bdd = toBDD.visit(ipSpace);
                       BDD rightBDD = toBDD.visit(rightIpSpace);
+                      BDD leftOnly = bdd.diff(rightBDD);
                       assert !bdd.diffSat(rightBDD)
                           : "Left BDDs larger for node "
                               + node
