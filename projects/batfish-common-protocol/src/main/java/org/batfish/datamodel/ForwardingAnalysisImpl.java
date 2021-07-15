@@ -1215,7 +1215,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet(
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
-      Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
+      Map<String, Map<String, IpSpace>> interfaceConnectedSubnetIps,
       IpSpace ownedIps) {
     Span span =
         GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeDeliveredToSubnet").start();
@@ -1236,7 +1236,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                               AclIpSpace.difference(
                                   AclIpSpace.intersection(
                                       ifaceEntry.getValue(),
-                                      interfaceExternalArpIps
+                                      interfaceConnectedSubnetIps
                                           .get(nodeEntry.getKey())
                                           .get(ifaceEntry.getKey())),
                                   ownedIps))));
@@ -1308,8 +1308,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * is internal but not in the interface subnet, when arping for next hop ip, either next hop ip is
    * owned by interfaces or dst ip is internal.
    *
-   * @param interfaceExternalArpIps Set of IPs for which some external device (not modeled by
-   *     Batfish) would reply to ARP in the real world.
+   * @param interfaceConnectedSubnetIps Set of subnet IPs connected to each interface.
    * @param interfacesWithMissingDevices Interfaces whose attached subnets are not full -- there may
    *     be other devices connected to the subnet for which we don't have a config.
    * @param arpFalseDestIp For each interface, dst IPs that can be ARP IPs and that we will not
@@ -1322,7 +1321,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    */
   @VisibleForTesting
   static Map<String, Map<String, Map<String, IpSpace>>> computeInsufficientInfo(
-      Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
+      Map<String, Map<String, IpSpace>> interfaceConnectedSubnetIps,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse,
@@ -1357,7 +1356,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                             IpSpace ipSpaceElsewhere =
                                 AclIpSpace.difference(
                                     internalIps,
-                                    interfaceExternalArpIps.get(hostname).get(ifaceName));
+                                    interfaceConnectedSubnetIps.get(hostname).get(ifaceName));
 
                             // case 1: arp for dst ip, dst ip is internal but not in any subnet of
                             // the interface
@@ -1644,11 +1643,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                       BDD bdd = toBDD.visit(ipSpace);
                       BDD rightBDD = toBDD.visit(rightIpSpace);
                       BDD leftOnly = bdd.diff(rightBDD);
-                      if (!leftOnly.isZero()) {
-                        System.out.println(
-                            Ip.create(toBDD.getBDDInteger().getValueSatisfying(leftOnly).get()));
-                        leftOnly.isZero();
-                      }
                       assert !bdd.diffSat(rightBDD)
                           : "Left BDDs larger for node "
                               + node
