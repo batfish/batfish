@@ -537,6 +537,72 @@ public class RoutesAnswererUtilTest {
   }
 
   @Test
+  public void testGroupBgpRoutes_filterByProtocol() {
+    Bgpv4Route bgpRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopIp(Ip.parse("1.1.1.2"))
+            .setOriginType(OriginType.IGP)
+            .setOriginatorIp(Ip.parse("1.1.1.2"))
+            .setProtocol(RoutingProtocol.BGP)
+            .setLocalPreference(1L)
+            .setAdmin(10)
+            .setMetric(30L)
+            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
+            .build();
+
+    Bgpv4Route ibgpRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopIp(Ip.parse("1.1.1.3"))
+            .setAdmin(10)
+            .setMetric(20L)
+            .setOriginType(OriginType.IGP)
+            .setOriginatorIp(Ip.parse("1.1.1.2"))
+            .setProtocol(RoutingProtocol.IBGP)
+            .setLocalPreference(1L)
+            .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
+            .build();
+
+    Table<String, String, Set<Bgpv4Route>> bgpTable = HashBasedTable.create();
+    bgpTable.row("node").put(Configuration.DEFAULT_VRF_NAME, new HashSet<>());
+    bgpTable.row("node").get(Configuration.DEFAULT_VRF_NAME).add(bgpRoute);
+    bgpTable.row("node").get(Configuration.DEFAULT_VRF_NAME).add(ibgpRoute);
+
+    Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> grouped =
+        groupBgpRoutes(
+            bgpTable,
+            ImmutableSet.of("node"),
+            ".*",
+            null,
+            // only include the IBGP route
+            new RoutingProtocolSpecifier("IBGP"));
+
+    assertThat(grouped.keySet(), hasSize(1));
+
+    RouteRowKey expectedKey =
+        new RouteRowKey("node", Configuration.DEFAULT_VRF_NAME, Prefix.parse("1.1.1.0/24"));
+    assertThat(grouped.keySet().iterator().next(), equalTo(expectedKey));
+
+    Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroup = grouped.get(expectedKey);
+
+    // only the ibgp route is included because of the RoutingProtocolSpecifier above
+    Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> expectedInnerMap =
+        ImmutableMap.of(
+            new RouteRowSecondaryKey(Ip.parse("1.1.1.3"), "ibgp"),
+            ImmutableSortedSet.of(
+                RouteRowAttribute.builder()
+                    .setAdminDistance(10)
+                    .setMetric(20L)
+                    .setLocalPreference(1L)
+                    .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
+                    .setOriginType(OriginType.IGP)
+                    .build()));
+    // matching the secondary key
+    assertThat(innerGroup, equalTo(expectedInnerMap));
+  }
+
+  @Test
   public void testGroupMatchingBgpRoutesByPrefix() {
     Bgpv4Route bgpv4Route1 =
         Bgpv4Route.testBuilder()
@@ -570,7 +636,12 @@ public class RoutesAnswererUtilTest {
     bgpTable.row("node").get(Configuration.DEFAULT_VRF_NAME).add(bgpv4Route2);
 
     Map<RouteRowKey, Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>> grouped =
-        groupBgpRoutes(bgpTable, ImmutableSet.of("node"), ".*", null, ".*");
+        groupBgpRoutes(
+            bgpTable,
+            ImmutableSet.of("node"),
+            ".*",
+            null,
+            RoutingProtocolSpecifier.ALL_PROTOCOLS_SPECIFIER);
 
     assertThat(grouped.keySet(), hasSize(1));
 
