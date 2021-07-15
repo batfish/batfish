@@ -186,7 +186,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     SFL_INGRESS_LOCATION = new InterfaceLinkLocation(SFL_INGRESS_NODE, SFL_INGRESS_IFACE);
     SFL_DST_IP_SPACE_SINGLE_NODE =
         AclIpSpace.difference(
-            SFL_EGRESS_IFACE_ADDRESS.getPrefix().toHostIpSpace(),
+            SFL_EGRESS_IFACE_ADDRESS.getPrefix().toIpSpace(),
             SFL_EGRESS_IFACE_ADDRESS.getIp().toIpSpace());
     SFL_DST_IP_SPACE_DUAL_NODE = SFL_NEIGHBOR_IFACE_ADDRESS.getIp().toIpSpace();
   }
@@ -914,7 +914,7 @@ public final class BidirectionalReachabilityAnalysisTest {
         new InterfaceLocation(FPFN_START_NODE, FPFN_EGRESS_IFACE),
         FPFN_START_EGRESS_ADDRESS.getIp().toIpSpace(),
         AclIpSpace.difference(
-            FPFN_END_EXIT_ADDRESS.getPrefix().toHostIpSpace(),
+            FPFN_END_EXIT_ADDRESS.getPrefix().toIpSpace(),
             FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
   }
 
@@ -926,7 +926,7 @@ public final class BidirectionalReachabilityAnalysisTest {
             FPFN_START_INGRESS_ADDRESS.getPrefix().toIpSpace(),
             FPFN_START_INGRESS_ADDRESS.getIp().toIpSpace()),
         AclIpSpace.difference(
-            FPFN_END_EXIT_ADDRESS.getPrefix().toHostIpSpace(),
+            FPFN_END_EXIT_ADDRESS.getPrefix().toIpSpace(),
             FPFN_END_EXIT_ADDRESS.getIp().toIpSpace()));
   }
 

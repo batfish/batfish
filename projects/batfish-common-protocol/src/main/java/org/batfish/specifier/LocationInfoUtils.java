@@ -57,20 +57,6 @@ public final class LocationInfoUtils {
         EmptyIpSpace.INSTANCE);
   }
 
-  /** @return the network or broadcast IPs of all connected subnets. */
-  @Nonnull
-  public static IpSpace connectedSubnetNetworkOrBroadcastIps(Interface iface) {
-    return firstNonNull(
-        AclIpSpace.union(
-            iface.getAllConcreteAddresses().stream()
-                .map(ConcreteInterfaceAddress::getPrefix)
-                .filter(pfx -> pfx.getPrefixLength() < 31)
-                .flatMap(pfx -> Stream.of(pfx.getStartIp(), pfx.getEndIp()))
-                .map(Ip::toIpSpace)
-                .toArray(IpSpace[]::new)),
-        EmptyIpSpace.INSTANCE);
-  }
-
   public static Map<Location, LocationInfo> computeLocationInfo(
       Map<String, Configuration> configs) {
     return computeLocationInfo(new IpOwners(configs), configs);
@@ -163,8 +149,7 @@ public final class LocationInfoUtils {
         true,
         firstNonNull(
             difference(connectedHostSubnetHostIps(iface), snapshotOwnedIps), EmptyIpSpace.INSTANCE),
-        connectedSubnetHostIps(iface),
-        connectedSubnetNetworkOrBroadcastIps(iface));
+        connectedSubnetHostIps(iface));
   }
 
   private static LocationInfo subtractSnapshotOwnedIpsFromSourceIps(
