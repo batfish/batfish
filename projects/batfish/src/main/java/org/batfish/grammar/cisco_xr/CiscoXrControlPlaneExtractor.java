@@ -874,6 +874,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.U_passwordContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.U_roleContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Uint16Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Uint32Context;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Uint8Context;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Uint_legacyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Update_source_bgp_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Use_af_group_bgp_tailContext;
@@ -7385,6 +7386,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       Extcommunity_set_rt_elem_16Context ctx) {
     // TODO: support other 16-bit range expressions
     return new LiteralUint16(toInteger(ctx.uint16()));
+  }
+
+  private static int toInteger(Uint8Context ctx) {
+    return Integer.parseInt(ctx.getText());
   }
 
   private static int toInteger(Uint16Context ctx) {

@@ -106,7 +106,7 @@ extended_access_list_additional_feature
    | DOD_HOST_PROHIBITED
    | DOD_NET_PROHIBITED
    | DSCP dscp_type
-   | icmp_message_type = uint_legacy icmp_message_code = uint_legacy?
+   | icmp_message_type = uint8 icmp_message_code = uint8?
    | ECHO
    | ECHO_REPLY
    | ESTABLISHED
@@ -156,7 +156,7 @@ extended_access_list_additional_feature
    | TIMESTAMP_REQUEST
    | TRACEROUTE
    | TTL_EXCEEDED
-   | TTL EQ uint_legacy // TODO
+   | TTL EQ uint8 // TODO
    | eacl_feature_udf
    | UNREACHABLE
 ;
