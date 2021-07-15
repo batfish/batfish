@@ -1642,7 +1642,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                       IpSpace rightIpSpace = rightIfaceMap.get(iface);
                       BDD bdd = toBDD.visit(ipSpace);
                       BDD rightBDD = toBDD.visit(rightIpSpace);
-                      BDD leftOnly = bdd.diff(rightBDD);
                       assert !bdd.diffSat(rightBDD)
                           : "Left BDDs larger for node "
                               + node
