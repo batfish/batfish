@@ -5456,8 +5456,6 @@ TRACEROUTE: 'traceroute';
 
 TRACK: 'track';
 
-TRACKED: 'tracked';
-
 TRACKING_PRIORITY_INCREMENT: 'tracking-priority-increment';
 
 TRADITIONAL: 'traditional';
@@ -5623,8 +5621,6 @@ UPLINK: 'uplink';
 UPLINKFAST: 'uplinkfast';
 
 UPS: 'ups';
-
-URG: 'urg';
 
 URI: 'uri';
 
