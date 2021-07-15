@@ -185,7 +185,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
         _originProtocol,
         _originType,
         _tag,
-        _status);
+        _status == null ? 0 : _status.ordinal());
   }
 
   /** Builder for {@link RouteRowAttribute} */
