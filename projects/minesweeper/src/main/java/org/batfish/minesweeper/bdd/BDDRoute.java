@@ -296,7 +296,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             _asPathRegexAtomicPredicates[i].nand(_asPathRegexAtomicPredicates[j]));
       }
     }
-    return prefLenConstraint.andWith(asPathConstraint);
+    // the next hop should be neither the min or max possible IP
+    // this constraint is enforced by NextHopIp's constructor
+    BDD nextHopConstraint =
+        _nextHop.geq(Ip.ZERO.asLong() + 1).and(_nextHop.leq(Ip.MAX.asLong() - 1));
+
+    return prefLenConstraint.andWith(asPathConstraint).andWith(nextHopConstraint);
   }
 
   /*

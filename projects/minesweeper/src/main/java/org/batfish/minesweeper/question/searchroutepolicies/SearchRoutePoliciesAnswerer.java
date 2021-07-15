@@ -46,6 +46,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
@@ -237,12 +238,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param g the Graph, which provides information about the community atomic predicates
    * @return either a route or a BDD representing an infeasible constraint
    */
-  private static Bgpv4Route satAssignmentToRoute(BDD fullModel, BDDRoute r, Graph g) {
+  private Bgpv4Route satAssignmentToRoute(BDD fullModel, BDDRoute r, Graph g) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
-            .setNextHop(NextHopDiscard.instance())
             .setProtocol(RoutingProtocol.BGP);
 
     Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
@@ -260,6 +260,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     AsPath asPath = satAssignmentToAsPath(fullModel, r, g);
     builder.setAsPath(asPath);
+
+    // this code assumes that the BDDRoute r represents the initial route, so the next-hop flags
+    // are false; we need to use these flags if we want to also produce the output route
+    assert (r.getNextHopDiscarded().isZero() && r.getNextHopSet().isZero());
+    switch (_direction) {
+      case IN:
+        builder.setNextHop(NextHopIp.of(Ip.create(r.getNextHop().satAssignmentToLong(fullModel))));
+        break;
+      case OUT:
+        builder.setNextHop(NextHopDiscard.instance());
+        break;
+    }
 
     return builder.build();
   }
