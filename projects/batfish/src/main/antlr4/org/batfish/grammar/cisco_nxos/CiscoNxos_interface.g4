@@ -75,12 +75,18 @@ i_bandwidth
   ) NEWLINE
 ;
 
+interface_bandwidth_eigrp_kbps
+:
+// 1-2560000000, units are kbps (for effective range of 1kbps-2.56Tbps)
+  uint32
+;
+
 interface_bandwidth_kbps
 :
-// 1-100000000, units are kbps (for effective range of 1kbps-100Gbps)
-  UINT8
-  | UINT16
-  | UINT32
+// 1-100000000, units are kbps (for effective range of 1kbps-100Gbps) for physical interfaces.
+// 1-3200000000, units are kbps (for effective range of 1kbps-3.2Tbps) for port-channels,
+//               which can bundle 32 physical interfaces
+  uint32
 ;
 
 i_channel_group
@@ -463,8 +469,7 @@ i_ip_address_concrete
 
 i_ip_bandwidth
 :
-  // bandwidth 1 - 2,560,000,000 kb/s
-  BANDWIDTH EIGRP router_eigrp_process_tag bw = interface_bandwidth_kbps NEWLINE
+  BANDWIDTH EIGRP router_eigrp_process_tag bw = interface_bandwidth_eigrp_kbps NEWLINE
 ;
 
 i_ip_delay

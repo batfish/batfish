@@ -3032,8 +3032,10 @@ public final class CiscoNxosGrammarTest {
 
   @Test
   public void testInterfacePortChannelParsing() {
-    // TODO: change to extraction test
-    assertThat(parseVendorConfig("nxos_interface_port_channel"), notNullValue());
+    CiscoNxosConfiguration c = parseVendorConfig("nxos_interface_port_channel");
+    assertThat(c.getInterfaces().keySet(), contains("port-channel1"));
+    Interface pc1 = c.getInterfaces().get("port-channel1");
+    assertThat(pc1.getBandwidth(), equalTo(3_200_000_000L));
   }
 
   /**
@@ -8551,7 +8553,7 @@ public final class CiscoNxosGrammarTest {
       // Interface with custom EIGRP BW, delay, passive-interface
       Interface iface = vc.getInterfaces().get("Ethernet1/1");
       assertThat(iface.getEigrp(), equalTo("1"));
-      assertThat(iface.getEigrpBandwidth(), equalTo(300));
+      assertThat(iface.getEigrpBandwidth(), equalTo(2560000000L));
       assertThat(iface.getEigrpDelay(), equalTo(400));
       assertTrue(iface.getEigrpPassive());
     }
@@ -8575,7 +8577,7 @@ public final class CiscoNxosGrammarTest {
         vrf member VRF
         ip address 192.0.2.2/24
         ip router eigrp 1
-        ip bandwidth eigrp 1 300
+        ip bandwidth eigrp 1 2560000000
         ip delay eigrp 1 400
         ip hold-time eigrp 1 100
         ip hello-interval eigrp 1 200
@@ -8587,7 +8589,7 @@ public final class CiscoNxosGrammarTest {
           iface.getBandwidth(), equalTo(getDefaultBandwidth(CiscoNxosInterfaceType.ETHERNET)));
       EigrpInterfaceSettings eigrp = iface.getEigrp();
       assertNotNull(eigrp);
-      assertThat(eigrp.getMetric().getValues().getBandwidth(), equalTo(300L));
+      assertThat(eigrp.getMetric().getValues().getBandwidth(), equalTo(2560000000L));
       // EIGRP metric values have delay in ps (1e-12); config has it in tens of µs (1e-5)
       assertThat(eigrp.getMetric().getValues().getDelay(), equalTo((long) (400 * 1e7)));
       assertTrue(eigrp.getPassive());
