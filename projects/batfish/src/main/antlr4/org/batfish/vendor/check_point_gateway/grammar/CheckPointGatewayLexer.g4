@@ -13,19 +13,29 @@ tokens {
 }
 
 // CheckPointGateway keywords
+ADDRESS: 'address';
 AUTO_NEGOTIATION: 'auto-negotiation';
+BLACKHOLE: 'blackhole';
+COMMENT: 'comment' -> pushMode(M_SingleStr);
 COMMENTS: 'comments' -> pushMode(M_SingleStr);
+DEFAULT: 'default';
 FORCE: 'force';
+GATEWAY: 'gateway';
 HOSTNAME: 'hostname' -> pushMode(M_SingleStr);
 INTERFACE: 'interface' -> pushMode(M_SingleStr);
 IPV4_ADDRESS: 'ipv4-address';
 LINK_SPEED: 'link-speed';
+LOGICAL: 'logical' -> pushMode(M_SingleStr);
 MASK_LENGTH: 'mask-length';
 MTU: 'mtu';
+NEXTHOP: 'nexthop';
 OFF: 'off';
 ON: 'on';
+PRIORITY: 'priority';
+REJECT: 'reject';
 SET: 'set';
 STATE: 'state';
+STATIC_ROUTE: 'static-route';
 SUBNET_MASK: 'subnet-mask';
 
 // Numeric tokens

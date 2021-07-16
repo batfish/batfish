@@ -1,0 +1,13 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname static_route_warn
+#
+set static-route default nexthop gateway logical eth0 on
+set static-route default comment "no underscore_ allowed in comment"
+set static-route 0.0.0.0/0 nexthop blackhole
+set static-route 10.10.0.0/16 nexthop gateway address 10.10.10.11 priority 0 on
+set static-route 10.10.0.0/16 nexthop gateway address 10.10.10.11 priority 9 on

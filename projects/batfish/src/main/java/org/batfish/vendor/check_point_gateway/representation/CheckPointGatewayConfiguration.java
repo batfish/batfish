@@ -11,6 +11,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -20,6 +21,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   public CheckPointGatewayConfiguration() {
     _interfaces = new HashMap<>();
+    _staticRoutes = new HashMap<>();
   }
 
   @Override
@@ -29,6 +31,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   public Map<String, Interface> getInterfaces() {
     return _interfaces;
+  }
+
+  public Map<Prefix, StaticRoute> getStaticRoutes() {
+    return _staticRoutes;
   }
 
   @Override
@@ -84,5 +90,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   private Configuration _c;
   private String _hostname;
   private Map<String, Interface> _interfaces;
+  /** destination prefix -> static route definition */
+  private Map<Prefix, StaticRoute> _staticRoutes;
+
   private ConfigurationFormat _vendor;
 }
