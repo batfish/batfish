@@ -485,11 +485,11 @@ public class FilterLineReachabilityAnswerer extends Answerer {
    * Info about how some ACL line is blocked: which lines block it and whether any of them treat any
    * packet differently than the blocked line would
    */
-  static class BlockingProperties {
+  public static class BlockingProperties {
     @Nonnull private final SortedSet<Integer> _blockingLineNums;
     private final boolean _diffAction;
 
-    BlockingProperties(@Nonnull SortedSet<Integer> blockingLineNums, boolean diffAction) {
+    public BlockingProperties(@Nonnull SortedSet<Integer> blockingLineNums, boolean diffAction) {
       _blockingLineNums = blockingLineNums;
       _diffAction = diffAction;
     }
