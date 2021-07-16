@@ -13,7 +13,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -133,13 +132,12 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
   }
 
   private static boolean containsOwnNextHop(AnnotatedRoute<AbstractRoute> route) {
-    Prefix network = route.getNetwork();
     NextHop nextHop = route.getAbstractRoute().getNextHop();
     if (!(nextHop instanceof NextHopIp)) {
       // no next-hop resolution, so stop here
       return false;
     }
-    return network.containsIp(((NextHopIp) nextHop).getIp());
+    return route.getNetwork().containsIp(((NextHopIp) nextHop).getIp());
   }
 
   /** Create a new empty RIB. */
