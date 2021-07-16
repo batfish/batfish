@@ -1,0 +1,26 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname static_route_convert
+#
+set interface eth0 state on
+set interface eth0 ipv4-address 10.0.0.1 mask-length 24
+#
+#
+set static-route default nexthop gateway logical eth0 on
+#
+set static-route 10.1.0.0/16 nexthop blackhole
+#
+set static-route 10.2.0.0/16 nexthop reject
+#
+set static-route 10.3.0.0/16 nexthop gateway address 10.0.0.2 priority 8 on
+#
+set static-route 10.4.0.0/16 nexthop gateway address 10.0.0.3 on
+set static-route 10.4.0.0/16 nexthop gateway address 10.0.0.4 priority 1 on
+#
+# Ignored since there is no connected route for this nexthop
+set static-route 10.5.0.0/16 nexthop gateway address 10.0.1.2 on
+set static-route 10.5.0.0/16 nexthop gateway address 10.0.0.5 priority 3 on
