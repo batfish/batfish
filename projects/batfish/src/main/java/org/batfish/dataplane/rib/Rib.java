@@ -139,8 +139,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       // no next-hop resolution, so stop here
       return false;
     }
-    Ip nextHopIp = ((NextHopIp) nextHop).getIp();
-    return network.containsIp(nextHopIp);
+    return network.containsIp(((NextHopIp) nextHop).getIp());
   }
 
   /** Create a new empty RIB. */
