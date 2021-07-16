@@ -46,13 +46,17 @@ public class TableMetadata {
       }
     }
 
-    // if textDesc is null, make one up using key columns if there are any or all columns if not
+    checkArgument(
+        columnMetadata.stream().anyMatch(ColumnMetadata::getIsKey),
+        "Invalid TableMetadata: no key columns in %s",
+        columnMetadata);
+
+    // if textDesc is null, make one up using key columns
     String desc = textDesc;
     if (desc == null) {
-      boolean haveKeyColumns = columnMetadata.stream().anyMatch(ColumnMetadata::getIsKey);
       desc =
           columnMetadata.stream()
-              .filter(cm -> !haveKeyColumns || cm.getIsKey())
+              .filter(ColumnMetadata::getIsKey)
               .map(cm -> String.format("${%s}", cm.getName()))
               .collect(Collectors.joining(" | "));
     }

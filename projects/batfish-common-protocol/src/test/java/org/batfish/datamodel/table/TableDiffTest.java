@@ -136,7 +136,7 @@ public class TableDiffTest {
     Row row = Row.of("key", "value");
     TableMetadata metadata =
         new TableMetadata(
-            ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "desc", false, true)),
+            ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "desc", true, false)),
             "desc");
 
     // delta is null
@@ -144,28 +144,14 @@ public class TableDiffTest {
     TableDiff.diffRowValues(diff1, row, null, metadata);
     assertThat(
         diff1.build(),
-        equalTo(
-            Row.of(
-                TableDiff.COL_KEY_PRESENCE,
-                TableDiff.COL_KEY_STATUS_ONLY_BASE,
-                TableDiff.baseColumnName("key"),
-                "value",
-                TableDiff.deltaColumnName("key"),
-                null)));
+        equalTo(Row.of(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_ONLY_BASE)));
 
     // base is null
     RowBuilder diff2 = Row.builder();
     TableDiff.diffRowValues(diff2, null, row, metadata);
     assertThat(
         diff2.build(),
-        equalTo(
-            Row.of(
-                TableDiff.COL_KEY_PRESENCE,
-                TableDiff.COL_KEY_STATUS_ONLY_DELTA,
-                TableDiff.baseColumnName("key"),
-                null,
-                TableDiff.deltaColumnName("key"),
-                "value")));
+        equalTo(Row.of(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_ONLY_DELTA)));
   }
 
   /** Checks if we get back the expected number of rows based on ignoring missing keys. */
@@ -258,32 +244,6 @@ public class TableDiffTest {
                     .put(TableDiff.deltaColumnName("value"), "value2")
                     .put(TableDiff.baseColumnName("neither"), "neither1")
                     .put(TableDiff.deltaColumnName("neither"), "neither2")
-                    .build());
-
-    assertThat(TableDiff.diffTables(table1, table2, true).getRows(), equalTo(expectedRows));
-  }
-
-  /** Checks if we properly handle tables that have no key columns */
-  @Test
-  public void diffTablesTestNoKeys() {
-    TableMetadata noKeys =
-        new TableMetadata(
-            ImmutableList.of(new ColumnMetadata("value", Schema.STRING, "value", false, true)),
-            "desc");
-
-    Row row1 = Row.of("value", "value1");
-    Row row2 = Row.of("value", "value2");
-
-    TableAnswerElement table1 = new TableAnswerElement(noKeys).addRow(row1);
-    TableAnswerElement table2 = new TableAnswerElement(noKeys).addRow(row2);
-
-    Rows expectedRows =
-        new Rows()
-            .add(
-                Row.builder()
-                    .put(TableDiff.COL_KEY_PRESENCE, TableDiff.COL_KEY_STATUS_BOTH)
-                    .put(TableDiff.baseColumnName("value"), "value1")
-                    .put(TableDiff.deltaColumnName("value"), "value2")
                     .build());
 
     assertThat(TableDiff.diffTables(table1, table2, true).getRows(), equalTo(expectedRows));
