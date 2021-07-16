@@ -80,9 +80,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Returns a {@link Stream of VI {@link org.batfish.datamodel.StaticRoute} corresponding to the
-   * specified VS {@link StaticRoute}. Only addresses corresponding to connected routes are
-   * considered and only nexthops with the lowest {@code priority} value are returned.
+   * Returns a {@link Stream} of VI {@link org.batfish.datamodel.StaticRoute} corresponding to the
+   * specified VS {@link StaticRoute}. Only valid routes with nexthop targets are returned.
    */
   private static Stream<org.batfish.datamodel.StaticRoute> convertStaticRoute(
       StaticRoute route, Map<String, Interface> interfaces) {
