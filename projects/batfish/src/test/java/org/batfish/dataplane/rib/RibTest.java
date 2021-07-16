@@ -291,8 +291,8 @@ public class RibTest {
     rib.mergeRoute(moreSpecificOwnNextHopRoute);
     rib.mergeRoute(lessSpecificOwnNextHopRoute);
 
-    // moreSpecificOwnNextHopRoute should be activated by activatingRoute, and the former should
-    // activate lessSpecificOwnNextHopRoute.
+    // Removing activatingRoute should deactivate moreSpecificOwnNextHopRoute, and deactivating the
+    // latter should deactivate lessSpecificOwnNextHopRoute.
     assertThat(
         rib.removeRouteGetDelta(activatingRoute)
             .getActions()
