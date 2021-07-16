@@ -28,7 +28,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
 
   private final class OwnNextHopManager {
 
-    private final SetMultimap<Ip, AnnotatedRoute<AbstractRoute>> _routesByNextHopIp;
+    private final @Nonnull SetMultimap<Ip, AnnotatedRoute<AbstractRoute>> _routesByNextHopIp;
 
     private OwnNextHopManager() {
       _routesByNextHopIp = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
