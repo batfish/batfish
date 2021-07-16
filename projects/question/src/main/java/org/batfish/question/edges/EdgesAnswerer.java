@@ -549,14 +549,9 @@ public class EdgesAnswerer extends Answerer {
       case BGP:
         columnBuilder.add(
             new ColumnMetadata(
-                COL_NODE,
-                Schema.NODE,
-                "Node from which the edge originates",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                COL_NODE, Schema.NODE, "Node from which the edge originates", true, false));
         columnBuilder.add(
-            new ColumnMetadata(
-                COL_IP, Schema.IP, "IP at the side of originator", Boolean.FALSE, Boolean.TRUE));
+            new ColumnMetadata(COL_IP, Schema.IP, "IP at the side of originator", true, false));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_INTERFACE,
@@ -573,18 +568,10 @@ public class EdgesAnswerer extends Answerer {
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_REMOTE_NODE,
-                Schema.NODE,
-                "Node at which the edge terminates",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                COL_REMOTE_NODE, Schema.NODE, "Node at which the edge terminates", true, false));
         columnBuilder.add(
             new ColumnMetadata(
-                COL_REMOTE_IP,
-                Schema.IP,
-                "IP at the side of the responder",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                COL_REMOTE_IP, Schema.IP, "IP at the side of the responder", true, false));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_REMOTE_INTERFACE,
@@ -659,30 +646,30 @@ public class EdgesAnswerer extends Answerer {
                 COL_SOURCE_INTERFACE,
                 Schema.INTERFACE,
                 "Source interface used in the IPsec session",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                false,
+                true));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_TUNNEL_INTERFACE,
                 Schema.INTERFACE,
                 "Tunnel interface (if any) used in the IPsec session",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                true,
+                false));
 
         columnBuilder.add(
             new ColumnMetadata(
                 COL_REMOTE_SOURCE_INTERFACE,
                 Schema.INTERFACE,
                 "Remote source interface used in the IPsec session",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                false,
+                true));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_REMOTE_TUNNEL_INTERFACE,
                 Schema.INTERFACE,
                 "Remote tunnel interface (if any) used in the IPsec session",
-                Boolean.FALSE,
-                Boolean.TRUE));
+                true,
+                false));
         break;
       case OSPF:
       case ISIS:
@@ -694,16 +681,16 @@ public class EdgesAnswerer extends Answerer {
                 COL_INTERFACE,
                 Schema.INTERFACE,
                 "Interface from which the edge originates",
-                Boolean.TRUE,
-                Boolean.TRUE));
+                true,
+                false));
 
         columnBuilder.add(
             new ColumnMetadata(
                 COL_REMOTE_INTERFACE,
                 Schema.INTERFACE,
                 "Interface at which the edge terminates",
-                Boolean.TRUE,
-                Boolean.TRUE));
+                true,
+                false));
     }
     return new TableMetadata(columnBuilder.build(), "Display Edges");
   }
