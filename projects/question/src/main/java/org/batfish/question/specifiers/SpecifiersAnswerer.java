@@ -65,8 +65,8 @@ public final class SpecifiersAnswerer extends Answerer {
 
     List<ColumnMetadata> columns =
         ImmutableList.of(
-            new ColumnMetadata(COL_NODE, Schema.NODE, "Node", false, false),
-            new ColumnMetadata(COL_FILTER_NAME, Schema.STRING, "Filter name", false, false));
+            new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false),
+            new ColumnMetadata(COL_FILTER_NAME, Schema.STRING, "Filter name", true, false));
 
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
@@ -96,7 +96,7 @@ public final class SpecifiersAnswerer extends Answerer {
 
     List<ColumnMetadata> columns =
         ImmutableList.of(
-            new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", false, false));
+            new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false));
 
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
@@ -114,7 +114,7 @@ public final class SpecifiersAnswerer extends Answerer {
   @VisibleForTesting
   static TableAnswerElement resolveIpSpace(SpecifiersQuestion question, SpecifierContext context) {
     List<ColumnMetadata> columns =
-        ImmutableList.of(new ColumnMetadata(COL_IP_SPACE, Schema.STRING, "IP space", false, false));
+        ImmutableList.of(new ColumnMetadata(COL_IP_SPACE, Schema.STRING, "IP space", true, false));
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
 
@@ -135,7 +135,7 @@ public final class SpecifiersAnswerer extends Answerer {
 
     List<ColumnMetadata> columns =
         ImmutableList.of(
-            new ColumnMetadata(COL_LOCATIONS, Schema.STRING, "Resolution", false, false),
+            new ColumnMetadata(COL_LOCATIONS, Schema.STRING, "Resolution", true, false),
             new ColumnMetadata(COL_IP_SPACE, Schema.STRING, "IP space", false, false));
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
@@ -160,7 +160,7 @@ public final class SpecifiersAnswerer extends Answerer {
   static TableAnswerElement resolveLocation(SpecifiersQuestion question, SpecifierContext context) {
 
     List<ColumnMetadata> columns =
-        ImmutableList.of(new ColumnMetadata(COL_LOCATION, Schema.STRING, "Location", false, false));
+        ImmutableList.of(new ColumnMetadata(COL_LOCATION, Schema.STRING, "Location", true, false));
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
 
@@ -175,7 +175,7 @@ public final class SpecifiersAnswerer extends Answerer {
   static TableAnswerElement resolveNode(SpecifiersQuestion question, SpecifierContext context) {
 
     List<ColumnMetadata> columns =
-        ImmutableList.of(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", false, false));
+        ImmutableList.of(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false));
     TableAnswerElement table = new TableAnswerElement(new TableMetadata(columns));
     Map<String, ColumnMetadata> columnMap = table.getMetadata().toColumnMap();
 
