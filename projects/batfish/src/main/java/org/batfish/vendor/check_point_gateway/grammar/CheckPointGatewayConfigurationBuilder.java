@@ -5,6 +5,7 @@ import static org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayLe
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -370,8 +371,18 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     return false;
   }
 
+  /** Handle hostname special string replacements, like {@code %m} for chassis identifier. */
+  private @Nonnull String preprocessHostname(String original) {
+    return original.replace("%m", "ch01-01");
+  }
+
   private @Nonnull Optional<String> toString(ParserRuleContext messageCtx, HostnameContext ctx) {
-    return toString(messageCtx, ctx.word(), "device hostname", DEVICE_HOSTNAME_PATTERN);
+    return toString(
+        messageCtx,
+        ctx.word(),
+        "device hostname",
+        this::preprocessHostname,
+        DEVICE_HOSTNAME_PATTERN);
   }
 
   private @Nonnull Optional<String> toString(
@@ -390,8 +401,32 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx,
+      WordContext ctx,
+      String type,
+      Function<String, String> preprocessFunction,
+      Pattern pattern) {
+    return toString(messageCtx, ctx, type, preprocessFunction, s -> pattern.matcher(s).matches());
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, WordContext ctx, String type, Predicate<String> predicate) {
     String text = toString(ctx);
+    return toString(messageCtx, text, type, predicate);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx,
+      WordContext ctx,
+      String type,
+      Function<String, String> preprocessFunction,
+      Predicate<String> predicate) {
+    String text = preprocessFunction.apply(toString(ctx));
+    return toString(messageCtx, text, type, predicate);
+  }
+
+  private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, String text, String type, Predicate<String> predicate) {
     if (!predicate.test(text)) {
       warn(messageCtx, String.format("Illegal value for %s", type));
       return Optional.empty();

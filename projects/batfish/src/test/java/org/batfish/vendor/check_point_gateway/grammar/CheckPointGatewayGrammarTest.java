@@ -118,6 +118,15 @@ public class CheckPointGatewayGrammarTest {
   }
 
   @Test
+  public void testHostnameChassis() {
+    String hostname = "hostname_chassis";
+    CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
+    assertThat(c, notNullValue());
+    // Confirm the `%m` is replaced with a chassis identifier
+    assertThat(c.getHostname(), equalTo("hostname_chassis-ch01-01"));
+  }
+
+  @Test
   public void testDeviceModel() {
     String hostname = "hostname";
     Configuration c = parseConfig(hostname);
