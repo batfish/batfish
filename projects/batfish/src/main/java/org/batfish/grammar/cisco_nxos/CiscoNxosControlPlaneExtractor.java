@@ -403,6 +403,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inos_accessContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Inos_switchportContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.InoshutContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_addressContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_eigrp_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_bandwidth_kbpsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_descriptionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Interface_ipv6_addressContext;
@@ -860,7 +861,11 @@ import org.batfish.representation.cisco_nxos.VrfAddressFamily;
 public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseListener
     implements SilentSyntaxListener {
 
-  private static final IntegerSpace BANDWIDTH_RANGE = IntegerSpace.of(Range.closed(1, 100_000_000));
+  private static final LongSpace BANDWIDTH_RANGE = LongSpace.of(Range.closed(1L, 100_000_000L));
+  private static final LongSpace BANDWIDTH_EIGRP_RANGE =
+      LongSpace.of(Range.closed(1L, 2_560_000_000L));
+  private static final LongSpace BANDWIDTH_PORT_CHANNEL_RANGE =
+      LongSpace.of(Range.closed(1L, 3_200_000_000L));
   private static final IntegerSpace BGP_ALLOWAS_IN = IntegerSpace.of(Range.closed(1, 10));
   private static final LongSpace BGP_ASN_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace BGP_EBGP_MULTIHOP_TTL_RANGE =
@@ -2077,7 +2082,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.decrement != null) {
       Optional<Integer> decrementOrErr =
           toIntegerInSpace(
-              ctx, ctx.decrement, HSRP_TRACK_DECREMENT_RANGE, "hspr group track decrement");
+              ctx, ctx.decrement, HSRP_TRACK_DECREMENT_RANGE, "hsrp group track decrement");
       if (!decrementOrErr.isPresent()) {
         return;
       }
@@ -5402,11 +5407,12 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitI_bandwidth(I_bandwidthContext ctx) {
     if (ctx.bw != null) {
-      Integer bandwidth = toBandwidth(ctx, ctx.bw);
-      if (bandwidth == null) {
-        return;
-      }
-      _currentInterfaces.forEach(iface -> iface.setBandwidth(bandwidth));
+      boolean hasPortChannel =
+          _currentInterfaces.stream()
+              .anyMatch(i -> i.getType() == CiscoNxosInterfaceType.PORT_CHANNEL);
+      Optional<Long> bandwidth =
+          hasPortChannel ? toPortChannelBandwidth(ctx, ctx.bw) : toBandwidth(ctx, ctx.bw);
+      bandwidth.ifPresent(bw -> _currentInterfaces.forEach(iface -> iface.setBandwidth(bw)));
     }
     if (ctx.inherit != null) {
       // TODO: support bandwidth inherit
@@ -5527,8 +5533,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitI_ip_bandwidth(I_ip_bandwidthContext ctx) {
-    Integer bandwidth = toBandwidth(ctx, ctx.bw);
-    _currentInterfaces.forEach(iface -> iface.setEigrpBandwidth(bandwidth));
+    toBandwidthEigrp(ctx, ctx.bw)
+        .ifPresent(bw -> _currentInterfaces.forEach(iface -> iface.setEigrpBandwidth(bw)));
   }
 
   @Override
@@ -5906,8 +5912,9 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     if (ctx.tag != null) {
       builder.setTag(toLong(ctx.tag));
     }
-    if (ctx.track != null) {
-      Optional<Integer> track = toInteger(ctx, ctx.track);
+    CiscoNxosParser.Ip_route_network_trackContext track_ctx = ctx.ip_route_network_track();
+    if (track_ctx != null) {
+      Optional<Integer> track = toInteger(track_ctx, track_ctx.track);
       if (!track.isPresent()) {
         return;
       }
@@ -5921,18 +5928,18 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
             CiscoNxosStructureType.TRACK,
             trackNumber.toString(),
             CiscoNxosStructureUsage.IP_ROUTE_TRACK,
-            ctx.start.getLine());
+            track_ctx.start.getLine());
         return;
       }
       _c.referenceStructure(
           CiscoNxosStructureType.TRACK,
           trackNumber.toString(),
           CiscoNxosStructureUsage.IP_ROUTE_TRACK,
-          ctx.start.getLine());
+          track_ctx.start.getLine());
 
       builder.setTrack(trackNumber);
       // TODO: support track object number
-      todo(ctx);
+      todo(track_ctx);
     }
     StaticRoute route = builder.build();
     _currentVrf.getStaticRoutes().put(route.getPrefix(), route);
@@ -6698,17 +6705,19 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     _currentVlans.forEach(v -> v.setVni(vni));
   }
 
-  private @Nullable Integer toBandwidth(
+  private @Nonnull Optional<Long> toBandwidthEigrp(
+      ParserRuleContext messageCtx, Interface_bandwidth_eigrp_kbpsContext ctx) {
+    return toLongInSpace(messageCtx, ctx, BANDWIDTH_EIGRP_RANGE, "bandwidth eigrp");
+  }
+
+  private @Nonnull Optional<Long> toBandwidth(
       ParserRuleContext messageCtx, Interface_bandwidth_kbpsContext ctx) {
-    int bandwidth = Integer.parseInt(ctx.getText());
-    if (!BANDWIDTH_RANGE.contains(bandwidth)) {
-      warn(
-          messageCtx,
-          String.format(
-              "Expected bandwidth in range %s, but got '%d'", BANDWIDTH_RANGE, bandwidth));
-      return null;
-    }
-    return bandwidth;
+    return toLongInSpace(messageCtx, ctx, BANDWIDTH_RANGE, "bandwidth");
+  }
+
+  private Optional<Long> toPortChannelBandwidth(
+      ParserRuleContext messageCtx, Interface_bandwidth_kbpsContext ctx) {
+    return toLongInSpace(messageCtx, ctx, BANDWIDTH_PORT_CHANNEL_RANGE, "bandwidth");
   }
 
   private @Nonnull Optional<Integer> toInteger(

@@ -84,7 +84,7 @@ public class VendorConfigurationFormatDetectorTest {
   public void testCheckPoint() {
     String fileText =
         "#\n"
-            + "# Configuration of host_name\n"
+            + "# Configuration of host_name-ch01-01\n"
             + "# Language version: 13.4v1\n"
             + "set installer policy check-for-updates-period 3\n"
             + "set hostname check_point\n";

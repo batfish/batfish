@@ -20,6 +20,7 @@ import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
@@ -30,12 +31,14 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ho
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Interface_nameContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ip_addressContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ip_mask_lengthContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ip_prefixContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Link_speedContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.MtuContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.On_or_offContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Quoted_textContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.S_hostnameContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.S_interfaceContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.S_static_routeContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Si_auto_negotiationContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Si_commentsContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Si_ipv4_addressContext;
@@ -44,6 +47,14 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Si
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Si_stateContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Siia_maskContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Single_quoted_stringContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ssr_commentContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ssr_nexthopContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.SsrnContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.SsrngContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ssrng_priorityContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Static_route_commentContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Static_route_prefixContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Static_route_priorityContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint16Context;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint32Context;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint8Context;
@@ -51,6 +62,13 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Wo
 import org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.Interface;
 import org.batfish.vendor.check_point_gateway.representation.Interface.LinkSpeed;
+import org.batfish.vendor.check_point_gateway.representation.Nexthop;
+import org.batfish.vendor.check_point_gateway.representation.NexthopAddress;
+import org.batfish.vendor.check_point_gateway.representation.NexthopBlackhole;
+import org.batfish.vendor.check_point_gateway.representation.NexthopLogical;
+import org.batfish.vendor.check_point_gateway.representation.NexthopReject;
+import org.batfish.vendor.check_point_gateway.representation.NexthopTarget;
+import org.batfish.vendor.check_point_gateway.representation.StaticRoute;
 
 @ParametersAreNonnullByDefault
 public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayParserBaseListener
@@ -174,6 +192,97 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     _currentInterface.setState(toBoolean(ctx.on_or_off()));
   }
 
+  @Override
+  public void enterS_static_route(S_static_routeContext ctx) {
+    Optional<Prefix> prefix = toPrefix(ctx, ctx.static_route_prefix());
+    if (!prefix.isPresent()) {
+      // Dummy
+      _currentStaticRoute = new StaticRoute(Prefix.ZERO);
+      return;
+    }
+
+    _currentStaticRoute =
+        _configuration.getStaticRoutes().computeIfAbsent(prefix.get(), StaticRoute::new);
+  }
+
+  @Override
+  public void exitS_static_route(S_static_routeContext ctx) {
+    _currentStaticRoute = null;
+  }
+
+  @Override
+  public void exitSsr_comment(Ssr_commentContext ctx) {
+    toString(ctx, ctx.static_route_comment()).ifPresent(c -> _currentStaticRoute.setComment(c));
+  }
+
+  @Override
+  public void enterSsr_nexthop(Ssr_nexthopContext ctx) {
+    Optional<NexthopTarget> nexthopTarget = toNexthopTarget(ctx.ssrn());
+    if (!nexthopTarget.isPresent()) {
+      // Dummy
+      _currentStaticRouteNextHop = new Nexthop(NexthopBlackhole.INSTANCE);
+      return;
+    }
+
+    _currentStaticRouteNextHop =
+        _currentStaticRoute.getNexthops().computeIfAbsent(nexthopTarget.get(), Nexthop::new);
+  }
+
+  @Override
+  public void exitSsrng_priority(Ssrng_priorityContext ctx) {
+    toInteger(ctx, ctx.static_route_priority())
+        .ifPresent(p -> _currentStaticRouteNextHop.setPriority(p));
+  }
+
+  @Override
+  public void exitSsr_nexthop(Ssr_nexthopContext ctx) {
+    _currentStaticRouteNextHop = null;
+  }
+
+  private @Nonnull Optional<NexthopTarget> toNexthopTarget(SsrnContext ctx) {
+    if (ctx.ssrn_blackhole() != null) {
+      return Optional.of(NexthopBlackhole.INSTANCE);
+    } else if (ctx.ssrn_reject() != null) {
+      return Optional.of(NexthopReject.INSTANCE);
+    }
+    assert ctx.ssrn_gateway() != null;
+    return toNexthopTarget(ctx.ssrn_gateway().ssrng());
+  }
+
+  private @Nonnull Optional<NexthopTarget> toNexthopTarget(SsrngContext ctx) {
+    if (ctx.ssrng_address() != null) {
+      return Optional.of(new NexthopAddress(toIp(ctx.ssrng_address().ip_address())));
+    }
+    assert ctx.ssrng_logical() != null;
+    String iface = toString(ctx.ssrng_logical().iface);
+    if (!_configuration.getInterfaces().containsKey(iface)) {
+      warn(ctx, "Cannot set nexthop gateway to non-existent interface");
+      return Optional.empty();
+    }
+    return Optional.of(new NexthopLogical(iface));
+  }
+
+  private @Nonnull Optional<Prefix> toPrefix(
+      ParserRuleContext messageCtx, Static_route_prefixContext ctx) {
+    if (ctx.ip_prefix() != null) {
+      Prefix prefix = toPrefix(ctx.ip_prefix());
+      if (prefix.equals(Prefix.ZERO)) {
+        warn(
+            messageCtx,
+            String.format(
+                "Static-route prefix %s is not valid, use the 'default' keyword instead.", prefix));
+        return Optional.empty();
+      }
+      return Optional.of(prefix);
+    }
+    assert ctx.DEFAULT() != null;
+    return Optional.of(Prefix.ZERO);
+  }
+
+  private @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
+    return Prefix.parse(ctx.getText());
+  }
+
   private LinkSpeed toLinkSpeed(Link_speedContext ctx) {
     if (ctx.HUNDRED_M_FULL() != null) {
       return LinkSpeed.HUNDRED_M_FULL;
@@ -190,6 +299,15 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, MtuContext ctx) {
     return toIntegerInSpace(messageCtx, ctx.uint16(), MTU_SPACE, "mtu");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Static_route_priorityContext ctx) {
+    return toIntegerInSpace(
+        messageCtx,
+        ctx.uint8(),
+        STATIC_ROUTE_NEXTHOP_PRIORITY_SPACE,
+        "static-route nexthop priority");
   }
 
   private @Nonnull Optional<Integer> toSubnetBits(
@@ -262,6 +380,11 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Static_route_commentContext ctx) {
+    return toString(messageCtx, ctx.word(), "static-route comment", STATIC_ROUTE_COMMENT_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, WordContext ctx, String type, Pattern pattern) {
     return toString(messageCtx, ctx, type, s -> pattern.matcher(s).matches());
   }
@@ -305,11 +428,18 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   private static final Pattern DEVICE_HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
   // Only certain prefixes are allowed, so this is more broad than what the device accepts
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9.-]+$");
+  private static final Pattern STATIC_ROUTE_COMMENT_PATTERN = Pattern.compile("^[A-Za-z0-9,. ]+$");
 
   private static final IntegerSpace MASK_LENGTH_SPACE = IntegerSpace.of(Range.closed(1, 32));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 16000));
+  private static final IntegerSpace STATIC_ROUTE_NEXTHOP_PRIORITY_SPACE =
+      IntegerSpace.of(Range.closed(1, 8));
 
   private Interface _currentInterface;
+
+  private StaticRoute _currentStaticRoute;
+
+  private Nexthop _currentStaticRouteNextHop;
 
   @Nonnull private CheckPointGatewayConfiguration _configuration;
 

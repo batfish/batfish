@@ -365,7 +365,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
    *     given specified nodes and ACL regex.
    */
   @VisibleForTesting
-  static List<AclSpecs> getAclSpecs(
+  public static List<AclSpecs> getAclSpecs(
       SortedMap<String, Configuration> configurations,
       Map<String, Set<IpAccessList>> specifiedAcls,
       FilterLineReachabilityRows answer) {
@@ -485,11 +485,11 @@ public class FilterLineReachabilityAnswerer extends Answerer {
    * Info about how some ACL line is blocked: which lines block it and whether any of them treat any
    * packet differently than the blocked line would
    */
-  static class BlockingProperties {
+  public static class BlockingProperties {
     @Nonnull private final SortedSet<Integer> _blockingLineNums;
     private final boolean _diffAction;
 
-    BlockingProperties(@Nonnull SortedSet<Integer> blockingLineNums, boolean diffAction) {
+    public BlockingProperties(@Nonnull SortedSet<Integer> blockingLineNums, boolean diffAction) {
       _blockingLineNums = blockingLineNums;
       _diffAction = diffAction;
     }
@@ -568,7 +568,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return new BlockingProperties(answerLines.build(), diffAction);
   }
 
-  private static void answerAclReachabilityLine(
+  public static void answerAclReachabilityLine(
       AclSpecs aclSpec, BDDPacket bddPacket, FilterLineReachabilityRows answerRows) {
     BDDFactory bddFactory = bddPacket.getFactory();
     BDDSourceManager sourceMgr =
