@@ -45,7 +45,6 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
@@ -1047,7 +1046,7 @@ public class SearchRoutePoliciesAnswererTest {
     LongSpace localPref = LongSpace.builder().including(45L).build();
     LongSpace med = LongSpace.builder().including(56L).build();
     LongSpace tag = LongSpace.builder().including(67L).build();
-    PrefixIpSpace nextHop = (PrefixIpSpace) Prefix.parse("1.0.0.0/8").toIpSpace();
+    Prefix nextHop = Prefix.parse("1.0.0.0/8");
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(

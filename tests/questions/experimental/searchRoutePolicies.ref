@@ -8,9 +8,6 @@
     "complementPrefix" : false,
     "localPreference" : "",
     "med" : "",
-    "nextHopIp" : {
-      "class" : "org.batfish.datamodel.UniverseIpSpace"
-    },
     "prefix" : [
       "1.1.1.0/24"
     ],
@@ -23,9 +20,6 @@
     "complementPrefix" : false,
     "localPreference" : "",
     "med" : "",
-    "nextHopIp" : {
-      "class" : "org.batfish.datamodel.UniverseIpSpace"
-    },
     "prefix" : [
       "2.2.2.0/24"
     ],

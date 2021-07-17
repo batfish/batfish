@@ -418,7 +418,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             g.getAsPathRegexAtomicPredicates(),
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
-    result.andWith(constraints.getNextHopIp().accept(new IpSpaceToBDD(r.getNextHop())));
+    result.andWith(
+        constraints
+            .getNextHopIp()
+            .orElse(Prefix.ZERO)
+            .toIpSpace()
+            .accept(new IpSpaceToBDD(r.getNextHop())));
 
     return result;
   }
