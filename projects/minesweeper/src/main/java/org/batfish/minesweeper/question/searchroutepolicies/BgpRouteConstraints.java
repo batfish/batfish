@@ -11,8 +11,11 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.UniverseIpSpace;
 
 /** A set of constraints on a BGP route announcement. */
 @ParametersAreNonnullByDefault
@@ -25,6 +28,7 @@ public class BgpRouteConstraints {
   private static final String PROP_TAG = "tag";
   private static final String PROP_COMMUNITIES = "communities";
   private static final String PROP_AS_PATH = "asPath";
+  private static final String PROP_NEXT_HOP_IP = "nextHopIp";
 
   // the announcement's prefix must be within this space
   @Nonnull private final PrefixSpace _prefix;
@@ -40,6 +44,8 @@ public class BgpRouteConstraints {
   @Nonnull private final RegexConstraints _communities;
   // the announcement's AS path must satisfy these constraints
   @Nonnull private final RegexConstraints _asPath;
+  // the announcement's next-hop IP must be within this space
+  @Nonnull private final IpSpace _nextHopIp;
 
   private static final LongSpace THIRTY_TWO_BIT_RANGE =
       LongSpace.builder().including(Range.closed(0L, 4294967295L)).build();
@@ -52,7 +58,8 @@ public class BgpRouteConstraints {
       @Nullable @JsonProperty(PROP_MED) LongSpace.Builder med,
       @Nullable @JsonProperty(PROP_TAG) LongSpace.Builder tag,
       @Nullable @JsonProperty(PROP_COMMUNITIES) RegexConstraints communities,
-      @Nullable @JsonProperty(PROP_AS_PATH) RegexConstraints asPath) {
+      @Nullable @JsonProperty(PROP_AS_PATH) RegexConstraints asPath,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) PrefixIpSpace nextHopIp) {
     this(
         prefix,
         complementPrefix,
@@ -60,7 +67,8 @@ public class BgpRouteConstraints {
         processBuilder(med),
         processBuilder(tag),
         communities,
-        asPath);
+        asPath,
+        nextHopIp);
   }
 
   private BgpRouteConstraints(
@@ -70,7 +78,8 @@ public class BgpRouteConstraints {
       @Nullable LongSpace med,
       @Nullable LongSpace tag,
       @Nullable RegexConstraints communities,
-      @Nullable RegexConstraints asPath) {
+      @Nullable RegexConstraints asPath,
+      @Nullable PrefixIpSpace nextHopIp) {
     _prefix = firstNonNull(prefix, new PrefixSpace());
     _complementPrefix = complementPrefix;
     _localPreference = firstNonNull(localPreference, LongSpace.EMPTY);
@@ -78,6 +87,7 @@ public class BgpRouteConstraints {
     _tag = firstNonNull(tag, LongSpace.EMPTY);
     _communities = firstNonNull(communities, new RegexConstraints());
     _asPath = firstNonNull(asPath, new RegexConstraints());
+    _nextHopIp = firstNonNull(nextHopIp, UniverseIpSpace.INSTANCE);
     validate(this);
   }
 
@@ -122,6 +132,7 @@ public class BgpRouteConstraints {
     private LongSpace _tag;
     private RegexConstraints _communities;
     private RegexConstraints _asPath;
+    private PrefixIpSpace _nextHopIp;
 
     private Builder() {}
 
@@ -160,9 +171,21 @@ public class BgpRouteConstraints {
       return this;
     }
 
+    public Builder setNextHopIp(PrefixIpSpace nextHopIp) {
+      _nextHopIp = nextHopIp;
+      return this;
+    }
+
     public BgpRouteConstraints build() {
       return new BgpRouteConstraints(
-          _prefix, _complementPrefix, _localPreference, _med, _tag, _communities, _asPath);
+          _prefix,
+          _complementPrefix,
+          _localPreference,
+          _med,
+          _tag,
+          _communities,
+          _asPath,
+          _nextHopIp);
     }
   }
 
@@ -184,7 +207,8 @@ public class BgpRouteConstraints {
         && Objects.equals(_med, other._med)
         && Objects.equals(_tag, other._tag)
         && Objects.equals(_communities, other._communities)
-        && Objects.equals(_asPath, other._asPath);
+        && Objects.equals(_asPath, other._asPath)
+        && Objects.equals(_nextHopIp, other._nextHopIp);
   }
 
   @JsonProperty(PROP_PREFIX)
@@ -228,9 +252,22 @@ public class BgpRouteConstraints {
     return _asPath;
   }
 
+  @JsonProperty(PROP_NEXT_HOP_IP)
+  @Nonnull
+  public IpSpace getNextHopIp() {
+    return _nextHopIp;
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(
-        _prefix, _complementPrefix, _localPreference, _med, _tag, _communities, _asPath);
+        _prefix,
+        _complementPrefix,
+        _localPreference,
+        _med,
+        _tag,
+        _communities,
+        _asPath,
+        _nextHopIp);
   }
 }

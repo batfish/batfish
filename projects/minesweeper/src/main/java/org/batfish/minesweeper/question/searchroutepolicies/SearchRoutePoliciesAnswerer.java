@@ -30,6 +30,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
@@ -417,6 +418,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             g.getAsPathRegexAtomicPredicates(),
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
+    result.andWith(constraints.getNextHopIp().accept(new IpSpaceToBDD(r.getNextHop())));
 
     return result;
   }

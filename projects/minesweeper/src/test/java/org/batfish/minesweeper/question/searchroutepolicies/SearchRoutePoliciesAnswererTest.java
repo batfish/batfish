@@ -45,6 +45,7 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
@@ -1046,6 +1047,7 @@ public class SearchRoutePoliciesAnswererTest {
     LongSpace localPref = LongSpace.builder().including(45L).build();
     LongSpace med = LongSpace.builder().including(56L).build();
     LongSpace tag = LongSpace.builder().including(67L).build();
+    PrefixIpSpace nextHop = (PrefixIpSpace) Prefix.parse("1.0.0.0/8").toIpSpace();
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
@@ -1055,6 +1057,7 @@ public class SearchRoutePoliciesAnswererTest {
                 .setLocalPreference(localPref)
                 .setMed(med)
                 .setTag(tag)
+                .setNextHopIp(nextHop)
                 .build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
@@ -1073,7 +1076,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
             .setProtocol(RoutingProtocol.BGP)
-            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setNextHopIp(Ip.parse("1.0.0.0"))
             .build();
 
     BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
