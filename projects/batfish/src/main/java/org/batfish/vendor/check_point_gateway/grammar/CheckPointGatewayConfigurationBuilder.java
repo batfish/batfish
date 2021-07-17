@@ -373,6 +373,7 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   /** Handle hostname special string replacements, like {@code %m} for chassis identifier. */
   private @Nonnull String preprocessHostname(String original) {
+    // Assume this is the first chassis and (?)blade
     return original.replace("%m", "ch01-01");
   }
 
