@@ -43,7 +43,9 @@ public class BgpRouteConstraints {
   @Nonnull private final RegexConstraints _communities;
   // the announcement's AS path must satisfy these constraints
   @Nonnull private final RegexConstraints _asPath;
-  // the announcement's next-hop IP must be within this prefix
+  // the announcement's next-hop IP must be within this prefix;
+  // an empty value means that any next-hop IP is ok, including
+  // an unset one
   @Nonnull private final Optional<Prefix> _nextHopIp;
 
   private static final LongSpace THIRTY_TWO_BIT_RANGE =

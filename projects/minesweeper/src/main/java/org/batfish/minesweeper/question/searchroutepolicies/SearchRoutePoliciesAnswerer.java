@@ -393,7 +393,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return positiveConstraints.diffWith(negativeConstraints);
   }
 
-  private BDD routeConstraintsToBDD(BgpRouteConstraints constraints, BDDRoute r, Graph g) {
+  private BDD routeConstraintsToBDD(
+      BgpRouteConstraints constraints, BDDRoute r, boolean outputRoute, Graph g) {
 
     // make sure the model we end up getting corresponds to a valid route
     BDD result = r.wellFormednessConstraints();
@@ -418,13 +419,18 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             g.getAsPathRegexAtomicPredicates(),
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
-    result.andWith(
-        constraints
-            .getNextHopIp()
-            .orElse(Prefix.ZERO)
-            .toIpSpace()
-            .accept(new IpSpaceToBDD(r.getNextHop())));
 
+    Optional<Prefix> optNextHopIp = constraints.getNextHopIp();
+    if (optNextHopIp.isPresent()) {
+      BDD nextHopBDD = optNextHopIp.get().toIpSpace().accept(new IpSpaceToBDD(r.getNextHop()));
+      if (outputRoute) {
+        nextHopBDD = nextHopBDD.and(r.getNextHopDiscarded().not());
+        if (_direction == Environment.Direction.OUT) {
+          nextHopBDD = nextHopBDD.and(r.getNextHopSet());
+        }
+      }
+      result.andWith(nextHopBDD);
+    }
     return result;
   }
 
@@ -451,10 +457,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outputRoute = result.getFirst();
     BDD intersection;
-    BDD inConstraints = routeConstraintsToBDD(_inputConstraints, new BDDRoute(g), g);
+    BDD inConstraints = routeConstraintsToBDD(_inputConstraints, new BDDRoute(g), false, g);
     if (_action == PERMIT) {
       // incorporate the constraints on the output route as well
-      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, g);
+      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, true, g);
       intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
     } else {
       intersection = acceptedAnnouncements.not().and(inConstraints);
