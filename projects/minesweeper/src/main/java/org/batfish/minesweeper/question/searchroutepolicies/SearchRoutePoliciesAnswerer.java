@@ -347,6 +347,25 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     }
   }
 
+  private BDD nextHopIpConstraintsToBDD(
+      Optional<Prefix> optNextHopIp, BDDRoute r, boolean outputRoute) {
+    if (optNextHopIp.isPresent()) {
+      BDD nextHopBDD = optNextHopIp.get().toIpSpace().accept(new IpSpaceToBDD(r.getNextHop()));
+      if (outputRoute) {
+        // make sure that the next hop was not discarded by the route map
+        nextHopBDD = nextHopBDD.and(r.getNextHopDiscarded().not());
+        if (_direction == Environment.Direction.OUT) {
+          // in the OUT direction we can only use the next-hop IP in the route
+          // if the route-map explicitly sets it
+          nextHopBDD = nextHopBDD.and(r.getNextHopSet());
+        }
+      }
+      return nextHopBDD;
+    } else {
+      return r.getFactory().one();
+    }
+  }
+
   /**
    * Convert regex constraints from a {@link BgpRouteConstraints} object to a BDD.
    *
@@ -419,18 +438,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             g.getAsPathRegexAtomicPredicates(),
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
+    result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
 
-    Optional<Prefix> optNextHopIp = constraints.getNextHopIp();
-    if (optNextHopIp.isPresent()) {
-      BDD nextHopBDD = optNextHopIp.get().toIpSpace().accept(new IpSpaceToBDD(r.getNextHop()));
-      if (outputRoute) {
-        nextHopBDD = nextHopBDD.and(r.getNextHopDiscarded().not());
-        if (_direction == Environment.Direction.OUT) {
-          nextHopBDD = nextHopBDD.and(r.getNextHopSet());
-        }
-      }
-      result.andWith(nextHopBDD);
-    }
     return result;
   }
 
