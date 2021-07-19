@@ -1209,7 +1209,8 @@ public class TransferBDDTest {
     BDDRoute outAnnouncements = result.getFirst();
 
     BDD expectedBDD =
-        tbdd.firstBitsEqual(_anyRoute.getNextHop().getBitvec(), Prefix.parse("1.0.0.0/8"), 8);
+        TransferBDD.firstBitsEqual(
+            _anyRoute.getNextHop().getBitvec(), Prefix.parse("1.0.0.0/8"), 8);
     assertEquals(acceptedAnnouncements, expectedBDD);
 
     assertEquals(tbdd.iteZero(acceptedAnnouncements, _anyRoute), outAnnouncements);
