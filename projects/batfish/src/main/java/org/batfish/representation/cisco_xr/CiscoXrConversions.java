@@ -1410,7 +1410,8 @@ public class CiscoXrConversions {
       return null;
     }
     String filterName = distributeList.getFilterName();
-    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST) {
+    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
+        || distributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST) {
       if (c.getRouteFilterLists().containsKey(filterName)) {
         String rpName = generatedOspfInboundDistributeListName(vrfName, procName);
         if (!c.getRoutingPolicies().containsKey(rpName)) {
@@ -1429,8 +1430,11 @@ public class CiscoXrConversions {
       } else {
         w.redFlag(
             String.format(
-                "Ignoring OSPF distribute-list %s: access-list is not defined or failed to convert",
-                filterName));
+                "Ignoring OSPF distribute-list %s: %s is not defined or failed to convert",
+                filterName,
+                distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
+                    ? "access-list"
+                    : "prefix-list"));
         return null;
       }
     } else {

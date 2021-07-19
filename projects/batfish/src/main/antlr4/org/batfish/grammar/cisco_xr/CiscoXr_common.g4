@@ -26,6 +26,7 @@ flow_exporter_map_name: WORD;
 flow_monitor_map_name: WORD;
 parameter: PARAMETER;
 policy_map_name: WORD;
+prefix_list_name: WORD;
 rd_set_name: WORD;
 route_policy_name: WORD;
 sampler_map_name: WORD;

@@ -141,11 +141,14 @@ ro_distribute_list
   DISTRIBUTE_LIST
   (
     rodl_acl
+    | rodl_prefix_list
     | rodl_route_policy
   )
 ;
 
 rodl_acl: acl = access_list_name (IN | OUT) NEWLINE;
+
+rodl_prefix_list: PREFIX_LIST pl = prefix_list_name (IN | OUT) NEWLINE;
 
 rodl_route_policy: ROUTE_POLICY rp = route_policy_name IN NEWLINE;
 
