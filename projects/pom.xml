@@ -97,7 +97,7 @@
     <httpcore.version>4.4.14</httpcore.version>
     <libthrift.version>0.14.0</libthrift.version>
     <okhttp.version>3.14.8</okhttp.version>
-    <tomcat-embed-core.version>8.5.63</tomcat-embed-core.version>
+    <tomcat-embed-core.version>8.5.69</tomcat-embed-core.version>
 
     <!--
       Annotation paths for Eclipse. The Eclipse workspace must first have the M2_REPO classpath variable configured.
