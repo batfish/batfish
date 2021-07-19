@@ -255,7 +255,7 @@ interface_rs_stanza
 
 ip_prefix_list_stanza
 :
-   IPV4 PREFIX_LIST name = variable
+   IPV4 PREFIX_LIST name = prefix_list_name
    (
       (
          NEWLINE

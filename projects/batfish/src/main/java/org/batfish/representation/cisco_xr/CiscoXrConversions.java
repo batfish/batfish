@@ -1433,6 +1433,9 @@ public class CiscoXrConversions {
                 filterName));
         return null;
       }
+    } else if (distributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST) {
+      // todo
+      return null;
     } else {
       assert distributeList.getFilterType() == DistributeListFilterType.ROUTE_POLICY;
       if (c.getRoutingPolicies().containsKey(filterName)) {

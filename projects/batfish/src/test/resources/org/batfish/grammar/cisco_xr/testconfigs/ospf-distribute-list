@@ -8,8 +8,18 @@ interface GigabitEthernet0/0/0/1
 interface GigabitEthernet0/0/0/2
  no shutdown
 !
+interface GigabitEthernet0/0/0/3
+ no shutdown
+!
 ipv4 access-list ACL2
 ipv4 access-list ACL3
+!
+prefix-set PL1
+  5.5.5.5/32
+end-set
+prefix-set PL2
+  6.6.6.6/32
+end-set
 !
 route-policy RP
 end-policy
@@ -28,4 +38,11 @@ router ospf 2
   distribute-list ACL3 in
   area 2
     interface GigabitEthernet0/0/0/2
+!
+router ospf 3
+  router-id 3.3.3.3
+  distribute-list prefix-list PL1 in
+  distribute-list prefix-list PL2 out
+  area 3
+    interface GigabitEthernet0/0/0/3
 !

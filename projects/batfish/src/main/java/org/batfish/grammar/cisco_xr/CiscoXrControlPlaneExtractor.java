@@ -125,6 +125,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_ARE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DEFAULT_INFORMATION_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_DISTRIBUTE_LIST_ROUTE_POLICY_IN;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_REDISTRIBUTE_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.POLICY_MAP_EVENT_CLASS;
@@ -680,6 +682,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcse_classContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Pmtcsec_activateContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.PortContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Port_specifierContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_list_nameContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_set_elemContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prefix_set_stanzaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Prepend_as_path_rp_stanzaContext;
@@ -2302,7 +2305,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
-    String name = ctx.name.getText();
+    String name = toString(ctx.name);
     _currentPrefixList = _configuration.getPrefixLists().computeIfAbsent(name, PrefixList::new);
     _configuration.defineStructure(PREFIX_LIST, name, ctx);
   }
@@ -6099,6 +6102,24 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
+  public void exitRodl_prefix_list(CiscoXrParser.Rodl_prefix_listContext ctx) {
+    String name = toString(ctx.pl);
+    DistributeList distributeList = new DistributeList(name, DistributeListFilterType.PREFIX_LIST);
+
+    if (ctx.IN() != null) {
+      _configuration.referenceStructure(
+          IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN, ctx.pl.getStart().getLine());
+      _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
+    } else {
+      assert ctx.OUT() != null;
+      _configuration.referenceStructure(
+          IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT, ctx.pl.getStart().getLine());
+      _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
+    }
+    todo(ctx);
+  }
+
+  @Override
   public void exitRodl_route_policy(Rodl_route_policyContext ctx) {
     String name = toString(ctx.rp);
     _configuration.referenceStructure(
@@ -9007,6 +9028,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Nonnull
   private static String toString(Access_list_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  @Nonnull
+  private static String toString(Prefix_list_nameContext ctx) {
     return ctx.getText();
   }
 

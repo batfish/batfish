@@ -1236,7 +1236,7 @@ public final class XrGrammarTest {
   @Test
   public void testOspfDistributeListExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("ospf-distribute-list");
-    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2"));
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3"));
     OspfProcess p1 = c.getDefaultVrf().getOspfProcesses().get("1");
     assertThat(
         p1.getInboundGlobalDistributeList(),
@@ -1249,18 +1249,27 @@ public final class XrGrammarTest {
         p2.getInboundGlobalDistributeList(),
         equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
     assertThat(p2.getOutboundGlobalDistributeList(), nullValue());
+    OspfProcess p3 = c.getDefaultVrf().getOspfProcesses().get("3");
+    assertThat(
+        p3.getInboundGlobalDistributeList(),
+        equalTo(new DistributeList("PL1", DistributeListFilterType.PREFIX_LIST)));
+    assertThat(
+        p3.getOutboundGlobalDistributeList(),
+        equalTo(new DistributeList("PL2", DistributeListFilterType.PREFIX_LIST)));
   }
 
   @Test
   public void testOspfDistributeListConversion() {
     Configuration c = parseConfig("ospf-distribute-list");
-    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2"));
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3"));
 
     String iface1Name = "GigabitEthernet0/0/0/1";
     String iface2Name = "GigabitEthernet0/0/0/2";
+    String iface3Name = "GigabitEthernet0/0/0/3";
     OspfInterfaceSettings settings1 = c.getActiveInterfaces().get(iface1Name).getOspfSettings();
     OspfInterfaceSettings settings2 = c.getActiveInterfaces().get(iface2Name).getOspfSettings();
-    assert settings1 != null && settings2 != null;
+    OspfInterfaceSettings settings3 = c.getActiveInterfaces().get(iface3Name).getOspfSettings();
+    assert settings1 != null && settings2 != null && settings3 != null;
 
     // First OSPF process uses a routing policy called RP for inbound distribute-list
     assertThat(settings1.getInboundDistributeListPolicy(), equalTo("RP"));
@@ -1271,6 +1280,8 @@ public final class XrGrammarTest {
     String generatedRpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "2");
     assertThat(settings2.getInboundDistributeListPolicy(), equalTo(generatedRpName));
     assertThat(c.getRoutingPolicies(), hasKey(generatedRpName));
+
+    // TODO Test settings3 (distribute-list prefix-list in/out)
   }
 
   @Test
