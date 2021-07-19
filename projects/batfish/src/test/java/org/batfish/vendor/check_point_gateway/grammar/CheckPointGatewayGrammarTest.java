@@ -14,6 +14,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -100,8 +101,10 @@ public class CheckPointGatewayGrammarTest {
     try {
       Map<String, Configuration> configs = parseTextConfigs(hostname);
       String canonicalHostname = hostname.toLowerCase();
-      assertThat(configs, hasKey(canonicalHostname));
-      Configuration c = configs.get(canonicalHostname);
+      String canonicalChassisHostname = canonicalHostname + "-ch01-01";
+      assertThat(configs, anyOf(hasKey(canonicalHostname), hasKey(canonicalChassisHostname)));
+      Configuration c =
+          configs.getOrDefault(canonicalHostname, configs.get(canonicalChassisHostname));
       assertThat(c, hasConfigurationFormat(CHECK_POINT_GATEWAY));
       return c;
     } catch (IOException e) {
@@ -120,7 +123,8 @@ public class CheckPointGatewayGrammarTest {
     String hostname = "hostname";
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
-    assertThat(c.getHostname(), equalTo(hostname));
+    // Confirm hostname extracted as-typed; will be lower-cased in conversion.
+    assertThat(c.getHostname(), equalTo("HOSTNAME"));
   }
 
   @Test
@@ -129,7 +133,20 @@ public class CheckPointGatewayGrammarTest {
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
     // Confirm the `%m` is replaced with a chassis identifier
+    assertThat(c.getHostname(), equalTo("hostname_CHASSIS-ch01-01"));
+  }
+
+  @Test
+  public void testHumanName() {
+    Configuration c = parseConfig("hostname");
+    assertThat(c, notNullValue());
+    assertThat(c.getHostname(), equalTo("hostname"));
+    assertThat(c.getHumanName(), equalTo("HOSTNAME"));
+
+    c = parseConfig("hostname_chassis");
+    assertThat(c, notNullValue());
     assertThat(c.getHostname(), equalTo("hostname_chassis-ch01-01"));
+    assertThat(c.getHumanName(), equalTo("hostname_CHASSIS-ch01-01"));
   }
 
   @Test
