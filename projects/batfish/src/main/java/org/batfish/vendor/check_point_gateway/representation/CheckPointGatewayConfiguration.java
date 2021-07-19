@@ -61,6 +61,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
+    _c.setHumanName(hostname);
     _c.setDeviceModel(DeviceModel.CHECK_POINT_GATEWAY);
     _c.setDefaultCrossZoneAction(LineAction.DENY);
     _c.setDefaultInboundAction(LineAction.PERMIT);
@@ -158,6 +159,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   private Configuration _c;
   private String _hostname;
+
   private Map<String, Interface> _interfaces;
   /** destination prefix -> static route definition */
   private Map<Prefix, StaticRoute> _staticRoutes;

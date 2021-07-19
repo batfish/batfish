@@ -4,4 +4,4 @@
 #
 # Exported by admin on Wed Jun 23 16:11:18 2021
 #
-set hostname hostname
+set hostname HOSTNAME
