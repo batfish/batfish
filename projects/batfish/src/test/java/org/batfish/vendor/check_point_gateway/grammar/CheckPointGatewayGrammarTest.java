@@ -10,6 +10,7 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.Matchers.allOf;
@@ -24,6 +25,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
@@ -41,6 +43,10 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -320,5 +326,53 @@ public class CheckPointGatewayGrammarTest {
                     "Static-route prefix 0.0.0.0/0 is not valid, use the 'default' keyword"
                         + " instead."),
                 hasComment("Illegal value for static-route comment"))));
+  }
+
+  @Test
+  public void testStaticRouteConversion() {
+    String hostname = "static_route_convert";
+    Configuration c = parseConfig(hostname);
+    Vrf vrf = c.getDefaultVrf();
+
+    assertThat(
+        vrf,
+        hasStaticRoutes(
+            equalTo(
+                ImmutableSet.of(
+                    org.batfish.datamodel.StaticRoute.testBuilder()
+                        .setAdministrativeCost(0)
+                        .setNetwork(Prefix.ZERO)
+                        .setNextHop(NextHopInterface.of("eth0"))
+                        .build(),
+                    org.batfish.datamodel.StaticRoute.testBuilder()
+                        .setAdministrativeCost(0)
+                        .setNetwork(Prefix.parse("10.1.0.0/16"))
+                        .setNextHop(NextHopDiscard.instance())
+                        .build(),
+                    org.batfish.datamodel.StaticRoute.testBuilder()
+                        .setAdministrativeCost(0)
+                        .setNetwork(Prefix.parse("10.2.0.0/16"))
+                        .setNextHop(NextHopDiscard.instance())
+                        .build(),
+                    org.batfish.datamodel.StaticRoute.testBuilder()
+                        .setAdministrativeCost(8)
+                        .setNetwork(Prefix.parse("10.3.0.0/16"))
+                        .setNextHop(NextHopIp.of(Ip.parse("10.0.0.2")))
+                        .build(),
+                    org.batfish.datamodel.StaticRoute.testBuilder()
+                        .setAdministrativeCost(0)
+                        .setNetwork(Prefix.parse("10.4.0.0/16"))
+                        .setNextHop(NextHopIp.of(Ip.parse("10.0.0.3")))
+                        .build(),
+                    org.batfish.datamodel.StaticRoute.testBuilder()
+                        .setAdministrativeCost(1)
+                        .setNetwork(Prefix.parse("10.4.0.0/16"))
+                        .setNextHop(NextHopIp.of(Ip.parse("10.0.0.4")))
+                        .build(),
+                    org.batfish.datamodel.StaticRoute.testBuilder()
+                        .setAdministrativeCost(3)
+                        .setNetwork(Prefix.parse("10.5.0.0/16"))
+                        .setNextHop(NextHopIp.of(Ip.parse("10.0.0.5")))
+                        .build()))));
   }
 }
