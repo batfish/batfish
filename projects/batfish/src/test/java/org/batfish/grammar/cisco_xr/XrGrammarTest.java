@@ -1277,11 +1277,15 @@ public final class XrGrammarTest {
 
     // Second OSPF process uses an ACL for inbound distribute-list.
     // Semantics of the generated routing policy are tested elsewhere.
-    String generatedRpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "2");
-    assertThat(settings2.getInboundDistributeListPolicy(), equalTo(generatedRpName));
-    assertThat(c.getRoutingPolicies(), hasKey(generatedRpName));
+    String generatedRpNameProc2 = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "2");
+    assertThat(settings2.getInboundDistributeListPolicy(), equalTo(generatedRpNameProc2));
+    assertThat(c.getRoutingPolicies(), hasKey(generatedRpNameProc2));
 
-    // TODO Test settings3 (distribute-list prefix-list in/out)
+    // Third OSPF process uses a prefix-set for inbound distribute-list.
+    // Semantics of the generated routing policy are tested elsewhere.
+    String generatedRpNameProc3 = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "3");
+    assertThat(settings3.getInboundDistributeListPolicy(), equalTo(generatedRpNameProc3));
+    assertThat(c.getRoutingPolicies(), hasKey(generatedRpNameProc3));
   }
 
   @Test
