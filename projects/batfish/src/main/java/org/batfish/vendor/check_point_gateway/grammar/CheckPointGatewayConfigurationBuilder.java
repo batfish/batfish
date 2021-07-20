@@ -219,7 +219,7 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     }
 
     // Trust interface references are valid if interfaces haven't been explicitly configured yet
-    // i.e. looks like we're parsing `show configuration` data which has can have undef refs
+    // i.e. looks like we're parsing `show configuration` data which has interface refs before defs
     if (!_firstInterfaceHasBeenConfigured) {
       return true;
     }
@@ -283,11 +283,12 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     _currentInterface =
         toString(ctx, ctx.interface_name())
             .map(n -> _configuration.getInterfaces().computeIfAbsent(n, Interface::new))
-            .orElseGet(() -> new Interface(ctx.interface_name().getText()));
+            .orElse(new Interface(ctx.interface_name().getText()));
     _currentInterfaceInBondingGroup = isInterfaceInBondingGroup(_currentInterface);
     _firstInterfaceHasBeenConfigured = true;
   }
 
+  /** Indicates if the specified interface is already a member of a bonding group. */
   private boolean isInterfaceInBondingGroup(Interface iface) {
     return _configuration.getBondingGroups().values().stream()
         .anyMatch(bg -> bg.getInterfaces().contains(iface.getName()));
@@ -346,8 +347,8 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   @Override
   public void exitSi_state(Si_stateContext ctx) {
     boolean state = toBoolean(ctx.on_or_off());
-    // *Changing* state is not permitted for an interface in a bonding group
-    if (_currentInterfaceInBondingGroup && state != _currentInterface.getState()) {
+    // Setting state to `off` is not permitted for an interface in a bonding group
+    if (_currentInterfaceInBondingGroup && !state) {
       warn(ctx, "Interface is a member of a bonding group and cannot be configured directly.");
       return;
     }
