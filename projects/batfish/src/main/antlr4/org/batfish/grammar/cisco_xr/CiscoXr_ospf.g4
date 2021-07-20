@@ -19,10 +19,8 @@ ro_area
 ro_area_inner
 :
   ro_common
-  | roa_cost
   | roa_interface
   | roa_mpls
-  | roa_network
   | roa_nssa
   | roa_range
 ;
@@ -106,6 +104,9 @@ ro_auto_cost
 ro_common
 :
    ro_authentication
+   | ro_cost
+   | ro_network
+   | ro_passive
    | ro_priority
    | ro_null
 ;
@@ -263,15 +264,7 @@ ro_null
    ) null_rest_of_line
 ;
 
-ro_passive_interface_default
-:
-   NO? PASSIVE_INTERFACE DEFAULT NEWLINE
-;
-
-ro_passive_interface
-:
-   NO? PASSIVE_INTERFACE i = interface_name NEWLINE
-;
+ro_passive: PASSIVE (ENABLE | DISABLE)? NEWLINE;
 
 ro_priority: PRIORITY uint_legacy NEWLINE;
 
@@ -326,20 +319,14 @@ ro_vrf
    )*
 ;
 
-roa_cost
+ro_cost
 :
    COST cost = uint_legacy NEWLINE
 ;
 
 roa_interface
 :
-   INTERFACE iname = interface_name NEWLINE
-   (
-      ro_common
-      | roai_cost
-      | roai_network
-      | roai_passive
-   )*
+   INTERFACE iname = interface_name NEWLINE ro_common*
 ;
 
 roa_range
@@ -364,27 +351,6 @@ roa_mpls
 ;
 
 roampls_traffic_eng: TRAFFIC_ENG NEWLINE;
-
-roa_network
-:
-   NETWORK ospf_network_type NEWLINE
-;
-
-roai_cost
-:
-   COST cost = uint_legacy NEWLINE
-;
-
-roai_network: NETWORK ospf_network_type NEWLINE;
-
-roai_passive
-:
-   PASSIVE
-   (
-      ENABLE
-      | DISABLE
-   )? NEWLINE
-;
 
 rov3_address_family
 :
@@ -457,9 +423,6 @@ s_router_ospf
       | ro_max_metric
       | ro_maximum_paths
       | ro_mpls
-      | ro_network
-      | ro_passive_interface_default
-      | ro_passive_interface
       | ro_redistribute
       | ro_router_id
       | ro_summary_address

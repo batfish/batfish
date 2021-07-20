@@ -2,9 +2,7 @@ package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
@@ -31,16 +29,14 @@ public class OspfProcess implements Serializable {
   private boolean _defaultInformationOriginateAlways;
   private String _defaultInformationOriginateMap;
   private Long _defaultMetric;
-  @Nullable private OspfNetworkType _defaultNetworkType;
   @Nullable private DistributeList _inboundGlobalDistributeList;
   private Long _maxMetricExternalLsa;
   private boolean _maxMetricIncludeStub;
   private boolean _maxMetricRouterLsa;
   private Long _maxMetricSummaryLsa;
   private final String _name;
-  private Set<String> _nonDefaultInterfaces;
+  private final OspfSettings _ospfSettings;
   @Nullable private DistributeList _outboundGlobalDistributeList;
-  private boolean _passiveInterfaceDefault;
   private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
   private double _referenceBandwidth;
   private Ip _routerId;
@@ -64,7 +60,7 @@ public class OspfProcess implements Serializable {
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
     _areas = new TreeMap<>();
-    _nonDefaultInterfaces = new HashSet<>();
+    _ospfSettings = new OspfSettings();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
   }
 
@@ -97,11 +93,6 @@ public class OspfProcess implements Serializable {
   }
 
   @Nullable
-  public OspfNetworkType getDefaultNetworkType() {
-    return _defaultNetworkType;
-  }
-
-  @Nullable
   public DistributeList getInboundGlobalDistributeList() {
     return _inboundGlobalDistributeList;
   }
@@ -126,17 +117,13 @@ public class OspfProcess implements Serializable {
     return _name;
   }
 
-  public Set<String> getNonDefaultInterfaces() {
-    return _nonDefaultInterfaces;
+  public OspfSettings getOspfSettings() {
+    return _ospfSettings;
   }
 
   @Nullable
   public DistributeList getOutboundGlobalDistributeList() {
     return _outboundGlobalDistributeList;
-  }
-
-  public boolean getPassiveInterfaceDefault() {
-    return _passiveInterfaceDefault;
   }
 
   public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
@@ -175,10 +162,6 @@ public class OspfProcess implements Serializable {
     _defaultMetric = metric;
   }
 
-  public void setDefaultNetworkType(@Nullable OspfNetworkType networkType) {
-    _defaultNetworkType = networkType;
-  }
-
   public void setInboundGlobalDistributeList(@Nullable DistributeList inboundGlobalDistributeList) {
     _inboundGlobalDistributeList = inboundGlobalDistributeList;
   }
@@ -202,10 +185,6 @@ public class OspfProcess implements Serializable {
   public void setOutboundGlobalDistributeList(
       @Nullable DistributeList outboundGlobalDistributeList) {
     _outboundGlobalDistributeList = outboundGlobalDistributeList;
-  }
-
-  public void setPassiveInterfaceDefault(boolean b) {
-    _passiveInterfaceDefault = b;
   }
 
   public void setReferenceBandwidth(double referenceBandwidth) {

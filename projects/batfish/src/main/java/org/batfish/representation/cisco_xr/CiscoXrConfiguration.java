@@ -1389,6 +1389,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       long areaNum = area.getAreaNum();
       OspfArea.Builder viAreaBuilder = OspfArea.builder().setNumber(areaNum);
 
+      // Inherit unset area settings from router
+      OspfSettings areaSettings = area.getOspfSettings();
+      areaSettings.inheritFrom(proc.getOspfSettings());
+
       // Fill in OSPF settings for interfaces in this area
       ImmutableSortedSet.Builder<String> areaInterfacesBuilder = ImmutableSortedSet.naturalOrder();
       for (Entry<String, OspfInterfaceSettings> e : area.getInterfaceSettings().entrySet()) {
@@ -1399,7 +1403,10 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           continue;
         }
         areaInterfacesBuilder.add(ifaceName);
-        finalizeInterfaceOspfSettings(iface, proc, areaNum, e.getValue(), vrfName, c);
+        // Inherit unset interface settings from area and finalize VI interface
+        OspfInterfaceSettings ifaceSettings = e.getValue();
+        ifaceSettings.getOspfSettings().inheritFrom(areaSettings);
+        finalizeInterfaceOspfSettings(iface, proc, areaNum, ifaceSettings, vrfName, c);
       }
       viAreaBuilder.setInterfaces(areaInterfacesBuilder.build());
 
@@ -1518,16 +1525,13 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Interface iface,
       OspfProcess proc,
       long areaNum,
-      OspfInterfaceSettings vsOspfSettings,
+      OspfInterfaceSettings vsIfaceSettings,
       String vrfName,
       Configuration c) {
-    String ifaceName = iface.getName();
     org.batfish.datamodel.ospf.OspfInterfaceSettings.Builder ospfSettings =
         org.batfish.datamodel.ospf.OspfInterfaceSettings.builder().setPassive(false);
     ospfSettings.setProcess(proc.getName());
-    if (firstNonNull(
-        vsOspfSettings.getPassive(),
-        (proc.getPassiveInterfaceDefault() ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
+    if (firstNonNull(vsIfaceSettings.getOspfSettings().getPassive(), false)) {
       ospfSettings.setPassive(true);
     }
     Optional.ofNullable(
@@ -1535,26 +1539,24 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                 proc.getInboundGlobalDistributeList(), vrfName, proc.getName(), c, _w))
         .ifPresent(ospfSettings::setInboundDistributeListPolicy);
 
-    ospfSettings.setHelloMultiplier(vsOspfSettings.getHelloMultiplier());
     ospfSettings.setAreaName(areaNum);
-    ospfSettings.setEnabled(!vsOspfSettings.getShutdown());
 
+    // Interface settings already inherited from area and router settings, so if interface settings
+    // have no network type, then none is configured at any level
     org.batfish.representation.cisco_xr.OspfNetworkType vsNetworkType =
-        vsOspfSettings.getNetworkType();
-    // Use default from process if it exists and no type is already set
-    if (vsNetworkType == null) {
-      vsNetworkType = proc.getDefaultNetworkType();
-    }
+        vsIfaceSettings.getOspfSettings().getNetworkType();
     org.batfish.datamodel.ospf.OspfNetworkType networkType = toOspfNetworkType(vsNetworkType, _w);
 
     ospfSettings.setNetworkType(networkType);
-    if (vsOspfSettings.getCost() == null && iface.isLoopback()) {
+    if (vsIfaceSettings.getOspfSettings().getCost() == null && iface.isLoopback()) {
       ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
     } else {
-      ospfSettings.setCost(vsOspfSettings.getCost());
+      ospfSettings.setCost(vsIfaceSettings.getOspfSettings().getCost());
     }
-    ospfSettings.setHelloInterval(toOspfHelloInterval(vsOspfSettings, networkType));
-    ospfSettings.setDeadInterval(toOspfDeadInterval(vsOspfSettings, networkType));
+    ospfSettings.setHelloInterval(
+        toOspfHelloInterval(vsIfaceSettings.getOspfSettings(), networkType));
+    ospfSettings.setDeadInterval(
+        toOspfDeadInterval(vsIfaceSettings.getOspfSettings(), networkType));
 
     iface.setOspfSettings(ospfSettings.build());
   }

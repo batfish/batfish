@@ -1961,13 +1961,12 @@ public class CiscoXrConversions {
    */
   @VisibleForTesting
   static int toOspfDeadInterval(
-      OspfInterfaceSettings ifaceSettings,
-      @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
-    Integer deadInterval = ifaceSettings.getDeadInterval();
+      OspfSettings ospfSettings, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
+    Integer deadInterval = ospfSettings.getDeadInterval();
     if (deadInterval != null) {
       return deadInterval;
     }
-    Integer helloInterval = ifaceSettings.getHelloInterval();
+    Integer helloInterval = ospfSettings.getHelloInterval();
     if (helloInterval != null) {
       return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
@@ -1985,9 +1984,8 @@ public class CiscoXrConversions {
    */
   @VisibleForTesting
   static int toOspfHelloInterval(
-      OspfInterfaceSettings ifaceSettings,
-      @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
-    Integer helloInterval = ifaceSettings.getHelloInterval();
+      OspfSettings ospfSettings, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
+    Integer helloInterval = ospfSettings.getHelloInterval();
     if (helloInterval != null) {
       return helloInterval;
     }

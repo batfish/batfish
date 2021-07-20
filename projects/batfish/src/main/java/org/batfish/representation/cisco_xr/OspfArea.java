@@ -13,12 +13,14 @@ public class OspfArea implements Serializable {
   private final long _areaNum;
   private final Map<String, OspfInterfaceSettings> _interfaceSettings;
   @Nullable private NssaSettings _nssaSettings;
+  private final OspfSettings _ospfSettings;
   @Nullable private StubSettings _stubSettings;
   private final Map<Prefix, OspfAreaSummary> _summaries;
 
   public OspfArea(long areaNum) {
     _areaNum = areaNum;
     _interfaceSettings = new TreeMap<>();
+    _ospfSettings = new OspfSettings();
     _summaries = new TreeMap<>();
   }
 
@@ -42,6 +44,10 @@ public class OspfArea implements Serializable {
     // Area cannot be both an NSSA and a stub
     _stubSettings = null;
     return _nssaSettings;
+  }
+
+  public OspfSettings getOspfSettings() {
+    return _ospfSettings;
   }
 
   public @Nullable StubSettings getStubSettings() {

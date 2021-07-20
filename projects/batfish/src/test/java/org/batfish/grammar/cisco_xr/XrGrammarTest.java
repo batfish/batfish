@@ -3195,19 +3195,19 @@ public final class XrGrammarTest {
 
     // Configured in OSPF router
     assertThat(
-        area0Settings.get("GigabitEthernet0/0/0/1").getNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/1").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_POINT));
     assertThat(
-        area0Settings.get("GigabitEthernet0/0/0/2").getNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/2").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
     assertThat(
-        area0Settings.get("GigabitEthernet0/0/0/3").getNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/3").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.NON_BROADCAST));
     assertThat(
-        area0Settings.get("GigabitEthernet0/0/0/4").getNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/4").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_MULTIPOINT));
     assertThat(
-        area0Settings.get("GigabitEthernet0/0/0/5").getNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/5").getOspfSettings().getNetworkType(),
         equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
   }
 
@@ -3225,12 +3225,13 @@ public final class XrGrammarTest {
 
     // Network types configured at OSPF interface level
     assertThat(
-        area0Settings.get("GigabitEthernet0/0/0/1").getNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/1").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
-    assertNull(area0Settings.get("GigabitEthernet0/0/0/2").getNetworkType());
+    assertNull(area0Settings.get("GigabitEthernet0/0/0/2").getOspfSettings().getNetworkType());
 
     // Network type configured at OSPF router level
-    assertThat(ospfProcess.getDefaultNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
+    assertThat(
+        ospfProcess.getOspfSettings().getNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
   }
 
   @Test
