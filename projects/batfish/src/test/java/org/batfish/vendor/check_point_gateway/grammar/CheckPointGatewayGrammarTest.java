@@ -438,6 +438,8 @@ public class CheckPointGatewayGrammarTest {
     assertThat(bond4.getMode(), equalTo(Mode.ACTIVE_BACKUP));
 
     // Defaults
+    Interface bond1024Iface = c.getInterfaces().get("bond1024");
+    assertThat(bond1024Iface.getState(), equalTo(true));
     BondingGroup bond1024 = c.getBondingGroups().get(1024);
     assertThat(bond1024.getInterfaces(), emptyIterable());
     assertNull(bond1024.getMode());
