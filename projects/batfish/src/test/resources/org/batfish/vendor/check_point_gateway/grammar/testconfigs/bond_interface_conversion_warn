@@ -8,3 +8,9 @@ set hostname bond_interface_conversion_warn
 #
 # Not possible to tell at parse-time this bonding group line is referencing an invalid iface
 add bonding group 1000 interface eth1
+#
+add bonding group 1001 interface eth0
+set bonding group 1001 mode active-backup
+#
+set interface eth0 state on
+#

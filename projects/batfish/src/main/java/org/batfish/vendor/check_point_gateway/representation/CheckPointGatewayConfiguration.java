@@ -31,6 +31,7 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
@@ -192,6 +193,15 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                   members.stream()
                       .map(member -> new Dependency(member, DependencyType.AGGREGATE))
                       .collect(ImmutableSet.toImmutableSet()));
+
+              if (bg.getModeEffective() == Mode.ACTIVE_BACKUP) {
+                _w.redFlag(
+                    String.format(
+                        "Bonding group mode active-backup is not yet supported in Batfish."
+                            + " Deactivating interface %s.",
+                        ifaceName));
+                newIface.setActive(false);
+              }
             });
     return newIface.build();
   }

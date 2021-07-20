@@ -565,5 +565,16 @@ public class CheckPointGatewayGrammarTest {
         hasRedFlagWarning(
             hostname,
             containsString("Cannot reference non-existent interface eth1 in bonding group 1000.")));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                "Bonding group mode active-backup is not yet supported in Batfish. Deactivating"
+                    + " interface bond1001.")));
+
+    // Unsupported bonding group mode should be deactivated
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasInterface("bond1001", isActive(false)));
   }
 }
