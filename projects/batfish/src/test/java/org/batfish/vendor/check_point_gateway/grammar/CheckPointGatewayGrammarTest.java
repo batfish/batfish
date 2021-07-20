@@ -8,7 +8,17 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.ConfigurationFormat.CHECK_POINT_GATEWAY;
+import static org.batfish.datamodel.Interface.DependencyType.AGGREGATE;
+import static org.batfish.datamodel.InterfaceType.AGGREGATED;
+import static org.batfish.datamodel.InterfaceType.PHYSICAL;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
@@ -17,9 +27,11 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -40,16 +52,22 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup.LacpRate;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup.XmitHashPolicy;
 import org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.Interface;
 import org.batfish.vendor.check_point_gateway.representation.Interface.LinkSpeed;
@@ -383,5 +401,132 @@ public class CheckPointGatewayGrammarTest {
                         .setNetwork(Prefix.parse("10.5.0.0/16"))
                         .setNextHop(NextHopIp.of(Ip.parse("10.0.0.5")))
                         .build()))));
+  }
+
+  @Test
+  public void testBondInterfaceExtraction() {
+    String hostname = "bond_interface";
+    CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
+    assertThat(c, notNullValue());
+    assertThat(
+        c.getInterfaces(),
+        hasKeys("bond0", "bond1", "bond2", "bond3", "bond4", "bond1024", "eth0", "eth1"));
+    assertThat(c.getBondingGroups(), hasKeys(containsInAnyOrder(0, 1, 2, 3, 4, 1024)));
+
+    Interface bond0Iface = c.getInterfaces().get("bond0");
+    assertThat(bond0Iface.getState(), equalTo(true));
+    assertThat(bond0Iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.10/24")));
+    BondingGroup bond0 = c.getBondingGroups().get(0);
+    assertThat(bond0.getInterfaces(), containsInAnyOrder("eth0", "eth1"));
+    assertThat(bond0.getMode(), equalTo(Mode.EIGHT_ZERO_TWO_THREE_AD));
+    assertThat(bond0.getLacpRate(), equalTo(LacpRate.SLOW));
+    assertThat(bond0.getXmitHashPolicy(), equalTo(XmitHashPolicy.LAYER2));
+
+    BondingGroup bond1 = c.getBondingGroups().get(1);
+    assertThat(bond1.getMode(), equalTo(Mode.EIGHT_ZERO_TWO_THREE_AD));
+    assertThat(bond1.getLacpRate(), equalTo(LacpRate.FAST));
+    assertThat(bond1.getXmitHashPolicy(), equalTo(XmitHashPolicy.LAYER3_4));
+
+    BondingGroup bond2 = c.getBondingGroups().get(2);
+    assertThat(bond2.getMode(), equalTo(Mode.ROUND_ROBIN));
+
+    BondingGroup bond3 = c.getBondingGroups().get(3);
+    assertThat(bond3.getMode(), equalTo(Mode.XOR));
+
+    BondingGroup bond4 = c.getBondingGroups().get(4);
+    assertThat(bond4.getMode(), equalTo(Mode.ACTIVE_BACKUP));
+
+    // Defaults
+    BondingGroup bond1024 = c.getBondingGroups().get(1024);
+    assertThat(bond1024.getInterfaces(), emptyIterable());
+    assertNull(bond1024.getMode());
+    assertThat(bond1024.getModeEffective(), equalTo(BondingGroup.DEFAULT_MODE));
+    assertNull(bond1024.getLacpRate());
+    assertNull(bond1024.getXmitHashPolicy());
+  }
+
+  @Test
+  public void testBondInterfaceWarning() throws IOException {
+    String hostname = "bond_interface_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected bonding group number in range 0-1024, but got '1025'"),
+                hasComment("Expected bonding group number in range 0-1024, but got '1026'"),
+                allOf(
+                    hasComment(
+                        "Illegal value for bonding group member interface name (must be eth"
+                            + " interface)"),
+                    hasText(containsString("interface lo"))),
+                hasComment("Cannot configure non-existent bonding group, add it first."),
+                hasComment("Interface can only be added to one bonding group."))));
+
+    // No bonding groups or bond interfaces should be created from invalid add/set lines
+    CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
+    assertThat(c, notNullValue());
+    assertThat(c.getInterfaces(), hasKeys("bond1000", "eth0", "lo"));
+    assertThat(c.getBondingGroups(), hasKeys(contains(1000)));
+  }
+
+  @Test
+  public void testBondInterfaceConversion() {
+    String hostname = "bond_interface_conversion";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, notNullValue());
+    assertThat(c.getAllInterfaces(), hasKeys("bond0", "bond1", "eth0", "eth1"));
+
+    String bond0Name = "bond0";
+    String bond1Name = "bond1";
+    String eth0Name = "eth0";
+    String eth1Name = "eth1";
+
+    assertThat(c, hasInterface(bond0Name, isActive(true)));
+    assertThat(c, hasInterface(bond0Name, hasInterfaceType(AGGREGATED)));
+    assertThat(
+        c,
+        hasInterface(
+            bond0Name,
+            hasDependencies(
+                containsInAnyOrder(
+                    new Dependency(eth0Name, AGGREGATE), new Dependency(eth1Name, AGGREGATE)))));
+    assertThat(
+        c, hasInterface(bond0Name, hasChannelGroupMembers(containsInAnyOrder(eth0Name, eth1Name))));
+    assertThat(c, hasInterface(bond0Name, hasChannelGroup(nullValue())));
+
+    assertThat(c, hasInterface(bond1Name, isActive(false)));
+    assertThat(c, hasInterface(bond1Name, hasInterfaceType(AGGREGATED)));
+    assertThat(c, hasInterface(bond1Name, hasDependencies(emptyIterable())));
+    assertThat(c, hasInterface(bond1Name, hasChannelGroupMembers(emptyIterable())));
+    assertThat(c, hasInterface(bond1Name, hasChannelGroup(nullValue())));
+
+    assertThat(c, hasInterface(eth0Name, isActive(true)));
+    assertThat(c, hasInterface(eth0Name, hasInterfaceType(PHYSICAL)));
+    assertThat(c, hasInterface(eth0Name, hasChannelGroup(equalTo("0"))));
+
+    assertThat(c, hasInterface(eth1Name, isActive(true)));
+    assertThat(c, hasInterface(eth1Name, hasInterfaceType(PHYSICAL)));
+    assertThat(c, hasInterface(eth1Name, hasChannelGroup(equalTo("0"))));
+  }
+
+  @Test
+  public void testBondInterfaceConversionWarn() throws IOException {
+    String hostname = "bond_interface_conversion_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString("Cannot reference non-existent interface eth1 in bonding group 1000.")));
   }
 }

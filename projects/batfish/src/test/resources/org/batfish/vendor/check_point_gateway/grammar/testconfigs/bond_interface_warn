@@ -1,0 +1,20 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname bond_interface_warn
+#
+add bonding group 1 interface lo
+#
+add bonding group 1025 interface eth0
+#
+set bonding group 999 lacp-rate slow
+set bonding group 1026 lacp-rate slow
+#
+add bonding group 1000 interface eth0
+add bonding group 1001 interface eth0
+#
+set interface eth0 state on
+set interface lo state on

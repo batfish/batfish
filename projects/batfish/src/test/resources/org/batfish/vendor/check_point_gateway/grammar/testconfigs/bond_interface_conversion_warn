@@ -1,0 +1,10 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname bond_interface_conversion_warn
+#
+# Not possible to tell at parse-time this bonding group line is referencing an invalid iface
+add bonding group 1000 interface eth1

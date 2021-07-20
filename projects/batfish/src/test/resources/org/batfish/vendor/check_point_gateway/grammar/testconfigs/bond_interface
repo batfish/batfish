@@ -1,0 +1,34 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname bond_interface
+#
+add bonding group 0 interface eth0
+add bonding group 0 interface eth1
+set bonding group 0 mode 8023AD
+set bonding group 0 lacp-rate slow
+set bonding group 0 xmit-hash-policy layer2
+#
+add bonding group 1
+set bonding group 1 mode 8023AD
+set bonding group 1 lacp-rate fast
+set bonding group 1 xmit-hash-policy layer3+4
+#
+add bonding group 2
+set bonding group 2 mode round-robin
+#
+add bonding group 3
+set bonding group 3 mode xor
+#
+add bonding group 4
+set bonding group 4 mode active-backup
+#
+add bonding group 1024
+#
+set interface eth0 state on
+set interface eth1 state on
+set interface bond0 ipv4-address 10.10.10.10 mask-length 24
+#

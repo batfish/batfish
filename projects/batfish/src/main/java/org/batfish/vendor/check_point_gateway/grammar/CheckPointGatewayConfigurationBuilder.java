@@ -26,6 +26,11 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.SilentSyntaxListener;
 import org.batfish.grammar.UnrecognizedLineToken;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.A_bonding_groupContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Abg_interfaceContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Bonding_group_member_interface_nameContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Bonding_group_modeContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Bonding_group_numberContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Check_point_gateway_configurationContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Double_quoted_stringContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.HostnameContext;
@@ -33,13 +38,18 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.In
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ip_addressContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ip_mask_lengthContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ip_prefixContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Lacp_rateContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Link_speedContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.MtuContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.On_or_offContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Quoted_textContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.S_bonding_groupContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.S_hostnameContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.S_interfaceContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.S_static_routeContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Sbg_lacp_rateContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Sbg_modeContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Sbg_xmit_hash_policyContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Si_auto_negotiationContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Si_commentsContext;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Si_ipv4_addressContext;
@@ -60,6 +70,11 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Ui
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint32Context;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Uint8Context;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.WordContext;
+import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayParser.Xmit_hash_policyContext;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup.LacpRate;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup.XmitHashPolicy;
 import org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration;
 import org.batfish.vendor.check_point_gateway.representation.Interface;
 import org.batfish.vendor.check_point_gateway.representation.Interface.LinkSpeed;
@@ -141,6 +156,100 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   @Override
   public void enterCheck_point_gateway_configuration(
       Check_point_gateway_configurationContext ctx) {}
+
+  @Override
+  public void enterA_bonding_group(A_bonding_groupContext ctx) {
+    Optional<Integer> numOpt = toInteger(ctx, ctx.bonding_group_number());
+    _currentAddedBondingGroupIsValid = numOpt.isPresent();
+    if (!_currentAddedBondingGroupIsValid) {
+      _currentBondingGroup = new BondingGroup(0); // dummy
+      return;
+    }
+    _currentBondingGroup =
+        _configuration
+            .getBondingGroups()
+            .getOrDefault(numOpt.get(), new BondingGroup(numOpt.get()));
+  }
+
+  @Override
+  public void exitA_bonding_group(A_bonding_groupContext ctx) {
+    if (_currentAddedBondingGroupIsValid) {
+      Optional<Integer> numOpt = toInteger(ctx, ctx.bonding_group_number());
+      // Guaranteed by _currentAddedBondingGroupIsValid
+      assert numOpt.isPresent();
+      int num = numOpt.get();
+      Interface bondIface =
+          _configuration
+              .getInterfaces()
+              .computeIfAbsent(
+                  "bond" + num,
+                  name -> {
+                    // Bond interfaces are active by default
+                    Interface iface = new Interface(name);
+                    iface.setState(true);
+                    return iface;
+                  });
+      bondIface.setBondingGroup(_currentBondingGroup);
+
+      _configuration.getBondingGroups().putIfAbsent(num, _currentBondingGroup);
+    }
+    _currentBondingGroup = null;
+  }
+
+  @Override
+  public void exitAbg_interface(Abg_interfaceContext ctx) {
+    Optional<String> ifaceNameOpt = toString(ctx, ctx.bonding_group_member_interface_name());
+    if (!ifaceNameOpt.isPresent()) {
+      _currentAddedBondingGroupIsValid = false;
+      return;
+    }
+
+    // TODO better validation of bonding group member interfaces
+    //  e.g. if ipv4-address is configured already, interface can't be added as a member
+    String ifaceName = ifaceNameOpt.get();
+    if (_configuration.getBondingGroups().values().stream()
+        .anyMatch(bg -> bg.getInterfaces().contains(ifaceName))) {
+      warn(ctx, "Interface can only be added to one bonding group.");
+      _currentAddedBondingGroupIsValid = false;
+      return;
+    }
+    _currentBondingGroup.getInterfaces().add(ifaceName);
+  }
+
+  @Override
+  public void enterS_bonding_group(S_bonding_groupContext ctx) {
+    _currentBondingGroup = new BondingGroup(0); // dummy
+    Optional<Integer> numOpt = toInteger(ctx, ctx.bonding_group_number());
+    if (!numOpt.isPresent()) {
+      return;
+    }
+    int num = numOpt.get();
+    if (!_configuration.getBondingGroups().containsKey(num)) {
+      warn(ctx, "Cannot configure non-existent bonding group, add it first.");
+      return;
+    }
+    _currentBondingGroup = _configuration.getBondingGroups().get(num);
+  }
+
+  @Override
+  public void exitS_bonding_group(S_bonding_groupContext ctx) {
+    _currentBondingGroup = null;
+  }
+
+  @Override
+  public void exitSbg_lacp_rate(Sbg_lacp_rateContext ctx) {
+    _currentBondingGroup.setLacpRate(toLacpRate(ctx.lacp_rate()));
+  }
+
+  @Override
+  public void exitSbg_mode(Sbg_modeContext ctx) {
+    _currentBondingGroup.setMode(toMode(ctx.bonding_group_mode()));
+  }
+
+  @Override
+  public void exitSbg_xmit_hash_policy(Sbg_xmit_hash_policyContext ctx) {
+    _currentBondingGroup.setXmitHashPolicy(toXmitHashPolicy(ctx.xmit_hash_policy()));
+  }
 
   @Override
   public void exitS_hostname(S_hostnameContext ctx) {
@@ -298,6 +407,40 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     return LinkSpeed.THOUSAND_M_FULL;
   }
 
+  private BondingGroup.LacpRate toLacpRate(Lacp_rateContext ctx) {
+    if (ctx.FAST() != null) {
+      return LacpRate.FAST;
+    }
+    assert ctx.SLOW() != null;
+    return LacpRate.SLOW;
+  }
+
+  private BondingGroup.Mode toMode(Bonding_group_modeContext ctx) {
+    if (ctx.ACTIVE_BACKUP() != null) {
+      return Mode.ACTIVE_BACKUP;
+    } else if (ctx.EIGHT_ZERO_TWO_THREE_AD() != null) {
+      return Mode.EIGHT_ZERO_TWO_THREE_AD;
+    } else if (ctx.ROUND_ROBIN() != null) {
+      return Mode.ROUND_ROBIN;
+    }
+    assert ctx.XOR() != null;
+    return Mode.XOR;
+  }
+
+  private XmitHashPolicy toXmitHashPolicy(Xmit_hash_policyContext ctx) {
+    if (ctx.LAYER2() != null) {
+      return XmitHashPolicy.LAYER2;
+    }
+    assert ctx.LAYER3_4() != null;
+    return XmitHashPolicy.LAYER3_4;
+  }
+
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, Bonding_group_numberContext ctx) {
+    return toIntegerInSpace(
+        messageCtx, ctx.uint16(), BONDING_GROUP_NUMBER_SPACE, "bonding group number");
+  }
+
   private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, MtuContext ctx) {
     return toIntegerInSpace(messageCtx, ctx.uint16(), MTU_SPACE, "mtu");
   }
@@ -387,6 +530,15 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Bonding_group_member_interface_nameContext ctx) {
+    return toString(
+        messageCtx,
+        ctx.interface_name().word(),
+        "bonding group member interface name (must be eth interface)",
+        BONDING_GROUP_MEMBER_INTERFACE_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Interface_nameContext ctx) {
     return toString(messageCtx, ctx.word(), "interface name", INTERFACE_NAME_PATTERN);
   }
@@ -461,15 +613,27 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     return text.getText().replaceAll("\\\\", "");
   }
 
+  private static final Pattern BONDING_GROUP_MEMBER_INTERFACE_NAME_PATTERN =
+      Pattern.compile("^eth[0-9-]+$");
   private static final Pattern DEVICE_HOSTNAME_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
   // Only certain prefixes are allowed, so this is more broad than what the device accepts
   private static final Pattern INTERFACE_NAME_PATTERN = Pattern.compile("^[A-Za-z0-9.-]+$");
   private static final Pattern STATIC_ROUTE_COMMENT_PATTERN = Pattern.compile("^[A-Za-z0-9,. ]+$");
 
+  private static final IntegerSpace BONDING_GROUP_NUMBER_SPACE =
+      IntegerSpace.of(Range.closed(0, 1024));
   private static final IntegerSpace MASK_LENGTH_SPACE = IntegerSpace.of(Range.closed(1, 32));
   private static final IntegerSpace MTU_SPACE = IntegerSpace.of(Range.closed(68, 16000));
   private static final IntegerSpace STATIC_ROUTE_NEXTHOP_PRIORITY_SPACE =
       IntegerSpace.of(Range.closed(1, 8));
+
+  private BondingGroup _currentBondingGroup;
+
+  /**
+   * If the current bonding group is valid. Indicates if an interface should be created for the
+   * current bonding group, if it doesn't already exist.
+   */
+  private boolean _currentAddedBondingGroupIsValid;
 
   private Interface _currentInterface;
 

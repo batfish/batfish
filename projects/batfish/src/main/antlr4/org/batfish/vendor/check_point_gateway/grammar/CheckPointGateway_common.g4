@@ -28,6 +28,8 @@ ip_mask_length: uint8;
 static_route_priority: uint8;
 
 uint16: UINT8 | UINT16;
+// 0-1024
+bonding_group_number: uint16;
 // 68-16000 for ipv4
 mtu: uint16;
 
