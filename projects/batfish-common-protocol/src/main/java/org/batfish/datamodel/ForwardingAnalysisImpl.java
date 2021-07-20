@@ -249,9 +249,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getOrDefault(node, ImmutableMap.of())
                                 .getOrDefault(vrf, ImmutableMap.of());
 
+                        // _arpFalse may include interfaces in other VRFs that we forward out
+                        // through due to VRF leaking
+                        Set<String> ifaces =
+                            Sets.union(accepted.keySet(), _arpFalse.get(node).get(vrf).keySet());
+
                         Map<String, InterfaceForwardingBehavior> interfaceForwardingBehavior =
                             toImmutableMap(
-                                accepted.keySet(),
+                                ifaces,
                                 Function.identity(),
                                 iface -> {
                                   IpSpace deliveredToSubnet =
