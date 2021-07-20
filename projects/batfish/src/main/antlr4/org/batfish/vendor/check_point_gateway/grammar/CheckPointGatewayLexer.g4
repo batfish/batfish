@@ -13,32 +13,46 @@ tokens {
 }
 
 // CheckPointGateway keywords
+ACTIVE_BACKUP: 'active-backup';
+ADD: 'add';
 ADDRESS: 'address';
 AUTO_NEGOTIATION: 'auto-negotiation';
 BLACKHOLE: 'blackhole';
+BONDING: 'bonding';
 COMMENT: 'comment' -> pushMode(M_SingleStr);
 COMMENTS: 'comments' -> pushMode(M_SingleStr);
 DEFAULT: 'default';
+FAST: 'fast';
 FORCE: 'force';
 GATEWAY: 'gateway';
+GROUP: 'group';
 HOSTNAME: 'hostname' -> pushMode(M_SingleStr);
 INTERFACE: 'interface' -> pushMode(M_SingleStr);
 IPV4_ADDRESS: 'ipv4-address';
+LACP_RATE: 'lacp-rate';
+LAYER2: 'layer2';
+LAYER3_4: 'layer3+4';
 LINK_SPEED: 'link-speed';
 LOGICAL: 'logical' -> pushMode(M_SingleStr);
 MASK_LENGTH: 'mask-length';
+MODE: 'mode';
 MTU: 'mtu';
 NEXTHOP: 'nexthop';
 OFF: 'off';
 ON: 'on';
 PRIORITY: 'priority';
 REJECT: 'reject';
+ROUND_ROBIN: 'round-robin';
 SET: 'set';
+SLOW: 'slow';
 STATE: 'state';
 STATIC_ROUTE: 'static-route';
 SUBNET_MASK: 'subnet-mask';
+XMIT_HASH_POLICY: 'xmit-hash-policy';
+XOR: 'xor';
 
 // Numeric tokens
+EIGHT_ZERO_TWO_THREE_AD: '8023AD';
 HUNDRED_M_FULL: '100M/full';
 HUNDRED_M_HALF: '100M/half';
 TEN_M_FULL: '10M/full';
