@@ -16,7 +16,11 @@ public abstract class AnnotatedRib<R extends AbstractRoute> extends AbstractRib<
     implements Serializable {
 
   AnnotatedRib() {
-    super();
+    this(false);
+  }
+
+  AnnotatedRib(boolean withBackupRoutes) {
+    super(withBackupRoutes);
   }
 
   /*
