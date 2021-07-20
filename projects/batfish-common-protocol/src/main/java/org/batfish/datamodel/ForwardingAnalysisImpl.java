@@ -249,13 +249,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // ips not belonging to any subnet in the network, including inactive interfaces.
       IpSpace externalIps = internalIps.complement();
 
-      Map<String, Map<String, Map<String, IpSpace>>> _exitsNetwork =
-          computeExitsNetwork(
-              interfacesWithMissingDevices,
-              dstIpsWithUnownedNextHopIpArpFalse,
-              arpFalseDestIp,
-              externalIps);
-
       _vrfForwardingBehavior =
           toImmutableMap(
               configurations,
@@ -273,10 +266,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getVrfIfaceOwnedIpSpaces()
                                 .getOrDefault(node, ImmutableMap.of())
                                 .getOrDefault(vrf, ImmutableMap.of());
-                        Map<String, IpSpace> exitsNetwork =
-                            _exitsNetwork
-                                .getOrDefault(node, ImmutableMap.of())
-                                .getOrDefault(vrf, ImmutableMap.of());
                         Map<String, IpSpace> insufficientInfo =
                             _insufficientInfo
                                 .getOrDefault(node, ImmutableMap.of())
@@ -287,7 +276,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getOrDefault(vrf, ImmutableMap.of());
 
                         Set<String> ifaces =
-                            Stream.of(accepted, exitsNetwork, insufficientInfo, neighborUnreachable)
+                            Stream.of(accepted, insufficientInfo, neighborUnreachable)
                                 .flatMap(map -> map.keySet().stream())
                                 .collect(Collectors.toSet());
 
@@ -304,10 +293,20 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                           arpFalseDestIp,
                                           interfaceExternalArpIps,
                                           ownedIps);
+
+                                  IpSpace exitsNetwork =
+                                      computeExitsNetwork(
+                                          node,
+                                          vrf,
+                                          iface,
+                                          interfacesWithMissingDevices,
+                                          dstIpsWithUnownedNextHopIpArpFalse,
+                                          arpFalseDestIp,
+                                          externalIps);
                                   return InterfaceForwardingBehavior.builder()
                                       .setAccepted(accepted.get(iface))
                                       .setDeliveredToSubnet(deliveredToSubnet)
-                                      .setExitsNetwork(exitsNetwork.get(iface))
+                                      .setExitsNetwork(exitsNetwork)
                                       .setInsufficientInfo(insufficientInfo.get(iface))
                                       .setNeighborUnreachable(neighborUnreachable.get(iface))
                                       .build();
@@ -1236,53 +1235,31 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * Necessary and sufficient: The connected subnet is not full, the dest IP is external, and path
    * is not expected to come back into network (i.e. the ARP IP is also external).
    */
-  static Map<String, Map<String, Map<String, IpSpace>>> computeExitsNetwork(
+  static IpSpace computeExitsNetwork(
+      String node,
+      String vrf,
+      String iface,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDstIp,
       IpSpace externalIps) {
-    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeExitsNetwork").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          dstIpsWithUnownedNextHopIpArpFalse,
-          Entry::getKey,
-          nodeEntry -> {
-            String hostname = nodeEntry.getKey();
-            Set<String> interfacesWithMissingDevicesNode =
-                interfacesWithMissingDevices.get(hostname);
-            return toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey,
-                vrfEntry -> {
-                  String vrfName = vrfEntry.getKey();
-                  Map<String, IpSpace> arpFalseDstIpVrf = arpFalseDstIp.get(hostname).get(vrfName);
-                  return toImmutableMap(
-                      vrfEntry.getValue(),
-                      Entry::getKey,
-                      ifaceEntry -> {
-                        String ifaceName = ifaceEntry.getKey();
-                        // the connected subnet is full
-                        if (!interfacesWithMissingDevicesNode.contains(ifaceName)) {
-                          return EmptyIpSpace.INSTANCE;
-                        }
-
-                        // Returns the union of the following 2 cases:
-                        // 1. Arp for dst ip and dst ip is external
-                        // 2. Arp for next hop ip, next hop ip is not owned by any interfaces,
-                        // and dst ip is external
-                        return AclIpSpace.intersection(
-                            // dest ip is external
-                            externalIps,
-                            // arp for dst Ip OR arp for external next-hop IP
-                            AclIpSpace.union(
-                                arpFalseDstIpVrf.get(ifaceName), ifaceEntry.getValue()));
-                      });
-                });
-          });
-    } finally {
-      span.finish();
+    // the connected subnet is full
+    if (!interfacesWithMissingDevices.get(node).contains(iface)) {
+      return EmptyIpSpace.INSTANCE;
     }
+
+    // Returns the union of the following 2 cases:
+    // 1. Arp for dst ip and dst ip is external
+    // 2. Arp for next hop ip, next hop ip is not owned by any interfaces,
+    // and dst ip is external
+    IpSpace ifaceDstIpsWithUnownedNextHopIpArpFalse =
+        dstIpsWithUnownedNextHopIpArpFalse.get(node).get(vrf).get(iface);
+    IpSpace ifaceArpFalseDstIp = arpFalseDstIp.get(node).get(vrf).get(iface);
+    return AclIpSpace.intersection(
+        // dest ip is external
+        externalIps,
+        // arp for dst Ip OR arp for external next-hop IP
+        AclIpSpace.union(ifaceArpFalseDstIp, ifaceDstIpsWithUnownedNextHopIpArpFalse));
   }
 
   /**

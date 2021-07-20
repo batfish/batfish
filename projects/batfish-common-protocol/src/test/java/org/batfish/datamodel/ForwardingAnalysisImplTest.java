@@ -1341,13 +1341,13 @@ public class ForwardingAnalysisImplTest {
             CONFIG1, VRF1, INTERFACE1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
     IpSpace exitsNetworkIpSpace =
         computeExitsNetwork(
-                interfacesWithMissingDevices,
-                dstIpsWithUnownedNextHopIpArpFalse,
-                arpFalseDestIp,
-                externalIps)
-            .get(CONFIG1)
-            .get(VRF1)
-            .get(INTERFACE1);
+            CONFIG1,
+            VRF1,
+            INTERFACE1,
+            interfacesWithMissingDevices,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            arpFalseDestIp,
+            externalIps);
 
     IpSpace insufficientInfoIpSpace =
         computeInsufficientInfo(
