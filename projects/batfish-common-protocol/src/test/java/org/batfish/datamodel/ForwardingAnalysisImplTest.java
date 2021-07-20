@@ -1351,15 +1351,15 @@ public class ForwardingAnalysisImplTest {
 
     IpSpace insufficientInfoIpSpace =
         computeInsufficientInfo(
-                interfaceHostSubnetIps,
-                interfacesWithMissingDevices,
-                arpFalseDestIp,
-                dstIpsWithUnownedNextHopIpArpFalse,
-                dstIpsWithOwnedNextHopIpArpFalse,
-                internalIps)
-            .get(CONFIG1)
-            .get(VRF1)
-            .get(INTERFACE1);
+            CONFIG1,
+            VRF1,
+            INTERFACE1,
+            interfaceHostSubnetIps,
+            interfacesWithMissingDevices,
+            arpFalseDestIp,
+            dstIpsWithUnownedNextHopIpArpFalse,
+            dstIpsWithOwnedNextHopIpArpFalse,
+            internalIps);
     IpSpace neighborUnreachableIpSpace =
         computeNeighborUnreachable(
                 arpFalse,
