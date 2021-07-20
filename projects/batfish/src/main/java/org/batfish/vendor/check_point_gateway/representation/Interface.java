@@ -20,7 +20,7 @@ public class Interface implements Serializable {
   public static final int DEFAULT_INTERFACE_MTU = 1500;
 
   public Interface(String name) {
-    _state = false;
+    _state = true;
     _name = name;
   }
 

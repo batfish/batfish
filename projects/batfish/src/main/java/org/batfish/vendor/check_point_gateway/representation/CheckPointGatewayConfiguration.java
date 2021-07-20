@@ -8,12 +8,19 @@ import com.google.common.collect.ImmutableSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface.Dependency;
+import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -24,14 +31,21 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.vendor.VendorConfiguration;
+import org.batfish.vendor.check_point_gateway.representation.BondingGroup.Mode;
 
 public class CheckPointGatewayConfiguration extends VendorConfiguration {
 
   public static final String VRF_NAME = "default";
 
   public CheckPointGatewayConfiguration() {
+    _bondingGroups = new HashMap<>();
     _interfaces = new HashMap<>();
     _staticRoutes = new HashMap<>();
+  }
+
+  @Nonnull
+  public Map<Integer, BondingGroup> getBondingGroups() {
+    return _bondingGroups;
   }
 
   @Override
@@ -139,6 +153,8 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
+    } else if (name.startsWith("bond")) {
+      return InterfaceType.AGGREGATED;
     }
     return InterfaceType.UNKNOWN;
   }
@@ -150,13 +166,104 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .setName(ifaceName)
             .setOwner(_c)
             .setVrf(vrf)
-            .setActive(iface.getState())
-            .setAddress(iface.getAddress())
-            .setType(getInterfaceType(iface))
-            .setMtu(iface.getMtuEffective());
+            .setType(getInterfaceType(iface));
+
+    Optional<Integer> parentBondingGroupOpt = getParentBondingGroupNumber(iface);
+    if (parentBondingGroupOpt.isPresent()) {
+      Integer parentBondingGroup = parentBondingGroupOpt.get();
+      newIface.setChannelGroup(parentBondingGroup.toString());
+      Interface parentBondInterface = _interfaces.get(getBondInterfaceName(parentBondingGroup));
+      assert parentBondInterface != null;
+      newIface
+          .setChannelGroup(parentBondingGroup.toString())
+          // Member interface inherits some configuration from parent bonding group
+          .setMtu(parentBondInterface.getMtuEffective());
+    } else {
+      newIface
+          .setAddress(iface.getAddress())
+          .setActive(iface.getState())
+          .setMtu(iface.getMtuEffective());
+    }
+
+    getBondingGroup(ifaceName)
+        .ifPresent(
+            bg -> {
+              Set<String> members = getValidMembers(bg);
+              newIface.setChannelGroupMembers(members);
+              newIface.setDependencies(
+                  members.stream()
+                      .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+                      .collect(ImmutableSet.toImmutableSet()));
+
+              if (bg.getModeEffective() == Mode.ACTIVE_BACKUP) {
+                _w.redFlag(
+                    String.format(
+                        "Bonding group mode active-backup is not yet supported in Batfish."
+                            + " Deactivating interface %s.",
+                        ifaceName));
+                newIface.setActive(false);
+              }
+            });
     return newIface.build();
   }
 
+  /**
+   * Get the {@link BondingGroup} corresponding to the specified bond interface. Returns {@link
+   * Optional#empty} if the interface is not a bond interface or if the bonding group does not
+   * exist.
+   */
+  @Nonnull
+  private Optional<BondingGroup> getBondingGroup(String ifaceName) {
+    Pattern p = Pattern.compile("bond(\\d+)");
+    Matcher res = p.matcher(ifaceName);
+    if (res.matches()) {
+      return Optional.ofNullable(_bondingGroups.get(Integer.valueOf(res.group(1))));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * Returns the parent bonding group number for the specified interface, or {@link Optional#empty}
+   * if it is not a member of a bonding group.
+   */
+  @Nonnull
+  private Optional<Integer> getParentBondingGroupNumber(Interface iface) {
+    return _bondingGroups.values().stream()
+        .filter(bg -> bg.getInterfaces().contains(iface.getName()))
+        .findFirst()
+        .map(BondingGroup::getNumber);
+  }
+
+  /** Get bonding interface name from its bonding group number. */
+  @Nonnull
+  public static String getBondInterfaceName(int groupNumber) {
+    return "bond" + groupNumber;
+  }
+
+  /**
+   * Returns a {@link Set} of valid members for the specified bonding group. Adds warnings if any
+   * member interfaces are invalid.
+   *
+   * <p>Filters out things like non-existent interfaces.
+   */
+  @Nonnull
+  private Set<String> getValidMembers(BondingGroup bondingGroup) {
+    return bondingGroup.getInterfaces().stream()
+        .filter(
+            m -> {
+              boolean exists = _interfaces.containsKey(m);
+              if (!exists) {
+                _w.redFlag(
+                    String.format(
+                        "Cannot reference non-existent interface %s in bonding group %d.",
+                        m, bondingGroup.getNumber()));
+              }
+              return exists;
+            })
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
+  @Nonnull private Map<Integer, BondingGroup> _bondingGroups;
   private Configuration _c;
   private String _hostname;
 

@@ -1,0 +1,19 @@
+#
+# Configuration of hostname
+# Language version: 13.4v1
+#
+# Exported by admin on Wed Jun 23 16:11:18 2021
+#
+set hostname bond_interface_conversion
+#
+add bonding group 0 interface eth0
+add bonding group 0 interface eth1
+#
+add bonding group 1
+#
+set interface eth0 state on
+set interface eth1 state on
+set interface bond0 ipv4-address 10.10.10.10 mask-length 24
+set interface bond0 mtu 1234
+set interface bond1 state off
+#
