@@ -161,8 +161,8 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   @Override
   public void enterA_bonding_group(A_bonding_groupContext ctx) {
     Optional<Integer> numOpt = toInteger(ctx, ctx.bonding_group_number());
-    _currentAddedBondingGroupIsValid = numOpt.isPresent();
-    if (!_currentAddedBondingGroupIsValid) {
+    _currentBondingGroupLineIsValid = numOpt.isPresent();
+    if (!_currentBondingGroupLineIsValid) {
       _currentBondingGroup = new BondingGroup(0); // dummy
       return;
     }
@@ -175,13 +175,9 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   @Override
   public void exitA_bonding_group(A_bonding_groupContext ctx) {
     // Create the bonding group and its interface if needed
-    if (_currentAddedBondingGroupIsValid) {
-      Optional<Integer> numOpt = toInteger(ctx, ctx.bonding_group_number());
-      // Guaranteed by _currentAddedBondingGroupIsValid
-      assert numOpt.isPresent();
-      int num = numOpt.get();
+    if (_currentBondingGroupLineIsValid) {
+      int num = _currentBondingGroup.getNumber();
       _configuration.getInterfaces().computeIfAbsent(getBondInterfaceName(num), Interface::new);
-
       _configuration.getBondingGroups().putIfAbsent(num, _currentBondingGroup);
     }
     _currentBondingGroup = null;
@@ -191,7 +187,7 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   public void exitAbg_interface(Abg_interfaceContext ctx) {
     Optional<String> ifaceNameOpt = toString(ctx, ctx.bonding_group_member_interface_name());
     if (!ifaceNameOpt.isPresent() || !isValidBondGroupMember(ctx, ifaceNameOpt.get())) {
-      _currentAddedBondingGroupIsValid = false;
+      _currentBondingGroupLineIsValid = false;
       return;
     }
 
@@ -674,7 +670,7 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   private BondingGroup _currentBondingGroup;
 
   /** If the current bonding group configuration line is valid. */
-  private boolean _currentAddedBondingGroupIsValid;
+  private boolean _currentBondingGroupLineIsValid;
 
   private Interface _currentInterface;
 
@@ -692,12 +688,11 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
    * This indicates if any interfaces have been explicitly configured up to this point in parsing.
    *
    * <p>This is used in heuristics to determine when Batfish should be strict about bonding group
-   * member interfaces, i.e. disallow adding non-existent interfaces as bonding group members.
+   * member interfaces, i.e. disallow adding undefined interfaces as bonding group members.
    *
    * <p>This is needed because Check Point gateways will print output for {@code show configuration}
-   * where bonding group member interfaces are referenced before their definition. This syntax could
-   * not be entered on a device CLI in the order printed. We need to handle parsing of this slightly
-   * differently than "reconfiguration" lines, which cannot reference undefined interfaces.
+   * where bonding group members are referenced before their definition. This is in contrast to
+   * "reconfiguration" lines, which cannot reference undefined ifaces/come after their definitions.
    */
   private boolean _firstInterfaceHasBeenConfigured;
 
