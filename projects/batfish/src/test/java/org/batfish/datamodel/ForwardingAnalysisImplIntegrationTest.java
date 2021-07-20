@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.util.Map;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -49,12 +48,12 @@ public class ForwardingAnalysisImplIntegrationTest {
 
     // the null route's prefix should not actually null route anything
     assertThat(
-        forwardingAnalysis.getNullRoutedIps().get(hostname).get(vrfName),
+        forwardingAnalysis.getVrfForwardingBehavior().get(hostname).get(vrfName).getNullRoutedIps(),
         not(containsIp(nonForwardingRoutePrefix.getStartIp())));
 
     // the null route's prefix should not be routable
     assertThat(
-        forwardingAnalysis.getRoutableIps().get(hostname).get(vrfName),
+        forwardingAnalysis.getVrfForwardingBehavior().get(hostname).get(vrfName).getRoutableIps(),
         not(containsIp(nonForwardingRoutePrefix.getStartIp())));
   }
 
@@ -105,11 +104,17 @@ public class ForwardingAnalysisImplIntegrationTest {
 
     // the non-forwarding route's prefix should not be null routed
     assertThat(
-        forwardingAnalysis.getNullRoutedIps().get(hostname).get(vrfName),
+        forwardingAnalysis.getVrfForwardingBehavior().get(hostname).get(vrfName).getNullRoutedIps(),
         not(containsIp(nonForwardingRoutePrefix.getStartIp())));
 
     IpSpace exitsNetwork =
-        forwardingAnalysis.getExitsNetwork().get(hostname).get(vrfName).get(ifaceName);
+        forwardingAnalysis
+            .getVrfForwardingBehavior()
+            .get(hostname)
+            .get(vrfName)
+            .getInterfaceForwardingBehavior()
+            .get(ifaceName)
+            .getExitsNetwork();
 
     // the forwarding route's prefix should be routed out the interface
     assertThat(exitsNetwork, containsIp(forwardingRoutePrefix.getStartIp()));
@@ -161,20 +166,29 @@ public class ForwardingAnalysisImplIntegrationTest {
 
     ForwardingAnalysis forwardingAnalysis =
         batfish.loadDataPlane(batfish.getSnapshot()).getForwardingAnalysis();
-    Map<String, Map<String, Map<String, IpSpace>>> exitsNetwork =
-        forwardingAnalysis.getExitsNetwork();
 
     assertThat(
-        exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()),
+        forwardingAnalysis
+            .getVrfForwardingBehavior()
+            .get(c1.getHostname())
+            .get(vrf1.getName())
+            .getInterfaceForwardingBehavior()
+            .get(i1.getName())
+            .getExitsNetwork(),
         containsIp(prefix.getStartIp()));
 
     // after setting the static arp on i2, should not be exits network anymore
     i2.setAdditionalArpIps(prefix.getStartIp().toIpSpace());
     batfish.computeDataPlane(batfish.getSnapshot());
     forwardingAnalysis = batfish.loadDataPlane(batfish.getSnapshot()).getForwardingAnalysis();
-    exitsNetwork = forwardingAnalysis.getExitsNetwork();
     assertThat(
-        exitsNetwork.get(c1.getHostname()).get(vrf1.getName()).get(i1.getName()),
+        forwardingAnalysis
+            .getVrfForwardingBehavior()
+            .get(c1.getHostname())
+            .get(vrf1.getName())
+            .getInterfaceForwardingBehavior()
+            .get(i1.getName())
+            .getExitsNetwork(),
         not(containsIp(prefix.getStartIp())));
   }
 }

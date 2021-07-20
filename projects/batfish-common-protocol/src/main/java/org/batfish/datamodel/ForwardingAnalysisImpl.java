@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -71,6 +72,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   // node -> vrf -> interface -> dst ips that end up with insufficient info
   private final Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
+
+  // node -> vrf -> forwarding behavior for that VRF.
+  private final Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior;
 
   public ForwardingAnalysisImpl(
       Map<String, Configuration> configurations,
@@ -272,6 +276,71 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
               dstIpsWithUnownedNextHopIpArpFalse,
               arpFalseDestIp,
               externalIps);
+
+      _vrfForwardingBehavior =
+          toImmutableMap(
+              configurations,
+              Entry::getKey, // config
+              nodeEntry ->
+                  toImmutableMap(
+                      nodeEntry.getValue().getVrfs(),
+                      Entry::getKey, // vrf
+                      vrfEntry -> {
+                        String node = nodeEntry.getKey();
+                        String vrf = vrfEntry.getKey();
+
+                        Map<String, IpSpace> acceptedIps =
+                            _acceptedIps
+                                .getOrDefault(node, ImmutableMap.of())
+                                .getOrDefault(vrf, ImmutableMap.of());
+                        Map<String, IpSpace> deliveredToSubnet =
+                            _deliveredToSubnet
+                                .getOrDefault(node, ImmutableMap.of())
+                                .getOrDefault(vrf, ImmutableMap.of());
+                        Map<String, IpSpace> exitsNetwork =
+                            _exitsNetwork
+                                .getOrDefault(node, ImmutableMap.of())
+                                .getOrDefault(vrf, ImmutableMap.of());
+                        Map<String, IpSpace> insufficientInfo =
+                            _insufficientInfo
+                                .getOrDefault(node, ImmutableMap.of())
+                                .getOrDefault(vrf, ImmutableMap.of());
+                        Map<String, IpSpace> neighborUnreachable =
+                            _neighborUnreachable
+                                .getOrDefault(node, ImmutableMap.of())
+                                .getOrDefault(vrf, ImmutableMap.of());
+
+                        Set<String> ifaces =
+                            Stream.of(
+                                    acceptedIps,
+                                    deliveredToSubnet,
+                                    exitsNetwork,
+                                    insufficientInfo,
+                                    neighborUnreachable)
+                                .flatMap(map -> map.keySet().stream())
+                                .collect(Collectors.toSet());
+
+                        Map<String, InterfaceForwardingBehavior> interfaceForwardingBehavior =
+                            toImmutableMap(
+                                ifaces,
+                                Function.identity(),
+                                iface ->
+                                    InterfaceForwardingBehavior.builder()
+                                        .setAccepted(acceptedIps.get(iface))
+                                        .setDeliveredToSubnet(deliveredToSubnet.get(iface))
+                                        .setExitsNetwork(exitsNetwork.get(iface))
+                                        .setInsufficientInfo(insufficientInfo.get(iface))
+                                        .setNeighborUnreachable(neighborUnreachable.get(iface))
+                                        .build());
+
+                        return VrfForwardingBehavior.builder()
+                            .setArpTrueEdge(_arpTrueEdge.get(node).get(vrf))
+                            .setInterfaceForwardingBehavior(interfaceForwardingBehavior)
+                            .setNextVrf(_nextVrfIpsByNodeVrf.get(node).get(vrf))
+                            .setNullRoutedIps(_nullRoutedIps.get(node).get(vrf))
+                            .setRoutableIps(_routableIps.get(node).get(vrf))
+                            .build();
+                      }));
 
       assert sanityCheck(ipSpaceToBDD, configurations);
     } finally {
@@ -1069,39 +1138,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     }
   }
 
-  @Nonnull
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getAcceptsIps() {
-    return _acceptedIps;
-  }
-
   @Override
   public Map<String, Map<String, IpSpace>> getArpReplies() {
     return _arpReplies;
   }
 
+  @Nonnull
   @Override
-  public Map<String, Map<String, Map<Edge, IpSpace>>> getArpTrueEdge() {
-    return _arpTrueEdge;
+  public Map<String, Map<String, VrfForwardingBehavior>> getVrfForwardingBehavior() {
+    return _vrfForwardingBehavior;
   }
 
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getNextVrfIps() {
-    return _nextVrfIpsByNodeVrf;
-  }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getNullRoutedIps() {
-    return _nullRoutedIps;
-  }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getRoutableIps() {
-    return _routableIps;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getDeliveredToSubnet() {
+  private Map<String, Map<String, Map<String, IpSpace>>> getDeliveredToSubnet() {
     return _deliveredToSubnet;
   }
 
@@ -1228,8 +1276,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     }
   }
 
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork() {
+  private Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork() {
     return _exitsNetwork;
   }
 
@@ -1424,8 +1471,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     }
   }
 
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
+  private Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
     return _neighborUnreachable;
   }
 
@@ -1451,8 +1497,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     }
   }
 
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo() {
+  private Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo() {
     return _insufficientInfo;
   }
 

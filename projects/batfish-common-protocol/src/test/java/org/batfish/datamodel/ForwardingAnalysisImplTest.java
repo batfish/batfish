@@ -1563,29 +1563,18 @@ public class ForwardingAnalysisImplTest {
         new ForwardingAnalysisImpl(
             configs, fibs, new Topology(ImmutableSortedSet.of()), computeLocationInfo(configs));
 
-    assertFalse(
+    InterfaceForwardingBehavior i1ForwardingBehavior =
         analysis
-            .getDeliveredToSubnet()
+            .getVrfForwardingBehavior()
             .get(c1.getHostname())
             .get(v1.getName())
-            .get(i1.getName())
-            .containsIp(ip2, c1.getIpSpaces()));
+            .getInterfaceForwardingBehavior()
+            .get(i1.getName());
+    assertFalse(i1ForwardingBehavior.getDeliveredToSubnet().containsIp(ip2, c1.getIpSpaces()));
 
-    assertTrue(
-        analysis
-            .getNeighborUnreachable()
-            .get(c1.getHostname())
-            .get(v1.getName())
-            .get(i1.getName())
-            .containsIp(ip2, c1.getIpSpaces()));
+    assertTrue(i1ForwardingBehavior.getNeighborUnreachable().containsIp(ip2, c1.getIpSpaces()));
 
-    assertFalse(
-        analysis
-            .getInsufficientInfo()
-            .get(c1.getHostname())
-            .get(v1.getName())
-            .get(i1.getName())
-            .containsIp(ip2, c1.getIpSpaces()));
+    assertFalse(i1ForwardingBehavior.getInsufficientInfo().containsIp(ip2, c1.getIpSpaces()));
   }
 
   private static class MockIpSpace extends IpSpace {

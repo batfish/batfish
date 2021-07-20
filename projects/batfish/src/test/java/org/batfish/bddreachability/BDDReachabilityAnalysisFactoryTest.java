@@ -606,10 +606,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
       iface.setActive(false);
       BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
       Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
-          ImmutableMap.of(
-              config.getHostname(),
-              ImmutableMap.of(
-                  vrf.getName(), ImmutableMap.of(iface.getName(), _pkt.getFactory().zero())));
+          ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
       assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
 
@@ -618,10 +615,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
       iface.blacklist();
       BDDReachabilityAnalysisFactory factory = makeBddReachabilityAnalysisFactory(configs);
       Map<String, Map<String, Map<String, BDD>>> expectedAcceptBdds =
-          ImmutableMap.of(
-              config.getHostname(),
-              ImmutableMap.of(
-                  vrf.getName(), ImmutableMap.of(iface.getName(), _pkt.getFactory().zero())));
+          ImmutableMap.of(config.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of()));
       assertThat(factory.getIfaceAcceptBDDs(), equalTo(expectedAcceptBdds));
     }
   }
