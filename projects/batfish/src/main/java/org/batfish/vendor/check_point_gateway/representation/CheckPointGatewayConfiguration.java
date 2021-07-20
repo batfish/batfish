@@ -10,8 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -162,18 +165,27 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .setName(ifaceName)
             .setOwner(_c)
             .setVrf(vrf)
-            .setActive(iface.getState())
-            .setAddress(iface.getAddress())
-            .setType(getInterfaceType(iface))
-            .setMtu(iface.getMtuEffective());
+            .setType(getInterfaceType(iface));
 
-    Optional<Integer> parentBondingGroup = getParentBondingGroup(iface);
-    parentBondingGroup.ifPresent(pbg -> newIface.setChannelGroup(pbg.toString()));
+    Optional<Integer> parentBondingGroupOpt = getParentBondingGroupNumber(iface);
+    if (parentBondingGroupOpt.isPresent()) {
+      Integer parentBondingGroup = parentBondingGroupOpt.get();
+      newIface.setChannelGroup(parentBondingGroup.toString());
+      Interface parentBondInterface = _interfaces.get(getBondInterfaceName(parentBondingGroup));
+      assert parentBondInterface != null;
+      // Member interface inherits some configuration from parent bonding group
+      newIface.setMtu(parentBondInterface.getMtuEffective());
+    } else {
+      newIface
+          .setAddress(iface.getAddress())
+          .setActive(iface.getState())
+          .setMtu(iface.getMtuEffective());
+    }
+    parentBondingGroupOpt.ifPresent(pbg -> newIface.setChannelGroup(pbg.toString()));
 
-    BondingGroup bondingGroup = iface.getBondingGroup();
+    BondingGroup bondingGroup = getBondingGroup(ifaceName);
     if (bondingGroup != null) {
-      Set<String> members =
-          getValidBondingGroupMembers(bondingGroup.getInterfaces(), bondingGroup.getNumber());
+      Set<String> members = getValidMembers(bondingGroup);
       newIface.setChannelGroupMembers(members);
       newIface.setDependencies(
           members.stream()
@@ -184,24 +196,46 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Returns the parent bonding group for the specified interface, or {@link Optional#empty} if it
-   * is not a member of a bonding group.
+   * Get the {@link BondingGroup} corresponding to the specified bond interface. Returns {@code
+   * null} if the interface is not a bond interface or if the bonding group does not exist.
    */
-  private Optional<Integer> getParentBondingGroup(Interface iface) {
+  @Nullable
+  private BondingGroup getBondingGroup(String ifaceName) {
+    Pattern p = Pattern.compile("bond(\\d+)");
+    Matcher res = p.matcher(ifaceName);
+    if (res.matches()) {
+      return _bondingGroups.get(Integer.valueOf(res.group(1)));
+    }
+    return null;
+  }
+
+  /**
+   * Returns the parent bonding group number for the specified interface, or {@link Optional#empty}
+   * if it is not a member of a bonding group.
+   */
+  @Nonnull
+  private Optional<Integer> getParentBondingGroupNumber(Interface iface) {
     return _bondingGroups.values().stream()
         .filter(bg -> bg.getInterfaces().contains(iface.getName()))
         .findFirst()
         .map(BondingGroup::getNumber);
   }
 
+  /** Get bonding interface name from its bonding group number. */
+  @Nonnull
+  public static String getBondInterfaceName(int groupNumber) {
+    return "bond" + groupNumber;
+  }
+
   /**
-   * Returns a {@link Set} of valid members given an initial set of candidate bonding group member
-   * interfaces. Adds warnings if any interfaces are invalid.
+   * Returns a {@link Set} of valid members for the specified bonding group. Adds warnings if any
+   * member interfaces are invalid.
    *
    * <p>Filters out things like non-existent interfaces.
    */
-  private Set<String> getValidBondingGroupMembers(Set<String> members, int bondingGroupNum) {
-    return members.stream()
+  @Nonnull
+  private Set<String> getValidMembers(BondingGroup bondingGroup) {
+    return bondingGroup.getInterfaces().stream()
         .filter(
             m -> {
               boolean exists = _interfaces.containsKey(m);
@@ -209,7 +243,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                 _w.redFlag(
                     String.format(
                         "Cannot reference non-existent interface %s in bonding group %d.",
-                        m, bondingGroupNum));
+                        m, bondingGroup.getNumber()));
               }
               return exists;
             })

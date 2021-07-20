@@ -1,6 +1,7 @@
 package org.batfish.vendor.check_point_gateway.grammar;
 
 import static org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayLexer.WORD;
+import static org.batfish.vendor.check_point_gateway.representation.CheckPointGatewayConfiguration.getBondInterfaceName;
 
 import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
@@ -173,23 +174,22 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   @Override
   public void exitA_bonding_group(A_bonding_groupContext ctx) {
+    // Create the bonding group and its interface if needed
     if (_currentAddedBondingGroupIsValid) {
       Optional<Integer> numOpt = toInteger(ctx, ctx.bonding_group_number());
       // Guaranteed by _currentAddedBondingGroupIsValid
       assert numOpt.isPresent();
       int num = numOpt.get();
-      Interface bondIface =
-          _configuration
-              .getInterfaces()
-              .computeIfAbsent(
-                  "bond" + num,
-                  name -> {
-                    // Bond interfaces are active by default
-                    Interface iface = new Interface(name);
-                    iface.setState(true);
-                    return iface;
-                  });
-      bondIface.setBondingGroup(_currentBondingGroup);
+      _configuration
+          .getInterfaces()
+          .computeIfAbsent(
+              getBondInterfaceName(num),
+              name -> {
+                // Bond interfaces are active by default
+                Interface iface = new Interface(name);
+                iface.setState(true);
+                return iface;
+              });
 
       _configuration.getBondingGroups().putIfAbsent(num, _currentBondingGroup);
     }
@@ -199,21 +199,43 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
   @Override
   public void exitAbg_interface(Abg_interfaceContext ctx) {
     Optional<String> ifaceNameOpt = toString(ctx, ctx.bonding_group_member_interface_name());
-    if (!ifaceNameOpt.isPresent()) {
+    if (!ifaceNameOpt.isPresent() || !isValidBondGroupMember(ctx, ifaceNameOpt.get())) {
       _currentAddedBondingGroupIsValid = false;
       return;
     }
 
-    // TODO better validation of bonding group member interfaces
-    //  e.g. if ipv4-address is configured already, interface can't be added as a member
-    String ifaceName = ifaceNameOpt.get();
+    _currentBondingGroup.getInterfaces().add(ifaceNameOpt.get());
+  }
+
+  /**
+   * Indicates if the specified interface can be added as a bonding group member. Adds a warning if
+   * not.
+   */
+  private boolean isValidBondGroupMember(ParserRuleContext ctx, String ifaceName) {
     if (_configuration.getBondingGroups().values().stream()
         .anyMatch(bg -> bg.getInterfaces().contains(ifaceName))) {
       warn(ctx, "Interface can only be added to one bonding group.");
-      _currentAddedBondingGroupIsValid = false;
-      return;
+      return false;
     }
-    _currentBondingGroup.getInterfaces().add(ifaceName);
+
+    // Trust interface references are valid if interfaces haven't been explicitly configured yet
+    // i.e. looks like we're parsing `show configuration` data which has can have undef refs
+    if (!_firstInterfaceHasBeenConfigured) {
+      return true;
+    }
+
+    Interface candidate = _configuration.getInterfaces().get(ifaceName);
+    if (candidate == null) {
+      warn(ctx, "Cannot add non-existent interface to a bonding group.");
+      return false;
+    }
+
+    if (candidate.getAddress() != null) {
+      warn(ctx, "Cannot add an interface with a configured address to a bonding group.");
+      return false;
+    }
+
+    return true;
   }
 
   @Override
@@ -261,16 +283,28 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     _currentInterface =
         toString(ctx, ctx.interface_name())
             .map(n -> _configuration.getInterfaces().computeIfAbsent(n, Interface::new))
-            .orElse(new Interface(ctx.interface_name().getText()));
+            .orElseGet(() -> new Interface(ctx.interface_name().getText()));
+    _currentInterfaceInBondingGroup = isInterfaceInBondingGroup(_currentInterface);
+    _firstInterfaceHasBeenConfigured = true;
+  }
+
+  private boolean isInterfaceInBondingGroup(Interface iface) {
+    return _configuration.getBondingGroups().values().stream()
+        .anyMatch(bg -> bg.getInterfaces().contains(iface.getName()));
   }
 
   @Override
   public void exitS_interface(S_interfaceContext ctx) {
     _currentInterface = null;
+    _currentInterfaceInBondingGroup = null;
   }
 
   @Override
   public void exitSi_auto_negotiation(Si_auto_negotiationContext ctx) {
+    if (_currentInterfaceInBondingGroup) {
+      warn(ctx, "Interface is a member of a bonding group and cannot be configured directly.");
+      return;
+    }
     _currentInterface.setAutoNegotiate(toBoolean(ctx.on_or_off()));
   }
 
@@ -281,6 +315,10 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   @Override
   public void exitSi_ipv4_address(Si_ipv4_addressContext ctx) {
+    if (_currentInterfaceInBondingGroup) {
+      warn(ctx, "Interface is a member of a bonding group and cannot be configured directly.");
+      return;
+    }
     Ip ip = toIp(ctx.ip_address());
     Optional<Integer> subnetBits = toSubnetBits(ctx, ctx.siia_mask());
     subnetBits.ifPresent(
@@ -289,17 +327,31 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   @Override
   public void exitSi_link_speed(Si_link_speedContext ctx) {
+    if (_currentInterfaceInBondingGroup) {
+      warn(ctx, "Interface is a member of a bonding group and cannot be configured directly.");
+      return;
+    }
     _currentInterface.setLinkSpeed(toLinkSpeed(ctx.link_speed()));
   }
 
   @Override
   public void exitSi_mtu(Si_mtuContext ctx) {
+    if (_currentInterfaceInBondingGroup) {
+      warn(ctx, "Interface is a member of a bonding group and cannot be configured directly.");
+      return;
+    }
     toInteger(ctx, ctx.mtu()).ifPresent(m -> _currentInterface.setMtu(m));
   }
 
   @Override
   public void exitSi_state(Si_stateContext ctx) {
-    _currentInterface.setState(toBoolean(ctx.on_or_off()));
+    boolean state = toBoolean(ctx.on_or_off());
+    // *Changing* state is not permitted for an interface in a bonding group
+    if (_currentInterfaceInBondingGroup && state != _currentInterface.getState()) {
+      warn(ctx, "Interface is a member of a bonding group and cannot be configured directly.");
+      return;
+    }
+    _currentInterface.setState(state);
   }
 
   @Override
@@ -629,17 +681,33 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   private BondingGroup _currentBondingGroup;
 
-  /**
-   * If the current bonding group is valid. Indicates if an interface should be created for the
-   * current bonding group, if it doesn't already exist.
-   */
+  /** If the current bonding group configuration line is valid. */
   private boolean _currentAddedBondingGroupIsValid;
 
   private Interface _currentInterface;
 
+  /**
+   * Indicates if {@code _currentInterface} is in a bonding group. This determines if certain
+   * properties can be (re)configured.
+   */
+  private Boolean _currentInterfaceInBondingGroup;
+
   private StaticRoute _currentStaticRoute;
 
   private Nexthop _currentStaticRouteNextHop;
+
+  /**
+   * This indicates if any interfaces have been explicitly configured up to this point in parsing.
+   *
+   * <p>This is used in heuristics to determine when Batfish should be strict about bonding group
+   * member interfaces, i.e. disallow adding non-existent interfaces as bonding group members.
+   *
+   * <p>This is needed because Check Point gateways will print output for {@code show configuration}
+   * where bonding group member interfaces are referenced before their definition. This syntax could
+   * not be entered on a device CLI in the order printed, so we need to handle parsing of this
+   * slightly differently than "reconfiguration" lines.
+   */
+  private boolean _firstInterfaceHasBeenConfigured;
 
   @Nonnull private CheckPointGatewayConfiguration _configuration;
 

@@ -20,7 +20,7 @@ public class Interface implements Serializable {
   public static final int DEFAULT_INTERFACE_MTU = 1500;
 
   public Interface(String name) {
-    _state = false;
+    _state = true;
     _name = name;
   }
 
@@ -35,16 +35,6 @@ public class Interface implements Serializable {
   @Nullable
   public Boolean getAutoNegotiate() {
     return _autoNegotiate;
-  }
-
-  /**
-   * <i>Internal</i> reference to the {@link BondingGroup} for a bond interface. This is not an
-   * explicitly configured property on physical devices. This is {@code null} for non-bond
-   * interfaces.
-   */
-  @Nullable
-  public BondingGroup getBondingGroup() {
-    return _bondingGroup;
   }
 
   @Nullable
@@ -85,10 +75,6 @@ public class Interface implements Serializable {
     _autoNegotiate = autoNegotiate;
   }
 
-  public void setBondingGroup(BondingGroup bondingGroup) {
-    _bondingGroup = bondingGroup;
-  }
-
   public void setComments(String comments) {
     _comments = comments;
   }
@@ -107,7 +93,6 @@ public class Interface implements Serializable {
 
   @Nullable private ConcreteInterfaceAddress _address;
   @Nullable private Boolean _autoNegotiate;
-  @Nullable private BondingGroup _bondingGroup;
   @Nullable private String _comments;
   @Nullable private LinkSpeed _linkSpeed;
   @Nullable private Integer _mtu;

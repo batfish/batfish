@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroup;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasChannelGroupMembers;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDependencies;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -208,7 +209,7 @@ public class CheckPointGatewayGrammarTest {
     assertNull(eth1.getAutoNegotiate());
     assertNull(eth1.getComments());
     assertNull(eth1.getLinkSpeed());
-    assertFalse(eth1.getState());
+    assertTrue(eth1.getState());
     assertNull(eth2.getMtu());
     assertThat(eth2.getMtuEffective(), equalTo(Interface.DEFAULT_INTERFACE_MTU));
   }
@@ -467,12 +468,44 @@ public class CheckPointGatewayGrammarTest {
                             + " interface)"),
                     hasText(containsString("interface lo"))),
                 hasComment("Cannot configure non-existent bonding group, add it first."),
+                allOf(
+                    hasComment(
+                        "Cannot add an interface with a configured address to a bonding group."),
+                    hasText(containsString("interface eth1"))),
+                allOf(
+                    hasComment("Cannot add non-existent interface to a bonding group."),
+                    hasText(containsString("interface eth2"))),
+                allOf(
+                    hasComment(
+                        "Interface is a member of a bonding group and cannot be configured"
+                            + " directly."),
+                    hasText(containsString("state off"))),
+                allOf(
+                    hasComment(
+                        "Interface is a member of a bonding group and cannot be configured"
+                            + " directly."),
+                    hasText(containsString("mtu"))),
+                allOf(
+                    hasComment(
+                        "Interface is a member of a bonding group and cannot be configured"
+                            + " directly."),
+                    hasText(containsString("ipv4-address"))),
+                allOf(
+                    hasComment(
+                        "Interface is a member of a bonding group and cannot be configured"
+                            + " directly."),
+                    hasText(containsString("link-speed"))),
+                allOf(
+                    hasComment(
+                        "Interface is a member of a bonding group and cannot be configured"
+                            + " directly."),
+                    hasText(containsString("auto-negotiation"))),
                 hasComment("Interface can only be added to one bonding group."))));
 
     // No bonding groups or bond interfaces should be created from invalid add/set lines
     CheckPointGatewayConfiguration c = parseVendorConfig(hostname);
     assertThat(c, notNullValue());
-    assertThat(c.getInterfaces(), hasKeys("bond1000", "eth0", "lo"));
+    assertThat(c.getInterfaces(), hasKeys("bond1000", "eth0", "eth1", "lo"));
     assertThat(c.getBondingGroups(), hasKeys(contains(1000)));
   }
 
@@ -500,6 +533,7 @@ public class CheckPointGatewayGrammarTest {
     assertThat(
         c, hasInterface(bond0Name, hasChannelGroupMembers(containsInAnyOrder(eth0Name, eth1Name))));
     assertThat(c, hasInterface(bond0Name, hasChannelGroup(nullValue())));
+    assertThat(c, hasInterface(bond0Name, hasMtu(1234)));
 
     assertThat(c, hasInterface(bond1Name, isActive(false)));
     assertThat(c, hasInterface(bond1Name, hasInterfaceType(AGGREGATED)));
@@ -510,6 +544,7 @@ public class CheckPointGatewayGrammarTest {
     assertThat(c, hasInterface(eth0Name, isActive(true)));
     assertThat(c, hasInterface(eth0Name, hasInterfaceType(PHYSICAL)));
     assertThat(c, hasInterface(eth0Name, hasChannelGroup(equalTo("0"))));
+    assertThat(c, hasInterface(eth0Name, hasMtu(1234)));
 
     assertThat(c, hasInterface(eth1Name, isActive(true)));
     assertThat(c, hasInterface(eth1Name, hasInterfaceType(PHYSICAL)));
