@@ -1,6 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -9,7 +10,12 @@ import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
+import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ResolutionRestriction;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.junit.Test;
 
@@ -62,5 +68,28 @@ public class RibTest {
     AbstractRoute route2 = sb.build();
 
     assertThat(rib.comparePreference(annotateRoute(route1), annotateRoute(route2)), equalTo(0));
+  }
+
+  @Test
+  public void testBackup() {
+    Rib rib = new Rib();
+    StaticRoute.Builder sb = StaticRoute.testBuilder().setNetwork(Prefix.ZERO);
+    AnnotatedRoute<AbstractRoute> r1 =
+        annotateRoute(sb.setAdministrativeCost(250).setNextHopInterface("foo").build());
+    AnnotatedRoute<AbstractRoute> r2 =
+        annotateRoute(
+            Bgpv4Route.testBuilder()
+                .setNetwork(Prefix.ZERO)
+                .setNextHopInterface("blah")
+                .setOriginatorIp(Ip.parse("1.1.1.1"))
+                .setOriginType(OriginType.IGP)
+                .setProtocol(RoutingProtocol.BGP)
+                .build());
+    rib.mergeRoute(r1);
+    assertThat(rib.longestPrefixMatch(Ip.ZERO, ResolutionRestriction.alwaysTrue()), contains(r1));
+    rib.mergeRoute(r2);
+    assertThat(rib.longestPrefixMatch(Ip.ZERO, ResolutionRestriction.alwaysTrue()), contains(r2));
+    rib.removeRoute(r2);
+    assertThat(rib.longestPrefixMatch(Ip.ZERO, ResolutionRestriction.alwaysTrue()), contains(r1));
   }
 }
