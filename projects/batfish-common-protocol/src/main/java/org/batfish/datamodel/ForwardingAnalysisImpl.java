@@ -85,8 +85,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // Unowned (i.e., external to the network) IPs
       BDD unownedIpsBDD = ipSpaceToBDD.visit(ownedIps).not();
 
-      Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps = computeAcceptedIps(ipOwners);
-
       // IpSpaces matched by each prefix
       // -- only will have entries for active interfaces if FIB is correct
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(fibs);
@@ -273,8 +271,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                         String node = nodeEntry.getKey();
                         String vrf = vrfEntry.getKey();
 
-                        Map<String, IpSpace> acceptedIps =
-                            _acceptedIps
+                        Map<String, IpSpace> accepted =
+                            ipOwners
+                                .getVrfIfaceOwnedIpSpaces()
                                 .getOrDefault(node, ImmutableMap.of())
                                 .getOrDefault(vrf, ImmutableMap.of());
                         Map<String, IpSpace> deliveredToSubnet =
@@ -296,7 +295,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
                         Set<String> ifaces =
                             Stream.of(
-                                    acceptedIps,
+                                    accepted,
                                     deliveredToSubnet,
                                     exitsNetwork,
                                     insufficientInfo,
@@ -310,7 +309,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 Function.identity(),
                                 iface ->
                                     InterfaceForwardingBehavior.builder()
-                                        .setAccepted(acceptedIps.get(iface))
+                                        .setAccepted(accepted.get(iface))
                                         .setDeliveredToSubnet(deliveredToSubnet.get(iface))
                                         .setExitsNetwork(exitsNetwork.get(iface))
                                         .setInsufficientInfo(insufficientInfo.get(iface))
@@ -330,16 +329,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     } finally {
       span.finish();
     }
-  }
-
-  /**
-   * Compute the space of IPs accepted by an interface<br>
-   * Mapping: hostname -&gt; vrf name -&gt; interface name -&gt; space of IPs
-   */
-  // TODO: Account for special case VRF-accepted IPs that are not interface IPs.
-  private static Map<String, Map<String, Map<String, IpSpace>>> computeAcceptedIps(
-      IpOwners ipOwners) {
-    return ipOwners.getVrfIfaceOwnedIpSpaces();
   }
 
   /**
