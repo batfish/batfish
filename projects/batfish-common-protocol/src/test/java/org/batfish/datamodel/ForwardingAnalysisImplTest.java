@@ -1362,14 +1362,14 @@ public class ForwardingAnalysisImplTest {
             internalIps);
     IpSpace neighborUnreachableIpSpace =
         computeNeighborUnreachable(
-                arpFalse,
-                interfacesWithMissingDevices,
-                arpFalseDestIp,
-                interfaceHostSubnetIps,
-                ownedIps)
-            .get(CONFIG1)
-            .get(VRF1)
-            .get(INTERFACE1);
+            CONFIG1,
+            VRF1,
+            INTERFACE1,
+            arpFalse,
+            interfacesWithMissingDevices,
+            arpFalseDestIp,
+            interfaceHostSubnetIps,
+            ownedIps);
 
     if (expectedDisposition == FlowDisposition.EXITS_NETWORK) {
       assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getStartIp()));

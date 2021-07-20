@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import org.batfish.common.bdd.BDDPacket;
@@ -226,14 +225,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<String, Set<String>> interfacesWithMissingDevices =
           computeInterfacesWithMissingDevices(interfaceExternalArpIpBDDs, unownedIpsBDD);
 
-      Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable =
-          computeNeighborUnreachable(
-              _arpFalse,
-              interfacesWithMissingDevices,
-              arpFalseDestIp,
-              interfaceExternalArpIps,
-              ownedIps);
-
       // ips belonging to any subnet in the network, including inactive interfaces.
       IpSpace internalIps = computeInternalIps(ipOwners.getAllInterfaceHostIps());
 
@@ -257,19 +248,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getVrfIfaceOwnedIpSpaces()
                                 .getOrDefault(node, ImmutableMap.of())
                                 .getOrDefault(vrf, ImmutableMap.of());
-                        Map<String, IpSpace> neighborUnreachable =
-                            _neighborUnreachable
-                                .getOrDefault(node, ImmutableMap.of())
-                                .getOrDefault(vrf, ImmutableMap.of());
-
-                        Set<String> ifaces =
-                            Stream.of(accepted, neighborUnreachable)
-                                .flatMap(map -> map.keySet().stream())
-                                .collect(Collectors.toSet());
 
                         Map<String, InterfaceForwardingBehavior> interfaceForwardingBehavior =
                             toImmutableMap(
-                                ifaces,
+                                accepted.keySet(),
                                 Function.identity(),
                                 iface -> {
                                   IpSpace deliveredToSubnet =
@@ -303,12 +285,23 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                           dstIpsWithOwnedNextHopIpArpFalse,
                                           internalIps);
 
+                                  IpSpace neighborUnreachable =
+                                      computeNeighborUnreachable(
+                                          node,
+                                          vrf,
+                                          iface,
+                                          _arpFalse,
+                                          interfacesWithMissingDevices,
+                                          arpFalseDestIp,
+                                          interfaceExternalArpIps,
+                                          ownedIps);
+
                                   return InterfaceForwardingBehavior.builder()
                                       .setAccepted(accepted.get(iface))
                                       .setDeliveredToSubnet(deliveredToSubnet)
                                       .setExitsNetwork(exitsNetwork)
                                       .setInsufficientInfo(insufficientInfo)
-                                      .setNeighborUnreachable(neighborUnreachable.get(iface))
+                                      .setNeighborUnreachable(neighborUnreachable)
                                       .build();
                                 });
 
@@ -1325,44 +1318,21 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    *
    * <p>An interface is full if all subnets connected to it are full.
    */
-  static Map<String, Map<String, Map<String, IpSpace>>> computeNeighborUnreachable(
+  static IpSpace computeNeighborUnreachable(
+      String node,
+      String vrf,
+      String iface,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       IpSpace ownedIps) {
-    Span span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNeighborUnreachable").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          arpFalse,
-          Entry::getKey,
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
-                  Entry::getKey,
-                  vrfEntry ->
-                      toImmutableMap(
-                          vrfEntry.getValue(),
-                          Entry::getKey,
-                          ifaceEntry -> {
-                            String node = nodeEntry.getKey();
-                            String vrf = vrfEntry.getKey();
-                            String iface = ifaceEntry.getKey();
-
-                            IpSpace ifaceArpFalse = ifaceEntry.getValue();
-
-                            return interfacesWithMissingDevices.get(node).contains(iface)
-                                ? AclIpSpace.intersection(
-                                    arpFalseDestIp.get(node).get(vrf).get(iface),
-                                    interfaceExternalArpIps.get(node).get(iface),
-                                    ownedIps)
-                                : ifaceArpFalse;
-                          })));
-    } finally {
-      span.finish();
-    }
+    return interfacesWithMissingDevices.get(node).contains(iface)
+        ? AclIpSpace.intersection(
+            arpFalseDestIp.get(node).get(vrf).get(iface),
+            interfaceExternalArpIps.get(node).get(iface),
+            ownedIps)
+        : arpFalse.get(node).get(vrf).get(iface);
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
