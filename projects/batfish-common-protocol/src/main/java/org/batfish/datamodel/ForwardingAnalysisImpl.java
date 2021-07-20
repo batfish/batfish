@@ -220,9 +220,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                           entry -> ((InterfaceLinkLocation) entry.getKey()).getInterfaceName(),
                           entry -> entry.getValue().getArpIps())));
 
-      Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet =
-          computeDeliveredToSubnet(arpFalseDestIp, interfaceExternalArpIps, ownedIps);
-
       Map<String, Map<String, BDD>> interfaceExternalArpIpBDDs =
           computeInterfaceExternalArpIpBDDs(interfaceExternalArpIps, ipSpaceToBDD);
       // hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot
@@ -276,10 +273,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getVrfIfaceOwnedIpSpaces()
                                 .getOrDefault(node, ImmutableMap.of())
                                 .getOrDefault(vrf, ImmutableMap.of());
-                        Map<String, IpSpace> deliveredToSubnet =
-                            _deliveredToSubnet
-                                .getOrDefault(node, ImmutableMap.of())
-                                .getOrDefault(vrf, ImmutableMap.of());
                         Map<String, IpSpace> exitsNetwork =
                             _exitsNetwork
                                 .getOrDefault(node, ImmutableMap.of())
@@ -294,12 +287,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getOrDefault(vrf, ImmutableMap.of());
 
                         Set<String> ifaces =
-                            Stream.of(
-                                    accepted,
-                                    deliveredToSubnet,
-                                    exitsNetwork,
-                                    insufficientInfo,
-                                    neighborUnreachable)
+                            Stream.of(accepted, exitsNetwork, insufficientInfo, neighborUnreachable)
                                 .flatMap(map -> map.keySet().stream())
                                 .collect(Collectors.toSet());
 
@@ -307,14 +295,23 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                             toImmutableMap(
                                 ifaces,
                                 Function.identity(),
-                                iface ->
-                                    InterfaceForwardingBehavior.builder()
-                                        .setAccepted(accepted.get(iface))
-                                        .setDeliveredToSubnet(deliveredToSubnet.get(iface))
-                                        .setExitsNetwork(exitsNetwork.get(iface))
-                                        .setInsufficientInfo(insufficientInfo.get(iface))
-                                        .setNeighborUnreachable(neighborUnreachable.get(iface))
-                                        .build());
+                                iface -> {
+                                  IpSpace deliveredToSubnet =
+                                      computeDeliveredToSubnet(
+                                          node,
+                                          vrf,
+                                          iface,
+                                          arpFalseDestIp,
+                                          interfaceExternalArpIps,
+                                          ownedIps);
+                                  return InterfaceForwardingBehavior.builder()
+                                      .setAccepted(accepted.get(iface))
+                                      .setDeliveredToSubnet(deliveredToSubnet)
+                                      .setExitsNetwork(exitsNetwork.get(iface))
+                                      .setInsufficientInfo(insufficientInfo.get(iface))
+                                      .setNeighborUnreachable(neighborUnreachable.get(iface))
+                                      .build();
+                                });
 
                         return VrfForwardingBehavior.builder()
                             .setArpTrueEdge(_arpTrueEdge.get(node).get(vrf))
@@ -1218,36 +1215,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    * subnet.
    */
   @VisibleForTesting
-  static Map<String, Map<String, Map<String, IpSpace>>> computeDeliveredToSubnet(
+  static IpSpace computeDeliveredToSubnet(
+      String node,
+      String vrf,
+      String iface,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       IpSpace ownedIps) {
-    Span span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeDeliveredToSubnet").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          arpFalseDestIp,
-          Entry::getKey,
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
-                  Entry::getKey,
-                  vrfEntry ->
-                      toImmutableMap(
-                          vrfEntry.getValue(),
-                          Entry::getKey,
-                          ifaceEntry ->
-                              AclIpSpace.difference(
-                                  AclIpSpace.intersection(
-                                      ifaceEntry.getValue(),
-                                      interfaceExternalArpIps
-                                          .get(nodeEntry.getKey())
-                                          .get(ifaceEntry.getKey())),
-                                  ownedIps))));
-    } finally {
-      span.finish();
-    }
+    IpSpace ifaceArpFalseDestIp = arpFalseDestIp.get(node).get(vrf).get(iface);
+    IpSpace ifaceExternalArpIps = interfaceExternalArpIps.get(node).get(iface);
+    return AclIpSpace.difference(
+        AclIpSpace.intersection(ifaceArpFalseDestIp, ifaceExternalArpIps), ownedIps);
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork() {

@@ -1212,12 +1212,9 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
+    IpSpace result =
+        computeDeliveredToSubnet(c1, vrf1, i1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+    assertThat(result, not(containsIp(ip)));
   }
 
   @Test
@@ -1233,12 +1230,9 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), not(containsIp(ip))))));
+    IpSpace result =
+        computeDeliveredToSubnet(c1, vrf1, i1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+    assertThat(result, not(containsIp(ip)));
   }
 
   @Test
@@ -1254,12 +1248,9 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
-
-    assertThat(
-        result,
-        hasEntry(equalTo(c1), hasEntry(equalTo(vrf1), hasEntry(equalTo(i1), containsIp(ip)))));
+    IpSpace result =
+        computeDeliveredToSubnet(c1, vrf1, i1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+    assertThat(result, containsIp(ip));
   }
 
   enum NextHopIpStatus {
@@ -1346,10 +1337,8 @@ public class ForwardingAnalysisImplTest {
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
     IpSpace deliveredToSubnetIpSpace =
-        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps)
-            .get(CONFIG1)
-            .get(VRF1)
-            .get(INTERFACE1);
+        computeDeliveredToSubnet(
+            CONFIG1, VRF1, INTERFACE1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
     IpSpace exitsNetworkIpSpace =
         computeExitsNetwork(
                 interfacesWithMissingDevices,
