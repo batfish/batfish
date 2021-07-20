@@ -38,10 +38,6 @@ import org.batfish.specifier.LocationInfo;
 
 /** Implementation of {@link ForwardingAnalysis}. */
 public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Serializable {
-
-  /** node -&gt; vrf -&gt; interface -&gt; ips accepted by that interface */
-  private final Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
-
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
@@ -60,18 +56,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   // node -> vrf -> destination IPs that can be routed
   private final Map<String, Map<String, IpSpace>> _routableIps;
-
-  // node -> vrf -> interface -> dst ips that end up with neighbor unreachable
-  private final Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable;
-
-  // node -> vrf -> interface -> dst ips that end up delivered to subnet
-  private final Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
-
-  // node -> vrf -> interface -> dst ips that end up exiting the network
-  private final Map<String, Map<String, Map<String, IpSpace>>> _exitsNetwork;
-
-  // node -> vrf -> interface -> dst ips that end up with insufficient info
-  private final Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo;
 
   // node -> vrf -> forwarding behavior for that VRF.
   private final Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior;
@@ -101,7 +85,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // Unowned (i.e., external to the network) IPs
       BDD unownedIpsBDD = ipSpaceToBDD.visit(ownedIps).not();
 
-      _acceptedIps = computeAcceptedIps(ipOwners);
+      Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps = computeAcceptedIps(ipOwners);
 
       // IpSpaces matched by each prefix
       // -- only will have entries for active interfaces if FIB is correct
@@ -238,7 +222,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                           entry -> ((InterfaceLinkLocation) entry.getKey()).getInterfaceName(),
                           entry -> entry.getValue().getArpIps())));
 
-      _deliveredToSubnet =
+      Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet =
           computeDeliveredToSubnet(arpFalseDestIp, interfaceExternalArpIps, ownedIps);
 
       Map<String, Map<String, BDD>> interfaceExternalArpIpBDDs =
@@ -247,7 +231,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<String, Set<String>> interfacesWithMissingDevices =
           computeInterfacesWithMissingDevices(interfaceExternalArpIpBDDs, unownedIpsBDD);
 
-      _neighborUnreachable =
+      Map<String, Map<String, Map<String, IpSpace>>> _neighborUnreachable =
           computeNeighborUnreachable(
               _arpFalse,
               interfacesWithMissingDevices,
@@ -258,7 +242,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // ips belonging to any subnet in the network, including inactive interfaces.
       IpSpace internalIps = computeInternalIps(ipOwners.getAllInterfaceHostIps());
 
-      _insufficientInfo =
+      Map<String, Map<String, Map<String, IpSpace>>> _insufficientInfo =
           computeInsufficientInfo(
               interfaceExternalArpIps,
               interfacesWithMissingDevices,
@@ -270,7 +254,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // ips not belonging to any subnet in the network, including inactive interfaces.
       IpSpace externalIps = internalIps.complement();
 
-      _exitsNetwork =
+      Map<String, Map<String, Map<String, IpSpace>>> _exitsNetwork =
           computeExitsNetwork(
               interfacesWithMissingDevices,
               dstIpsWithUnownedNextHopIpArpFalse,
@@ -1150,7 +1134,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getDeliveredToSubnet() {
-    return _deliveredToSubnet;
+    return getInterfaceForwardingBehaviorIpSpaces(
+        InterfaceForwardingBehavior::getDeliveredToSubnet);
   }
 
   private static Map<String, Map<String, BDD>> computeInterfaceExternalArpIpBDDs(
@@ -1277,7 +1262,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork() {
-    return _exitsNetwork;
+    return getInterfaceForwardingBehaviorIpSpaces(InterfaceForwardingBehavior::getExitsNetwork);
   }
 
   /**
@@ -1472,7 +1457,24 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
-    return _neighborUnreachable;
+    return getInterfaceForwardingBehaviorIpSpaces(
+        InterfaceForwardingBehavior::getNeighborUnreachable);
+  }
+
+  private Map<String, Map<String, Map<String, IpSpace>>> getInterfaceForwardingBehaviorIpSpaces(
+      Function<InterfaceForwardingBehavior, IpSpace> ipSpaceGetter) {
+    return toImmutableMap(
+        _vrfForwardingBehavior,
+        Entry::getKey, // node
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, // vrf
+                vrfEntry ->
+                    toImmutableMap(
+                        vrfEntry.getValue().getInterfaceForwardingBehavior(),
+                        Entry::getKey, // iface
+                        ifaceEntry -> ipSpaceGetter.apply(ifaceEntry.getValue()))));
   }
 
   /** hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot */
@@ -1498,7 +1500,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo() {
-    return _insufficientInfo;
+    return getInterfaceForwardingBehaviorIpSpaces(InterfaceForwardingBehavior::getInsufficientInfo);
   }
 
   private static Map<String, Map<String, Map<String, IpSpace>>>
@@ -1558,19 +1560,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       IpSpaceToBDD ipSpaceToBDD, Map<String, Configuration> configurations) {
     // Sanity check internal properties.
     assertAllInterfacesActiveNodeInterface(_arpReplies, configurations);
-    assertAllInterfacesActiveNodeVrfInterface(_arpFalse, configurations);
-    assertAllInterfacesActiveNodeVrfInterface(_deliveredToSubnet, configurations);
-    assertAllInterfacesActiveNodeVrfInterface(_exitsNetwork, configurations);
-    assertAllInterfacesActiveNodeVrfInterface(_insufficientInfo, configurations);
-    assertAllInterfacesActiveNodeVrfInterface(_neighborUnreachable, configurations);
+    assertAllInterfacesActiveVrfForwardingBehavior(_vrfForwardingBehavior, configurations);
 
     // Sanity check public APIs.
     assertAllInterfacesActiveNodeInterface(getArpReplies(), configurations);
-    assertAllInterfacesActiveNodeVrfInterface(getDeliveredToSubnet(), configurations);
-    assertAllInterfacesActiveNodeVrfInterface(getExitsNetwork(), configurations);
-    assertAllInterfacesActiveNodeVrfInterface(getInsufficientInfo(), configurations);
-    assertAllInterfacesActiveNodeVrfInterface(getNeighborUnreachable(), configurations);
-    assertAllInterfacesActiveNodeVrfInterface(_arpFalse, configurations);
+    assertAllInterfacesActiveVrfForwardingBehavior(getVrfForwardingBehavior(), configurations);
 
     // Sanity check traceroute-reachability different variables.
     Map<String, Map<String, Map<String, IpSpace>>> unionOthers =
@@ -1593,30 +1587,17 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
     return true;
   }
-
-  /**
-   * Asserts that all interfaces in the given nested map are inactive in the given configurations.
-   */
-  private static void assertAllInterfacesActiveNodeVrfInterface(
-      Map<String, Map<String, Map<String, IpSpace>>> nodeVrfInterfaceMap,
+  /** Asserts that all interfaces in the given nested map are active in the given configurations. */
+  private static void assertAllInterfacesActiveVrfForwardingBehavior(
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
       Map<String, Configuration> configurations) {
-    nodeVrfInterfaceMap.forEach(
-        (node, vrfInterfaceMap) ->
-            vrfInterfaceMap.forEach(
-                (vrf, ifaceMap) ->
-                    ifaceMap
+    vrfForwardingBehavior.forEach(
+        (node, vrfMap) ->
+            vrfMap.forEach(
+                (vrf, vfb) ->
+                    vfb.getInterfaceForwardingBehavior()
                         .keySet()
-                        .forEach(
-                            i -> {
-                              if (i.equals(Interface.NULL_INTERFACE_NAME)) {
-                                return;
-                              }
-                              Configuration c = configurations.get(node);
-                              assert c != null : node + " is null";
-                              Interface iface = c.getAllInterfaces().get(i);
-                              assert iface != null : node + "[" + i + "] is null";
-                              assert iface.getActive() : node + "[" + i + "] is not active";
-                            })));
+                        .forEach(i -> assertInterfaceActive(node, i, configurations))));
   }
 
   /**
@@ -1627,19 +1608,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<String, Configuration> configurations) {
     nodeInterfaceMap.forEach(
         (node, ifaceMap) ->
-            ifaceMap
-                .keySet()
-                .forEach(
-                    i -> {
-                      if (i.equals(Interface.NULL_INTERFACE_NAME)) {
-                        return;
-                      }
-                      Configuration c = configurations.get(node);
-                      assert c != null : node + " is null";
-                      Interface iface = c.getAllInterfaces().get(i);
-                      assert iface != null : node + "[" + i + "] is null";
-                      assert iface.getActive() : node + "[" + i + "] is not active";
-                    }));
+            ifaceMap.keySet().forEach(i -> assertInterfaceActive(node, i, configurations)));
+  }
+
+  private static void assertInterfaceActive(
+      String node, String i, Map<String, Configuration> configurations) {
+    if (i.equals(Interface.NULL_INTERFACE_NAME)) {
+      return;
+    }
+    Configuration c = configurations.get(node);
+    assert c != null : node + " is null";
+    Interface iface = c.getAllInterfaces().get(i);
+    assert iface != null : node + "[" + i + "] is null";
+    assert iface.getActive() : node + "[" + i + "] is not active";
   }
 
   /**
