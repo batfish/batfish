@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -50,6 +49,8 @@ public class OspfProcess implements Serializable {
 
   @Nullable private DistributeList _inboundGlobalDistributeList;
 
+  private final Map<Long, Map<String, OspfInterfaceSettings>> _interfaceSettings;
+
   private Long _maxMetricExternalLsa;
 
   private boolean _maxMetricIncludeStub;
@@ -59,8 +60,6 @@ public class OspfProcess implements Serializable {
   private Long _maxMetricSummaryLsa;
 
   private final String _name;
-
-  private Set<OspfNetwork> _networks;
 
   private Set<String> _nonDefaultInterfaces;
 
@@ -100,9 +99,9 @@ public class OspfProcess implements Serializable {
   public OspfProcess(String name) {
     _name = name;
     _referenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
-    _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
+    _interfaceSettings = new TreeMap<>();
     _nonDefaultInterfaces = new HashSet<>();
     _nssas = new HashMap<>();
     _passiveInterfaces = new HashSet<>();
@@ -145,6 +144,11 @@ public class OspfProcess implements Serializable {
     return _inboundGlobalDistributeList;
   }
 
+  /** Mapping of area number to interface name to {@link OspfInterfaceSettings} */
+  public Map<Long, Map<String, OspfInterfaceSettings>> getInterfaceSettings() {
+    return _interfaceSettings;
+  }
+
   public Long getMaxMetricExternalLsa() {
     return _maxMetricExternalLsa;
   }
@@ -163,10 +167,6 @@ public class OspfProcess implements Serializable {
 
   public String getName() {
     return _name;
-  }
-
-  public Set<OspfNetwork> getNetworks() {
-    return _networks;
   }
 
   public Set<String> getNonDefaultInterfaces() {

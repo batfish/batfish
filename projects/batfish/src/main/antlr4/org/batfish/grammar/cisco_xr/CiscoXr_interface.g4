@@ -351,11 +351,6 @@ if_ip_router_isis
    IP ROUTER ISIS null_rest_of_line
 ;
 
-if_ip_router_ospf_area
-:
-   IP ROUTER OSPF procname = variable AREA (area_ip = IP_ADDRESS | area_dec = uint_legacy) NEWLINE
-;
-
 if_ip_rtp
 :
    IP RTP HEADER_COMPRESSION (PASSIVE | IPHC_FORMAT | IETF_FORMAT) PERIODIC_REFRESH? NEWLINE
@@ -1641,7 +1636,6 @@ if_inner
    | if_ip_passive_interface_eigrp
    | if_ip_pim_neighbor_filter
    | if_ip_router_isis
-   | if_ip_router_ospf_area
    | if_ip_rtp
    | if_ip_sticky_arp
    | if_ip_summary_address

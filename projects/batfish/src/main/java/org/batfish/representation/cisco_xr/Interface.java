@@ -152,24 +152,6 @@ public class Interface implements Serializable {
 
   @Nullable private Integer _nativeVlan;
 
-  private Long _ospfArea;
-
-  private Integer _ospfCost;
-
-  @Nullable private Integer _ospfDeadInterval;
-
-  @Nullable private Integer _ospfHelloInterval;
-
-  private int _ospfHelloMultiplier;
-
-  @Nullable private OspfNetworkType _ospfNetworkType;
-
-  @Nullable private Boolean _ospfPassive;
-
-  @Nullable private String _ospfProcess;
-
-  private boolean _ospfShutdown;
-
   private String _outgoingFilter;
 
   private ConcreteInterfaceAddress _address;
@@ -340,47 +322,6 @@ public class Interface implements Serializable {
     return _nativeVlan;
   }
 
-  public Long getOspfArea() {
-    return _ospfArea;
-  }
-
-  public Integer getOspfCost() {
-    return _ospfCost;
-  }
-
-  /** Get the time (in seconds) to wait before neighbors are declared dead */
-  @Nullable
-  public Integer getOspfDeadInterval() {
-    return _ospfDeadInterval;
-  }
-
-  /** Get the time (in seconds) between sending hello messages to neighbors */
-  @Nullable
-  public Integer getOspfHelloInterval() {
-    return _ospfHelloInterval;
-  }
-
-  public int getOspfHelloMultiplier() {
-    return _ospfHelloMultiplier;
-  }
-
-  public @Nullable OspfNetworkType getOspfNetworkType() {
-    return _ospfNetworkType;
-  }
-
-  @Nullable
-  public Boolean getOspfPassive() {
-    return _ospfPassive;
-  }
-
-  public String getOspfProcess() {
-    return _ospfProcess;
-  }
-
-  public boolean getOspfShutdown() {
-    return _ospfShutdown;
-  }
-
   public String getOutgoingFilter() {
     return _outgoingFilter;
   }
@@ -514,42 +455,6 @@ public class Interface implements Serializable {
 
   public void setNativeVlan(Integer vlan) {
     _nativeVlan = vlan;
-  }
-
-  public void setOspfArea(Long ospfArea) {
-    _ospfArea = ospfArea;
-  }
-
-  public void setOspfCost(int ospfCost) {
-    _ospfCost = ospfCost;
-  }
-
-  public void setOspfDeadInterval(int seconds) {
-    _ospfDeadInterval = seconds;
-  }
-
-  public void setOspfHelloInterval(int seconds) {
-    _ospfHelloInterval = seconds;
-  }
-
-  public void setOspfHelloMultiplier(int multiplier) {
-    _ospfHelloMultiplier = multiplier;
-  }
-
-  public void setOspfNetworkType(@Nullable OspfNetworkType ospfNetworkType) {
-    _ospfNetworkType = ospfNetworkType;
-  }
-
-  public void setOspfPassive(@Nullable Boolean ospfPassive) {
-    _ospfPassive = ospfPassive;
-  }
-
-  public void setOspfProcess(@Nullable String processName) {
-    _ospfProcess = processName;
-  }
-
-  public void setOspfShutdown(boolean ospfShutdown) {
-    _ospfShutdown = ospfShutdown;
   }
 
   public void setOutgoingFilter(String accessListName) {

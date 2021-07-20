@@ -536,7 +536,6 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_igmpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_pim_neighbor_filterContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_isisContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_router_ospf_areaContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.If_ipv4_access_groupContext;
@@ -971,7 +970,7 @@ import org.batfish.representation.cisco_xr.NeighborIsAsPathSetElem;
 import org.batfish.representation.cisco_xr.NetworkObjectGroup;
 import org.batfish.representation.cisco_xr.NssaSettings;
 import org.batfish.representation.cisco_xr.OriginatesFromAsPathSetElem;
-import org.batfish.representation.cisco_xr.OspfNetwork;
+import org.batfish.representation.cisco_xr.OspfInterfaceSettings;
 import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.OspfRedistributionPolicy;
@@ -2615,32 +2614,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
     _configuration.referenceStructure(
         INTERFACE, ifaceName, OSPF_AREA_INTERFACE, ctx.iname.getStart().getLine());
-    Interface iface = _configuration.getInterfaces().get(ifaceName);
-    if (iface == null) {
-      warn(
-          ctx.iname,
-          String.format("OSPF interface %s not declared before OSPF process", ifaceName));
-      iface = addInterface(ifaceName, ctx.iname, false);
-    }
-    // might cause problems if interfaces are declared after ospf, but
-    // whatever
-    for (ConcreteInterfaceAddress address : iface.getAllAddresses()) {
-      Prefix prefix = address.getPrefix();
-      OspfNetwork network = new OspfNetwork(prefix, _currentOspfArea);
-      _currentOspfProcess.getNetworks().add(network);
-    }
-    iface.setOspfArea(_currentOspfArea);
-    iface.setOspfProcess(_currentOspfProcess.getName());
-    _currentOspfInterface = iface.getName();
+    _currentOspfProcess
+        .getInterfaceSettings()
+        .computeIfAbsent(_currentOspfArea, k -> new TreeMap<>())
+        .computeIfAbsent(ifaceName, k -> new OspfInterfaceSettings());
+    _currentOspfInterface = ifaceName;
   }
 
   @Override
   public void exitRoi_network(Roi_networkContext ctx) {
-    Interface iface = _configuration.getInterfaces().get(_currentOspfInterface);
-
-    // Guaranteed by roa_interface, should be created if it doesn't exist
-    assert iface != null;
-    iface.setOspfNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
+    OspfInterfaceSettings iface =
+        _currentOspfProcess.getInterfaceSettings().get(_currentOspfArea).get(_currentOspfInterface);
+    iface.setNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
   }
 
   @Override
@@ -4239,22 +4224,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   public void exitIf_ip_router_isis(If_ip_router_isisContext ctx) {
     for (Interface iface : _currentInterfaces) {
       iface.setIsisInterfaceMode(IsisInterfaceMode.ACTIVE);
-    }
-  }
-
-  @Override
-  public void exitIf_ip_router_ospf_area(If_ip_router_ospf_areaContext ctx) {
-    long area;
-    if (ctx.area_dec != null) {
-      area = toInteger(ctx.area_dec);
-    } else {
-      assert ctx.area_ip != null;
-      area = toIp(ctx.area_ip).asLong();
-    }
-    String ospfProcessName = ctx.procname.getText();
-    for (Interface iface : _currentInterfaces) {
-      iface.setOspfArea(area);
-      iface.setOspfProcess(ospfProcessName);
     }
   }
 
@@ -6261,9 +6230,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRoi_cost(Roi_costContext ctx) {
-    Interface iface = _configuration.getInterfaces().get(_currentOspfInterface);
+    OspfInterfaceSettings iface =
+        _currentOspfProcess.getInterfaceSettings().get(_currentOspfArea).get(_currentOspfInterface);
     int cost = toInteger(ctx.cost);
-    iface.setOspfCost(cost);
+    iface.setCost(cost);
   }
 
   @Override

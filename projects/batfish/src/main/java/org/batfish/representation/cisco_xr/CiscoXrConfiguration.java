@@ -54,7 +54,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -136,7 +135,6 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
-import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
@@ -1075,42 +1073,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private static final Pattern INTERFACE_WITH_SUBINTERFACE = Pattern.compile("^(.*)\\.(\\d+)$");
 
-  /**
-   * Get the {@link OspfNetwork} in the specified {@link OspfProcess} containing the specified
-   * {@link Interface}'s address
-   *
-   * <p>Returns {@code null} if the interface address is {@code null} or the interface address does
-   * not overlap with any {@link OspfNetwork} in the specified {@link OspfProcess}
-   */
-  private static @Nullable OspfNetwork getOspfNetworkForInterface(
-      Interface iface, OspfProcess process) {
-    ConcreteInterfaceAddress interfaceAddress = iface.getAddress();
-    if (interfaceAddress == null) {
-      // Iface has no IP address / isn't associated with a network in this OSPF process
-      return null;
-    }
-
-    // Sort networks with longer prefixes first, then lower start IPs and areas
-    SortedSet<OspfNetwork> networks =
-        ImmutableSortedSet.copyOf(
-            Comparator.<OspfNetwork>comparingInt(n -> n.getPrefix().getPrefixLength())
-                .reversed()
-                .thenComparing(n -> n.getPrefix().getStartIp())
-                .thenComparingLong(OspfNetwork::getArea),
-            process.getNetworks());
-    for (OspfNetwork network : networks) {
-      Prefix networkPrefix = network.getPrefix();
-      Ip networkAddress = networkPrefix.getStartIp();
-      Ip maskedInterfaceAddress =
-          interfaceAddress.getIp().getNetworkAddress(networkPrefix.getPrefixLength());
-      if (maskedInterfaceAddress.equals(networkAddress)) {
-        // Found a longest prefix match, so found the network in this OSPF process for the iface
-        return network;
-      }
-    }
-    return null;
-  }
-
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
@@ -1429,37 +1391,22 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     // Set RFC 1583 compatibility
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
 
-    for (Entry<String, org.batfish.datamodel.Interface> e :
-        c.getAllInterfaces(vrfName).entrySet()) {
-      org.batfish.datamodel.Interface iface = e.getValue();
-      /*
-       * Filter out interfaces that do not belong to this process, however if the process name is missing,
-       * proceed down to inference based on network addresses.
-       */
-      Interface vsIface = _interfaces.get(iface.getName());
-      if (vsIface.getOspfProcess() != null && !vsIface.getOspfProcess().equals(proc.getName())) {
-        continue;
-      }
-      OspfNetwork network = getOspfNetworkForInterface(vsIface, proc);
-      if (vsIface.getOspfProcess() == null && network == null) {
-        // Interface is not in an OspfNetwork on this process
-        continue;
-      }
-
-      String ifaceName = e.getKey();
-      Long areaNum = vsIface.getOspfArea();
-      // OSPF area number was not configured on the interface itself, so get from OspfNetwork
-      if (areaNum == null) {
-        if (network == null) {
+    for (Entry<Long, Map<String, OspfInterfaceSettings>> e :
+        proc.getInterfaceSettings().entrySet()) {
+      long areaNum = e.getKey();
+      for (Entry<String, OspfInterfaceSettings> e2 : e.getValue().entrySet()) {
+        String ifaceName = e2.getKey();
+        org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
+        if (iface == null) {
+          // No need to file warning, there will be an undefined reference to the interface
           continue;
         }
-        areaNum = network.getArea();
+        areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
+        ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
+            areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
+        newAreaInterfacesBuilder.add(ifaceName);
+        finalizeInterfaceOspfSettings(iface, proc, areaNum, vrfName, c);
       }
-      areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
-      ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
-          areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
-      newAreaInterfacesBuilder.add(ifaceName);
-      finalizeInterfaceOspfSettings(iface, vsIface, proc, areaNum, vrfName, c);
     }
     areaInterfacesBuilders.forEach(
         (areaNum, interfacesBuilder) ->
@@ -1592,49 +1539,50 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
   /** Setup OSPF settings on specified VI interface. */
   private void finalizeInterfaceOspfSettings(
       org.batfish.datamodel.Interface iface,
-      Interface vsIface,
-      @Nullable OspfProcess proc,
-      @Nullable Long areaNum,
+      OspfProcess proc,
+      long areaNum,
       String vrfName,
       Configuration c) {
-    String ifaceName = vsIface.getName();
-    OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder().setPassive(false);
-    if (proc != null) {
-      ospfSettings.setProcess(proc.getName());
-      if (firstNonNull(
-          vsIface.getOspfPassive(),
-          proc.getPassiveInterfaces().contains(ifaceName)
-              || (proc.getPassiveInterfaceDefault()
-                  ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
-        proc.getPassiveInterfaces().add(ifaceName);
-        ospfSettings.setPassive(true);
-      }
-      Optional.ofNullable(
-              getOspfInboundDistributeListPolicy(
-                  proc.getInboundGlobalDistributeList(), vrfName, proc.getName(), c, _w))
-          .ifPresent(ospfSettings::setInboundDistributeListPolicy);
+    String ifaceName = iface.getName();
+    org.batfish.datamodel.ospf.OspfInterfaceSettings.Builder ospfSettings =
+        org.batfish.datamodel.ospf.OspfInterfaceSettings.builder().setPassive(false);
+    OspfInterfaceSettings vsOspfSettings =
+        Optional.ofNullable(proc.getInterfaceSettings().get(areaNum).get(iface.getName()))
+            .orElse(new OspfInterfaceSettings());
+    ospfSettings.setProcess(proc.getName());
+    if (firstNonNull(
+        vsOspfSettings.getPassive(),
+        proc.getPassiveInterfaces().contains(ifaceName)
+            || (proc.getPassiveInterfaceDefault()
+                ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
+      proc.getPassiveInterfaces().add(ifaceName);
+      ospfSettings.setPassive(true);
     }
-    ospfSettings.setHelloMultiplier(vsIface.getOspfHelloMultiplier());
+    Optional.ofNullable(
+            getOspfInboundDistributeListPolicy(
+                proc.getInboundGlobalDistributeList(), vrfName, proc.getName(), c, _w))
+        .ifPresent(ospfSettings::setInboundDistributeListPolicy);
 
+    ospfSettings.setHelloMultiplier(vsOspfSettings.getHelloMultiplier());
     ospfSettings.setAreaName(areaNum);
-    ospfSettings.setEnabled(proc != null && areaNum != null && !vsIface.getOspfShutdown());
+    ospfSettings.setEnabled(!vsOspfSettings.getShutdown());
 
     org.batfish.representation.cisco_xr.OspfNetworkType vsNetworkType =
-        vsIface.getOspfNetworkType();
+        vsOspfSettings.getNetworkType();
     // Use default from process if it exists and no type is already set
-    if (vsNetworkType == null && proc != null) {
+    if (vsNetworkType == null) {
       vsNetworkType = proc.getDefaultNetworkType();
     }
     org.batfish.datamodel.ospf.OspfNetworkType networkType = toOspfNetworkType(vsNetworkType, _w);
 
     ospfSettings.setNetworkType(networkType);
-    if (vsIface.getOspfCost() == null && iface.isLoopback()) {
+    if (vsOspfSettings.getCost() == null && iface.isLoopback()) {
       ospfSettings.setCost(DEFAULT_LOOPBACK_OSPF_COST);
     } else {
-      ospfSettings.setCost(vsIface.getOspfCost());
+      ospfSettings.setCost(vsOspfSettings.getCost());
     }
-    ospfSettings.setHelloInterval(toOspfHelloInterval(vsIface, networkType));
-    ospfSettings.setDeadInterval(toOspfDeadInterval(vsIface, networkType));
+    ospfSettings.setHelloInterval(toOspfHelloInterval(vsOspfSettings, networkType));
+    ospfSettings.setDeadInterval(toOspfDeadInterval(vsOspfSettings, networkType));
 
     iface.setOspfSettings(ospfSettings.build());
   }
@@ -2209,31 +2157,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           }
           // END Convert BGP process for various vendors
           ///////////////////////////////////////////////
-        });
-
-    /*
-     * Another pass over interfaces to push final settings to VI interfaces.
-     * (e.g. has OSPF settings but no associated OSPF process, common in show run all)
-     */
-    _interfaces.forEach(
-        (ifaceName, vsIface) -> {
-          org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
-          if (iface == null) {
-            // Should never get here
-            return;
-          } else if (iface.getOspfAreaName() != null) {
-            // Already configured
-            return;
-          }
-          // Not part of an OSPF area, but has settings
-          if (vsIface.getOspfArea() != null
-              || vsIface.getOspfCost() != null
-              || vsIface.getOspfPassive() != null
-              || vsIface.getOspfNetworkType() != null
-              || vsIface.getOspfDeadInterval() != null
-              || vsIface.getOspfHelloInterval() != null) {
-            finalizeInterfaceOspfSettings(iface, vsIface, null, null, iface.getVrfName(), c);
-          }
         });
 
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined

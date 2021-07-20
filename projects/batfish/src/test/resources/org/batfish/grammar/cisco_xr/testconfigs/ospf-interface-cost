@@ -7,6 +7,15 @@ interface GigabitEthernet0/0/0/1
 interface GigabitEthernet0/0/0/2
  no shutdown
 !
+interface Loopback1
+ no shutdown
+!
+interface Loopback2
+ no shutdown
+!
+interface Loopback3
+ no shutdown
+!
 router ospf 2
  router-id 10.10.10.10
  auto-cost reference-bandwidth 400000
