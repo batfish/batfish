@@ -23,6 +23,7 @@ ro_area_inner
   | roa_interface
   | roa_mpls
   | roa_network
+  | roa_nssa
   | roa_range
 ;
 
@@ -101,11 +102,11 @@ ro_auto_cost
    )? NEWLINE
 ;
 
+// Statements that can appear in router, area, or interface contexts
 ro_common
 :
    ro_authentication
-   | ro_nssa
-   | ro_rfc1583_compatibility
+   | ro_priority
    | ro_null
 ;
 
@@ -188,7 +189,7 @@ ro_maximum_paths
 
 ro_network: NETWORK ospf_network_type NEWLINE;
 
-ro_nssa
+roa_nssa
 :
    NSSA
    (
@@ -262,15 +263,6 @@ ro_null
    ) null_rest_of_line
 ;
 
-ro_rfc1583_compatibility
-:
-   NO?
-   (
-      RFC1583COMPATIBILITY
-      | COMPATIBLE RFC1583
-   ) NEWLINE
-;
-
 ro_passive_interface_default
 :
    NO? PASSIVE_INTERFACE DEFAULT NEWLINE
@@ -280,6 +272,8 @@ ro_passive_interface
 :
    NO? PASSIVE_INTERFACE i = interface_name NEWLINE
 ;
+
+ro_priority: PRIORITY uint_legacy NEWLINE;
 
 ro_redistribute
 :
@@ -342,10 +336,9 @@ roa_interface
    INTERFACE iname = interface_name NEWLINE
    (
       ro_common
-      | roi_cost
-      | roi_network
-      | roi_priority
-      | roi_passive
+      | roai_cost
+      | roai_network
+      | roai_passive
    )*
 ;
 
@@ -377,25 +370,20 @@ roa_network
    NETWORK ospf_network_type NEWLINE
 ;
 
-roi_cost
+roai_cost
 :
    COST cost = uint_legacy NEWLINE
 ;
 
-roi_network: NETWORK ospf_network_type NEWLINE;
+roai_network: NETWORK ospf_network_type NEWLINE;
 
-roi_passive
+roai_passive
 :
    PASSIVE
    (
       ENABLE
       | DISABLE
    )? NEWLINE
-;
-
-roi_priority
-:
-   PRIORITY uint_legacy NEWLINE
 ;
 
 rov3_address_family
@@ -476,7 +464,6 @@ s_router_ospf
       | ro_router_id
       | ro_summary_address
       | ro_vrf
-      | roi_priority
    )*
 ;
 

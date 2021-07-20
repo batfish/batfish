@@ -1383,9 +1383,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newProcess.setMaxMetricSummaryNetworks(proc.getMaxMetricSummaryLsa());
     }
 
-    // Set RFC 1583 compatibility
-    newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
-
     // establish areas
     ImmutableMap.Builder<Long, OspfArea> areas = ImmutableMap.builder();
     for (org.batfish.representation.cisco_xr.OspfArea area : proc.getAreas().values()) {

@@ -43,7 +43,6 @@ public class OspfProcess implements Serializable {
   private boolean _passiveInterfaceDefault;
   private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
   private double _referenceBandwidth;
-  private @Nullable Boolean _rfc1583Compatible;
   private Ip _routerId;
 
   public long getDefaultMetric(RoutingProtocol protocol) {
@@ -148,10 +147,6 @@ public class OspfProcess implements Serializable {
     return _referenceBandwidth;
   }
 
-  public @Nullable Boolean getRfc1583Compatible() {
-    return _rfc1583Compatible;
-  }
-
   public Ip getRouterId() {
     return _routerId;
   }
@@ -215,10 +210,6 @@ public class OspfProcess implements Serializable {
 
   public void setReferenceBandwidth(double referenceBandwidth) {
     _referenceBandwidth = referenceBandwidth;
-  }
-
-  public void setRfc1583Compatible(@Nullable Boolean rfc1583Compatible) {
-    _rfc1583Compatible = rfc1583Compatible;
   }
 
   public void setRouterId(Ip routerId) {

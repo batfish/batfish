@@ -750,17 +750,16 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_maximum_pathsContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passive_interface_defaultContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_rfc1583_compatibilityContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_router_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_rangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roai_costContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roai_networkContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roai_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_aclContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_costContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_networkContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Roi_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instanceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_nullContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rorri_protocolContext;
@@ -2622,7 +2621,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRoi_network(Roi_networkContext ctx) {
+  public void exitRoai_network(Roai_networkContext ctx) {
     _currentOspfInterface.setNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
   }
 
@@ -6182,11 +6181,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_rfc1583_compatibility(Ro_rfc1583_compatibilityContext ctx) {
-    _currentOspfProcess.setRfc1583Compatible(ctx.NO() == null);
-  }
-
-  @Override
   public void exitRo_router_id(Ro_router_idContext ctx) {
     Ip routerId = toIp(ctx.ip);
     _currentOspfProcess.setRouterId(routerId);
@@ -6227,12 +6221,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRoi_cost(Roi_costContext ctx) {
+  public void exitRoai_cost(Roai_costContext ctx) {
     _currentOspfInterface.setCost(toInteger(ctx.cost));
   }
 
   @Override
-  public void exitRoi_passive(Roi_passiveContext ctx) {
+  public void exitRoai_passive(Roai_passiveContext ctx) {
     if (ctx.ENABLE() != null) {
       _currentOspfInterface.setPassive(true);
     }

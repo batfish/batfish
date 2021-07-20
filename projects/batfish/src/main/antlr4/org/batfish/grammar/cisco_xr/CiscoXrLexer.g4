@@ -4495,10 +4495,6 @@ RF_SWITCH: 'rf-switch';
 
 RFC_3576_SERVER: 'rfc-3576-server';
 
-RFC1583: 'rfc1583';
-
-RFC1583COMPATIBILITY: 'rfc1583compatibility';
-
 RIB: 'rib' -> pushMode(M_Word);
 
 RIB_HAS_ROUTE: 'rib-has-route';
