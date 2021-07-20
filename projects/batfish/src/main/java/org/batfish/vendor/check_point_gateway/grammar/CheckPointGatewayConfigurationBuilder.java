@@ -180,16 +180,7 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
       // Guaranteed by _currentAddedBondingGroupIsValid
       assert numOpt.isPresent();
       int num = numOpt.get();
-      _configuration
-          .getInterfaces()
-          .computeIfAbsent(
-              getBondInterfaceName(num),
-              name -> {
-                // Bond interfaces are active by default
-                Interface iface = new Interface(name);
-                iface.setState(true);
-                return iface;
-              });
+      _configuration.getInterfaces().computeIfAbsent(getBondInterfaceName(num), Interface::new);
 
       _configuration.getBondingGroups().putIfAbsent(num, _currentBondingGroup);
     }
@@ -705,8 +696,8 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
    *
    * <p>This is needed because Check Point gateways will print output for {@code show configuration}
    * where bonding group member interfaces are referenced before their definition. This syntax could
-   * not be entered on a device CLI in the order printed, so we need to handle parsing of this
-   * slightly differently than "reconfiguration" lines.
+   * not be entered on a device CLI in the order printed. We need to handle parsing of this slightly
+   * differently than "reconfiguration" lines, which cannot reference undefined interfaces.
    */
   private boolean _firstInterfaceHasBeenConfigured;
 

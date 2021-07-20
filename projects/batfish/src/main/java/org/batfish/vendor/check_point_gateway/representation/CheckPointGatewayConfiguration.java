@@ -14,7 +14,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -173,40 +172,43 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       newIface.setChannelGroup(parentBondingGroup.toString());
       Interface parentBondInterface = _interfaces.get(getBondInterfaceName(parentBondingGroup));
       assert parentBondInterface != null;
-      // Member interface inherits some configuration from parent bonding group
-      newIface.setMtu(parentBondInterface.getMtuEffective());
+      newIface
+          .setChannelGroup(parentBondingGroup.toString())
+          // Member interface inherits some configuration from parent bonding group
+          .setMtu(parentBondInterface.getMtuEffective());
     } else {
       newIface
           .setAddress(iface.getAddress())
           .setActive(iface.getState())
           .setMtu(iface.getMtuEffective());
     }
-    parentBondingGroupOpt.ifPresent(pbg -> newIface.setChannelGroup(pbg.toString()));
 
-    BondingGroup bondingGroup = getBondingGroup(ifaceName);
-    if (bondingGroup != null) {
-      Set<String> members = getValidMembers(bondingGroup);
-      newIface.setChannelGroupMembers(members);
-      newIface.setDependencies(
-          members.stream()
-              .map(member -> new Dependency(member, DependencyType.AGGREGATE))
-              .collect(ImmutableSet.toImmutableSet()));
-    }
+    getBondingGroup(ifaceName)
+        .ifPresent(
+            bg -> {
+              Set<String> members = getValidMembers(bg);
+              newIface.setChannelGroupMembers(members);
+              newIface.setDependencies(
+                  members.stream()
+                      .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+                      .collect(ImmutableSet.toImmutableSet()));
+            });
     return newIface.build();
   }
 
   /**
-   * Get the {@link BondingGroup} corresponding to the specified bond interface. Returns {@code
-   * null} if the interface is not a bond interface or if the bonding group does not exist.
+   * Get the {@link BondingGroup} corresponding to the specified bond interface. Returns {@link
+   * Optional#empty} if the interface is not a bond interface or if the bonding group does not
+   * exist.
    */
-  @Nullable
-  private BondingGroup getBondingGroup(String ifaceName) {
+  @Nonnull
+  private Optional<BondingGroup> getBondingGroup(String ifaceName) {
     Pattern p = Pattern.compile("bond(\\d+)");
     Matcher res = p.matcher(ifaceName);
     if (res.matches()) {
-      return _bondingGroups.get(Integer.valueOf(res.group(1)));
+      return Optional.ofNullable(_bondingGroups.get(Integer.valueOf(res.group(1))));
     }
-    return null;
+    return Optional.empty();
   }
 
   /**
