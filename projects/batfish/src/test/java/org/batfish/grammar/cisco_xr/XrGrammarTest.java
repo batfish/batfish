@@ -242,6 +242,7 @@ import org.batfish.representation.cisco_xr.LiteralUint16Range;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.NeighborIsAsPathSetElem;
 import org.batfish.representation.cisco_xr.OriginatesFromAsPathSetElem;
+import org.batfish.representation.cisco_xr.OspfArea;
 import org.batfish.representation.cisco_xr.OspfInterfaceSettings;
 import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
@@ -3179,10 +3180,9 @@ public final class XrGrammarTest {
     String hostname = "ospf-network-type";
     CiscoXrConfiguration c = parseVendorConfig(hostname);
     OspfProcess ospfProcess = c.getDefaultVrf().getOspfProcesses().get("65100");
-    Map<Long, Map<String, OspfInterfaceSettings>> ospfSettingsByArea =
-        ospfProcess.getInterfaceSettings();
-    assertThat(ospfSettingsByArea, hasKeys(0L));
-    Map<String, OspfInterfaceSettings> area0Settings = ospfSettingsByArea.get(0L);
+    Map<Long, OspfArea> areas = ospfProcess.getAreas();
+    assertThat(areas, hasKeys(0L));
+    Map<String, OspfInterfaceSettings> area0Settings = areas.get(0L).getInterfaceSettings();
 
     assertThat(
         area0Settings.keySet(),
@@ -3216,10 +3216,9 @@ public final class XrGrammarTest {
     String hostname = "ospf-network-type-override";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
     OspfProcess ospfProcess = vc.getDefaultVrf().getOspfProcesses().get("65100");
-    Map<Long, Map<String, OspfInterfaceSettings>> ospfSettingsByArea =
-        ospfProcess.getInterfaceSettings();
 
-    Map<String, OspfInterfaceSettings> area0Settings = ospfSettingsByArea.get(0L);
+    Map<String, OspfInterfaceSettings> area0Settings =
+        ospfProcess.getAreas().get(0L).getInterfaceSettings();
     assertThat(
         area0Settings.keySet(),
         containsInAnyOrder("GigabitEthernet0/0/0/1", "GigabitEthernet0/0/0/2"));

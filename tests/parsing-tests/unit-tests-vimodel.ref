@@ -53196,6 +53196,12 @@
                       }
                     },
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
+                  },
+                  "60" : {
+                    "injectDefaultRoute" : true,
+                    "metricOfDefaultRoute" : 0,
+                    "name" : 60,
+                    "stubType" : "NONE"
                   }
                 },
                 "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",

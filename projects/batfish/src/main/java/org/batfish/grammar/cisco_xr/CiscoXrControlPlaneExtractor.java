@@ -211,7 +211,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.Stack;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -970,6 +969,7 @@ import org.batfish.representation.cisco_xr.NeighborIsAsPathSetElem;
 import org.batfish.representation.cisco_xr.NetworkObjectGroup;
 import org.batfish.representation.cisco_xr.NssaSettings;
 import org.batfish.representation.cisco_xr.OriginatesFromAsPathSetElem;
+import org.batfish.representation.cisco_xr.OspfArea;
 import org.batfish.representation.cisco_xr.OspfInterfaceSettings;
 import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
@@ -1296,9 +1296,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   private NamedBgpPeerGroup _currentNamedPeerGroup;
 
-  private Long _currentOspfArea;
+  private OspfArea _currentOspfArea;
 
-  private String _currentOspfInterface;
+  private OspfInterfaceSettings _currentOspfInterface;
 
   private OspfProcess _currentOspfProcess;
 
@@ -2589,7 +2589,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void enterRo_area(Ro_areaContext ctx) {
-    _currentOspfArea = toLong(ctx.area);
+    long areaNum = toLong(ctx.area);
+    _currentOspfArea = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
   }
 
   @Override
@@ -2614,18 +2615,15 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
     _configuration.referenceStructure(
         INTERFACE, ifaceName, OSPF_AREA_INTERFACE, ctx.iname.getStart().getLine());
-    _currentOspfProcess
-        .getInterfaceSettings()
-        .computeIfAbsent(_currentOspfArea, k -> new TreeMap<>())
-        .computeIfAbsent(ifaceName, k -> new OspfInterfaceSettings());
-    _currentOspfInterface = ifaceName;
+    _currentOspfInterface =
+        _currentOspfArea
+            .getInterfaceSettings()
+            .computeIfAbsent(ifaceName, k -> new OspfInterfaceSettings());
   }
 
   @Override
   public void exitRoi_network(Roi_networkContext ctx) {
-    OspfInterfaceSettings iface =
-        _currentOspfProcess.getInterfaceSettings().get(_currentOspfArea).get(_currentOspfInterface);
-    iface.setNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
+    _currentOspfInterface.setNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
   }
 
   @Override
@@ -5971,9 +5969,9 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
-    OspfProcess proc = _currentOspfProcess;
-    long area = toLong(ctx.area);
-    NssaSettings settings = proc.getNssas().computeIfAbsent(area, a -> new NssaSettings());
+    long areaNum = toLong(ctx.area);
+    OspfArea area = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
+    NssaSettings settings = area.getOrCreateNssaSettings();
     if (ctx.default_information_originate != null) {
       settings.setDefaultInformationOriginate(true);
     }
@@ -5988,6 +5986,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitRo_area_range(CiscoXrParser.Ro_area_rangeContext ctx) {
     long areaNum = toLong(ctx.area);
+    OspfArea area = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
     Prefix prefix;
     if (ctx.area_prefix != null) {
       prefix = Prefix.parse(ctx.area_prefix.getText());
@@ -5997,22 +5996,21 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     boolean advertise = ctx.NOT_ADVERTISE() == null;
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
 
-    Map<Prefix, OspfAreaSummary> area =
-        _currentOspfProcess.getSummaries().computeIfAbsent(areaNum, k -> new TreeMap<>());
-    area.put(
-        prefix,
-        new OspfAreaSummary(
-            advertise
-                ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
-                : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
-            cost));
+    area.getSummaries()
+        .put(
+            prefix,
+            new OspfAreaSummary(
+                advertise
+                    ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
+                    : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
+                cost));
   }
 
   @Override
   public void exitRo_area_stub(Ro_area_stubContext ctx) {
-    OspfProcess proc = _currentOspfProcess;
-    long area = toLong(ctx.area);
-    StubSettings settings = proc.getStubs().computeIfAbsent(area, a -> new StubSettings());
+    long areaNum = toLong(ctx.area);
+    OspfArea area = _currentOspfProcess.getAreas().computeIfAbsent(areaNum, OspfArea::new);
+    StubSettings settings = area.getOrCreateStubSettings();
     if (ctx.no_summary != null) {
       settings.setNoSummary(true);
     }
@@ -6217,29 +6215,26 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     boolean advertise = ctx.NOT_ADVERTISE() == null;
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
 
-    Map<Prefix, OspfAreaSummary> area =
-        _currentOspfProcess.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
-    area.put(
-        prefix,
-        new OspfAreaSummary(
-            advertise
-                ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
-                : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
-            cost));
+    _currentOspfArea
+        .getSummaries()
+        .put(
+            prefix,
+            new OspfAreaSummary(
+                advertise
+                    ? SummaryRouteBehavior.ADVERTISE_AND_INSTALL_DISCARD
+                    : SummaryRouteBehavior.NOT_ADVERTISE_AND_NO_DISCARD,
+                cost));
   }
 
   @Override
   public void exitRoi_cost(Roi_costContext ctx) {
-    OspfInterfaceSettings iface =
-        _currentOspfProcess.getInterfaceSettings().get(_currentOspfArea).get(_currentOspfInterface);
-    int cost = toInteger(ctx.cost);
-    iface.setCost(cost);
+    _currentOspfInterface.setCost(toInteger(ctx.cost));
   }
 
   @Override
   public void exitRoi_passive(Roi_passiveContext ctx) {
     if (ctx.ENABLE() != null) {
-      _currentOspfProcess.getPassiveInterfaces().add(_currentOspfInterface);
+      _currentOspfInterface.setPassive(true);
     }
   }
 

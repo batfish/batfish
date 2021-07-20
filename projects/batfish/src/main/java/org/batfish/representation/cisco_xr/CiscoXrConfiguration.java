@@ -2,7 +2,6 @@ package org.batfish.representation.cisco_xr;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
@@ -1384,88 +1383,69 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newProcess.setMaxMetricSummaryNetworks(proc.getMaxMetricSummaryLsa());
     }
 
-    // establish areas and associated interfaces
-    Map<Long, OspfArea.Builder> areas = new HashMap<>();
-    Map<Long, ImmutableSortedSet.Builder<String>> areaInterfacesBuilders = new HashMap<>();
-
     // Set RFC 1583 compatibility
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
 
-    for (Entry<Long, Map<String, OspfInterfaceSettings>> e :
-        proc.getInterfaceSettings().entrySet()) {
-      long areaNum = e.getKey();
-      for (Entry<String, OspfInterfaceSettings> e2 : e.getValue().entrySet()) {
-        String ifaceName = e2.getKey();
+    // establish areas
+    ImmutableMap.Builder<Long, OspfArea> areas = ImmutableMap.builder();
+    for (org.batfish.representation.cisco_xr.OspfArea area : proc.getAreas().values()) {
+      long areaNum = area.getAreaNum();
+      OspfArea.Builder viAreaBuilder = OspfArea.builder().setNumber(areaNum);
+
+      // Fill in OSPF settings for interfaces in this area
+      ImmutableSortedSet.Builder<String> areaInterfacesBuilder = ImmutableSortedSet.naturalOrder();
+      for (Entry<String, OspfInterfaceSettings> e : area.getInterfaceSettings().entrySet()) {
+        String ifaceName = e.getKey();
         org.batfish.datamodel.Interface iface = c.getAllInterfaces().get(ifaceName);
         if (iface == null) {
           // No need to file warning, there will be an undefined reference to the interface
           continue;
         }
-        areas.computeIfAbsent(areaNum, areaNumber -> OspfArea.builder().setNumber(areaNumber));
-        ImmutableSortedSet.Builder<String> newAreaInterfacesBuilder =
-            areaInterfacesBuilders.computeIfAbsent(areaNum, n -> ImmutableSortedSet.naturalOrder());
-        newAreaInterfacesBuilder.add(ifaceName);
-        finalizeInterfaceOspfSettings(iface, proc, areaNum, vrfName, c);
+        areaInterfacesBuilder.add(ifaceName);
+        finalizeInterfaceOspfSettings(iface, proc, areaNum, e.getValue(), vrfName, c);
       }
-    }
-    areaInterfacesBuilders.forEach(
-        (areaNum, interfacesBuilder) ->
-            areas.get(areaNum).addInterfaces(interfacesBuilder.build()));
-    proc.getNssas()
-        .forEach(
-            (areaId, nssaSettings) -> {
-              if (!areas.containsKey(areaId)) {
-                return;
-              }
-              areas.get(areaId).setStubType(StubType.NSSA);
-              areas.get(areaId).setNssaSettings(toNssaSettings(nssaSettings));
-            });
+      viAreaBuilder.setInterfaces(areaInterfacesBuilder.build());
 
-    proc.getStubs()
-        .forEach(
-            (areaId, stubSettings) -> {
-              if (!areas.containsKey(areaId)) {
-                return;
-              }
-              areas.get(areaId).setStubType(StubType.STUB);
-              areas.get(areaId).setStubSettings(toStubSettings(stubSettings));
-            });
-
-    // create summarization filters for inter-area routes
-    for (Entry<Long, Map<Prefix, OspfAreaSummary>> e1 : proc.getSummaries().entrySet()) {
-      long areaLong = e1.getKey();
-      Map<Prefix, OspfAreaSummary> summaries = e1.getValue();
-      OspfArea.Builder area = areas.get(areaLong);
-      String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + areaLong + "~";
-      RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
-      c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
-      if (area == null) {
-        area = OspfArea.builder().setNumber(areaLong);
-        areas.put(areaLong, area);
+      // Process stub type settings
+      if (area.getNssaSettings() != null) {
+        viAreaBuilder.setStubType(StubType.NSSA);
+        viAreaBuilder.setNssaSettings(toNssaSettings(area.getNssaSettings()));
+      } else if (area.getStubSettings() != null) {
+        viAreaBuilder.setStubType(StubType.STUB);
+        viAreaBuilder.setStubSettings(toStubSettings(area.getStubSettings()));
       }
-      area.setSummaryFilter(summaryFilterName);
-      for (Entry<Prefix, OspfAreaSummary> e2 : summaries.entrySet()) {
-        Prefix prefix = e2.getKey();
-        OspfAreaSummary summary = e2.getValue();
-        int prefixLength = prefix.getPrefixLength();
-        int filterMinPrefixLength =
-            summary.isAdvertised()
-                ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
-                : prefixLength;
+
+      // Populate VI area summaries and create summary filter
+      if (!area.getSummaries().isEmpty()) {
+        String summaryFilterName = "~OSPF_SUMMARY_FILTER:" + vrfName + ":" + areaNum + "~";
+        RouteFilterList summaryFilter = new RouteFilterList(summaryFilterName);
+        c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
+        viAreaBuilder.setSummaryFilter(summaryFilterName);
+        for (Entry<Prefix, OspfAreaSummary> e : area.getSummaries().entrySet()) {
+          Prefix prefix = e.getKey();
+          OspfAreaSummary summary = e.getValue();
+          int prefixLength = prefix.getPrefixLength();
+          int filterMinPrefixLength =
+              summary.isAdvertised()
+                  ? Math.min(Prefix.MAX_PREFIX_LENGTH, prefixLength + 1)
+                  : prefixLength;
+          summaryFilter.addLine(
+              new RouteFilterLine(
+                  LineAction.DENY,
+                  IpWildcard.create(prefix),
+                  new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
+        }
+        viAreaBuilder.addSummaries(ImmutableSortedMap.copyOf(area.getSummaries()));
         summaryFilter.addLine(
             new RouteFilterLine(
-                LineAction.DENY,
-                IpWildcard.create(prefix),
-                new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
+                LineAction.PERMIT,
+                IpWildcard.create(Prefix.ZERO),
+                new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
       }
-      area.addSummaries(ImmutableSortedMap.copyOf(summaries));
-      summaryFilter.addLine(
-          new RouteFilterLine(
-              LineAction.PERMIT,
-              IpWildcard.create(Prefix.ZERO),
-              new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+
+      areas.put(areaNum, viAreaBuilder.build());
     }
-    newProcess.setAreas(toImmutableSortedMap(areas, Entry::getKey, e -> e.getValue().build()));
+    newProcess.setAreas(areas.build());
 
     String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
@@ -1541,21 +1521,16 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Interface iface,
       OspfProcess proc,
       long areaNum,
+      OspfInterfaceSettings vsOspfSettings,
       String vrfName,
       Configuration c) {
     String ifaceName = iface.getName();
     org.batfish.datamodel.ospf.OspfInterfaceSettings.Builder ospfSettings =
         org.batfish.datamodel.ospf.OspfInterfaceSettings.builder().setPassive(false);
-    OspfInterfaceSettings vsOspfSettings =
-        Optional.ofNullable(proc.getInterfaceSettings().get(areaNum).get(iface.getName()))
-            .orElse(new OspfInterfaceSettings());
     ospfSettings.setProcess(proc.getName());
     if (firstNonNull(
         vsOspfSettings.getPassive(),
-        proc.getPassiveInterfaces().contains(ifaceName)
-            || (proc.getPassiveInterfaceDefault()
-                ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
-      proc.getPassiveInterfaces().add(ifaceName);
+        (proc.getPassiveInterfaceDefault() ^ proc.getNonDefaultInterfaces().contains(ifaceName)))) {
       ospfSettings.setPassive(true);
     }
     Optional.ofNullable(
