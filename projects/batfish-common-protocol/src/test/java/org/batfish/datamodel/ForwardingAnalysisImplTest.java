@@ -1275,9 +1275,7 @@ public class ForwardingAnalysisImplTest {
           ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE));
     }
 
-    Map<String, Map<String, Map<String, IpSpace>>> arpFalse =
-        ImmutableMap.of(
-            CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
+    Map<String, IpSpace> arpFalse = ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace());
 
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 

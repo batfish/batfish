@@ -40,9 +40,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
-  // node -> vrf -> interface -> destination IPs for which arp will fail
-  private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalse;
-
   // node -> vrf -> nextVrf -> IPs that vrf delegates to nextVrf
   private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIpsByNodeVrf;
 
@@ -160,7 +157,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
       arpFalseDestIp =
           computeArpFalseDestIp(matchingIps, routesWhereDstIpCanBeArpIp, someoneReplies);
-      _arpFalse = union(arpFalseDestIp, arpFalseNextHopIp);
 
       // mapping: hostname -> interface -> ips on which we should assume some external device (not
       // modeled in batfish) is listening, and would reply to ARP in the real world.
@@ -252,10 +248,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                         Map<Edge, IpSpace> arpTrueEdge =
                             computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
+                        Map<String, IpSpace> arpFalse =
+                            union1(
+                                arpFalseDestIp.get(node).get(vrf),
+                                arpFalseNextHopIp.get(node).get(vrf));
+
                         // _arpFalse may include interfaces in other VRFs that we forward out
                         // through due to VRF leaking
-                        Set<String> ifaces =
-                            Sets.union(accepted.keySet(), _arpFalse.get(node).get(vrf).keySet());
+                        Set<String> ifaces = Sets.union(accepted.keySet(), arpFalse.keySet());
 
                         Map<String, InterfaceForwardingBehavior> interfaceForwardingBehavior =
                             toImmutableMap(
@@ -298,7 +298,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                           node,
                                           vrf,
                                           iface,
-                                          _arpFalse,
+                                          arpFalse,
                                           interfacesWithMissingDevices,
                                           arpFalseDestIp,
                                           interfaceExternalArpIps,
@@ -1048,6 +1048,20 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     }
   }
 
+  static Map<String, IpSpace> union1(
+      Map<String, IpSpace> ipSpaces1, Map<String, IpSpace> ipSpaces2) {
+    checkArgument(
+        ipSpaces1.keySet().equals(ipSpaces2.keySet()),
+        "Can't union with different nodes: %s and %s",
+        ipSpaces1.keySet(),
+        ipSpaces2.keySet());
+
+    return toImmutableMap(
+        ipSpaces1,
+        Entry::getKey, /* hostname */
+        nodeEntry -> AclIpSpace.union(nodeEntry.getValue(), ipSpaces2.get(nodeEntry.getKey())));
+  }
+
   static Map<String, Map<String, Map<String, IpSpace>>> union(
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2) {
@@ -1233,7 +1247,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       String node,
       String vrf,
       String iface,
-      Map<String, Map<String, Map<String, IpSpace>>> arpFalse,
+      Map<String, IpSpace> arpFalse,
       Map<String, Set<String>> interfacesWithMissingDevices,
       Map<String, Map<String, Map<String, IpSpace>>> arpFalseDestIp,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
@@ -1243,7 +1257,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             arpFalseDestIp.get(node).get(vrf).get(iface),
             interfaceExternalArpIps.get(node).get(iface),
             ownedIps)
-        : arpFalse.get(node).get(vrf).get(iface);
+        : arpFalse.get(iface);
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
@@ -1373,7 +1387,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     Map<String, Map<String, Map<String, IpSpace>>> union2 = union(union1, getDeliveredToSubnet());
     Map<String, Map<String, Map<String, IpSpace>>> union3 = union(union2, getExitsNetwork());
     assertDeepIpSpaceEquality(unionOthers, union3, ipSpaceToBDD);
-    assertDeepIpSpaceEquality(_arpFalse, unionOthers, ipSpaceToBDD);
+    // TODO move this somewhere we can do it
+    //    assertDeepIpSpaceEquality(_arpFalse, unionOthers, ipSpaceToBDD);
 
     return true;
   }
