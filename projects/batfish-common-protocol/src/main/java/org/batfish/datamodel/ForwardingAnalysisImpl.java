@@ -42,9 +42,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   // node -> vrf -> nextVrf -> IPs that vrf delegates to nextVrf
   private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIpsByNodeVrf;
 
-  // node -> vrf -> destination IPs that will be null routes
-  private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
-
   // node -> vrf -> destination IPs that can be routed
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
@@ -82,7 +79,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // Set of routes that forward out each interface
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
           computeRoutesWithNextHop(fibs);
-      _nullRoutedIps = computeNullRoutedIps(matchingIps, fibs);
       _nextVrfIpsByNodeVrf = computeNextVrfIpsByNodeVrf(matchingIps, fibs);
       _routableIps = computeRoutableIps(fibs);
 
@@ -322,11 +318,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                       .build();
                                 });
 
+                        // destination IPs that will be null routes
+                        IpSpace nullRoutedIps = computeNullRoutedIps(node, vrf, matchingIps, fibs);
+
                         return VrfForwardingBehavior.builder()
                             .setArpTrueEdge(arpTrueEdge)
                             .setInterfaceForwardingBehavior(interfaceForwardingBehavior)
                             .setNextVrf(_nextVrfIpsByNodeVrf.get(node).get(vrf))
-                            .setNullRoutedIps(_nullRoutedIps.get(node).get(vrf))
+                            .setNullRoutedIps(nullRoutedIps)
                             .setRoutableIps(_routableIps.get(node).get(vrf))
                             .build();
                       }));
@@ -566,40 +565,19 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeNullRoutedIps(
+  static IpSpace computeNullRoutedIps(
+      String node,
+      String vrf,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Fib>> fibs) {
-    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNullRoutedIps").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return fibs.entrySet().stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey /* hostname */,
-                  fibsByHostnameEntry -> {
-                    String hostname = fibsByHostnameEntry.getKey();
-                    return fibsByHostnameEntry.getValue().entrySet().stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                fibsByVrfEntry -> {
-                                  String vrf = fibsByVrfEntry.getKey();
-                                  Fib fib = fibsByVrfEntry.getValue();
-                                  Map<Prefix, IpSpace> vrfMatchingIps =
-                                      matchingIps.get(hostname).get(vrf);
-                                  Set<AbstractRoute> nullRoutes =
-                                      fib.allEntries().stream()
-                                          .filter(
-                                              fibEntry ->
-                                                  fibEntry.getAction() instanceof FibNullRoute)
-                                          .map(FibEntry::getTopLevelRoute)
-                                          .collect(ImmutableSet.toImmutableSet());
-                                  return computeRouteMatchConditions(nullRoutes, vrfMatchingIps);
-                                }));
-                  }));
-    } finally {
-      span.finish();
-    }
+    Fib fib = fibs.get(node).get(vrf);
+    Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(node).get(vrf);
+    Set<AbstractRoute> nullRoutes =
+        fib.allEntries().stream()
+            .filter(fibEntry -> fibEntry.getAction() instanceof FibNullRoute)
+            .map(FibEntry::getTopLevelRoute)
+            .collect(ImmutableSet.toImmutableSet());
+    return computeRouteMatchConditions(nullRoutes, vrfMatchingIps);
   }
 
   @VisibleForTesting

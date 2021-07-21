@@ -753,16 +753,14 @@ public class ForwardingAnalysisImplTest {
                                         otherRoute.getNextHopInterface()),
                                     ImmutableList.of(otherRoute)))))
                     .build()));
-    Map<String, Map<String, IpSpace>> result = computeNullRoutedIps(computeMatchingIps(fibs), fibs);
+    IpSpace result = computeNullRoutedIps(c1, v1, computeMatchingIps(fibs), fibs);
 
     /* IPs for the null route should appear */
-    assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), containsIp(P1.getStartIp()))));
-    assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), containsIp(P1.getEndIp()))));
+    assertThat(result, containsIp(P1.getStartIp()));
+    assertThat(result, containsIp(P1.getEndIp()));
     /* IPs for the non-null route should not appear */
-    assertThat(
-        result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), not(containsIp(P2.getStartIp())))));
-    assertThat(
-        result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), not(containsIp(P2.getEndIp())))));
+    assertThat(result, not(containsIp(P2.getStartIp())));
+    assertThat(result, not(containsIp(P2.getEndIp())));
   }
 
   @Test
