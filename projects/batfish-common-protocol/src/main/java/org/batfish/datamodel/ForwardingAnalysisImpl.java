@@ -139,12 +139,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
               routesWithNextHopIpArpFalse,
               route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
-      /* node -> vrf -> interface -> dst ips for which that vrf forwards out that interface,
-       * ARPing for a next-hop IP and receiving no reply
-       */
-      Map<String, Map<String, Map<String, IpSpace>>> arpFalseNextHopIp =
-          computeArpFalseNextHopIp(matchingIps, routesWithNextHopIpArpFalse);
-
       /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface,
        * ARPing for the destination IP
        */
@@ -248,8 +242,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                             computeArpFalseDestIp(
                                 node, vrf, matchingIps, routesWhereDstIpCanBeArpIp, someoneReplies);
 
-                        Map<String, IpSpace> arpFalse =
-                            union1(arpFalseDestIp, arpFalseNextHopIp.get(node).get(vrf));
+                        /* interface -> dst ips for which this vrf forwards out that interface,
+                         * ARPing for a next-hop IP and receiving no reply
+                         */
+                        Map<String, IpSpace> arpFalseNextHopIp =
+                            computeArpFalseNextHopIp(
+                                node, vrf, matchingIps, routesWithNextHopIpArpFalse);
+
+                        Map<String, IpSpace> arpFalse = union1(arpFalseDestIp, arpFalseNextHopIp);
 
                         // _arpFalse may include interfaces in other VRFs that we forward out
                         // through due to VRF leaking
@@ -558,46 +558,21 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, Map<String, IpSpace>>> computeArpFalseNextHopIp(
+  static Map<String, IpSpace> computeArpFalseNextHopIp(
+      String node,
+      String vrf,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse) {
-    Span span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpFalseNextHopIp").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return routesWithNextHopIpArpFalse.entrySet().stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey /* hostname */,
-                  routesWithNextHopIpArpFalseByHostnameEntry -> {
-                    String hostname = routesWithNextHopIpArpFalseByHostnameEntry.getKey();
-                    return routesWithNextHopIpArpFalseByHostnameEntry.getValue().entrySet().stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                routesWithNextHopIpArpFalseByVrfEntry -> {
-                                  String vrf = routesWithNextHopIpArpFalseByVrfEntry.getKey();
-                                  return routesWithNextHopIpArpFalseByVrfEntry
-                                      .getValue()
-                                      .entrySet()
-                                      .stream()
-                                      /* null_interface is handled in computeNullRoutedIps */
-                                      .filter(
-                                          entry ->
-                                              !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
-                                      .collect(
-                                          ImmutableMap.toImmutableMap(
-                                              Entry::getKey /* outInterface */,
-                                              routesWithNextHopIpArpFalseByOutInterfaceEntry ->
-                                                  computeRouteMatchConditions(
-                                                      routesWithNextHopIpArpFalseByOutInterfaceEntry
-                                                          .getValue(),
-                                                      matchingIps.get(hostname).get(vrf))));
-                                }));
-                  }));
-    } finally {
-      span.finish();
-    }
+    return routesWithNextHopIpArpFalse.get(node).get(vrf).entrySet().stream()
+        /* null_interface is handled in computeNullRoutedIps */
+        .filter(entry -> !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey /* outInterface */,
+                routesWithNextHopIpArpFalseByOutInterfaceEntry ->
+                    computeRouteMatchConditions(
+                        routesWithNextHopIpArpFalseByOutInterfaceEntry.getValue(),
+                        matchingIps.get(node).get(vrf))));
   }
 
   @VisibleForTesting

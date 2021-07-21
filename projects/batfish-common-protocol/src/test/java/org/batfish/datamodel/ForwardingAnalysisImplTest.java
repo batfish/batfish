@@ -656,25 +656,14 @@ public class ForwardingAnalysisImplTest {
             ImmutableMap.of(
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
 
-    Map<String, Map<String, Map<String, IpSpace>>> result =
-        computeArpFalseNextHopIp(computeMatchingIps(fibs), routesWithNextHopIpArpFalse);
+    Map<String, IpSpace> result =
+        computeArpFalseNextHopIp(c1, v1, computeMatchingIps(fibs), routesWithNextHopIpArpFalse);
 
     /* IPs matching some route on interface with no response should appear */
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1),
-            hasEntry(equalTo(v1), hasEntry(equalTo(i1), containsIp(P1.getStartIp())))));
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1), hasEntry(equalTo(v1), hasEntry(equalTo(i1), containsIp(P1.getEndIp())))));
+    assertThat(result, hasEntry(equalTo(i1), containsIp(P1.getStartIp())));
+    assertThat(result, hasEntry(equalTo(i1), containsIp(P1.getEndIp())));
     /* Other IPs should not appear */
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1),
-            hasEntry(equalTo(v1), hasEntry(equalTo(i1), not(containsIp(P2.getStartIp()))))));
+    assertThat(result, hasEntry(equalTo(i1), not(containsIp(P2.getStartIp()))));
   }
 
   @Test
@@ -1125,7 +1114,6 @@ public class ForwardingAnalysisImplTest {
   @Test
   public void testComputeDeliveredToSubnetNoArpFalse() {
     String c1 = "c1";
-    String vrf1 = "vrf1";
     String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
@@ -1142,7 +1130,6 @@ public class ForwardingAnalysisImplTest {
   @Test
   public void testComputeDeliveredToSubnetNoInterfaceHostIps() {
     String c1 = "c1";
-    String vrf1 = "vrf1";
     String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
@@ -1159,7 +1146,6 @@ public class ForwardingAnalysisImplTest {
   @Test
   public void testComputeDeliveredToSubnetEqual() {
     String c1 = "c1";
-    String vrf1 = "vrf1";
     String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
