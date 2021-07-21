@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
@@ -819,19 +820,6 @@ public class TransferBDD {
     return firstBitsEqual(record.getNextHop().getBitvec(), p, pLen);
   }
 
-  // Produce a BDD representing conditions under which a particular prefix in the route (either the
-  // destination network or the next-hop IP) is within a given prefix range.
-  private static BDD isRelevantFor(BDDRoute record, PrefixRange range, PrefixType type) {
-    switch (type) {
-      case DESTINATION:
-        return isRelevantForDestination(record, range);
-      case NEXTHOP:
-        return isRelevantForNextHop(record, range);
-      default:
-        throw new UnsupportedOperationException("Unexpected PrefixType: " + type);
-    }
-  }
-
   /*
    * If-then-else statement
    */
@@ -987,7 +975,10 @@ public class TransferBDD {
    * Converts a route filter list to a boolean expression.
    */
   private BDD matchFilterList(
-      TransferParam<BDDRoute> p, RouteFilterList x, BDDRoute other, PrefixType type) {
+      TransferParam<BDDRoute> p,
+      RouteFilterList x,
+      BDDRoute other,
+      BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher) {
     BDD acc = factory.zero();
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
     Collections.reverse(lines);
@@ -1001,7 +992,7 @@ public class TransferBDD {
         PrefixRange range = new PrefixRange(pfx, r);
         p.debug("Prefix Range: " + range);
         p.debug("Action: " + line.getAction());
-        BDD matches = isRelevantFor(other, range, type);
+        BDD matches = symbolicMatcher.apply(other, range);
         BDD action = mkBDD(line.getAction() == LineAction.PERMIT);
         acc = ite(matches, action, acc);
       }
@@ -1009,20 +1000,17 @@ public class TransferBDD {
     return acc;
   }
 
-  private enum PrefixType {
-    DESTINATION,
-    NEXTHOP
-  }
-
-  // Determine whether we are matching on the destination or on the next-hop IP
-  private PrefixType toPrefixType(PrefixExpr pe) {
+  // Returns a function that can convert a prefix range into a BDD that constrains the appropriate
+  // part of a route (destination prefix or next-hop IP), depending on the given prefix
+  // expression.
+  private BiFunction<BDDRoute, PrefixRange, BDD> prefixExprToSymbolicMatcher(PrefixExpr pe) {
     if (pe.equals(DestinationNetwork.instance())) {
-      return PrefixType.DESTINATION;
+      return TransferBDD::isRelevantForDestination;
     } else if (pe instanceof IpPrefix) {
       IpPrefix ipp = (IpPrefix) pe;
       if (ipp.getIp().equals(NextHopIp.instance())
           && ipp.getPrefixLength().equals(new LiteralInt(Prefix.MAX_PREFIX_LENGTH))) {
-        return PrefixType.NEXTHOP;
+        return TransferBDD::isRelevantForNextHop;
       }
     }
     throw new UnsupportedOperationException("Unsupported prefix expression: " + pe);
@@ -1033,7 +1021,8 @@ public class TransferBDD {
    */
   private BDD matchPrefixSet(
       TransferParam<BDDRoute> p, Configuration conf, MatchPrefixSet m, BDDRoute other) {
-    PrefixType pt = toPrefixType(m.getPrefix());
+    BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher =
+        prefixExprToSymbolicMatcher(m.getPrefix());
     PrefixSetExpr e = m.getPrefixSet();
     if (e instanceof ExplicitPrefixSet) {
       ExplicitPrefixSet x = (ExplicitPrefixSet) e;
@@ -1043,7 +1032,7 @@ public class TransferBDD {
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: " + range);
         if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
-          acc = acc.or(isRelevantFor(other, range, pt));
+          acc = acc.or(symbolicMatcher.apply(other, range));
         }
       }
       return acc;
@@ -1053,7 +1042,7 @@ public class TransferBDD {
       p.debug("Named: " + x.getName());
       String name = x.getName();
       RouteFilterList fl = conf.getRouteFilterLists().get(name);
-      return matchFilterList(p, fl, other, pt);
+      return matchFilterList(p, fl, other, symbolicMatcher);
 
     } else {
       throw new BatfishException("TODO: match prefix set: " + e);
