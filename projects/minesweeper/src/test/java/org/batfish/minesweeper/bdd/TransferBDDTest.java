@@ -84,6 +84,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -103,7 +104,9 @@ import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link TransferBDD}. */
 public class TransferBDDTest {
@@ -116,6 +119,8 @@ public class TransferBDDTest {
   private Configuration _baseConfig;
   private Graph _g;
   private BDDRoute _anyRoute;
+
+  @Rule public ExpectedException _exception = ExpectedException.none();
 
   private static final String AS_PATH_NAME = "asPathName";
 
@@ -1217,6 +1222,25 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testUnsupportedMatchNextHop() {
+    _policyBuilder.addStatement(
+        new If(
+            new MatchPrefixSet(
+                new IpPrefix(NextHopIp.instance(), new LiteralInt(8)),
+                new ExplicitPrefixSet(
+                    new PrefixSpace(
+                        ImmutableList.of(PrefixRange.fromPrefix(Prefix.parse("1.0.0.0/8")))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+
+    // when matching on the next-hop IP, we require the prefix length to be 32
+    _exception.expect(UnsupportedOperationException.class);
+    tbdd.compute(ImmutableSet.of());
+  }
+
+  @Test
   public void testDiscardNextHop() {
     _policyBuilder
         .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
@@ -1257,6 +1281,17 @@ public class TransferBDDTest {
     expected.setNextHop(
         BDDInteger.makeFromValue(expected.getFactory(), 32, Ip.parse("1.1.1.1").asLong()));
     assertEquals(expected, outAnnouncements);
+  }
+
+  @Test
+  public void testUnsupportedSetNextHop() {
+    _policyBuilder.addStatement(new SetNextHop(SelfNextHop.getInstance()));
+    RoutingPolicy policy = _policyBuilder.build();
+    _g = new Graph(_batfish, _batfish.getSnapshot());
+    TransferBDD tbdd = new TransferBDD(_g, _baseConfig, policy.getStatements());
+
+    _exception.expect(UnsupportedOperationException.class);
+    tbdd.compute(ImmutableSet.of());
   }
 
   @Test
