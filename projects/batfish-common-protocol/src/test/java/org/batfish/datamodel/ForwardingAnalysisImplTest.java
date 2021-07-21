@@ -307,8 +307,7 @@ public class ForwardingAnalysisImplTest {
     IpSpace nextHopIpSpace = new MockIpSpace(1);
     IpSpace dstIpSpace = new MockIpSpace(2);
     Edge e1 = Edge.of("c1", "i1", "c2", "i2");
-    Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp =
-        ImmutableMap.of("c1", ImmutableMap.of("v1", ImmutableMap.of(e1, dstIpSpace)));
+    Map<Edge, IpSpace> arpTrueEdgeDestIp = ImmutableMap.of(e1, dstIpSpace);
     Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp =
         ImmutableMap.of("c1", ImmutableMap.of("v1", ImmutableMap.of(e1, nextHopIpSpace)));
     Map<Edge, IpSpace> result =
@@ -362,30 +361,20 @@ public class ForwardingAnalysisImplTest {
                 AclIpSpace.permitting(i2Ip.toIpSpace())
                     .thenPermitting(P1.getEndIp().toIpSpace())
                     .build()));
-    Map<String, Map<String, Map<Edge, IpSpace>>> result =
-        computeArpTrueEdgeDestIp(computeMatchingIps(fibs), routesWithDestIpEdge, arpReplies);
+    Map<Edge, IpSpace> result =
+        computeArpTrueEdgeDestIp(
+            c1.getHostname(),
+            vrf1.getName(),
+            computeMatchingIps(fibs),
+            routesWithDestIpEdge,
+            arpReplies);
 
     /* Respond to request for IP on i2. */
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(equalTo(vrf1.getName()), hasEntry(equalTo(edge), containsIp(i2Ip)))));
+    assertThat(result, hasEntry(equalTo(edge), containsIp(i2Ip)));
     /* Do not make ARP request for IP matched by more specific route not going out i1.  */
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()), hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))))));
+    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))));
     /* Do not receive response for IP i2 does not own. */
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()),
-                hasEntry(equalTo(edge), not(containsIp(P1.getStartIp()))))));
+    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P1.getStartIp()))));
   }
 
   @Test

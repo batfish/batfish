@@ -172,15 +172,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
           computeRoutesWithDestIpEdge(topology, routesWhereDstIpCanBeArpIp);
 
       /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
-       * ARPing for the dest IP and receiving a reply from the target of the edge.
-       *
-       * Note: the source interface of the edge must be in the node, but may not be in the vrf,
-       * due to route leaking, etc
-       */
-      Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp =
-          computeArpTrueEdgeDestIp(matchingIps, routesWithDestIpEdge, _arpReplies);
-
-      /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
        * ARPing for some next-hop IP and receiving a reply from the target of the edge.
        *
        * Note: the source interface of the edge must be in the node, but may not be in the vrf,
@@ -240,6 +231,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getVrfIfaceOwnedIpSpaces()
                                 .getOrDefault(node, ImmutableMap.of())
                                 .getOrDefault(vrf, ImmutableMap.of());
+
+                        /* edge -> dst ips for which this vrf forwards out the source of the edge,
+                         * ARPing for the dest IP and receiving a reply from the target of the edge.
+                         *
+                         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+                         * due to route leaking, etc
+                         */
+                        Map<Edge, IpSpace> arpTrueEdgeDestIp =
+                            computeArpTrueEdgeDestIp(
+                                node, vrf, matchingIps, routesWithDestIpEdge, _arpReplies);
 
                         Map<Edge, IpSpace> arpTrueEdge =
                             computeArpTrueEdge(node, vrf, arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
@@ -383,55 +384,38 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   static Map<Edge, IpSpace> computeArpTrueEdge(
       String node,
       String vrf,
-      Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp,
+      Map<Edge, IpSpace> arpTrueEdgeDestIp,
       Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp) {
-    Map<Edge, IpSpace> dstIp = arpTrueEdgeDestIp.get(node).get(vrf);
     Map<Edge, IpSpace> nextHopIp = arpTrueEdgeNextHopIp.get(node).get(vrf);
-    return Sets.union(dstIp.keySet(), nextHopIp.keySet()).stream()
+    return Sets.union(arpTrueEdgeDestIp.keySet(), nextHopIp.keySet()).stream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Function.identity(),
-                edge -> AclIpSpace.union(dstIp.get(edge), nextHopIp.get(edge))));
+                edge -> AclIpSpace.union(arpTrueEdgeDestIp.get(edge), nextHopIp.get(edge))));
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, Map<Edge, IpSpace>>> computeArpTrueEdgeDestIp(
+  static Map<Edge, IpSpace> computeArpTrueEdgeDestIp(
+      String node,
+      String vrf,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithDestIpEdge,
       Map<String, Map<String, IpSpace>> arpReplies) {
-    Span span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpTrueEdgeDestIp").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          routesWithDestIpEdge,
-          Entry::getKey, // node
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
-                  Entry::getKey, // vrf
-                  vrfEntry ->
-                      toImmutableMap(
-                          vrfEntry.getValue(),
-                          Entry::getKey, // edge
-                          edgeEntry -> {
-                            Edge edge = edgeEntry.getKey();
-                            Set<AbstractRoute> routes = edgeEntry.getValue();
-                            String hostname = edge.getNode1();
-                            String vrf = vrfEntry.getKey();
-                            IpSpace dstIpMatchesSomeRoutePrefix =
-                                computeRouteMatchConditions(
-                                    routes, matchingIps.get(hostname).get(vrf));
-                            String recvNode = edge.getNode2();
-                            String recvInterface = edge.getInt2();
-                            IpSpace recvReplies = arpReplies.get(recvNode).get(recvInterface);
-                            return AclIpSpace.rejecting(dstIpMatchesSomeRoutePrefix.complement())
-                                .thenPermitting(recvReplies)
-                                .build();
-                          })));
-    } finally {
-      span.finish();
-    }
+    return toImmutableMap(
+        routesWithDestIpEdge.get(node).get(vrf),
+        Entry::getKey, // edge
+        edgeEntry -> {
+          Edge edge = edgeEntry.getKey();
+          Set<AbstractRoute> routes = edgeEntry.getValue();
+          IpSpace dstIpMatchesSomeRoutePrefix =
+              computeRouteMatchConditions(routes, matchingIps.get(node).get(vrf));
+          String recvNode = edge.getNode2();
+          String recvInterface = edge.getInt2();
+          IpSpace recvReplies = arpReplies.get(recvNode).get(recvInterface);
+          return AclIpSpace.rejecting(dstIpMatchesSomeRoutePrefix.complement())
+              .thenPermitting(recvReplies)
+              .build();
+        });
   }
 
   @VisibleForTesting
