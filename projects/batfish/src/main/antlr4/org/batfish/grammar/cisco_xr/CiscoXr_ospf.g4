@@ -86,7 +86,7 @@ ro_area_stub
    )* NEWLINE
 ;
 
-ro_authentication
+roc_authentication
 :
    AUTHENTICATION MESSAGE_DIGEST? NEWLINE
 ;
@@ -103,12 +103,12 @@ ro_auto_cost
 // Statements that can appear in router, area, or interface contexts
 ro_common
 :
-   ro_authentication
-   | ro_cost
-   | ro_network
-   | ro_passive
-   | ro_priority
-   | ro_null
+   roc_authentication
+   | roc_cost
+   | roc_network
+   | roc_passive
+   | roc_priority
+   | roc_null
 ;
 
 ro_default_information
@@ -188,7 +188,7 @@ ro_maximum_paths
    ) uint_legacy NEWLINE
 ;
 
-ro_network: NETWORK ospf_network_type NEWLINE;
+roc_network: NETWORK ospf_network_type NEWLINE;
 
 roa_nssa
 :
@@ -211,7 +211,7 @@ roa_nssa
    )* NEWLINE
 ;
 
-ro_null
+roc_null
 :
    NO?
    (
@@ -264,9 +264,9 @@ ro_null
    ) null_rest_of_line
 ;
 
-ro_passive: PASSIVE (ENABLE | DISABLE)? NEWLINE;
+roc_passive: PASSIVE (ENABLE | DISABLE)? NEWLINE;
 
-ro_priority: PRIORITY uint_legacy NEWLINE;
+roc_priority: PRIORITY uint_legacy NEWLINE;
 
 ro_redistribute
 :
@@ -319,7 +319,7 @@ ro_vrf
    )*
 ;
 
-ro_cost
+roc_cost
 :
    COST cost = uint_legacy NEWLINE
 ;

@@ -747,12 +747,12 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_default_informationContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_default_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_max_metricContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_maximum_pathsContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_networkContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_router_idContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ro_vrfContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_rangeContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roc_networkContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Roc_passiveContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_aclContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instanceContext;
@@ -2833,7 +2833,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_cost(CiscoXrParser.Ro_costContext ctx) {
+  public void exitRoc_cost(CiscoXrParser.Roc_costContext ctx) {
     _currentOspfSettings.setCost(toInteger(ctx.cost));
   }
 
@@ -6043,12 +6043,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRo_network(Ro_networkContext ctx) {
+  public void exitRoc_network(Roc_networkContext ctx) {
     _currentOspfSettings.setNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
   }
 
   @Override
-  public void exitRo_passive(Ro_passiveContext ctx) {
+  public void exitRoc_passive(Roc_passiveContext ctx) {
     if (ctx.DISABLE() == null) {
       _currentOspfSettings.setPassive(true);
     } else {
