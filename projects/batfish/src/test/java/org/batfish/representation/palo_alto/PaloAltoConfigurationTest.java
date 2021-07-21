@@ -27,6 +27,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -46,6 +48,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.Zone.Type;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -703,5 +706,23 @@ public final class PaloAltoConfigurationTest {
     rule.getTo().add("C");
     assertFalse(checkIntrazoneValidityAndWarn(rule, w));
     assertThat(w, hasRedFlag(hasText(containsString("Skipping invalid intrazone security rule"))));
+  }
+
+  @Test
+  public void testMarkAbstractStructureFromUnknownNamespace_concreteStructures() {
+    PaloAltoConfiguration c = new PaloAltoConfiguration();
+    c.markAbstractStructureFromUnknownNamespace(
+        PaloAltoStructureType.ADDRESS_LIKE,
+        ImmutableList.of(
+            PaloAltoStructureType.ADDRESS_LIKE_OR_NONE, PaloAltoStructureType.ADDRESS_OBJECT),
+        false);
+    MatcherAssert.assertThat(
+        c.getConcreteStructureTypes(),
+        equalTo(
+            ImmutableMap.of(
+                PaloAltoStructureType.ADDRESS_LIKE.getDescription(),
+                ImmutableSet.of(
+                    PaloAltoStructureType.ADDRESS_LIKE_OR_NONE.getDescription(),
+                    PaloAltoStructureType.ADDRESS_OBJECT.getDescription()))));
   }
 }

@@ -9,11 +9,14 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStru
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyIterable;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
@@ -395,5 +398,83 @@ public final class VendorConfigurationTest {
           c.getAnswerElement(),
           hasReferencedStructure(FILENAME, _testStructureType2, newName, _testStructureUsage));
     }
+  }
+
+  private enum MockStructureType implements StructureType {
+    TYPE1("type1"),
+    TYPE2("type2"),
+    TYPE3("type3");
+
+    private final String _description;
+
+    MockStructureType(String description) {
+      _description = description;
+    }
+
+    @Override
+    public String getDescription() {
+      return _description;
+    }
+  }
+
+  private enum MockStructureUsage implements StructureUsage {
+    TYPE1("type1"),
+    TYPE2("type2");
+
+    private final String _description;
+
+    MockStructureUsage(String description) {
+      _description = description;
+    }
+
+    @Override
+    public String getDescription() {
+      return _description;
+    }
+  }
+
+  @Test
+  public void testMarkConcreteStructure_concreteStructures() {
+    VendorConfiguration c = buildVendorConfiguration();
+    c.markConcreteStructure(MockStructureType.TYPE1);
+    assertThat(
+        c.getConcreteStructureTypes(),
+        equalTo(
+            ImmutableMap.of(
+                MockStructureType.TYPE1.getDescription(),
+                ImmutableSet.of(MockStructureType.TYPE1.getDescription()))));
+  }
+
+  @Test
+  public void testMarkAbstractStructure_concreteStructures() {
+    VendorConfiguration c = buildVendorConfiguration();
+    c.markAbstractStructure(
+        MockStructureType.TYPE1,
+        MockStructureUsage.TYPE1,
+        ImmutableList.of(MockStructureType.TYPE2, MockStructureType.TYPE3));
+    assertThat(
+        c.getConcreteStructureTypes(),
+        equalTo(
+            ImmutableMap.of(
+                MockStructureType.TYPE1.getDescription(),
+                ImmutableSet.of(
+                    MockStructureType.TYPE2.getDescription(),
+                    MockStructureType.TYPE3.getDescription()))));
+  }
+
+  @Test
+  public void testMarkAbstractStructureAllUsages_concreteStructures() {
+    VendorConfiguration c = buildVendorConfiguration();
+    c.markAbstractStructureAllUsages(
+        MockStructureType.TYPE1,
+        ImmutableList.of(MockStructureType.TYPE2, MockStructureType.TYPE3));
+    assertThat(
+        c.getConcreteStructureTypes(),
+        equalTo(
+            ImmutableMap.of(
+                MockStructureType.TYPE1.getDescription(),
+                ImmutableSet.of(
+                    MockStructureType.TYPE2.getDescription(),
+                    MockStructureType.TYPE3.getDescription()))));
   }
 }

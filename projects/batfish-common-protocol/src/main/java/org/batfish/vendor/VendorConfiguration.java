@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Range;
@@ -12,14 +13,18 @@ import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -63,6 +68,8 @@ public abstract class VendorConfiguration implements Serializable {
   protected final SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
       _undefinedReferences;
 
+  @Nonnull protected final Map<String, Set<String>> _concreteStructureTypes;
+
   private transient boolean _unrecognized;
 
   protected transient Warnings _w;
@@ -72,6 +79,7 @@ public abstract class VendorConfiguration implements Serializable {
     _structureDefinitions = new TreeMap<>();
     _structureReferences = new TreeMap<>();
     _undefinedReferences = new TreeMap<>();
+    _concreteStructureTypes = new HashMap<>();
   }
 
   public String canonicalizeInterfaceName(String name) {
@@ -103,6 +111,16 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   /**
+   * Returns a map from an abstract or concrete structure type to all its concrete instantiations.
+   */
+  @JsonIgnore
+  public final Map<String, Set<String>> getConcreteStructureTypes() {
+    return _concreteStructureTypes.entrySet().stream()
+        .collect(
+            ImmutableMap.toImmutableMap(Entry::getKey, e -> ImmutableSet.copyOf(e.getValue())));
+  }
+
+  /**
    * Mark all references to a structure of the given type.
    *
    * <p>Do not use if {@code type} is used as an abstract structure type; instead use {@link
@@ -124,6 +142,9 @@ public abstract class VendorConfiguration implements Serializable {
             def.setNumReferrers(def.getNumReferrers() + count);
           }
         });
+    _concreteStructureTypes
+        .computeIfAbsent(type.getDescription(), t -> new HashSet<>())
+        .add(type.getDescription());
   }
 
   /**
@@ -159,6 +180,12 @@ public abstract class VendorConfiguration implements Serializable {
                 info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
           }
         });
+    _concreteStructureTypes
+        .computeIfAbsent(type.getDescription(), t -> new HashSet<>())
+        .addAll(
+            structureTypesToCheck.stream()
+                .map(StructureType::getDescription)
+                .collect(Collectors.toSet()));
   }
 
   /**
@@ -190,6 +217,12 @@ public abstract class VendorConfiguration implements Serializable {
                         info -> info.setNumReferrers(info.getNumReferrers() + lines.size()));
                   }
                 }));
+    _concreteStructureTypes
+        .computeIfAbsent(type.getDescription(), t -> new HashSet<>())
+        .addAll(
+            structureTypesToCheck.stream()
+                .map(StructureType::getDescription)
+                .collect(Collectors.toSet()));
   }
 
   /**

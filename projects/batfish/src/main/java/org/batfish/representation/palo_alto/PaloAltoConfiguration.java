@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -3268,7 +3269,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     markAbstractStructureFromUnknownNamespace(type, structureTypesToCheck, false, usages);
   }
 
-  private void markAbstractStructureFromUnknownNamespace(
+  @VisibleForTesting
+  void markAbstractStructureFromUnknownNamespace(
       PaloAltoStructureType type,
       Collection<PaloAltoStructureType> structureTypesToCheck,
       boolean ignoreUndefined,
@@ -3300,6 +3302,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             }
           });
     }
+    _concreteStructureTypes
+        .computeIfAbsent(type.getDescription(), t -> new HashSet<>())
+        .addAll(
+            structureTypesToCheck.stream()
+                .map(PaloAltoStructureType::getDescription)
+                .collect(Collectors.toSet()));
   }
 
   public @Nullable Vsys getPanorama() {
