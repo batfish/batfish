@@ -305,13 +305,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                           interfaceExternalArpIps,
                                           ownedIps);
 
-                                  return InterfaceForwardingBehavior.builder()
-                                      .setAccepted(accepted.get(iface))
-                                      .setDeliveredToSubnet(deliveredToSubnet)
-                                      .setExitsNetwork(exitsNetwork)
-                                      .setInsufficientInfo(insufficientInfo)
-                                      .setNeighborUnreachable(neighborUnreachable)
-                                      .build();
+                                  InterfaceForwardingBehavior ifb =
+                                      InterfaceForwardingBehavior.builder()
+                                          .setAccepted(accepted.get(iface))
+                                          .setDeliveredToSubnet(deliveredToSubnet)
+                                          .setExitsNetwork(exitsNetwork)
+                                          .setInsufficientInfo(insufficientInfo)
+                                          .setNeighborUnreachable(neighborUnreachable)
+                                          .build();
+
+                                  assert sanityCheckInterfaceForwardingBehavior(
+                                      node, vrf, iface, ipSpaceToBDD, arpFalse, ifb);
+                                  return ifb;
                                 });
 
                         // destination IPs that will be null routes
@@ -330,7 +335,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                             .build();
                       }));
 
-      assert sanityCheck(ipSpaceToBDD, configurations);
+      assert sanityCheck(configurations);
     } finally {
       span.finish();
     }
@@ -844,11 +849,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     return _vrfForwardingBehavior;
   }
 
-  private Map<String, Map<String, Map<String, IpSpace>>> getDeliveredToSubnet() {
-    return getInterfaceForwardingBehaviorIpSpaces(
-        InterfaceForwardingBehavior::getDeliveredToSubnet);
-  }
-
   private static Map<String, Map<String, BDD>> computeInterfaceExternalArpIpBDDs(
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps, IpSpaceToBDD ipSpaceToBDD) {
     Span span =
@@ -951,10 +951,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         AclIpSpace.intersection(arpFalseDestIp, ifaceExternalArpIps), ownedIps);
   }
 
-  private Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork() {
-    return getInterfaceForwardingBehaviorIpSpaces(InterfaceForwardingBehavior::getExitsNetwork);
-  }
-
   /**
    * Necessary and sufficient: The connected subnet is not full, the dest IP is external, and path
    * is not expected to come back into network (i.e. the ARP IP is also external).
@@ -1049,27 +1045,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         : arpFalse;
   }
 
-  private Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
-    return getInterfaceForwardingBehaviorIpSpaces(
-        InterfaceForwardingBehavior::getNeighborUnreachable);
-  }
-
-  private Map<String, Map<String, Map<String, IpSpace>>> getInterfaceForwardingBehaviorIpSpaces(
-      Function<InterfaceForwardingBehavior, IpSpace> ipSpaceGetter) {
-    return toImmutableMap(
-        _vrfForwardingBehavior,
-        Entry::getKey, // node
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey, // vrf
-                vrfEntry ->
-                    toImmutableMap(
-                        vrfEntry.getValue().getInterfaceForwardingBehavior(),
-                        Entry::getKey, // iface
-                        ifaceEntry -> ipSpaceGetter.apply(ifaceEntry.getValue()))));
-  }
-
   /** hostname -> interfaces that are not full. I.e. could have neighbors not present in snapshot */
   private static Map<String, Set<String>> computeInterfacesWithMissingDevices(
       Map<String, Map<String, BDD>> interfaceExternalArpIpBDDs, BDD unownedIpsBDD) {
@@ -1090,10 +1065,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     } finally {
       span.finish();
     }
-  }
-
-  private Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo() {
-    return getInterfaceForwardingBehaviorIpSpaces(InterfaceForwardingBehavior::getInsufficientInfo);
   }
 
   private static IpSpace computeDstIpsWithNextHopIpArpFalseFilter(
@@ -1126,8 +1097,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   /**
    * Run sanity checks over the computed variables. Can be slow so only run in debug/assertion mode.
    */
-  private boolean sanityCheck(
-      IpSpaceToBDD ipSpaceToBDD, Map<String, Configuration> configurations) {
+  private boolean sanityCheck(Map<String, Configuration> configurations) {
     // Sanity check internal properties.
     assertAllInterfacesActiveNodeInterface(_arpReplies, configurations);
     assertAllInterfacesActiveVrfForwardingBehavior(_vrfForwardingBehavior, configurations);
@@ -1135,29 +1105,45 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     // Sanity check public APIs.
     assertAllInterfacesActiveNodeInterface(getArpReplies(), configurations);
     assertAllInterfacesActiveVrfForwardingBehavior(getVrfForwardingBehavior(), configurations);
-
-    // Sanity check traceroute-reachability different variables.
-    Map<String, Map<String, Map<String, IpSpace>>> unionOthers =
-        union(
-            getNeighborUnreachable(),
-            union(
-                getInsufficientInfo(), //
-                union(getDeliveredToSubnet(), getExitsNetwork())));
-    assertDeepIpSpaceEquality(
-        union(getNeighborUnreachable(), getInsufficientInfo()),
-        union(getInsufficientInfo(), getNeighborUnreachable()),
-        ipSpaceToBDD);
-
-    Map<String, Map<String, Map<String, IpSpace>>> union1 =
-        union(getNeighborUnreachable(), getInsufficientInfo());
-    Map<String, Map<String, Map<String, IpSpace>>> union2 = union(union1, getDeliveredToSubnet());
-    Map<String, Map<String, Map<String, IpSpace>>> union3 = union(union2, getExitsNetwork());
-    assertDeepIpSpaceEquality(unionOthers, union3, ipSpaceToBDD);
-    // TODO move this somewhere we can do it
-    //    assertDeepIpSpaceEquality(_arpFalse, unionOthers, ipSpaceToBDD);
-
     return true;
   }
+
+  private boolean sanityCheckInterfaceForwardingBehavior(
+      String node,
+      String vrf,
+      String iface,
+      IpSpaceToBDD ipSpaceToBDD,
+      IpSpace arpFalse,
+      InterfaceForwardingBehavior ifb) {
+    synchronized (ipSpaceToBDD.getBDDInteger().getFactory()) {
+      BDD arpFalseBdd = ipSpaceToBDD.visit(arpFalse);
+      BDD dispositionUnionBdd =
+          ipSpaceToBDD.visit(
+              firstNonNull(
+                  AclIpSpace.union(
+                      ifb.getDeliveredToSubnet(),
+                      ifb.getExitsNetwork(),
+                      ifb.getInsufficientInfo(),
+                      ifb.getNeighborUnreachable()),
+                  EmptyIpSpace.INSTANCE));
+      assert !arpFalseBdd.diffSat(dispositionUnionBdd)
+          : "arpFalseBdd larger than dispositionUnionBdd for node "
+              + node
+              + " VRF "
+              + vrf
+              + " interface "
+              + iface;
+      assert !dispositionUnionBdd.diffSat(arpFalseBdd)
+          : "dispositionUnionBdd larger than arpFalseBdd for node "
+              + node
+              + " VRF "
+              + vrf
+              + " interface "
+              + iface;
+    }
+    return true;
+  }
+
   /** Asserts that all interfaces in the given nested map are active in the given configurations. */
   private static void assertAllInterfacesActiveVrfForwardingBehavior(
       Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
@@ -1192,49 +1178,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     Interface iface = c.getAllInterfaces().get(i);
     assert iface != null : node + "[" + i + "] is null";
     assert iface.getActive() : node + "[" + i + "] is not active";
-  }
-
-  /**
-   * Asserts that all interfaces in the given nested map are inactive in the given configurations.
-   */
-  private static void assertDeepIpSpaceEquality(
-      Map<String, Map<String, Map<String, IpSpace>>> left,
-      Map<String, Map<String, Map<String, IpSpace>>> right,
-      IpSpaceToBDD toBDD) {
-    assert left.keySet().equals(right.keySet())
-        : "Different node sets " + left.keySet() + " " + right.keySet();
-    left.forEach(
-        (node, vrfIfaceMap) -> {
-          Map<String, Map<String, IpSpace>> rightVrfIfaceMap = right.get(node);
-          assert vrfIfaceMap.keySet().equals(rightVrfIfaceMap.keySet())
-              : "Different VRFs for node " + node;
-          vrfIfaceMap.forEach(
-              (vrf, ifaceMap) -> {
-                Map<String, IpSpace> rightIfaceMap = rightVrfIfaceMap.get(vrf);
-                assert vrfIfaceMap.keySet().equals(rightVrfIfaceMap.keySet())
-                    : "Different interfaces node " + node + " VRF " + vrf;
-                ifaceMap.forEach(
-                    (iface, ipSpace) -> {
-                      IpSpace rightIpSpace = rightIfaceMap.get(iface);
-                      BDD bdd = toBDD.visit(ipSpace);
-                      BDD rightBDD = toBDD.visit(rightIpSpace);
-                      assert !bdd.diffSat(rightBDD)
-                          : "Left BDDs larger for node "
-                              + node
-                              + " VRF "
-                              + vrf
-                              + " interface "
-                              + iface;
-                      assert !rightBDD.diffSat(bdd)
-                          : "Right BDDs larger for node "
-                              + node
-                              + " VRF "
-                              + vrf
-                              + " interface "
-                              + iface;
-                    });
-              });
-        });
   }
 
   /** Mapping: route -&gt; nexthopinterface -&gt; resolved nextHopIp -&gt; interfaceRoutes */
