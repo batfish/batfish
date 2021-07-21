@@ -79,6 +79,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_QUERY_ONLY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.NTP_ACCESS_GROUP_SERVE_ONLY;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_ACCESS_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_EXPLICIT_TRACKING;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ROUTER_IGMP_MAXIMUM_GROUPS_PER_INTERFACE;
@@ -117,6 +118,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -192,7 +194,6 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.ospf.OspfInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
@@ -241,6 +242,8 @@ import org.batfish.representation.cisco_xr.LiteralUint16Range;
 import org.batfish.representation.cisco_xr.LiteralUint32;
 import org.batfish.representation.cisco_xr.NeighborIsAsPathSetElem;
 import org.batfish.representation.cisco_xr.OriginatesFromAsPathSetElem;
+import org.batfish.representation.cisco_xr.OspfArea;
+import org.batfish.representation.cisco_xr.OspfInterfaceSettings;
 import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
 import org.batfish.representation.cisco_xr.PassesThroughAsPathSetElem;
@@ -1222,6 +1225,24 @@ public final class XrGrammarTest {
   }
 
   @Test
+  public void testOspfInterfaceUndefined() {
+    // OSPF settings mention an undefined interface Bundle-Ether201
+    String hostname = "ospf-interface-undefined";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // The interface is not converted
+    assertThat(c.getAllInterfaces(), anEmptyMap());
+
+    // The interface reference is considered undefined
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    String filename = "configs/" + hostname;
+    assertThat(
+        ccae, hasUndefinedReference(filename, INTERFACE, "Bundle-Ether201", OSPF_AREA_INTERFACE));
+  }
+
+  @Test
   public void testOspfCost() {
     Configuration manual = parseConfig("ospf-cost");
     assertThat(
@@ -1266,9 +1287,12 @@ public final class XrGrammarTest {
     String iface1Name = "GigabitEthernet0/0/0/1";
     String iface2Name = "GigabitEthernet0/0/0/2";
     String iface3Name = "GigabitEthernet0/0/0/3";
-    OspfInterfaceSettings settings1 = c.getActiveInterfaces().get(iface1Name).getOspfSettings();
-    OspfInterfaceSettings settings2 = c.getActiveInterfaces().get(iface2Name).getOspfSettings();
-    OspfInterfaceSettings settings3 = c.getActiveInterfaces().get(iface3Name).getOspfSettings();
+    org.batfish.datamodel.ospf.OspfInterfaceSettings settings1 =
+        c.getActiveInterfaces().get(iface1Name).getOspfSettings();
+    org.batfish.datamodel.ospf.OspfInterfaceSettings settings2 =
+        c.getActiveInterfaces().get(iface2Name).getOspfSettings();
+    org.batfish.datamodel.ospf.OspfInterfaceSettings settings3 =
+        c.getActiveInterfaces().get(iface3Name).getOspfSettings();
     assert settings1 != null && settings2 != null && settings3 != null;
 
     // First OSPF process uses a routing policy called RP for inbound distribute-list
@@ -3155,9 +3179,13 @@ public final class XrGrammarTest {
   public void testOspfNetworkType() {
     String hostname = "ospf-network-type";
     CiscoXrConfiguration c = parseVendorConfig(hostname);
+    OspfProcess ospfProcess = c.getDefaultVrf().getOspfProcesses().get("65100");
+    Map<Long, OspfArea> areas = ospfProcess.getAreas();
+    assertThat(areas, hasKeys(0L));
+    Map<String, OspfInterfaceSettings> area0Settings = areas.get(0L).getInterfaceSettings();
 
     assertThat(
-        c.getInterfaces().keySet(),
+        area0Settings.keySet(),
         containsInAnyOrder(
             "GigabitEthernet0/0/0/1",
             "GigabitEthernet0/0/0/2",
@@ -3167,19 +3195,19 @@ public final class XrGrammarTest {
 
     // Configured in OSPF router
     assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/1").getOspfNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/1").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_POINT));
     assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/2").getOspfNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/2").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
     assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/3").getOspfNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/3").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.NON_BROADCAST));
     assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/4").getOspfNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/4").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.POINT_TO_MULTIPOINT));
     assertThat(
-        c.getInterfaces().get("GigabitEthernet0/0/0/5").getOspfNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/5").getOspfSettings().getNetworkType(),
         equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
   }
 
@@ -3187,21 +3215,23 @@ public final class XrGrammarTest {
   public void testOspfNetworkTypeOverrideExtraction() {
     String hostname = "ospf-network-type-override";
     CiscoXrConfiguration vc = parseVendorConfig(hostname);
+    OspfProcess ospfProcess = vc.getDefaultVrf().getOspfProcesses().get("65100");
 
+    Map<String, OspfInterfaceSettings> area0Settings =
+        ospfProcess.getAreas().get(0L).getInterfaceSettings();
     assertThat(
-        vc.getInterfaces().keySet(),
+        area0Settings.keySet(),
         containsInAnyOrder("GigabitEthernet0/0/0/1", "GigabitEthernet0/0/0/2"));
 
     // Network types configured at OSPF interface level
     assertThat(
-        vc.getInterfaces().get("GigabitEthernet0/0/0/1").getOspfNetworkType(),
+        area0Settings.get("GigabitEthernet0/0/0/1").getOspfSettings().getNetworkType(),
         equalTo(org.batfish.representation.cisco_xr.OspfNetworkType.BROADCAST));
-    assertNull(vc.getInterfaces().get("GigabitEthernet0/0/0/2").getOspfNetworkType());
+    assertNull(area0Settings.get("GigabitEthernet0/0/0/2").getOspfSettings().getNetworkType());
 
     // Network type configured at OSPF router level
     assertThat(
-        vc.getDefaultVrf().getOspfProcesses().get("65100").getDefaultNetworkType(),
-        equalTo(OspfNetworkType.POINT_TO_POINT));
+        ospfProcess.getOspfSettings().getNetworkType(), equalTo(OspfNetworkType.POINT_TO_POINT));
   }
 
   @Test
