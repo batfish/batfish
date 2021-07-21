@@ -55,8 +55,6 @@ public class ForwardingAnalysisImplTest {
 
   private static final String CONFIG1 = "config1";
 
-  private static final String VRF1 = "vrf1";
-
   private static final String INTERFACE1 = "interface1";
 
   private static final String INTERFACE2 = "interface2";
@@ -1185,33 +1183,21 @@ public class ForwardingAnalysisImplTest {
     }
 
     Map<String, IpSpace> arpFalseDestIp;
-    Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithOwnedNextHopIpArpFalse;
-    Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithUnownedNextHopIpArpFalse;
+    IpSpace dstIpsWithOwnedNextHopIpArpFalse;
+    IpSpace dstIpsWithUnownedNextHopIpArpFalse;
     if (nextHopIpStatus == NextHopIpStatus.EXTERNAL) {
       arpFalseDestIp = ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE);
-      dstIpsWithOwnedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      dstIpsWithUnownedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
+      dstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+      dstIpsWithUnownedNextHopIpArpFalse = dstPrefix.toIpSpace();
     } else if (nextHopIpStatus == NextHopIpStatus.INTERNAL) {
       arpFalseDestIp = ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE);
       internalIpsBuilder.thenPermitting(nextHopIp.toIpSpace());
-      dstIpsWithOwnedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace())));
-      dstIpsWithUnownedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
+      dstIpsWithOwnedNextHopIpArpFalse = dstPrefix.toIpSpace();
+      dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     } else {
       arpFalseDestIp = ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace());
-      dstIpsWithOwnedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
-      dstIpsWithUnownedNextHopIpArpFalse =
-          ImmutableMap.of(
-              CONFIG1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE)));
+      dstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
+      dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     }
 
     if (isDstIpInternal) {
@@ -1240,7 +1226,6 @@ public class ForwardingAnalysisImplTest {
     IpSpace exitsNetworkIpSpace =
         computeExitsNetwork(
             CONFIG1,
-            VRF1,
             INTERFACE1,
             interfacesWithMissingDevices,
             dstIpsWithUnownedNextHopIpArpFalse,
@@ -1250,7 +1235,6 @@ public class ForwardingAnalysisImplTest {
     IpSpace insufficientInfoIpSpace =
         computeInsufficientInfo(
             CONFIG1,
-            VRF1,
             INTERFACE1,
             interfaceHostSubnetIps,
             interfacesWithMissingDevices,
