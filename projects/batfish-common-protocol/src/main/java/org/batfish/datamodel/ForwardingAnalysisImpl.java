@@ -231,13 +231,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
                         Map<String, IpSpace> arpFalse = union1(arpFalseDestIp, arpFalseNextHopIp);
 
-                        // _arpFalse may include interfaces in other VRFs that we forward out
-                        // through due to VRF leaking
-                        Set<String> ifaces = Sets.union(accepted.keySet(), arpFalse.keySet());
-
                         Map<String, InterfaceForwardingBehavior> interfaceForwardingBehavior =
                             toImmutableMap(
-                                ifaces,
+                                // routesWithNextHop may include interfaces in other VRFs that we
+                                // forward out through due to VRF leaking. All active interfaces
+                                // in this VRF are included due to local routes.
+                                routesWithNextHop.get(node).get(vrf).keySet(),
                                 Function.identity(),
                                 iface -> {
                                   /* dst IPs for which that VRF forwards out that interface, ARPing
