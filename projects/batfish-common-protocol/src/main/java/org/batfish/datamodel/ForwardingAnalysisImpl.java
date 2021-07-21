@@ -215,22 +215,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                         Map<Edge, IpSpace> arpTrueEdge =
                             computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
-                        /* interface -> dst IPs for which this VRF forwards out that interface, ARPing
-                         * for the dst ip itself with no reply
-                         */
-                        Map<String, IpSpace> arpFalseDestIp =
-                            computeArpFalseDestIp(
-                                node, vrf, matchingIps, routesWhereDstIpCanBeArpIp, someoneReplies);
-
-                        /* interface -> dst ips for which this vrf forwards out that interface,
-                         * ARPing for a next-hop IP and receiving no reply
-                         */
-                        Map<String, IpSpace> arpFalseNextHopIp =
-                            computeArpFalseNextHopIp(
-                                node, vrf, matchingIps, routesWithNextHopIpArpFalse);
-
-                        Map<String, IpSpace> arpFalse = union1(arpFalseDestIp, arpFalseNextHopIp);
-
                         Map<String, InterfaceForwardingBehavior> interfaceForwardingBehavior =
                             toImmutableMap(
                                 // routesWithNextHop may include interfaces in other VRFs that we
@@ -239,6 +223,32 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 routesWithNextHop.get(node).get(vrf).keySet(),
                                 Function.identity(),
                                 iface -> {
+                                  /* dst IPs for which this VRF forwards out that interface, ARPing
+                                   * for the dst ip itself with no reply
+                                   */
+                                  IpSpace arpFalseDestIp =
+                                      computeArpFalseDestIp(
+                                          node,
+                                          vrf,
+                                          iface,
+                                          matchingIps,
+                                          routesWhereDstIpCanBeArpIp,
+                                          someoneReplies);
+
+                                  /* dst ips for which this vrf forwards out that interface,
+                                   * ARPing for a next-hop IP and receiving no reply
+                                   */
+                                  IpSpace arpFalseNextHopIp =
+                                      computeArpFalseNextHopIp(
+                                          node,
+                                          vrf,
+                                          iface,
+                                          matchingIps,
+                                          routesWithNextHopIpArpFalse);
+
+                                  IpSpace arpFalse =
+                                      AclIpSpace.union(arpFalseDestIp, arpFalseNextHopIp);
+
                                   /* dst IPs for which that VRF forwards out that interface, ARPing
                                    * for some unowned next-hop IP with no reply
                                    */
@@ -537,49 +547,30 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Map<String, IpSpace> computeArpFalseDestIp(
+  static IpSpace computeArpFalseDestIp(
       String node,
       String vrf,
+      String iface,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp,
       Map<String, Map<String, IpSpace>> someoneReplies) {
     Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(node).get(vrf);
     Map<String, IpSpace> someoneRepliesNode = someoneReplies.getOrDefault(node, ImmutableMap.of());
-    return routesWhereDstIpCanBeArpIp.entrySet().stream()
-        /* null_interface is handled in computeNullRoutedIps */
-        .filter(entry -> !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* outInterface */,
-                ifaceEntry -> {
-                  String outInterface = ifaceEntry.getKey();
-                  Set<AbstractRoute> routes = ifaceEntry.getValue();
-                  IpSpace someoneRepliesIface =
-                      someoneRepliesNode.getOrDefault(outInterface, EmptyIpSpace.INSTANCE);
-                  IpSpace ipsRoutedOutInterface =
-                      computeRouteMatchConditions(routes, vrfMatchingIps);
-                  return AclIpSpace.rejecting(someoneRepliesIface)
-                      .thenPermitting(ipsRoutedOutInterface)
-                      .build();
-                }));
+    Set<AbstractRoute> routes = routesWhereDstIpCanBeArpIp.get(iface);
+    IpSpace someoneRepliesIface = someoneRepliesNode.getOrDefault(iface, EmptyIpSpace.INSTANCE);
+    IpSpace ipsRoutedOutInterface = computeRouteMatchConditions(routes, vrfMatchingIps);
+    return AclIpSpace.rejecting(someoneRepliesIface).thenPermitting(ipsRoutedOutInterface).build();
   }
 
   @VisibleForTesting
-  static Map<String, IpSpace> computeArpFalseNextHopIp(
+  static IpSpace computeArpFalseNextHopIp(
       String node,
       String vrf,
+      String iface,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse) {
-    return routesWithNextHopIpArpFalse.get(node).get(vrf).entrySet().stream()
-        /* null_interface is handled in computeNullRoutedIps */
-        .filter(entry -> !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey /* outInterface */,
-                routesWithNextHopIpArpFalseByOutInterfaceEntry ->
-                    computeRouteMatchConditions(
-                        routesWithNextHopIpArpFalseByOutInterfaceEntry.getValue(),
-                        matchingIps.get(node).get(vrf))));
+    return computeRouteMatchConditions(
+        routesWithNextHopIpArpFalse.get(node).get(vrf).get(iface), matchingIps.get(node).get(vrf));
   }
 
   @VisibleForTesting
@@ -987,20 +978,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     }
   }
 
-  static Map<String, IpSpace> union1(
-      Map<String, IpSpace> ipSpaces1, Map<String, IpSpace> ipSpaces2) {
-    checkArgument(
-        ipSpaces1.keySet().equals(ipSpaces2.keySet()),
-        "Can't union with different nodes: %s and %s",
-        ipSpaces1.keySet(),
-        ipSpaces2.keySet());
-
-    return toImmutableMap(
-        ipSpaces1,
-        Entry::getKey, /* hostname */
-        nodeEntry -> AclIpSpace.union(nodeEntry.getValue(), ipSpaces2.get(nodeEntry.getKey())));
-  }
-
   static Map<String, Map<String, Map<String, IpSpace>>> union(
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces1,
       Map<String, Map<String, Map<String, IpSpace>>> ipSpaces2) {
@@ -1074,13 +1051,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   static IpSpace computeDeliveredToSubnet(
       String node,
       String iface,
-      Map<String, IpSpace> arpFalseDestIp,
+      IpSpace arpFalseDestIp,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       IpSpace ownedIps) {
-    IpSpace ifaceArpFalseDestIp = arpFalseDestIp.get(iface);
     IpSpace ifaceExternalArpIps = interfaceExternalArpIps.get(node).get(iface);
     return AclIpSpace.difference(
-        AclIpSpace.intersection(ifaceArpFalseDestIp, ifaceExternalArpIps), ownedIps);
+        AclIpSpace.intersection(arpFalseDestIp, ifaceExternalArpIps), ownedIps);
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork() {
@@ -1096,7 +1072,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       String iface,
       Map<String, Set<String>> interfacesWithMissingDevices,
       IpSpace dstIpsWithUnownedNextHopIpArpFalse,
-      Map<String, IpSpace> arpFalseDstIp,
+      IpSpace arpFalseDstIp,
       IpSpace externalIps) {
     // the connected subnet is full
     if (!interfacesWithMissingDevices.get(node).contains(iface)) {
@@ -1107,12 +1083,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     // 1. Arp for dst ip and dst ip is external
     // 2. Arp for next hop ip, next hop ip is not owned by any interfaces,
     // and dst ip is external
-    IpSpace ifaceArpFalseDstIp = arpFalseDstIp.get(iface);
     return AclIpSpace.intersection(
         // dest ip is external
         externalIps,
         // arp for dst Ip OR arp for external next-hop IP
-        AclIpSpace.union(ifaceArpFalseDstIp, dstIpsWithUnownedNextHopIpArpFalse));
+        AclIpSpace.union(arpFalseDstIp, dstIpsWithUnownedNextHopIpArpFalse));
   }
 
   /**
@@ -1138,7 +1113,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       String iface,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       Map<String, Set<String>> interfacesWithMissingDevices,
-      Map<String, IpSpace> arpFalseDestIp,
+      IpSpace arpFalseDestIp,
       IpSpace dstIpsWithUnownedNextHopIpArpFalse,
       IpSpace dstIpsWithOwnedNextHopIpArpFalse,
       IpSpace internalIps) {
@@ -1154,7 +1129,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     return AclIpSpace.union(
         // case 1: arp for dst ip, dst ip is internal but not in any subnet of
         // the interface
-        AclIpSpace.intersection(arpFalseDestIp.get(iface), ipSpaceElsewhere),
+        AclIpSpace.intersection(arpFalseDestIp, ipSpaceElsewhere),
         // case 2: arp for nhip, nhip is not owned by interfaces, dst ip is
         // internal
         AclIpSpace.intersection(dstIpsWithUnownedNextHopIpArpFalse, internalIps),
@@ -1171,15 +1146,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   static IpSpace computeNeighborUnreachable(
       String node,
       String iface,
-      Map<String, IpSpace> arpFalse,
+      IpSpace arpFalse,
       Map<String, Set<String>> interfacesWithMissingDevices,
-      Map<String, IpSpace> arpFalseDestIp,
+      IpSpace arpFalseDestIp,
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps,
       IpSpace ownedIps) {
     return interfacesWithMissingDevices.get(node).contains(iface)
         ? AclIpSpace.intersection(
-            arpFalseDestIp.get(iface), interfaceExternalArpIps.get(node).get(iface), ownedIps)
-        : arpFalse.get(iface);
+            arpFalseDestIp, interfaceExternalArpIps.get(node).get(iface), ownedIps)
+        : arpFalse;
   }
 
   private Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {

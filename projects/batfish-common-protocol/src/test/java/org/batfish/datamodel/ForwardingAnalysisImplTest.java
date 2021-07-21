@@ -594,16 +594,16 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute));
     Map<String, Map<String, IpSpace>> someoneReplies =
         ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace()));
-    Map<String, IpSpace> result =
+    IpSpace result =
         computeArpFalseDestIp(
-            c1, v1, computeMatchingIps(fibs), routesWhereDstIpCanBeArpIp, someoneReplies);
+            c1, v1, i1, computeMatchingIps(fibs), routesWhereDstIpCanBeArpIp, someoneReplies);
 
     /* Should contain IP in the route's prefix that sees no reply */
-    assertThat(result, hasEntry(equalTo(i1), containsIp(P1.getStartIp())));
+    assertThat(result, containsIp(P1.getStartIp()));
     /* Should not contain IP in the route's prefix that sees reply */
-    assertThat(result, hasEntry(equalTo(i1), not(containsIp(P1.getEndIp()))));
+    assertThat(result, not(containsIp(P1.getEndIp())));
     /* Should not contain other IPs */
-    assertThat(result, hasEntry(equalTo(i1), not(containsIp(P2.getEndIp()))));
+    assertThat(result, not(containsIp(P2.getEndIp())));
   }
 
   @Test
@@ -620,19 +620,19 @@ public class ForwardingAnalysisImplTest {
     Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
         ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute));
     Map<String, Map<String, IpSpace>> someoneReplies = ImmutableMap.of();
-    Map<String, IpSpace> result =
+    IpSpace result =
         computeArpFalseDestIp(
-            c1, v1, computeMatchingIps(fibs), routesWhereDstIpCanBeArpIp, someoneReplies);
+            c1, v1, i1, computeMatchingIps(fibs), routesWhereDstIpCanBeArpIp, someoneReplies);
 
     /*
      * Since _someoneReplies is empty, all IPs for which longest-prefix-match route has no
      * next-hop-ip should be in the result space.
      */
-    assertThat(result, hasEntry(equalTo(i1), containsIp(P1.getStartIp())));
-    assertThat(result, hasEntry(equalTo(i1), containsIp(P1.getEndIp())));
+    assertThat(result, containsIp(P1.getStartIp()));
+    assertThat(result, containsIp(P1.getEndIp()));
 
     /* Should not contain other IPs */
-    assertThat(result, hasEntry(equalTo(i1), not(containsIp(P2.getEndIp()))));
+    assertThat(result, not(containsIp(P2.getEndIp())));
   }
 
   @Test
@@ -654,14 +654,14 @@ public class ForwardingAnalysisImplTest {
             ImmutableMap.of(
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
 
-    Map<String, IpSpace> result =
-        computeArpFalseNextHopIp(c1, v1, computeMatchingIps(fibs), routesWithNextHopIpArpFalse);
+    IpSpace result =
+        computeArpFalseNextHopIp(c1, v1, i1, computeMatchingIps(fibs), routesWithNextHopIpArpFalse);
 
     /* IPs matching some route on interface with no response should appear */
-    assertThat(result, hasEntry(equalTo(i1), containsIp(P1.getStartIp())));
-    assertThat(result, hasEntry(equalTo(i1), containsIp(P1.getEndIp())));
+    assertThat(result, containsIp(P1.getStartIp()));
+    assertThat(result, containsIp(P1.getEndIp()));
     /* Other IPs should not appear */
-    assertThat(result, hasEntry(equalTo(i1), not(containsIp(P2.getStartIp()))));
+    assertThat(result, not(containsIp(P2.getStartIp())));
   }
 
   @Test
@@ -1110,7 +1110,7 @@ public class ForwardingAnalysisImplTest {
     String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
-    Map<String, IpSpace> arpFalseDestIp = ImmutableMap.of(i1, EmptyIpSpace.INSTANCE);
+    IpSpace arpFalseDestIp = EmptyIpSpace.INSTANCE;
     Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
         ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
@@ -1126,7 +1126,7 @@ public class ForwardingAnalysisImplTest {
     String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
-    Map<String, IpSpace> arpFalseDestIp = ImmutableMap.of(i1, ip.toIpSpace());
+    IpSpace arpFalseDestIp = ip.toIpSpace();
     Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
         ImmutableMap.of(c1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
@@ -1142,7 +1142,7 @@ public class ForwardingAnalysisImplTest {
     String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
-    Map<String, IpSpace> arpFalseDestIp = ImmutableMap.of(i1, ip.toIpSpace());
+    IpSpace arpFalseDestIp = ip.toIpSpace();
     Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
         ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
@@ -1177,20 +1177,20 @@ public class ForwardingAnalysisImplTest {
       interfacesWithMissingDevices = ImmutableMap.of(CONFIG1, ImmutableSet.of());
     }
 
-    Map<String, IpSpace> arpFalseDestIp;
+    IpSpace arpFalseDestIp;
     IpSpace dstIpsWithOwnedNextHopIpArpFalse;
     IpSpace dstIpsWithUnownedNextHopIpArpFalse;
     if (nextHopIpStatus == NextHopIpStatus.EXTERNAL) {
-      arpFalseDestIp = ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE);
+      arpFalseDestIp = EmptyIpSpace.INSTANCE;
       dstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
       dstIpsWithUnownedNextHopIpArpFalse = dstPrefix.toIpSpace();
     } else if (nextHopIpStatus == NextHopIpStatus.INTERNAL) {
-      arpFalseDestIp = ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE);
+      arpFalseDestIp = EmptyIpSpace.INSTANCE;
       internalIpsBuilder.thenPermitting(nextHopIp.toIpSpace());
       dstIpsWithOwnedNextHopIpArpFalse = dstPrefix.toIpSpace();
       dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     } else {
-      arpFalseDestIp = ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace());
+      arpFalseDestIp = dstPrefix.toIpSpace();
       dstIpsWithOwnedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
       dstIpsWithUnownedNextHopIpArpFalse = EmptyIpSpace.INSTANCE;
     }
@@ -1211,7 +1211,7 @@ public class ForwardingAnalysisImplTest {
           ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE));
     }
 
-    Map<String, IpSpace> arpFalse = ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace());
+    IpSpace arpFalse = dstPrefix.toIpSpace();
 
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
