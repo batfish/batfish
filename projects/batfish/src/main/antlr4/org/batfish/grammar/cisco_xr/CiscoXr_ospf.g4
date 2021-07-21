@@ -8,7 +8,7 @@ options {
 
 ro_address_family
 :
-   ADDRESS_FAMILY IPV4 UNICAST? NEWLINE ro_common*
+   ADDRESS_FAMILY IPV4 UNICAST? NEWLINE
 ;
 
 ro_area
