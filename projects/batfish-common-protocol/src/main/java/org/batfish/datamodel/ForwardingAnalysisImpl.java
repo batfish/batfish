@@ -147,7 +147,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // Note: BDDs are not thread-safe and this method is run in parallel.
       // all uses must synchronize on the BDDFactory within.
       // this is here only for sanity checking (only with assertions enabled)
-      IpSpaceToBDD ipSpaceToBDD_unsafe_do_not_use,
+      IpSpaceToBDD ipSpaceToBDDUnsafeDoNotUse,
       IpOwners ipOwners,
       Map<String, Map<String, Fib>> fibs,
       Set<Ip> unownedArpIps,
@@ -305,7 +305,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                       .build();
 
               assert sanityCheckInterfaceForwardingBehavior(
-                  node, vrf, iface, ipSpaceToBDD_unsafe_do_not_use, arpFalse, ifb);
+                  node, vrf, iface, ipSpaceToBDDUnsafeDoNotUse, arpFalse, ifb);
               return ifb;
             });
 
