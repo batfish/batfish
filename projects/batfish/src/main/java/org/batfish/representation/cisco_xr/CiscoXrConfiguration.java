@@ -2214,7 +2214,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
    * calling this function.
    */
   private Set<String> getAclsUsedForRouting() {
-    // TODO Include OSPF outbound distribute lists when conversion supports them
+    // TODO Include OSPF global outbound distribute lists when conversion supports them
     return _vrfs.values().stream()
         .flatMap(vrf -> vrf.getOspfProcesses().values().stream())
         .flatMap(proc -> proc.getAreas().values().stream())

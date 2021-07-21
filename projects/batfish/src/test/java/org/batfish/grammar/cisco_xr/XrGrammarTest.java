@@ -1259,45 +1259,44 @@ public final class XrGrammarTest {
   public void testOspfDistributeListExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("ospf-distribute-list");
     assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
-    OspfSettings settings1 = c.getDefaultVrf().getOspfProcesses().get("1").getOspfSettings();
+    OspfProcess proc1 = c.getDefaultVrf().getOspfProcesses().get("1");
+    OspfSettings settings1 = proc1.getOspfSettings();
     assertThat(
         settings1.getDistributeListIn(),
         equalTo(new DistributeList("RP", DistributeListFilterType.ROUTE_POLICY)));
     assertThat(
-        settings1.getDistributeListOut(),
+        proc1.getDistributeListOut(),
         equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
-    OspfSettings settings2 = c.getDefaultVrf().getOspfProcesses().get("2").getOspfSettings();
+    OspfProcess proc2 = c.getDefaultVrf().getOspfProcesses().get("2");
+    OspfSettings settings2 = proc2.getOspfSettings();
     assertThat(
         settings2.getDistributeListIn(),
         equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
-    assertThat(settings2.getDistributeListOut(), nullValue());
-    OspfSettings settings3 = c.getDefaultVrf().getOspfProcesses().get("3").getOspfSettings();
+    assertThat(proc2.getDistributeListOut(), nullValue());
+    OspfProcess proc3 = c.getDefaultVrf().getOspfProcesses().get("3");
+    OspfSettings settings3 = proc3.getOspfSettings();
     assertThat(
         settings3.getDistributeListIn(),
         equalTo(new DistributeList("PL1", DistributeListFilterType.PREFIX_LIST)));
     assertThat(
-        settings3.getDistributeListOut(),
+        proc3.getDistributeListOut(),
         equalTo(new DistributeList("PL2", DistributeListFilterType.PREFIX_LIST)));
 
-    // Process 4 has distribute lists set at process, area, and interface levels
+    // Process 4 has inbound distribute lists set at process, area, and interface levels.
+    // (Outbound distribute lists can only be configured at process level.)
     OspfProcess proc4 = c.getDefaultVrf().getOspfProcesses().get("4");
     OspfSettings proc4Settings = proc4.getOspfSettings();
     assertThat(
         proc4Settings.getDistributeListIn(),
         equalTo(new DistributeList("ACL1", DistributeListFilterType.ACCESS_LIST)));
-    assertThat(
-        proc4Settings.getDistributeListOut(),
-        equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
     {
       // Area 4 does not have distribute lists at area or interface levels
       OspfArea area = proc4.getAreas().get(4L);
       OspfSettings areaSettings = area.getOspfSettings();
       assertNull(areaSettings.getDistributeListIn());
-      assertNull(areaSettings.getDistributeListOut());
       OspfSettings ifaceSettings =
           area.getInterfaceSettings().get("GigabitEthernet0/0/0/4").getOspfSettings();
       assertNull(ifaceSettings.getDistributeListIn());
-      assertNull(ifaceSettings.getDistributeListOut());
     }
     {
       // Area 5 has distribute lists at area level but not interface level
@@ -1305,29 +1304,21 @@ public final class XrGrammarTest {
       OspfSettings areaSettings = area.getOspfSettings();
       assertThat(
           areaSettings.getDistributeListIn(),
-          equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
-      assertThat(
-          areaSettings.getDistributeListOut(),
-          equalTo(new DistributeList("ACL4", DistributeListFilterType.ACCESS_LIST)));
+          equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
       OspfSettings ifaceSettings =
           area.getInterfaceSettings().get("GigabitEthernet0/0/0/5").getOspfSettings();
       assertNull(ifaceSettings.getDistributeListIn());
-      assertNull(ifaceSettings.getDistributeListOut());
     }
     {
       // Area 6 has distribute lists at interface level but not area level
       OspfArea area = proc4.getAreas().get(6L);
       OspfSettings areaSettings = area.getOspfSettings();
       assertNull(areaSettings.getDistributeListIn());
-      assertNull(areaSettings.getDistributeListOut());
       OspfSettings ifaceSettings =
           area.getInterfaceSettings().get("GigabitEthernet0/0/0/6").getOspfSettings();
       assertThat(
           ifaceSettings.getDistributeListIn(),
-          equalTo(new DistributeList("ACL5", DistributeListFilterType.ACCESS_LIST)));
-      assertThat(
-          ifaceSettings.getDistributeListOut(),
-          equalTo(new DistributeList("ACL6", DistributeListFilterType.ACCESS_LIST)));
+          equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
     }
     {
       // Area 7 has distribute lists at both area and interface levels
@@ -1335,18 +1326,12 @@ public final class XrGrammarTest {
       OspfSettings areaSettings = area.getOspfSettings();
       assertThat(
           areaSettings.getDistributeListIn(),
-          equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
-      assertThat(
-          areaSettings.getDistributeListOut(),
-          equalTo(new DistributeList("ACL4", DistributeListFilterType.ACCESS_LIST)));
+          equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
       OspfSettings ifaceSettings =
           area.getInterfaceSettings().get("GigabitEthernet0/0/0/7").getOspfSettings();
       assertThat(
           ifaceSettings.getDistributeListIn(),
-          equalTo(new DistributeList("ACL5", DistributeListFilterType.ACCESS_LIST)));
-      assertThat(
-          ifaceSettings.getDistributeListOut(),
-          equalTo(new DistributeList("ACL6", DistributeListFilterType.ACCESS_LIST)));
+          equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
     }
   }
 
@@ -1381,13 +1366,13 @@ public final class XrGrammarTest {
     /*
     Fourth OSPF process is for testing inheritance. When configured:
     - Process-level distribute list permits 1.1.1.0/24
-    - Area-level distribute list permits 3.3.3.0/24
-    - Interface-level distribute list permits 5.5.5.0/24
+    - Area-level distribute list permits 2.2.2.0/24
+    - Interface-level distribute list permits 3.3.3.0/24
     */
     StaticRoute.Builder srb = StaticRoute.testBuilder();
     StaticRoute permittedByProcList = srb.setNetwork(Prefix.parse("1.1.1.0/24")).build();
-    StaticRoute permittedByAreaList = srb.setNetwork(Prefix.parse("3.3.3.0/24")).build();
-    StaticRoute permittedByIfaceList = srb.setNetwork(Prefix.parse("5.5.5.0/24")).build();
+    StaticRoute permittedByAreaList = srb.setNetwork(Prefix.parse("2.2.2.0/24")).build();
+    StaticRoute permittedByIfaceList = srb.setNetwork(Prefix.parse("3.3.3.0/24")).build();
     {
       // Area 4: Interface inherits process-level distribute list
       String ifaceName = "GigabitEthernet0/0/0/4";

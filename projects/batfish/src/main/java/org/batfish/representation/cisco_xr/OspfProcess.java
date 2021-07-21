@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -28,6 +29,7 @@ public class OspfProcess implements Serializable {
   private boolean _defaultInformationOriginateAlways;
   private String _defaultInformationOriginateMap;
   private Long _defaultMetric;
+  @Nullable private DistributeList _distributeListOut;
   private Long _maxMetricExternalLsa;
   private boolean _maxMetricIncludeStub;
   private boolean _maxMetricRouterLsa;
@@ -89,6 +91,11 @@ public class OspfProcess implements Serializable {
     return _defaultMetric;
   }
 
+  @Nullable
+  public DistributeList getDistributeListOut() {
+    return _distributeListOut;
+  }
+
   public Long getMaxMetricExternalLsa() {
     return _maxMetricExternalLsa;
   }
@@ -147,6 +154,10 @@ public class OspfProcess implements Serializable {
 
   public void setDefaultMetric(Long metric) {
     _defaultMetric = metric;
+  }
+
+  public void setDistributeListOut(@Nullable DistributeList distributeListOut) {
+    _distributeListOut = distributeListOut;
   }
 
   public void setMaxMetricExternalLsa(Long maxMetricExternalLsa) {
