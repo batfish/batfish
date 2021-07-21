@@ -16,7 +16,6 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -99,11 +98,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             computeArpReplies(
                 configurations, ipsRoutedOutInterfaces, interfaceOwnedIps, _routableIps);
       }
-
-      /* Compute ARP stuff bottom-up from _arpReplies. */
-
-      Map<String, Map<String, IpSpace>> someoneReplies =
-          computeSomeoneReplies(topology, _arpReplies);
 
       // mapping: hostname -> interface -> ips on which we should assume some external device (not
       // modeled in batfish) is listening, and would reply to ARP in the real world.
@@ -215,6 +209,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 routesWithNextHop.get(node).get(vrf).keySet(),
                                 Function.identity(),
                                 iface -> {
+                                  /* Compute ARP stuff bottom-up from _arpReplies. */
+                                  IpSpace someoneReplies =
+                                      computeSomeoneReplies(node, iface, topology, _arpReplies);
+
                                   /* set of routes on that vrf that forward out that interface
                                    * with a next hop ip that gets no arp replies
                                    */
@@ -551,13 +549,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       String iface,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp,
-      Map<String, Map<String, IpSpace>> someoneReplies) {
+      IpSpace someoneReplies) {
     Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(node).get(vrf);
-    Map<String, IpSpace> someoneRepliesNode = someoneReplies.getOrDefault(node, ImmutableMap.of());
     Set<AbstractRoute> routes = routesWhereDstIpCanBeArpIp.get(iface);
-    IpSpace someoneRepliesIface = someoneRepliesNode.getOrDefault(iface, EmptyIpSpace.INSTANCE);
     IpSpace ipsRoutedOutInterface = computeRouteMatchConditions(routes, vrfMatchingIps);
-    return AclIpSpace.rejecting(someoneRepliesIface).thenPermitting(ipsRoutedOutInterface).build();
+    return AclIpSpace.rejecting(someoneReplies).thenPermitting(ipsRoutedOutInterface).build();
   }
 
   @VisibleForTesting
@@ -802,12 +798,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       String iface,
       Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces,
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop,
-      Map<String, Map<String, IpSpace>> someoneReplies) {
+      IpSpace someoneReplies) {
     return computeRoutesWithNextHopIpArpFalseForInterface(
-        nextHopInterfaces,
-        iface,
-        routesWithNextHop.get(node).get(vrf).get(iface),
-        someoneReplies.getOrDefault(node, ImmutableMap.of()));
+        nextHopInterfaces, iface, routesWithNextHop.get(node).get(vrf).get(iface), someoneReplies);
   }
 
   @VisibleForTesting
@@ -815,8 +808,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces,
       String outInterface,
       Set<AbstractRoute> candidateRoutes,
-      Map<String, IpSpace> nodeSomeoneReplies) {
-    IpSpace someoneReplies = nodeSomeoneReplies.getOrDefault(outInterface, EmptyIpSpace.INSTANCE);
+      IpSpace someoneReplies) {
     return candidateRoutes.stream()
         .filter(
             candidateRoute ->
@@ -872,35 +864,15 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, IpSpace>> computeSomeoneReplies(
-      Topology topology, Map<String, Map<String, IpSpace>> arpReplies) {
-    Span span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeSomeoneReplies").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      Map<String, Map<String, AclIpSpace.Builder>> someoneRepliesByNode = new HashMap<>();
-      topology
-          .getEdges()
-          .forEach(
-              edge ->
-                  someoneRepliesByNode
-                      .computeIfAbsent(edge.getNode1(), n -> new HashMap<>())
-                      .computeIfAbsent(edge.getInt1(), i -> AclIpSpace.builder())
-                      .thenPermitting((arpReplies.get(edge.getNode2()).get(edge.getInt2()))));
-      return someoneRepliesByNode.entrySet().stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey /* hostname */,
-                  someoneRepliesByNodeEntry ->
-                      someoneRepliesByNodeEntry.getValue().entrySet().stream()
-                          .collect(
-                              ImmutableMap.toImmutableMap(
-                                  Entry::getKey /* interface */,
-                                  someoneRepliesByInterfaceEntry ->
-                                      someoneRepliesByInterfaceEntry.getValue().build()))));
-    } finally {
-      span.finish();
-    }
+  static @Nonnull IpSpace computeSomeoneReplies(
+      String node, String iface, Topology topology, Map<String, Map<String, IpSpace>> arpReplies) {
+    return firstNonNull(
+        AclIpSpace.union(
+            topology.getNeighbors(NodeInterfacePair.of(node, iface)).stream()
+                .map(
+                    neighbor -> arpReplies.get(neighbor.getHostname()).get(neighbor.getInterface()))
+                .collect(Collectors.toList())),
+        EmptyIpSpace.INSTANCE);
   }
 
   @Override

@@ -592,8 +592,7 @@ public class ForwardingAnalysisImplTest {
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
     Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
         ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute));
-    Map<String, Map<String, IpSpace>> someoneReplies =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace()));
+    IpSpace someoneReplies = P1.getEndIp().toIpSpace();
     IpSpace result =
         computeArpFalseDestIp(
             c1, v1, i1, computeMatchingIps(fibs), routesWhereDstIpCanBeArpIp, someoneReplies);
@@ -619,7 +618,7 @@ public class ForwardingAnalysisImplTest {
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
     Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
         ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute));
-    Map<String, Map<String, IpSpace>> someoneReplies = ImmutableMap.of();
+    IpSpace someoneReplies = EmptyIpSpace.INSTANCE;
     IpSpace result =
         computeArpFalseDestIp(
             c1, v1, i1, computeMatchingIps(fibs), routesWhereDstIpCanBeArpIp, someoneReplies);
@@ -919,8 +918,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(
             r1,
             ImmutableMap.of(i1, ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(ifaceRoute))));
-    Map<String, Map<String, IpSpace>> someoneReplies =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp().toIpSpace()));
+    IpSpace someoneReplies = P2.getEndIp().toIpSpace();
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalse(
             c1, v1, i1, nextHopInterfaces, routesWithNextHop, someoneReplies);
@@ -962,10 +960,7 @@ public class ForwardingAnalysisImplTest {
                 ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute))));
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalseForInterface(
-            nextHopInterfaces,
-            outInterface,
-            candidateRoutes,
-            ImmutableMap.of(outInterface, P2.getStartIp().toIpSpace()));
+            nextHopInterfaces, outInterface, candidateRoutes, P2.getStartIp().toIpSpace());
 
     /*
      * Should only contain nextHopIpRoute1 since it is the only route with a next-hop-ip for which
@@ -1008,7 +1003,7 @@ public class ForwardingAnalysisImplTest {
                 ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute))));
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalseForInterface(
-            nextHopInterfaces, outInterface, candidateRoutes, ImmutableMap.of());
+            nextHopInterfaces, outInterface, candidateRoutes, EmptyIpSpace.INSTANCE);
 
     /*
      * Should contain both nextHopIpRoute1 and nextHopIpRoute2, since:
@@ -1068,14 +1063,13 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, IpSpace>> arpReplies =
         ImmutableMap.of(c2, ImmutableMap.of(i2, P1.toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
-    Map<String, Map<String, IpSpace>> result = computeSomeoneReplies(topology, arpReplies);
+    IpSpace result = computeSomeoneReplies(c1, i1, topology, arpReplies);
 
     /* IPs allowed by neighbor should appear */
-    assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), containsIp(P1.getStartIp()))));
-    assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), containsIp(P1.getEndIp()))));
+    assertThat(result, containsIp(P1.getStartIp()));
+    assertThat(result, containsIp(P1.getEndIp()));
     /* IPs not allowed by neighbor should not appear */
-    assertThat(
-        result, hasEntry(equalTo(c1), hasEntry(equalTo(i1), not(containsIp(P2.getStartIp())))));
+    assertThat(result, not(containsIp(P2.getStartIp())));
   }
 
   @Test
