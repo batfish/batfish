@@ -345,12 +345,8 @@ public class ForwardingAnalysisImplTest {
                                 .build()))
                     .build()));
     Edge edge = Edge.of(c1.getHostname(), i1.getName(), c2.getHostname(), i2.getName());
-    Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithDestIpEdge =
-        ImmutableMap.of(
-            c1.getHostname(),
-            ImmutableMap.of(
-                vrf1.getName(),
-                ImmutableMap.of(edge, ImmutableSet.of(new ConnectedRoute(P1, i1.getName())))));
+    Map<Edge, Set<AbstractRoute>> routesWithDestIpEdge =
+        ImmutableMap.of(edge, ImmutableSet.of(new ConnectedRoute(P1, i1.getName())));
     Map<String, Map<String, IpSpace>> arpReplies =
         ImmutableMap.of(
             c2.getHostname(),
@@ -908,13 +904,10 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
     Edge e1 = Edge.of(c1, i1, c2, i2);
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
-    Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> result =
-        computeRoutesWithDestIpEdge(topology, routesWhereDstIpCanBeArpIp);
+    Map<Edge, Set<AbstractRoute>> result =
+        computeRoutesWithDestIpEdge(c1, v1, topology, routesWhereDstIpCanBeArpIp);
 
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1), hasEntry(equalTo(v1), equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))))));
+    assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
   }
 
   @Test
