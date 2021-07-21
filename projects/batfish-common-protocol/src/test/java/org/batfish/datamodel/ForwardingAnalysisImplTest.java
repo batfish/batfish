@@ -14,7 +14,7 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsAssignedToT
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeIpsRoutedOutInterfaces;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeMatchingIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNeighborUnreachable;
-import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNextVrfIpsByNodeVrf;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNextVrfIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNullRoutedIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWhereDstIpCanBeArpIp;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithDestIpEdge;
@@ -706,16 +706,13 @@ public class ForwardingAnalysisImplTest {
                     .build()));
 
     // Each VRF should delegate the matching IpSpace for its nextVrf route to the other VRF.
+    Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(fibs);
     assertThat(
-        computeNextVrfIpsByNodeVrf(computeMatchingIps(fibs), fibs),
-        equalTo(
-            ImmutableMap.of(
-                c1,
-                ImmutableMap.of(
-                    v1,
-                    ImmutableMap.of(v2, P1_1.toIpSpace()),
-                    v2,
-                    ImmutableMap.of(v1, P2_2.toIpSpace())))));
+        computeNextVrfIps(c1, v1, matchingIps, fibs),
+        equalTo(ImmutableMap.of(v2, P1_1.toIpSpace())));
+    assertThat(
+        computeNextVrfIps(c1, v2, matchingIps, fibs),
+        equalTo(ImmutableMap.of(v1, P2_2.toIpSpace())));
   }
 
   @Test

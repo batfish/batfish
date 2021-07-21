@@ -39,9 +39,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
-  // node -> vrf -> nextVrf -> IPs that vrf delegates to nextVrf
-  private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIpsByNodeVrf;
-
   // node -> vrf -> destination IPs that can be routed
   private final Map<String, Map<String, IpSpace>> _routableIps;
 
@@ -79,7 +76,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // Set of routes that forward out each interface
       Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
           computeRoutesWithNextHop(fibs);
-      _nextVrfIpsByNodeVrf = computeNextVrfIpsByNodeVrf(matchingIps, fibs);
       _routableIps = computeRoutableIps(fibs);
 
       /* Compute _arpReplies: for each interface, the set of arp IPs for which that interface will
@@ -321,10 +317,14 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                         // destination IPs that will be null routes
                         IpSpace nullRoutedIps = computeNullRoutedIps(node, vrf, matchingIps, fibs);
 
+                        // nextVrf -> dest IPs that vrf delegates to nextVrf
+                        Map<String, IpSpace> nextVrfIps =
+                            computeNextVrfIps(node, vrf, matchingIps, fibs);
+
                         return VrfForwardingBehavior.builder()
                             .setArpTrueEdge(arpTrueEdge)
                             .setInterfaceForwardingBehavior(interfaceForwardingBehavior)
-                            .setNextVrf(_nextVrfIpsByNodeVrf.get(node).get(vrf))
+                            .setNextVrf(nextVrfIps)
                             .setNullRoutedIps(nullRoutedIps)
                             .setRoutableIps(_routableIps.get(node).get(vrf))
                             .build();
@@ -581,32 +581,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, Map<String, IpSpace>>> computeNextVrfIpsByNodeVrf(
+  static Map<String, IpSpace> computeNextVrfIps(
+      String node,
+      String vrf,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Fib>> fibs) {
-    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeNextVrfIps").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return fibs.entrySet().stream()
-          .collect(
-              ImmutableMap.toImmutableMap(
-                  Entry::getKey /* hostname */,
-                  fibsByHostnameEntry -> {
-                    String hostname = fibsByHostnameEntry.getKey();
-                    return fibsByHostnameEntry.getValue().entrySet().stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Entry::getKey /* vrf */,
-                                fibsByVrfEntry ->
-                                    computeNextVrfIps(
-                                        fibsByVrfEntry.getValue(), /* fib */
-                                        matchingIps
-                                            .get(hostname)
-                                            .get(fibsByVrfEntry.getKey()) /* matchingIps */)));
-                  }));
-    } finally {
-      span.finish();
-    }
+    return computeNextVrfIps(fibs.get(node).get(vrf), matchingIps.get(node).get(vrf));
   }
 
   private static Map<String, IpSpace> computeNextVrfIps(Fib fib, Map<Prefix, IpSpace> matchingIps) {
