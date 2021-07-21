@@ -119,12 +119,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
           computeRoutesWithNextHopIpArpFalse(
               nextHopInterfacesByNodeVrf, routesWithNextHop, someoneReplies);
 
-      /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface,
-       * ARPing for the destination IP
-       */
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp =
-          computeRoutesWhereDstIpCanBeArpIp(nextHopInterfacesByNodeVrf, routesWithNextHop);
-
       // mapping: hostname -> interface -> ips on which we should assume some external device (not
       // modeled in batfish) is listening, and would reply to ARP in the real world.
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps =
@@ -167,6 +161,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getOrDefault(node, ImmutableMap.of())
                                 .getOrDefault(vrf, ImmutableMap.of());
 
+                        /* interface -> set of routes on that vrf that forward out that interface,
+                         * ARPing for the destination IP
+                         */
+                        Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
+                            computeRoutesWhereDstIpCanBeArpIp(
+                                node, vrf, nextHopInterfacesByNodeVrf, routesWithNextHop);
+
                         /* edge -> routes in this vrf that forward out the source of that edge,
                          * ARPing for the dest IP and receiving a response from the target of the edge.
                          *
@@ -174,8 +175,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                          * due to route leaking, etc
                          */
                         Map<Edge, Set<AbstractRoute>> routesWithDestIpEdge =
-                            computeRoutesWithDestIpEdge(
-                                node, vrf, topology, routesWhereDstIpCanBeArpIp);
+                            computeRoutesWithDestIpEdge(node, topology, routesWhereDstIpCanBeArpIp);
 
                         /* edge -> dst ips for which this vrf forwards out the source of the edge,
                          * ARPing for the dest IP and receiving a reply from the target of the edge.
@@ -542,11 +542,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       String node,
       String vrf,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp,
+      Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp,
       Map<String, Map<String, IpSpace>> someoneReplies) {
     Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(node).get(vrf);
     Map<String, IpSpace> someoneRepliesNode = someoneReplies.getOrDefault(node, ImmutableMap.of());
-    return routesWhereDstIpCanBeArpIp.get(node).get(vrf).entrySet().stream()
+    return routesWhereDstIpCanBeArpIp.entrySet().stream()
         /* null_interface is handled in computeNullRoutedIps */
         .filter(entry -> !entry.getKey().equals(Interface.NULL_INTERFACE_NAME))
         .collect(
@@ -735,63 +735,43 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   /**
-   * Mapping: hostname -&gt; vrfname -&gt; interfacename -&gt; a set of routes where each route has
-   * at least one unset final next hop ip
+   * Mapping: interfacename -&gt; a set of routes where each route has at least one unset final next
+   * hop ip
    */
   @VisibleForTesting
-  static Map<String, Map<String, Map<String, Set<AbstractRoute>>>>
-      computeRoutesWhereDstIpCanBeArpIp(
-          Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
-              nextHopInterfacesByNodeVrf,
-          Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
-    Span span = GlobalTracer.get().buildSpan("construct BDDFlowConstraintGenerator").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          routesWithNextHop,
-          Entry::getKey /* hostname */,
-          nodeEntry -> {
-            String hostname = nodeEntry.getKey();
-            return toImmutableMap(
-                nodeEntry.getValue(),
-                Entry::getKey /* vrf */,
-                vrfEntry -> {
-                  String vrf = vrfEntry.getKey();
-                  Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces =
-                      nextHopInterfacesByNodeVrf.get(hostname).get(vrf);
-                  return toImmutableMap(
-                      vrfEntry.getValue(),
-                      Entry::getKey /* interface */,
-                      ifaceEntry -> {
-                        String iface = ifaceEntry.getKey();
-                        // return a set of routes where each route has
-                        // some final next hop ip unset
-                        return ifaceEntry
-                            .getValue() // routes with this interface as
-                            // outgoing interfaces
-                            .stream()
-                            .filter(
-                                route ->
-                                    nextHopInterfaces
-                                        .get(route)
-                                        .get(iface) // final next hop ips
-                                        .containsKey(Route.UNSET_ROUTE_NEXT_HOP_IP))
-                            .collect(ImmutableSet.toImmutableSet());
-                      });
-                });
-          });
-    } finally {
-      span.finish();
-    }
+  static Map<String, Set<AbstractRoute>> computeRoutesWhereDstIpCanBeArpIp(
+      String node,
+      String vrf,
+      Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
+          nextHopInterfacesByNodeVrf,
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
+    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces =
+        nextHopInterfacesByNodeVrf.get(node).get(vrf);
+    return toImmutableMap(
+        routesWithNextHop.get(node).get(vrf),
+        Entry::getKey /* interface */,
+        ifaceEntry -> {
+          String iface = ifaceEntry.getKey();
+          // return a set of routes where each route has
+          // some final next hop ip unset
+          return ifaceEntry
+              .getValue() // routes with this interface as
+              // outgoing interfaces
+              .stream()
+              .filter(
+                  route ->
+                      nextHopInterfaces
+                          .get(route)
+                          .get(iface) // final next hop ips
+                          .containsKey(Route.UNSET_ROUTE_NEXT_HOP_IP))
+              .collect(ImmutableSet.toImmutableSet());
+        });
   }
 
   @VisibleForTesting
   static Map<Edge, Set<AbstractRoute>> computeRoutesWithDestIpEdge(
-      String node,
-      String vrf,
-      Topology topology,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp) {
-    return routesWhereDstIpCanBeArpIp.get(node).get(vrf).entrySet().stream()
+      String node, Topology topology, Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp) {
+    return routesWhereDstIpCanBeArpIp.entrySet().stream()
         .flatMap(
             ifaceEntry -> {
               NodeInterfacePair out = NodeInterfacePair.of(node, ifaceEntry.getKey());

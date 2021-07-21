@@ -590,8 +590,8 @@ public class ForwardingAnalysisImplTest {
             c1,
             ImmutableMap.of(
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));
+    Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
+        ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute));
     Map<String, Map<String, IpSpace>> someoneReplies =
         ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace()));
     Map<String, IpSpace> result =
@@ -617,8 +617,8 @@ public class ForwardingAnalysisImplTest {
             c1,
             ImmutableMap.of(
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));
+    Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
+        ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute));
     Map<String, Map<String, IpSpace>> someoneReplies = ImmutableMap.of();
     Map<String, IpSpace> result =
         computeArpFalseDestIp(
@@ -846,31 +846,26 @@ public class ForwardingAnalysisImplTest {
                             i1,
                             ImmutableMap.of(
                                 Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute))))));
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        computeRoutesWhereDstIpCanBeArpIp(nextHopInterfacesByNodeVrf, routesWithNextHop);
+    Map<String, Set<AbstractRoute>> result =
+        computeRoutesWhereDstIpCanBeArpIp(c1, v1, nextHopInterfacesByNodeVrf, routesWithNextHop);
 
     /* Only the interface route should show up */
-    assertThat(
-        result,
-        equalTo(
-            ImmutableMap.of(
-                c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))))));
+    assertThat(result, equalTo(ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));
   }
 
   @Test
   public void testComputeRoutesWithDestIpEdge() {
     String c1 = "c1";
     String c2 = "c2";
-    String v1 = "v1";
     String i1 = "i1";
     String i2 = "i2";
     AbstractRoute r1 = new ConnectedRoute(P1, i1);
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
+    Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
+        ImmutableMap.of(i1, ImmutableSet.of(r1));
     Edge e1 = Edge.of(c1, i1, c2, i2);
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     Map<Edge, Set<AbstractRoute>> result =
-        computeRoutesWithDestIpEdge(c1, v1, topology, routesWhereDstIpCanBeArpIp);
+        computeRoutesWithDestIpEdge(c1, topology, routesWhereDstIpCanBeArpIp);
 
     assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
   }
