@@ -36,6 +36,15 @@ public class PrefixTrieMultiMapTest {
     return prefixes;
   }
 
+  private static List<Prefix> keysInPostOrderFiltered(
+      PrefixTrieMultiMap<Integer> map, int maxPrefixLength) {
+    List<Prefix> prefixes = new ArrayList<>();
+    map.traverseEntries(
+        (prefix, elems) -> prefixes.add(prefix),
+        (prefix, elems) -> maxPrefixLength >= prefix.getPrefixLength());
+    return prefixes;
+  }
+
   private static <T> List<Entry<Prefix, Set<T>>> entriesPostOrder(PrefixTrieMultiMap<T> map) {
     List<Entry<Prefix, Set<T>>> entries = new ArrayList<>();
     map.traverseEntries((prefix, elems) -> entries.add(immutableEntry(prefix, elems)));
@@ -235,6 +244,29 @@ public class PrefixTrieMultiMapTest {
 
     List<Prefix> prefixes = keysInPostOrder(map);
     assertThat(prefixes, contains(ll, lr, l, rl, rr, r, Prefix.ZERO));
+  }
+
+  @Test
+  public void testTraverseEntriesFiltered() {
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    Prefix l = Prefix.parse("0.0.0.0/8");
+    Prefix ll = Prefix.parse("0.0.0.0/16");
+    Prefix lr = Prefix.parse("0.128.0.0/16");
+    Prefix r = Prefix.parse("128.0.0.0/8");
+    Prefix rl = Prefix.parse("128.0.0.0/16");
+    Prefix rr = Prefix.parse("128.128.0.0/16");
+
+    map.put(l, 0);
+    map.put(ll, 0);
+    map.put(lr, 0);
+
+    // adding in different order just for fun
+    map.put(rr, 0);
+    map.put(rl, 0);
+    map.put(r, 0);
+
+    List<Prefix> prefixes = keysInPostOrderFiltered(map, 8);
+    assertThat(prefixes, contains(l, r, Prefix.ZERO));
   }
 
   @Test
