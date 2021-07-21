@@ -72,6 +72,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // Unowned (i.e., external to the network) IPs
       BDD unownedIpsBDD = ipSpaceToBDD.visit(ownedIps).not();
 
+      // ARP ips not belonging to any subnet in the network
+      Set<Ip> unownedArpIps = computeUnownedArpIps(fibs, ipSpaceToBDD, unownedIpsBDD);
+
       // IpSpaces matched by each prefix
       // -- only will have entries for active interfaces if FIB is correct
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(fibs);
@@ -239,10 +242,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                       computeDstIpsWithNextHopIpArpFalseFilter(
                                           matchingIps.get(node).get(vrf),
                                           routesWithNextHopIpArpFalse,
-                                          route ->
-                                              ipSpaceToBDD
-                                                  .toBDD(route.getNextHopIp())
-                                                  .andSat(unownedIpsBDD));
+                                          // TODO this should be checking the resolved next hop IP!
+                                          route -> unownedArpIps.contains(route.getNextHopIp()));
 
                                   /* dst IPs for which that VRF forwards out that interface, ARPing
                                    * for some owned next-hop IP with no reply
@@ -251,10 +252,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                       computeDstIpsWithNextHopIpArpFalseFilter(
                                           matchingIps.get(node).get(vrf),
                                           routesWithNextHopIpArpFalse,
-                                          route ->
-                                              !ipSpaceToBDD
-                                                  .toBDD(route.getNextHopIp())
-                                                  .andSat(unownedIpsBDD));
+                                          // TODO this should be checking the resolved next hop IP!
+                                          route -> !unownedArpIps.contains(route.getNextHopIp()));
 
                                   IpSpace deliveredToSubnet =
                                       computeDeliveredToSubnet(
@@ -321,6 +320,21 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     } finally {
       span.finish();
     }
+  }
+
+  private static Set<Ip> computeUnownedArpIps(
+      Map<String, Map<String, Fib>> fibs, IpSpaceToBDD ipSpaceToBDD, BDD unownedIpsBDD) {
+    return fibs.values().stream()
+        .map(Map::values)
+        .flatMap(Collection::stream)
+        .map(Fib::allEntries)
+        .flatMap(Collection::stream)
+        .map(FibEntry::getAction)
+        .filter(FibForward.class::isInstance)
+        .map(fibAction -> ((FibForward) fibAction).getArpIp())
+        .distinct()
+        .filter(arpIp -> ipSpaceToBDD.toBDD(arpIp).andSat(unownedIpsBDD))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
