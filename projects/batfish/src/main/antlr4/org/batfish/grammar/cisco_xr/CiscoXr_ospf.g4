@@ -105,6 +105,7 @@ ro_common
 :
    roc_authentication
    | roc_cost
+   | roc_distribute_list
    | roc_network
    | roc_passive
    | roc_priority
@@ -138,7 +139,7 @@ ro_distance
    DISTANCE value = uint_legacy NEWLINE
 ;
 
-ro_distribute_list
+roc_distribute_list
 :
   DISTRIBUTE_LIST
   (
@@ -419,7 +420,6 @@ s_router_ospf
       | ro_default_information
       | ro_default_metric
       | ro_distance
-      | ro_distribute_list
       | ro_max_metric
       | ro_maximum_paths
       | ro_mpls

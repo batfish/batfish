@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.ospf.OspfMetricType;
@@ -29,14 +28,12 @@ public class OspfProcess implements Serializable {
   private boolean _defaultInformationOriginateAlways;
   private String _defaultInformationOriginateMap;
   private Long _defaultMetric;
-  @Nullable private DistributeList _inboundGlobalDistributeList;
   private Long _maxMetricExternalLsa;
   private boolean _maxMetricIncludeStub;
   private boolean _maxMetricRouterLsa;
   private Long _maxMetricSummaryLsa;
   private final String _name;
   private final OspfSettings _ospfSettings;
-  @Nullable private DistributeList _outboundGlobalDistributeList;
   private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
   private double _referenceBandwidth;
   private Ip _routerId;
@@ -92,11 +89,6 @@ public class OspfProcess implements Serializable {
     return _defaultMetric;
   }
 
-  @Nullable
-  public DistributeList getInboundGlobalDistributeList() {
-    return _inboundGlobalDistributeList;
-  }
-
   public Long getMaxMetricExternalLsa() {
     return _maxMetricExternalLsa;
   }
@@ -119,11 +111,6 @@ public class OspfProcess implements Serializable {
 
   public OspfSettings getOspfSettings() {
     return _ospfSettings;
-  }
-
-  @Nullable
-  public DistributeList getOutboundGlobalDistributeList() {
-    return _outboundGlobalDistributeList;
   }
 
   public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
@@ -162,10 +149,6 @@ public class OspfProcess implements Serializable {
     _defaultMetric = metric;
   }
 
-  public void setInboundGlobalDistributeList(@Nullable DistributeList inboundGlobalDistributeList) {
-    _inboundGlobalDistributeList = inboundGlobalDistributeList;
-  }
-
   public void setMaxMetricExternalLsa(Long maxMetricExternalLsa) {
     _maxMetricExternalLsa = maxMetricExternalLsa;
   }
@@ -180,11 +163,6 @@ public class OspfProcess implements Serializable {
 
   public void setMaxMetricSummaryLsa(Long maxMetricSummaryLsa) {
     _maxMetricSummaryLsa = maxMetricSummaryLsa;
-  }
-
-  public void setOutboundGlobalDistributeList(
-      @Nullable DistributeList outboundGlobalDistributeList) {
-    _outboundGlobalDistributeList = outboundGlobalDistributeList;
   }
 
   public void setReferenceBandwidth(double referenceBandwidth) {

@@ -14,6 +14,14 @@ public class OspfSettings implements Serializable {
     return _deadInterval;
   }
 
+  public @Nullable DistributeList getDistributeListIn() {
+    return _distributeListIn;
+  }
+
+  public @Nullable DistributeList getDistributeListOut() {
+    return _distributeListOut;
+  }
+
   /** Get the time (in seconds) between sending hello messages to neighbors */
   public @Nullable Integer getHelloInterval() {
     return _helloInterval;
@@ -33,6 +41,14 @@ public class OspfSettings implements Serializable {
 
   public void setDeadInterval(@Nullable Integer seconds) {
     _deadInterval = seconds;
+  }
+
+  public void setDistributeListIn(@Nullable DistributeList distributeListIn) {
+    _distributeListIn = distributeListIn;
+  }
+
+  public void setDistributeListOut(@Nullable DistributeList distributeListOut) {
+    _distributeListOut = distributeListOut;
   }
 
   public void setHelloInterval(@Nullable Integer seconds) {
@@ -58,6 +74,12 @@ public class OspfSettings implements Serializable {
     if (_deadInterval == null) {
       setDeadInterval(parent.getDeadInterval());
     }
+    if (_distributeListIn == null) {
+      setDistributeListIn(parent.getDistributeListIn());
+    }
+    if (_distributeListOut == null) {
+      setDistributeListOut(parent.getDistributeListOut());
+    }
     if (_helloInterval == null) {
       setHelloInterval(parent.getHelloInterval());
     }
@@ -71,6 +93,8 @@ public class OspfSettings implements Serializable {
 
   @Nullable private Integer _cost;
   @Nullable private Integer _deadInterval;
+  @Nullable private DistributeList _distributeListIn;
+  @Nullable private DistributeList _distributeListOut;
   @Nullable private Integer _helloInterval;
   @Nullable private OspfNetworkType _networkType;
   @Nullable private Boolean _passive;

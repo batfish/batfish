@@ -246,6 +246,7 @@ import org.batfish.representation.cisco_xr.OspfArea;
 import org.batfish.representation.cisco_xr.OspfInterfaceSettings;
 import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
+import org.batfish.representation.cisco_xr.OspfSettings;
 import org.batfish.representation.cisco_xr.PassesThroughAsPathSetElem;
 import org.batfish.representation.cisco_xr.PeerAs;
 import org.batfish.representation.cisco_xr.PrivateAs;
@@ -1257,59 +1258,180 @@ public final class XrGrammarTest {
   @Test
   public void testOspfDistributeListExtraction() {
     CiscoXrConfiguration c = parseVendorConfig("ospf-distribute-list");
-    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3"));
-    OspfProcess p1 = c.getDefaultVrf().getOspfProcesses().get("1");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
+    OspfSettings settings1 = c.getDefaultVrf().getOspfProcesses().get("1").getOspfSettings();
     assertThat(
-        p1.getInboundGlobalDistributeList(),
+        settings1.getDistributeListIn(),
         equalTo(new DistributeList("RP", DistributeListFilterType.ROUTE_POLICY)));
     assertThat(
-        p1.getOutboundGlobalDistributeList(),
+        settings1.getDistributeListOut(),
         equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
-    OspfProcess p2 = c.getDefaultVrf().getOspfProcesses().get("2");
+    OspfSettings settings2 = c.getDefaultVrf().getOspfProcesses().get("2").getOspfSettings();
     assertThat(
-        p2.getInboundGlobalDistributeList(),
+        settings2.getDistributeListIn(),
         equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
-    assertThat(p2.getOutboundGlobalDistributeList(), nullValue());
-    OspfProcess p3 = c.getDefaultVrf().getOspfProcesses().get("3");
+    assertThat(settings2.getDistributeListOut(), nullValue());
+    OspfSettings settings3 = c.getDefaultVrf().getOspfProcesses().get("3").getOspfSettings();
     assertThat(
-        p3.getInboundGlobalDistributeList(),
+        settings3.getDistributeListIn(),
         equalTo(new DistributeList("PL1", DistributeListFilterType.PREFIX_LIST)));
     assertThat(
-        p3.getOutboundGlobalDistributeList(),
+        settings3.getDistributeListOut(),
         equalTo(new DistributeList("PL2", DistributeListFilterType.PREFIX_LIST)));
+
+    // Process 4 has distribute lists set at process, area, and interface levels
+    OspfProcess proc4 = c.getDefaultVrf().getOspfProcesses().get("4");
+    OspfSettings proc4Settings = proc4.getOspfSettings();
+    assertThat(
+        proc4Settings.getDistributeListIn(),
+        equalTo(new DistributeList("ACL1", DistributeListFilterType.ACCESS_LIST)));
+    assertThat(
+        proc4Settings.getDistributeListOut(),
+        equalTo(new DistributeList("ACL2", DistributeListFilterType.ACCESS_LIST)));
+    {
+      // Area 4 does not have distribute lists at area or interface levels
+      OspfArea area = proc4.getAreas().get(4L);
+      OspfSettings areaSettings = area.getOspfSettings();
+      assertNull(areaSettings.getDistributeListIn());
+      assertNull(areaSettings.getDistributeListOut());
+      OspfSettings ifaceSettings =
+          area.getInterfaceSettings().get("GigabitEthernet0/0/0/4").getOspfSettings();
+      assertNull(ifaceSettings.getDistributeListIn());
+      assertNull(ifaceSettings.getDistributeListOut());
+    }
+    {
+      // Area 5 has distribute lists at area level but not interface level
+      OspfArea area = proc4.getAreas().get(5L);
+      OspfSettings areaSettings = area.getOspfSettings();
+      assertThat(
+          areaSettings.getDistributeListIn(),
+          equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
+      assertThat(
+          areaSettings.getDistributeListOut(),
+          equalTo(new DistributeList("ACL4", DistributeListFilterType.ACCESS_LIST)));
+      OspfSettings ifaceSettings =
+          area.getInterfaceSettings().get("GigabitEthernet0/0/0/5").getOspfSettings();
+      assertNull(ifaceSettings.getDistributeListIn());
+      assertNull(ifaceSettings.getDistributeListOut());
+    }
+    {
+      // Area 6 has distribute lists at interface level but not area level
+      OspfArea area = proc4.getAreas().get(6L);
+      OspfSettings areaSettings = area.getOspfSettings();
+      assertNull(areaSettings.getDistributeListIn());
+      assertNull(areaSettings.getDistributeListOut());
+      OspfSettings ifaceSettings =
+          area.getInterfaceSettings().get("GigabitEthernet0/0/0/6").getOspfSettings();
+      assertThat(
+          ifaceSettings.getDistributeListIn(),
+          equalTo(new DistributeList("ACL5", DistributeListFilterType.ACCESS_LIST)));
+      assertThat(
+          ifaceSettings.getDistributeListOut(),
+          equalTo(new DistributeList("ACL6", DistributeListFilterType.ACCESS_LIST)));
+    }
+    {
+      // Area 7 has distribute lists at both area and interface levels
+      OspfArea area = proc4.getAreas().get(7L);
+      OspfSettings areaSettings = area.getOspfSettings();
+      assertThat(
+          areaSettings.getDistributeListIn(),
+          equalTo(new DistributeList("ACL3", DistributeListFilterType.ACCESS_LIST)));
+      assertThat(
+          areaSettings.getDistributeListOut(),
+          equalTo(new DistributeList("ACL4", DistributeListFilterType.ACCESS_LIST)));
+      OspfSettings ifaceSettings =
+          area.getInterfaceSettings().get("GigabitEthernet0/0/0/7").getOspfSettings();
+      assertThat(
+          ifaceSettings.getDistributeListIn(),
+          equalTo(new DistributeList("ACL5", DistributeListFilterType.ACCESS_LIST)));
+      assertThat(
+          ifaceSettings.getDistributeListOut(),
+          equalTo(new DistributeList("ACL6", DistributeListFilterType.ACCESS_LIST)));
+    }
   }
 
   @Test
   public void testOspfDistributeListConversion() {
     Configuration c = parseConfig("ospf-distribute-list");
-    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3"));
-
-    String iface1Name = "GigabitEthernet0/0/0/1";
-    String iface2Name = "GigabitEthernet0/0/0/2";
-    String iface3Name = "GigabitEthernet0/0/0/3";
-    org.batfish.datamodel.ospf.OspfInterfaceSettings settings1 =
-        c.getActiveInterfaces().get(iface1Name).getOspfSettings();
-    org.batfish.datamodel.ospf.OspfInterfaceSettings settings2 =
-        c.getActiveInterfaces().get(iface2Name).getOspfSettings();
-    org.batfish.datamodel.ospf.OspfInterfaceSettings settings3 =
-        c.getActiveInterfaces().get(iface3Name).getOspfSettings();
-    assert settings1 != null && settings2 != null && settings3 != null;
-
-    // First OSPF process uses a routing policy called RP for inbound distribute-list
-    assertThat(settings1.getInboundDistributeListPolicy(), equalTo("RP"));
-    assertThat(c.getRoutingPolicies(), hasKey("RP"));
-
-    // Second OSPF process uses an ACL for inbound distribute-list.
-    // Semantics of the generated routing policy are tested elsewhere.
-    String generatedRpNameProc2 = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "2");
-    assertThat(settings2.getInboundDistributeListPolicy(), equalTo(generatedRpNameProc2));
-    assertThat(c.getRoutingPolicies(), hasKey(generatedRpNameProc2));
-
-    // Third OSPF process uses a prefix-set for inbound distribute-list.
-    // Semantics of the generated routing policy are tested elsewhere.
-    String generatedRpNameProc3 = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "3");
-    assertThat(settings3.getInboundDistributeListPolicy(), equalTo(generatedRpNameProc3));
-    assertThat(c.getRoutingPolicies(), hasKey(generatedRpNameProc3));
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
+    {
+      // First OSPF process uses a routing policy called RP for inbound distribute-list
+      Interface iface = c.getActiveInterfaces().get("GigabitEthernet0/0/0/1");
+      assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo("RP"));
+      assertThat(c.getRoutingPolicies(), hasKey("RP"));
+    }
+    {
+      // Second OSPF process uses an ACL for inbound distribute-list.
+      // Semantics of the generated routing policy are tested elsewhere.
+      String ifaceName = "GigabitEthernet0/0/0/2";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "2", 2, ifaceName);
+      Interface iface = c.getActiveInterfaces().get(ifaceName);
+      assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
+      assertThat(c.getRoutingPolicies(), hasKey(rpName));
+    }
+    {
+      // Third OSPF process uses a prefix-set for inbound distribute-list.
+      // Semantics of the generated routing policy are tested elsewhere.
+      String ifaceName = "GigabitEthernet0/0/0/3";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "3", 3, ifaceName);
+      Interface iface = c.getActiveInterfaces().get(ifaceName);
+      assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
+      assertThat(c.getRoutingPolicies(), hasKey(rpName));
+    }
+    /*
+    Fourth OSPF process is for testing inheritance. When configured:
+    - Process-level distribute list permits 1.1.1.0/24
+    - Area-level distribute list permits 3.3.3.0/24
+    - Interface-level distribute list permits 5.5.5.0/24
+    */
+    StaticRoute.Builder srb = StaticRoute.testBuilder();
+    StaticRoute permittedByProcList = srb.setNetwork(Prefix.parse("1.1.1.0/24")).build();
+    StaticRoute permittedByAreaList = srb.setNetwork(Prefix.parse("3.3.3.0/24")).build();
+    StaticRoute permittedByIfaceList = srb.setNetwork(Prefix.parse("5.5.5.0/24")).build();
+    {
+      // Area 4: Interface inherits process-level distribute list
+      String ifaceName = "GigabitEthernet0/0/0/4";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "4", 4, ifaceName);
+      Interface iface = c.getActiveInterfaces().get(ifaceName);
+      assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
+      RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+      assertRoutingPolicyPermitsRoute(rp, permittedByProcList);
+      assertRoutingPolicyDeniesRoute(rp, permittedByAreaList);
+      assertRoutingPolicyDeniesRoute(rp, permittedByIfaceList);
+    }
+    {
+      // Area 5: Interface inherits area-level distribute list
+      String ifaceName = "GigabitEthernet0/0/0/5";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "4", 5, ifaceName);
+      Interface iface = c.getActiveInterfaces().get(ifaceName);
+      assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
+      RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+      assertRoutingPolicyDeniesRoute(rp, permittedByProcList);
+      assertRoutingPolicyPermitsRoute(rp, permittedByAreaList);
+      assertRoutingPolicyDeniesRoute(rp, permittedByIfaceList);
+    }
+    {
+      // Area 6: Interface has its own distribute lists, overriding process-level lists
+      String ifaceName = "GigabitEthernet0/0/0/6";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "4", 6, ifaceName);
+      Interface iface = c.getActiveInterfaces().get(ifaceName);
+      assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
+      RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+      assertRoutingPolicyDeniesRoute(rp, permittedByProcList);
+      assertRoutingPolicyDeniesRoute(rp, permittedByAreaList);
+      assertRoutingPolicyPermitsRoute(rp, permittedByIfaceList);
+    }
+    {
+      // Area 7: Interface has its own distribute lists, overriding both process and area lists
+      String ifaceName = "GigabitEthernet0/0/0/7";
+      String rpName = generatedOspfInboundDistributeListName(DEFAULT_VRF_NAME, "4", 7, ifaceName);
+      Interface iface = c.getActiveInterfaces().get(ifaceName);
+      assertThat(iface.getOspfSettings().getInboundDistributeListPolicy(), equalTo(rpName));
+      RoutingPolicy rp = c.getRoutingPolicies().get(rpName);
+      assertRoutingPolicyDeniesRoute(rp, permittedByProcList);
+      assertRoutingPolicyDeniesRoute(rp, permittedByAreaList);
+      assertRoutingPolicyPermitsRoute(rp, permittedByIfaceList);
+    }
   }
 
   @Test

@@ -5995,12 +5995,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.IN() != null) {
       _configuration.referenceStructure(
           IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN, ctx.acl.getStart().getLine());
-      _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
+      _currentOspfSettings.setDistributeListIn(distributeList);
     } else {
       assert ctx.OUT() != null;
       _configuration.referenceStructure(
           IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT, ctx.acl.getStart().getLine());
-      _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
+      _currentOspfSettings.setDistributeListOut(distributeList);
       todo(ctx);
     }
   }
@@ -6013,12 +6013,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     if (ctx.IN() != null) {
       _configuration.referenceStructure(
           IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN, ctx.pl.getStart().getLine());
-      _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
+      _currentOspfSettings.setDistributeListIn(distributeList);
     } else {
       assert ctx.OUT() != null;
       _configuration.referenceStructure(
           IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT, ctx.pl.getStart().getLine());
-      _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
+      _currentOspfSettings.setDistributeListOut(distributeList);
       todo(ctx);
     }
   }
@@ -6030,7 +6030,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         ROUTE_POLICY, name, OSPF_DISTRIBUTE_LIST_ROUTE_POLICY_IN, ctx.rp.getStart().getLine());
 
     DistributeList distributeList = new DistributeList(name, DistributeListFilterType.ROUTE_POLICY);
-    _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
+    _currentOspfSettings.setDistributeListIn(distributeList);
   }
 
   @Override
