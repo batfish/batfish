@@ -308,10 +308,8 @@ public class ForwardingAnalysisImplTest {
     IpSpace dstIpSpace = new MockIpSpace(2);
     Edge e1 = Edge.of("c1", "i1", "c2", "i2");
     Map<Edge, IpSpace> arpTrueEdgeDestIp = ImmutableMap.of(e1, dstIpSpace);
-    Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp =
-        ImmutableMap.of("c1", ImmutableMap.of("v1", ImmutableMap.of(e1, nextHopIpSpace)));
-    Map<Edge, IpSpace> result =
-        computeArpTrueEdge("c1", "v1", arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
+    Map<Edge, IpSpace> arpTrueEdgeNextHopIp = ImmutableMap.of(e1, nextHopIpSpace);
+    Map<Edge, IpSpace> result = computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
     assertThat(
         result,
@@ -421,47 +419,23 @@ public class ForwardingAnalysisImplTest {
                             .setNextHopIp(P2.getStartIp())
                             .setAdministrativeCost(1)
                             .build()))));
-    Map<String, Map<String, Map<Edge, IpSpace>>> result =
-        computeArpTrueEdgeNextHopIp(computeMatchingIps(fibs), routesWithNextHopIpArpTrue);
+    Map<Edge, IpSpace> result =
+        computeArpTrueEdgeNextHopIp(
+            c1.getHostname(), vrf1.getName(), computeMatchingIps(fibs), routesWithNextHopIpArpTrue);
 
     /*
      * Respond for any destination IP in network not matching more specific route not going out i1.
      */
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()), hasEntry(equalTo(edge), containsIp(P1.getStartIp())))));
+    assertThat(result, hasEntry(equalTo(edge), containsIp(P1.getStartIp())));
 
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(equalTo(vrf1.getName()), hasEntry(equalTo(edge), containsIp(i2Ip)))));
+    assertThat(result, hasEntry(equalTo(edge), containsIp(i2Ip)));
 
     /* Do not respond for destination IP matching more specific route not going out i1 */
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()), hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))))));
+    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P1.getEndIp()))));
 
     /* Do not respond for destination IPs not matching route */
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()),
-                hasEntry(equalTo(edge), not(containsIp(P2.getStartIp()))))));
-    assertThat(
-        result,
-        hasEntry(
-            equalTo(c1.getHostname()),
-            hasEntry(
-                equalTo(vrf1.getName()), hasEntry(equalTo(edge), not(containsIp(P2.getEndIp()))))));
+    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P2.getStartIp()))));
+    assertThat(result, hasEntry(equalTo(edge), not(containsIp(P2.getEndIp()))));
   }
 
   @Test

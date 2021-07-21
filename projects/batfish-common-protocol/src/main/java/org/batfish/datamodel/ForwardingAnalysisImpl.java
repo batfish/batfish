@@ -181,15 +181,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
           computeRoutesWithNextHopIpArpTrue(
               nextHopInterfacesByNodeVrf, topology, _arpReplies, routesWithNextHop);
 
-      /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
-       * ARPing for some next-hop IP and receiving a reply from the target of the edge.
-       *
-       * Note: the source interface of the edge must be in the node, but may not be in the vrf,
-       * due to route leaking, etc
-       */
-      Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp =
-          computeArpTrueEdgeNextHopIp(matchingIps, routesWithNextHopIpArpTrue);
-
       // mapping: hostname -> interface -> ips on which we should assume some external device (not
       // modeled in batfish) is listening, and would reply to ARP in the real world.
       Map<String, Map<String, IpSpace>> interfaceExternalArpIps =
@@ -242,8 +233,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                             computeArpTrueEdgeDestIp(
                                 node, vrf, matchingIps, routesWithDestIpEdge, _arpReplies);
 
+                        /* edge -> dst ips for which this vrf forwards out the source of the edge,
+                         * ARPing for some next-hop IP and receiving a reply from the target of the edge.
+                         *
+                         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+                         * due to route leaking, etc
+                         */
+                        Map<Edge, IpSpace> arpTrueEdgeNextHopIp =
+                            computeArpTrueEdgeNextHopIp(
+                                node, vrf, matchingIps, routesWithNextHopIpArpTrue);
+
                         Map<Edge, IpSpace> arpTrueEdge =
-                            computeArpTrueEdge(node, vrf, arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
+                            computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
                         // _arpFalse may include interfaces in other VRFs that we forward out
                         // through due to VRF leaking
@@ -382,16 +383,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static Map<Edge, IpSpace> computeArpTrueEdge(
-      String node,
-      String vrf,
-      Map<Edge, IpSpace> arpTrueEdgeDestIp,
-      Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp) {
-    Map<Edge, IpSpace> nextHopIp = arpTrueEdgeNextHopIp.get(node).get(vrf);
-    return Sets.union(arpTrueEdgeDestIp.keySet(), nextHopIp.keySet()).stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Function.identity(),
-                edge -> AclIpSpace.union(arpTrueEdgeDestIp.get(edge), nextHopIp.get(edge))));
+      Map<Edge, IpSpace> arpTrueEdgeDestIp, Map<Edge, IpSpace> arpTrueEdgeNextHopIp) {
+    return toImmutableMap(
+        Sets.union(arpTrueEdgeDestIp.keySet(), arpTrueEdgeNextHopIp.keySet()),
+        Function.identity(), // edge
+        edge -> AclIpSpace.union(arpTrueEdgeDestIp.get(edge), arpTrueEdgeNextHopIp.get(edge)));
   }
 
   @VisibleForTesting
@@ -419,35 +415,16 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, Map<Edge, IpSpace>>> computeArpTrueEdgeNextHopIp(
+  static Map<Edge, IpSpace> computeArpTrueEdgeNextHopIp(
+      String node,
+      String vrf,
       Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
       Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithNextHopIpArpTrue) {
-    Span span =
-        GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpTrueEdgeNextHopIp").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          routesWithNextHopIpArpTrue,
-          Entry::getKey, // node
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
-                  Entry::getKey, // vrf
-                  vrfEntry ->
-                      vrfEntry.getValue().entrySet().stream()
-                          .collect(
-                              ImmutableMap.toImmutableMap(
-                                  Entry::getKey, // edge
-                                  edgeEntry -> {
-                                    String hostname = nodeEntry.getKey();
-                                    String vrf = vrfEntry.getKey();
-                                    Set<AbstractRoute> routes = edgeEntry.getValue();
-                                    return computeRouteMatchConditions(
-                                        routes, matchingIps.get(hostname).get(vrf));
-                                  }))));
-    } finally {
-      span.finish();
-    }
+    return toImmutableMap(
+        routesWithNextHopIpArpTrue.get(node).get(vrf),
+        Entry::getKey, // edge
+        edgeEntry ->
+            computeRouteMatchConditions(edgeEntry.getValue(), matchingIps.get(node).get(vrf)));
   }
 
   @VisibleForTesting
