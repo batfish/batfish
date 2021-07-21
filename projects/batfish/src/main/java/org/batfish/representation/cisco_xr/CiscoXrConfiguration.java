@@ -1353,6 +1353,13 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         ImmutableList.of());
   }
 
+  /**
+   * Copies configured {@link OspfSettings} from each {@link OspfProcess} into its member {@link
+   * org.batfish.representation.cisco_xr.OspfArea areas}, and from each area into its member {@link
+   * OspfInterfaceSettings interfaces}.
+   *
+   * @see OspfSettings#inheritFrom(OspfSettings)
+   */
   private static void inheritOspfSettings(OspfProcess proc) {
     OspfSettings procSettings = proc.getOspfSettings();
     for (org.batfish.representation.cisco_xr.OspfArea area : proc.getAreas().values()) {
