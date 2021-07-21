@@ -40,10 +40,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   // node -> interface -> ips that the interface would reply arp request
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 
-  // node -> vrf -> edge -> dest IPs for which the vrf will forward out the source of the edge,
-  // ARPing for some ARP IP and receiving a reply from the target of the edge.
-  private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
-
   // node -> vrf -> interface -> destination IPs for which arp will fail
   private final Map<String, Map<String, Map<String, IpSpace>>> _arpFalse;
 
@@ -121,91 +117,87 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
        * for some owned next-hop IP with no reply
        */
       Map<String, Map<String, Map<String, IpSpace>>> dstIpsWithOwnedNextHopIpArpFalse;
-      {
-        Map<String, Map<String, IpSpace>> someoneReplies =
-            computeSomeoneReplies(topology, _arpReplies);
+      Map<String, Map<String, IpSpace>> someoneReplies =
+          computeSomeoneReplies(topology, _arpReplies);
 
-        /*
-         * Mapping: node -> vrf -> route -> nexthopinterface -> resolved nextHopIp ->
-         * interfaceRoutes
-         */
-        Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
-            nextHopInterfacesByNodeVrf = computeNextHopInterfacesByNodeVrf(fibs);
+      /*
+       * Mapping: node -> vrf -> route -> nexthopinterface -> resolved nextHopIp ->
+       * interfaceRoutes
+       */
+      Map<String, Map<String, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>>
+          nextHopInterfacesByNodeVrf = computeNextHopInterfacesByNodeVrf(fibs);
 
-        /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
-         * with a next hop ip that gets no arp replies
-         */
-        Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse =
-            computeRoutesWithNextHopIpArpFalse(
-                nextHopInterfacesByNodeVrf, routesWithNextHop, someoneReplies);
+      /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface
+       * with a next hop ip that gets no arp replies
+       */
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse =
+          computeRoutesWithNextHopIpArpFalse(
+              nextHopInterfacesByNodeVrf, routesWithNextHop, someoneReplies);
 
-        dstIpsWithUnownedNextHopIpArpFalse =
-            computeDstIpsWithNextHopIpArpFalseFilter(
-                matchingIps,
-                routesWithNextHopIpArpFalse,
-                route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
+      dstIpsWithUnownedNextHopIpArpFalse =
+          computeDstIpsWithNextHopIpArpFalseFilter(
+              matchingIps,
+              routesWithNextHopIpArpFalse,
+              route -> ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
-        dstIpsWithOwnedNextHopIpArpFalse =
-            computeDstIpsWithNextHopIpArpFalseFilter(
-                matchingIps,
-                routesWithNextHopIpArpFalse,
-                route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
+      dstIpsWithOwnedNextHopIpArpFalse =
+          computeDstIpsWithNextHopIpArpFalseFilter(
+              matchingIps,
+              routesWithNextHopIpArpFalse,
+              route -> !ipSpaceToBDD.toBDD(route.getNextHopIp()).andSat(unownedIpsBDD));
 
-        /* node -> vrf -> interface -> dst ips for which that vrf forwards out that interface,
-         * ARPing for a next-hop IP and receiving no reply
-         */
-        Map<String, Map<String, Map<String, IpSpace>>> arpFalseNextHopIp =
-            computeArpFalseNextHopIp(matchingIps, routesWithNextHopIpArpFalse);
+      /* node -> vrf -> interface -> dst ips for which that vrf forwards out that interface,
+       * ARPing for a next-hop IP and receiving no reply
+       */
+      Map<String, Map<String, Map<String, IpSpace>>> arpFalseNextHopIp =
+          computeArpFalseNextHopIp(matchingIps, routesWithNextHopIpArpFalse);
 
-        /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface,
-         * ARPing for the destination IP
-         */
-        Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp =
-            computeRoutesWhereDstIpCanBeArpIp(nextHopInterfacesByNodeVrf, routesWithNextHop);
+      /* node -> vrf -> interface -> set of routes on that vrf that forward out that interface,
+       * ARPing for the destination IP
+       */
+      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWhereDstIpCanBeArpIp =
+          computeRoutesWhereDstIpCanBeArpIp(nextHopInterfacesByNodeVrf, routesWithNextHop);
 
-        arpFalseDestIp =
-            computeArpFalseDestIp(matchingIps, routesWhereDstIpCanBeArpIp, someoneReplies);
-        _arpFalse = union(arpFalseDestIp, arpFalseNextHopIp);
+      arpFalseDestIp =
+          computeArpFalseDestIp(matchingIps, routesWhereDstIpCanBeArpIp, someoneReplies);
+      _arpFalse = union(arpFalseDestIp, arpFalseNextHopIp);
 
-        /* node -> vrf -> edge -> routes in that vrf that forward out the source of that edge,
-         * ARPing for the dest IP and receiving a response from the target of the edge.
-         *
-         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
-         * due to route leaking, etc
-         */
-        Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithDestIpEdge =
-            computeRoutesWithDestIpEdge(topology, routesWhereDstIpCanBeArpIp);
+      /* node -> vrf -> edge -> routes in that vrf that forward out the source of that edge,
+       * ARPing for the dest IP and receiving a response from the target of the edge.
+       *
+       * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+       * due to route leaking, etc
+       */
+      Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithDestIpEdge =
+          computeRoutesWithDestIpEdge(topology, routesWhereDstIpCanBeArpIp);
 
-        /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
-         * ARPing for the dest IP and receiving a reply from the target of the edge.
-         *
-         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
-         * due to route leaking, etc
-         */
-        Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp =
-            computeArpTrueEdgeDestIp(matchingIps, routesWithDestIpEdge, _arpReplies);
+      /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
+       * ARPing for the dest IP and receiving a reply from the target of the edge.
+       *
+       * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+       * due to route leaking, etc
+       */
+      Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp =
+          computeArpTrueEdgeDestIp(matchingIps, routesWithDestIpEdge, _arpReplies);
 
-        /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
-         * ARPing for some next-hop IP and receiving a reply from the target of the edge.
-         *
-         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
-         * due to route leaking, etc
-         */
-        Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithNextHopIpArpTrue =
-            computeRoutesWithNextHopIpArpTrue(
-                nextHopInterfacesByNodeVrf, topology, _arpReplies, routesWithNextHop);
+      /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
+       * ARPing for some next-hop IP and receiving a reply from the target of the edge.
+       *
+       * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+       * due to route leaking, etc
+       */
+      Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithNextHopIpArpTrue =
+          computeRoutesWithNextHopIpArpTrue(
+              nextHopInterfacesByNodeVrf, topology, _arpReplies, routesWithNextHop);
 
-        /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
-         * ARPing for some next-hop IP and receiving a reply from the target of the edge.
-         *
-         * Note: the source interface of the edge must be in the node, but may not be in the vrf,
-         * due to route leaking, etc
-         */
-        Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp =
-            computeArpTrueEdgeNextHopIp(matchingIps, routesWithNextHopIpArpTrue);
-
-        _arpTrueEdge = computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
-      }
+      /* node -> vrf -> edge -> dst ips for which that vrf forwards out the source of the edge,
+       * ARPing for some next-hop IP and receiving a reply from the target of the edge.
+       *
+       * Note: the source interface of the edge must be in the node, but may not be in the vrf,
+       * due to route leaking, etc
+       */
+      Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp =
+          computeArpTrueEdgeNextHopIp(matchingIps, routesWithNextHopIpArpTrue);
 
       // mapping: hostname -> interface -> ips on which we should assume some external device (not
       // modeled in batfish) is listening, and would reply to ARP in the real world.
@@ -248,6 +240,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 .getVrfIfaceOwnedIpSpaces()
                                 .getOrDefault(node, ImmutableMap.of())
                                 .getOrDefault(vrf, ImmutableMap.of());
+
+                        Map<Edge, IpSpace> arpTrueEdge =
+                            computeArpTrueEdge(node, vrf, arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
                         // _arpFalse may include interfaces in other VRFs that we forward out
                         // through due to VRF leaking
@@ -311,7 +306,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                 });
 
                         return VrfForwardingBehavior.builder()
-                            .setArpTrueEdge(_arpTrueEdge.get(node).get(vrf))
+                            .setArpTrueEdge(arpTrueEdge)
                             .setInterfaceForwardingBehavior(interfaceForwardingBehavior)
                             .setNextVrf(_nextVrfIpsByNodeVrf.get(node).get(vrf))
                             .setNullRoutedIps(_nullRoutedIps.get(node).get(vrf))
@@ -385,32 +380,18 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Map<String, Map<String, Map<Edge, IpSpace>>> computeArpTrueEdge(
+  static Map<Edge, IpSpace> computeArpTrueEdge(
+      String node,
+      String vrf,
       Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeDestIp,
       Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp) {
-    Span span = GlobalTracer.get().buildSpan("ForwardingAnalysisImpl.computeArpTrueEdge").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          arpTrueEdgeDestIp,
-          Entry::getKey, // node
-          nodeEntry ->
-              toImmutableMap(
-                  nodeEntry.getValue(),
-                  Entry::getKey, // vrf
-                  vrfEntry -> {
-                    Map<Edge, IpSpace> dstIp = vrfEntry.getValue();
-                    Map<Edge, IpSpace> nextHopIp =
-                        arpTrueEdgeNextHopIp.get(nodeEntry.getKey()).get(vrfEntry.getKey());
-                    return Sets.union(dstIp.keySet(), nextHopIp.keySet()).stream()
-                        .collect(
-                            ImmutableMap.toImmutableMap(
-                                Function.identity(),
-                                edge -> AclIpSpace.union(dstIp.get(edge), nextHopIp.get(edge))));
-                  }));
-    } finally {
-      span.finish();
-    }
+    Map<Edge, IpSpace> dstIp = arpTrueEdgeDestIp.get(node).get(vrf);
+    Map<Edge, IpSpace> nextHopIp = arpTrueEdgeNextHopIp.get(node).get(vrf);
+    return Sets.union(dstIp.keySet(), nextHopIp.keySet()).stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Function.identity(),
+                edge -> AclIpSpace.union(dstIp.get(edge), nextHopIp.get(edge))));
   }
 
   @VisibleForTesting

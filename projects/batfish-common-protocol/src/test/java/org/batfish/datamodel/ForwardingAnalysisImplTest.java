@@ -311,22 +311,18 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of("c1", ImmutableMap.of("v1", ImmutableMap.of(e1, dstIpSpace)));
     Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdgeNextHopIp =
         ImmutableMap.of("c1", ImmutableMap.of("v1", ImmutableMap.of(e1, nextHopIpSpace)));
-    Map<String, Map<String, Map<Edge, IpSpace>>> result =
-        computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
+    Map<Edge, IpSpace> result =
+        computeArpTrueEdge("c1", "v1", arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
     assertThat(
         result,
         hasEntry(
-            equalTo("c1"),
-            hasEntry(
-                equalTo("v1"),
-                hasEntry(
-                    equalTo(e1),
-                    isAclIpSpaceThat(
-                        hasLines(
-                            containsInAnyOrder(
-                                AclIpSpaceLine.permit(nextHopIpSpace),
-                                AclIpSpaceLine.permit(dstIpSpace))))))));
+            equalTo(e1),
+            isAclIpSpaceThat(
+                hasLines(
+                    containsInAnyOrder(
+                        AclIpSpaceLine.permit(nextHopIpSpace),
+                        AclIpSpaceLine.permit(dstIpSpace))))));
   }
 
   @Test
