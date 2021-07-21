@@ -1069,49 +1069,37 @@ public class ForwardingAnalysisImplTest {
 
   @Test
   public void testComputeDeliveredToSubnetNoArpFalse() {
-    String c1 = "c1";
-    String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = EmptyIpSpace.INSTANCE;
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
+    IpSpace interfaceHostSubnetIps = ip.toIpSpace();
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
-    IpSpace result =
-        computeDeliveredToSubnet(c1, i1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+    IpSpace result = computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
     assertThat(result, not(containsIp(ip)));
   }
 
   @Test
   public void testComputeDeliveredToSubnetNoInterfaceHostIps() {
-    String c1 = "c1";
-    String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = ip.toIpSpace();
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, EmptyIpSpace.INSTANCE));
+    IpSpace interfaceHostSubnetIps = EmptyIpSpace.INSTANCE;
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
-    IpSpace result =
-        computeDeliveredToSubnet(c1, i1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+    IpSpace result = computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
     assertThat(result, not(containsIp(ip)));
   }
 
   @Test
   public void testComputeDeliveredToSubnetEqual() {
-    String c1 = "c1";
-    String i1 = "i1";
     Ip ip = Ip.parse("10.0.0.1");
 
     IpSpace arpFalseDestIp = ip.toIpSpace();
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps =
-        ImmutableMap.of(c1, ImmutableMap.of(i1, ip.toIpSpace()));
+    IpSpace interfaceHostSubnetIps = ip.toIpSpace();
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
-    IpSpace result =
-        computeDeliveredToSubnet(c1, i1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+    IpSpace result = computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
     assertThat(result, containsIp(ip));
   }
 
@@ -1133,12 +1121,7 @@ public class ForwardingAnalysisImplTest {
 
     AclIpSpace.Builder internalIpsBuilder = AclIpSpace.builder();
 
-    Map<String, Set<String>> interfacesWithMissingDevices;
-    if (!isSubnetFull) {
-      interfacesWithMissingDevices = ImmutableMap.of(CONFIG1, ImmutableSet.of(INTERFACE1));
-    } else {
-      interfacesWithMissingDevices = ImmutableMap.of(CONFIG1, ImmutableSet.of());
-    }
+    boolean hasMissingDevices = !isSubnetFull;
 
     IpSpace arpFalseDestIp;
     IpSpace dstIpsWithOwnedNextHopIpArpFalse;
@@ -1165,13 +1148,11 @@ public class ForwardingAnalysisImplTest {
     IpSpace internalIps = internalIpsBuilder.build();
     IpSpace externalIps = internalIps.complement();
 
-    Map<String, Map<String, IpSpace>> interfaceHostSubnetIps;
+    IpSpace interfaceHostSubnetIps;
     if (isDstIpInSubnet) {
-      interfaceHostSubnetIps =
-          ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, dstPrefix.toIpSpace()));
+      interfaceHostSubnetIps = dstPrefix.toIpSpace();
     } else {
-      interfaceHostSubnetIps =
-          ImmutableMap.of(CONFIG1, ImmutableMap.of(INTERFACE1, EmptyIpSpace.INSTANCE));
+      interfaceHostSubnetIps = EmptyIpSpace.INSTANCE;
     }
 
     IpSpace arpFalse = dstPrefix.toIpSpace();
@@ -1179,36 +1160,22 @@ public class ForwardingAnalysisImplTest {
     IpSpace ownedIps = EmptyIpSpace.INSTANCE;
 
     IpSpace deliveredToSubnetIpSpace =
-        computeDeliveredToSubnet(
-            CONFIG1, INTERFACE1, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
+        computeDeliveredToSubnet(arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
     IpSpace exitsNetworkIpSpace =
         computeExitsNetwork(
-            CONFIG1,
-            INTERFACE1,
-            interfacesWithMissingDevices,
-            dstIpsWithUnownedNextHopIpArpFalse,
-            arpFalseDestIp,
-            externalIps);
+            hasMissingDevices, dstIpsWithUnownedNextHopIpArpFalse, arpFalseDestIp, externalIps);
 
     IpSpace insufficientInfoIpSpace =
         computeInsufficientInfo(
-            CONFIG1,
-            INTERFACE1,
             interfaceHostSubnetIps,
-            interfacesWithMissingDevices,
+            hasMissingDevices,
             arpFalseDestIp,
             dstIpsWithUnownedNextHopIpArpFalse,
             dstIpsWithOwnedNextHopIpArpFalse,
             internalIps);
     IpSpace neighborUnreachableIpSpace =
         computeNeighborUnreachable(
-            CONFIG1,
-            INTERFACE1,
-            arpFalse,
-            interfacesWithMissingDevices,
-            arpFalseDestIp,
-            interfaceHostSubnetIps,
-            ownedIps);
+            arpFalse, hasMissingDevices, arpFalseDestIp, interfaceHostSubnetIps, ownedIps);
 
     if (expectedDisposition == FlowDisposition.EXITS_NETWORK) {
       assertThat(exitsNetworkIpSpace, containsIp(dstPrefix.getStartIp()));
