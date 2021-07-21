@@ -19,10 +19,9 @@ ro_area
 ro_area_inner
 :
   ro_common
-  | roa_cost
   | roa_interface
   | roa_mpls
-  | roa_network
+  | roa_nssa
   | roa_range
 ;
 
@@ -87,7 +86,7 @@ ro_area_stub
    )* NEWLINE
 ;
 
-ro_authentication
+roc_authentication
 :
    AUTHENTICATION MESSAGE_DIGEST? NEWLINE
 ;
@@ -101,12 +100,15 @@ ro_auto_cost
    )? NEWLINE
 ;
 
+// Statements that can appear in router, area, or interface contexts
 ro_common
 :
-   ro_authentication
-   | ro_nssa
-   | ro_rfc1583_compatibility
-   | ro_null
+   roc_authentication
+   | roc_cost
+   | roc_network
+   | roc_passive
+   | roc_priority
+   | roc_null
 ;
 
 ro_default_information
@@ -186,9 +188,9 @@ ro_maximum_paths
    ) uint_legacy NEWLINE
 ;
 
-ro_network: NETWORK ospf_network_type NEWLINE;
+roc_network: NETWORK ospf_network_type NEWLINE;
 
-ro_nssa
+roa_nssa
 :
    NSSA
    (
@@ -209,7 +211,7 @@ ro_nssa
    )* NEWLINE
 ;
 
-ro_null
+roc_null
 :
    NO?
    (
@@ -262,24 +264,9 @@ ro_null
    ) null_rest_of_line
 ;
 
-ro_rfc1583_compatibility
-:
-   NO?
-   (
-      RFC1583COMPATIBILITY
-      | COMPATIBLE RFC1583
-   ) NEWLINE
-;
+roc_passive: PASSIVE (ENABLE | DISABLE)? NEWLINE;
 
-ro_passive_interface_default
-:
-   NO? PASSIVE_INTERFACE DEFAULT NEWLINE
-;
-
-ro_passive_interface
-:
-   NO? PASSIVE_INTERFACE i = interface_name NEWLINE
-;
+roc_priority: PRIORITY uint_legacy NEWLINE;
 
 ro_redistribute
 :
@@ -332,21 +319,14 @@ ro_vrf
    )*
 ;
 
-roa_cost
+roc_cost
 :
    COST cost = uint_legacy NEWLINE
 ;
 
 roa_interface
 :
-   INTERFACE iname = interface_name NEWLINE
-   (
-      ro_common
-      | roi_cost
-      | roi_network
-      | roi_priority
-      | roi_passive
-   )*
+   INTERFACE iname = interface_name NEWLINE ro_common*
 ;
 
 roa_range
@@ -371,32 +351,6 @@ roa_mpls
 ;
 
 roampls_traffic_eng: TRAFFIC_ENG NEWLINE;
-
-roa_network
-:
-   NETWORK ospf_network_type NEWLINE
-;
-
-roi_cost
-:
-   COST cost = uint_legacy NEWLINE
-;
-
-roi_network: NETWORK ospf_network_type NEWLINE;
-
-roi_passive
-:
-   PASSIVE
-   (
-      ENABLE
-      | DISABLE
-   )? NEWLINE
-;
-
-roi_priority
-:
-   PRIORITY uint_legacy NEWLINE
-;
 
 rov3_address_family
 :
@@ -469,14 +423,10 @@ s_router_ospf
       | ro_max_metric
       | ro_maximum_paths
       | ro_mpls
-      | ro_network
-      | ro_passive_interface_default
-      | ro_passive_interface
       | ro_redistribute
       | ro_router_id
       | ro_summary_address
       | ro_vrf
-      | roi_priority
    )*
 ;
 

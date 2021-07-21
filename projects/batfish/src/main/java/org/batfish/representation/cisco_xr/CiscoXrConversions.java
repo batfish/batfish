@@ -1954,19 +1954,19 @@ public class CiscoXrConversions {
   }
 
   /**
-   * Helper to infer dead interval from configured OSPF settings on an interface. Check explicitly
-   * set dead interval, infer from hello interval, or infer from OSPF network type, in that order.
-   * See https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
-   * for more details.
+   * Helper to infer dead interval from configured OSPF settings. Check explicitly set dead
+   * interval, infer from hello interval, or infer from OSPF network type, in that order. See
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
+   * more details.
    */
   @VisibleForTesting
   static int toOspfDeadInterval(
-      Interface iface, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
-    Integer deadInterval = iface.getOspfDeadInterval();
+      OspfSettings ospfSettings, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
+    Integer deadInterval = ospfSettings.getDeadInterval();
     if (deadInterval != null) {
       return deadInterval;
     }
-    Integer helloInterval = iface.getOspfHelloInterval();
+    Integer helloInterval = ospfSettings.getHelloInterval();
     if (helloInterval != null) {
       return OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * helloInterval;
     }
@@ -1977,15 +1977,15 @@ public class CiscoXrConversions {
   }
 
   /**
-   * Helper to infer hello interval from configured OSPF settings on an interface. Check explicitly
-   * set hello interval or infer from OSPF network type, in that order. See
+   * Helper to infer hello interval from configured OSPF settings. Check explicitly set hello
+   * interval or infer from OSPF network type, in that order. See
    * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
    * more details.
    */
   @VisibleForTesting
   static int toOspfHelloInterval(
-      Interface iface, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
-    Integer helloInterval = iface.getOspfHelloInterval();
+      OspfSettings ospfSettings, @Nullable org.batfish.datamodel.ospf.OspfNetworkType networkType) {
+    Integer helloInterval = ospfSettings.getHelloInterval();
     if (helloInterval != null) {
       return helloInterval;
     }

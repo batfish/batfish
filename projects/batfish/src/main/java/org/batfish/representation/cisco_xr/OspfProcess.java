@@ -2,87 +2,44 @@ package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfMetricType;
 
 public class OspfProcess implements Serializable {
 
   private static final long DEFAULT_DEFAULT_INFORMATION_METRIC = 1L;
-
   private static final OspfMetricType DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE = OspfMetricType.E2;
-
   // Although not clearly documented; from GNS3 emulation and CiscoXr forum
   // (https://community.cisco_xr.com/t5/switching/ospf-cost-calculation/td-p/2917356)
   public static final int DEFAULT_LOOPBACK_OSPF_COST = 1;
-
   public static final long DEFAULT_MAX_METRIC_EXTERNAL_LSA = 0xFF0000L;
-
   public static final long DEFAULT_MAX_METRIC_SUMMARY_LSA = 0xFF0000L;
-
   // https://www.cisco.com/c/en/us/td/docs/ios_xr_sw/iosxr_r3-7/routing/command/reference/rr37ospf.html
   public static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 100E6D;
-
   public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;
 
+  private final Map<Long, OspfArea> _areas;
   private long _defaultInformationMetric;
-
   private OspfMetricType _defaultInformationMetricType;
-
   private boolean _defaultInformationOriginate;
-
   private boolean _defaultInformationOriginateAlways;
-
   private String _defaultInformationOriginateMap;
-
   private Long _defaultMetric;
-
-  @Nullable private OspfNetworkType _defaultNetworkType;
-
   @Nullable private DistributeList _inboundGlobalDistributeList;
-
   private Long _maxMetricExternalLsa;
-
   private boolean _maxMetricIncludeStub;
-
   private boolean _maxMetricRouterLsa;
-
   private Long _maxMetricSummaryLsa;
-
   private final String _name;
-
-  private Set<OspfNetwork> _networks;
-
-  private Set<String> _nonDefaultInterfaces;
-
-  private Map<Long, NssaSettings> _nssas;
-
+  private final OspfSettings _ospfSettings;
   @Nullable private DistributeList _outboundGlobalDistributeList;
-
-  private Map<Long, StubSettings> _stubs;
-
-  private boolean _passiveInterfaceDefault;
-
-  private Set<String> _passiveInterfaces;
-
   private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
-
   private double _referenceBandwidth;
-
-  private @Nullable Boolean _rfc1583Compatible;
-
   private Ip _routerId;
-
-  private Map<Long, Map<Prefix, OspfAreaSummary>> _summaries;
 
   public long getDefaultMetric(RoutingProtocol protocol) {
     if (_defaultMetric != null) {
@@ -100,15 +57,15 @@ public class OspfProcess implements Serializable {
   public OspfProcess(String name) {
     _name = name;
     _referenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
-    _networks = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
-    _nonDefaultInterfaces = new HashSet<>();
-    _nssas = new HashMap<>();
-    _passiveInterfaces = new HashSet<>();
-    _stubs = new HashMap<>();
+    _areas = new TreeMap<>();
+    _ospfSettings = new OspfSettings();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
-    _summaries = new TreeMap<>();
+  }
+
+  public Map<Long, OspfArea> getAreas() {
+    return _areas;
   }
 
   public long getDefaultInformationMetric() {
@@ -136,11 +93,6 @@ public class OspfProcess implements Serializable {
   }
 
   @Nullable
-  public OspfNetworkType getDefaultNetworkType() {
-    return _defaultNetworkType;
-  }
-
-  @Nullable
   public DistributeList getInboundGlobalDistributeList() {
     return _inboundGlobalDistributeList;
   }
@@ -165,29 +117,13 @@ public class OspfProcess implements Serializable {
     return _name;
   }
 
-  public Set<OspfNetwork> getNetworks() {
-    return _networks;
-  }
-
-  public Set<String> getNonDefaultInterfaces() {
-    return _nonDefaultInterfaces;
-  }
-
-  public Map<Long, NssaSettings> getNssas() {
-    return _nssas;
+  public OspfSettings getOspfSettings() {
+    return _ospfSettings;
   }
 
   @Nullable
   public DistributeList getOutboundGlobalDistributeList() {
     return _outboundGlobalDistributeList;
-  }
-
-  public boolean getPassiveInterfaceDefault() {
-    return _passiveInterfaceDefault;
-  }
-
-  public Set<String> getPassiveInterfaces() {
-    return _passiveInterfaces;
   }
 
   public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
@@ -198,20 +134,8 @@ public class OspfProcess implements Serializable {
     return _referenceBandwidth;
   }
 
-  public @Nullable Boolean getRfc1583Compatible() {
-    return _rfc1583Compatible;
-  }
-
   public Ip getRouterId() {
     return _routerId;
-  }
-
-  public Map<Long, StubSettings> getStubs() {
-    return _stubs;
-  }
-
-  public Map<Long, Map<Prefix, OspfAreaSummary>> getSummaries() {
-    return _summaries;
   }
 
   public void setDefaultInformationMetric(int metric) {
@@ -236,10 +160,6 @@ public class OspfProcess implements Serializable {
 
   public void setDefaultMetric(Long metric) {
     _defaultMetric = metric;
-  }
-
-  public void setDefaultNetworkType(@Nullable OspfNetworkType networkType) {
-    _defaultNetworkType = networkType;
   }
 
   public void setInboundGlobalDistributeList(@Nullable DistributeList inboundGlobalDistributeList) {
@@ -267,16 +187,8 @@ public class OspfProcess implements Serializable {
     _outboundGlobalDistributeList = outboundGlobalDistributeList;
   }
 
-  public void setPassiveInterfaceDefault(boolean b) {
-    _passiveInterfaceDefault = b;
-  }
-
   public void setReferenceBandwidth(double referenceBandwidth) {
     _referenceBandwidth = referenceBandwidth;
-  }
-
-  public void setRfc1583Compatible(@Nullable Boolean rfc1583Compatible) {
-    _rfc1583Compatible = rfc1583Compatible;
   }
 
   public void setRouterId(Ip routerId) {
