@@ -237,9 +237,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                    */
                                   IpSpace dstIpsWithUnownedNextHopIpArpFalse =
                                       computeDstIpsWithNextHopIpArpFalseFilter(
-                                          node,
-                                          vrf,
-                                          matchingIps,
+                                          matchingIps.get(node).get(vrf),
                                           routesWithNextHopIpArpFalse,
                                           route ->
                                               ipSpaceToBDD
@@ -251,9 +249,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                    */
                                   IpSpace dstIpsWithOwnedNextHopIpArpFalse =
                                       computeDstIpsWithNextHopIpArpFalseFilter(
-                                          node,
-                                          vrf,
-                                          matchingIps,
+                                          matchingIps.get(node).get(vrf),
                                           routesWithNextHopIpArpFalse,
                                           route ->
                                               !ipSpaceToBDD
@@ -1027,13 +1023,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   private static IpSpace computeDstIpsWithNextHopIpArpFalseFilter(
-      String node,
-      String vrf,
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
+      Map<Prefix, IpSpace> matchingIps,
       Set<AbstractRoute> routesWithNextHopIpArpFalse,
       Predicate<AbstractRoute> routeFilter) {
-    return computeRouteMatchConditionsFilter(
-        routesWithNextHopIpArpFalse, matchingIps.get(node).get(vrf), routeFilter);
+    return computeRouteMatchConditionsFilter(routesWithNextHopIpArpFalse, matchingIps, routeFilter);
   }
 
   private static IpSpace computeOwnedIps(Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {

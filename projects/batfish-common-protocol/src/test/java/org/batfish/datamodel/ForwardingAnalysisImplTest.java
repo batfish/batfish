@@ -53,8 +53,6 @@ import org.junit.Test;
 /** Tests of {@link ForwardingAnalysisImpl}. */
 public class ForwardingAnalysisImplTest {
 
-  private static final String CONFIG1 = "config1";
-
   private static final String INTERFACE1 = "interface1";
 
   private static final String INTERFACE2 = "interface2";
