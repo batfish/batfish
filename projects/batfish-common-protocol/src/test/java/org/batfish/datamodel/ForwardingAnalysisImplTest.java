@@ -406,19 +406,15 @@ public class ForwardingAnalysisImplTest {
                                 .thenPermitting(P1.toIpSpace())
                                 .build()))
                     .build()));
-    Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> routesWithNextHopIpArpTrue =
+    Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue =
         ImmutableMap.of(
-            c1.getHostname(),
-            ImmutableMap.of(
-                vrf1.getName(),
-                ImmutableMap.of(
-                    edge,
-                    ImmutableSet.of(
-                        StaticRoute.testBuilder()
-                            .setNetwork(P1)
-                            .setNextHopIp(P2.getStartIp())
-                            .setAdministrativeCost(1)
-                            .build()))));
+            edge,
+            ImmutableSet.of(
+                StaticRoute.testBuilder()
+                    .setNetwork(P1)
+                    .setNextHopIp(P2.getStartIp())
+                    .setAdministrativeCost(1)
+                    .build()));
     Map<Edge, IpSpace> result =
         computeArpTrueEdgeNextHopIp(
             c1.getHostname(), vrf1.getName(), computeMatchingIps(fibs), routesWithNextHopIpArpTrue);
@@ -1127,15 +1123,12 @@ public class ForwardingAnalysisImplTest {
                         r2,
                         ImmutableMap.of(
                             i1, ImmutableMap.of(r2.getNextHopIp(), ImmutableSet.of(ifaceRoute))))));
-    Map<String, Map<String, Map<Edge, Set<AbstractRoute>>>> result =
+    Map<Edge, Set<AbstractRoute>> result =
         computeRoutesWithNextHopIpArpTrue(
-            nextHopInterfacesByNodeVrf, topology, arpReplies, routesWithNextHop);
+            c1, v1, nextHopInterfacesByNodeVrf, topology, arpReplies, routesWithNextHop);
 
     /* Only the route with the next hop ip that gets a reply should be present. */
-    assertThat(
-        result,
-        equalTo(
-            ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(e1, ImmutableSet.of(r1))))));
+    assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));
   }
 
   @Test
