@@ -646,8 +646,7 @@ public class ForwardingAnalysisImplTest {
             .setNextHopIp(P2.getStartIp())
             .setAdministrativeCost(1)
             .build();
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHopIpArpFalse =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
+    Set<AbstractRoute> routesWithNextHopIpArpFalse = ImmutableSet.of(r1);
     Map<String, Map<String, Fib>> fibs =
         ImmutableMap.of(
             c1,
@@ -655,7 +654,7 @@ public class ForwardingAnalysisImplTest {
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
 
     IpSpace result =
-        computeArpFalseNextHopIp(c1, v1, i1, computeMatchingIps(fibs), routesWithNextHopIpArpFalse);
+        computeArpFalseNextHopIp(c1, v1, computeMatchingIps(fibs), routesWithNextHopIpArpFalse);
 
     /* IPs matching some route on interface with no response should appear */
     assertThat(result, containsIp(P1.getStartIp()));
@@ -937,14 +936,11 @@ public class ForwardingAnalysisImplTest {
                             i1, ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(ifaceRoute))))));
     Map<String, Map<String, IpSpace>> someoneReplies =
         ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp().toIpSpace()));
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
+    Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalse(
-            nextHopInterfacesByNodeVrf, routesWithNextHop, someoneReplies);
+            c1, v1, i1, nextHopInterfacesByNodeVrf, routesWithNextHop, someoneReplies);
 
-    assertThat(
-        result,
-        equalTo(
-            ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))))));
+    assertThat(result, equalTo(ImmutableSet.of(r1)));
   }
 
   @Test
