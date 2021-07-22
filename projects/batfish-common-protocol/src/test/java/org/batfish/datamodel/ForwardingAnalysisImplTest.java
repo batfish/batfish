@@ -353,9 +353,7 @@ public class ForwardingAnalysisImplTest {
                     .build()));
     Map<Edge, IpSpace> result =
         computeArpTrueEdgeDestIp(
-            c1.getHostname(),
-            vrf1.getName(),
-            computeMatchingIps(fibs),
+            computeMatchingIps(fibs).get(c1.getHostname()).get(vrf1.getName()),
             routesWithDestIpEdge,
             arpReplies);
 

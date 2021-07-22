@@ -191,7 +191,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      * due to route leaking, etc
      */
     Map<Edge, IpSpace> arpTrueEdgeDestIp =
-        computeArpTrueEdgeDestIp(node, vrf, matchingIps, routesWithDestIpEdge, _arpReplies);
+        computeArpTrueEdgeDestIp(matchingIps.get(node).get(vrf), routesWithDestIpEdge, _arpReplies);
 
     /* edge -> dst ips for which that vrf forwards out the source of the edge,
      * ARPing for some next-hop IP and receiving a reply from the target of the edge.
@@ -415,9 +415,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static Map<Edge, IpSpace> computeArpTrueEdgeDestIp(
-      String node,
-      String vrf,
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
+      Map<Prefix, IpSpace> matchingIps,
       Map<Edge, Set<AbstractRoute>> routesWithDestIpEdge,
       Map<String, Map<String, IpSpace>> arpReplies) {
     return toImmutableMap(
@@ -426,8 +424,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         edgeEntry -> {
           Edge edge = edgeEntry.getKey();
           Set<AbstractRoute> routes = edgeEntry.getValue();
-          IpSpace dstIpMatchesSomeRoutePrefix =
-              computeRouteMatchConditions(routes, matchingIps.get(node).get(vrf));
+          IpSpace dstIpMatchesSomeRoutePrefix = computeRouteMatchConditions(routes, matchingIps);
           String recvNode = edge.getNode2();
           String recvInterface = edge.getInt2();
           IpSpace recvReplies = arpReplies.get(recvNode).get(recvInterface);
