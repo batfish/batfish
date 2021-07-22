@@ -159,6 +159,7 @@ import org.batfish.datamodel.vendor_family.cisco_xr.Aaa;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco_xr.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco_xr.CiscoXrFamily;
+import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco_xr.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -1352,6 +1353,24 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         ImmutableList.of());
   }
 
+  /**
+   * Copies configured {@link OspfSettings} from each {@link OspfProcess} into its member {@link
+   * org.batfish.representation.cisco_xr.OspfArea areas}, and from each area into its member {@link
+   * OspfInterfaceSettings interfaces}.
+   *
+   * @see OspfSettings#inheritFrom(OspfSettings)
+   */
+  private static void inheritOspfSettings(OspfProcess proc) {
+    OspfSettings procSettings = proc.getOspfSettings();
+    for (org.batfish.representation.cisco_xr.OspfArea area : proc.getAreas().values()) {
+      OspfSettings areaSettings = area.getOspfSettings();
+      areaSettings.inheritFrom(procSettings);
+      for (OspfInterfaceSettings iface : area.getInterfaceSettings().values()) {
+        iface.getOspfSettings().inheritFrom(areaSettings);
+      }
+    }
+  }
+
   private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       OspfProcess proc, String vrfName, Configuration c, CiscoXrConfiguration oldConfig) {
     Ip routerId = proc.getRouterId();
@@ -1389,10 +1408,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       long areaNum = area.getAreaNum();
       OspfArea.Builder viAreaBuilder = OspfArea.builder().setNumber(areaNum);
 
-      // Inherit unset area settings from router
-      OspfSettings areaSettings = area.getOspfSettings();
-      areaSettings.inheritFrom(proc.getOspfSettings());
-
       // Fill in OSPF settings for interfaces in this area
       ImmutableSortedSet.Builder<String> areaInterfacesBuilder = ImmutableSortedSet.naturalOrder();
       for (Entry<String, OspfInterfaceSettings> e : area.getInterfaceSettings().entrySet()) {
@@ -1403,10 +1418,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
           continue;
         }
         areaInterfacesBuilder.add(ifaceName);
-        // Inherit unset interface settings from area and finalize VI interface
-        OspfInterfaceSettings ifaceSettings = e.getValue();
-        ifaceSettings.getOspfSettings().inheritFrom(areaSettings);
-        finalizeInterfaceOspfSettings(iface, proc, areaNum, ifaceSettings, vrfName, c);
+        finalizeInterfaceOspfSettings(iface, proc, areaNum, e.getValue(), vrfName, c);
       }
       viAreaBuilder.setInterfaces(areaInterfacesBuilder.build());
 
@@ -1534,15 +1546,17 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     if (firstNonNull(vsIfaceSettings.getOspfSettings().getPassive(), false)) {
       ospfSettings.setPassive(true);
     }
+
+    // Interface settings already inherited from area and process settings, so we don't need to
+    // check beyond interface settings for distribute lists, network type, etc.
+    DistributeList distListIn = vsIfaceSettings.getOspfSettings().getDistributeListIn();
     Optional.ofNullable(
             getOspfInboundDistributeListPolicy(
-                proc.getInboundGlobalDistributeList(), vrfName, proc.getName(), c, _w))
+                distListIn, vrfName, proc.getName(), areaNum, iface.getName(), c, _w))
         .ifPresent(ospfSettings::setInboundDistributeListPolicy);
 
     ospfSettings.setAreaName(areaNum);
 
-    // Interface settings already inherited from area and router settings, so if interface settings
-    // have no network type, then none is configured at any level
     org.batfish.representation.cisco_xr.OspfNetworkType vsNetworkType =
         vsIfaceSettings.getOspfSettings().getNetworkType();
     org.batfish.datamodel.ospf.OspfNetworkType networkType = toOspfNetworkType(vsNetworkType, _w);
@@ -1857,14 +1871,20 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
+    // inherit OSPF settings before calling getAclsUsedForRouting
+    _vrfs.values().stream()
+        .flatMap(vrf -> vrf.getOspfProcesses().values().stream())
+        .forEach(CiscoXrConfiguration::inheritOspfSettings);
+
     // convert VS access lists to VI access lists, route filter, or packet policy
+    Set<String> aclsUsedForRouting = getAclsUsedForRouting();
     for (Ipv4AccessList eaList : _ipv4Acls.values()) {
       if (isIpv4AclUsedForAbf(eaList)) {
         PacketPolicy packetPolicy = CiscoXrConversions.toPacketPolicy(eaList, _objectGroups, _w);
         c.getPacketPolicies().put(packetPolicy.getName(), packetPolicy);
       }
 
-      if (isAclUsedForRouting(eaList.getName())) {
+      if (aclsUsedForRouting.contains(eaList.getName())) {
         RouteFilterList rfList = CiscoXrConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
@@ -2186,18 +2206,27 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         });
   }
 
-  private boolean isAclUsedForRouting(@Nonnull String aclName) {
-    // TODO Include OSPF processes' outbound global distribute lists when conversion supports them
-    // TODO Check distribute lists assigned to specific areas and interfaces once that's extracted
+  /**
+   * Returns names of all ACLs that must be converted to {@link RouteFilterList} because they are
+   * used for routing. Currently this is limited to ACLs used as OSPF distribute-lists.
+   *
+   * <p>NOTE: OSPF settings should be {@link #inheritOspfSettings(OspfProcess) inherited} before
+   * calling this function.
+   */
+  private Set<String> getAclsUsedForRouting() {
+    // TODO Include OSPF global outbound distribute lists when conversion supports them
     return _vrfs.values().stream()
         .flatMap(vrf -> vrf.getOspfProcesses().values().stream())
-        .map(OspfProcess::getInboundGlobalDistributeList)
-        .filter(Objects::nonNull)
-        .anyMatch(
+        .flatMap(proc -> proc.getAreas().values().stream())
+        .flatMap(area -> area.getInterfaceSettings().values().stream())
+        .map(OspfInterfaceSettings::getOspfSettings)
+        .map(OspfSettings::getDistributeListIn)
+        .filter(
             distList ->
-                distList.getFilterName().equals(aclName)
-                    && distList.getFilterType()
-                        == DistributeList.DistributeListFilterType.ACCESS_LIST);
+                distList != null
+                    && distList.getFilterType() == DistributeListFilterType.ACCESS_LIST)
+        .map(DistributeList::getFilterName)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /** Indicates if any line in the specified ipv4 ACL is used for ACL based forwarding. */

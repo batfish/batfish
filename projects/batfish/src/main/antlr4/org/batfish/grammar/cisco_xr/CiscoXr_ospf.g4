@@ -105,6 +105,7 @@ ro_common
 :
    roc_authentication
    | roc_cost
+   | roc_distribute_list_in
    | roc_network
    | roc_passive
    | roc_priority
@@ -138,21 +139,28 @@ ro_distance
    DISTANCE value = uint_legacy NEWLINE
 ;
 
-ro_distribute_list
+roc_distribute_list_in
 :
   DISTRIBUTE_LIST
   (
-    rodl_acl
-    | rodl_prefix_list
+    rodl_acl_in
+    | rodl_prefix_list_in
     | rodl_route_policy
   )
 ;
 
-rodl_acl: acl = access_list_name (IN | OUT) NEWLINE;
+ro_distribute_list_out: DISTRIBUTE_LIST (rodl_acl_out | rodl_prefix_list_out);
 
-rodl_prefix_list: PREFIX_LIST pl = prefix_list_name (IN | OUT) NEWLINE;
+rodl_acl_in: acl = access_list_name IN NEWLINE;
 
+rodl_prefix_list_in: PREFIX_LIST pl = prefix_list_name IN NEWLINE;
+
+// route-policies can't be used on outbound traffic
 rodl_route_policy: ROUTE_POLICY rp = route_policy_name IN NEWLINE;
+
+rodl_acl_out: acl = access_list_name OUT NEWLINE;
+
+rodl_prefix_list_out: PREFIX_LIST pl = prefix_list_name OUT NEWLINE;
 
 ro_max_metric
 :
@@ -419,7 +427,7 @@ s_router_ospf
       | ro_default_information
       | ro_default_metric
       | ro_distance
-      | ro_distribute_list
+      | ro_distribute_list_out
       | ro_max_metric
       | ro_maximum_paths
       | ro_mpls

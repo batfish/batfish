@@ -1404,6 +1404,8 @@ public class CiscoXrConversions {
       @Nullable DistributeList distributeList,
       String vrfName,
       String procName,
+      long areaNum,
+      String ifaceName,
       Configuration c,
       Warnings w) {
     if (distributeList == null) {
@@ -1413,7 +1415,8 @@ public class CiscoXrConversions {
     if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
         || distributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST) {
       if (c.getRouteFilterLists().containsKey(filterName)) {
-        String rpName = generatedOspfInboundDistributeListName(vrfName, procName);
+        String rpName =
+            generatedOspfInboundDistributeListName(vrfName, procName, areaNum, ifaceName);
         if (!c.getRoutingPolicies().containsKey(rpName)) {
           RoutingPolicy.builder()
               .setName(rpName)
