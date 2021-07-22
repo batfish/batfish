@@ -746,7 +746,8 @@ public class ForwardingAnalysisImplTest {
                                         otherRoute.getNextHopInterface()),
                                     ImmutableList.of(otherRoute)))))
                     .build()));
-    IpSpace result = computeNullRoutedIps(c1, v1, computeMatchingIps(fibs), fibs);
+    IpSpace result =
+        computeNullRoutedIps(computeMatchingIps(fibs).get(c1).get(v1), fibs.get(c1).get(v1));
 
     /* IPs for the null route should appear */
     assertThat(result, containsIp(P1.getStartIp()));

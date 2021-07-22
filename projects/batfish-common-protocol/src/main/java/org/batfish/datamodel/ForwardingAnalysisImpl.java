@@ -316,7 +316,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             });
 
     // destination IPs that will be null routes
-    IpSpace nullRoutedIps = computeNullRoutedIps(node, vrf, matchingIps, fibs);
+    IpSpace nullRoutedIps =
+        computeNullRoutedIps(matchingIps.get(node).get(vrf), fibs.get(node).get(vrf));
 
     // nextVrf -> dest IPs that vrf delegates to nextVrf
     Map<String, IpSpace> nextVrfIps = computeNextVrfIps(node, vrf, matchingIps, fibs);
@@ -560,19 +561,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static IpSpace computeNullRoutedIps(
-      String node,
-      String vrf,
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<String, Map<String, Fib>> fibs) {
-    Fib fib = fibs.get(node).get(vrf);
-    Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(node).get(vrf);
+  static IpSpace computeNullRoutedIps(Map<Prefix, IpSpace> matchingIps, Fib fib) {
     Set<AbstractRoute> nullRoutes =
         fib.allEntries().stream()
             .filter(fibEntry -> fibEntry.getAction() instanceof FibNullRoute)
             .map(FibEntry::getTopLevelRoute)
             .collect(ImmutableSet.toImmutableSet());
-    return computeRouteMatchConditions(nullRoutes, vrfMatchingIps);
+    return computeRouteMatchConditions(nullRoutes, matchingIps);
   }
 
   @VisibleForTesting
