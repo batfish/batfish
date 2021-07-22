@@ -807,8 +807,6 @@ public class ForwardingAnalysisImplTest {
 
   @Test
   public void testComputeRoutesWhereDstIpCanBeArpIp() {
-    String c1 = "c1";
-    String v1 = "v1";
     String i1 = "i1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()
@@ -995,7 +993,6 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, IpSpace>> arpReplies =
         ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp().toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
-    String v1 = "v1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()
             .setNetwork(P1)
@@ -1008,8 +1005,8 @@ public class ForwardingAnalysisImplTest {
             .setNextHopIp(P2.getEndIp())
             .setAdministrativeCost(1)
             .build();
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1, r2))));
+    Map<String, Set<AbstractRoute>> routesWithNextHop =
+        ImmutableMap.of(i1, ImmutableSet.of(r1, r2));
     Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
         ImmutableMap.of(
             r1,
@@ -1018,7 +1015,7 @@ public class ForwardingAnalysisImplTest {
             ImmutableMap.of(i1, ImmutableSet.of(r2.getNextHopIp())));
     Map<Edge, Set<AbstractRoute>> result =
         computeRoutesWithNextHopIpArpTrue(
-            c1, v1, nextHopInterfaces, topology, arpReplies, routesWithNextHop);
+            c1, nextHopInterfaces, topology, arpReplies, routesWithNextHop);
 
     /* Only the route with the next hop ip that gets a reply should be present. */
     assertThat(result, equalTo(ImmutableMap.of(e1, ImmutableSet.of(r1))));

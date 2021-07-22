@@ -200,7 +200,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      */
     Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue =
         computeRoutesWithNextHopIpArpTrue(
-            node, vrf, nextHopInterfaces, topology, _arpReplies, routesWithNextHop);
+            node, nextHopInterfaces, topology, _arpReplies, routesWithNextHop.get(node).get(vrf));
 
     /* edge -> dst ips for which this vrf forwards out the source of the edge,
      * ARPing for some next-hop IP and receiving a reply from the target of the edge.
@@ -757,12 +757,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   @VisibleForTesting
   static Map<Edge, Set<AbstractRoute>> computeRoutesWithNextHopIpArpTrue(
       String node,
-      String vrf,
       Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
       Topology topology,
       Map<String, Map<String, IpSpace>> arpReplies,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
-    return routesWithNextHop.get(node).get(vrf).entrySet().stream()
+      Map<String, Set<AbstractRoute>> routesWithNextHop) {
+    return routesWithNextHop.entrySet().stream()
         .flatMap(
             ifaceEntry -> {
               String outInterface = ifaceEntry.getKey();
