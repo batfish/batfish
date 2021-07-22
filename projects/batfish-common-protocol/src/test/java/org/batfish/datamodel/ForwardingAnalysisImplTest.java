@@ -648,7 +648,8 @@ public class ForwardingAnalysisImplTest {
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
 
     IpSpace result =
-        computeArpFalseNextHopIp(c1, v1, computeMatchingIps(fibs), routesWithNextHopIpArpFalse);
+        computeArpFalseNextHopIp(
+            computeMatchingIps(fibs).get(c1).get(v1), routesWithNextHopIpArpFalse);
 
     /* IPs matching some route on interface with no response should appear */
     assertThat(result, containsIp(P1.getStartIp()));

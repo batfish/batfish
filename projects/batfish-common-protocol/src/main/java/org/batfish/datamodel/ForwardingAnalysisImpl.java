@@ -251,7 +251,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                * ARPing for a next-hop IP and receiving no reply
                */
               IpSpace arpFalseNextHopIp =
-                  computeArpFalseNextHopIp(node, vrf, matchingIps, routesWithNextHopIpArpFalse);
+                  computeArpFalseNextHopIp(
+                      matchingIps.get(node).get(vrf), routesWithNextHopIpArpFalse);
 
               IpSpace arpFalse = AclIpSpace.union(arpFalseDestIp, arpFalseNextHopIp);
 
@@ -561,11 +562,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static IpSpace computeArpFalseNextHopIp(
-      String node,
-      String vrf,
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Set<AbstractRoute> routesWithNextHopIpArpFalse) {
-    return computeRouteMatchConditions(routesWithNextHopIpArpFalse, matchingIps.get(node).get(vrf));
+      Map<Prefix, IpSpace> matchingIps, Set<AbstractRoute> routesWithNextHopIpArpFalse) {
+    return computeRouteMatchConditions(routesWithNextHopIpArpFalse, matchingIps);
   }
 
   @VisibleForTesting
