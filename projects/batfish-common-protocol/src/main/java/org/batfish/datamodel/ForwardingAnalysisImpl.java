@@ -17,13 +17,16 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
@@ -231,8 +234,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
               /* set of routes on that vrf that forward out that interface
                * with a next hop ip that gets no arp replies
                */
-              Set<AbstractRoute> routesWithNextHopIpArpFalse =
-                  computeRoutesWithNextHopIpArpFalse(
+              Set<AbstractRoute> arpFalseNhipRoutes =
+                  computeArpFalseNhipRoutes(
                       iface, nextHopInterfaces, routesWithNextHop.get(iface), someoneReplies);
 
               /* dst IPs for which this VRF forwards out that interface, ARPing
@@ -245,30 +248,33 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
               /* dst ips for which this vrf forwards out that interface,
                * ARPing for a next-hop IP and receiving no reply
                */
-              IpSpace arpFalseNextHopIp =
-                  computeArpFalseNextHopIp(matchingIps, routesWithNextHopIpArpFalse);
+              IpSpace arpFalseNextHopIp = computeArpFalseNextHopIp(matchingIps, arpFalseNhipRoutes);
 
               IpSpace arpFalse = AclIpSpace.union(arpFalseDestIp, arpFalseNextHopIp);
+
+              // Of the routes that ARP for a next-hop IP and don't receive a response,
+              // determine which ARP for an owned IP, and which ARP for an unowned IP.
+              // Note: Due to ECMP during resolution, these sets are not necessarily disjoint.
+              List<AbstractRoute> arpFalseNhipRoutesWithUnownedArpIp = new ArrayList<>();
+              List<AbstractRoute> arpFalseNhipRoutesWithOwnedArpIp = new ArrayList<>();
+              classifyArpFalseNhipRoutes(
+                  unownedArpIps,
+                  nextHopInterfaces,
+                  arpFalseNhipRoutes,
+                  arpFalseNhipRoutesWithUnownedArpIp::add,
+                  arpFalseNhipRoutesWithOwnedArpIp::add);
 
               /* dst IPs for which that VRF forwards out that interface, ARPing
                * for some unowned next-hop IP with no reply
                */
               IpSpace dstIpsWithUnownedNextHopIpArpFalse =
-                  computeDstIpsWithNextHopIpArpFalseFilter(
-                      matchingIps,
-                      routesWithNextHopIpArpFalse,
-                      // TODO this should be checking the resolved next hop IP!
-                      route -> unownedArpIps.contains(route.getNextHopIp()));
+                  computeRouteMatchConditions(arpFalseNhipRoutesWithUnownedArpIp, matchingIps);
 
               /* dst IPs for which that VRF forwards out that interface, ARPing
-               * for some owned next-hop IP with no reply
+               * for some owned next-hop IP with no reply.
                */
               IpSpace dstIpsWithOwnedNextHopIpArpFalse =
-                  computeDstIpsWithNextHopIpArpFalseFilter(
-                      matchingIps,
-                      routesWithNextHopIpArpFalse,
-                      // TODO this should be checking the resolved next hop IP!
-                      route -> !unownedArpIps.contains(route.getNextHopIp()));
+                  computeRouteMatchConditions(arpFalseNhipRoutesWithOwnedArpIp, matchingIps);
 
               IpSpace deliveredToSubnet =
                   computeDeliveredToSubnet(arpFalseDestIp, externalArpIps, ownedIps);
@@ -322,6 +328,38 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         .setNullRoutedIps(nullRoutedIps)
         .setRoutableIps(_routableIps.get(node).get(vrf))
         .build();
+  }
+
+  /**
+   * Of the routes that ARP for a next-hop IP and don't receive a response, determine which ARP for
+   * an owned IP, and which ARP for an unowned IP. Note: Due to ECMP during resolution, both may be
+   * true for a single route.
+   */
+  private static void classifyArpFalseNhipRoutes(
+      Set<Ip> unownedArpIps,
+      Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
+      Set<AbstractRoute> routesWithNextHopIpArpFalse,
+      Consumer<AbstractRoute> arpFalseNhipRoutesWithUnownedArpIp,
+      Consumer<AbstractRoute> arpFalseNhipRoutesWithOwnedArpIp) {
+    routesWithNextHopIpArpFalse.forEach(
+        route -> {
+          // Iterate over the arpIps for this route, checking whether each is owned. Stop once
+          // we've found one owned and one unowned.
+          Iterator<Ip> it =
+              nextHopInterfaces.get(route).values().stream().flatMap(Set::stream).iterator();
+          boolean foundUnowned = false;
+          boolean foundOwned = false;
+          while (it.hasNext() && !(foundUnowned && foundOwned)) {
+            Ip arpIp = it.next();
+            if (!foundUnowned && unownedArpIps.contains(arpIp)) {
+              foundUnowned = true;
+              arpFalseNhipRoutesWithUnownedArpIp.accept(route);
+            } else if (!foundOwned) {
+              foundOwned = true;
+              arpFalseNhipRoutesWithOwnedArpIp.accept(route);
+            }
+          }
+        });
   }
 
   private static Set<Ip> computeUnownedArpIps(
@@ -631,21 +669,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static IpSpace computeRouteMatchConditions(
-      Set<AbstractRoute> routes, Map<Prefix, IpSpace> matchingIps) {
+      Collection<AbstractRoute> routes, Map<Prefix, IpSpace> matchingIps) {
     // get the union of IpSpace that match one of the routes
-    return computeRouteMatchConditionsFilter(routes, matchingIps, r -> true);
-  }
-
-  @VisibleForTesting
-  static IpSpace computeRouteMatchConditionsFilter(
-      Set<AbstractRoute> routes,
-      Map<Prefix, IpSpace> matchingIps,
-      Predicate<AbstractRoute> routeFilter) {
     // get the union of IpSpace that match one of the routes
     return firstNonNull(
         AclIpSpace.union(
             routes.stream()
-                .filter(routeFilter)
                 .map(AbstractRoute::getNetwork)
                 .distinct()
                 .map(matchingIps::get)
@@ -727,7 +756,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Set<AbstractRoute> computeRoutesWithNextHopIpArpFalse(
+  static Set<AbstractRoute> computeArpFalseNhipRoutes(
       String iface,
       Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
       Set<AbstractRoute> routesWithNextHop,
@@ -1006,13 +1035,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     } finally {
       span.finish();
     }
-  }
-
-  private static IpSpace computeDstIpsWithNextHopIpArpFalseFilter(
-      Map<Prefix, IpSpace> matchingIps,
-      Set<AbstractRoute> routesWithNextHopIpArpFalse,
-      Predicate<AbstractRoute> routeFilter) {
-    return computeRouteMatchConditionsFilter(routesWithNextHopIpArpFalse, matchingIps, routeFilter);
   }
 
   private static IpSpace computeOwnedIps(Map<String, Map<String, Set<Ip>>> interfaceOwnedIps) {
