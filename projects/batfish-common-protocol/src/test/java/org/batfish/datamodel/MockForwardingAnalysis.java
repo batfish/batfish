@@ -5,33 +5,75 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 public class MockForwardingAnalysis implements ForwardingAnalysis {
+  private final Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior;
+  private final Map<String, Map<String, IpSpace>> _arpReplies;
 
-  public static class Builder {
+  private MockForwardingAnalysis(
+      Map<String, Map<String, IpSpace>> arpReplies,
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior) {
+    _arpReplies = ImmutableMap.copyOf(arpReplies);
+    _vrfForwardingBehavior = ImmutableMap.copyOf(vrfForwardingBehavior);
+  }
 
-    private Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
-    private Map<String, Map<String, IpSpace>> _arpReplies;
-    private Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
-    private Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
-    private Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIps;
-    private Map<String, Map<String, IpSpace>> _nullRoutedIps;
-    private Map<String, Map<String, IpSpace>> _routableIps;
+  @Override
+  public Map<String, Map<String, IpSpace>> getArpReplies() {
+    return _arpReplies;
+  }
 
-    private Builder() {
-      _acceptedIps = ImmutableMap.of();
-      _arpReplies = ImmutableMap.of();
-      _arpTrueEdge = ImmutableMap.of();
-      _deliveredToSubnet = ImmutableMap.of();
-      _nextVrfIps = ImmutableMap.of();
-      _nullRoutedIps = ImmutableMap.of();
-      _routableIps = ImmutableMap.of();
-    }
+  @Nonnull
+  @Override
+  public Map<String, Map<String, VrfForwardingBehavior>> getVrfForwardingBehavior() {
+    return _vrfForwardingBehavior;
+  }
 
-    public MockForwardingAnalysis build() {
-      return new MockForwardingAnalysis(this);
-    }
+  /** Helper when we only need VrfForwardinBehavior at a single vrf */
+  public static MockForwardingAnalysis withVrfForwardingBehavior(
+      String node, String vrf, VrfForwardingBehavior vrfForwardingBehavior) {
+    return MockForwardingAnalysis.builder()
+        .setVrfForwardingBehavior(
+            ImmutableMap.of(node, ImmutableMap.of(vrf, vrfForwardingBehavior)))
+        .build();
+  }
 
-    public Builder setAcceptedIps(Map<String, Map<String, Map<String, IpSpace>>> acceptedIps) {
-      _acceptedIps = acceptedIps;
+  /** Helper when we only need accepted IPs at a single interface */
+  public static MockForwardingAnalysis withAcceptedIps(
+      String node, String vrf, String iface, IpSpace ips) {
+    return withInterfaceForwardingBehavior(
+        node, vrf, iface, InterfaceForwardingBehavior.withAcceptedIps(ips));
+  }
+
+  /** Helper when we only need accepted IPs at a single interface */
+  public static MockForwardingAnalysis withDeliveredToSubnetIps(
+      String node, String vrf, String iface, IpSpace ips) {
+    return withInterfaceForwardingBehavior(
+        node, vrf, iface, InterfaceForwardingBehavior.withDeliveredToSubnet(ips));
+  }
+
+  /** Helper when we only {@link InterfaceForwardingBehavior} for a single interface. */
+  public static MockForwardingAnalysis withInterfaceForwardingBehavior(
+      String node, String vrf, String iface, InterfaceForwardingBehavior ifb) {
+    ImmutableMap<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior =
+        ImmutableMap.of(
+            node,
+            ImmutableMap.of(
+                vrf,
+                VrfForwardingBehavior.withInterfaceForwardingBehavior(
+                    ImmutableMap.of(iface, ifb))));
+    return MockForwardingAnalysis.builder().setVrfForwardingBehavior(vrfForwardingBehavior).build();
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static final class Builder {
+    private Map<String, Map<String, VrfForwardingBehavior>> _vrfForwardingBehavior =
+        ImmutableMap.of();
+    private Map<String, Map<String, IpSpace>> _arpReplies = ImmutableMap.of();
+
+    public Builder setVrfForwardingBehavior(
+        Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior) {
+      _vrfForwardingBehavior = vrfForwardingBehavior;
       return this;
     }
 
@@ -40,103 +82,8 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
       return this;
     }
 
-    public Builder setArpTrueEdge(Map<String, Map<String, Map<Edge, IpSpace>>> arpTrueEdge) {
-      _arpTrueEdge = arpTrueEdge;
-      return this;
+    public MockForwardingAnalysis build() {
+      return new MockForwardingAnalysis(_arpReplies, _vrfForwardingBehavior);
     }
-
-    public Builder setDeliveredToSubnet(
-        Map<String, Map<String, Map<String, IpSpace>>> deliveredToSubnet) {
-      _deliveredToSubnet = deliveredToSubnet;
-      return this;
-    }
-
-    public Builder setNextVrfIps(Map<String, Map<String, IpSpace>> nextVrfIps) {
-      _nullRoutedIps = nextVrfIps;
-      return this;
-    }
-
-    public Builder setNullRoutedIps(Map<String, Map<String, IpSpace>> nullRoutedIps) {
-      _nullRoutedIps = nullRoutedIps;
-      return this;
-    }
-
-    public Builder setRoutableIps(Map<String, Map<String, IpSpace>> routableIps) {
-      _routableIps = routableIps;
-      return this;
-    }
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  private final Map<String, Map<String, Map<String, IpSpace>>> _acceptedIps;
-  private final Map<String, Map<String, IpSpace>> _arpReplies;
-  private final Map<String, Map<String, Map<Edge, IpSpace>>> _arpTrueEdge;
-  private final Map<String, Map<String, Map<String, IpSpace>>> _deliveredToSubnet;
-  private final Map<String, Map<String, Map<String, IpSpace>>> _nextVrfIps;
-  private final Map<String, Map<String, IpSpace>> _nullRoutedIps;
-  private final Map<String, Map<String, IpSpace>> _routableIps;
-
-  public MockForwardingAnalysis(Builder builder) {
-    _acceptedIps = ImmutableMap.copyOf(builder._acceptedIps);
-    _arpReplies = ImmutableMap.copyOf(builder._arpReplies);
-    _arpTrueEdge = ImmutableMap.copyOf(builder._arpTrueEdge);
-    _deliveredToSubnet = ImmutableMap.copyOf(builder._deliveredToSubnet);
-    _nextVrfIps = ImmutableMap.copyOf(builder._nextVrfIps);
-    _nullRoutedIps = ImmutableMap.copyOf(builder._nullRoutedIps);
-    _routableIps = ImmutableMap.copyOf(builder._routableIps);
-  }
-
-  @Nonnull
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getAcceptsIps() {
-    return _acceptedIps;
-  }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getArpReplies() {
-    return _arpReplies;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<Edge, IpSpace>>> getArpTrueEdge() {
-    return _arpTrueEdge;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
-    return ImmutableMap.of();
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getExitsNetwork() {
-    return ImmutableMap.of();
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getDeliveredToSubnet() {
-    return _deliveredToSubnet;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getInsufficientInfo() {
-    return ImmutableMap.of();
-  }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getNullRoutedIps() {
-    return _nullRoutedIps;
-  }
-
-  @Override
-  public Map<String, Map<String, IpSpace>> getRoutableIps() {
-    return _routableIps;
-  }
-
-  @Override
-  public Map<String, Map<String, Map<String, IpSpace>>> getNextVrfIps() {
-    return _nextVrfIps;
   }
 }

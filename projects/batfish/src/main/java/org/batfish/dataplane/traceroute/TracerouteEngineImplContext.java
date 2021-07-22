@@ -26,6 +26,7 @@ import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
+import org.batfish.datamodel.InterfaceForwardingBehavior;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -105,32 +106,23 @@ public class TracerouteEngineImplContext {
   FlowDisposition computeDisposition(String hostname, String outgoingInterfaceName, Ip dstIp) {
     String vrfName =
         _configurations.get(hostname).getAllInterfaces().get(outgoingInterfaceName).getVrfName();
-    if (_forwardingAnalysis
-        .getDeliveredToSubnet()
-        .get(hostname)
-        .get(vrfName)
-        .get(outgoingInterfaceName)
-        .containsIp(dstIp, ImmutableMap.of())) {
+    InterfaceForwardingBehavior interfaceForwardingBehavior =
+        _forwardingAnalysis
+            .getVrfForwardingBehavior()
+            .get(hostname)
+            .get(vrfName)
+            .getInterfaceForwardingBehavior()
+            .get(outgoingInterfaceName);
+    if (interfaceForwardingBehavior.getDeliveredToSubnet().containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.DELIVERED_TO_SUBNET;
-    } else if (_forwardingAnalysis
-        .getExitsNetwork()
-        .get(hostname)
-        .get(vrfName)
-        .get(outgoingInterfaceName)
-        .containsIp(dstIp, ImmutableMap.of())) {
+    } else if (interfaceForwardingBehavior.getExitsNetwork().containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.EXITS_NETWORK;
-    } else if (_forwardingAnalysis
+    } else if (interfaceForwardingBehavior
         .getInsufficientInfo()
-        .get(hostname)
-        .get(vrfName)
-        .get(outgoingInterfaceName)
         .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.INSUFFICIENT_INFO;
-    } else if (_forwardingAnalysis
+    } else if (interfaceForwardingBehavior
         .getNeighborUnreachable()
-        .get(hostname)
-        .get(vrfName)
-        .get(outgoingInterfaceName)
         .containsIp(dstIp, ImmutableMap.of())) {
       return FlowDisposition.NEIGHBOR_UNREACHABLE;
     } else {
@@ -178,18 +170,18 @@ public class TracerouteEngineImplContext {
   @Nonnull
   Optional<String> interfaceAcceptingIp(String node, String vrf, Ip ip) {
     return _forwardingAnalysis
-        .getAcceptsIps()
-        .getOrDefault(node, ImmutableMap.of())
-        .getOrDefault(vrf, ImmutableMap.of())
+        .getVrfForwardingBehavior()
+        .get(node)
+        .get(vrf)
+        .getInterfaceForwardingBehavior()
         .entrySet()
         .stream()
-        .filter(e -> e.getValue().containsIp(ip, ImmutableMap.of()))
+        .filter(e -> e.getValue().getAcceptedIps().containsIp(ip, ImmutableMap.of()))
         .map(Entry::getKey)
         .findAny(); // Should be zero or one.
   }
 
   /** Returns true if the given VRF will accept traffic to the given IP. */
-  @Nonnull
   boolean vrfAcceptsIp(String node, String vrf, Ip ip) {
     return interfaceAcceptingIp(node, vrf, ip).isPresent();
   }
