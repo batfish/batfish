@@ -125,7 +125,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                       ipOwners,
                                       fibs,
                                       unownedArpIps,
-                                      matchingIps,
+                                      matchingIps.get(config.getHostname()).get(vrf),
                                       ownedIps,
                                       interfacesWithMissingDevices,
                                       internalIps,
@@ -151,7 +151,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       IpOwners ipOwners,
       Map<String, Map<String, Fib>> fibs,
       Set<Ip> unownedArpIps,
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
+      Map<Prefix, IpSpace> matchingIps,
       IpSpace ownedIps,
       Multimap<String, String> interfacesWithMissingDevices,
       IpSpace internalIps,
@@ -162,7 +162,6 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             .getVrfIfaceOwnedIpSpaces()
             .getOrDefault(node, ImmutableMap.of())
             .getOrDefault(vrf, ImmutableMap.of());
-
     /*
      * Mapping: route -> nexthopinterface -> resolved nextHopIp -> interfaceRoutes
      */
@@ -191,7 +190,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      * due to route leaking, etc
      */
     Map<Edge, IpSpace> arpTrueEdgeDestIp =
-        computeArpTrueEdgeDestIp(matchingIps.get(node).get(vrf), routesWithDestIpEdge, _arpReplies);
+        computeArpTrueEdgeDestIp(matchingIps, routesWithDestIpEdge, _arpReplies);
 
     /* edge -> dst ips for which that vrf forwards out the source of the edge,
      * ARPing for some next-hop IP and receiving a reply from the target of the edge.
@@ -210,7 +209,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      * due to route leaking, etc
      */
     Map<Edge, IpSpace> arpTrueEdgeNextHopIp =
-        computeArpTrueEdgeNextHopIp(matchingIps.get(node).get(vrf), routesWithNextHopIpArpTrue);
+        computeArpTrueEdgeNextHopIp(matchingIps, routesWithNextHopIpArpTrue);
 
     Map<Edge, IpSpace> arpTrueEdge = computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
@@ -243,16 +242,13 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                */
               IpSpace arpFalseDestIp =
                   computeArpFalseDestIp(
-                      matchingIps.get(node).get(vrf),
-                      routesWhereDstIpCanBeArpIp.get(iface),
-                      someoneReplies);
+                      matchingIps, routesWhereDstIpCanBeArpIp.get(iface), someoneReplies);
 
               /* dst ips for which this vrf forwards out that interface,
                * ARPing for a next-hop IP and receiving no reply
                */
               IpSpace arpFalseNextHopIp =
-                  computeArpFalseNextHopIp(
-                      matchingIps.get(node).get(vrf), routesWithNextHopIpArpFalse);
+                  computeArpFalseNextHopIp(matchingIps, routesWithNextHopIpArpFalse);
 
               IpSpace arpFalse = AclIpSpace.union(arpFalseDestIp, arpFalseNextHopIp);
 
@@ -261,7 +257,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                */
               IpSpace dstIpsWithUnownedNextHopIpArpFalse =
                   computeDstIpsWithNextHopIpArpFalseFilter(
-                      matchingIps.get(node).get(vrf),
+                      matchingIps,
                       routesWithNextHopIpArpFalse,
                       // TODO this should be checking the resolved next hop IP!
                       route -> unownedArpIps.contains(route.getNextHopIp()));
@@ -271,7 +267,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                */
               IpSpace dstIpsWithOwnedNextHopIpArpFalse =
                   computeDstIpsWithNextHopIpArpFalseFilter(
-                      matchingIps.get(node).get(vrf),
+                      matchingIps,
                       routesWithNextHopIpArpFalse,
                       // TODO this should be checking the resolved next hop IP!
                       route -> !unownedArpIps.contains(route.getNextHopIp()));
@@ -316,12 +312,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             });
 
     // destination IPs that will be null routes
-    IpSpace nullRoutedIps =
-        computeNullRoutedIps(matchingIps.get(node).get(vrf), fibs.get(node).get(vrf));
+    IpSpace nullRoutedIps = computeNullRoutedIps(matchingIps, fibs.get(node).get(vrf));
 
     // nextVrf -> dest IPs that vrf delegates to nextVrf
-    Map<String, IpSpace> nextVrfIps =
-        computeNextVrfIps(matchingIps.get(node).get(vrf), fibs.get(node).get(vrf));
+    Map<String, IpSpace> nextVrfIps = computeNextVrfIps(matchingIps, fibs.get(node).get(vrf));
 
     return VrfForwardingBehavior.builder()
         .setArpTrueEdge(arpTrueEdge)
