@@ -320,7 +320,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
         computeNullRoutedIps(matchingIps.get(node).get(vrf), fibs.get(node).get(vrf));
 
     // nextVrf -> dest IPs that vrf delegates to nextVrf
-    Map<String, IpSpace> nextVrfIps = computeNextVrfIps(node, vrf, matchingIps, fibs);
+    Map<String, IpSpace> nextVrfIps =
+        computeNextVrfIps(matchingIps.get(node).get(vrf), fibs.get(node).get(vrf));
 
     return VrfForwardingBehavior.builder()
         .setArpTrueEdge(arpTrueEdge)
@@ -571,12 +572,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
   }
 
   @VisibleForTesting
-  static Map<String, IpSpace> computeNextVrfIps(
-      String node,
-      String vrf,
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<String, Map<String, Fib>> fibs) {
-    return computeNextVrfIps(fibs.get(node).get(vrf), matchingIps.get(node).get(vrf));
+  static Map<String, IpSpace> computeNextVrfIps(Map<Prefix, IpSpace> matchingIps, Fib fib) {
+    return computeNextVrfIps(fib, matchingIps);
   }
 
   private static Map<String, IpSpace> computeNextVrfIps(Fib fib, Map<Prefix, IpSpace> matchingIps) {

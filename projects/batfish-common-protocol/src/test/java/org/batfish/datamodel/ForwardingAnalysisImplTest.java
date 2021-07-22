@@ -702,12 +702,12 @@ public class ForwardingAnalysisImplTest {
                     .build()));
 
     // Each VRF should delegate the matching IpSpace for its nextVrf route to the other VRF.
-    Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps = computeMatchingIps(fibs);
+    Map<String, Map<Prefix, IpSpace>> matchingIps = computeMatchingIps(fibs).get(c1);
     assertThat(
-        computeNextVrfIps(c1, v1, matchingIps, fibs),
+        computeNextVrfIps(matchingIps.get(v1), fibs.get(c1).get(v1)),
         equalTo(ImmutableMap.of(v2, P1_1.toIpSpace())));
     assertThat(
-        computeNextVrfIps(c1, v2, matchingIps, fibs),
+        computeNextVrfIps(matchingIps.get(v2), fibs.get(c1).get(v2)),
         equalTo(ImmutableMap.of(v1, P2_2.toIpSpace())));
   }
 
