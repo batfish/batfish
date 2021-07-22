@@ -821,13 +821,12 @@ public class ForwardingAnalysisImplTest {
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
         ImmutableMap.of(
             c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1, ifaceRoute))));
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces =
+    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
         ImmutableMap.of(
             r1,
-            ImmutableMap.of(i1, ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+            ImmutableMap.of(i1, ImmutableSet.of(r1.getNextHopIp())),
             ifaceRoute,
-            ImmutableMap.of(
-                i1, ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute))));
+            ImmutableMap.of(i1, ImmutableSet.of(Route.UNSET_ROUTE_NEXT_HOP_IP)));
     Map<String, Set<AbstractRoute>> result =
         computeRoutesWhereDstIpCanBeArpIp(c1, v1, nextHopInterfaces, routesWithNextHop);
 
@@ -906,11 +905,8 @@ public class ForwardingAnalysisImplTest {
             .build();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
-    AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces =
-        ImmutableMap.of(
-            r1,
-            ImmutableMap.of(i1, ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(ifaceRoute))));
+    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
+        ImmutableMap.of(r1, ImmutableMap.of(i1, ImmutableSet.of(r1.getNextHopIp())));
     IpSpace someoneReplies = P2.getEndIp().toIpSpace();
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalse(
@@ -937,20 +933,14 @@ public class ForwardingAnalysisImplTest {
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
     Set<AbstractRoute> candidateRoutes =
         ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute);
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces =
+    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
         ImmutableMap.of(
             nextHopIpRoute1,
-            ImmutableMap.of(
-                outInterface,
-                ImmutableMap.of(nextHopIpRoute1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+            ImmutableMap.of(outInterface, ImmutableSet.of(nextHopIpRoute1.getNextHopIp())),
             nextHopIpRoute2,
-            ImmutableMap.of(
-                outInterface,
-                ImmutableMap.of(nextHopIpRoute2.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+            ImmutableMap.of(outInterface, ImmutableSet.of(nextHopIpRoute2.getNextHopIp())),
             ifaceRoute,
-            ImmutableMap.of(
-                outInterface,
-                ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute))));
+            ImmutableMap.of(outInterface, ImmutableSet.of(Route.UNSET_ROUTE_NEXT_HOP_IP)));
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalseForInterface(
             nextHopInterfaces, outInterface, candidateRoutes, P2.getStartIp().toIpSpace());
@@ -980,20 +970,14 @@ public class ForwardingAnalysisImplTest {
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, outInterface);
     Set<AbstractRoute> candidateRoutes =
         ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute);
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces =
+    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
         ImmutableMap.of(
             nextHopIpRoute1,
-            ImmutableMap.of(
-                outInterface,
-                ImmutableMap.of(nextHopIpRoute1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+            ImmutableMap.of(outInterface, ImmutableSet.of(nextHopIpRoute1.getNextHopIp())),
             nextHopIpRoute2,
-            ImmutableMap.of(
-                outInterface,
-                ImmutableMap.of(nextHopIpRoute2.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+            ImmutableMap.of(outInterface, ImmutableSet.of(nextHopIpRoute2.getNextHopIp())),
             ifaceRoute,
-            ImmutableMap.of(
-                outInterface,
-                ImmutableMap.of(Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(ifaceRoute))));
+            ImmutableMap.of(outInterface, ImmutableSet.of(Route.UNSET_ROUTE_NEXT_HOP_IP)));
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalseForInterface(
             nextHopInterfaces, outInterface, candidateRoutes, EmptyIpSpace.INSTANCE);
@@ -1031,13 +1015,12 @@ public class ForwardingAnalysisImplTest {
             .build();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1, r2))));
-    AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
-    Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces =
+    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
         ImmutableMap.of(
             r1,
-            ImmutableMap.of(i1, ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(ifaceRoute))),
+            ImmutableMap.of(i1, ImmutableSet.of(r1.getNextHopIp())),
             r2,
-            ImmutableMap.of(i1, ImmutableMap.of(r2.getNextHopIp(), ImmutableSet.of(ifaceRoute))));
+            ImmutableMap.of(i1, ImmutableSet.of(r2.getNextHopIp())));
     Map<Edge, Set<AbstractRoute>> result =
         computeRoutesWithNextHopIpArpTrue(
             c1, v1, nextHopInterfaces, topology, arpReplies, routesWithNextHop);
