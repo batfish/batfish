@@ -124,7 +124,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                                     locationInfo,
                                     ipSpaceToBDD,
                                     ipOwners,
-                                    fibs,
+                                    fibs.get(node).get(vrf),
                                     unownedArpIps,
                                     matchingIps.get(node).get(vrf),
                                     ownedIps,
@@ -151,7 +151,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       // this is here only for sanity checking (only with assertions enabled)
       IpSpaceToBDD ipSpaceToBDDUnsafeDoNotUse,
       IpOwners ipOwners,
-      Map<String, Map<String, Fib>> fibs,
+      Fib fib,
       Set<Ip> unownedArpIps,
       Map<Prefix, IpSpace> matchingIps,
       IpSpace ownedIps,
@@ -167,8 +167,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     /*
      * Mapping: route -> nexthopinterface -> resolved nextHopIp -> interfaceRoutes
      */
-    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
-        computeNextHopInterfaces(fibs.get(node).get(vrf));
+    Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces = computeNextHopInterfaces(fib);
 
     /* interface -> set of routes on that vrf that forward out that interface,
      * ARPing for the destination IP
@@ -311,10 +310,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             });
 
     // destination IPs that will be null routes
-    IpSpace nullRoutedIps = computeNullRoutedIps(matchingIps, fibs.get(node).get(vrf));
+    IpSpace nullRoutedIps = computeNullRoutedIps(matchingIps, fib);
 
     // nextVrf -> dest IPs that vrf delegates to nextVrf
-    Map<String, IpSpace> nextVrfIps = computeNextVrfIps(matchingIps, fibs.get(node).get(vrf));
+    Map<String, IpSpace> nextVrfIps = computeNextVrfIps(matchingIps, fib);
 
     return VrfForwardingBehavior.builder()
         .setArpTrueEdge(arpTrueEdge)
