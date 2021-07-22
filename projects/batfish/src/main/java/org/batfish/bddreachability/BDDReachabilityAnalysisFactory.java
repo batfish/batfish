@@ -65,9 +65,11 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceForwardingBehavior;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.VrfForwardingBehavior;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.packet_policy.FibLookup;
 import org.batfish.datamodel.packet_policy.VrfExprNameExtractor;
@@ -252,10 +254,12 @@ public final class BDDReachabilityAnalysisFactory {
       _one = packet.getFactory().one();
       _zero = packet.getFactory().zero();
       _ignoreFilters = ignoreFilters;
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior =
+          forwardingAnalysis.getVrfForwardingBehavior();
       _topologyEdges =
-          forwardingAnalysis.getArpTrueEdge().values().stream()
+          vrfForwardingBehavior.values().stream()
               .flatMap(m -> m.values().stream())
-              .flatMap(m -> m.keySet().stream())
+              .flatMap(vfb -> vfb.getArpTrueEdge().keySet().stream())
               .collect(ImmutableSet.toImmutableSet());
       _lastHopMgr =
           initializeSessions
@@ -285,21 +289,38 @@ public final class BDDReachabilityAnalysisFactory {
       _bddIncomingTransformations = computeBDDIncomingTransformations();
       _bddOutgoingTransformations = computeBDDOutgoingTransformations();
 
-      _arpTrueEdgeBDDs = computeArpTrueEdgeBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
+      _arpTrueEdgeBDDs = computeArpTrueEdgeBDDs(vrfForwardingBehavior, _dstIpSpaceToBDD);
       _neighborUnreachableBDDs =
-          computeDispositionBDDs(forwardingAnalysis.getNeighborUnreachable(), _dstIpSpaceToBDD);
+          computeIfaceForwardingBehaviorBDDs(
+              vrfForwardingBehavior,
+              InterfaceForwardingBehavior::getNeighborUnreachable,
+              _dstIpSpaceToBDD);
       _deliveredToSubnetBDDs =
-          computeDispositionBDDs(forwardingAnalysis.getDeliveredToSubnet(), _dstIpSpaceToBDD);
+          computeIfaceForwardingBehaviorBDDs(
+              vrfForwardingBehavior,
+              InterfaceForwardingBehavior::getDeliveredToSubnet,
+              _dstIpSpaceToBDD);
       _exitsNetworkBDDs =
-          computeDispositionBDDs(forwardingAnalysis.getExitsNetwork(), _dstIpSpaceToBDD);
+          computeIfaceForwardingBehaviorBDDs(
+              vrfForwardingBehavior,
+              InterfaceForwardingBehavior::getExitsNetwork,
+              _dstIpSpaceToBDD);
       _insufficientInfoBDDs =
-          computeDispositionBDDs(forwardingAnalysis.getInsufficientInfo(), _dstIpSpaceToBDD);
-      _nullRoutedBDDs = computeNullRoutedBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
-      _routableBDDs = computeRoutableBDDs(forwardingAnalysis, _dstIpSpaceToBDD);
+          computeIfaceForwardingBehaviorBDDs(
+              vrfForwardingBehavior,
+              InterfaceForwardingBehavior::getInsufficientInfo,
+              _dstIpSpaceToBDD);
+      _nullRoutedBDDs =
+          computeVrfForwardingBehaviorBDDs(
+              vrfForwardingBehavior, VrfForwardingBehavior::getNullRoutedIps, _dstIpSpaceToBDD);
+      _routableBDDs =
+          computeVrfForwardingBehaviorBDDs(
+              vrfForwardingBehavior, VrfForwardingBehavior::getRoutableIps, _dstIpSpaceToBDD);
       _ifaceAcceptBDDs =
-          computeIfaceAcceptBDDs(configs, forwardingAnalysis.getAcceptsIps(), _dstIpSpaceToBDD);
+          computeIfaceForwardingBehaviorBDDs(
+              vrfForwardingBehavior, InterfaceForwardingBehavior::getAcceptedIps, _dstIpSpaceToBDD);
       _vrfAcceptBDDs = computeVrfAcceptBDDs(); // must do this after populating _ifaceAcceptBDDs
-      _nextVrfBDDs = computeNextVrfBDDs(forwardingAnalysis.getNextVrfIps(), _dstIpSpaceToBDD);
+      _nextVrfBDDs = computeNextVrfBDDs(vrfForwardingBehavior, _dstIpSpaceToBDD);
       _interfacesToVrfsMap = computeInterfacesToVrfsMap(configs);
 
       _convertedPacketPolicies = convertPacketPolicies(configs, ipsRoutedOutInterfacesFactory);
@@ -470,42 +491,24 @@ public final class BDDReachabilityAnalysisFactory {
     }
   }
 
-  private static @Nonnull Map<String, Map<String, BDD>> computeNullRoutedBDDs(
-      ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
+  private static @Nonnull Map<String, Map<String, BDD>> computeVrfForwardingBehaviorBDDs(
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
+      Function<VrfForwardingBehavior, IpSpace> ipSpaceGetter,
+      IpSpaceToBDD toBDD) {
     Span span =
         GlobalTracer.get()
-            .buildSpan("BDDReachabilityAnalysisFactory.computeNullRoutedBDDs")
+            .buildSpan("BDDReachabilityAnalysisFactory.computeVrfForwardingBehaviorBDDs")
             .start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return toImmutableMap(
-          forwardingAnalysis.getNullRoutedIps(),
-          Entry::getKey /* hostname */,
-          nullRoutedIpsByNodeVrfEntry ->
-              toImmutableMap(
-                  nullRoutedIpsByNodeVrfEntry.getValue(),
-                  Entry::getKey /* vrf */,
-                  nullRoutedIpsByVrfEntry ->
-                      nullRoutedIpsByVrfEntry.getValue().accept(ipSpaceToBDD)));
-    } finally {
-      span.finish();
-    }
-  }
-
-  private static Map<String, Map<String, BDD>> computeRoutableBDDs(
-      ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
-    Span span =
-        GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.computeRoutableBDDs").start();
-    try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
-      assert scope != null; // avoid unused warning
-      return toImmutableMap(
-          forwardingAnalysis.getRoutableIps(),
-          Entry::getKey,
+          vrfForwardingBehavior,
+          Entry::getKey, // node
           nodeEntry ->
               toImmutableMap(
                   nodeEntry.getValue(),
-                  Entry::getKey,
-                  vrfEntry -> vrfEntry.getValue().accept(ipSpaceToBDD)));
+                  Entry::getKey, // vrf
+                  vrfEntry -> ipSpaceGetter.apply(vrfEntry.getValue()).accept(toBDD)));
     } finally {
       span.finish();
     }
@@ -568,7 +571,9 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private static Map<String, Map<String, Map<org.batfish.datamodel.Edge, BDD>>>
-      computeArpTrueEdgeBDDs(ForwardingAnalysis forwardingAnalysis, IpSpaceToBDD ipSpaceToBDD) {
+      computeArpTrueEdgeBDDs(
+          Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
+          IpSpaceToBDD ipSpaceToBDD) {
     Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeArpTrueEdgeBDDs")
@@ -576,7 +581,7 @@ public final class BDDReachabilityAnalysisFactory {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return toImmutableMap(
-          forwardingAnalysis.getArpTrueEdge(),
+          vrfForwardingBehavior,
           Entry::getKey, // node
           nodeEntry ->
               toImmutableMap(
@@ -584,7 +589,7 @@ public final class BDDReachabilityAnalysisFactory {
                   Entry::getKey, // vrf
                   vrfEntry ->
                       toImmutableMap(
-                          vrfEntry.getValue(),
+                          vrfEntry.getValue().getArpTrueEdge(),
                           Entry::getKey,
                           edgeEntry -> edgeEntry.getValue().accept(ipSpaceToBDD))));
     } finally {
@@ -592,8 +597,10 @@ public final class BDDReachabilityAnalysisFactory {
     }
   }
 
-  private static Map<String, Map<String, Map<String, BDD>>> computeDispositionBDDs(
-      Map<String, Map<String, Map<String, IpSpace>>> ipSpaceMap, IpSpaceToBDD ipSpaceToBDD) {
+  private static Map<String, Map<String, Map<String, BDD>>> computeIfaceForwardingBehaviorBDDs(
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
+      Function<InterfaceForwardingBehavior, IpSpace> dispositionIpSpaceGetter,
+      IpSpaceToBDD ipSpaceToBDD) {
     Span span =
         GlobalTracer.get()
             .buildSpan("BDDReachabilityAnalysisFactory.computeDispositionBDDs")
@@ -601,7 +608,7 @@ public final class BDDReachabilityAnalysisFactory {
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return toImmutableMap(
-          ipSpaceMap,
+          vrfForwardingBehavior,
           Entry::getKey,
           nodeEntry ->
               toImmutableMap(
@@ -609,9 +616,12 @@ public final class BDDReachabilityAnalysisFactory {
                   Entry::getKey,
                   vrfEntry ->
                       toImmutableMap(
-                          vrfEntry.getValue(),
+                          vrfEntry.getValue().getInterfaceForwardingBehavior(),
                           Entry::getKey,
-                          ifaceEntry -> ifaceEntry.getValue().accept(ipSpaceToBDD))));
+                          ifaceEntry ->
+                              dispositionIpSpaceGetter
+                                  .apply(ifaceEntry.getValue())
+                                  .accept(ipSpaceToBDD))));
     } finally {
       span.finish();
     }
@@ -1941,14 +1951,14 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private Map<String, Map<String, Map<String, BDD>>> computeNextVrfBDDs(
-      Map<String, Map<String, Map<String, IpSpace>>> nextVrfIpsByNodeVrf,
+      Map<String, Map<String, VrfForwardingBehavior>> vrfForwardingBehavior,
       IpSpaceToBDD ipSpaceToBDD) {
     Span span =
         GlobalTracer.get().buildSpan("BDDReachabilityAnalysisFactory.computeNextVrfBDDs").start();
     try (Scope scope = GlobalTracer.get().scopeManager().activate(span)) {
       assert scope != null; // avoid unused warning
       return toImmutableMap(
-          nextVrfIpsByNodeVrf,
+          vrfForwardingBehavior,
           Entry::getKey /* node */,
           nextVrfIpsByNodeVrfEntry ->
               toImmutableMap(
@@ -1956,7 +1966,7 @@ public final class BDDReachabilityAnalysisFactory {
                   Entry::getKey /* vrf */,
                   nextVrfIpsByVrfEntry ->
                       toImmutableMap(
-                          nextVrfIpsByVrfEntry.getValue() /* nextVrfIpsByNextVrf */,
+                          nextVrfIpsByVrfEntry.getValue().getNextVrfIps() /* nextVrfIpsByNextVrf */,
                           Entry::getKey,
                           nextVrfIpsByNextVrfEntry ->
                               nextVrfIpsByNextVrfEntry.getValue().accept(ipSpaceToBDD))));

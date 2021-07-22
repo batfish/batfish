@@ -78,6 +78,7 @@ import org.batfish.datamodel.FlowDiff;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceForwardingBehavior;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -95,6 +96,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.VrfForwardingBehavior;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -167,15 +169,11 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder()
-                        .setAcceptedIps(
-                            ImmutableMap.of(
-                                c.getHostname(),
-                                ImmutableMap.of(
-                                    vrf.getName(),
-                                    ImmutableMap.of(
-                                        acceptingInterface, flow.getDstIp().toIpSpace()))))
-                        .build())
+                    MockForwardingAnalysis.withAcceptedIps(
+                        c.getHostname(),
+                        vrf.getName(),
+                        acceptingInterface,
+                        flow.getDstIp().toIpSpace()))
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
@@ -315,14 +313,8 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder()
-                        .setAcceptedIps(
-                            ImmutableMap.of(
-                                c.getHostname(),
-                                ImmutableMap.of(
-                                    vrf.getName(),
-                                    ImmutableMap.of(acceptingIfaceName, dstIp.toIpSpace()))))
-                        .build())
+                    MockForwardingAnalysis.withAcceptedIps(
+                        c.getHostname(), vrf.getName(), acceptingIfaceName, dstIp.toIpSpace()))
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
@@ -406,11 +398,8 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder()
-                        .setAcceptedIps(
-                            ImmutableMap.of(
-                                c.getHostname(), ImmutableMap.of(vrf.getName(), ImmutableMap.of())))
-                        .build())
+                    MockForwardingAnalysis.withVrfForwardingBehavior(
+                        c.getHostname(), vrf.getName(), VrfForwardingBehavior.builder().build()))
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(inboundSession),
@@ -552,13 +541,8 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder()
-                        .setAcceptedIps(
-                            ImmutableMap.of(
-                                c.getHostname(),
-                                ImmutableMap.of(
-                                    vrf.getName(), ImmutableMap.of(ifaceName, acceptedIps))))
-                        .build())
+                    MockForwardingAnalysis.withAcceptedIps(
+                        c.getHostname(), vrf.getName(), ifaceName, acceptedIps))
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(incomingSession),
@@ -733,21 +717,21 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder()
+                    MockForwardingAnalysis
                         // Transformed return flow out either egress iface is delivered to subnet
-                        .setDeliveredToSubnet(
+                        .withVrfForwardingBehavior(
+                        c.getHostname(),
+                        vrf.getName(),
+                        VrfForwardingBehavior.withInterfaceForwardingBehavior(
                             ImmutableMap.of(
-                                c.getHostname(),
-                                ImmutableMap.of(
-                                    vrf.getName(),
-                                    ImmutableMap.of(
-                                        // Use postNatDstIp for both since the flow will be
-                                        // transformed by the time ARP happens.
-                                        preNatEgressIface,
-                                        postNatDstIp.toIpSpace(),
-                                        postNatEgressIface,
-                                        postNatDstIp.toIpSpace()))))
-                        .build())
+                                // Use postNatDstIp for both since the flow will be
+                                // transformed by the time ARP happens.
+                                preNatEgressIface,
+                                InterfaceForwardingBehavior.withDeliveredToSubnet(
+                                    postNatDstIp.toIpSpace()),
+                                postNatEgressIface,
+                                InterfaceForwardingBehavior.withDeliveredToSubnet(
+                                    postNatDstIp.toIpSpace())))))
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(incomingSession),
@@ -844,13 +828,8 @@ public final class FlowTracerTest {
     DataPlane mockDataPlane =
         MockDataPlane.builder()
             .setForwardingAnalysis(
-                MockForwardingAnalysis.builder()
-                    .setDeliveredToSubnet(
-                        ImmutableMap.of(
-                            c.getHostname(),
-                            ImmutableMap.of(
-                                vrf.getName(), ImmutableMap.of(eth3.getName(), dstIp.toIpSpace()))))
-                    .build())
+                MockForwardingAnalysis.withDeliveredToSubnetIps(
+                    c.getHostname(), vrf.getName(), eth3.getName(), dstIp.toIpSpace()))
             .build();
     Fib fib =
         MockFib.builder()
@@ -1057,7 +1036,14 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder().setAcceptedIps(ImmutableMap.of()).build())
+                    MockForwardingAnalysis.builder()
+                        .setVrfForwardingBehavior(
+                            ImmutableMap.of(
+                                hostname,
+                                ImmutableMap.of(
+                                    srcVrfName, VrfForwardingBehavior.builder().build(),
+                                    nextVrfName, VrfForwardingBehavior.builder().build())))
+                        .build())
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
@@ -1154,13 +1140,8 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder()
-                        .setAcceptedIps(
-                            ImmutableMap.of(
-                                hostname,
-                                ImmutableMap.of(
-                                    nextVrfName, ImmutableMap.of(ifaceName, dstIp.toIpSpace()))))
-                        .build())
+                    MockForwardingAnalysis.withAcceptedIps(
+                        hostname, nextVrfName, ifaceName, dstIp.toIpSpace()))
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
@@ -1247,7 +1228,14 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder().setAcceptedIps(ImmutableMap.of()).build())
+                    MockForwardingAnalysis.builder()
+                        .setVrfForwardingBehavior(
+                            ImmutableMap.of(
+                                hostname,
+                                ImmutableMap.of(
+                                    vrf1Name, VrfForwardingBehavior.builder().build(),
+                                    vrf2Name, VrfForwardingBehavior.builder().build())))
+                        .build())
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
@@ -1342,14 +1330,8 @@ public final class FlowTracerTest {
         new TracerouteEngineImplContext(
             MockDataPlane.builder()
                 .setForwardingAnalysis(
-                    MockForwardingAnalysis.builder()
-                        .setDeliveredToSubnet(
-                            ImmutableMap.of(
-                                c.getHostname(),
-                                ImmutableMap.of(
-                                    srcVrf.getName(),
-                                    ImmutableMap.of("iface1", dstIp.toIpSpace()))))
-                        .build())
+                    MockForwardingAnalysis.withDeliveredToSubnetIps(
+                        c.getHostname(), srcVrf.getName(), "iface1", dstIp.toIpSpace()))
                 .build(),
             Topology.EMPTY,
             ImmutableSet.of(),
@@ -2026,13 +2008,8 @@ public final class FlowTracerTest {
 
     // Set up forwarding analysis to consider flows to dstIp delivered to subnet
     ForwardingAnalysis forwardingAnalysis =
-        MockForwardingAnalysis.builder()
-            .setDeliveredToSubnet(
-                ImmutableMap.of(
-                    c.getHostname(),
-                    ImmutableMap.of(
-                        vrf.getName(), ImmutableMap.of(iface.getName(), dstIp.toIpSpace()))))
-            .build();
+        MockForwardingAnalysis.withDeliveredToSubnetIps(
+            c.getHostname(), vrf.getName(), iface.getName(), dstIp.toIpSpace());
     ImmutableMap<String, Configuration> configs = ImmutableMap.of(c.getHostname(), c);
 
     TracerouteEngineImplContext ctxt =
