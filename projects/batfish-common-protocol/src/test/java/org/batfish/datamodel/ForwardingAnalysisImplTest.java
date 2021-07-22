@@ -588,12 +588,11 @@ public class ForwardingAnalysisImplTest {
             c1,
             ImmutableMap.of(
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
-    Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
-        ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute));
+    Set<AbstractRoute> routesWhereDstIpCanBeArpIp = ImmutableSet.of(ifaceRoute);
     IpSpace someoneReplies = P1.getEndIp().toIpSpace();
     IpSpace result =
         computeArpFalseDestIp(
-            c1, v1, i1, computeMatchingIps(fibs), routesWhereDstIpCanBeArpIp, someoneReplies);
+            computeMatchingIps(fibs).get(c1).get(v1), routesWhereDstIpCanBeArpIp, someoneReplies);
 
     /* Should contain IP in the route's prefix that sees no reply */
     assertThat(result, containsIp(P1.getStartIp()));
@@ -614,12 +613,11 @@ public class ForwardingAnalysisImplTest {
             c1,
             ImmutableMap.of(
                 v1, MockFib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
-    Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
-        ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute));
+    Set<AbstractRoute> routesWhereDstIpCanBeArpIp = ImmutableSet.of(ifaceRoute);
     IpSpace someoneReplies = EmptyIpSpace.INSTANCE;
     IpSpace result =
         computeArpFalseDestIp(
-            c1, v1, i1, computeMatchingIps(fibs), routesWhereDstIpCanBeArpIp, someoneReplies);
+            computeMatchingIps(fibs).get(c1).get(v1), routesWhereDstIpCanBeArpIp, someoneReplies);
 
     /*
      * Since _someoneReplies is empty, all IPs for which longest-prefix-match route has no
@@ -894,8 +892,6 @@ public class ForwardingAnalysisImplTest {
 
   @Test
   public void testComputeRoutesWithNextHopIpArpFalse() {
-    String c1 = "c1";
-    String v1 = "v1";
     String i1 = "i1";
     AbstractRoute r1 =
         StaticRoute.testBuilder()

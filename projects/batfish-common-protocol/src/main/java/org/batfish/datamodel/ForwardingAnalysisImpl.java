@@ -243,7 +243,9 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                */
               IpSpace arpFalseDestIp =
                   computeArpFalseDestIp(
-                      node, vrf, iface, matchingIps, routesWhereDstIpCanBeArpIp, someoneReplies);
+                      matchingIps.get(node).get(vrf),
+                      routesWhereDstIpCanBeArpIp.get(iface),
+                      someoneReplies);
 
               /* dst ips for which this vrf forwards out that interface,
                * ARPing for a next-hop IP and receiving no reply
@@ -549,15 +551,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static IpSpace computeArpFalseDestIp(
-      String node,
-      String vrf,
-      String iface,
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp,
+      Map<Prefix, IpSpace> matchingIps,
+      Set<AbstractRoute> routesWhereDstIpCanBeArpIp,
       IpSpace someoneReplies) {
-    Map<Prefix, IpSpace> vrfMatchingIps = matchingIps.get(node).get(vrf);
-    Set<AbstractRoute> routes = routesWhereDstIpCanBeArpIp.get(iface);
-    IpSpace ipsRoutedOutInterface = computeRouteMatchConditions(routes, vrfMatchingIps);
+    IpSpace ipsRoutedOutInterface =
+        computeRouteMatchConditions(routesWhereDstIpCanBeArpIp, matchingIps);
     return AclIpSpace.rejecting(someoneReplies).thenPermitting(ipsRoutedOutInterface).build();
   }
 
