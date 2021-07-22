@@ -817,9 +817,8 @@ public class ForwardingAnalysisImplTest {
             .setAdministrativeCost(1)
             .build();
     AbstractRoute ifaceRoute = new ConnectedRoute(P2, i1);
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
-        ImmutableMap.of(
-            c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1, ifaceRoute))));
+    Map<String, Set<AbstractRoute>> routesWithNextHop =
+        ImmutableMap.of(i1, ImmutableSet.of(r1, ifaceRoute));
     Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
         ImmutableMap.of(
             r1,
@@ -827,7 +826,7 @@ public class ForwardingAnalysisImplTest {
             ifaceRoute,
             ImmutableMap.of(i1, ImmutableSet.of(Route.UNSET_ROUTE_NEXT_HOP_IP)));
     Map<String, Set<AbstractRoute>> result =
-        computeRoutesWhereDstIpCanBeArpIp(c1, v1, nextHopInterfaces, routesWithNextHop);
+        computeRoutesWhereDstIpCanBeArpIp(nextHopInterfaces, routesWithNextHop);
 
     /* Only the interface route should show up */
     assertThat(result, equalTo(ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));

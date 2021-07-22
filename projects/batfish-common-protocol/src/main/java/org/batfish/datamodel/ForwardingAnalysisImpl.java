@@ -172,7 +172,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      * ARPing for the destination IP
      */
     Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
-        computeRoutesWhereDstIpCanBeArpIp(node, vrf, nextHopInterfaces, routesWithNextHop);
+        computeRoutesWhereDstIpCanBeArpIp(nextHopInterfaces, routesWithNextHop.get(node).get(vrf));
 
     /* edge -> routes in this vrf that forward out the source of that edge,
      * ARPing for the dest IP and receiving a response from the target of the edge.
@@ -661,12 +661,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
    */
   @VisibleForTesting
   static Map<String, Set<AbstractRoute>> computeRoutesWhereDstIpCanBeArpIp(
-      String node,
-      String vrf,
       Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
+      Map<String, Set<AbstractRoute>> routesWithNextHop) {
     return toImmutableMap(
-        routesWithNextHop.get(node).get(vrf),
+        routesWithNextHop,
         Entry::getKey /* interface */,
         ifaceEntry -> {
           String iface = ifaceEntry.getKey();
