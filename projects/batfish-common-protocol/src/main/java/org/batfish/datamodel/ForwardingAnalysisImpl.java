@@ -233,7 +233,10 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                */
               Set<AbstractRoute> routesWithNextHopIpArpFalse =
                   computeRoutesWithNextHopIpArpFalse(
-                      node, vrf, iface, nextHopInterfaces, routesWithNextHop, someoneReplies);
+                      iface,
+                      nextHopInterfaces,
+                      routesWithNextHop.get(node).get(vrf).get(iface),
+                      someoneReplies);
 
               /* dst IPs for which this VRF forwards out that interface, ARPing
                * for the dst ip itself with no reply
@@ -754,14 +757,12 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static Set<AbstractRoute> computeRoutesWithNextHopIpArpFalse(
-      String node,
-      String vrf,
       String iface,
       Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop,
+      Set<AbstractRoute> routesWithNextHop,
       IpSpace someoneReplies) {
     return computeRoutesWithNextHopIpArpFalseForInterface(
-        nextHopInterfaces, iface, routesWithNextHop.get(node).get(vrf).get(iface), someoneReplies);
+        nextHopInterfaces, iface, routesWithNextHop, someoneReplies);
   }
 
   @VisibleForTesting

@@ -903,14 +903,13 @@ public class ForwardingAnalysisImplTest {
             .setNextHopIp(P2.getStartIp())
             .setAdministrativeCost(1)
             .build();
-    Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
+    Set<AbstractRoute> routesWithNextHop = ImmutableSet.of(r1);
     Map<AbstractRoute, Map<String, Set<Ip>>> nextHopInterfaces =
         ImmutableMap.of(r1, ImmutableMap.of(i1, ImmutableSet.of(r1.getNextHopIp())));
     IpSpace someoneReplies = P2.getEndIp().toIpSpace();
     Set<AbstractRoute> result =
         computeRoutesWithNextHopIpArpFalse(
-            c1, v1, i1, nextHopInterfaces, routesWithNextHop, someoneReplies);
+            i1, nextHopInterfaces, routesWithNextHop, someoneReplies);
 
     assertThat(result, equalTo(ImmutableSet.of(r1)));
   }
