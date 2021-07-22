@@ -115,22 +115,24 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                           toImmutableMap(
                               config.getVrfs().keySet(),
                               Function.identity(),
-                              vrf ->
-                                  computeVrfForwardingBehavior(
-                                      config.getHostname(),
-                                      vrf,
-                                      topology,
-                                      locationInfo,
-                                      ipSpaceToBDD,
-                                      ipOwners,
-                                      fibs,
-                                      unownedArpIps,
-                                      matchingIps.get(config.getHostname()).get(vrf),
-                                      ownedIps,
-                                      interfacesWithMissingDevices,
-                                      internalIps,
-                                      externalIps,
-                                      routesWithNextHop))))
+                              vrf -> {
+                                String node = config.getHostname();
+                                return computeVrfForwardingBehavior(
+                                    node,
+                                    vrf,
+                                    topology,
+                                    locationInfo,
+                                    ipSpaceToBDD,
+                                    ipOwners,
+                                    fibs,
+                                    unownedArpIps,
+                                    matchingIps.get(node).get(vrf),
+                                    ownedIps,
+                                    interfacesWithMissingDevices,
+                                    internalIps,
+                                    externalIps,
+                                    routesWithNextHop.get(node).get(vrf));
+                              })))
               .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
 
       assert sanityCheck(configurations);
@@ -156,7 +158,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
       Multimap<String, String> interfacesWithMissingDevices,
       IpSpace internalIps,
       IpSpace externalIps,
-      Map<String, Map<String, Map<String, Set<AbstractRoute>>>> routesWithNextHop) {
+      Map<String, Set<AbstractRoute>> routesWithNextHop) {
     Map<String, IpSpace> accepted =
         ipOwners
             .getVrfIfaceOwnedIpSpaces()
@@ -172,7 +174,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      * ARPing for the destination IP
      */
     Map<String, Set<AbstractRoute>> routesWhereDstIpCanBeArpIp =
-        computeRoutesWhereDstIpCanBeArpIp(nextHopInterfaces, routesWithNextHop.get(node).get(vrf));
+        computeRoutesWhereDstIpCanBeArpIp(nextHopInterfaces, routesWithNextHop);
 
     /* edge -> routes in this vrf that forward out the source of that edge,
      * ARPing for the dest IP and receiving a response from the target of the edge.
@@ -200,7 +202,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      */
     Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue =
         computeRoutesWithNextHopIpArpTrue(
-            node, nextHopInterfaces, topology, _arpReplies, routesWithNextHop.get(node).get(vrf));
+            node, nextHopInterfaces, topology, _arpReplies, routesWithNextHop);
 
     /* edge -> dst ips for which this vrf forwards out the source of the edge,
      * ARPing for some next-hop IP and receiving a reply from the target of the edge.
@@ -218,7 +220,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
             // routesWithNextHop may include interfaces in other VRFs that we
             // forward out through due to VRF leaking. All active interfaces
             // in this VRF are included due to local routes.
-            routesWithNextHop.get(node).get(vrf).keySet(),
+            routesWithNextHop.keySet(),
             Function.identity(),
             iface -> {
               IpSpace externalArpIps =
@@ -232,10 +234,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
                */
               Set<AbstractRoute> routesWithNextHopIpArpFalse =
                   computeRoutesWithNextHopIpArpFalse(
-                      iface,
-                      nextHopInterfaces,
-                      routesWithNextHop.get(node).get(vrf).get(iface),
-                      someoneReplies);
+                      iface, nextHopInterfaces, routesWithNextHop.get(iface), someoneReplies);
 
               /* dst IPs for which this VRF forwards out that interface, ARPing
                * for the dst ip itself with no reply
