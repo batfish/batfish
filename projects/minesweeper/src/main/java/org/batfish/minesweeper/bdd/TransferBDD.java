@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +14,7 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -85,7 +85,6 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.OspfType;
-import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
@@ -327,15 +326,11 @@ public class TransferBDD {
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
       Set<RoutingProtocol> rps = mp.getProtocols();
-      if (rps.size() > 1) {
-        // Hack: Minesweeper doesn't support MatchProtocol with multiple arguments.
-        List<BooleanExpr> mps = rps.stream().map(MatchProtocol::new).collect(Collectors.toList());
-        return compute(new Disjunction(mps), state);
-      }
-      RoutingProtocol rp = Iterables.getOnlyElement(rps);
-      Protocol proto = Protocol.fromRoutingProtocol(rp);
-      BDD protBDD = proto == null ? factory.zero() : p.getData().getProtocolHistory().value(proto);
-      return result.setReturnValueBDD(protBDD);
+      BDDFiniteDomain<RoutingProtocol> rpBDDFD = _originalRoute.getProtocolHistory();
+      BDD matchRPBDD =
+          factory.orAll(
+              rps.stream().map(rpBDDFD::getConstraintForValue).collect(Collectors.toList()));
+      return result.setReturnValueBDD(matchRPBDD);
 
     } else if (expr instanceof MatchPrefixSet) {
       p.debug("MatchPrefixSet");
@@ -611,7 +606,7 @@ public class TransferBDD {
       curP.debug("SetMetric");
       SetMetric sm = (SetMetric) stmt;
       LongExpr ie = sm.getMetric();
-      BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
+      BDD isBGP = curP.getData().getProtocolHistory().getConstraintForValue(RoutingProtocol.BGP);
       // update the MED if the protocol is BGP, and otherwise update the metric
       // TODO: is this the right thing to do?
       BDD ignoreMed = isBGP.not().or(unreachable(result));
@@ -1151,7 +1146,7 @@ public class TransferBDD {
     for (int i = 0; i < rec.getAsPathRegexAtomicPredicates().length; i++) {
       rec.getAsPathRegexAtomicPredicates()[i] = factory.zero();
     }
-    rec.getProtocolHistory().getInteger().setValue(0);
+    rec.getProtocolHistory().getVar().setValue(0);
     return rec;
   }
 

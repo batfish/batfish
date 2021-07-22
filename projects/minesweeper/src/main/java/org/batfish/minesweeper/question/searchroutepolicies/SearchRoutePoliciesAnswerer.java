@@ -52,7 +52,6 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.Graph;
-import org.batfish.minesweeper.Protocol;
 import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
@@ -390,8 +389,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     // make sure the model we end up getting corresponds to a valid route
     BDD result = r.wellFormednessConstraints();
 
-    // require the protocol to be BGP
-    result.andWith(r.getProtocolHistory().value(Protocol.BGP));
     result.andWith(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
     result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));

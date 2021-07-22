@@ -1,5 +1,8 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.math.IntMath;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,13 +16,14 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.minesweeper.Graph;
 import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.OspfType;
-import org.batfish.minesweeper.Protocol;
 
 /**
  * A collection of attributes describing a route advertisement, used for symbolic route analysis.
@@ -44,8 +48,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   static BDDFactory factory;
 
-  private static List<Protocol> allProtos;
-
   private static List<OspfType> allMetricTypes;
 
   private static BDDPairing pairing;
@@ -58,12 +60,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     allMetricTypes.add(OspfType.OIA);
     allMetricTypes.add(OspfType.E1);
     allMetricTypes.add(OspfType.E2);
-
-    allProtos = new ArrayList<>();
-    allProtos.add(Protocol.CONNECTED);
-    allProtos.add(Protocol.STATIC);
-    allProtos.add(Protocol.OSPF);
-    allProtos.add(Protocol.BGP);
 
     factory = JFactory.init(100000, 10000);
     // factory.disableReorder();
@@ -121,7 +117,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final BDDInteger _prefixLength;
 
-  private final BDDDomain<Protocol> _protocolHistory;
+  private final BDDFiniteDomain<RoutingProtocol> _protocolHistory;
 
   private BDDInteger _tag;
 
@@ -143,15 +139,22 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDDRoute(int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
     int numVars = factory.varNum();
-    int numNeeded = 32 * 6 + 6 + numCommAtomicPredicates + numAsPathRegexAtomicPredicates + 4;
+    int numNeeded =
+        32 * 6
+            + 6
+            + numCommAtomicPredicates
+            + numAsPathRegexAtomicPredicates
+            + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
+            + 2;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
     _bitNames = new HashMap<>();
 
     int idx = 0;
-    _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
-    int len = _protocolHistory.getInteger().size();
+    _protocolHistory =
+        new BDDFiniteDomain<>(factory, idx, ImmutableSet.copyOf(RoutingProtocol.values()));
+    int len = _protocolHistory.getVar().size();
     addBitNames("proto", len, idx, false);
     idx += len;
     // Initialize integer values
@@ -213,7 +216,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _med = new BDDInteger(other._med);
     _tag = new BDDInteger(other._tag);
     _localPref = new BDDInteger(other._localPref);
-    _protocolHistory = new BDDDomain<>(other._protocolHistory);
+    _protocolHistory =
+        new BDDFiniteDomain<>(
+            other._protocolHistory.getVar(), other._protocolHistory.getValueBdds().keySet());
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
   }
@@ -398,7 +403,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _prefixLength;
   }
 
-  public BDDDomain<Protocol> getProtocolHistory() {
+  public BDDFiniteDomain<RoutingProtocol> getProtocolHistory() {
     return _protocolHistory;
   }
 
