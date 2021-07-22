@@ -753,7 +753,10 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_interfaceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roa_rangeContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roc_networkContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Roc_passiveContext;
-import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_aclContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_acl_inContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_acl_outContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_prefix_list_inContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_prefix_list_outContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Rodl_route_policyContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instanceContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Ror_routing_instance_nullContext;
@@ -5988,39 +5991,41 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void exitRodl_acl(Rodl_aclContext ctx) {
+  public void exitRodl_acl_in(Rodl_acl_inContext ctx) {
     String name = toString(ctx.acl);
     DistributeList distributeList = new DistributeList(name, DistributeListFilterType.ACCESS_LIST);
-
-    if (ctx.IN() != null) {
-      _configuration.referenceStructure(
-          IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN, ctx.acl.getStart().getLine());
-      _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
-    } else {
-      assert ctx.OUT() != null;
-      _configuration.referenceStructure(
-          IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT, ctx.acl.getStart().getLine());
-      _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
-      todo(ctx);
-    }
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_IN, ctx.acl.getStart().getLine());
+    _currentOspfSettings.setDistributeListIn(distributeList);
   }
 
   @Override
-  public void exitRodl_prefix_list(CiscoXrParser.Rodl_prefix_listContext ctx) {
+  public void exitRodl_acl_out(Rodl_acl_outContext ctx) {
+    String name = toString(ctx.acl);
+    DistributeList distributeList = new DistributeList(name, DistributeListFilterType.ACCESS_LIST);
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_ACCESS_LIST_OUT, ctx.acl.getStart().getLine());
+    _currentOspfProcess.setDistributeListOut(distributeList);
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRodl_prefix_list_in(Rodl_prefix_list_inContext ctx) {
     String name = toString(ctx.pl);
     DistributeList distributeList = new DistributeList(name, DistributeListFilterType.PREFIX_LIST);
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN, ctx.pl.getStart().getLine());
+    _currentOspfSettings.setDistributeListIn(distributeList);
+  }
 
-    if (ctx.IN() != null) {
-      _configuration.referenceStructure(
-          IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_PREFIX_LIST_IN, ctx.pl.getStart().getLine());
-      _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
-    } else {
-      assert ctx.OUT() != null;
-      _configuration.referenceStructure(
-          IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT, ctx.pl.getStart().getLine());
-      _currentOspfProcess.setOutboundGlobalDistributeList(distributeList);
-      todo(ctx);
-    }
+  @Override
+  public void exitRodl_prefix_list_out(Rodl_prefix_list_outContext ctx) {
+    String name = toString(ctx.pl);
+    DistributeList distributeList = new DistributeList(name, DistributeListFilterType.PREFIX_LIST);
+    _configuration.referenceStructure(
+        IP_ACCESS_LIST, name, OSPF_DISTRIBUTE_LIST_PREFIX_LIST_OUT, ctx.pl.getStart().getLine());
+    _currentOspfProcess.setDistributeListOut(distributeList);
+    todo(ctx);
   }
 
   @Override
@@ -6030,7 +6035,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         ROUTE_POLICY, name, OSPF_DISTRIBUTE_LIST_ROUTE_POLICY_IN, ctx.rp.getStart().getLine());
 
     DistributeList distributeList = new DistributeList(name, DistributeListFilterType.ROUTE_POLICY);
-    _currentOspfProcess.setInboundGlobalDistributeList(distributeList);
+    _currentOspfSettings.setDistributeListIn(distributeList);
   }
 
   @Override

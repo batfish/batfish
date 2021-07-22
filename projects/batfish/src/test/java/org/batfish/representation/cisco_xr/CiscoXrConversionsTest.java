@@ -56,7 +56,7 @@ public class CiscoXrConversionsTest extends TestCase {
   public void testGetOspfInboundDistributeListPolicy_nullList() {
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
     Warnings w = new Warnings(true, true, true);
-    assertNull(getOspfInboundDistributeListPolicy(null, "vrf", "proc", c, w));
+    assertNull(getOspfInboundDistributeListPolicy(null, "vrf", "proc", 0, "iface", c, w));
     assertThat(w, hasRedFlags(empty()));
   }
 
@@ -66,7 +66,7 @@ public class CiscoXrConversionsTest extends TestCase {
         new DistributeList("acl", DistributeList.DistributeListFilterType.ACCESS_LIST);
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
     Warnings w = new Warnings(true, true, true);
-    assertNull(getOspfInboundDistributeListPolicy(distList, "vrf", "proc", c, w));
+    assertNull(getOspfInboundDistributeListPolicy(distList, "vrf", "proc", 0, "iface", c, w));
     assertThat(
         w,
         hasRedFlags(
@@ -84,7 +84,7 @@ public class CiscoXrConversionsTest extends TestCase {
         new DistributeList("pl", DistributeList.DistributeListFilterType.PREFIX_LIST);
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
     Warnings w = new Warnings(true, true, true);
-    assertNull(getOspfInboundDistributeListPolicy(distList, "vrf", "proc", c, w));
+    assertNull(getOspfInboundDistributeListPolicy(distList, "vrf", "proc", 0, "iface", c, w));
     assertThat(
         w,
         hasRedFlags(
@@ -102,7 +102,7 @@ public class CiscoXrConversionsTest extends TestCase {
         new DistributeList("rp", DistributeList.DistributeListFilterType.ROUTE_POLICY);
     Configuration c = new Configuration("c", ConfigurationFormat.CISCO_IOS_XR);
     Warnings w = new Warnings(true, true, true);
-    assertNull(getOspfInboundDistributeListPolicy(distList, "vrf", "proc", c, w));
+    assertNull(getOspfInboundDistributeListPolicy(distList, "vrf", "proc", 0, "iface", c, w));
     assertThat(
         w,
         hasRedFlags(
@@ -131,9 +131,12 @@ public class CiscoXrConversionsTest extends TestCase {
     // Function should create a routing policy corresponding to the ACL's route filter list
     String vrfName = "vrf";
     String procName = "proc";
-    String rpName = generatedOspfInboundDistributeListName(vrfName, procName);
+    long areaNum = 0;
+    String ifaceName = "iface";
+    String rpName = generatedOspfInboundDistributeListName(vrfName, procName, areaNum, ifaceName);
     assertThat(
-        getOspfInboundDistributeListPolicy(distList, vrfName, procName, c, w), equalTo(rpName));
+        getOspfInboundDistributeListPolicy(distList, vrfName, procName, areaNum, ifaceName, c, w),
+        equalTo(rpName));
     assertThat(w, hasRedFlags(empty()));
 
     // Test the generated routing policy
@@ -161,9 +164,12 @@ public class CiscoXrConversionsTest extends TestCase {
     // Function should create a routing policy corresponding to the prefix-list
     String vrfName = "vrf";
     String procName = "proc";
-    String rpName = generatedOspfInboundDistributeListName(vrfName, procName);
+    long areaNum = 0;
+    String ifaceName = "iface";
+    String rpName = generatedOspfInboundDistributeListName(vrfName, procName, areaNum, ifaceName);
     assertThat(
-        getOspfInboundDistributeListPolicy(distList, vrfName, procName, c, w), equalTo(rpName));
+        getOspfInboundDistributeListPolicy(distList, vrfName, procName, areaNum, ifaceName, c, w),
+        equalTo(rpName));
     assertThat(w, hasRedFlags(empty()));
 
     // Test the generated routing policy
@@ -182,7 +188,7 @@ public class CiscoXrConversionsTest extends TestCase {
     RoutingPolicy.builder().setName(distList.getFilterName()).setOwner(c).build();
     Warnings w = new Warnings(true, true, true);
     assertThat(
-        getOspfInboundDistributeListPolicy(distList, "vrf", "proc", c, w),
+        getOspfInboundDistributeListPolicy(distList, "vrf", "proc", 0, "iface", c, w),
         equalTo(distList.getFilterName()));
     assertThat(w, hasRedFlags(empty()));
   }
