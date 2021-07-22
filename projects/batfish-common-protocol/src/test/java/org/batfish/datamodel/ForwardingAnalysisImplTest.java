@@ -409,7 +409,8 @@ public class ForwardingAnalysisImplTest {
                     .build()));
     Map<Edge, IpSpace> result =
         computeArpTrueEdgeNextHopIp(
-            c1.getHostname(), vrf1.getName(), computeMatchingIps(fibs), routesWithNextHopIpArpTrue);
+            computeMatchingIps(fibs).get(c1.getHostname()).get(vrf1.getName()),
+            routesWithNextHopIpArpTrue);
 
     /*
      * Respond for any destination IP in network not matching more specific route not going out i1.

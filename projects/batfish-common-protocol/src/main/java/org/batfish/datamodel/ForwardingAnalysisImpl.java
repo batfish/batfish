@@ -210,7 +210,7 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
      * due to route leaking, etc
      */
     Map<Edge, IpSpace> arpTrueEdgeNextHopIp =
-        computeArpTrueEdgeNextHopIp(node, vrf, matchingIps, routesWithNextHopIpArpTrue);
+        computeArpTrueEdgeNextHopIp(matchingIps.get(node).get(vrf), routesWithNextHopIpArpTrue);
 
     Map<Edge, IpSpace> arpTrueEdge = computeArpTrueEdge(arpTrueEdgeDestIp, arpTrueEdgeNextHopIp);
 
@@ -439,15 +439,11 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
 
   @VisibleForTesting
   static Map<Edge, IpSpace> computeArpTrueEdgeNextHopIp(
-      String node,
-      String vrf,
-      Map<String, Map<String, Map<Prefix, IpSpace>>> matchingIps,
-      Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue) {
+      Map<Prefix, IpSpace> matchingIps, Map<Edge, Set<AbstractRoute>> routesWithNextHopIpArpTrue) {
     return toImmutableMap(
         routesWithNextHopIpArpTrue,
         Entry::getKey, // edge
-        edgeEntry ->
-            computeRouteMatchConditions(edgeEntry.getValue(), matchingIps.get(node).get(vrf)));
+        edgeEntry -> computeRouteMatchConditions(edgeEntry.getValue(), matchingIps));
   }
 
   @VisibleForTesting
