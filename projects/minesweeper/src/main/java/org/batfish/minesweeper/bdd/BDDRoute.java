@@ -115,6 +115,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private BDDInteger _metric;
 
+  private BDDInteger _nextHop;
+
+  // to properly determine the next-hop IP that results from each path through a given route-map we
+  // need to track a few more pieces of information:  whether the next-hop is explicitly discarded
+  // by the route-map and whether the next-hop is explicitly set by the route-map
+  private BDD _nextHopDiscarded;
+  private BDD _nextHopSet;
+
   private BDDDomain<OspfType> _ospfMetric;
 
   private final BDDInteger _prefix;
@@ -143,7 +151,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDDRoute(int numCommAtomicPredicates, int numAsPathRegexAtomicPredicates) {
     int numVars = factory.varNum();
-    int numNeeded = 32 * 6 + 6 + numCommAtomicPredicates + numAsPathRegexAtomicPredicates + 4;
+    int numNeeded = 32 * 7 + 6 + numCommAtomicPredicates + numAsPathRegexAtomicPredicates + 4;
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -161,6 +169,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _med = BDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("med", 32, idx, false);
     idx += 32;
+    _nextHop = BDDInteger.makeFromIndex(factory, 32, idx, false);
+    addBitNames("nextHop", 32, idx, false);
+    idx += 32;
+    _nextHopSet = factory.zero();
+    _nextHopDiscarded = factory.zero();
     _tag = BDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("tag", 32, idx, false);
     idx += 32;
@@ -209,6 +222,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _prefixLength = new BDDInteger(other._prefixLength);
     _prefix = new BDDInteger(other._prefix);
     _metric = new BDDInteger(other._metric);
+    _nextHop = new BDDInteger(other._nextHop);
+    _nextHopSet = other._nextHopSet.id();
+    _nextHopDiscarded = other._nextHopDiscarded.id();
     _adminDist = new BDDInteger(other._adminDist);
     _med = new BDDInteger(other._med);
     _tag = new BDDInteger(other._tag);
@@ -280,7 +296,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             _asPathRegexAtomicPredicates[i].nand(_asPathRegexAtomicPredicates[j]));
       }
     }
-    return prefLenConstraint.andWith(asPathConstraint);
+    // the next hop should be neither the min or max possible IP
+    // this constraint is enforced by NextHopIp's constructor
+    BDD nextHopConstraint =
+        _nextHop.geq(Ip.ZERO.asLong() + 1).and(_nextHop.leq(Ip.MAX.asLong() - 1));
+
+    return prefLenConstraint.andWith(asPathConstraint).andWith(nextHopConstraint);
   }
 
   /*
@@ -382,6 +403,30 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _metric = metric;
   }
 
+  public BDDInteger getNextHop() {
+    return _nextHop;
+  }
+
+  public void setNextHop(BDDInteger nextHop) {
+    _nextHop = nextHop;
+  }
+
+  public BDD getNextHopDiscarded() {
+    return _nextHopDiscarded;
+  }
+
+  public void setNextHopDiscarded(BDD nextHopDiscarded) {
+    _nextHopDiscarded = nextHopDiscarded;
+  }
+
+  public BDD getNextHopSet() {
+    return _nextHopSet;
+  }
+
+  public void setNextHopSet(BDD nextHopSet) {
+    _nextHopSet = nextHopSet;
+  }
+
   public BDDDomain<OspfType> getOspfMetric() {
     return _ospfMetric;
   }
@@ -419,6 +464,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_med != null ? _med.hashCode() : 0);
       result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
       result = 31 * result + (_tag != null ? _tag.hashCode() : 0);
+      result = 31 * result + (_nextHop != null ? _nextHop.hashCode() : 0);
+      result = 31 * result + (_nextHopDiscarded != null ? _nextHopDiscarded.hashCode() : 0);
+      result = 31 * result + (_nextHopSet != null ? _nextHopSet.hashCode() : 0);
       result =
           31 * result
               + (_communityAtomicPredicates != null
@@ -447,6 +495,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
         && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_med, other._med)
+        && Objects.equals(_nextHop, other._nextHop)
+        && Objects.equals(_nextHopDiscarded, other._nextHopDiscarded)
+        && Objects.equals(_nextHopSet, other._nextHopSet)
         && Objects.equals(_tag, other._tag)
         && Objects.equals(_adminDist, other._adminDist);
   }
@@ -459,6 +510,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD[] adminDist = getAdminDist().getBitvec();
     BDD[] med = getMed().getBitvec();
     BDD[] localPref = getLocalPref().getBitvec();
+    BDD[] nextHop = getNextHop().getBitvec();
+    BDD nextHopDiscarded = getNextHopDiscarded();
+    BDD nextHopSet = getNextHopSet();
     BDD[] tag = getTag().getBitvec();
     BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
 
@@ -466,6 +520,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD[] adminDist2 = other.getAdminDist().getBitvec();
     BDD[] med2 = other.getMed().getBitvec();
     BDD[] localPref2 = other.getLocalPref().getBitvec();
+    BDD[] nextHop2 = other.getNextHop().getBitvec();
+    BDD nextHopDiscarded2 = other.getNextHopDiscarded();
+    BDD nextHopSet2 = other.getNextHopSet();
     BDD[] tag2 = other.getTag().getBitvec();
     BDD[] ospfMet2 = other.getOspfMetric().getInteger().getBitvec();
 
@@ -474,8 +531,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       adminDist[i].orWith(adminDist2[i]);
       med[i].orWith(med2[i]);
       localPref[i].orWith(localPref2[i]);
+      nextHop[i].orWith(nextHop2[i]);
       tag[i].orWith(tag2[i]);
     }
+    nextHopDiscarded.orWith(nextHopDiscarded2);
+    nextHopSet.orWith(nextHopSet2);
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i].orWith(ospfMet2[i]);
     }
@@ -508,6 +568,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD[] adminDist = rec.getAdminDist().getBitvec();
     BDD[] med = rec.getMed().getBitvec();
     BDD[] localPref = rec.getLocalPref().getBitvec();
+    BDD[] nextHop = rec.getNextHop().getBitvec();
+    BDD nextHopDiscarded = rec.getNextHopDiscarded();
+    BDD nextHopSet = rec.getNextHopSet();
     BDD[] tag = rec.getTag().getBitvec();
     BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
     for (int i = 0; i < 32; i++) {
@@ -515,8 +578,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       adminDist[i] = adminDist[i].veccompose(pairing);
       med[i] = med[i].veccompose(pairing);
       localPref[i] = localPref[i].veccompose(pairing);
+      nextHop[i] = nextHop[i].veccompose(pairing);
       tag[i] = tag[i].veccompose(pairing);
     }
+    rec.setNextHopDiscarded(nextHopDiscarded.veccompose(pairing));
+    rec.setNextHopSet(nextHopSet.veccompose(pairing));
     for (int i = 0; i < ospfMet.length; i++) {
       ospfMet[i] = ospfMet[i].veccompose(pairing);
     }
