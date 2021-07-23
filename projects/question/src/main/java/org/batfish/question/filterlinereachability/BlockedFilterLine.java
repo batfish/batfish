@@ -14,7 +14,7 @@ public final class BlockedFilterLine extends UnreachableFilterLine {
   public BlockedFilterLine(
       AclSpecs aclSpecs, int lineNumber, List<Integer> blockingLines, Boolean diffAction) {
     super(aclSpecs, lineNumber);
-    checkArgument(blockingLines.size() > 0, "blockingLines must not be empty for a blocked line");
+    checkArgument(!blockingLines.isEmpty(), "blockingLines must not be empty for a blocked line");
     _blockingLines = blockingLines;
     _diffAction = diffAction;
   }
