@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeArpFalseDestIp;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeArpFalseNextHopIp;
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeArpFalseNhipRoutes;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeArpReplies;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeArpTrueEdge;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeArpTrueEdgeDestIp;
@@ -18,7 +19,6 @@ import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNextVrfIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNullRoutedIps;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWhereDstIpCanBeArpIp;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithDestIpEdge;
-import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalse;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalseForInterface;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue;
 import static org.batfish.datamodel.ForwardingAnalysisImpl.computeSomeoneReplies;
@@ -902,8 +902,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(r1, ImmutableMap.of(i1, ImmutableSet.of(r1.getNextHopIp())));
     IpSpace someoneReplies = P2.getEndIp().toIpSpace();
     Set<AbstractRoute> result =
-        computeRoutesWithNextHopIpArpFalse(
-            i1, nextHopInterfaces, routesWithNextHop, someoneReplies);
+        computeArpFalseNhipRoutes(i1, nextHopInterfaces, routesWithNextHop, someoneReplies);
 
     assertThat(result, equalTo(ImmutableSet.of(r1)));
   }
@@ -1253,6 +1252,59 @@ public class ForwardingAnalysisImplTest {
     // nhip internal, interface is not full, dst ip is external -> insufficient info
     testDispositionComputationTemplate(
         NextHopIpStatus.INTERNAL, false, false, false, FlowDisposition.INSUFFICIENT_INFO);
+  }
+
+  /**
+   * Test that if a route has an unowned next hop IP, but it resolves to an owned ARP IP and we
+   * don't get an ARP response, we get insufficient info.
+   */
+  @Test
+  public void testUnknownedNextHopIpOwnedArpIp() {
+    Configuration n1 = _cb.setHostname("n1").build();
+    Vrf v1 = _vb.setOwner(n1).build();
+    Interface i1 =
+        _ib.setOwner(n1)
+            .setVrf(v1)
+            .setAddress(ConcreteInterfaceAddress.parse("10.0.1.0/31"))
+            .build();
+
+    Ip arpIp = Ip.parse("3.3.3.3"); // unowned
+
+    StaticRoute route =
+        StaticRoute.testBuilder()
+            .setNetwork(Prefix.parse("1.1.1.1/32"))
+            .setNextHopIp(Ip.parse("2.2.2.2"))
+            .setAdmin(1)
+            .build();
+
+    MockFib fib1 =
+        MockFib.builder()
+            .setMatchingIps(ImmutableMap.of(route.getNetwork(), route.getNetwork().toIpSpace()))
+            .setFibEntries(
+                ImmutableMap.of(
+                    arpIp,
+                    ImmutableSet.of(
+                        new FibEntry(
+                            new FibForward(arpIp, i1.getName()), ImmutableList.of(route)))))
+            .build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(n1.getHostname(), n1);
+    Map<String, Map<String, Fib>> fibs =
+        ImmutableMap.of(n1.getHostname(), ImmutableMap.of(v1.getName(), fib1));
+
+    ForwardingAnalysis fa =
+        new ForwardingAnalysisImpl(
+            configs, fibs, new Topology(ImmutableSortedSet.of()), computeLocationInfo(configs));
+
+    InterfaceForwardingBehavior ifb =
+        fa.getVrfForwardingBehavior()
+            .get(n1.getHostname())
+            .get(v1.getName())
+            .getInterfaceForwardingBehavior()
+            .get(i1.getName());
+    assertThat(ifb.getInsufficientInfo(), not(containsIp(route.getNetwork().getStartIp())));
+
+    assertThat(ifb.getExitsNetwork(), containsIp(route.getNetwork().getStartIp()));
   }
 
   // If two nodes are in the same subnet but not connected per the given topology,
