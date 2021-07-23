@@ -295,7 +295,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   public void traverseEntries(BiConsumer<Prefix, Set<T>> consumer) {
     // Chose null instead of something like BiPredicates.alwaysTrue() because:
     // - it doesn't exist
-    // - could not custom version to type-check
+    // - could not get custom version to type-check
     traverseEntriesImpl(consumer, null);
   }
 
