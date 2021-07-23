@@ -23,7 +23,7 @@ public final class TraceElements {
     if (line.getName() == null) {
       return null;
     }
-    return matchedByAclLine(line.getName(), line.getVendorStructureId());
+    return matchedByAclLine(line.getName(), line.getVendorStructureId().orElse(null));
   }
 
   public static TraceElement matchedByAclLine(

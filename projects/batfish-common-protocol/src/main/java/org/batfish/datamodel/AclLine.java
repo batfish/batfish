@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.vendor.VendorStructureId;
@@ -39,8 +40,8 @@ public abstract class AclLine implements Serializable {
   }
 
   @JsonProperty(PROP_VENDOR_STRUCTURE_ID)
-  public final VendorStructureId getVendorStructureId() {
-    return _vendorStructureId;
+  public final Optional<VendorStructureId> getVendorStructureId() {
+    return Optional.ofNullable(_vendorStructureId);
   }
 
   public abstract <R> R accept(GenericAclLineVisitor<R> visitor);

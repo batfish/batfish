@@ -2433,7 +2433,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
                     l.getName(),
                     l.getTraceElement(),
-                    l.getVendorStructureId()))
+                    l.getVendorStructureId().orElse(null)))
         .collect(ImmutableList.toImmutableList());
   }
 
