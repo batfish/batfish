@@ -20,28 +20,7 @@ import static org.batfish.representation.palo_alto.Conversions.getBgpCommonExpor
 import static org.batfish.representation.palo_alto.OspfVr.DEFAULT_LOOPBACK_OSPF_COST;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ADDRESS_OBJECT;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.ifaceOutgoingTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.intrazoneDefaultAcceptTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressAnyTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressGroupTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressObjectTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchAddressValueTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationAnyTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationGroupTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationObjectTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchApplicationOverrideRuleTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchBuiltInApplicationTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchDestinationAddressTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedDestinationAddressTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchNegatedSourceAddressTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceApplicationDefaultTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
-import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.*;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
@@ -1014,7 +993,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                       LineAction.PERMIT,
                       TrueExpr.INSTANCE,
                       "Accept intrazone by default",
-                      intrazoneDefaultAcceptTraceElement(vsysName, fromZone.getName())))
+                      intrazoneDefaultAcceptTraceElement(vsysName, fromZone.getName()),
+                      null))
               .build();
     }
 
@@ -1513,6 +1493,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
         .setTraceElement(matchSecurityRuleTraceElement(rule.getName(), vsys))
+        .setVendorStructureId(
+            securityRuleVendorStructureId(rule.getName(), vsys.getName(), _filename))
         .build();
   }
 
@@ -2085,7 +2067,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                     iface.getName(), zone.getVsys().getName(), zone.getName()),
                 zoneFilterName,
                 ifaceOutgoingTraceElement(
-                    iface.getName(), zone.getName(), zone.getVsys().getName())));
+                    iface.getName(), zone.getName(), zone.getVsys().getName()),
+                null));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
                 Action.POST_NAT_FIB_LOOKUP, zone.getInterfaceNames(), null, null));

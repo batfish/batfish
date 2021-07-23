@@ -136,17 +136,7 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
-import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
-import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
-import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
-import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionRoutingPolicyName;
-import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
-import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
-import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
-import static org.batfish.representation.juniper.JuniperConfiguration.generateInstanceImportPolicyName;
-import static org.batfish.representation.juniper.JuniperConfiguration.generateResolutionRibImportPolicyName;
-import static org.batfish.representation.juniper.JuniperConfiguration.matchingFirewallFilterTerm;
-import static org.batfish.representation.juniper.JuniperConfiguration.matchingSecurityPolicyTerm;
+import static org.batfish.representation.juniper.JuniperConfiguration.*;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
@@ -525,9 +515,7 @@ public final class FlatJuniperGrammarTest {
                                                     .build(),
                                                 ApplicationSetMember
                                                     .getTraceElementForUserApplication(
-                                                        "configs/" + c.getHostname(),
-                                                        APPLICATION,
-                                                        "a1")),
+                                                        filename, APPLICATION, "a1")),
                                             // a2
                                             new MatchHeaderSpace(
                                                 HeaderSpace.builder()
@@ -538,13 +526,9 @@ public final class FlatJuniperGrammarTest {
                                                     .build(),
                                                 ApplicationSetMember
                                                     .getTraceElementForUserApplication(
-                                                        "configs/" + c.getHostname(),
-                                                        APPLICATION,
-                                                        "a2"))),
+                                                        filename, APPLICATION, "a2"))),
                                         ApplicationSetMember.getTraceElementForUserApplication(
-                                            "configs/" + c.getHostname(),
-                                            APPLICATION_SET,
-                                            "appset1")),
+                                            filename, APPLICATION_SET, "appset1")),
                                     // a3
                                     new MatchHeaderSpace(
                                         HeaderSpace.builder()
@@ -552,12 +536,13 @@ public final class FlatJuniperGrammarTest {
                                             .setDstPorts(ImmutableList.of(SubRange.singleton(3)))
                                             .build(),
                                         ApplicationSetMember.getTraceElementForUserApplication(
-                                            "configs/" + c.getHostname(), APPLICATION, "a3"))),
+                                            filename, APPLICATION, "a3"))),
                                 ApplicationSetMember.getTraceElementForUserApplication(
-                                    "configs/" + c.getHostname(), APPLICATION_SET, "appset2")),
+                                    filename, APPLICATION_SET, "appset2")),
                             "p1",
-                            matchingSecurityPolicyTerm(
-                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")))))));
+                            matchingSecurityPolicyTerm(filename, ACL_NAME_GLOBAL_POLICY, "p1"),
+                            securityPolicyTermVendorStructureId(
+                                filename, ACL_NAME_GLOBAL_POLICY, "p1")))))));
 
     /* Check that appset1 and appset2 are referenced, but appset3 is not */
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_SET, "appset1", 1));
@@ -688,6 +673,8 @@ public final class FlatJuniperGrammarTest {
                                     "configs/" + c.getHostname(), APPLICATION, "a1")),
                             "p1",
                             matchingSecurityPolicyTerm(
+                                "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1"),
+                            securityPolicyTermVendorStructureId(
                                 "configs/" + c.getHostname(), ACL_NAME_GLOBAL_POLICY, "p1")))))));
   }
 
@@ -2986,6 +2973,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testSourceAddress() {
     Configuration c = parseConfig("firewall-source-address");
+    String filename = "configs/" + c.getHostname();
     String filterNameV4 = "FILTER";
     String filterNameV6 = "FILTERv6";
 
@@ -3027,8 +3015,9 @@ public final class FlatJuniperGrammarTest {
                                                     "Matched source-address 2.3.4.5/24"))))))
                             .setName("TERM")
                             .setTraceElement(
-                                matchingFirewallFilterTerm(
-                                    "configs/" + c.getHostname(), filterNameV4, "TERM"))
+                                matchingFirewallFilterTerm(filename, filterNameV4, "TERM"))
+                            .setVendorStructureId(
+                                firewallFilterTermVendorStructureId(filename, filterNameV4, "TERM"))
                             .build())))));
   }
 
@@ -3292,6 +3281,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testDestinationAddress() {
     Configuration c = parseConfig("firewall-destination-address");
+    String filename = "configs/" + c.getHostname();
     String filterNameV4 = "FILTER";
     String filterNameV6 = "FILTERv6";
 
@@ -3334,8 +3324,9 @@ public final class FlatJuniperGrammarTest {
                                                     "Matched destination-address 2.3.4.5/24"))))))
                             .setName("TERM")
                             .setTraceElement(
-                                matchingFirewallFilterTerm(
-                                    "configs/" + c.getHostname(), filterNameV4, "TERM"))
+                                matchingFirewallFilterTerm(filename, filterNameV4, "TERM"))
+                            .setVendorStructureId(
+                                firewallFilterTermVendorStructureId(filename, filterNameV4, "TERM"))
                             .build())))));
   }
 
@@ -5491,6 +5482,8 @@ public final class FlatJuniperGrammarTest {
                                         TraceElement.of("Matched source-address 1.2.3.6")))),
                             "TERM",
                             matchingFirewallFilterTerm(
+                                "configs/" + config.getHostname(), "FILTER1", "TERM"),
+                            firewallFilterTermVendorStructureId(
                                 "configs/" + config.getHostname(), "FILTER1", "TERM"))))
                 .build()));
 

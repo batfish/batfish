@@ -15,6 +15,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.vendor.VendorStructureId;
 
 /** A line in an IpAccessList */
 public final class ExprAclLine extends AclLine {
@@ -29,6 +30,8 @@ public final class ExprAclLine extends AclLine {
 
     private TraceElement _traceElement;
 
+    private VendorStructureId _vendorStructureId;
+
     private boolean _setTraceElement;
 
     private Builder() {}
@@ -41,8 +44,10 @@ public final class ExprAclLine extends AclLine {
     public ExprAclLine build() {
       // If traceElement has not been set, create a default one from the name
       TraceElement traceElement =
-          (!_setTraceElement && _name != null) ? matchedByAclLine(_name) : _traceElement;
-      return new ExprAclLine(_action, _matchCondition, _name, traceElement);
+          (!_setTraceElement && _name != null)
+              ? matchedByAclLine(_name, _vendorStructureId)
+              : _traceElement;
+      return new ExprAclLine(_action, _matchCondition, _name, traceElement, _vendorStructureId);
     }
 
     public Builder rejecting() {
@@ -68,6 +73,11 @@ public final class ExprAclLine extends AclLine {
     public Builder setTraceElement(@Nullable TraceElement traceElement) {
       _setTraceElement = true;
       _traceElement = traceElement;
+      return this;
+    }
+
+    public Builder setVendorStructureId(@Nullable VendorStructureId vendorStructureId) {
+      _vendorStructureId = vendorStructureId;
       return this;
     }
   }
@@ -147,25 +157,28 @@ public final class ExprAclLine extends AclLine {
       @Nullable @JsonProperty(PROP_ACTION) LineAction action,
       @Nullable @JsonProperty(PROP_MATCH_CONDITION) AclLineMatchExpr matchCondition,
       @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement,
+      @Nullable @JsonProperty(PROP_VENDOR_STRUCTURE_ID) VendorStructureId vendorStructureId) {
     return new ExprAclLine(
         checkNotNull(action, "%s cannot be null", PROP_ACTION),
         checkNotNull(matchCondition, "%s cannot be null", PROP_MATCH_CONDITION),
         name,
-        traceElement);
+        traceElement,
+        vendorStructureId);
   }
 
   public ExprAclLine(
       @Nonnull LineAction action, @Nonnull AclLineMatchExpr matchCondition, String name) {
-    this(action, matchCondition, name, null);
+    this(action, matchCondition, name, null, null);
   }
 
   public ExprAclLine(
       @Nonnull LineAction action,
       @Nonnull AclLineMatchExpr matchCondition,
       String name,
-      TraceElement traceElement) {
-    super(name, traceElement);
+      TraceElement traceElement,
+      VendorStructureId vendorStructureId) {
+    super(name, traceElement, vendorStructureId);
     _action = action;
     _matchCondition = matchCondition;
   }
@@ -182,7 +195,8 @@ public final class ExprAclLine extends AclLine {
     return _action == other._action
         && Objects.equals(_matchCondition, other._matchCondition)
         && Objects.equals(_name, other._name)
-        && Objects.equals(_traceElement, other._traceElement);
+        && Objects.equals(_traceElement, other._traceElement)
+        && Objects.equals(_vendorStructureId, other._vendorStructureId);
   }
 
   /** The action the underlying access-list will take when this line matches an IPV4 packet. */
@@ -203,7 +217,7 @@ public final class ExprAclLine extends AclLine {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_action, _matchCondition, _name, _traceElement);
+    return Objects.hash(_action, _matchCondition, _name, _traceElement, _vendorStructureId);
   }
 
   public Builder toBuilder() {
@@ -211,7 +225,8 @@ public final class ExprAclLine extends AclLine {
         .setAction(_action)
         .setMatchCondition(_matchCondition)
         .setName(_name)
-        .setTraceElement(_traceElement);
+        .setTraceElement(_traceElement)
+        .setVendorStructureId(_vendorStructureId);
   }
 
   @Override
@@ -224,6 +239,9 @@ public final class ExprAclLine extends AclLine {
         .add(
             PROP_TRACE_ELEMENT,
             Optional.ofNullable(_traceElement).map(TraceElement::toString).orElse(null))
+        .add(
+            PROP_VENDOR_STRUCTURE_ID,
+            Optional.ofNullable(_vendorStructureId).map(VendorStructureId::toString).orElse(null))
         .toString();
   }
 }

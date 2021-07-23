@@ -50,7 +50,8 @@ public class FwFromJunosApplicationTest {
                                 ImmutableSet.of(SubRange.singleton(NamedPort.BGP.number())))
                             .build()),
                     null,
-                    junosApp.getBaseApplication().getTermTraceElement(null)))));
+                    junosApp.getBaseApplication().getTermTraceElement(null),
+                    null))));
   }
 
   /**
