@@ -796,7 +796,7 @@ public class TransferBDD {
     return new TransferBDDState(curP.setData(result.getReturnValue().getFirst()), result);
   }
 
-  // Produce a BDD representing conditions under which the route's destination IP is within a
+  // Produce a BDD representing conditions under which the route's destination prefix is within a
   // given prefix range.
   public static BDD isRelevantForDestination(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
