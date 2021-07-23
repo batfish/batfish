@@ -56,27 +56,23 @@ public final class RibResolutionTrie {
    * or removal of a route whose network is {@code newPrefix}.
    */
   public @Nonnull Set<Ip> getAffectedNextHopIps(Prefix newPrefix) {
-    int newPrefixLength = newPrefix.getPrefixLength();
     ImmutableSet.Builder<Ip> affectedNextHopIps = ImmutableSet.builder();
     // If a node contains a NHIP, add it to the result.
-    BiConsumer<Prefix, Set<ResolutionTrieValue>> consumer =
+    BiConsumer<Prefix, Set<ResolutionTrieValue>> collectNextHopIp =
         (prefix, values) -> {
           if (values.contains(NHIP)) {
             affectedNextHopIps.add(prefix.getStartIp());
           }
         };
     // Visit nodes either:
-    // - whose prefix contains newPrefix
-    // - whose prefix is contained within newPrefix and either:
-    //   - do not contain a previously added prefix,
-    //     i.e., an intermediate node, or one with just an NHIP
-    //   - contain a previously added prefix that is not more specific than newPrefix
+    // - whose prefix contains newPrefix.
+    // - whose prefix is contained within newPrefix, and do not contain a previously added prefix,
+    //   i.e., an intermediate node, or one with just an NHIP.
     BiPredicate<Prefix, Set<ResolutionTrieValue>> visitNode =
         (prefix, values) ->
             prefix.containsPrefix(newPrefix)
-                || (newPrefix.containsPrefix(prefix)
-                    && (!values.contains(PREFIX) || prefix.getPrefixLength() <= newPrefixLength));
-    _prefixesAndNextHops.traverseEntries(consumer, visitNode);
+                || (newPrefix.containsPrefix(prefix) && !values.contains(PREFIX));
+    _prefixesAndNextHops.traverseEntries(collectNextHopIp, visitNode);
     return affectedNextHopIps.build();
   }
 }
