@@ -403,6 +403,7 @@ import org.batfish.representation.cisco_nxos.UdpOptions;
 import org.batfish.representation.cisco_nxos.Vlan;
 import org.batfish.representation.cisco_nxos.Vrf;
 import org.batfish.representation.cisco_nxos.VrfAddressFamily;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -3103,6 +3104,21 @@ public final class CiscoNxosGrammarTest {
       assertThat(iface.getIpForward(), nullValue());
       assertThat(iface.getIpProxyArp(), nullValue());
     }
+  }
+
+  @Test
+  public void testIpAccessListLineVendorStructureId() throws IOException {
+    String hostname = "nxos_ip_access_list";
+    Configuration c = parseConfig(hostname);
+    org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_simple_protocols");
+    AclLine line = acl.getLines().get(0);
+    assertThat(
+        line.getVendorStructureId().get(),
+        equalTo(
+            new VendorStructureId(
+                "configs/" + hostname,
+                CiscoNxosStructureType.IP_ACCESS_LIST.getDescription(),
+                line.getName())));
   }
 
   @Test

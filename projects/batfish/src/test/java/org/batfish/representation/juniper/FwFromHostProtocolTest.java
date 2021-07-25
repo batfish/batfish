@@ -40,7 +40,8 @@ public class FwFromHostProtocolTest {
                                 ImmutableSet.of(SubRange.singleton(NamedPort.BGP.number())))
                             .build()),
                     null,
-                    TraceElement.of("Matched host-inbound-traffic protocol BGP")))));
+                    TraceElement.of("Matched host-inbound-traffic protocol BGP"),
+                    null))));
   }
 
   @Test

@@ -86815,6 +86815,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper-tcpflags",
+                  "structureName" : "foo bar",
+                  "structureType" : "firewall filter term"
                 }
               }
             ],
@@ -88647,6 +88652,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_firewall",
+                  "structureName" : "blah blorp",
+                  "structureType" : "firewall filter term"
                 }
               },
               {
@@ -88692,6 +88702,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_firewall",
+                  "structureName" : "blah prefix-list",
+                  "structureType" : "firewall filter term"
                 }
               },
               {
@@ -88737,6 +88752,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_firewall",
+                  "structureName" : "blah some term",
+                  "structureType" : "firewall filter term"
                 }
               },
               {
@@ -88762,6 +88782,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_firewall",
+                  "structureName" : "blah t3",
+                  "structureType" : "firewall filter term"
                 }
               }
             ],
@@ -92782,6 +92807,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_security",
+                  "structureName" : "zone~A~to~zone~B 123-4",
+                  "structureType" : "security policy term"
                 }
               }
             ],
@@ -92814,6 +92844,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_security",
+                  "structureName" : "~GLOBAL_SECURITY_POLICY~ p1",
+                  "structureType" : "security policy term"
                 }
               }
             ],
@@ -93809,6 +93844,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_security",
+                  "structureName" : "~GLOBAL_SECURITY_POLICY~",
+                  "structureType" : "security policy"
                 }
               },
               {
@@ -93868,6 +93908,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_security",
+                  "structureName" : "zone~A~to~zone~B",
+                  "structureType" : "security policy"
                 }
               },
               {
@@ -93890,6 +93935,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_security",
+                  "structureName" : "~GLOBAL_SECURITY_POLICY~",
+                  "structureType" : "security policy"
                 }
               },
               {
@@ -93936,6 +93986,11 @@
                       }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/juniper_security",
+                  "structureName" : "zone~A~to~zone~B 123-4",
+                  "structureType" : "security policy term"
                 }
               }
             ],

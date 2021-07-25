@@ -1798,7 +1798,7 @@ public final class CiscoAsaGrammarTest {
               isTraceTree(
                   asaDeniedByOutputFilterTraceElement(
                       "configs/asa-security-level-permit-tracing", filterOut),
-                  isTraceTree(matchedByAclLine("deny tcp any any eq 22")))));
+                  isTraceTree(matchedByAclLine("deny tcp any any eq 22", null)))));
     }
 
     // permitted, inter-interface

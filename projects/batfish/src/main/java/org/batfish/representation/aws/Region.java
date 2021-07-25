@@ -939,7 +939,8 @@ public final class Region implements Serializable {
           new AclAclLine(
               String.format("Security Group %s", sg.getGroupName()),
               acl.getName(),
-              getTraceElementForSecurityGroup(sg.getGroupName())));
+              getTraceElementForSecurityGroup(sg.getGroupName()),
+              null));
     }
 
     IpAccessList inAcl =
@@ -967,7 +968,8 @@ public final class Region implements Serializable {
           new AclAclLine(
               String.format("Security Group %s", sg.getGroupName()),
               acl.getName(),
-              getTraceElementForSecurityGroup(sg.getGroupName())));
+              getTraceElementForSecurityGroup(sg.getGroupName()),
+              null));
     }
 
     // egress ACL is spoofing protection plus egress SGs
