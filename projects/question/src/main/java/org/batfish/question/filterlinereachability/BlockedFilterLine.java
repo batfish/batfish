@@ -9,10 +9,10 @@ import org.batfish.datamodel.answers.AclSpecs;
 /** Data about blocked/shadowed filter lines. */
 public final class BlockedFilterLine extends UnreachableFilterLine {
   private final List<Integer> _blockingLines;
-  private final Boolean _diffAction;
+  private final boolean _diffAction;
 
   public BlockedFilterLine(
-      AclSpecs aclSpecs, int lineNumber, List<Integer> blockingLines, Boolean diffAction) {
+      AclSpecs aclSpecs, int lineNumber, List<Integer> blockingLines, boolean diffAction) {
     super(aclSpecs, lineNumber);
     checkArgument(!blockingLines.isEmpty(), "blockingLines must not be empty for a blocked line");
     _blockingLines = blockingLines;
