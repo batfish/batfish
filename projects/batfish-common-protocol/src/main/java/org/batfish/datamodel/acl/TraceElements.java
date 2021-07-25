@@ -23,11 +23,16 @@ public final class TraceElements {
     if (line.getName() == null) {
       return null;
     }
-    return matchedByAclLine(line.getName());
+    return matchedByAclLine(line.getName(), line.getVendorStructureId().orElse(null));
   }
 
-  public static TraceElement matchedByAclLine(String lineName) {
-    return TraceElement.of("Matched line " + lineName);
+  public static TraceElement matchedByAclLine(
+      String lineName, @Nullable VendorStructureId vendorStructureId) {
+    if (vendorStructureId == null) {
+      return TraceElement.of("Matched line " + lineName);
+    } else {
+      return TraceElement.builder().add("Matched line ").add(lineName, vendorStructureId).build();
+    }
   }
 
   public static TraceElement permittedByNamedIpSpace(

@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.vendor.VendorStructureId;
 
 /**
  * An {@link AclLine} that matches packets that explicitly match a given ACL, and takes the same
@@ -25,19 +26,24 @@ public final class AclAclLine extends AclLine {
   private static AclAclLine jsonCreator(
       @Nullable @JsonProperty(PROP_NAME) String name,
       @Nullable @JsonProperty(PROP_ACL_NAME) String aclName,
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement,
+      @Nullable @JsonProperty(PROP_VENDOR_STRUCTURE_ID) VendorStructureId vendorStructureId) {
     checkNotNull(name, "%s must be provided", PROP_NAME);
     checkNotNull(aclName, "%s must be provided", PROP_ACL_NAME);
-    return new AclAclLine(name, aclName, traceElement);
+    return new AclAclLine(name, aclName, traceElement, vendorStructureId);
   }
 
-  public AclAclLine(String name, String aclName, @Nullable TraceElement traceElement) {
-    super(name, traceElement);
+  public AclAclLine(
+      String name,
+      String aclName,
+      @Nullable TraceElement traceElement,
+      @Nullable VendorStructureId vendorStructureId) {
+    super(name, traceElement, vendorStructureId);
     _aclName = aclName;
   }
 
   public AclAclLine(String name, String aclName) {
-    this(name, aclName, null);
+    this(name, aclName, null, null);
   }
 
   @Nonnull
@@ -62,12 +68,13 @@ public final class AclAclLine extends AclLine {
     AclAclLine other = (AclAclLine) obj;
     return Objects.equals(_aclName, other._aclName)
         && Objects.equals(_name, other._name)
-        && Objects.equals(_traceElement, other._traceElement);
+        && Objects.equals(_traceElement, other._traceElement)
+        && Objects.equals(_vendorStructureId, other._vendorStructureId);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_aclName, _name, _traceElement);
+    return Objects.hash(_aclName, _name, _traceElement, _vendorStructureId);
   }
 
   @Override

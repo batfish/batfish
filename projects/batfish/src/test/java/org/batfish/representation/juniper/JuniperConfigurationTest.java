@@ -114,20 +114,16 @@ public class JuniperConfigurationTest {
     // ACL from headerSpace filter should have one line
     AclLine headerSpaceAclLine = Iterables.getOnlyElement(headerSpaceAcl.getLines());
     // It should have a MatchHeaderSpace match condition, matching the ipAddrPrefix from above
+    VendorStructureId vsId =
+        new VendorStructureId("file", FIREWALL_FILTER_TERM.getDescription(), "filter term");
     assertThat(
         headerSpaceAclLine,
         equalTo(
             ExprAclLine.builder()
                 .setName("term")
                 .setAction(LineAction.PERMIT)
-                .setTraceElement(
-                    TraceElement.builder()
-                        .add("Matched ")
-                        .add(
-                            "term",
-                            new VendorStructureId(
-                                "file", FIREWALL_FILTER_TERM.getDescription(), "filter term"))
-                        .build())
+                .setTraceElement(TraceElement.builder().add("Matched ").add("term", vsId).build())
+                .setVendorStructureId(vsId)
                 .setMatchCondition(
                     new AndMatchExpr(
                         ImmutableList.of(
@@ -163,20 +159,16 @@ public class JuniperConfigurationTest {
     AclLine comboAclLine = Iterables.getOnlyElement(headerSpaceAndSrcInterfaceAcl.getLines());
     // It should have an AndMatchExpr match condition, containing both a MatchSrcInterface
     // condition and a MatchHeaderSpace condition
+    VendorStructureId vsId =
+        new VendorStructureId("file", SECURITY_POLICY_TERM.getDescription(), "filter term");
     assertThat(
         comboAclLine,
         equalTo(
             ExprAclLine.builder()
                 .setName("term")
                 .setAction(LineAction.PERMIT)
-                .setTraceElement(
-                    TraceElement.builder()
-                        .add("Matched ")
-                        .add(
-                            "term",
-                            new VendorStructureId(
-                                "file", SECURITY_POLICY_TERM.getDescription(), "filter term"))
-                        .build())
+                .setTraceElement(TraceElement.builder().add("Matched ").add("term", vsId).build())
+                .setVendorStructureId(vsId)
                 .setMatchCondition(
                     new AndMatchExpr(
                         ImmutableList.of(
@@ -786,7 +778,8 @@ public class JuniperConfigurationTest {
                 new MatchHeaderSpace(
                     HeaderSpace.builder().setSrcIps(Ip.parse("1.1.1.1").toIpSpace()).build()),
                 "match1",
-                TraceElement.of("trace of match1")));
+                TraceElement.of("trace of match1"),
+                null));
 
     MatchHeaderSpace conj =
         new MatchHeaderSpace(

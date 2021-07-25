@@ -193,11 +193,13 @@ public class RegionTest {
                 new AclAclLine(
                     "Security Group sg-1",
                     "~INGRESS~SECURITY-GROUP~sg-1~sg-001~",
-                    getTraceElementForSecurityGroup("sg-1")),
+                    getTraceElementForSecurityGroup("sg-1"),
+                    null),
                 new AclAclLine(
                     "Security Group sg-2",
                     "~INGRESS~SECURITY-GROUP~sg-2~sg-002~",
-                    getTraceElementForSecurityGroup("sg-2")))));
+                    getTraceElementForSecurityGroup("sg-2"),
+                    null))));
 
     assertThat(
         iface.getOutgoingFilter().getLines(),

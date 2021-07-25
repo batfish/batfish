@@ -315,6 +315,7 @@ public enum HostSystemService {
             LineAction.PERMIT,
             new MatchHeaderSpace(headerSpaceBuilder.build()),
             null,
-            getTraceElement()));
+            getTraceElement(),
+            null));
   }
 }

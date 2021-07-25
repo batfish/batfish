@@ -2270,34 +2270,41 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .setSourceType(CiscoNxosStructureType.IP_ACCESS_LIST.getDescription())
         .setLines(
             list.getLines().values().stream()
-                .flatMap(this::toExprAclLine)
+                .map(this::toExprAclLine)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
 
   /**
-   * Converts the supplied {@code line} to zero or more vendor-independent {@link ExprAclLine}s
+   * Converts the supplied {@code line} to zero or one vendor-independent {@link ExprAclLine}s
    * depending on semantics.
    */
-  private @Nonnull Stream<ExprAclLine> toExprAclLine(IpAccessListLine line) {
+  private @Nonnull Optional<ExprAclLine> toExprAclLine(IpAccessListLine line) {
     return line.accept(
-        new IpAccessListLineVisitor<Stream<ExprAclLine>>() {
+        new IpAccessListLineVisitor<Optional<ExprAclLine>>() {
           @Override
-          public Stream<ExprAclLine> visitActionIpAccessListLine(
+          public Optional<ExprAclLine> visitActionIpAccessListLine(
               ActionIpAccessListLine actionIpAccessListLine) {
             LineAction action = actionIpAccessListLine.getAction();
-            return Stream.of(
+            return Optional.of(
                 ExprAclLine.builder()
                     .setAction(action)
                     .setMatchCondition(toAclLineMatchExpr(actionIpAccessListLine, action))
                     .setName(actionIpAccessListLine.getText())
+                    .setVendorStructureId(
+                        new VendorStructureId(
+                            _filename,
+                            CiscoNxosStructureType.IP_ACCESS_LIST.getDescription(),
+                            actionIpAccessListLine.getText()))
                     .build());
           }
 
           @Override
-          public Stream<ExprAclLine> visitRemarkIpAccessListLine(
+          public Optional<ExprAclLine> visitRemarkIpAccessListLine(
               RemarkIpAccessListLine remarkIpAccessListLine) {
-            return Stream.empty();
+            return Optional.empty();
           }
         });
   }

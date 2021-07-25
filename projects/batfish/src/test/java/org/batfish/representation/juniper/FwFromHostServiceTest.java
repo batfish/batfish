@@ -41,7 +41,8 @@ public class FwFromHostServiceTest {
                                 ImmutableSet.of(SubRange.singleton(NamedPort.DOMAIN.number())))
                             .build()),
                     null,
-                    HostSystemService.DNS.getTraceElement()))));
+                    HostSystemService.DNS.getTraceElement(),
+                    null))));
   }
 
   @Test
