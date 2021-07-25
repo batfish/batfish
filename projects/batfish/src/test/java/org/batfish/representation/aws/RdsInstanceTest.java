@@ -211,7 +211,8 @@ public class RdsInstanceTest {
                   new AclAclLine(
                       "Security Group Test Security Group",
                       "~EGRESS~SECURITY-GROUP~Test Security Group~" + "sg-0de0ddfa8a5a45810~",
-                      Utils.getTraceElementForSecurityGroup("Test Security Group")))));
+                      Utils.getTraceElementForSecurityGroup("Test Security Group"),
+                      null))));
       assertThat(
           testRds.getIpAccessLists().get(eniIngressAclName(iface.getName())).getLines(),
           equalTo(
@@ -219,7 +220,8 @@ public class RdsInstanceTest {
                   new AclAclLine(
                       "Security Group Test Security Group",
                       "~INGRESS~SECURITY-GROUP~Test Security Group~sg-0de0ddfa8a5a45810~",
-                      Utils.getTraceElementForSecurityGroup("Test Security Group")))));
+                      Utils.getTraceElementForSecurityGroup("Test Security Group"),
+                      null))));
       assertThat(
           iface.getFirewallSessionInterfaceInfo(),
           equalTo(

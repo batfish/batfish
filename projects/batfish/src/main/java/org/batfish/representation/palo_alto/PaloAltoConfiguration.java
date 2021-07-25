@@ -39,6 +39,7 @@ import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchServiceTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.matchSourceAddressTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.originatedFromDeviceTraceElement;
+import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.securityRuleVendorStructureId;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.unzonedIfaceRejectTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneMatchTraceElement;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.zoneToZoneRejectTraceElement;
@@ -1014,7 +1015,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                       LineAction.PERMIT,
                       TrueExpr.INSTANCE,
                       "Accept intrazone by default",
-                      intrazoneDefaultAcceptTraceElement(vsysName, fromZone.getName())))
+                      intrazoneDefaultAcceptTraceElement(vsysName, fromZone.getName()),
+                      null))
               .build();
     }
 
@@ -1513,6 +1515,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .setAction(rule.getAction())
         .setMatchCondition(new AndMatchExpr(conjuncts))
         .setTraceElement(matchSecurityRuleTraceElement(rule.getName(), vsys))
+        .setVendorStructureId(
+            securityRuleVendorStructureId(rule.getName(), vsys.getName(), _filename))
         .build();
   }
 
@@ -2085,7 +2089,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                     iface.getName(), zone.getVsys().getName(), zone.getName()),
                 zoneFilterName,
                 ifaceOutgoingTraceElement(
-                    iface.getName(), zone.getName(), zone.getVsys().getName())));
+                    iface.getName(), zone.getName(), zone.getVsys().getName()),
+                null));
         newIface.setFirewallSessionInterfaceInfo(
             new FirewallSessionInterfaceInfo(
                 Action.POST_NAT_FIB_LOOKUP, zone.getInterfaceNames(), null, null));

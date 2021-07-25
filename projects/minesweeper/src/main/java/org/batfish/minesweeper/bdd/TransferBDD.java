@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
@@ -43,12 +44,17 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IpNextHop;
+import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
@@ -59,7 +65,10 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
+import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
@@ -335,7 +344,9 @@ public class TransferBDD {
       p.debug("MatchPrefixSet");
       MatchPrefixSet m = (MatchPrefixSet) expr;
 
-      BDD prefixSet = matchPrefixSet(p.indent(), _conf, m.getPrefixSet(), _originalRoute);
+      // MatchPrefixSet::evaluate obtains the prefix to match (either the destination network or
+      // next-hop IP) from the original route, so we do the same here
+      BDD prefixSet = matchPrefixSet(p.indent(), _conf, m, _originalRoute);
       return result.setReturnValueBDD(prefixSet);
 
       // TODO: implement me
@@ -654,6 +665,7 @@ public class TransferBDD {
       CommunityAPDispositions dispositions =
           setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _originalRoute));
       updateCommunities(dispositions, curP, result);
+
     } else if (stmt instanceof CallStatement) {
       /*
        this code is based on the concrete semantics defined by CallStatement::execute, which also
@@ -699,8 +711,7 @@ public class TransferBDD {
 
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
-      // System.out.println("Warning: use of unimplemented feature SetNextHop");
-      // TODO: implement me
+      setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
 
     } else if (stmt instanceof TraceableStatement) {
       return compute(((TraceableStatement) stmt).getInnerStatements(), state);
@@ -758,25 +769,28 @@ public class TransferBDD {
     return new TransferBDDState(curP.setData(result.getReturnValue().getFirst()), result);
   }
 
-  /*
-   * Check if a prefix range match is applicable for the packet destination
-   * Ip address, given the prefix length variable.
-   *
-   * Since aggregation is modelled separately, we assume that prefixLen
-   * is not modified, and thus will contain only the underlying variables:
-   * [var(0), ..., var(n)]
-   */
-  public static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
+  // Produce a BDD representing conditions under which the route's destination prefix is within a
+  // given prefix range.
+  public static BDD isRelevantForDestination(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
-    BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, p.getPrefixLength());
+    int pLen = p.getPrefixLength();
 
-    BDDInteger prefixLength = record.getPrefixLength();
     SubRange r = range.getLengthRange();
     int lower = r.getStart();
     int upper = r.getEnd();
-    BDD lenMatch = prefixLength.range(lower, upper);
 
-    return lenMatch.and(prefixMatch);
+    BDD prefixMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, pLen);
+    BDDInteger prefixLength = record.getPrefixLength();
+    BDD lenMatch = prefixLength.range(lower, upper);
+    return prefixMatch.and(lenMatch);
+  }
+
+  // Produce a BDD representing conditions under which the route's next-hop address is within a
+  // given prefix range.
+  private static BDD isRelevantForNextHop(BDDRoute record, PrefixRange range) {
+    Prefix p = range.getPrefix();
+    int pLen = p.getPrefixLength();
+    return firstBitsEqual(record.getNextHop().getBitvec(), p, pLen);
   }
 
   /*
@@ -838,6 +852,13 @@ public class TransferBDD {
     x = r1.getMed();
     y = r2.getMed();
     ret.getMed().setValue(ite(guard, x, y));
+
+    x = r1.getNextHop();
+    y = r2.getNextHop();
+    ret.getNextHop().setValue(ite(guard, x, y));
+
+    ret.setNextHopDiscarded(ite(guard, r1.getNextHopDiscarded(), r2.getNextHopDiscarded()));
+    ret.setNextHopSet(ite(guard, r1.getNextHopSet(), r2.getNextHopSet()));
 
     x = r1.getTag();
     y = r2.getTag();
@@ -922,7 +943,11 @@ public class TransferBDD {
   /*
    * Converts a route filter list to a boolean expression.
    */
-  private BDD matchFilterList(TransferParam<BDDRoute> p, RouteFilterList x, BDDRoute other) {
+  private BDD matchFilterList(
+      TransferParam<BDDRoute> p,
+      RouteFilterList x,
+      BDDRoute other,
+      BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher) {
     BDD acc = factory.zero();
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
     Collections.reverse(lines);
@@ -936,7 +961,7 @@ public class TransferBDD {
         PrefixRange range = new PrefixRange(pfx, r);
         p.debug("Prefix Range: " + range);
         p.debug("Action: " + line.getAction());
-        BDD matches = isRelevantFor(other, range);
+        BDD matches = symbolicMatcher.apply(other, range);
         BDD action = mkBDD(line.getAction() == LineAction.PERMIT);
         acc = ite(matches, action, acc);
       }
@@ -944,25 +969,39 @@ public class TransferBDD {
     return acc;
   }
 
+  // Returns a function that can convert a prefix range into a BDD that constrains the appropriate
+  // part of a route (destination prefix or next-hop IP), depending on the given prefix
+  // expression.
+  private BiFunction<BDDRoute, PrefixRange, BDD> prefixExprToSymbolicMatcher(PrefixExpr pe) {
+    if (pe.equals(DestinationNetwork.instance())) {
+      return TransferBDD::isRelevantForDestination;
+    } else if (pe instanceof IpPrefix) {
+      IpPrefix ipp = (IpPrefix) pe;
+      if (ipp.getIp().equals(NextHopIp.instance())
+          && ipp.getPrefixLength().equals(new LiteralInt(Prefix.MAX_PREFIX_LENGTH))) {
+        return TransferBDD::isRelevantForNextHop;
+      }
+    }
+    throw new UnsupportedOperationException("Unsupported prefix expression: " + pe);
+  }
+
   /*
    * Converts a prefix set to a boolean expression.
    */
   private BDD matchPrefixSet(
-      TransferParam<BDDRoute> p, Configuration conf, PrefixSetExpr e, BDDRoute other) {
+      TransferParam<BDDRoute> p, Configuration conf, MatchPrefixSet m, BDDRoute other) {
+    BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher =
+        prefixExprToSymbolicMatcher(m.getPrefix());
+    PrefixSetExpr e = m.getPrefixSet();
     if (e instanceof ExplicitPrefixSet) {
       ExplicitPrefixSet x = (ExplicitPrefixSet) e;
 
       Set<PrefixRange> ranges = x.getPrefixSpace().getPrefixRanges();
-      if (ranges.isEmpty()) {
-        p.debug("empty");
-        return factory.one();
-      }
-
       BDD acc = factory.zero();
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: " + range);
         if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
-          acc = acc.or(isRelevantFor(other, range));
+          acc = acc.or(symbolicMatcher.apply(other, range));
         }
       }
       return acc;
@@ -972,7 +1011,7 @@ public class TransferBDD {
       p.debug("Named: " + x.getName());
       String name = x.getName();
       RouteFilterList fl = conf.getRouteFilterLists().get(name);
-      return matchFilterList(p, fl, other);
+      return matchFilterList(p, fl, other, symbolicMatcher);
 
     } else {
       throw new BatfishException("TODO: match prefix set: " + e);
@@ -1008,6 +1047,21 @@ public class TransferBDD {
    */
   BDD mkBDD(boolean b) {
     return b ? factory.one() : factory.zero();
+  }
+
+  private void setNextHop(NextHopExpr expr, BDDRoute route) {
+    // record the fact that the next-hop has been explicitly set by the route-map
+    route.setNextHopSet(factory.one());
+    if (expr instanceof DiscardNextHop) {
+      route.setNextHopDiscarded(factory.one());
+    } else if (expr instanceof IpNextHop) {
+      List<Ip> ips = ((IpNextHop) expr).getIps();
+      checkArgument(ips.size() == 1, "Currently not allowing multiple next-hop IPs to be set");
+      Ip ip = ips.get(0);
+      route.setNextHop(BDDInteger.makeFromValue(factory, 32, ip.asLong()));
+    } else {
+      throw new UnsupportedOperationException("Unsupported next-hop expression: " + expr);
+    }
   }
 
   // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
@@ -1093,6 +1147,9 @@ public class TransferBDD {
     rec.getAdminDist().setValue(0);
     rec.getPrefixLength().setValue(0);
     rec.getMed().setValue(0);
+    rec.getNextHop().setValue(0);
+    rec.setNextHopDiscarded(factory.zero());
+    rec.setNextHopSet(factory.zero());
     rec.getTag().setValue(0);
     rec.getPrefix().setValue(0);
     for (int i = 0; i < rec.getCommunityAtomicPredicates().length; i++) {
