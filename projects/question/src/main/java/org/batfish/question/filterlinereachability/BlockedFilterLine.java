@@ -27,7 +27,7 @@ public final class BlockedFilterLine extends UnreachableFilterLine {
    * Whether one of the blocking lines has (or can have) a different action. Note: this is
    * non-trivial because {@link AclAclLine} can permit or deny.
    */
-  public Boolean hasDiffAction() {
+  public boolean hasDiffAction() {
     return _diffAction;
   }
 
