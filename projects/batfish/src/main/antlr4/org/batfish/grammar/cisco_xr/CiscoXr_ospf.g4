@@ -114,7 +114,7 @@ ro_common
 
 ro_default_information
 :
-   NO? DEFAULT_INFORMATION ORIGINATE
+   DEFAULT_INFORMATION ORIGINATE
    (
       METRIC metric = uint_legacy
       | METRIC_TYPE metric_type = uint_legacy
@@ -126,7 +126,7 @@ ro_default_information
 
 ro_default_metric
 :
-   NO? DEFAULT_METRIC metric = uint_legacy NEWLINE
+   DEFAULT_METRIC metric = uint_legacy NEWLINE
 ;
 
 ro_distance
@@ -192,6 +192,14 @@ ro_maximum_paths
 ;
 
 roc_network: NETWORK ospf_network_type NEWLINE;
+
+ro_no
+:
+   NO (
+      DEFAULT_INFORMATION ORIGINATE
+      | DEFAULT_METRIC uint_legacy
+   ) NEWLINE
+;
 
 roa_nssa
 :
@@ -396,6 +404,7 @@ s_router_ospf
       | ro_max_metric
       | ro_maximum_paths
       | ro_mpls
+      | ro_no
       | ro_redistribute
       | ro_router_id
       | ro_summary_address

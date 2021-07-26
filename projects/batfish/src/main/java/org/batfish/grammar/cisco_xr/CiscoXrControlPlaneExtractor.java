@@ -5959,42 +5959,32 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_default_information(Ro_default_informationContext ctx) {
-    OspfProcess proc = _currentOspfProcess;
-    if (ctx.NO() != null) {
-      proc.setDefaultInformationOriginate(null);
-    } else {
-      if (ctx.policy != null) {
-        todo(ctx);
-        String name = toString(ctx.policy);
-        _configuration.referenceStructure(
-            ROUTE_POLICY, name, OSPF_DEFAULT_INFORMATION_ROUTE_POLICY, ctx.start.getLine());
-      }
-      OspfDefaultInformationOriginate defaultInformationOriginate =
-          new OspfDefaultInformationOriginate();
-      boolean always = ctx.ALWAYS().size() > 0;
-      defaultInformationOriginate.setAlways(always);
-      if (ctx.metric != null) {
-        int metric = toInteger(ctx.metric);
-        defaultInformationOriginate.setMetric(metric);
-      }
-      if (ctx.metric_type != null) {
-        int metricTypeInt = toInteger(ctx.metric_type);
-        OspfMetricType metricType = OspfMetricType.fromInteger(metricTypeInt);
-        defaultInformationOriginate.setMetricType(metricType);
-      }
-      proc.setDefaultInformationOriginate(defaultInformationOriginate);
+    if (ctx.policy != null) {
+      todo(ctx);
+      String name = toString(ctx.policy);
+      _configuration.referenceStructure(
+          ROUTE_POLICY, name, OSPF_DEFAULT_INFORMATION_ROUTE_POLICY, ctx.start.getLine());
     }
+    OspfDefaultInformationOriginate defaultInformationOriginate =
+        new OspfDefaultInformationOriginate();
+    boolean always = ctx.ALWAYS().size() > 0;
+    defaultInformationOriginate.setAlways(always);
+    if (ctx.metric != null) {
+      int metric = toInteger(ctx.metric);
+      defaultInformationOriginate.setMetric(metric);
+    }
+    if (ctx.metric_type != null) {
+      int metricTypeInt = toInteger(ctx.metric_type);
+      OspfMetricType metricType = OspfMetricType.fromInteger(metricTypeInt);
+      defaultInformationOriginate.setMetricType(metricType);
+    }
+    _currentOspfProcess.setDefaultInformationOriginate(defaultInformationOriginate);
   }
 
   @Override
   public void exitRo_default_metric(Ro_default_metricContext ctx) {
-    OspfProcess proc = _currentOspfProcess;
-    if (ctx.NO() != null) {
-      proc.setDefaultMetric(null);
-    } else {
-      long metric = toLong(ctx.metric);
-      proc.setDefaultMetric(metric);
-    }
+    long metric = toLong(ctx.metric);
+    _currentOspfProcess.setDefaultMetric(metric);
   }
 
   @Override
@@ -6057,6 +6047,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitRoc_network(Roc_networkContext ctx) {
     _currentOspfSettings.setNetworkType(toOspfNetworkType(ctx.ospf_network_type()));
+  }
+
+  @Override
+  public void exitRo_no(CiscoXrParser.Ro_noContext ctx) {
+    OspfProcess proc = _currentOspfProcess;
+    if (ctx.DEFAULT_INFORMATION() != null) {
+      proc.setDefaultInformationOriginate(null);
+    } else if (ctx.DEFAULT_METRIC() != null) {
+      proc.setDefaultMetric(null);
+    }
   }
 
   @Override
