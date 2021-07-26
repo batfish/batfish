@@ -87,6 +87,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         return;
       }
       Prefix prefix = delta.getPrefixes().findFirst().get();
+      assert delta.getPrefixes().allMatch(prefix::equals);
       if (delta.getActions().count() == 1) {
         // no backups
         if (extractRoutes(prefix).isEmpty()) {
@@ -139,22 +140,14 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       if (initialDelta.isEmpty()) {
         return RibDelta.empty();
       }
+      assert initialDelta.getRoutes().contains(route);
       RibDelta.Builder<AnnotatedRoute<AbstractRoute>> delta =
           RibDelta.<AnnotatedRoute<AbstractRoute>>builder().from(initialDelta);
       postProcessDelta(initialDelta);
       Set<AnnotatedRoute<AbstractRoute>> affectedRoutes = new LinkedHashSet<>();
-      affectedRoutes.add(
-          initialDelta
-              .getActions()
-              .filter(action -> action.getRoute().equals(route))
-              .map(RouteAdvertisement::getRoute)
-              .findFirst()
-              .get());
-      initialDelta
-          .getActions()
-          .filter(action -> !action.getRoute().equals(route))
-          .map(RouteAdvertisement::getRoute)
-          .forEach(affectedRoutes::add);
+      // make sure route gets added first, then add everything else in the delta
+      affectedRoutes.add(route);
+      initialDelta.getActions().map(RouteAdvertisement::getRoute).forEach(affectedRoutes::add);
       initialDelta.getPrefixes().flatMap(p -> getAffectedRoutes(p)).forEach(affectedRoutes::add);
       while (!affectedRoutes.isEmpty()) {
         AnnotatedRoute<AbstractRoute> nextRoute = affectedRoutes.iterator().next();
@@ -209,7 +202,6 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
             // A cycle was detected.
             RibDelta<AnnotatedRoute<AbstractRoute>> removal =
                 Rib.super.removeRouteGetDelta(affectedRoute);
-            assert delta.isEmpty() ^ removal.isEmpty();
             postProcessDelta(removal);
             RibDelta<AnnotatedRoute<AbstractRoute>> netChange =
                 RibDelta.<AnnotatedRoute<AbstractRoute>>builder().from(delta).from(removal).build();
