@@ -69,6 +69,7 @@ public final class Configuration implements Serializable {
     private String _domainName;
     private LineAction _defaultCrossZoneAction;
     private LineAction _defaultInboundAction;
+    private boolean _mainRibEnforceResolvability;
 
     private Builder(@Nullable Supplier<String> hostnameGenerator) {
       _hostnameGenerator = hostnameGenerator;
@@ -89,6 +90,7 @@ public final class Configuration implements Serializable {
       }
       configuration.setDeviceModel(_deviceModel);
       configuration.setDomainName(_domainName);
+      configuration.setMainRibEnforceResolvability(_mainRibEnforceResolvability);
       return configuration;
     }
 
@@ -130,6 +132,11 @@ public final class Configuration implements Serializable {
       _defaultInboundAction = defaultInboundAction;
       return this;
     }
+
+    public @Nonnull Builder setMainRibEnforceResolvability(boolean mainRibEnforceResolvability) {
+      _mainRibEnforceResolvability = mainRibEnforceResolvability;
+      return this;
+    }
   }
 
   public static final String DEFAULT_VRF_NAME = "default";
@@ -166,6 +173,7 @@ public final class Configuration implements Serializable {
   private static final String PROP_IPSEC_PHASE2_PROPOSALS = "ipsecPhase2Proposals";
   private static final String PROP_LOGGING_SERVERS = "loggingServers";
   private static final String PROP_LOGGING_SOURCE_INTERFACE = "loggingSourceInterface";
+  private static final String PROP_MAIN_RIB_ENFORCE_RESOLVABILITY = "mainRibEnforceResolvability";
   private static final String PROP_MLAGS = "mlags";
   private static final String PROP_NAME = "name";
   private static final String PROP_NTP_SERVERS = "ntpServers";
@@ -248,6 +256,8 @@ public final class Configuration implements Serializable {
   private Set<String> _loggingServers;
 
   private String _loggingSourceInterface;
+
+  private boolean _mainRibEnforceResolvability;
 
   private Map<String, Mlag> _mlags;
 
@@ -665,6 +675,11 @@ public final class Configuration implements Serializable {
     return _loggingSourceInterface;
   }
 
+  @JsonProperty(PROP_MAIN_RIB_ENFORCE_RESOLVABILITY)
+  public boolean getMainRibEnforceResolvability() {
+    return _mainRibEnforceResolvability;
+  }
+
   @JsonProperty(PROP_MLAGS)
   @Nonnull
   public Map<String, Mlag> getMlags() {
@@ -934,6 +949,11 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_LOGGING_SOURCE_INTERFACE)
   public void setLoggingSourceInterface(String loggingSourceInterface) {
     _loggingSourceInterface = loggingSourceInterface;
+  }
+
+  @JsonProperty(PROP_MAIN_RIB_ENFORCE_RESOLVABILITY)
+  public void setMainRibEnforceResolvability(boolean mainRibEnforceResolvability) {
+    _mainRibEnforceResolvability = mainRibEnforceResolvability;
   }
 
   @JsonProperty(PROP_MLAGS)
