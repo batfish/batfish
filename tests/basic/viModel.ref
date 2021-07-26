@@ -431,6 +431,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routeFilterLists" : {
           "101" : {
             "lines" : [
@@ -2024,6 +2025,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "ntpServers" : [
           "18.18.18.18",
           "23.23.23.23"
@@ -3347,6 +3349,7 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -4238,6 +4241,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "ntpServers" : [
           "18.18.18.18",
           "23.23.23.23"
@@ -5827,6 +5831,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "ntpServers" : [
           "18.18.18.18"
         ],
@@ -7124,6 +7129,7 @@
           "1.1.1.1",
           "2.1.2.2"
         ],
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -7770,6 +7776,7 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -8753,6 +8760,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routeFilterLists" : {
           "102" : {
             "lines" : [
@@ -9667,6 +9675,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routeFilterLists" : {
           "105" : {
             "lines" : [
@@ -10620,6 +10629,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routeFilterLists" : {
           "105" : {
             "lines" : [
@@ -11634,6 +11644,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "ntpServers" : [
           "18.18.18.18",
           "23.23.23.23"
@@ -13105,6 +13116,7 @@
             "sourceType" : "extended ipv4 access-list"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "ntpServers" : [
           "18.18.18.18",
           "23.23.23.23"
@@ -14276,6 +14288,7 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -14993,6 +15006,7 @@
             "name" : "nat::PREROUTING"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
@@ -15330,6 +15344,7 @@
             "name" : "nat::PREROUTING"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {

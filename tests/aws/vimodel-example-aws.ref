@@ -206,6 +206,7 @@
             "name" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -437,6 +438,7 @@
             "name" : "~INGRESS~SECURITY-GROUP~default~sg-3dfb3140~"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -550,6 +552,7 @@
             "vrf" : "default"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~asgw~to~backbone~export~policy~" : {
             "name" : "~asgw~to~backbone~export~policy~",
@@ -26648,6 +26651,7 @@
             "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~igw~to~backbone~export~policy~" : {
             "name" : "~igw~to~backbone~export~policy~",
@@ -26829,6 +26833,7 @@
             "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~igw~to~backbone~export~policy~" : {
             "name" : "~igw~to~backbone~export~policy~",
@@ -27009,6 +27014,7 @@
             "name" : "~DENY~UNASSOCIATED~PRIVATE~IPs~"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~igw~to~backbone~export~policy~" : {
             "name" : "~igw~to~backbone~export~policy~",
@@ -27162,6 +27168,7 @@
             "vrf" : "default"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "exportPolicyOnInternet" : {
             "name" : "exportPolicyOnInternet",
@@ -27771,6 +27778,7 @@
             "name" : "Block outgoing traffic using reserved addresses"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "exportPolicyOnIspToCustomers" : {
             "name" : "exportPolicyOnIspToCustomers",
@@ -61064,6 +61072,7 @@
             ]
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routeFilterLists" : {
           "MATCH_ALL_BGP" : {
             "lines" : [
@@ -62195,6 +62204,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -62405,6 +62415,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -62626,6 +62637,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -62836,6 +62848,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -63046,6 +63059,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -63256,6 +63270,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -63466,6 +63481,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -63687,6 +63703,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -63908,6 +63925,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -64118,6 +64136,7 @@
             "sourceType" : "Network ACL"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -64640,6 +64659,7 @@
             "name" : "~INGRESS~SECURITY-GROUP~default~sg-55510831~"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -64975,6 +64995,7 @@
             ]
           }
         },
+        "mainRibEnforceResolvability" : false,
         "routingPolicies" : {
           "~vgw~export-policy~" : {
             "name" : "~vgw~export-policy~",
@@ -65233,6 +65254,7 @@
             "vrf" : "vrf-vgw-81fd279f"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -65401,6 +65423,7 @@
             "vrf" : "vrf-igw-fac5839d"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -65737,6 +65760,7 @@
             "vrf" : "vrf-igw-9b93ddfc"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -66038,6 +66062,7 @@
             "vrf" : "vrf-igw-068fee63"
           }
         },
+        "mainRibEnforceResolvability" : false,
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",

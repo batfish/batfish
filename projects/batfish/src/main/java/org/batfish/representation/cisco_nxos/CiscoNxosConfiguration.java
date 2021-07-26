@@ -3703,6 +3703,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     _c.setDefaultInboundAction(LineAction.PERMIT);
     _c.setDefaultCrossZoneAction(LineAction.PERMIT);
     _c.setExportBgpFromBgpRib(true);
+    _c.setMainRibEnforceResolvability(true);
 
     convertDomainName();
     convertObjectGroups();
