@@ -7,12 +7,9 @@ import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.ospf.OspfMetricType;
 
 public class OspfProcess implements Serializable {
 
-  private static final long DEFAULT_DEFAULT_INFORMATION_METRIC = 1L;
-  private static final OspfMetricType DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE = OspfMetricType.E2;
   // Although not clearly documented; from GNS3 emulation and CiscoXr forum
   // (https://community.cisco_xr.com/t5/switching/ospf-cost-calculation/td-p/2917356)
   public static final int DEFAULT_LOOPBACK_OSPF_COST = 1;
@@ -23,11 +20,7 @@ public class OspfProcess implements Serializable {
   public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;
 
   private final Map<Long, OspfArea> _areas;
-  private long _defaultInformationMetric;
-  private OspfMetricType _defaultInformationMetricType;
-  private boolean _defaultInformationOriginate;
-  private boolean _defaultInformationOriginateAlways;
-  private String _defaultInformationOriginateMap;
+  @Nullable private OspfDefaultInformationOriginate _defaultInformationOriginate;
   private Long _defaultMetric;
   @Nullable private DistributeList _distributeListOut;
   private Long _maxMetricExternalLsa;
@@ -56,8 +49,6 @@ public class OspfProcess implements Serializable {
   public OspfProcess(String name) {
     _name = name;
     _referenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
-    _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
-    _defaultInformationMetricType = DEFAULT_DEFAULT_INFORMATION_METRIC_TYPE;
     _areas = new TreeMap<>();
     _ospfSettings = new OspfSettings();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
@@ -67,24 +58,11 @@ public class OspfProcess implements Serializable {
     return _areas;
   }
 
-  public long getDefaultInformationMetric() {
-    return _defaultInformationMetric;
-  }
-
-  public OspfMetricType getDefaultInformationMetricType() {
-    return _defaultInformationMetricType;
-  }
-
-  public boolean getDefaultInformationOriginate() {
+  /**
+   * Associated {@link OspfDefaultInformationOriginate} for this process, or null if not configured.
+   */
+  public @Nullable OspfDefaultInformationOriginate getDefaultInformationOriginate() {
     return _defaultInformationOriginate;
-  }
-
-  public boolean getDefaultInformationOriginateAlways() {
-    return _defaultInformationOriginateAlways;
-  }
-
-  public String getDefaultInformationOriginateMap() {
-    return _defaultInformationOriginateMap;
   }
 
   public Long getDefaultMetric() {
@@ -132,24 +110,9 @@ public class OspfProcess implements Serializable {
     return _routerId;
   }
 
-  public void setDefaultInformationMetric(int metric) {
-    _defaultInformationMetric = metric;
-  }
-
-  public void setDefaultInformationMetricType(OspfMetricType metricType) {
-    _defaultInformationMetricType = metricType;
-  }
-
-  public void setDefaultInformationOriginate(boolean b) {
-    _defaultInformationOriginate = b;
-  }
-
-  public void setDefaultInformationOriginateAlways(boolean b) {
-    _defaultInformationOriginateAlways = b;
-  }
-
-  public void setDefaultInformationOriginateMap(String name) {
-    _defaultInformationOriginateMap = name;
+  public void setDefaultInformationOriginate(
+      @Nullable OspfDefaultInformationOriginate defaultInformationOriginate) {
+    _defaultInformationOriginate = defaultInformationOriginate;
   }
 
   public void setDefaultMetric(Long metric) {

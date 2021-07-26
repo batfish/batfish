@@ -8,6 +8,8 @@ import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
@@ -134,7 +136,6 @@ import org.batfish.datamodel.isis.IsisInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
-import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -271,7 +272,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public static final String MANAGEMENT_VRF_NAME = "management";
 
-  static final int MAX_ADMINISTRATIVE_COST = 32767;
+  public static final int MAX_ADMINISTRATIVE_COST = 32767;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
@@ -303,10 +304,6 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         .filter(e -> Objects.nonNull(e.getValue().getAddress()))
         .collect(
             ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
-  }
-
-  public static String computeOspfDefaultRouteGenerationPolicyName(String vrf, String proc) {
-    return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
   }
 
   public static String computeServiceObjectAclName(String name) {
@@ -1463,45 +1460,38 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
     newProcess.setAreas(areas.build());
 
-    String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
+    String ospfExportPolicyName = generatedOspfExportPolicyName(vrfName, proc.getName());
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, c);
     c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
     List<Statement> ospfExportStatements = ospfExportPolicy.getStatements();
     newProcess.setExportPolicy(ospfExportPolicyName);
 
     // policy map for default information
-    if (proc.getDefaultInformationOriginate()) {
-      If ospfExportDefault = new If();
-      ospfExportStatements.add(ospfExportDefault);
+    if (proc.getDefaultInformationOriginate() != null) {
+      OspfDefaultInformationOriginate defaultInformationOriginate =
+          proc.getDefaultInformationOriginate();
+      // Add an export statement to export the default route with correct metric and metric type
+      SetMetric setMetric = new SetMetric(new LiteralLong(defaultInformationOriginate.getMetric()));
+      SetOspfMetricType setMetricType =
+          new SetOspfMetricType(defaultInformationOriginate.getMetricType());
+      If ospfExportDefault =
+          new If(
+              new Conjunction(
+                  ImmutableList.of(
+                      matchDefaultRoute(), new MatchProtocol(RoutingProtocol.AGGREGATE))),
+              ImmutableList.of(setMetric, setMetricType, ExitAccept.toStaticStatement()));
       ospfExportDefault.setComment("OSPF export default route");
-      List<Statement> ospfExportDefaultStatements = ospfExportDefault.getTrueStatements();
-      long metric = proc.getDefaultInformationMetric();
-      ospfExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
-      OspfMetricType metricType = proc.getDefaultInformationMetricType();
-      ospfExportDefaultStatements.add(new SetOspfMetricType(metricType));
-      // add default export map with metric
-      String defaultOriginateMapName = proc.getDefaultInformationOriginateMap();
+      ospfExportStatements.add(ospfExportDefault);
+      // Give the process a generated default route to export
       GeneratedRoute.Builder route =
           GeneratedRoute.builder()
               .setNetwork(Prefix.ZERO)
               .setNonRouting(true)
               .setAdmin(MAX_ADMINISTRATIVE_COST);
-      if (defaultOriginateMapName != null) {
-        RoutingPolicy ospfDefaultGenerationPolicy =
-            c.getRoutingPolicies().get(defaultOriginateMapName);
-        if (ospfDefaultGenerationPolicy != null) {
-          // TODO This should depend on a default route existing, unless `always` is configured
-          // If `always` is configured, maybe the route-map should be ignored. Needs GNS3 check.
-          route.setGenerationPolicy(defaultOriginateMapName);
-          newProcess.addGeneratedRoute(route.build());
-        }
-      } else if (proc.getDefaultInformationOriginateAlways()) {
-        // add generated aggregate with no precondition
-        newProcess.addGeneratedRoute(route.build());
-      } else {
-        // Use a generated route that will only be generated if a default route exists in RIB
+      if (!defaultInformationOriginate.getAlways()) {
+        // Route should only be generated if a default route exists in RIB
         String defaultRouteGenerationPolicyName =
-            computeOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
+            generatedOspfDefaultRouteGenerationPolicyName(vrfName, proc.getName());
         RoutingPolicy.builder()
             .setOwner(c)
             .setName(defaultRouteGenerationPolicyName)
@@ -1511,12 +1501,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                     ImmutableList.of(Statements.ReturnTrue.toStaticStatement())))
             .build();
         route.setGenerationPolicy(defaultRouteGenerationPolicyName);
-        newProcess.addGeneratedRoute(route.build());
       }
-      ospfExportDefaultStatements.add(ExitAccept.toStaticStatement());
-      ospfExportDefault.setGuard(
-          new Conjunction(
-              ImmutableList.of(matchDefaultRoute(), new MatchProtocol(RoutingProtocol.AGGREGATE))));
+      newProcess.addGeneratedRoute(route.build());
     }
 
     // TODO: distribute lists

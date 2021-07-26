@@ -967,6 +967,7 @@ import org.batfish.representation.cisco_xr.NetworkObjectGroup;
 import org.batfish.representation.cisco_xr.NssaSettings;
 import org.batfish.representation.cisco_xr.OriginatesFromAsPathSetElem;
 import org.batfish.representation.cisco_xr.OspfArea;
+import org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate;
 import org.batfish.representation.cisco_xr.OspfInterfaceSettings;
 import org.batfish.representation.cisco_xr.OspfNetworkType;
 import org.batfish.representation.cisco_xr.OspfProcess;
@@ -5958,24 +5959,30 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
 
   @Override
   public void exitRo_default_information(Ro_default_informationContext ctx) {
-    if (ctx.policy != null) {
-      todo(ctx);
-      String name = toString(ctx.policy);
-      _configuration.referenceStructure(
-          ROUTE_POLICY, name, OSPF_DEFAULT_INFORMATION_ROUTE_POLICY, ctx.start.getLine());
-    }
     OspfProcess proc = _currentOspfProcess;
-    proc.setDefaultInformationOriginate(true);
-    boolean always = ctx.ALWAYS().size() > 0;
-    proc.setDefaultInformationOriginateAlways(always);
-    if (ctx.metric != null) {
-      int metric = toInteger(ctx.metric);
-      proc.setDefaultInformationMetric(metric);
-    }
-    if (ctx.metric_type != null) {
-      int metricTypeInt = toInteger(ctx.metric_type);
-      OspfMetricType metricType = OspfMetricType.fromInteger(metricTypeInt);
-      proc.setDefaultInformationMetricType(metricType);
+    if (ctx.NO() != null) {
+      proc.setDefaultInformationOriginate(null);
+    } else {
+      if (ctx.policy != null) {
+        todo(ctx);
+        String name = toString(ctx.policy);
+        _configuration.referenceStructure(
+            ROUTE_POLICY, name, OSPF_DEFAULT_INFORMATION_ROUTE_POLICY, ctx.start.getLine());
+      }
+      OspfDefaultInformationOriginate defaultInformationOriginate =
+          new OspfDefaultInformationOriginate();
+      boolean always = ctx.ALWAYS().size() > 0;
+      defaultInformationOriginate.setAlways(always);
+      if (ctx.metric != null) {
+        int metric = toInteger(ctx.metric);
+        defaultInformationOriginate.setMetric(metric);
+      }
+      if (ctx.metric_type != null) {
+        int metricTypeInt = toInteger(ctx.metric_type);
+        OspfMetricType metricType = OspfMetricType.fromInteger(metricTypeInt);
+        defaultInformationOriginate.setMetricType(metricType);
+      }
+      proc.setDefaultInformationOriginate(defaultInformationOriginate);
     }
   }
 

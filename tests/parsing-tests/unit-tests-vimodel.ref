@@ -29582,8 +29582,8 @@
           }
         },
         "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
           }
         },
         "vendorFamily" : {
@@ -29622,7 +29622,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "192.168.1.1",
@@ -38594,8 +38594,8 @@
           }
         },
         "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -38823,7 +38823,7 @@
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 4.0E10,
                 "routerId" : "1.2.3.4",
@@ -39081,8 +39081,14 @@
           }
         },
         "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
+          },
+          "~OSPF_EXPORT_POLICY:default:abcdefg~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:abcdefg~"
+          },
+          "~OSPF_EXPORT_POLICY:default:ignored~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:ignored~"
           },
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -39160,7 +39166,7 @@
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:0~"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
@@ -39175,7 +39181,7 @@
                   "ospfIA" : 110,
                   "ospfIS" : 110
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:abcdefg~",
                 "processId" : "abcdefg",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
@@ -39213,7 +39219,7 @@
                     "summaryFilter" : "~OSPF_SUMMARY_FILTER:default:1~"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:ignored~",
                 "processId" : "ignored",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "1.1.1.1",
@@ -48225,8 +48231,8 @@
           }
         },
         "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
           },
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -48294,7 +48300,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "2.130.0.1",
@@ -53087,8 +53093,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
+          "~OSPF_EXPORT_POLICY:default:2~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:2~",
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -53204,7 +53210,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:2~",
                 "generatedRoutes" : [
                   {
                     "class" : "org.batfish.datamodel.GeneratedRoute",

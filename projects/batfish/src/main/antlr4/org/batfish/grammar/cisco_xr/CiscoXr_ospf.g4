@@ -114,15 +114,10 @@ ro_common
 
 ro_default_information
 :
-   DEFAULT_INFORMATION ORIGINATE
+   NO? DEFAULT_INFORMATION ORIGINATE
    (
-      (
-         METRIC metric = uint_legacy
-      )
-      |
-      (
-         METRIC_TYPE metric_type = uint_legacy
-      )
+      METRIC metric = uint_legacy
+      | METRIC_TYPE metric_type = uint_legacy
       | ALWAYS
       | ROUTE_POLICY policy = route_policy_name
       | TAG uint_legacy
@@ -223,48 +218,18 @@ roc_null
 :
    NO?
    (
-      (
-         AREA variable AUTHENTICATION
-      )
+      AREA variable AUTHENTICATION
       | AUTO_COST
       | BFD
       | CAPABILITY
       | DEAD_INTERVAL
-      | DISCARD_ROUTE
       | FAST_REROUTE
-      | GRACEFUL_RESTART
       | HELLO_INTERVAL
-      |
-      (
-         IP
-         (
-            OSPF
-            (
-               EVENT_HISTORY
-            )
-         )
-      )
-      | ISPF
       | LOG
-      | LOG_ADJ_CHANGES
-      | LOG_ADJACENCY_CHANGES
       | MAX_LSA
-      |
-      (
-         MAXIMUM
-         (
-            REDISTRIBUTED_PREFIXES
-         )
-      )
+      | MAXIMUM REDISTRIBUTED_PREFIXES
       | MESSAGE_DIGEST_KEY
       | MTU_IGNORE
-      |
-      (
-         NO
-         (
-            DEFAULT_INFORMATION
-         )
-      )
       | NSF
       | NSR
       | SNMP

@@ -9,6 +9,8 @@ import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AsPath.ofSingletonAsSets;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
+import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
@@ -35,6 +37,7 @@ import static org.batfish.datamodel.routing_policy.expr.IntComparator.GE;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.LE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
+import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.MAX_ADMINISTRATIVE_COST;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.RESOLUTION_POLICY_NAME;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
@@ -116,6 +119,8 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_EXPORT_TO_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_FROM_DEFAULT_VRF_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
+import static org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate.DEFAULT_METRIC;
+import static org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate.DEFAULT_METRIC_TYPE;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -174,6 +179,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -1253,6 +1259,137 @@ public final class XrGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
         equalTo(OspfProcess.DEFAULT_OSPF_REFERENCE_BANDWIDTH));
+  }
+
+  @Test
+  public void testOspfDefaultInformationOriginateExtraction() {
+    CiscoXrConfiguration c = parseVendorConfig("ospf-default-information");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
+    {
+      // default-information originate
+      OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("1");
+      assertThat(proc.getDefaultInformationOriginate().getAlways(), equalTo(false));
+      assertThat(proc.getDefaultInformationOriginate().getMetric(), equalTo(DEFAULT_METRIC));
+      assertThat(
+          proc.getDefaultInformationOriginate().getMetricType(), equalTo(DEFAULT_METRIC_TYPE));
+    }
+    {
+      // Second line completely overrides first line.
+      // default-information originate always metric 10 metric-type 2 route-policy RP
+      // default-information originate metric 12 metric-type 1
+      OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("2");
+      assertThat(proc.getDefaultInformationOriginate().getAlways(), equalTo(false));
+      assertThat(proc.getDefaultInformationOriginate().getMetric(), equalTo(12L));
+      assertThat(proc.getDefaultInformationOriginate().getMetricType(), equalTo(OspfMetricType.E1));
+    }
+    {
+      // default-information originate always metric 10 metric-type 2
+      // no default-information originate
+      OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("3");
+      assertNull(proc.getDefaultInformationOriginate());
+    }
+    {
+      // default-information originate metric 12 metric-type 1
+      // no default-information originate
+      // default-information originate always metric 10 route-policy RP
+      OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("4");
+      assertThat(proc.getDefaultInformationOriginate().getAlways(), equalTo(true));
+      assertThat(proc.getDefaultInformationOriginate().getMetric(), equalTo(10L));
+      assertThat(
+          proc.getDefaultInformationOriginate().getMetricType(), equalTo(DEFAULT_METRIC_TYPE));
+    }
+  }
+
+  @Test
+  public void testOspfDefaultInformationOriginateConversion() {
+    Configuration c = parseConfig("ospf-default-information");
+    assertThat(c.getDefaultVrf().getOspfProcesses(), hasKeys("1", "2", "3", "4"));
+    GeneratedRoute.Builder defaultRouteBuilder =
+        GeneratedRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setNonRouting(true)
+            .setAdmin(MAX_ADMINISTRATIVE_COST);
+    OspfExternalRoute.Builder exportedRouteBuilder =
+        OspfExternalRoute.builder()
+            // arbitrary values; route is used to check values set on export
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setAdvertiser("")
+            .setArea(1)
+            .setCostToAdvertiser(1)
+            .setLsaMetric(1);
+    {
+      // default-information originate
+      org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("1");
+      String defaultRouteGenerationPolicyName =
+          generatedOspfDefaultRouteGenerationPolicyName(DEFAULT_VRF_NAME, proc.getProcessId());
+      GeneratedRoute route =
+          defaultRouteBuilder.setGenerationPolicy(defaultRouteGenerationPolicyName).build();
+      assertThat(proc.getGeneratedRoutes(), contains(route));
+      // Export policy should permit the generated route and set its metric and metric type
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies()
+              .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
+      assert exportPolicy != null;
+      // set export route's values to non-defaults to confirm they really get set by the policy
+      exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E1);
+      assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);
+      OspfExternalRoute exportedRoute = exportedRouteBuilder.build();
+      assertThat(exportedRoute.getMetric(), equalTo(DEFAULT_METRIC));
+      assertThat(exportedRoute.getOspfMetricType(), equalTo(DEFAULT_METRIC_TYPE));
+    }
+    {
+      // Second line completely overrides first line.
+      // default-information originate always metric 10 metric-type 2 route-policy RP
+      // default-information originate metric 12 metric-type 1
+      org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("2");
+      String defaultRouteGenerationPolicyName =
+          generatedOspfDefaultRouteGenerationPolicyName(DEFAULT_VRF_NAME, proc.getProcessId());
+      GeneratedRoute route =
+          defaultRouteBuilder.setGenerationPolicy(defaultRouteGenerationPolicyName).build();
+      assertThat(proc.getGeneratedRoutes(), contains(route));
+      // Export policy should permit the generated route and set its metric and metric type
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies()
+              .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
+      assert exportPolicy != null;
+      // set export route's values to confirm they really get rewritten by the policy
+      exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E2);
+      assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);
+      OspfExternalRoute exportedRoute = exportedRouteBuilder.build();
+      assertThat(exportedRoute.getMetric(), equalTo(12L));
+      assertThat(exportedRoute.getOspfMetricType(), equalTo(OspfMetricType.E1));
+    }
+    {
+      // default-information originate always metric 10 metric-type 2
+      // no default-information originate
+      org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("3");
+      assertThat(proc.getGeneratedRoutes(), empty());
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies()
+              .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
+      assertRoutingPolicyDeniesRoute(exportPolicy, defaultRouteBuilder.build());
+    }
+    {
+      // default-information originate metric 12 metric-type 1
+      // no default-information originate
+      // default-information originate always metric 10 route-policy RP
+      org.batfish.datamodel.ospf.OspfProcess proc = c.getDefaultVrf().getOspfProcesses().get("4");
+      GeneratedRoute route = defaultRouteBuilder.setGenerationPolicy(null).build();
+      assertThat(proc.getGeneratedRoutes(), contains(route));
+      // Export policy should permit the generated route and set its metric and metric type
+      // TODO: Account for route-policy
+      RoutingPolicy exportPolicy =
+          c.getRoutingPolicies()
+              .get(generatedOspfExportPolicyName(DEFAULT_VRF_NAME, proc.getProcessId()));
+      assert exportPolicy != null;
+      // set export route's values to confirm they really get rewritten by the policy
+      exportedRouteBuilder.setMetric(2L).setOspfMetricType(OspfMetricType.E1);
+      assertRoutingPolicyPermitsRoute(exportPolicy, route, exportedRouteBuilder);
+      OspfExternalRoute exportedRoute = exportedRouteBuilder.build();
+      assertThat(exportedRoute.getMetric(), equalTo(10L));
+      assertThat(exportedRoute.getOspfMetricType(), equalTo(DEFAULT_METRIC_TYPE));
+    }
   }
 
   @Test

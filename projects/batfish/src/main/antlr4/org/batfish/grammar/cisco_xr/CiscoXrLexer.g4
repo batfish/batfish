@@ -2901,8 +2901,6 @@ LOCALIP: 'localip';
 
 LOG: 'log';
 
-LOG_ADJ_CHANGES: 'log-adj-changes';
-
 LOG_ADJACENCY_CHANGES: 'log-adjacency-changes';
 
 LOG_ENABLE: 'log-enable';
