@@ -1,6 +1,5 @@
 package org.batfish.dataplane.rib;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
@@ -10,8 +9,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -48,31 +47,41 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
 
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
-      RibDelta.Builder<AnnotatedRoute<AbstractRoute>> delta = RibDelta.builder();
-      boolean isNextHopIpRoute = isNextHopIpRoute(route);
-      if (isNextHopIpRoute) {
+      if (isNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
         _routesByNextHopIp.put(nextHopIp, route);
         _ribResolutionTrie.addNextHopIp(nextHopIp);
       }
-      RibDelta<AnnotatedRoute<AbstractRoute>> initialDelta = Rib.super.mergeRouteGetDelta(route);
-      return delta.from(processSideEffects(route, initialDelta)).build();
+      return processSideEffects(route, Rib.super.mergeRouteGetDelta(route));
     }
 
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
       if (isNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
-        _routesByNextHopIp.remove(nextHopIp, route);
-        if (_routesByNextHopIp.get(nextHopIp).isEmpty()) {
+        if (_routesByNextHopIp.remove(nextHopIp, route)
+            && _routesByNextHopIp.get(nextHopIp).isEmpty()) {
           _ribResolutionTrie.removeNextHopIp(nextHopIp);
         }
       }
-      RibDelta<AnnotatedRoute<AbstractRoute>> delta =
-          Rib.super.removeRouteGetDelta(route, Reason.WITHDRAW);
-      return processSideEffects(route, delta);
+      return processSideEffects(route, Rib.super.removeRouteGetDelta(route, Reason.WITHDRAW));
     }
 
+    /**
+     * Following a delta resulting from a call to {@link AbstractRib#mergeRouteGetDelta} {@link
+     * AbstractRib#removeRouteGetDelta}, propagate the changes to resolution metadata as follows:
+     *
+     * <ul>
+     *   <li>To ensure correctness of affected routes, add or remove the prefix corresponding to the
+     *       delta from the {@link #_ribResolutionTrie} if a first route for that network was added
+     *       or a last route for that network was removed from the RIB.
+     *   <li>To prevent spurious detected loops, remove any removed routes from the {@link
+     *       #_resolutionGraph}.
+     *   <li>To prepare for loop detection on new routes, add vertices for added routes to the
+     *       {@link #_resolutionGraph}. Edges must be added later in a specific order to ensure that
+     *       a detected loop results in the correct route(s) being withdrawn.
+     * </ul>
+     */
     void postProcessDelta(RibDelta<AnnotatedRoute<AbstractRoute>> delta) {
       if (delta.isEmpty()) {
         return;
@@ -146,10 +155,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
           .filter(action -> !action.getRoute().equals(route))
           .map(RouteAdvertisement::getRoute)
           .forEach(affectedRoutes::add);
-      initialDelta
-          .getPrefixes()
-          .flatMap(p -> getAffectedRoutes(p).stream())
-          .forEach(affectedRoutes::add);
+      initialDelta.getPrefixes().flatMap(p -> getAffectedRoutes(p)).forEach(affectedRoutes::add);
       while (!affectedRoutes.isEmpty()) {
         AnnotatedRoute<AbstractRoute> nextRoute = affectedRoutes.iterator().next();
         affectedRoutes.remove(nextRoute);
@@ -222,7 +228,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         delta = RibDelta.empty();
       }
       if (!isNextHopIpRoute || !delta.isEmpty()) {
-        remainingAffectedRoutes.addAll(getAffectedRoutes(affectedRoute.getNetwork()));
+        getAffectedRoutes(affectedRoute.getNetwork()).forEach(remainingAffectedRoutes::add);
       }
       return delta;
     }
@@ -232,7 +238,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
      * route} should not have any out edges. Otherwise, a loop may be created when updating edges.
      */
     private void updateAffectedRoutesOutEdges(AnnotatedRoute<AbstractRoute> route) {
-      getAffectedRoutes(route.getNetwork()).stream()
+      getAffectedRoutes(route.getNetwork())
           .filter(_resolutionGraph::containsVertex)
           .forEach(
               activeAffectedRoute -> {
@@ -244,14 +250,12 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     }
 
     /**
-     * Get a list of all tracked next hop IP routes affected by an update to a route with the given
-     * {@code prefix}.
+     * Get a stream of all tracked next hop IP routes affected by an update to a route with the
+     * given {@code prefix}.
      */
-    private @Nonnull List<AnnotatedRoute<AbstractRoute>> getAffectedRoutes(Prefix prefix) {
+    private @Nonnull Stream<AnnotatedRoute<AbstractRoute>> getAffectedRoutes(Prefix prefix) {
       Set<Ip> affectedNextHopIps = _ribResolutionTrie.getAffectedNextHopIps(prefix);
-      return affectedNextHopIps.stream()
-          .flatMap(nhip -> _routesByNextHopIp.get(nhip).stream())
-          .collect(ImmutableList.toImmutableList());
+      return affectedNextHopIps.stream().flatMap(nhip -> _routesByNextHopIp.get(nhip).stream());
     }
   }
 

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.PrefixTrieMultiMap.FoldOperator;
@@ -37,11 +38,10 @@ public class PrefixTrieMultiMapTest {
   }
 
   private static List<Prefix> keysInPostOrderFiltered(
-      PrefixTrieMultiMap<Integer> map, int maxPrefixLength) {
+      PrefixTrieMultiMap<Integer> map, Predicate<Prefix> prefixFilter) {
     List<Prefix> prefixes = new ArrayList<>();
     map.traverseEntries(
-        (prefix, elems) -> prefixes.add(prefix),
-        (prefix, elems) -> maxPrefixLength >= prefix.getPrefixLength());
+        (prefix, elems) -> prefixes.add(prefix), (prefix, elems) -> prefixFilter.test(prefix));
     return prefixes;
   }
 
@@ -265,8 +265,50 @@ public class PrefixTrieMultiMapTest {
     map.put(rl, 0);
     map.put(r, 0);
 
-    List<Prefix> prefixes = keysInPostOrderFiltered(map, 8);
+    List<Prefix> prefixes = keysInPostOrderFiltered(map, prefix -> prefix.getPrefixLength() <= 8);
     assertThat(prefixes, contains(l, r, Prefix.ZERO));
+  }
+
+  @Test
+  public void testTraverseEntriesFilteredNodeVisitedNoChildren() {
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
+
+    List<Prefix> prefixes = keysInPostOrderFiltered(map, prefix -> prefix.getPrefixLength() <= 8);
+    assertThat(prefixes, contains(Prefix.ZERO));
+  }
+
+  @Test
+  public void testTraverseEntriesFilteredNodeVisitedMixedChildren() {
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    Prefix l = Prefix.parse("0.0.0.0/8");
+    Prefix r = Prefix.parse("128.0.0.0/16");
+    map.put(l, 0);
+    map.put(r, 0);
+
+    List<Prefix> prefixes = keysInPostOrderFiltered(map, prefix -> prefix.getPrefixLength() <= 8);
+    assertThat(prefixes, contains(l, Prefix.ZERO));
+  }
+
+  @Test
+  public void testTraverseEntriesFilteredNodeNotVisitedValidChild() {
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    Prefix l = Prefix.parse("0.0.0.0/8");
+    Prefix ll = Prefix.parse("0.0.0.0/16");
+    map.put(l, 0);
+    map.put(ll, 0);
+
+    List<Prefix> prefixes = keysInPostOrderFiltered(map, prefix -> prefix.getPrefixLength() != 8);
+    assertThat(prefixes, contains(Prefix.ZERO));
+  }
+
+  @Test
+  public void testTraverseEntriesFilteredRootNotVisitedValidChild() {
+    PrefixTrieMultiMap<Integer> map = new PrefixTrieMultiMap<>(Prefix.ZERO);
+    Prefix l = Prefix.parse("0.0.0.0/8");
+    map.put(l, 0);
+
+    List<Prefix> prefixes = keysInPostOrderFiltered(map, prefix -> prefix.getPrefixLength() != 0);
+    assertThat(prefixes, empty());
   }
 
   @Test
