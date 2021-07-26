@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -19,6 +20,8 @@ import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.jgrapht.graph.DefaultEdge;
@@ -38,16 +41,44 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         _resolutionGraph;
     private final @Nonnull RibResolutionTrie _ribResolutionTrie;
     private final @Nonnull SetMultimap<Ip, AnnotatedRoute<AbstractRoute>> _routesByNextHopIp;
+    private final @Nonnull ResolutionRestriction<AnnotatedRoute<AbstractRoute>>
+        _resolutionRestriction;
+    private final @Nonnull Map<AnnotatedRoute<AbstractRoute>, Boolean> _resolutionRestrictionCache;
 
-    private ResolvabilityEnforcer() {
+    private ResolvabilityEnforcer(
+        ResolutionRestriction<AnnotatedRoute<AbstractRoute>> resolutionRestriction) {
       _routesByNextHopIp = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
       _ribResolutionTrie = new RibResolutionTrie();
       _resolutionGraph = new DirectedAcyclicGraph<>(DefaultEdge.class);
+      _resolutionRestrictionCache = new HashMap<>();
+      _resolutionRestriction =
+          route ->
+              _resolutionRestrictionCache.computeIfAbsent(
+                  route, computeResolutionRestriction(resolutionRestriction)::test);
+    }
+
+    /** Wrap resolution restriction with some whitelisting if needed. */
+    private @Nonnull ResolutionRestriction<AnnotatedRoute<AbstractRoute>>
+        computeResolutionRestriction(
+            ResolutionRestriction<AnnotatedRoute<AbstractRoute>> baseResolutionRestriction) {
+      if (baseResolutionRestriction
+          == ResolutionRestriction.<AnnotatedRoute<AbstractRoute>>alwaysTrue()) {
+        // no need to whitelist anything, so stop here.
+        return baseResolutionRestriction;
+      }
+      return route -> {
+        if (route.getAbstractRoute().getProtocol() == RoutingProtocol.CONNECTED) {
+          // Connected routes can always be used to resolve.
+          // TODO: confirm generally
+          return true;
+        }
+        return baseResolutionRestriction.test(route);
+      };
     }
 
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
-      if (isNextHopIpRoute(route)) {
+      if (isRecursiveNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
         _routesByNextHopIp.put(nextHopIp, route);
         _ribResolutionTrie.addNextHopIp(nextHopIp);
@@ -57,7 +88,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
 
     private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
         AnnotatedRoute<AbstractRoute> route) {
-      if (isNextHopIpRoute(route)) {
+      _resolutionRestrictionCache.remove(route);
+      if (isRecursiveNextHopIpRoute(route)) {
         Ip nextHopIp = route.getAbstractRoute().getNextHopIp();
         if (_routesByNextHopIp.remove(nextHopIp, route)
             && _routesByNextHopIp.get(nextHopIp).isEmpty()) {
@@ -89,11 +121,26 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
       Prefix prefix = delta.getPrefixes().findFirst().get();
       assert delta.getPrefixes().allMatch(prefix::equals);
       if (delta.getActions().count() == 1) {
-        // no backups
-        if (extractRoutes(prefix).isEmpty()) {
-          _ribResolutionTrie.removePrefix(prefix);
-        } else {
+        // No backup replacement, but there may be existing route(s) before an add or after a
+        // withdraw. Need to check if anything now present matches resolution restriction.
+        if (extractRoutes(prefix).stream().anyMatch(_resolutionRestriction)) {
           _ribResolutionTrie.addPrefix(prefix);
+        } else {
+          _ribResolutionTrie.removePrefix(prefix);
+        }
+      } else {
+        // More than one action, and this delta is the result of shifting backups.
+        // The only available routes now are the ADDs in the delta (either backup routes that were
+        // promoted after a removal, or an added route that demoted existing routes to backup). So
+        // we don't have to check the RIB.
+        if (delta
+            .getActions()
+            .anyMatch(
+                action ->
+                    !action.isWithdrawn() && _resolutionRestriction.test(action.getRoute()))) {
+          _ribResolutionTrie.addPrefix(prefix);
+        } else {
+          _ribResolutionTrie.removePrefix(prefix);
         }
       }
       delta
@@ -117,9 +164,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     private @Nonnull Set<AnnotatedRoute<AbstractRoute>> lpmIfValid(
         AnnotatedRoute<AbstractRoute> nhipRoute) {
       Set<AnnotatedRoute<AbstractRoute>> lpmRoutes =
-          longestPrefixMatch(
-              nhipRoute.getRoute().getNextHopIp(), ResolutionRestriction.alwaysTrue());
-      if (containsOwnNextHop(nhipRoute)) {
+          longestPrefixMatch(nhipRoute.getRoute().getNextHopIp(), _resolutionRestriction);
+      if (containsOwnNextHop(nhipRoute) && _resolutionRestriction.test(nhipRoute)) {
         int prefixLength = nhipRoute.getNetwork().getPrefixLength();
         return lpmRoutes.stream()
                 .anyMatch(lpmRoute -> lpmRoute.getNetwork().getPrefixLength() > prefixLength)
@@ -189,40 +235,63 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
           // The route has a next hop, but we need to check for a loop.
           delta = Rib.super.mergeRouteGetDelta(affectedRoute);
           postProcessDelta(delta);
-          _resolutionGraph.removeAllEdges(
-              ImmutableSet.copyOf(_resolutionGraph.outgoingEdgesOf(affectedRoute)));
-          // Recompute affected route edges. Should not loop since we haven't
-          // Connected out edges of affectedRoute yet.
-          updateAffectedRoutesOutEdges(affectedRoute);
-          try {
-            // Connect out edges of affected route. If it induces a loop, we must remove the route
-            // and restore the edges of the its affected routes.
-            initialLpm.forEach(lpmRoute -> _resolutionGraph.addEdge(affectedRoute, lpmRoute));
-          } catch (IllegalArgumentException e) {
-            // A cycle was detected.
-            RibDelta<AnnotatedRoute<AbstractRoute>> removal =
-                Rib.super.removeRouteGetDelta(affectedRoute);
-            postProcessDelta(removal);
-            RibDelta<AnnotatedRoute<AbstractRoute>> netChange =
-                RibDelta.<AnnotatedRoute<AbstractRoute>>builder().from(delta).from(removal).build();
-            // Either:
-            // - The route was already present, the initial delta was empty, the removal is
-            //   non-empty, and the net change is non-empty.
-            // - The route was added, the initial delta was non-empty, and the removal is also
-            //   non-empty. The net change should be empty.
-            assert !removal.isEmpty() && (delta.isEmpty() ^ netChange.isEmpty());
-            delta = netChange;
-            // Repair out edges of affected routes.
-            updateAffectedRoutesOutEdges(affectedRoute);
-          }
+          delta = performLoopDetection(affectedRoute, delta, initialLpm);
         }
       } else {
         delta = RibDelta.empty();
       }
-      if (!isNextHopIpRoute || !delta.isEmpty()) {
+      if (_resolutionRestriction.test(affectedRoute) && (!isNextHopIpRoute || !delta.isEmpty())) {
         getAffectedRoutes(affectedRoute.getNetwork()).forEach(remainingAffectedRoutes::add);
       }
       return delta;
+    }
+
+    /**
+     * Perform loop detection on the {@code affectedRoute} given the resulting post-processed {@code
+     * mergeDelta} and {@code lpmRoutes} for it. If a loop is detected, withdraw the route. Return
+     * the final delta after potentially withdrawing the route.
+     */
+    private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> performLoopDetection(
+        AnnotatedRoute<AbstractRoute> affectedRoute,
+        RibDelta<AnnotatedRoute<AbstractRoute>> mergeDelta,
+        Set<AnnotatedRoute<AbstractRoute>> lpmRoutes) {
+      if (!isRecursiveNextHopIpRoute(affectedRoute)
+          || !_resolutionRestriction.test(affectedRoute)) {
+        // Non-recursive routes cannot loop.
+        // Routes unusable for resolution cannot loop.
+        return mergeDelta;
+      }
+      RibDelta<AnnotatedRoute<AbstractRoute>> finalDelta = mergeDelta;
+      _resolutionGraph.removeAllEdges(
+          ImmutableSet.copyOf(_resolutionGraph.outgoingEdgesOf(affectedRoute)));
+      // Recompute affected route edges. Should not loop since we haven't
+      // Connected out edges of affectedRoute yet.
+      updateAffectedRoutesOutEdges(affectedRoute);
+      try {
+        // Connect out edges of affected route. If it induces a loop, we must remove the route
+        // and restore the edges of the its affected routes.
+        lpmRoutes.forEach(lpmRoute -> _resolutionGraph.addEdge(affectedRoute, lpmRoute));
+      } catch (IllegalArgumentException e) {
+        // A cycle was detected.
+        RibDelta<AnnotatedRoute<AbstractRoute>> removal =
+            Rib.super.removeRouteGetDelta(affectedRoute);
+        postProcessDelta(removal);
+        RibDelta<AnnotatedRoute<AbstractRoute>> netChange =
+            RibDelta.<AnnotatedRoute<AbstractRoute>>builder()
+                .from(mergeDelta)
+                .from(removal)
+                .build();
+        // Either:
+        // - The route was already present, the initial delta was empty, the removal is
+        //   non-empty, and the net change is non-empty.
+        // - The route was added, the initial delta was non-empty, and the removal is also
+        //   non-empty. The net change should be empty.
+        assert !removal.isEmpty() && (mergeDelta.isEmpty() ^ netChange.isEmpty());
+        finalDelta = netChange;
+        // Repair out edges of affected routes.
+        updateAffectedRoutesOutEdges(affectedRoute);
+      }
+      return finalDelta;
     }
 
     /**
@@ -252,11 +321,11 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
   }
 
   /**
-   * Returns {@code true} iff {@code route} is a next hop IP route whose network contains its own
-   * next hop IP.
+   * Returns {@code true} iff {@code route} is a recursive next hop IP route whose network contains
+   * its own next hop IP.
    */
   private static boolean containsOwnNextHop(AnnotatedRoute<AbstractRoute> route) {
-    return isNextHopIpRoute(route)
+    return isRecursiveNextHopIpRoute(route)
         && route.getNetwork().containsIp(route.getAbstractRoute().getNextHopIp());
   }
 
@@ -268,20 +337,32 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     return route.getAbstractRoute().getNextHop() instanceof NextHopIp;
   }
 
-  /** Create a new empty RIB. */
+  /**
+   * Returns {@code true} {@code route} is a recursive next hop IP only route (excludes routes that
+   * also have a next hop interface, and excludes non-recursive static routes).
+   */
+  private static boolean isRecursiveNextHopIpRoute(AnnotatedRoute<AbstractRoute> route) {
+    AbstractRoute abstractRoute = route.getAbstractRoute();
+    return isNextHopIpRoute(route)
+        && (!(abstractRoute instanceof StaticRoute)
+            || ((StaticRoute) abstractRoute).getRecursive());
+  }
+
+  /** Create a new empty RIB. Resolvability of recursive routes will not be enforced. */
   public Rib() {
-    this(false);
+    this(null);
   }
 
   /**
-   * Create a new empty RIB. If {@code enforceResolvability} is {@code true}, then merged routes
-   * that are not resolvable will remain inactive until they become resolvable again. Inactive
-   * routes will not be returned by {@link #getRoutes()}, {@link #getTypedRoutes()}, nor {@link
-   * #getTypedBackupRoutes()}.
+   * Create a new empty RIB. If {@code resolutionRestriction} is not {@code null}, then merged
+   * recursive routes that are not resolvable under the provided {@code resolutionRestriction} will
+   * remain inactive until they become resolvable again. Inactive routes will not be returned by
+   * {@link #getRoutes()}, {@link #getTypedRoutes()}, nor {@link #getTypedBackupRoutes()}.
    */
-  public Rib(boolean enforceResolvability) {
+  public Rib(@Nullable ResolutionRestriction<AnnotatedRoute<AbstractRoute>> resolutionRestriction) {
     super(true);
-    _resolvabilityEnforcer = enforceResolvability ? new ResolvabilityEnforcer() : null;
+    _resolvabilityEnforcer =
+        resolutionRestriction != null ? new ResolvabilityEnforcer(resolutionRestriction) : null;
   }
 
   @Override
@@ -315,5 +396,5 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         : RibDelta.empty();
   }
 
-  private final @Nullable ResolvabilityEnforcer _resolvabilityEnforcer;
+  private final transient @Nullable ResolvabilityEnforcer _resolvabilityEnforcer;
 }

@@ -110,7 +110,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityMergeResolvableRoute() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> activatingRoute =
         annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.0/31"), "foo"));
     AnnotatedRoute<AbstractRoute> nhipRoute =
@@ -129,7 +129,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityActivateResolvableRoute() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> activatingRoute =
         annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.0/31"), "foo"));
     AnnotatedRoute<AbstractRoute> nhipRoute =
@@ -152,7 +152,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityActivateRoutesCascade() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> nhipRoute1 =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -186,7 +186,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityDeactivateRoutesCascade() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> nhipRoute1 =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -226,7 +226,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilitySimpleLoop() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> activatingRoute =
         annotateRoute(new ConnectedRoute(Prefix.strict("1.0.0.0/8"), "foo"));
     AnnotatedRoute<AbstractRoute> nhipRoute =
@@ -257,7 +257,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityLargeLoop() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> activatingRoute =
         annotateRoute(new ConnectedRoute(Prefix.strict("1.0.0.0/24"), "foo"));
     AnnotatedRoute<AbstractRoute> nhipRoute1 =
@@ -311,7 +311,7 @@ public class RibTest {
 
   @Test
   public void testNoEnforceResolvabilityMergeOwnNextHopRoute() {
-    Rib rib = new Rib(false);
+    Rib rib = new Rib(null);
     AnnotatedRoute<AbstractRoute> ownNextHopRoute =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -327,7 +327,7 @@ public class RibTest {
 
   @Test
   public void testNoEnforceResolvabilityPreserveOwnNextHopRoute() {
-    Rib rib = new Rib(false);
+    Rib rib = new Rib(null);
     AnnotatedRoute<AbstractRoute> ownNextHopRoute =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -348,7 +348,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityMergeInvalidOwnNextHopRoute() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> ownNextHopRoute =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -362,7 +362,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityMergeValidOwnNextHopRoute() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> ownNextHopRoute =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -379,7 +379,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityActivateOwnNextHopRoute() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> ownNextHopRoute =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -403,7 +403,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityActivateOwnNextHopRouteCascade() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> moreSpecificOwnNextHopRoute =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -436,7 +436,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityRemoveActiveOwnNextHopRoute() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> ownNextHopRoute =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -459,7 +459,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityRemoveInactiveOwnNextHopRoute() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> ownNextHopRoute =
         annotateRoute(
             StaticRoute.testBuilder()
@@ -483,7 +483,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityRemoveRedundantActivatingRoutes() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> moreSpecificActivatingRoute =
         annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.1/32"), "i1"));
     AnnotatedRoute<AbstractRoute> lessSpecificActivatingRoute =
@@ -518,7 +518,7 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityRemoveActivatingRouteCascade() {
-    Rib rib = new Rib(true);
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
     AnnotatedRoute<AbstractRoute> activatingRoute =
         annotateRoute(new ConnectedRoute(Prefix.strict("10.0.1.1/32"), "lo"));
     AnnotatedRoute<AbstractRoute> moreSpecificOwnNextHopRoute =
@@ -548,5 +548,99 @@ public class RibTest {
             RouteAdvertisement.withdrawing(activatingRoute),
             RouteAdvertisement.withdrawing(lessSpecificOwnNextHopRoute),
             RouteAdvertisement.withdrawing(moreSpecificOwnNextHopRoute)));
+  }
+
+  @Test
+  public void testEnforceResolvabilityStaticNonrecursiveRouteCannotLoop() {
+    Rib rib = new Rib(ResolutionRestriction.alwaysTrue());
+    // would loop if non-recursive route were allowed to use it for resolution
+    AnnotatedRoute<AbstractRoute> notLoopingRoute =
+        annotateRoute(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.strict("2.0.0.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("1.0.0.1")))
+                .setRecursive(false)
+                .build());
+    AnnotatedRoute<AbstractRoute> connectedRoute1 =
+        annotateRoute(new ConnectedRoute(Prefix.strict("1.0.0.0/16"), "foo"));
+    AnnotatedRoute<AbstractRoute> connectedRoute2 =
+        annotateRoute(new ConnectedRoute(Prefix.strict("2.0.0.0/16"), "bar"));
+    AnnotatedRoute<AbstractRoute> staticNonrecursiveRoute =
+        annotateRoute(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.strict("1.0.0.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("2.0.0.1")))
+                .setRecursive(false)
+                .build());
+    rib.mergeRoute(connectedRoute1);
+    rib.mergeRoute(connectedRoute2);
+    rib.mergeRoute(notLoopingRoute);
+
+    // Route should be added just fine since it will only resolve via the connected route.
+    assertThat(
+        rib.mergeRouteGetDelta(staticNonrecursiveRoute),
+        equalTo(RibDelta.of(RouteAdvertisement.adding(staticNonrecursiveRoute))));
+  }
+
+  @Test
+  public void testEnforceResolvabilityRestrictedUnresolvable() {
+    // A route forbidden by resolution restriction can still be prevented from being installed
+    // if it cannot resolve.
+    Rib rib = new Rib(route -> route.getNetwork().getPrefixLength() != 24);
+    AnnotatedRoute<AbstractRoute> restrictedRoute =
+        annotateRoute(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.strict("1.0.0.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("2.0.0.1")))
+                .setRecursive(true)
+                .build());
+
+    assertThat(rib.mergeRouteGetDelta(restrictedRoute), equalTo(RibDelta.empty()));
+  }
+
+  @Test
+  public void testEnforceResolvabilityRestrictedRouteNoLoopOwnNextHop() {
+    // A route forbidden by resolution restriction cannot form a loop, even if it contains its own
+    // next hop.
+    Rib rib = new Rib(route -> route.getNetwork().getPrefixLength() != 24);
+    // would loop if non-recursive route were allowed to use it for resolution
+    AnnotatedRoute<AbstractRoute> restrictedRoute =
+        annotateRoute(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.strict("1.0.0.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("1.0.0.1")))
+                .setRecursive(true)
+                .build());
+    AnnotatedRoute<AbstractRoute> connectedRoute =
+        annotateRoute(new ConnectedRoute(Prefix.strict("1.0.0.0/16"), "foo"));
+    rib.mergeRoute(connectedRoute);
+
+    // Route should be added since it resolves via unrestricted connected route.
+    assertThat(
+        rib.mergeRouteGetDelta(restrictedRoute),
+        equalTo(RibDelta.of(RouteAdvertisement.adding(restrictedRoute))));
+  }
+
+  @Test
+  public void testEnforceResolvabilityConnectedRouteWhitelist() {
+    // A route forbidden by resolution restriction cannot form a loop, even if it contains its own
+    // next hop.
+    Rib rib = new Rib(route -> route.getNetwork().getPrefixLength() != 16);
+    // would loop if non-recursive route were allowed to use it for resolution
+    AnnotatedRoute<AbstractRoute> recursiveRoute =
+        annotateRoute(
+            StaticRoute.testBuilder()
+                .setNetwork(Prefix.strict("1.0.0.0/24"))
+                .setNextHop(NextHopIp.of(Ip.parse("2.0.0.1")))
+                .setRecursive(true)
+                .build());
+    AnnotatedRoute<AbstractRoute> connectedRoute =
+        annotateRoute(new ConnectedRoute(Prefix.strict("2.0.0.0/16"), "foo"));
+    rib.mergeRoute(connectedRoute);
+
+    // Recursive route can resolve via connected route even if latter is nominally restricted.
+    assertThat(
+        rib.mergeRouteGetDelta(recursiveRoute),
+        equalTo(RibDelta.of(RouteAdvertisement.adding(recursiveRoute))));
   }
 }

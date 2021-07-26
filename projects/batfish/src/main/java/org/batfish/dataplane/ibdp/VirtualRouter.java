@@ -248,7 +248,7 @@ public final class VirtualRouter {
             ? alwaysTrue()
             : _c.getRoutingPolicies().get(resolutionPolicy)::processReadOnly;
     // Main RIB + delta builder
-    _mainRib = new Rib();
+    _mainRib = new Rib(_c.getMainRibEnforceResolvability() ? _resolutionRestriction : null);
     _mainRibs = ImmutableMap.of(RibId.DEFAULT_RIB_NAME, _mainRib);
     _mainRibDeltaPrevRound = RibDelta.empty();
     _mainRibRouteDeltaBuilder = RibDelta.builder();
