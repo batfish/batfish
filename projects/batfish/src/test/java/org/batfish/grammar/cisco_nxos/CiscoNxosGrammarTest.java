@@ -94,15 +94,7 @@ import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.TCP_
 import static org.batfish.grammar.cisco_nxos.CiscoNxosControlPlaneExtractor.UDP_PORT_RANGE;
 import static org.batfish.main.BatfishTestUtils.TEST_SNAPSHOT;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_ID;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.DEFAULT_VRF_NAME;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.MANAGEMENT_VRF_NAME;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.RESOLUTION_POLICY_NAME;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.computeRoutingPolicyName;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborExportPolicyName;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpNeighborImportPolicyName;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.eigrpRedistributionPolicyName;
-import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
+import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.*;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
 import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
@@ -3110,15 +3102,38 @@ public final class CiscoNxosGrammarTest {
   public void testIpAccessListLineVendorStructureId() throws IOException {
     String hostname = "nxos_ip_access_list";
     Configuration c = parseConfig(hostname);
-    org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_simple_protocols");
-    AclLine line = acl.getLines().get(0);
-    assertThat(
-        line.getVendorStructureId().get(),
-        equalTo(
-            new VendorStructureId(
-                "configs/" + hostname,
-                CiscoNxosStructureType.IP_ACCESS_LIST.getDescription(),
-                line.getName())));
+
+    // acl_simple_protocols:  when the config doesn't include sequence numbers, they get assigned
+    // automatically
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_simple_protocols");
+      assertThat(
+          acl.getLines().get(0).getVendorStructureId().get(),
+          equalTo(
+              new VendorStructureId(
+                  "configs/" + hostname,
+                  CiscoNxosStructureType.IP_ACCESS_LIST_LINE.getDescription(),
+                  getAclLineName(acl.getName(), 10))));
+      assertThat(
+          acl.getLines().get(1).getVendorStructureId().get(),
+          equalTo(
+              new VendorStructureId(
+                  "configs/" + hostname,
+                  CiscoNxosStructureType.IP_ACCESS_LIST_LINE.getDescription(),
+                  getAclLineName(acl.getName(), 20))));
+    }
+
+    // acl_indices: when the config includes sequence numbers, we use them for the structure name
+    {
+      org.batfish.datamodel.IpAccessList acl = c.getIpAccessLists().get("acl_indices");
+      assertThat(
+          acl.getLines().get(1).getVendorStructureId().get(),
+          equalTo(
+              new VendorStructureId(
+                  "configs/" + hostname,
+                  CiscoNxosStructureType.IP_ACCESS_LIST_LINE.getDescription(),
+                  getAclLineName(acl.getName(), 13))));
+    }
   }
 
   @Test
