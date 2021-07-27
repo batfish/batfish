@@ -623,10 +623,9 @@ public class RibTest {
 
   @Test
   public void testEnforceResolvabilityConnectedRouteWhitelist() {
-    // A route forbidden by resolution restriction cannot form a loop, even if it contains its own
-    // next hop.
+    // A connected route may be used to resolve any next hop IP route regardless of resolution
+    // restriction.
     Rib rib = new Rib(route -> route.getNetwork().getPrefixLength() != 16);
-    // would loop if non-recursive route were allowed to use it for resolution
     AnnotatedRoute<AbstractRoute> recursiveRoute =
         annotateRoute(
             StaticRoute.testBuilder()

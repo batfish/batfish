@@ -157,9 +157,9 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
     }
 
     /**
-     * Performs longest prefix match on a next hop IP route. If the route contains its own next hop
-     * ip and the result does not contain a more specific route, returns the empty set. Otherwise,
-     * returns the LPM routes.
+     * Performs longest prefix match on a next hop IP route. If the route passes the resolution
+     * restriction, contains its own next hop IP, and the result does not contain a more specific
+     * route, returns the empty set. Otherwise, returns the LPM routes.
      */
     private @Nonnull Set<AnnotatedRoute<AbstractRoute>> lpmIfValid(
         AnnotatedRoute<AbstractRoute> nhipRoute) {
