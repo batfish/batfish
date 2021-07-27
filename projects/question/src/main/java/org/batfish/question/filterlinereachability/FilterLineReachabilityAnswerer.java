@@ -1,39 +1,27 @@
 package org.batfish.question.filterlinereachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.common.bdd.PermitAndDenyBdds.takeDifferentActions;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityRows.createMetadata;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedAcls;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedInterfaces;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
+import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
-import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
-import org.batfish.common.bdd.BDDSourceManager;
-import org.batfish.common.bdd.IpAccessListToBdd;
-import org.batfish.common.bdd.IpAccessListToBddImpl;
-import org.batfish.common.bdd.PermitAndDenyBdds;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclLine;
@@ -72,7 +60,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     SortedMap<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     List<AclSpecs> aclSpecs = getAclSpecs(configurations, specifiedAcls, answerRows);
-    answerAclReachability(aclSpecs, answerRows);
+    computeUnreachableFilterLines(aclSpecs).forEach(answerRows::addRowForLine);
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
     answer.postProcessAnswer(question, answerRows.getRows());
     return answer;
@@ -458,156 +446,12 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     return aclSpecs.stream().map(AclSpecs.Builder::build).collect(Collectors.toList());
   }
 
-  private static class LineAndWeight {
-    private final int _line;
-    private final double _weight;
-
-    public LineAndWeight(int line, double weight) {
-      _line = line;
-      _weight = weight;
-    }
-
-    private int getLine() {
-      return _line;
-    }
-
-    private double getWeight() {
-      return _weight;
-    }
-
-    private static final Comparator<LineAndWeight> COMPARATOR =
-        Comparator.comparing(LineAndWeight::getWeight)
-            .reversed()
-            .thenComparing(LineAndWeight::getLine);
-  }
-
-  /**
-   * Info about how some ACL line is blocked: which lines block it and whether any of them treat any
-   * packet differently than the blocked line would
-   */
-  public static class BlockingProperties {
-    @Nonnull private final SortedSet<Integer> _blockingLineNums;
-    private final boolean _diffAction;
-
-    public BlockingProperties(@Nonnull SortedSet<Integer> blockingLineNums, boolean diffAction) {
-      _blockingLineNums = blockingLineNums;
-      _diffAction = diffAction;
-    }
-
-    @Nonnull
-    SortedSet<Integer> getBlockingLineNums() {
-      return _blockingLineNums;
-    }
-
-    /**
-     * If true, indicates that some packet that matches the blocked line would be treated
-     * differently by some blocking line. (Does not require that the packet be able to reach that
-     * blocking line.)
-     */
-    boolean getDiffAction() {
-      return _diffAction;
-    }
-  }
-
-  @VisibleForTesting
-  static BlockingProperties findBlockingPropsForLine(
-      int blockedLineNum, List<PermitAndDenyBdds> bdds) {
-    PermitAndDenyBdds blockedLine = bdds.get(blockedLineNum);
-
-    ImmutableSortedSet.Builder<LineAndWeight> linesByWeight =
-        ImmutableSortedSet.orderedBy(LineAndWeight.COMPARATOR);
-
-    // First, we find all lines before blockedLine that actually terminate any packets
-    // blockedLine intends to. These, collectively, are the (partially-)blocking lines.
-    //
-    // In this same loop, we also compute the overlap of each such line with the blocked line
-    // and weight each blocking line by that overlap.
-    //
-    // Finally, we record whether any of these lines has a different action than the blocked line.
-    PermitAndDenyBdds restOfLine = blockedLine;
-    boolean diffAction = false; // true if some partially-blocking line has a different action.
-    for (int prevLineNum = 0; prevLineNum < blockedLineNum && !restOfLine.isZero(); prevLineNum++) {
-      PermitAndDenyBdds prevLine = bdds.get(prevLineNum);
-
-      if (!prevLine.getMatchBdd().andSat(restOfLine.getMatchBdd())) {
-        continue;
-      }
-
-      BDD blockedLineOverlap = prevLine.getMatchBdd().and(blockedLine.getMatchBdd());
-      linesByWeight.add(new LineAndWeight(prevLineNum, blockedLineOverlap.satCount()));
-      diffAction = diffAction || takeDifferentActions(prevLine, restOfLine);
-      restOfLine = restOfLine.diff(prevLine.getMatchBdd());
-    }
-
-    // In this second loop, we compute the answer:
-    // * include partially-blocking lines in weight order until the blocked line is fully blocked by
-    //   this subset.
-    // * also include the largest blocking line with a different action than the blocked line, if
-    //   not already in the above subset.
-    ImmutableSortedSet.Builder<Integer> answerLines = ImmutableSortedSet.naturalOrder();
-    restOfLine = blockedLine;
-    boolean needDiffAction = diffAction;
-    for (LineAndWeight line : linesByWeight.build()) {
-      int curLineNum = line.getLine();
-      PermitAndDenyBdds curLine = bdds.get(curLineNum);
-      boolean curDiff = takeDifferentActions(curLine, blockedLine);
-
-      // The original line is still not blocked, or this is the first line with a different action.
-      if (!restOfLine.isZero() || needDiffAction && curDiff) {
-        restOfLine = restOfLine.diff(curLine.getMatchBdd());
-        answerLines.add(curLineNum);
-        needDiffAction = needDiffAction && !curDiff;
-      }
-
-      // The original line is blocked and we have a line with a different action (if such exists).
-      if (restOfLine.isZero() && !needDiffAction) {
-        break;
-      }
-    }
-
-    return new BlockingProperties(answerLines.build(), diffAction);
-  }
-
-  public static void answerAclReachabilityLine(
-      AclSpecs aclSpec, BDDPacket bddPacket, FilterLineReachabilityRows answerRows) {
-    BDDFactory bddFactory = bddPacket.getFactory();
-    BDDSourceManager sourceMgr =
-        BDDSourceManager.forInterfaces(bddPacket, aclSpec.acl.getInterfaces());
-    IpAccessListToBdd ipAccessListToBdd =
-        new IpAccessListToBddImpl(
-            bddPacket, sourceMgr, aclSpec.acl.getDependencies(), ImmutableMap.of());
-
-    IpAccessList ipAcl = aclSpec.acl.getSanitizedAcl();
-    List<AclLine> lines = ipAcl.getLines();
-
-    /* Convert every line to permit and deny BDDs. */
-    List<PermitAndDenyBdds> ipLineToBDDMap =
-        lines.stream().map(ipAccessListToBdd::toPermitAndDenyBdds).collect(Collectors.toList());
-
-    /* Pass over BDDs to classify each as unmatchable, unreachable, or (implicitly) reachable. */
-    BDD unmatchedPackets = bddFactory.one(); // The packets that are not yet matched by the ACL.
-    ListIterator<PermitAndDenyBdds> lineIt = ipLineToBDDMap.listIterator();
-    while (lineIt.hasNext()) {
-      int lineNum = lineIt.nextIndex();
-      PermitAndDenyBdds lineBDDs = lineIt.next();
-      if (lineBDDs.isZero()) {
-        // This line is unmatchable
-        answerRows.addUnmatchableLine(aclSpec, lineNum);
-      } else if (unmatchedPackets.isZero() || !lineBDDs.getMatchBdd().andSat(unmatchedPackets)) {
-        // No unmatched packets in the ACL match this line, so this line is unreachable.
-        BlockingProperties blockingProps = findBlockingPropsForLine(lineNum, ipLineToBDDMap);
-        answerRows.addBlockedLine(aclSpec, lineNum, blockingProps);
-      }
-      unmatchedPackets = unmatchedPackets.diff(lineBDDs.getMatchBdd());
-    }
-  }
-
-  private static void answerAclReachability(
-      List<AclSpecs> aclSpecs, FilterLineReachabilityRows answerRows) {
+  private static Stream<UnreachableFilterLine> computeUnreachableFilterLines(
+      List<AclSpecs> aclSpecs) {
     BDDPacket bddPacket = new BDDPacket();
-
-    for (AclSpecs aclSpec : aclSpecs) {
-      answerAclReachabilityLine(aclSpec, bddPacket, answerRows);
-    }
+    return aclSpecs.stream()
+        .flatMap(
+            aclSpec ->
+                FilterLineReachabilityUtils.computeUnreachableFilterLines(aclSpec, bddPacket));
   }
 }

@@ -147,6 +147,51 @@ public final class TopologyUtil {
     }
   }
 
+  private static @Nonnull Layer1Node canonicalize(
+      Layer1Node node, Map<String, Configuration> configurations) {
+    Configuration c = getConfiguration(node, configurations);
+    if (c == null) {
+      // Host unknown, return node unchanged.
+      return node;
+    }
+    // Find a matching interface on the host, perhaps with a slightly different interface name.
+    // If found, create a new Layer1Node with that name, else return original.
+    return InterfaceUtil.matchingInterface(node.getInterfaceName(), c)
+        .map(i -> new Layer1Node(c.getHostname(), i.getName()))
+        .orElse(node);
+  }
+
+  /**
+   * Returns a new {@link Layer1Topology} where every node with an interface in non-canonical form
+   * (aka, not appearing in its corresponding {@link Configuration device's} {@link
+   * Configuration#getAllInterfaces()}) has a name that does appear.
+   *
+   * <p>Does not remove any non-existent nodes (hostname missing, or no canonical interface found).
+   *
+   * @see #cleanLayer1PhysicalTopology(Layer1Topology, Map)
+   */
+  public static Layer1Topology canonicalizeLayer1TopologyNodes(
+      @Nonnull Layer1Topology topology, @Nonnull Map<String, Configuration> configurations) {
+    Map<Layer1Node, Layer1Node> replacements = new HashMap<>();
+    for (Layer1Node original : topology.getGraph().nodes()) {
+      Layer1Node canonical = canonicalize(original, configurations);
+      if (!canonical.equals(original)) {
+        replacements.put(original, canonical);
+      }
+    }
+    if (replacements.isEmpty()) {
+      return topology;
+    }
+    return new Layer1Topology(
+        topology.getGraph().edges().stream()
+            .map(
+                edge ->
+                    new Layer1Edge(
+                        replacements.getOrDefault(edge.getNode1(), edge.getNode1()),
+                        replacements.getOrDefault(edge.getNode2(), edge.getNode2())))
+            .collect(ImmutableSet.toImmutableSet()));
+  }
+
   /**
    * Cleans {@link Layer1Topology}, by removing non-existent interfaces and making connectivity
    * symmetric.
@@ -155,7 +200,7 @@ public final class TopologyUtil {
       @Nonnull Layer1Topology rawLayer1Topology,
       @Nonnull Map<String, Configuration> configurations) {
     ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();
-    rawLayer1Topology.getGraph().edges().stream()
+    canonicalizeLayer1TopologyNodes(rawLayer1Topology, configurations).getGraph().edges().stream()
         .filter(
             edge -> {
               Interface i1 = getInterface(edge.getNode1(), configurations);

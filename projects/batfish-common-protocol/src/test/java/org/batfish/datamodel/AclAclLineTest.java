@@ -13,6 +13,7 @@ import com.google.common.testing.EqualsTester;
 import java.util.Collections;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Test;
 
 /** Tests of {@link AclAclLine} */
@@ -79,13 +80,17 @@ public class AclAclLineTest {
     TraceElement traceElement1 = TraceElement.builder().add("a").build();
     TraceElement traceElement2 = TraceElement.builder().add("b").build();
 
+    VendorStructureId vsId1 = new VendorStructureId("a", "b", "c");
+    VendorStructureId vsId2 = null;
+
     new EqualsTester()
         .addEqualityGroup(
-            new AclAclLine("name1", "acl1", traceElement1),
-            new AclAclLine("name1", "acl1", traceElement1))
-        .addEqualityGroup(new AclAclLine("name2", "acl1", traceElement1))
-        .addEqualityGroup(new AclAclLine("name1", "acl2", traceElement1))
-        .addEqualityGroup(new AclAclLine("name1", "acl1", traceElement2))
+            new AclAclLine("name1", "acl1", traceElement1, vsId1),
+            new AclAclLine("name1", "acl1", traceElement1, vsId1))
+        .addEqualityGroup(new AclAclLine("name2", "acl1", traceElement1, vsId1))
+        .addEqualityGroup(new AclAclLine("name1", "acl2", traceElement1, vsId1))
+        .addEqualityGroup(new AclAclLine("name1", "acl1", traceElement2, vsId1))
+        .addEqualityGroup(new AclAclLine("name1", "acl1", traceElement1, vsId2))
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -100,7 +105,11 @@ public class AclAclLineTest {
 
     {
       AclAclLine aclAclLine =
-          new AclAclLine("lineName", "aclName", TraceElement.builder().add("a").build());
+          new AclAclLine(
+              "lineName",
+              "aclName",
+              TraceElement.builder().add("a").build(),
+              new VendorStructureId("a", "b", "c"));
       AclAclLine clone = (AclAclLine) BatfishObjectMapper.clone(aclAclLine, AclLine.class);
       assertEquals(aclAclLine, clone);
     }

@@ -2,7 +2,7 @@ package org.batfish.minesweeper.question.searchroutepolicies;
 
 import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.datamodel.answers.Schema.STRING;
-import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantFor;
+import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.PERMIT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
@@ -30,6 +30,7 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
@@ -45,7 +46,7 @@ import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
@@ -229,20 +230,20 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
-   * concrete route for a given symbolic route that is consistent with the assignment.
+   * concrete input route that is consistent with the assignment.
    *
    * @param fullModel the satisfying assignment
-   * @param r the symbolic route
    * @param g the Graph, which provides information about the community atomic predicates
-   * @return either a route or a BDD representing an infeasible constraint
+   * @return a route
    */
-  private static Bgpv4Route satAssignmentToRoute(BDD fullModel, BDDRoute r, Graph g) {
+  private static Bgpv4Route satAssignmentToInputRoute(BDD fullModel, Graph g) {
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
-            .setNextHop(NextHopDiscard.instance())
             .setProtocol(RoutingProtocol.BGP);
+
+    BDDRoute r = new BDDRoute(g);
 
     Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
     long len = r.getPrefixLength().satAssignmentToLong(fullModel);
@@ -259,6 +260,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
     AsPath asPath = satAssignmentToAsPath(fullModel, r, g);
     builder.setAsPath(asPath);
+
+    // Note: this is the only part of the method that relies on the fact that we are solving for the
+    // input route.  If we also want to produce the output route from the model, given the BDDRoute
+    // that results from symbolic analysis, we need to consider the _direction as well as the values
+    // of the two next-hop flags in the BDDRoute, in order to do it properly
+    builder.setNextHop(NextHopIp.of(Ip.create(r.getNextHop().satAssignmentToLong(fullModel))));
 
     return builder.build();
   }
@@ -280,14 +287,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       return Optional.empty();
     } else {
       BDD fullModel = constraints.fullSatOne();
-      Bgpv4Route inRoute = satAssignmentToRoute(fullModel, new BDDRoute(g), g);
+      Bgpv4Route inRoute = satAssignmentToInputRoute(fullModel, g);
       Row result = TestRoutePoliciesAnswerer.rowResultFor(policy, inRoute, _direction);
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
       // is modeling something incorrectly (or both).
-      // TODO: We can also take this validation further by using satAssignmentToRoute to produce the
-      // output route from our fullModel and the final BDDRoute from the symbolic analysis (as we
-      // used to do) and then compare that to the TRP result.
+      // TODO: We can also take this validation further by using a variant of
+      // satAssignmentToInputRoute to produce the output route from our fullModel and the final
+      // BDDRoute from the symbolic analysis (as we used to do) and then compare that to the TRP
+      // result.
       assert result.get(TestRoutePoliciesAnswerer.COL_ACTION, STRING).equals(_action.toString());
       return Optional.of(result);
     }
@@ -300,7 +308,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     } else {
       BDD result = factory.zero();
       for (PrefixRange range : space.getPrefixRanges()) {
-        BDD rangeBDD = isRelevantFor(r, range);
+        BDD rangeBDD = isRelevantForDestination(r, range);
         result = result.or(rangeBDD);
       }
       if (complementPrefixes) {
@@ -335,6 +343,25 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         result = result.or(bddInt.range(closedRange.lowerEndpoint(), closedRange.upperEndpoint()));
       }
       return result;
+    }
+  }
+
+  private BDD nextHopIpConstraintsToBDD(
+      Optional<Prefix> optNextHopIp, BDDRoute r, boolean outputRoute) {
+    if (optNextHopIp.isPresent()) {
+      BDD nextHopBDD = optNextHopIp.get().toIpSpace().accept(new IpSpaceToBDD(r.getNextHop()));
+      if (outputRoute) {
+        // make sure that the next hop was not discarded by the route map
+        nextHopBDD = nextHopBDD.and(r.getNextHopDiscarded().not());
+        if (_direction == Environment.Direction.OUT) {
+          // in the OUT direction we can only use the next-hop IP in the route
+          // if the route-map explicitly sets it
+          nextHopBDD = nextHopBDD.and(r.getNextHopSet());
+        }
+      }
+      return nextHopBDD;
+    } else {
+      return r.getFactory().one();
     }
   }
 
@@ -384,7 +411,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return positiveConstraints.diffWith(negativeConstraints);
   }
 
-  private BDD routeConstraintsToBDD(BgpRouteConstraints constraints, BDDRoute r, Graph g) {
+  // Produce a BDD that represents all truth assignments for the given BDDRoute r that satisfy the
+  // given set of BgpRouteConstraints.  The way to represent next-hop constraints depends on whether
+  // r is an input or output route, so the outputRoute flag distinguishes these cases.
+  private BDD routeConstraintsToBDD(
+      BgpRouteConstraints constraints, BDDRoute r, boolean outputRoute, Graph g) {
 
     // make sure the model we end up getting corresponds to a valid route
     BDD result = r.wellFormednessConstraints();
@@ -407,6 +438,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             g.getAsPathRegexAtomicPredicates(),
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
+    result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
 
     return result;
   }
@@ -434,10 +466,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     BDD acceptedAnnouncements = result.getSecond();
     BDDRoute outputRoute = result.getFirst();
     BDD intersection;
-    BDD inConstraints = routeConstraintsToBDD(_inputConstraints, new BDDRoute(g), g);
+    BDD inConstraints = routeConstraintsToBDD(_inputConstraints, new BDDRoute(g), false, g);
     if (_action == PERMIT) {
       // incorporate the constraints on the output route as well
-      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, g);
+      BDD outConstraints = routeConstraintsToBDD(_outputConstraints, outputRoute, true, g);
       intersection = acceptedAnnouncements.and(inConstraints).and(outConstraints);
     } else {
       intersection = acceptedAnnouncements.not().and(inConstraints);

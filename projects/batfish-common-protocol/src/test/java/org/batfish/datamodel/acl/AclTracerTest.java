@@ -274,7 +274,7 @@ public class AclTracerTest {
         AclTracer.trace(
             acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces, namedIpSpaceMetadata);
 
-    assertThat(root, contains(isTraceTree(matchedByAclLine(ACCEPT_ALL.getName()))));
+    assertThat(root, contains(isTraceTree(matchedByAclLine(ACCEPT_ALL.getName(), null))));
   }
 
   @Test
@@ -454,7 +454,8 @@ public class AclTracerTest {
     IpAccessList testAcl =
         IpAccessList.builder()
             .setName(TEST_ACL)
-            .setLines(ImmutableList.of(new AclAclLine(TEST_ACL, ACL_NAME, testAclTraceElement)))
+            .setLines(
+                ImmutableList.of(new AclAclLine(TEST_ACL, ACL_NAME, testAclTraceElement, null)))
             .build();
 
     List<TraceTree> root =

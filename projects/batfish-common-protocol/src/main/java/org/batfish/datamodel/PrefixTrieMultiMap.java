@@ -4,6 +4,7 @@ import static org.batfish.datamodel.Prefix.longestCommonPrefix;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -14,7 +15,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -290,7 +293,33 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    * The traversal may not mutate the entries (the values are immutable sets).
    */
   public void traverseEntries(BiConsumer<Prefix, Set<T>> consumer) {
-    traverseNodes(node -> consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements)));
+    // Chose null instead of something like BiPredicates.alwaysTrue() because:
+    // - it doesn't exist
+    // - could not get custom version to type-check
+    traverseEntriesImpl(consumer, null);
+  }
+
+  /**
+   * Post-order traversal over the entries. Entries will always contain non-null keys and values.
+   * The traversal may not mutate the entries (the values are immutable sets).
+   *
+   * <p>A node will only be visited if {@code visitNode} returns {@code true} for its prefix and
+   * elements.
+   */
+  public void traverseEntries(
+      BiConsumer<Prefix, Set<T>> consumer, BiPredicate<Prefix, Set<T>> visitChild) {
+    traverseEntriesImpl(consumer, visitChild);
+  }
+
+  private void traverseEntriesImpl(
+      BiConsumer<Prefix, Set<T>> consumer, @Nullable BiPredicate<Prefix, Set<T>> visitNode) {
+    Consumer<Node<T>> nodeConsumer =
+        node -> consumer.accept(node._prefix, ImmutableSet.copyOf(node._elements));
+    if (visitNode == null) {
+      traverseNodes(nodeConsumer);
+    } else {
+      traverseNodes(nodeConsumer, node -> visitNode.test(node._prefix, node._elements));
+    }
   }
 
   /**
@@ -306,10 +335,20 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   }
 
   private void traverseNodes(Consumer<Node<T>> consumer) {
-    if (_root == null) {
+    traverseNodes(consumer, Predicates.alwaysTrue());
+  }
+
+  private void traverseNodes(Consumer<Node<T>> consumer, Predicate<Node<T>> visitNode) {
+    if (_root == null || !visitNode.test(_root)) {
       return;
     }
-    Traverser.<Node<T>>forTree(Node::getChildren).depthFirstPostOrder(_root).forEach(consumer);
+    Traverser.<Node<T>>forTree(
+            node ->
+                node.getChildren().stream()
+                    .filter(visitNode)
+                    .collect(ImmutableList.toImmutableList()))
+        .depthFirstPostOrder(_root)
+        .forEach(consumer);
   }
 
   private @Nullable Node<T> exactMatchNode(Prefix p) {

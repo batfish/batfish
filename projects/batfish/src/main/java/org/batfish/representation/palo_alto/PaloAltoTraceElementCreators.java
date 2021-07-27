@@ -20,13 +20,16 @@ public final class PaloAltoTraceElementCreators {
       String ruleName, String vsysName, String filename) {
     return TraceElement.builder()
         .add("Matched security rule ")
-        .add(
-            ruleName,
-            new VendorStructureId(
-                filename,
-                PaloAltoStructureType.SECURITY_RULE.getDescription(),
-                computeObjectName(vsysName, ruleName)))
+        .add(ruleName, securityRuleVendorStructureId(ruleName, vsysName, filename))
         .build();
+  }
+
+  static VendorStructureId securityRuleVendorStructureId(
+      String ruleName, String vsysName, String filename) {
+    return new VendorStructureId(
+        filename,
+        PaloAltoStructureType.SECURITY_RULE.getDescription(),
+        computeObjectName(vsysName, ruleName));
   }
 
   @VisibleForTesting

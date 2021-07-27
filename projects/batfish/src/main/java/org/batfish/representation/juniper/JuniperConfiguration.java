@@ -229,8 +229,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .add(
             String.format(
                 "%s %s", JuniperStructureType.FIREWALL_FILTER.getDescription(), filterName),
-            new VendorStructureId(
-                filename, JuniperStructureType.FIREWALL_FILTER.getDescription(), filterName))
+            firewallFilterVendorStructureId(filename, filterName))
         .build();
   }
 
@@ -238,39 +237,57 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @VisibleForTesting
   public static TraceElement matchingFirewallFilterTerm(
       String filename, String filterName, String termName) {
-    return TraceElement.builder()
-        .add("Matched ")
-        .add(
-            termName,
-            new VendorStructureId(
-                filename,
-                JuniperStructureType.FIREWALL_FILTER_TERM.getDescription(),
-                computeFirewallFilterTermName(filterName, termName)))
-        .build();
+    return matchedTraceElement(
+        termName, firewallFilterTermVendorStructureId(filename, filterName, termName));
+  }
+
+  private static VendorStructureId firewallFilterVendorStructureId(
+      String filename, String filterName) {
+    return new VendorStructureId(
+        filename, JuniperStructureType.FIREWALL_FILTER.getDescription(), filterName);
+  }
+
+  public static TraceElement matchedTraceElement(String name, VendorStructureId vsId) {
+    return TraceElement.builder().add("Matched ").add(name, vsId).build();
+  }
+
+  public static VendorStructureId firewallFilterTermVendorStructureId(
+      String filename, String filterName, String termName) {
+    return new VendorStructureId(
+        filename,
+        JuniperStructureType.FIREWALL_FILTER_TERM.getDescription(),
+        computeFirewallFilterTermName(filterName, termName));
   }
 
   /** Returns a trace element for a security policy term for the given test config. */
   @VisibleForTesting
   public static TraceElement matchingSecurityPolicyTerm(
       String filename, String policyName, String termName) {
-    return TraceElement.builder()
-        .add("Matched ")
-        .add(
-            termName,
-            new VendorStructureId(
-                filename,
-                JuniperStructureType.SECURITY_POLICY_TERM.getDescription(),
-                computeSecurityPolicyTermName(policyName, termName)))
-        .build();
+    return matchedTraceElement(
+        termName, securityPolicyTermVendorStructureId(filename, policyName, termName));
+  }
+
+  public static VendorStructureId securityPolicyTermVendorStructureId(
+      String filename, String policyName, String termName) {
+    return new VendorStructureId(
+        filename,
+        JuniperStructureType.SECURITY_POLICY_TERM.getDescription(),
+        computeSecurityPolicyTermName(policyName, termName));
   }
 
   private static TraceElement matchingAbstractTerm(
       JuniperStructureType aclType, String filename, String filterName, String termName) {
+    return matchedTraceElement(
+        termName, abstractTermVendorStructureId(aclType, filename, filterName, termName));
+  }
+
+  private static VendorStructureId abstractTermVendorStructureId(
+      JuniperStructureType aclType, String filename, String filterName, String termName) {
     if (aclType == JuniperStructureType.FIREWALL_FILTER) {
-      return matchingFirewallFilterTerm(filename, filterName, termName);
+      return firewallFilterTermVendorStructureId(filename, filterName, termName);
     }
     assert aclType == JuniperStructureType.SECURITY_POLICY;
-    return matchingSecurityPolicyTerm(filename, filterName, termName);
+    return securityPolicyTermVendorStructureId(filename, filterName, termName);
   }
 
   // See
@@ -2223,7 +2240,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             LineAction.PERMIT,
             OriginatingFromDevice.INSTANCE,
             "HOST_OUTBOUND",
-            TraceElement.of("Matched Juniper semantics on traffic originated from device")));
+            TraceElement.of("Matched Juniper semantics on traffic originated from device"),
+            null));
 
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
@@ -2239,37 +2257,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
         String policyDesc = String.format("security policy from %s to zone %s", fromDesc, toZone);
 
         String policyName = zoneToZoneFilter(filter.getFromZone().orElse("junos-host"), toZone);
+        VendorStructureId vendorStructureId =
+            new VendorStructureId(
+                _filename, JuniperStructureType.SECURITY_POLICY.getDescription(), policyName);
         TraceElement traceElement =
-            TraceElement.builder()
-                .add("Matched ")
-                .add(
-                    policyDesc,
-                    new VendorStructureId(
-                        _filename,
-                        JuniperStructureType.SECURITY_POLICY.getDescription(),
-                        policyName))
-                .build();
+            TraceElement.builder().add("Matched ").add(policyDesc, vendorStructureId).build();
 
-        zoneAclLines.add(new AclAclLine("Match " + policyDesc, filterName, traceElement));
+        zoneAclLines.add(
+            new AclAclLine("Match " + policyDesc, filterName, traceElement, vendorStructureId));
       }
     }
 
     /* Global policy if applicable */
     if (_masterLogicalSystem.getSecurityPolicies().get(ACL_NAME_GLOBAL_POLICY) != null) {
       /* Handle explicit accept/deny lines for global policy, unmatched lines fall-through to next. */
+      VendorStructureId vendorStructureId =
+          new VendorStructureId(
+              _filename,
+              JuniperStructureType.SECURITY_POLICY.getDescription(),
+              ACL_NAME_GLOBAL_POLICY);
       zoneAclLines.add(
           new AclAclLine(
               "Match global security policy",
               ACL_NAME_GLOBAL_POLICY,
               TraceElement.builder()
                   .add("Matched ")
-                  .add(
-                      "global security policy",
-                      new VendorStructureId(
-                          _filename,
-                          JuniperStructureType.SECURITY_POLICY.getDescription(),
-                          ACL_NAME_GLOBAL_POLICY))
-                  .build()));
+                  .add("global security policy", vendorStructureId)
+                  .build(),
+              vendorStructureId));
     }
 
     /* Add catch-all line with default action */
@@ -2278,7 +2293,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             _masterLogicalSystem.getDefaultCrossZoneAction(),
             TrueExpr.INSTANCE,
             "DEFAULT_POLICY",
-            TraceElement.of("Matched default policy")));
+            TraceElement.of("Matched default policy"),
+            null));
 
     IpAccessList zoneAcl = IpAccessList.builder().setName(name).setLines(zoneAclLines).build();
     _c.getIpAccessLists().put(name, zoneAcl);
@@ -2363,6 +2379,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .setMatchCondition(and(fwFromAndApplicationConjuncts))
             .setName(term.getName())
             .setTraceElement(matchingAbstractTerm(aclType, _filename, aclName, term.getName()))
+            .setVendorStructureId(
+                abstractTermVendorStructureId(aclType, _filename, aclName, term.getName()))
             .build());
     return lines;
   }
@@ -2414,7 +2432,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     l.getAction(),
                     new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
                     l.getName(),
-                    l.getTraceElement()))
+                    l.getTraceElement(),
+                    l.getVendorStructureId().orElse(null)))
         .collect(ImmutableList.toImmutableList());
   }
 
@@ -2436,7 +2455,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (FirewallFilter inner : filter.getInner()) {
         String filterName = inner.getName();
         lines.add(
-            new AclAclLine(filterName, filterName, matchingFirewallFilter(_filename, filterName)));
+            new AclAclLine(
+                filterName,
+                filterName,
+                matchingFirewallFilter(_filename, filterName),
+                firewallFilterVendorStructureId(_filename, filterName)));
       }
       return IpAccessList.builder().setName(filter.getName()).setLines(lines.build()).build();
     }

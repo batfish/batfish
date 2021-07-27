@@ -154,6 +154,7 @@ public final class TopologyUtilTest {
     String c1Name = "c1";
     String c2Name = "c2";
     String c1i1Name = "c1i1";
+    String c1i1NonCanonicalName = c1i1Name.toUpperCase();
     String c1i2Name = "c1i2";
     String c2i1Name = "c2i1";
     String c2i2Name = "c2i2";
@@ -173,12 +174,16 @@ public final class TopologyUtilTest {
     Map<String, Configuration> configurations = ImmutableMap.of(c1Name, c1, c2Name, c2);
     Layer1Topology rawLayer1Topology =
         new Layer1Topology(
-            new Layer1Edge(new Layer1Node(c1Name, c1i1Name), new Layer1Node(c2Name, c2i1Name)),
-            new Layer1Edge(new Layer1Node(c2Name, c2i1Name), new Layer1Node(c1Name, c1i1Name)),
+            new Layer1Edge(
+                new Layer1Node(c1Name, c1i1NonCanonicalName), new Layer1Node(c2Name, c2i1Name)),
+            new Layer1Edge(
+                new Layer1Node(c2Name, c2i1Name), new Layer1Node(c1Name, c1i1NonCanonicalName)),
             new Layer1Edge(new Layer1Node(c1Name, c1i2Name), new Layer1Node(c2Name, c2i2Name)),
             new Layer1Edge(new Layer1Node(c2Name, c2i2Name), new Layer1Node(c1Name, c1i2Name)));
 
     // inactive c2i2 should break c1i2<=>c2i2 link
+    // non-canonical names should be accepted.
+    assertThat(c1i1Name, not(equalTo(c1i1NonCanonicalName)));
     assertThat(
         TopologyUtil.cleanLayer1PhysicalTopology(rawLayer1Topology, configurations)
             .getGraph()

@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,6 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.filterlinereachability.FilterLineReachabilityAnswerer.BlockingProperties;
 
 /** Represents answers to aclReachability. */
 @ParametersAreNonnullByDefault
@@ -91,24 +89,11 @@ public class FilterLineReachabilityRows {
 
   private final Multiset<Row> _rows = HashMultiset.create();
 
-  /** Adds row for unmatchable line at index {@code lineNumber}. */
-  public void addUnmatchableLine(AclSpecs aclSpecs, int lineNumber) {
-    Reason reason =
-        aclSpecs.acl.hasUndefinedRef(lineNumber)
-            ? Reason.UNDEFINED_REFERENCE
-            : Reason.INDEPENDENTLY_UNMATCHABLE;
-    addRowForLine(
-        aclSpecs, lineNumber, reason, new BlockingProperties(ImmutableSortedSet.of(), false));
-  }
-
-  /** Adds row for blocked line at index {@code lineNumber}. */
-  public void addBlockedLine(AclSpecs aclSpecs, int lineNumber, BlockingProperties blockingProps) {
-    addRowForLine(aclSpecs, lineNumber, Reason.BLOCKING_LINES, blockingProps);
-  }
-
   /** Adds row for line at index {@code lineNumber} with reason {@code reason}. */
-  private void addRowForLine(
-      AclSpecs aclSpecs, int lineNumber, Reason reason, BlockingProperties blockingProps) {
+  void addRowForLine(UnreachableFilterLine line) {
+    AclSpecs aclSpecs = line.getAclSpecs();
+    int lineNumber = line.getLineNumber();
+
     if (aclSpecs.acl.inCycle(lineNumber)) {
       return;
     }
@@ -122,23 +107,47 @@ public class FilterLineReachabilityRows {
             .map(e -> e.getKey() + ": " + String.join(", ", e.getValue()))
             .collect(Collectors.toList());
 
-    _rows.add(
+    Row.TypedRowBuilder row =
         Row.builder(COLUMN_METADATA)
             .put(COL_SOURCES, flatSources)
             .put(COL_UNREACHABLE_LINE_ACTION, ActionGetter.getLineBehavior(blockedLine))
             .put(COL_UNREACHABLE_LINE, firstNonNull(blockedLine.getName(), blockedLine.toString()))
-            .put(
-                COL_BLOCKING_LINES,
-                blockingProps.getBlockingLineNums().stream()
-                    .map(
-                        i -> {
-                          AclLine l = acl.getLines().get(i);
-                          return firstNonNull(l.getName(), l.toString());
-                        })
-                    .collect(ImmutableList.toImmutableList()))
-            .put(COL_DIFF_ACTION, blockingProps.getDiffAction())
-            .put(COL_REASON, reason)
-            .build());
+            .put(COL_BLOCKING_LINES, ImmutableList.of())
+            .put(COL_DIFF_ACTION, false);
+
+    line.accept(
+        new UnreachableFilterLineVisitor<Void>() {
+          @Override
+          public Void visitBlockedFilterLine(BlockedFilterLine line) {
+            row.put(COL_REASON, Reason.BLOCKING_LINES)
+                .put(
+                    COL_BLOCKING_LINES,
+                    line.getBlockingLines().stream()
+                        .map(
+                            i -> {
+                              AclLine l = acl.getLines().get(i);
+                              return firstNonNull(l.getName(), l.toString());
+                            })
+                        .collect(ImmutableList.toImmutableList()))
+                .put(COL_DIFF_ACTION, line.hasDiffAction());
+            return null;
+          }
+
+          @Override
+          public Void visitIndependentlyUnmatchableFilterLine(
+              IndependentlyUnmatchableFilterLine line) {
+            row.put(COL_REASON, Reason.INDEPENDENTLY_UNMATCHABLE);
+            return null;
+          }
+
+          @Override
+          public Void visitFilterLineWithUndefinedReference(FilterLineWithUndefinedReference line) {
+            row.put(COL_REASON, Reason.UNDEFINED_REFERENCE);
+            return null;
+          }
+        });
+
+    _rows.add(row.build());
   }
 
   /**
