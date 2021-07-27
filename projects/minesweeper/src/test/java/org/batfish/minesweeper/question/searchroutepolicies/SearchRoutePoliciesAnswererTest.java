@@ -75,6 +75,7 @@ import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -1375,5 +1376,50 @@ public class SearchRoutePoliciesAnswererTest {
     assertThat(r4.lowerEndpoint(), equalTo(5L));
     assertEquals(BoundType.CLOSED, r4.upperBoundType());
     assertThat(r4.upperEndpoint(), equalTo(10L));
+  }
+
+  @Test
+  public void testMatchProtocol() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.IBGP),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            Action.PERMIT);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("0.0.0.0/0"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.IGP)
+            .setProtocol(RoutingProtocol.IBGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 }
