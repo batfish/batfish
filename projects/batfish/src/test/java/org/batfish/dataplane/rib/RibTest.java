@@ -471,6 +471,14 @@ public class RibTest {
 
     // Removing inactive ownNextHopRoute should not affect the RIB.
     assertThat(rib.removeRouteGetDelta(ownNextHopRoute), equalTo(RibDelta.empty()));
+
+    // ownNextHopRoute should not be activated when an activator is added, because
+    // it has been completely removed from the RIB.
+    AnnotatedRoute<AbstractRoute> activatingRoute =
+        annotateRoute(new ConnectedRoute(Prefix.strict("10.0.0.0/31"), "foo"));
+    assertThat(
+        rib.mergeRouteGetDelta(activatingRoute),
+        equalTo(RibDelta.of(RouteAdvertisement.adding(activatingRoute))));
   }
 
   @Test
