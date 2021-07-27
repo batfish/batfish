@@ -238,10 +238,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   private static Bgpv4Route satAssignmentToInputRoute(BDD fullModel, Graph g) {
     Bgpv4Route.Builder builder =
-        Bgpv4Route.builder()
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP);
+        Bgpv4Route.builder().setOriginatorIp(Ip.ZERO).setOriginType(OriginType.IGP);
 
     BDDRoute r = new BDDRoute(g);
 
@@ -254,6 +251,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     // the BDDRoute also tracks a metric but I believe for BGP we should use the MED
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
+
+    builder.setProtocol(r.getProtocolHistory().getValueFromAssignment(fullModel));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, g);
     builder.setCommunities(communities);
@@ -268,6 +267,21 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     builder.setNextHop(NextHopIp.of(Ip.create(r.getNextHop().satAssignmentToLong(fullModel))));
 
     return builder.build();
+  }
+
+  // Produces a full model of the given constraints, which represents a concrete input/output route
+  // consistent with the constraints.  Default values are chosen for particular fields of the input
+  // route if they are consistent with the constraints.
+  private BDD constraintsToModel(BDD constraints, Graph g) {
+    BDDRoute route = new BDDRoute(g);
+    // set the protocol field to BGP if it is consistent with the constraints
+    BDD isBGP = route.getProtocolHistory().getConstraintForValue(RoutingProtocol.BGP);
+    BDD augmentedConstraints = constraints.and(isBGP);
+    if (!augmentedConstraints.isZero()) {
+      return augmentedConstraints.fullSatOne();
+    } else {
+      return constraints.fullSatOne();
+    }
   }
 
   /**
@@ -286,7 +300,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD fullModel = constraints.fullSatOne();
+      BDD fullModel = constraintsToModel(constraints, g);
       Bgpv4Route inRoute = satAssignmentToInputRoute(fullModel, g);
       Row result = TestRoutePoliciesAnswerer.rowResultFor(policy, inRoute, _direction);
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
