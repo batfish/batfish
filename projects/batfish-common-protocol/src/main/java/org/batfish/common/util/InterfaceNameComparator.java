@@ -29,6 +29,7 @@ public final class InterfaceNameComparator implements Comparator<String>, Serial
     return INSTANCE;
   }
 
+  @VisibleForTesting
   static int compareStringVsNum(String left, String right) {
     Integer leftInt = Ints.tryParse(left);
     Integer rightInt = Ints.tryParse(right);
