@@ -53,6 +53,7 @@ import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHoldTime;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPreempt;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasPriority;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasBandwidth;
@@ -2374,6 +2375,20 @@ public final class CiscoNxosGrammarTest {
     Configuration c = parseConfig(hostname);
     assertThat(
         c, hasInterface("Ethernet1/21", hasDescription("Made it to the end of Ethernet1/21")));
+  }
+
+  @Test
+  public void testInterfaceShowRunAll2RetainsSetMode() throws IOException {
+    String hostname = "nxos_interface_show_all_2";
+    Configuration c = parseConfig(hostname);
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1/2",
+            allOf(
+                hasDescription("Made it to the end of Ethernet1/2"),
+                hasSwitchPortMode(org.batfish.datamodel.SwitchportMode.ACCESS),
+                hasAccessVlan(17))));
   }
 
   @Test

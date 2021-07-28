@@ -5743,7 +5743,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.ACCESS);
+          if (iface.getSwitchportMode() == null) {
+            // NX-OS has these commands in show run all even for interfaces in other modes.
+            iface.setSwitchportMode(SwitchportMode.ACCESS);
+          }
           iface.setAccessVlan(vlanId);
         });
   }
@@ -5802,7 +5805,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.TRUNK);
+          if (iface.getSwitchportMode() == null) {
+            // NX-OS has these commands in show run all even for interfaces in other modes.
+            iface.setSwitchportMode(SwitchportMode.TRUNK);
+          }
           if (ctx.ADD() != null) {
             iface.setAllowedVlans(iface.getAllowedVlans().union(vlans));
           } else if (ctx.REMOVE() != null) {
@@ -5821,7 +5827,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     _currentInterfaces.forEach(
         iface -> {
-          iface.setSwitchportMode(SwitchportMode.TRUNK);
+          if (iface.getSwitchportMode() == null) {
+            // NX-OS has these commands in show run all even for interfaces in other modes.
+            iface.setSwitchportMode(SwitchportMode.TRUNK);
+          }
           iface.setNativeVlan(vlanId);
         });
   }
