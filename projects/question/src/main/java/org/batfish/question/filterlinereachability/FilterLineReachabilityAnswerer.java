@@ -1,11 +1,14 @@
 package org.batfish.question.filterlinereachability;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CollectionUtil.toImmutableMap;
+import static org.batfish.question.filterlinereachability.AclEraser.erase;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityRows.createMetadata;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedAcls;
 import static org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.getReferencedInterfaces;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
@@ -16,6 +19,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -23,7 +27,6 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.common.util.CollectionUtil;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
@@ -56,7 +59,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
     SpecifierContext ctxt = _batfish.specifierContext(snapshot);
 
-    Map<String, Set<IpAccessList>> specifiedAcls = getSpecifiedFilters(question, ctxt);
+    Map<String, Set<String>> specifiedAcls = getSpecifiedFilters(question, ctxt);
 
     SortedMap<String, Configuration> configurations = _batfish.loadConfigurations(snapshot);
     List<AclSpecs> aclSpecs = getAclSpecs(configurations, specifiedAcls, answerRows);
@@ -68,7 +71,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
 
   private static final class AclNode {
 
-    private final class Dependency {
+    private static final class Dependency {
       public final AclNode dependency;
       public final Set<Integer> lineNums = new TreeSet<>();
 
@@ -204,25 +207,26 @@ public class FilterLineReachabilityAnswerer extends Answerer {
   }
 
   private static void createAclNode(
-      IpAccessList acl,
+      String aclName,
       Map<String, AclNode> aclNodeMap,
-      Map<String, IpAccessList> acls,
+      Map<String, Supplier<IpAccessList>> eraseAcls,
       HeaderSpaceSanitizer headerSpaceSanitizer,
       Set<String> nodeInterfaces) {
 
     // Create ACL node for current ACL
-    AclNode node = new AclNode(acl);
-    aclNodeMap.put(acl.getName(), node);
+    IpAccessList erasedAcl = eraseAcls.get(aclName).get();
+    AclNode node = new AclNode(erasedAcl);
+    aclNodeMap.put(aclName, node);
 
     // Go through lines and add dependencies
     int index = 0;
-    for (AclLine line : acl.getLines()) {
+    for (AclLine line : erasedAcl.getLines()) {
       boolean lineMarkedUnmatchable = false;
 
       // Find all references to other ACLs and record them
       Set<String> referencedAcls = getReferencedAcls(line);
       if (!referencedAcls.isEmpty()) {
-        if (!acls.keySet().containsAll(referencedAcls)) {
+        if (!eraseAcls.keySet().containsAll(referencedAcls)) {
           // Not all referenced ACLs exist. Mark line as unmatchable.
           node.addUndefinedRef(index);
           lineMarkedUnmatchable = true;
@@ -232,11 +236,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
             if (referencedAclNode == null) {
               // Referenced ACL not yet recorded; recurse on it
               createAclNode(
-                  acls.get(referencedAclName),
-                  aclNodeMap,
-                  acls,
-                  headerSpaceSanitizer,
-                  nodeInterfaces);
+                  referencedAclName, aclNodeMap, eraseAcls, headerSpaceSanitizer, nodeInterfaces);
               referencedAclNode = aclNodeMap.get(referencedAclName);
             }
             // Referenced ACL has now been recorded; add dependency
@@ -325,17 +325,18 @@ public class FilterLineReachabilityAnswerer extends Answerer {
    * Collects the list of specified filters that we need to process, based on the nodes desired, the
    * filters desired, and whether generated filters are ignored
    */
-  static Map<String, Set<IpAccessList>> getSpecifiedFilters(
+  static Map<String, Set<String>> getSpecifiedFilters(
       FilterLineReachabilityQuestion question, SpecifierContext ctxt) {
     Set<String> specifiedNodes = question.nodeSpecifier().resolve(ctxt);
     FilterSpecifier filterSpecifier = question.getFilterSpecifier();
 
-    return CollectionUtil.toImmutableMap(
+    return toImmutableMap(
         specifiedNodes,
         Function.identity(),
         node ->
             filterSpecifier.resolve(node, ctxt).stream()
                 .filter(f -> !(question.getIgnoreComposites() && f.isComposite()))
+                .map(IpAccessList::getName)
                 .collect(ImmutableSet.toImmutableSet()));
   }
 
@@ -355,7 +356,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
   @VisibleForTesting
   public static List<AclSpecs> getAclSpecs(
       SortedMap<String, Configuration> configurations,
-      Map<String, Set<IpAccessList>> specifiedAcls,
+      Map<String, Set<String>> specifiedAcls,
       FilterLineReachabilityRows answer) {
     List<AclSpecs.Builder> aclSpecs = new ArrayList<>();
 
@@ -367,21 +368,25 @@ public class FilterLineReachabilityAnswerer extends Answerer {
     for (String hostname : configurations.keySet()) {
       if (specifiedAcls.containsKey(hostname)) {
         Configuration c = configurations.get(hostname);
-        Set<IpAccessList> acls = specifiedAcls.get(hostname);
+
+        // Erase TraceElements and VendorStructureIds from ACLs, so ACLs from different devices can
+        // be considered equivalent (VSIDs contain filenames).
+        Map<String, Supplier<IpAccessList>> erasedAcls =
+            toImmutableMap(
+                c.getIpAccessLists().values(),
+                IpAccessList::getName,
+                acl -> Suppliers.memoize(() -> erase(acl)));
+
+        Set<String> acls = specifiedAcls.get(hostname);
         HeaderSpaceSanitizer headerSpaceSanitizer = new HeaderSpaceSanitizer(c.getIpSpaces());
         Map<String, Interface> nodeInterfaces = c.getAllInterfaces();
 
         // Build graph of AclNodes containing pointers to dependencies and referencing nodes
         Map<String, AclNode> aclNodeMap = new TreeMap<>();
-        for (IpAccessList acl : acls) {
-          String aclName = acl.getName();
+        for (String aclName : acls) {
           if (!aclNodeMap.containsKey(aclName)) {
             createAclNode(
-                acl,
-                aclNodeMap,
-                c.getIpAccessLists(),
-                headerSpaceSanitizer,
-                nodeInterfaces.keySet());
+                aclName, aclNodeMap, erasedAcls, headerSpaceSanitizer, nodeInterfaces.keySet());
           }
         }
 
@@ -398,8 +403,7 @@ public class FilterLineReachabilityAnswerer extends Answerer {
         }
 
         // For each ACL specified by aclRegex, create a CanonicalAcl with its dependencies
-        for (IpAccessList acl : acls) {
-          String aclName = acl.getName();
+        for (String aclName : acls) {
           AclNode node = aclNodeMap.get(aclName);
 
           // Finalize interfaces. If ACL references all interfaces on the device, keep interfaces
