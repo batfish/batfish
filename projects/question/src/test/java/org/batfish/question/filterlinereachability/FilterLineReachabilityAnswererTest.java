@@ -203,7 +203,7 @@ public class FilterLineReachabilityAnswererTest {
     // we should get the one acl we put in otherwise
     assertThat(
         getSpecifiedFilters(new FilterLineReachabilityQuestion((String) null, null, false), ctxt),
-        equalTo(ImmutableMap.of("c1", ImmutableSet.of(aclGenerated))));
+        equalTo(ImmutableMap.of("c1", ImmutableSet.of(aclGenerated.getName()))));
   }
 
   @Test
@@ -837,13 +837,13 @@ public class FilterLineReachabilityAnswererTest {
 
   private List<AclSpecs> getAclSpecs(Set<String> configNames) {
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of("c1", _c1, "c2", _c2);
-    Map<String, Set<IpAccessList>> acls =
+    Map<String, Set<String>> acls =
         CollectionUtil.toImmutableMap(
             configs,
             Entry::getKey,
             entry ->
                 configNames.contains(entry.getKey())
-                    ? ImmutableSet.copyOf(entry.getValue().getIpAccessLists().values())
+                    ? ImmutableSet.copyOf(entry.getValue().getIpAccessLists().keySet())
                     : ImmutableSet.of());
     return FilterLineReachabilityAnswerer.getAclSpecs(
         configs, acls, new FilterLineReachabilityRows());
