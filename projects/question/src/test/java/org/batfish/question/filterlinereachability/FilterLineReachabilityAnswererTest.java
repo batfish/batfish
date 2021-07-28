@@ -1,6 +1,7 @@
 package org.batfish.question.filterlinereachability;
 
 import static org.batfish.datamodel.ExprAclLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
@@ -52,10 +54,12 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.AclSpecs;
 import org.batfish.question.filterlinereachability.FilterLineReachabilityUtils.BlockingProperties;
 import org.batfish.specifier.MockSpecifierContext;
 import org.batfish.specifier.SpecifierContext;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -126,7 +130,36 @@ public class FilterLineReachabilityAnswererTest {
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1", "c2"));
+    assertThat(aclSpecs, hasSize(1));
+  }
 
+  @Test
+  public void testIgnoreTraceElements() {
+    // acl1 and acl2 are identical up to trace elements; should result in a single AclSpec
+    _aclb.setLines(ImmutableList.of(rejecting(TrueExpr.INSTANCE))).build();
+    _aclb2
+        .setLines(ImmutableList.of(rejecting(new TrueExpr(TraceElement.of("always reject")))))
+        .build();
+
+    List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1", "c2"));
+    assertThat(aclSpecs, hasSize(1));
+  }
+
+  @Test
+  public void testIgnoreVendorStructureIds() {
+    // acl1 and acl2 are identical up to VendorStructureIds; should result in a single AclSpec
+    _aclb.setLines(ImmutableList.of(rejecting(TrueExpr.INSTANCE))).build();
+    _aclb2
+        .setLines(
+            ImmutableList.of(
+                rejecting()
+                    .setMatchCondition(TrueExpr.INSTANCE)
+                    .setVendorStructureId(
+                        new VendorStructureId("filename", "structureType", "structureName"))
+                    .build()))
+        .build();
+
+    List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1", "c2"));
     assertThat(aclSpecs, hasSize(1));
   }
 
