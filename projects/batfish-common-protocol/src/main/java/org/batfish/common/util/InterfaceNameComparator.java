@@ -14,9 +14,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
- * A {@link Comparator Comparator<String>} implementation for interface names, biased towards Cisco-
- * and Juniper-like names that are a mix of letters and numbers, where numbers designate different
- * physical modules in some way.
+ * A {@link Comparator} implementation for interface names, biased towards Cisco- and Juniper-like
+ * names that are a mix of letters and numbers, where numbers designate different physical modules
+ * in some way.
  */
 @ParametersAreNonnullByDefault
 public final class InterfaceNameComparator implements Comparator<String>, Serializable {
