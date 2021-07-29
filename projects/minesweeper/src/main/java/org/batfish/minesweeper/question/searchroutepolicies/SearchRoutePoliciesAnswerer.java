@@ -29,6 +29,7 @@ import net.sf.javabdd.BDDFactory;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
+import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.plugin.IBatfish;
@@ -425,6 +426,20 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return positiveConstraints.diffWith(negativeConstraints);
   }
 
+  private BDD protocolSetToBDD(
+      Set<RoutingProtocol> protocolSet,
+      BDDFiniteDomain<RoutingProtocol> protocolBDD,
+      BDDFactory factory) {
+    if (protocolSet.isEmpty()) {
+      return factory.one();
+    } else {
+      return factory.orAll(
+          protocolSet.stream()
+              .map(protocolBDD::getConstraintForValue)
+              .collect(Collectors.toList()));
+    }
+  }
+
   // Produce a BDD that represents all truth assignments for the given BDDRoute r that satisfy the
   // given set of BgpRouteConstraints.  The way to represent next-hop constraints depends on whether
   // r is an input or output route, so the outputRoute flag distinguishes these cases.
@@ -453,6 +468,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             r.getAsPathRegexAtomicPredicates(),
             r.getFactory()));
     result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
+    result.andWith(
+        protocolSetToBDD(constraints.getProtocol(), r.getProtocolHistory(), r.getFactory()));
 
     return result;
   }
