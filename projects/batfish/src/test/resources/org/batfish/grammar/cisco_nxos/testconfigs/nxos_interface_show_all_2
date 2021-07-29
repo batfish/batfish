@@ -1,0 +1,75 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+version 7.0(3)I7(6) Bios:version 07.65
+switchname nxos_interface_show_all_2
+!
+interface Ethernet1/2
+  lacp port-priority 32768
+  lacp rate normal
+  lldp transmit
+  lldp receive
+  !TODO lldp dcbx version auto
+  no lldp tlv-set management-address 0.0.0.0
+  no lldp tlv-set management-address ::
+  no lldp tlv-set vlan
+  cdp enable
+  switchport
+  switchport mode access
+  no switchport monitor
+  no switchport dot1q ethertype
+  no switchport priority extend
+  switchport access vlan 17
+  switchport trunk native vlan 1
+  !TODO switchport trunk allow-multi-tag
+  !TODO no switchport vlan mapping enable
+  priority-flow-control mode auto
+  !TODO priority-flow-control watch-dog-interval off
+  spanning-tree port-priority 128
+  spanning-tree cost auto
+  spanning-tree link-type auto
+  spanning-tree port type normal
+  spanning-tree bpduguard enable
+  no spanning-tree bpdufilter
+  flowcontrol receive off
+  flowcontrol send off
+  delay 1
+  snmp trap link-status
+  mtu 1500
+  link debounce time 100
+  no beacon
+  !TODO no link transmit reset-skip
+  speed 1000
+  duplex auto
+  !TODO fec auto
+  !TODO dfe-tuning-delay 100
+  !TODO no port-type fabric
+  negotiate auto
+  logging event port link-status default
+  logging event port trunk-status default
+  storm-control broadcast level 10.00
+  storm-control multicast level 10.00
+  storm-control unicast level 100.00
+  storm-control action shutdown
+  storm-control action trap
+  bandwidth 1000000
+  no bandwidth inherit
+  load-interval counter 1 30
+  load-interval counter 2 300
+  no load-interval counter 3
+  no switchport block multicast
+  no switchport block unicast
+  !TODO no switchport mac-learn disable
+  no shutdown lan
+  no udld enable
+  !TODO no switchport autostate exclude
+  !TODO no ipv6 nd raguard
+  no ip dhcp snooping trust
+  !TODO no ip dhcp option82 suboption circuit-id
+  !TODO no ip dhcp snooping limit rate
+  no ip arp inspection trust
+  !TODO ip arp inspection limit rate 15 burst interval 5
+  no ip verify source dhcp-snooping-vlan
+  no shutdown
+  description Made it to the end of Ethernet1/2
+!
+boot nxos bootflash:/nxos.7.0.3.I7.6.bin
