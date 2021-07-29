@@ -73,21 +73,11 @@ public interface TopologyProvider {
    *
    * @return computed topology, or {@link Optional#empty()} if physical layer-1 topology is absent.
    */
-  @Nonnull
-  Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot);
-
-  /**
-   * Computes the {@link Layer1Topology} with respect to layer-1 physical edges for a given {@link
-   * NetworkSnapshot}. The layer-1 physical topology is constructed from 1) the raw layer-1 physical
-   * edges input by the user by trimming the edges whose nodes do not correspond to active physical
-   * interfaces, and adding the reverse edge for asymmetric edges; and 2) the synthesized layer-1
-   * physical topology.
-   *
-   * @return computed topology, or {@link Optional#empty()} if both raw and synthesized layer-1
-   *     physical topology is absent
-   */
-  @Nonnull
-  Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot);
+  default @Nonnull Optional<Layer1Topology> getLayer1LogicalTopology(
+      NetworkSnapshot networkSnapshot) {
+    return Optional.of(getLayer1Topologies(networkSnapshot).getActiveLogicalL1())
+        .filter(l1 -> !l1.isEmpty());
+  }
 
   /**
    * Returns the layer-3 {@link Topology} corresponding to the converged {@link
@@ -95,6 +85,10 @@ public interface TopologyProvider {
    */
   @Nonnull
   Topology getLayer3Topology(NetworkSnapshot snapshot);
+
+  /** Returns the {@link Layer1Topologies} for the given snapshot. */
+  @Nonnull
+  Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot);
 
   /** Returns the {@link L3Adjacencies} for the given snapshot. */
   @Nonnull
@@ -114,8 +108,11 @@ public interface TopologyProvider {
    * Return the {@link Layer1Topology} synthesized internally (e.g., during AWS modeling), or {@link
    * Optional#empty()} if no such data exists.
    */
-  @Nonnull
-  Optional<Layer1Topology> getSynthesizedLayer1Topology(NetworkSnapshot networkSnapshot);
+  default @Nonnull Optional<Layer1Topology> getSynthesizedLayer1Topology(
+      NetworkSnapshot networkSnapshot) {
+    return Optional.of(getLayer1Topologies(networkSnapshot).getSynthesizedL1())
+        .filter(l1 -> !l1.isEmpty());
+  }
 
   /**
    * Return the raw layer-3 {@link Topology} for a given {@link NetworkSnapshot}. The layer-3

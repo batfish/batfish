@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.common.topology.L3Adjacencies;
-import org.batfish.common.topology.Layer1Topology;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.VxlanTopology;
@@ -20,7 +20,7 @@ import org.batfish.datamodel.vxlan.VxlanTopology;
  */
 public class BroadcastL3Adjacencies implements L3Adjacencies {
   public static BroadcastL3Adjacencies create(
-      Layer1Topology l1, VxlanTopology vxlan, Map<String, Configuration> configs) {
+      Layer1Topologies l1, VxlanTopology vxlan, Map<String, Configuration> configs) {
     assert vxlan != null; // suppress unused warning.
     L3AdjacencyComputer adj = new L3AdjacencyComputer(configs, l1);
     return new BroadcastL3Adjacencies(adj.findAllBroadcastDomains());

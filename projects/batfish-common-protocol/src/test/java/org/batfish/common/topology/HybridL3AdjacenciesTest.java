@@ -202,10 +202,7 @@ public class HybridL3AdjacenciesTest {
     new EqualsTester()
         .addEqualityGroup(
             HybridL3Adjacencies.create(
-                Layer1Topology.EMPTY,
-                Layer1Topology.EMPTY,
-                Layer2Topology.EMPTY,
-                ImmutableMap.of()),
+                Layer1Topologies.empty(), Layer2Topology.EMPTY, ImmutableMap.of()),
             HybridL3Adjacencies.createForTesting(
                 ImmutableSet.of(),
                 Layer2Topology.EMPTY,
