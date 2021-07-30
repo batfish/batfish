@@ -11,6 +11,7 @@ public class IpsecPeerConfigId {
 
   @Nonnull private String _hostName;
 
+  @SuppressWarnings("PMD.UnnecessaryCaseChange") // that's what we're asserting
   public IpsecPeerConfigId(@Nonnull String ipsecPeerConfigName, @Nonnull String hostName) {
     assert hostName.equals(hostName.toLowerCase());
     _ipsecPeerConfigName = ipsecPeerConfigName;

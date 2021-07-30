@@ -33,7 +33,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "javax.ws.rs:javax.ws.rs-api:2.1.1",
     "javax.xml.bind:jaxb-api:2.3.0",
     "junit:junit:4.12",
-    "net.sourceforge.pmd:pmd-java:6.23.0",
+    "net.sourceforge.pmd:pmd-java:6.36.0",
     "org.antlr:antlr4-runtime:4.7.2",
     "org.apache.commons:commons-collections4:4.4",
     "org.apache.commons:commons-configuration2:2.7",

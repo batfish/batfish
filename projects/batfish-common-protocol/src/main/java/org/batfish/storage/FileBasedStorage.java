@@ -799,6 +799,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  @SuppressWarnings("PMD.UseTryWithResources") // syntax is awkward to close stream you don't open
   public void storeNetworkObject(InputStream inputStream, NetworkId networkId, String key)
       throws IOException {
     Path objectPath = getNetworkObjectPath(networkId, key);
@@ -826,6 +827,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  @SuppressWarnings("PMD.UseTryWithResources") // syntax is awkward to close stream you don't open
   public void storeNetworkBlob(InputStream inputStream, NetworkId networkId, String key)
       throws IOException {
     Path objectPath = getNetworkBlobPath(networkId, key);
@@ -873,6 +875,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
+  @SuppressWarnings("PMD.UseTryWithResources") // syntax is awkward to close stream you don't open
   public void storeSnapshotObject(
       InputStream inputStream, NetworkId networkId, SnapshotId snapshotId, String key)
       throws IOException {
