@@ -77,8 +77,9 @@ public abstract class BaseSettings {
       }
     } else {
       // Find the default properties file.
-      propertiesUrl =
-          defaultPropertyLocatorClass.getClassLoader().getResource(defaultPropertyFilename);
+      @SuppressWarnings("PMD.UseProperClassLoader") // intentional
+      URL url = defaultPropertyLocatorClass.getClassLoader().getResource(defaultPropertyFilename);
+      propertiesUrl = url;
     }
     try {
       return new Configurations().properties(propertiesUrl);

@@ -35,6 +35,7 @@ public final class SnapshotRuntimeData {
     }
 
     @VisibleForTesting
+    @SuppressWarnings("PMD.UnnecessaryCaseChange") // that's what we're checking
     public Builder setRuntimeData(@Nonnull Map<String, RuntimeData> runtimeData) {
       // For internal/test use only; shouldn't receive non-canonical hostnames
       checkArgument(
@@ -137,6 +138,7 @@ public final class SnapshotRuntimeData {
 
   @JsonIgnore
   @Nonnull
+  @SuppressWarnings("PMD.UnnecessaryCaseChange") // that's what we're asserting
   public RuntimeData getRuntimeData(String hostname) {
     assert hostname.equals(hostname.toLowerCase());
     return _runtimeData.getOrDefault(hostname, RuntimeData.EMPTY_RUNTIME_DATA);
