@@ -36,6 +36,8 @@
      <exclude name="UseVarargs"/>
   </rule>
 
+  <rule ref="category/java/codestyle.xml/ControlStatementBraces" />
+
   <rule ref="category/java/design.xml/UselessOverridingMethod"/>
 
   <rule ref="category/java/errorprone.xml">
