@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
-import org.batfish.common.bdd.BDDFiniteDomain;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
@@ -334,10 +333,7 @@ public class TransferBDD {
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
       Set<RoutingProtocol> rps = mp.getProtocols();
-      BDDFiniteDomain<RoutingProtocol> rpBDDFD = _originalRoute.getProtocolHistory();
-      BDD matchRPBDD =
-          factory.orAll(
-              rps.stream().map(rpBDDFD::getConstraintForValue).collect(Collectors.toList()));
+      BDD matchRPBDD = _originalRoute.anyProtocolIn(rps);
       return result.setReturnValueBDD(matchRPBDD);
 
     } else if (expr instanceof MatchPrefixSet) {

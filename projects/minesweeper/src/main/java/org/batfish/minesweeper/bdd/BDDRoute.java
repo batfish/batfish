@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -128,6 +129,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private final BDDFiniteDomain<RoutingProtocol> _protocolHistory;
 
   private BDDInteger _tag;
+
+  public static final Set<RoutingProtocol> ALL_BGP_PROTOCOLS =
+      ImmutableSet.of(RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
 
   /**
    * A constructor that obtains the number of atomic predicates for community and AS-path regexes
@@ -271,10 +275,18 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return factory.orAll(_communityAtomicPredicates);
   }
 
+  public BDD anyProtocolIn(Set<RoutingProtocol> protocols) {
+    return factory.orAll(
+        protocols.stream()
+            .map(_protocolHistory::getConstraintForValue)
+            .collect(Collectors.toList()));
+  }
+
   /**
-   * Not all assignments to the BDD variables that make up a BDDRoute represent valid routes. This
-   * method produces constraints that well-formed routes must satisfy, represented as a BDD. It is
-   * useful when the goal is to produce concrete example routes from a BDDRoute, for instance.
+   * Not all assignments to the BDD variables that make up a BDDRoute represent valid BGP routes.
+   * This method produces constraints that well-formed BGP routes must satisfy, represented as a
+   * BDD. It is useful when the goal is to produce concrete example BGP routes from a BDDRoute, for
+   * instance.
    *
    * <p>Note that it does not suffice to enforce these constraints as part of symbolic route
    * analysis (see {@link TransferBDD}). That analysis computes a BDD representing the input routes
@@ -286,8 +298,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    *
    * @return the constraints
    */
-  public BDD wellFormednessConstraints() {
+  public BDD bgpWellFormednessConstraints() {
 
+    // the protocol should be one of the ones allowed in a BgpRoute
+    BDD protocolConstraint = anyProtocolIn(ALL_BGP_PROTOCOLS);
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
     // at most one AS-path regex atomic predicate should be true, since by construction their
@@ -306,7 +320,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD nextHopConstraint =
         _nextHop.geq(Ip.ZERO.asLong() + 1).and(_nextHop.leq(Ip.MAX.asLong() - 1));
 
-    return prefLenConstraint.andWith(asPathConstraint).andWith(nextHopConstraint);
+    return protocolConstraint
+        .andWith(prefLenConstraint)
+        .andWith(asPathConstraint)
+        .andWith(nextHopConstraint);
   }
 
   /*

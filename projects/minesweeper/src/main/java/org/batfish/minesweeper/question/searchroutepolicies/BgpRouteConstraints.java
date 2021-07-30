@@ -18,6 +18,7 @@ import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.minesweeper.bdd.BDDRoute;
 
 /** A set of constraints on a BGP route announcement. */
 @ParametersAreNonnullByDefault
@@ -56,9 +57,6 @@ public class BgpRouteConstraints {
 
   private static final LongSpace THIRTY_TWO_BIT_RANGE =
       LongSpace.builder().including(Range.closed(0L, 4294967295L)).build();
-
-  private static final Set<RoutingProtocol> ALLOWED_PROTOCOLS =
-      ImmutableSet.of(RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
 
   @JsonCreator
   private BgpRouteConstraints(
@@ -139,7 +137,7 @@ public class BgpRouteConstraints {
 
   @VisibleForTesting
   static boolean isAllowedProtocolSet(Set<RoutingProtocol> protocol) {
-    return ALLOWED_PROTOCOLS.containsAll(protocol);
+    return BDDRoute.ALL_BGP_PROTOCOLS.containsAll(protocol);
   }
 
   public static Builder builder() {

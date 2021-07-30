@@ -447,7 +447,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BgpRouteConstraints constraints, BDDRoute r, boolean outputRoute, Graph g) {
 
     // make sure the model we end up getting corresponds to a valid route
-    BDD result = r.wellFormednessConstraints();
+    BDD result = r.bgpWellFormednessConstraints();
 
     result.andWith(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
