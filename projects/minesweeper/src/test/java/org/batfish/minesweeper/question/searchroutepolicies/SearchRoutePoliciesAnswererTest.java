@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Range;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.NetworkSnapshot;
@@ -1051,6 +1052,7 @@ public class SearchRoutePoliciesAnswererTest {
     LongSpace med = LongSpace.builder().including(56L).build();
     LongSpace tag = LongSpace.builder().including(67L).build();
     Prefix nextHop = Prefix.parse("1.0.0.0/8");
+    Set<RoutingProtocol> protocol = ImmutableSet.of(RoutingProtocol.AGGREGATE);
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
@@ -1061,6 +1063,7 @@ public class SearchRoutePoliciesAnswererTest {
                 .setMed(med)
                 .setTag(tag)
                 .setNextHopIp(nextHop)
+                .setProtocol(protocol)
                 .build(),
             EMPTY_CONSTRAINTS,
             HOSTNAME,
@@ -1078,7 +1081,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setTag(67)
             .setOriginatorIp(Ip.ZERO)
             .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP)
+            .setProtocol(RoutingProtocol.AGGREGATE)
             .setNextHopIp(Ip.parse("1.0.0.0"))
             .build();
 

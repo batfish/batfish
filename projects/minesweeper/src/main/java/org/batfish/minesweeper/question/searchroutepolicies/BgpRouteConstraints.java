@@ -126,7 +126,7 @@ public class BgpRouteConstraints {
     checkArgument(is32BitRange(med), "Invalid value for MED: %s", med);
     checkArgument(is32BitRange(tag), "Invalid value for tag: %s", tag);
 
-    checkArgument(isAllowedProtocolSet(protocol), "Invalid value for protocol: %s", protocol);
+    checkArgument(isBgpProtocol(protocol), "Invalid value for protocol: %s", protocol);
   }
 
   /** Check that the given long space only contains 32-bit integers. */
@@ -136,7 +136,7 @@ public class BgpRouteConstraints {
   }
 
   @VisibleForTesting
-  static boolean isAllowedProtocolSet(Set<RoutingProtocol> protocol) {
+  static boolean isBgpProtocol(Set<RoutingProtocol> protocol) {
     return BDDRoute.ALL_BGP_PROTOCOLS.containsAll(protocol);
   }
 

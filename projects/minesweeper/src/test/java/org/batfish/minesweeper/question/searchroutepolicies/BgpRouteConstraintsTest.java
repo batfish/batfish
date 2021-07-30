@@ -6,10 +6,13 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import com.google.common.testing.EqualsTester;
+import java.util.Set;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.LongSpace.Builder;
+import org.batfish.datamodel.RoutingProtocol;
 import org.junit.Test;
 
 /** Tests for {@link BgpRouteConstraints}. */
@@ -75,5 +78,16 @@ public class BgpRouteConstraintsTest {
     assertTrue(BgpRouteConstraints.is32BitRange(s1));
     assertFalse(BgpRouteConstraints.is32BitRange(s2));
     assertFalse(BgpRouteConstraints.is32BitRange(s3));
+  }
+
+  @Test
+  public void testIsAllowedProtocolSet() {
+    Set<RoutingProtocol> s1 = ImmutableSet.of();
+    Set<RoutingProtocol> s2 =
+        ImmutableSet.of(RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
+    Set<RoutingProtocol> s3 = ImmutableSet.of(RoutingProtocol.BGP, RoutingProtocol.OSPF);
+    assertTrue(BgpRouteConstraints.isBgpProtocol(s1));
+    assertTrue(BgpRouteConstraints.isBgpProtocol(s2));
+    assertFalse(BgpRouteConstraints.isBgpProtocol(s3));
   }
 }
