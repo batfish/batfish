@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -737,7 +738,7 @@ public class L3AdjacencyComputerTest {
       L3AdjacencyComputer l3 =
           new L3AdjacencyComputer(
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              Layer1Topology.EMPTY);
+              Layer1Topologies.empty());
       Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
       assertThat("all interfaces have a domain", domains, aMapWithSize(3));
       assertThat(
@@ -745,12 +746,14 @@ public class L3AdjacencyComputerTest {
     }
     {
       // With L1 topology, only connected interfaces in same domain.
+      Layer1Topology physical =
+          new Layer1Topology(
+              new Layer1Edge(
+                  n1.getHostname(), n1.getInterface(), n3.getHostname(), n3.getInterface()));
       L3AdjacencyComputer l3 =
           new L3AdjacencyComputer(
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              new Layer1Topology(
-                  new Layer1Edge(
-                      n1.getHostname(), n1.getInterface(), n3.getHostname(), n3.getInterface())));
+              new Layer1Topologies(physical, Layer1Topology.EMPTY, physical, physical));
       Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
       assertThat("all interfaces have a domain", domains, aMapWithSize(3));
       assertThat("connected ifaces in same domain", domains.get(n1), equalTo(domains.get(n3)));
@@ -765,7 +768,7 @@ public class L3AdjacencyComputerTest {
       L3AdjacencyComputer l3 =
           new L3AdjacencyComputer(
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              Layer1Topology.EMPTY);
+              Layer1Topologies.empty());
       Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
       assertThat("all interfaces have a domain", domains, aMapWithSize(3));
       assertThat(

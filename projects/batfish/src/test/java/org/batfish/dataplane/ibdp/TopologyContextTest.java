@@ -12,10 +12,10 @@ import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.NetworkBuilder;
 import com.google.common.graph.ValueGraphBuilder;
 import com.google.common.testing.EqualsTester;
-import java.util.Optional;
 import org.batfish.common.topology.GlobalBroadcastNoPointToPoint;
 import org.batfish.common.topology.HybridL3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TunnelTopology;
@@ -81,28 +81,24 @@ public final class TopologyContextTest {
         .addEqualityGroup(builder.setIsisTopology(new IsisTopology(isisTopology)).build())
         .addEqualityGroup(
             builder
-                .setLayer1LogicalTopology(
-                    Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
+                .setLayer1Topologies(
+                    new Layer1Topologies(
+                        new Layer1Topology(new Layer1Edge("a", "b", "c", "d")),
+                        Layer1Topology.EMPTY,
+                        Layer1Topology.EMPTY,
+                        Layer1Topology.EMPTY))
                 .build())
         .addEqualityGroup(
             builder
                 .setL3Adjacencies(
                     HybridL3Adjacencies.create(
-                        Layer1Topology.EMPTY,
-                        Layer1Topology.EMPTY,
-                        Layer2Topology.EMPTY,
-                        ImmutableMap.of()))
+                        Layer1Topologies.empty(), Layer2Topology.EMPTY, ImmutableMap.of()))
                 .build())
         .addEqualityGroup(
             builder
                 .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
                 .build())
         .addEqualityGroup(builder.setOspfTopology(new OspfTopology(ospfTopology)).build())
-        .addEqualityGroup(
-            builder
-                .setRawLayer1PhysicalTopology(
-                    Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
-                .build())
         .addEqualityGroup(
             builder
                 .setTunnelTopology(
@@ -144,13 +140,15 @@ public final class TopologyContextTest {
         .setEigrpTopology(new EigrpTopology(eigrpTopology))
         .setIsisTopology(new IsisTopology(isisTopology))
         .setIpsecTopology(new IpsecTopology(ipsecTopology))
-        .setLayer1LogicalTopology(
-            Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
         .setL3Adjacencies(GlobalBroadcastNoPointToPoint.instance())
+        .setLayer1Topologies(
+            new Layer1Topologies(
+                new Layer1Topology(new Layer1Edge("a", "b", "c", "d")),
+                Layer1Topology.EMPTY,
+                Layer1Topology.EMPTY,
+                Layer1Topology.EMPTY))
         .setLayer3Topology(new Topology(ImmutableSortedSet.of(Edge.of("a", "b", "c", "d"))))
         .setOspfTopology(new OspfTopology(ospfTopology))
-        .setRawLayer1PhysicalTopology(
-            Optional.of(new Layer1Topology(new Layer1Edge("a", "b", "c", "d"))))
         .setTunnelTopology(
             TunnelTopology.builder()
                 .add(NodeInterfacePair.of("n1", "i1"), NodeInterfacePair.of("n2", "i2"))

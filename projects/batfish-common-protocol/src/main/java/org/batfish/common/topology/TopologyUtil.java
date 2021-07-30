@@ -147,93 +147,6 @@ public final class TopologyUtil {
     }
   }
 
-  private static @Nonnull Layer1Node canonicalize(
-      Layer1Node node, Map<String, Configuration> configurations) {
-    Configuration c = getConfiguration(node, configurations);
-    if (c == null) {
-      // Host unknown, return node unchanged.
-      return node;
-    }
-    // Find a matching interface on the host, perhaps with a slightly different interface name.
-    // If found, create a new Layer1Node with that name, else return original.
-    return InterfaceUtil.matchingInterface(node.getInterfaceName(), c)
-        .map(i -> new Layer1Node(c.getHostname(), i.getName()))
-        .orElse(node);
-  }
-
-  /**
-   * Returns a new {@link Layer1Topology} where every node with an interface in non-canonical form
-   * (aka, not appearing in its corresponding {@link Configuration device's} {@link
-   * Configuration#getAllInterfaces()}) has a name that does appear.
-   *
-   * <p>Does not remove any non-existent nodes (hostname missing, or no canonical interface found).
-   *
-   * @see #cleanLayer1PhysicalTopology(Layer1Topology, Map)
-   */
-  public static Layer1Topology canonicalizeLayer1TopologyNodes(
-      @Nonnull Layer1Topology topology, @Nonnull Map<String, Configuration> configurations) {
-    Map<Layer1Node, Layer1Node> replacements = new HashMap<>();
-    for (Layer1Node original : topology.getGraph().nodes()) {
-      Layer1Node canonical = canonicalize(original, configurations);
-      if (!canonical.equals(original)) {
-        replacements.put(original, canonical);
-      }
-    }
-    if (replacements.isEmpty()) {
-      return topology;
-    }
-    return new Layer1Topology(
-        topology.getGraph().edges().stream()
-            .map(
-                edge ->
-                    new Layer1Edge(
-                        replacements.getOrDefault(edge.getNode1(), edge.getNode1()),
-                        replacements.getOrDefault(edge.getNode2(), edge.getNode2())))
-            .collect(ImmutableSet.toImmutableSet()));
-  }
-
-  /**
-   * Cleans {@link Layer1Topology}, by removing non-existent interfaces and making connectivity
-   * symmetric.
-   */
-  public static @Nonnull Layer1Topology cleanLayer1PhysicalTopology(
-      @Nonnull Layer1Topology rawLayer1Topology,
-      @Nonnull Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<Layer1Edge> edges = ImmutableSet.builder();
-    canonicalizeLayer1TopologyNodes(rawLayer1Topology, configurations).getGraph().edges().stream()
-        .filter(
-            edge -> {
-              Interface i1 = getInterface(edge.getNode1(), configurations);
-              Interface i2 = getInterface(edge.getNode2(), configurations);
-              return i1 != null && i2 != null && i1.getActive() && i2.getActive();
-            })
-        .forEach(
-            edge -> {
-              edges.add(edge);
-              edges.add(edge.reverse());
-            });
-    /* Filter out inactive interfaces */
-    return new Layer1Topology(edges.build());
-  }
-
-  /**
-   * Takes the union of two {@link Optional}s containing {@link Layer1Topology}. If either topology
-   * is not present, the other is returned. If both are present, the returned topology is the union
-   * of the edges in the two.
-   */
-  public static @Nonnull Optional<Layer1Topology> unionLayer1PhysicalTopologies(
-      Optional<Layer1Topology> topology1, Optional<Layer1Topology> topology2) {
-    if (!topology1.isPresent()) {
-      return topology2;
-    }
-    if (!topology2.isPresent()) {
-      return topology1;
-    }
-    return Optional.of(
-        new Layer1Topology(
-            Sets.union(topology1.get().getGraph().edges(), topology2.get().getGraph().edges())));
-  }
-
   private static void computeLayer2EdgesForLayer1Edge(
       @Nonnull Layer1Edge layer1Edge,
       @Nonnull Map<String, Configuration> configurations,
@@ -437,8 +350,7 @@ public final class TopologyUtil {
       @Nonnull Layer1Topology layer1LogicalTopology,
       VxlanTopology vxlanTopology,
       @Nonnull Map<String, Configuration> configurations) {
-    if (layer1LogicalTopology.getGraph().edges().isEmpty()
-        && vxlanTopology.getGraph().edges().isEmpty()) {
+    if (layer1LogicalTopology.isEmpty() && vxlanTopology.getGraph().edges().isEmpty()) {
       return Layer2Topology.EMPTY;
     }
     Layer2Topology.Builder l2TopologyBuilder = Layer2Topology.builder();
@@ -619,11 +531,6 @@ public final class TopologyUtil {
     return configurations.get(layer1Node.getHostname());
   }
 
-  private static @Nullable Configuration getConfiguration(
-      Layer2Node layer2Node, Map<String, Configuration> configurations) {
-    return configurations.get(layer2Node.getHostname());
-  }
-
   public static @Nullable Interface getInterface(
       @Nonnull Layer1Node layer1Node, @Nonnull Map<String, Configuration> configurations) {
     Configuration c = getConfiguration(layer1Node, configurations);
@@ -631,15 +538,6 @@ public final class TopologyUtil {
       return null;
     }
     return c.getAllInterfaces().get(layer1Node.getInterfaceName());
-  }
-
-  public static @Nullable Interface getInterface(
-      @Nonnull Layer2Node layer2Node, @Nonnull Map<String, Configuration> configurations) {
-    Configuration c = getConfiguration(layer2Node, configurations);
-    if (c == null) {
-      return null;
-    }
-    return c.getAllInterfaces().get(layer2Node.getInterfaceName());
   }
 
   private TopologyUtil() {}
@@ -805,15 +703,6 @@ public final class TopologyUtil {
         // Cisco's cross-VRF NAT interfaces.
         && edge.getInt1().startsWith("vasi")
         && edge.getInt2().startsWith("vasi");
-  }
-
-  public static @Nonnull Layer1Topology computeLayer1LogicalTopology(
-      Layer1Topology layer1PhysicalTopology, Map<String, Configuration> configurations) {
-    return new Layer1Topology(
-        layer1PhysicalTopology.getGraph().edges().stream()
-            .map(pEdge -> pEdge.toLogicalEdge(NetworkConfigurations.of(configurations)))
-            .filter(Objects::nonNull)
-            .collect(ImmutableSet.toImmutableSet()));
   }
 
   /**
