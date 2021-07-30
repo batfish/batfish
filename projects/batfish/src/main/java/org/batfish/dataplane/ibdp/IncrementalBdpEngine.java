@@ -151,6 +151,7 @@ final class IncrementalBdpEngine {
             false,
             true,
             trEngCurrentL3Topology,
+            partialDataplane.getFibs(),
             currentTopologyContext.getL3Adjacencies());
 
     // Update L3 adjacencies if necessary.

@@ -5,10 +5,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.Network;
 import com.google.common.graph.ValueGraphBuilder;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,9 +39,14 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Fib;
+import org.batfish.datamodel.FibEntry;
+import org.batfish.datamodel.FibForward;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LongSpace;
@@ -97,7 +106,7 @@ public final class BgpTopologyUtils {
   /**
    * Compute the BGP topology -- a network of {@link BgpPeerConfig}s connected by {@link
    * BgpSessionProperties}. See {@link #initBgpTopology(Map, Map, boolean, boolean,
-   * TracerouteEngine, L3Adjacencies)} for more details.
+   * TracerouteEngine, Map, L3Adjacencies)} for more details.
    *
    * @param configurations configuration keyed by hostname
    * @param ipOwners Ip owners (see {@link IpOwners#computeIpNodeOwners(Map, boolean)}
@@ -111,7 +120,8 @@ public final class BgpTopologyUtils {
       Map<Ip, Map<String, Set<String>>> ipOwners,
       boolean keepInvalid,
       L3Adjacencies l3Adjacencies) {
-    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, l3Adjacencies);
+    return initBgpTopology(
+        configurations, ipOwners, keepInvalid, false, null, ImmutableMap.of(), l3Adjacencies);
   }
 
   /**
@@ -139,6 +149,7 @@ public final class BgpTopologyUtils {
       boolean keepInvalid,
       boolean checkReachability,
       @Nullable TracerouteEngine tracerouteEngine,
+      Map<String, Map<String, Fib>> fibs,
       L3Adjacencies l3Adjacencies) {
     checkArgument(
         !checkReachability || !keepInvalid,
@@ -159,6 +170,8 @@ public final class BgpTopologyUtils {
        */
       MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
           ValueGraphBuilder.directed().allowsSelfLoops(false).build();
+      ImmutableSetMultimap.Builder<BgpPeerConfigId, Ip> dynamicLocalIps =
+          ImmutableSetMultimap.builder();
       for (Configuration node : configurations.values()) {
         String hostname = node.getHostname();
         for (Vrf vrf : node.getVrfs().values()) {
@@ -170,6 +183,8 @@ public final class BgpTopologyUtils {
           }
 
           // Active and dynamic peers
+          Fib fib =
+              Optional.ofNullable(fibs.get(hostname)).map(byVrf -> byVrf.get(vrfName)).orElse(null);
           for (Entry<Prefix, ? extends BgpPeerConfig> entry :
               Iterables.concat(
                   proc.getActiveNeighbors().entrySet(), proc.getPassiveNeighbors().entrySet())) {
@@ -181,10 +196,28 @@ public final class BgpTopologyUtils {
               continue;
             }
 
+            boolean isActive = bgpPeerConfig instanceof BgpActivePeerConfig;
             BgpPeerConfigId neighborID =
-                new BgpPeerConfigId(
-                    hostname, vrf.getName(), prefix, bgpPeerConfig instanceof BgpPassivePeerConfig);
+                new BgpPeerConfigId(hostname, vrf.getName(), prefix, !isActive);
             graph.addNode(neighborID);
+
+            // If local IP is null on an active peer, check for dynamically resolvable local IPs.
+            // These are IPs of interfaces that can be used to forward traffic to the peer address.
+            if (fib != null && isActive && bgpPeerConfig.getLocalIp() == null) {
+              Ip peerAddress = ((BgpActivePeerConfig) bgpPeerConfig).getPeerAddress();
+              if (peerAddress != null) {
+                fib.get(peerAddress).stream()
+                    .map(FibEntry::getAction)
+                    .filter(action -> action instanceof FibForward)
+                    .map(fibForward -> ((FibForward) fibForward).getInterfaceName())
+                    .map(forwardingIfaceName -> node.getActiveInterfaces().get(forwardingIfaceName))
+                    .filter(Objects::nonNull)
+                    .map(Interface::getConcreteAddress)
+                    .filter(Objects::nonNull)
+                    .map(ConcreteInterfaceAddress::getIp)
+                    .forEach(ip -> dynamicLocalIps.put(neighborID, ip));
+              }
+            }
           }
 
           // Unnumbered BGP peers: map of interface name to BgpUnnumberedPeerConfig
@@ -222,6 +255,7 @@ public final class BgpTopologyUtils {
                 networkConfigurations,
                 ipVrfOwners,
                 receivers,
+                dynamicLocalIps.build(),
                 checkReachability,
                 tracerouteEngine);
             break;
@@ -245,14 +279,21 @@ public final class BgpTopologyUtils {
       NetworkConfigurations nc,
       Map<Ip, Map<String, Set<String>>> ipOwners,
       Map<String, Multimap<String, BgpPeerConfigId>> receivers,
+      SetMultimap<BgpPeerConfigId, Ip> dynamicLocalIps,
       boolean checkReachability,
       TracerouteEngine tracerouteEngine) {
     BgpActivePeerConfig neighbor = nc.getBgpPointToPointPeerConfig(neighborId);
     if (neighbor == null
-        || neighbor.getLocalIp() == null
         || neighbor.getLocalAs() == null
         || neighbor.getPeerAddress() == null
         || neighbor.getRemoteAsns().isEmpty()) {
+      return;
+    }
+    Set<Ip> potentialLocalIps =
+        Optional.ofNullable(neighbor.getLocalIp())
+            .map(localIp -> (Set<Ip>) ImmutableSet.of(localIp))
+            .orElseGet(() -> dynamicLocalIps.get(neighborId));
+    if (potentialLocalIps.isEmpty()) {
       return;
     }
     // Find nodes that own the neighbor's peer address
@@ -271,22 +312,40 @@ public final class BgpTopologyUtils {
       }
       for (String vrf : vrfs) {
         receiversByVrf.get(vrf).stream()
-            .filter(
-                candidateId ->
-                    // If edge is already established (i.e., we already found that candidate can
-                    // initiate the session), don't bother checking in this direction
-                    !alreadyEstablished.contains(candidateId)
-                        // Ensure candidate has compatible local/remote IP, AS, & hostname
-                        && bgpCandidatePassesSanityChecks(neighborId, neighbor, candidateId, nc)
-                        // If checking reachability, ensure candidate is reachable
-                        && (!checkReachability
-                            // We initiate the session from the initiator to the listener since the
-                            // other direction will be checked once we pick up the listener as the
-                            // source. This is consistent with the directional nature of BGP graph.
-                            || initiateBgpSession(
-                                    neighborId, candidateId, neighbor, tracerouteEngine)
-                                .isSuccessful()))
-            .forEach(remoteId -> addEdges(neighbor, neighborId, remoteId, graph, nc));
+            // If edge is already established (i.e., we already found that candidate can
+            // initiate the session), don't bother checking in this direction
+            .filter(candidateId -> !alreadyEstablished.contains(candidateId))
+            .forEach(
+                candidateId -> {
+                  // Ensure candidate has compatible local/remote AS, isn't in same vrf as initiator
+                  BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
+                  if (!bgpCandidatePassesSanityChecks(
+                      neighborId, neighbor, candidateId, candidate)) {
+                    return;
+                  }
+                  // Check if neighbor has any feasible local IPs compatible with this candidate
+                  Set<Ip> feasibleLocalIpsForPeeringWithCandidate =
+                      getFeasibleLocalIps(potentialLocalIps, candidate);
+                  if (feasibleLocalIpsForPeeringWithCandidate.isEmpty()) {
+                    return;
+                  }
+                  if (!checkReachability) {
+                    feasibleLocalIpsForPeeringWithCandidate.forEach(
+                        ip -> addEdges(neighbor, neighborId, ip, candidateId, graph, nc));
+                  } else {
+                    initiateBgpSessions(
+                            neighborId,
+                            candidateId,
+                            neighbor,
+                            feasibleLocalIpsForPeeringWithCandidate,
+                            tracerouteEngine)
+                        .stream()
+                        .filter(BgpSessionInitiationResult::isSuccessful)
+                        .map(initiationResult -> initiationResult.getFlow().getSrcIp())
+                        .forEach(
+                            srcIp -> addEdges(neighbor, neighborId, srcIp, candidateId, graph, nc));
+                  }
+                });
       }
     }
   }
@@ -318,13 +377,15 @@ public final class BgpTopologyUtils {
                         peerNip,
                         NodeInterfacePair.of(
                             candidateId.getHostname(), candidateId.getPeerInterface())))
-        .forEach(remoteId -> addEdges(neighbor, neighborId, remoteId, graph, nc));
+        .forEach(
+            remoteId -> addEdges(neighbor, neighborId, neighbor.getLocalIp(), remoteId, graph, nc));
   }
 
   /** Adds edges in {@code graph} between the given {@link BgpPeerConfigId}s in both directions. */
   private static void addEdges(
       BgpPeerConfig p1,
       BgpPeerConfigId id1,
+      Ip p1LocalIp,
       BgpPeerConfigId id2,
       MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph,
       NetworkConfigurations networkConfigurations) {
@@ -341,6 +402,7 @@ public final class BgpTopologyUtils {
     BgpSessionProperties edgeToCandidate =
         BgpSessionProperties.from(
             p1,
+            p1LocalIp,
             remotePeer,
             false,
             asPair.getLocalAs(),
@@ -349,6 +411,7 @@ public final class BgpTopologyUtils {
     BgpSessionProperties edgeFromCandidate =
         BgpSessionProperties.from(
             p1,
+            p1LocalIp,
             remotePeer,
             true,
             asPair.getLocalAs(),
@@ -364,7 +427,7 @@ public final class BgpTopologyUtils {
    *
    * <ul>
    *   <li>is dynamic; or
-   *   <li>has no local IP (still viable because other peers could initiate a session with them); or
+   *   <li>has no local IP (still viable because local IP may be determined dynamically); or
    *   <li>has a local IP associated with the config's hostname, according to {@code ipOwners}
    * </ul>
    */
@@ -385,26 +448,28 @@ public final class BgpTopologyUtils {
   }
 
   /**
-   * Check if {@code candidateId} represents a candidate with a valid configuration and compatible
-   * local/remote AS and local/remote IP to peer with active peer {@code neighbor}.
+   * Check if {@code candidateId} represents a compatible candidate for {@code neighbor}:
+   *
+   * <ul>
+   *   <li>Candidate and neighbor must be in separate VRFs
+   *   <li>Candidate and neighbor must have matching local and remote ASNs
+   * </ul>
    */
   private static boolean bgpCandidatePassesSanityChecks(
       @Nonnull BgpPeerConfigId neighborId,
       @Nonnull BgpActivePeerConfig neighbor,
       @Nonnull BgpPeerConfigId candidateId,
-      @Nonnull NetworkConfigurations nc) {
+      @Nullable BgpPeerConfig candidate) {
     if (neighborId.getHostname().equals(candidateId.getHostname())
         && neighborId.getVrfName().equals(candidateId.getVrfName())) {
       // Do not let the same node/VRF peer with itself.
       return false;
     }
     // Ensure candidate exists and has compatible local and remote AS
-    BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     if (candidate == null) {
       return false;
     }
-    return bgpCandidateHasCompatibleAs(neighbor, candidate)
-        && bgpCandidateHasCompatibleIpOrPrefix(neighbor, candidate);
+    return bgpCandidateHasCompatibleAs(neighbor, candidate);
   }
 
   /**
@@ -424,23 +489,23 @@ public final class BgpTopologyUtils {
   }
 
   /**
-   * Returns if the candidate BGP peer has compatible IP (if active) or prefix (if dynamic).
+   * Returns the subset of {@code initiatorLocalIps} that would make the given {@link
+   * BgpActivePeerConfig neighbor} compatible with the potential remote {@link BgpPeerConfig
+   * candidate}. This subset may be empty, in which case the peering is not compatible.
    *
    * @throws IllegalArgumentException if the candidate is unnumbered
    */
-  public static boolean bgpCandidateHasCompatibleIpOrPrefix(
-      BgpActivePeerConfig bgpActivePeerConfig, BgpPeerConfig candidate) {
+  public static Set<Ip> getFeasibleLocalIps(Set<Ip> initiatorLocalIps, BgpPeerConfig candidate) {
     if (candidate instanceof BgpPassivePeerConfig) {
-      return ((BgpPassivePeerConfig) candidate)
-          .hasCompatibleRemotePrefix(bgpActivePeerConfig.getLocalIp());
+      BgpPassivePeerConfig passiveCandidate = (BgpPassivePeerConfig) candidate;
+      return initiatorLocalIps.stream()
+          .filter(passiveCandidate::hasCompatibleRemotePrefix)
+          .collect(ImmutableSet.toImmutableSet());
     } else if (candidate instanceof BgpActivePeerConfig) {
-      // If candidate has no local IP, we can still initiate unless session is EBGP single-hop.
-      return (Objects.equals(bgpActivePeerConfig.getPeerAddress(), candidate.getLocalIp())
-              || (candidate.getLocalIp() == null
-                  && BgpSessionProperties.getSessionType(bgpActivePeerConfig)
-                      != SessionType.EBGP_SINGLEHOP))
-          && Objects.equals(
-              bgpActivePeerConfig.getLocalIp(), ((BgpActivePeerConfig) candidate).getPeerAddress());
+      Ip candidatePeerAddress = ((BgpActivePeerConfig) candidate).getPeerAddress();
+      return candidatePeerAddress != null && initiatorLocalIps.contains(candidatePeerAddress)
+          ? ImmutableSet.of(candidatePeerAddress)
+          : ImmutableSet.of();
     }
     // Shouldn't be unnumbered
     throw new IllegalArgumentException(
@@ -472,95 +537,105 @@ public final class BgpTopologyUtils {
   }
 
   /**
-   * Initiates a TCP connection from the active BGP peer represented by {@code initiatorId} to its
-   * counterpart BGP peer represented by {@code listenerId}.
+   * Attempts to initiate a TCP connection from the active BGP peer represented by {@code
+   * initiatorId} to its counterpart BGP peer represented by {@code listenerId}.
    *
    * <p><b>Warning:</b> Notion of directionality is important here, we are assuming {@code
-   * initiator} is initiating the connection according to its local configuration
+   * initiator} is initiating the connection according to its local configuration.
    *
-   * <p>Assumes {@code initiator}'s local IP and peer address have already been confirmed nonnull.
+   * <p>Assumes {@code initiator}'s peer address have already been confirmed nonnull. {@code
+   * initiatorFeasibleLocalIps} is a set of IP addresses that the initiator may use as its local IP
+   * for initation.
    *
-   * @return The result of session initiation as a {@link BgpSessionInitiationResult} object.
+   * @return The results of session initiations for each feasible local IP as a list of {@link
+   *     BgpSessionInitiationResult}.
    */
-  public static BgpSessionInitiationResult initiateBgpSession(
+  public static List<BgpSessionInitiationResult> initiateBgpSessions(
       @Nonnull BgpPeerConfigId initiatorId,
       @Nonnull BgpPeerConfigId listenerId,
       @Nonnull BgpActivePeerConfig initiator,
+      @Nonnull Set<Ip> initiatorFeasibleLocalIps,
       @Nonnull TracerouteEngine tracerouteEngine) {
     assert initiatorId.getType() == BgpPeerConfigType.ACTIVE;
-    Flow flowFromSrc =
-        Flow.builder()
-            .setIpProtocol(IpProtocol.TCP)
-            .setTcpFlagsSyn(1)
-            .setIngressNode(initiatorId.getHostname())
-            .setIngressVrf(initiatorId.getVrfName())
-            .setSrcIp(initiator.getLocalIp())
-            .setDstIp(initiator.getPeerAddress())
-            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
-            .setDstPort(NamedPort.BGP.number())
-            .build();
+    ImmutableList.Builder<BgpSessionInitiationResult> initiationResults = ImmutableList.builder();
+    for (Ip potentialLocalIp : initiatorFeasibleLocalIps) {
+      Flow flowFromSrc =
+          Flow.builder()
+              .setIpProtocol(IpProtocol.TCP)
+              .setTcpFlagsSyn(1)
+              .setIngressNode(initiatorId.getHostname())
+              .setIngressVrf(initiatorId.getVrfName())
+              .setSrcIp(potentialLocalIp)
+              .setDstIp(initiator.getPeerAddress())
+              .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+              .setDstPort(NamedPort.BGP.number())
+              .build();
 
-    List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
-        tracerouteEngine
-            .computeTracesAndReverseFlows(ImmutableSet.of(flowFromSrc), false)
-            .get(flowFromSrc);
+      List<TraceAndReverseFlow> forwardTracesAndReverseFlows =
+          tracerouteEngine
+              .computeTracesAndReverseFlows(ImmutableSet.of(flowFromSrc), false)
+              .get(flowFromSrc);
 
-    boolean bgpSingleHop =
-        BgpSessionProperties.getSessionType(initiator) == SessionType.EBGP_SINGLEHOP;
+      // TODO Session should be eBGP single-hop if either initiator or listener is eBGP single-hop
+      boolean bgpSingleHop =
+          BgpSessionProperties.getSessionType(initiator) == SessionType.EBGP_SINGLEHOP;
 
-    List<TraceAndReverseFlow> reverseTraces =
-        forwardTracesAndReverseFlows.stream()
-            .filter(
-                traceAndReverseFlow -> {
-                  Trace forwardTrace = traceAndReverseFlow.getTrace();
-                  return forwardTrace.getDisposition() == FlowDisposition.ACCEPTED
-                      && (!bgpSingleHop || forwardTrace.getHops().size() <= 2);
-                })
-            .filter(
-                traceAndReverseFlow ->
-                    traceAndReverseFlow.getReverseFlow() != null
-                        && traceAndReverseFlow
-                            .getReverseFlow()
-                            .getIngressNode()
-                            .equals(listenerId.getHostname())
-                        && traceAndReverseFlow
-                            .getReverseFlow()
-                            .getIngressVrf()
-                            .equals(listenerId.getVrfName()))
-            .flatMap(
-                traceAndReverseFlow ->
-                    tracerouteEngine
-                        .computeTracesAndReverseFlows(
-                            ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
-                            traceAndReverseFlow.getNewFirewallSessions(),
-                            false)
-                        .get(traceAndReverseFlow.getReverseFlow())
-                        .stream())
-            .collect(ImmutableList.toImmutableList());
+      List<TraceAndReverseFlow> reverseTraces =
+          forwardTracesAndReverseFlows.stream()
+              .filter(
+                  traceAndReverseFlow -> {
+                    Trace forwardTrace = traceAndReverseFlow.getTrace();
+                    return forwardTrace.getDisposition() == FlowDisposition.ACCEPTED
+                        && (!bgpSingleHop || forwardTrace.getHops().size() <= 2);
+                  })
+              .filter(
+                  traceAndReverseFlow ->
+                      traceAndReverseFlow.getReverseFlow() != null
+                          && traceAndReverseFlow
+                              .getReverseFlow()
+                              .getIngressNode()
+                              .equals(listenerId.getHostname())
+                          && traceAndReverseFlow
+                              .getReverseFlow()
+                              .getIngressVrf()
+                              .equals(listenerId.getVrfName()))
+              .flatMap(
+                  traceAndReverseFlow ->
+                      tracerouteEngine
+                          .computeTracesAndReverseFlows(
+                              ImmutableSet.of(traceAndReverseFlow.getReverseFlow()),
+                              traceAndReverseFlow.getNewFirewallSessions(),
+                              false)
+                          .get(traceAndReverseFlow.getReverseFlow())
+                          .stream())
+              .collect(ImmutableList.toImmutableList());
 
-    boolean successful =
-        reverseTraces.stream()
-            .anyMatch(
-                traceAndReverseFlow -> {
-                  Trace reverseTrace = traceAndReverseFlow.getTrace();
-                  List<Hop> hops = reverseTrace.getHops();
-                  return !hops.isEmpty()
-                      && hops.get(hops.size() - 1)
-                          .getNode()
-                          .getName()
-                          .equals(initiatorId.getHostname())
-                      && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
-                });
+      boolean successful =
+          reverseTraces.stream()
+              .anyMatch(
+                  traceAndReverseFlow -> {
+                    Trace reverseTrace = traceAndReverseFlow.getTrace();
+                    List<Hop> hops = reverseTrace.getHops();
+                    return !hops.isEmpty()
+                        && hops.get(hops.size() - 1)
+                            .getNode()
+                            .getName()
+                            .equals(initiatorId.getHostname())
+                        && reverseTrace.getDisposition() == FlowDisposition.ACCEPTED;
+                  });
 
-    return new BgpSessionInitiationResult(
-        flowFromSrc,
-        forwardTracesAndReverseFlows.stream()
-            .map(TraceAndReverseFlow::getTrace)
-            .collect(ImmutableList.toImmutableList()),
-        reverseTraces.stream()
-            .map(TraceAndReverseFlow::getTrace)
-            .collect(ImmutableList.toImmutableList()),
-        successful);
+      initiationResults.add(
+          new BgpSessionInitiationResult(
+              flowFromSrc,
+              forwardTracesAndReverseFlows.stream()
+                  .map(TraceAndReverseFlow::getTrace)
+                  .collect(ImmutableList.toImmutableList()),
+              reverseTraces.stream()
+                  .map(TraceAndReverseFlow::getTrace)
+                  .collect(ImmutableList.toImmutableList()),
+              successful));
+    }
+    return initiationResults.build();
   }
 
   @Nullable
