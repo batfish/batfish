@@ -1,6 +1,5 @@
 package org.batfish.common.topology.broadcast;
 
-import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
 import static org.batfish.common.topology.broadcast.L3AdjacencyComputer.BATFISH_GLOBAL_HUB;
 import static org.batfish.common.topology.broadcast.L3AdjacencyComputer.computeEthernetHubs;
 import static org.batfish.common.topology.broadcast.L3AdjacencyComputer.connectL2InterfaceToBroadcastDomain;
@@ -35,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topologies;
+import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -754,6 +754,8 @@ public class L3AdjacencyComputerTest {
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.3/24"))
             .build();
     NodeInterfacePair n3 = NodeInterfacePair.of(i3);
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
     {
       // With no L1 topology, all 3 interfaces in same domain.
       L3AdjacencyComputer l3 =
@@ -774,7 +776,7 @@ public class L3AdjacencyComputerTest {
       L3AdjacencyComputer l3 =
           new L3AdjacencyComputer(
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              new Layer1Topologies(physical, Layer1Topology.EMPTY, physical, physical));
+              Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
       Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
       assertThat("all interfaces have a domain", domains, aMapWithSize(3));
       assertThat("connected ifaces in same domain", domains.get(n1), equalTo(domains.get(n3)));
@@ -804,18 +806,10 @@ public class L3AdjacencyComputerTest {
       Layer1Topology physical =
           new Layer1Topology(
               new Layer1Edge(n1.getHostname(), n1.getInterface(), "no-such-host", "no-such-iface"));
-      Layer1Topology logical =
-          new Layer1Topology(
-              new Layer1Edge(
-                  n1.getHostname(),
-                  n1.getInterface(),
-                  INVALID_INTERFACE.getHostname(),
-                  INVALID_INTERFACE.getInterfaceName()));
-      Layer1Topology cleanLogical = Layer1Topology.EMPTY;
       L3AdjacencyComputer l3 =
           new L3AdjacencyComputer(
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              new Layer1Topologies(physical, Layer1Topology.EMPTY, logical, cleanLogical));
+              Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
       Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
       assertThat("all interfaces have a domain", domains, aMapWithSize(3));
       assertThat("global hub ifaces in same domain", domains.get(n2), equalTo(domains.get(n3)));
