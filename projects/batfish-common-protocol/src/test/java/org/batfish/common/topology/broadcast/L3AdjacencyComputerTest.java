@@ -723,100 +723,106 @@ public class L3AdjacencyComputerTest {
     }
   }
 
-  /** A simple test that the code works end-to-end. */
-  @Test
-  public void testE2e() {
+  private static Map<String, Configuration> simple3InterfaceNetwork() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration c1 = nf.configurationBuilder().build();
-    Interface i1 =
-        nf.interfaceBuilder()
-            .setOwner(c1)
-            .setType(PHYSICAL)
-            .setActive(true)
-            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.1/24"))
-            .build();
-    NodeInterfacePair n1 = NodeInterfacePair.of(i1);
-    Configuration c2 = nf.configurationBuilder().build();
-    Interface i2 =
-        nf.interfaceBuilder()
-            .setOwner(c2)
-            .setType(PHYSICAL)
-            .setActive(true)
-            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.2/24"))
-            .build();
-    NodeInterfacePair n2 = NodeInterfacePair.of(i2);
-    Configuration c3 = nf.configurationBuilder().build();
-    Interface i3 =
-        nf.interfaceBuilder()
-            .setOwner(c3)
-            .setType(PHYSICAL)
-            .setActive(true)
-            .setAddress(ConcreteInterfaceAddress.parse("1.2.3.3/24"))
-            .build();
-    NodeInterfacePair n3 = NodeInterfacePair.of(i3);
-    Map<String, Configuration> configs =
-        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
-    {
-      // With no L1 topology, all 3 interfaces in same domain.
-      L3AdjacencyComputer l3 =
-          new L3AdjacencyComputer(
-              ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              Layer1Topologies.empty());
-      Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
-      assertThat("all interfaces have a domain", domains, aMapWithSize(3));
-      assertThat(
-          "all interfaces in same domain", ImmutableSet.copyOf(domains.values()), hasSize(1));
-    }
-    {
-      // With L1 topology, only connected interfaces in same domain.
-      Layer1Topology physical =
-          new Layer1Topology(
-              new Layer1Edge(
-                  n1.getHostname(), n1.getInterface(), n3.getHostname(), n3.getInterface()));
-      L3AdjacencyComputer l3 =
-          new L3AdjacencyComputer(
-              ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
-      Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
-      assertThat("all interfaces have a domain", domains, aMapWithSize(3));
-      assertThat("connected ifaces in same domain", domains.get(n1), equalTo(domains.get(n3)));
-      assertThat(
-          "global hub not connected to other interfaces",
-          domains.get(n2),
-          not(equalTo(domains.get(n1))));
-    }
-    {
-      // Encapsulation vlan honored, even with no L1.
-      i1.setEncapsulationVlan(4);
-      L3AdjacencyComputer l3 =
-          new L3AdjacencyComputer(
-              ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              Layer1Topologies.empty());
-      Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
-      assertThat("all interfaces have a domain", domains, aMapWithSize(3));
-      assertThat(
-          "unencapsulated interface in same domain", domains.get(n2), equalTo(domains.get(n3)));
-      assertThat(
-          "encapsulated interface not connected to unencapsulated interfaces",
-          domains.get(n2),
-          not(equalTo(domains.get(n1))));
-    }
-    {
-      // With L1 topology to disconnected interface, only global hub connected.
-      Layer1Topology physical =
-          new Layer1Topology(
-              new Layer1Edge(n1.getHostname(), n1.getInterface(), "no-such-host", "no-such-iface"));
-      L3AdjacencyComputer l3 =
-          new L3AdjacencyComputer(
-              ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
-      Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
-      assertThat("all interfaces have a domain", domains, aMapWithSize(3));
-      assertThat("global hub ifaces in same domain", domains.get(n2), equalTo(domains.get(n3)));
-      assertThat(
-          "n1 is disconnected, not connected to other interfaces",
-          domains.get(n1),
-          not(equalTo(domains.get(n2))));
-    }
+    Configuration c1 = nf.configurationBuilder().setHostname("c1").build();
+    nf.interfaceBuilder()
+        .setOwner(c1)
+        .setName("i1")
+        .setType(PHYSICAL)
+        .setActive(true)
+        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.1/24"))
+        .build();
+    Configuration c2 = nf.configurationBuilder().setHostname("c2").build();
+    nf.interfaceBuilder()
+        .setOwner(c2)
+        .setName("i2")
+        .setType(PHYSICAL)
+        .setActive(true)
+        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.2/24"))
+        .build();
+    Configuration c3 = nf.configurationBuilder().setHostname("c3").build();
+    nf.interfaceBuilder()
+        .setOwner(c3)
+        .setName("i3")
+        .setType(PHYSICAL)
+        .setActive(true)
+        .setAddress(ConcreteInterfaceAddress.parse("1.2.3.3/24"))
+        .build();
+    return ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
+  }
+
+  @Test
+  public void testE2e_noL1() {
+    Map<String, Configuration> configs = simple3InterfaceNetwork();
+    // With no L1 topology, all 3 interfaces in same domain.
+    L3AdjacencyComputer l3 = new L3AdjacencyComputer(configs, Layer1Topologies.empty());
+    Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+    assertThat("all interfaces have a domain", domains, aMapWithSize(3));
+    assertThat("all interfaces in same domain", ImmutableSet.copyOf(domains.values()), hasSize(1));
+  }
+
+  @Test
+  public void testE2e_L1() {
+    // With L1 topology, only connected interfaces in same domain.
+    Map<String, Configuration> configs = simple3InterfaceNetwork();
+    NodeInterfacePair n1 = NodeInterfacePair.of("c1", "i1");
+    NodeInterfacePair n2 = NodeInterfacePair.of("c2", "i2");
+    NodeInterfacePair n3 = NodeInterfacePair.of("c3", "i3");
+    Layer1Topology physical =
+        new Layer1Topology(
+            new Layer1Edge(
+                n1.getHostname(), n1.getInterface(), n3.getHostname(), n3.getInterface()));
+    L3AdjacencyComputer l3 =
+        new L3AdjacencyComputer(
+            configs, Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
+    Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+    assertThat("all interfaces have a domain", domains, aMapWithSize(3));
+    assertThat("connected ifaces in same domain", domains.get(n1), equalTo(domains.get(n3)));
+    assertThat(
+        "global hub not connected to other interfaces",
+        domains.get(n2),
+        not(equalTo(domains.get(n1))));
+  }
+
+  @Test
+  public void testE2e_disconnected() {
+    Map<String, Configuration> configs = simple3InterfaceNetwork();
+    NodeInterfacePair n1 = NodeInterfacePair.of("c1", "i1");
+    NodeInterfacePair n2 = NodeInterfacePair.of("c2", "i2");
+    NodeInterfacePair n3 = NodeInterfacePair.of("c3", "i3");
+    // With L1 topology to disconnected interface, only global hub connected.
+    Layer1Topology physical =
+        new Layer1Topology(
+            new Layer1Edge(n1.getHostname(), n1.getInterface(), "no-such-host", "no-such-iface"));
+    L3AdjacencyComputer l3 =
+        new L3AdjacencyComputer(
+            configs, Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
+    Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+    assertThat("all interfaces have a domain", domains, aMapWithSize(3));
+    assertThat("global hub ifaces in same domain", domains.get(n2), equalTo(domains.get(n3)));
+    assertThat(
+        "n1 is disconnected, not connected to other interfaces",
+        domains.get(n1),
+        not(equalTo(domains.get(n2))));
+  }
+
+  @Test
+  public void testE2e_encapsulation() {
+    // Encapsulation vlan honored, even with no L1.
+    Map<String, Configuration> configs = simple3InterfaceNetwork();
+    NodeInterfacePair n1 = NodeInterfacePair.of("c1", "i1");
+    NodeInterfacePair n2 = NodeInterfacePair.of("c2", "i2");
+    NodeInterfacePair n3 = NodeInterfacePair.of("c3", "i3");
+    configs.get(n1.getHostname()).getAllInterfaces().get(n1.getInterface()).setEncapsulationVlan(4);
+    L3AdjacencyComputer l3 = new L3AdjacencyComputer(configs, Layer1Topologies.empty());
+    Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+    assertThat("all interfaces have a domain", domains, aMapWithSize(3));
+    assertThat(
+        "unencapsulated interface in same domain", domains.get(n2), equalTo(domains.get(n3)));
+    assertThat(
+        "encapsulated interface not connected to unencapsulated interfaces",
+        domains.get(n2),
+        not(equalTo(domains.get(n1))));
   }
 }
