@@ -48,7 +48,7 @@ public class L3AdjacencyComputer {
     _layer1Topologies = layer1Topologies;
     _physicalInterfaces = computePhysicalInterfaces(configs);
     _ethernetHubs =
-        computeEthernetHubs(configs, _physicalInterfaces, _layer1Topologies.getActiveLogicalL1());
+        computeEthernetHubs(configs, _physicalInterfaces, _layer1Topologies.getLogicalL1());
     _deviceBroadcastDomains = computeDeviceBroadcastDomains(configs, _physicalInterfaces);
     _layer3Interfaces =
         computeLayer3Interfaces(configs, _deviceBroadcastDomains, _physicalInterfaces);
