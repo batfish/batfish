@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Topologies;
+import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -684,6 +685,26 @@ public class L3AdjacencyComputerTest {
           containsInAnyOrder(n1, n2));
     }
     {
+      // One interface with disconnected edge.
+      Map<String, EthernetHub> hubs =
+          computeEthernetHubs(
+              ImmutableMap.of(c.getHostname(), c),
+              makePhysicalMap(i1, i2, i3),
+              new Layer1Topology(
+                  ImmutableSet.of(
+                      new Layer1Edge(
+                          c.getHostname(), i1.getName(), "no-such-hostname", "no-such-iface"))));
+      assertThat(hubs, aMapWithSize(2));
+      String otherKey =
+          Iterables.getOnlyElement(
+              Sets.difference(hubs.keySet(), ImmutableSet.of(BATFISH_GLOBAL_HUB)));
+      assertThat(
+          getPairs(hubs.get(BATFISH_GLOBAL_HUB).getAttachedInterfacesForTesting().keySet()),
+          containsInAnyOrder(n2, n3));
+      assertThat(
+          getPairs(hubs.get(otherKey).getAttachedInterfacesForTesting().keySet()), contains(n1));
+    }
+    {
       // Line.
       Map<String, EthernetHub> hubs =
           computeEthernetHubs(
@@ -733,6 +754,8 @@ public class L3AdjacencyComputerTest {
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.3/24"))
             .build();
     NodeInterfacePair n3 = NodeInterfacePair.of(i3);
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3);
     {
       // With no L1 topology, all 3 interfaces in same domain.
       L3AdjacencyComputer l3 =
@@ -753,7 +776,7 @@ public class L3AdjacencyComputerTest {
       L3AdjacencyComputer l3 =
           new L3AdjacencyComputer(
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
-              new Layer1Topologies(physical, Layer1Topology.EMPTY, physical, physical));
+              Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
       Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
       assertThat("all interfaces have a domain", domains, aMapWithSize(3));
       assertThat("connected ifaces in same domain", domains.get(n1), equalTo(domains.get(n3)));
@@ -777,6 +800,23 @@ public class L3AdjacencyComputerTest {
           "encapsulated interface not connected to unencapsulated interfaces",
           domains.get(n2),
           not(equalTo(domains.get(n1))));
+    }
+    {
+      // With L1 topology to disconnected interface, only global hub connected.
+      Layer1Topology physical =
+          new Layer1Topology(
+              new Layer1Edge(n1.getHostname(), n1.getInterface(), "no-such-host", "no-such-iface"));
+      L3AdjacencyComputer l3 =
+          new L3AdjacencyComputer(
+              ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3),
+              Layer1TopologiesFactory.create(physical, Layer1Topology.EMPTY, configs));
+      Map<NodeInterfacePair, Integer> domains = l3.findAllBroadcastDomains();
+      assertThat("all interfaces have a domain", domains, aMapWithSize(3));
+      assertThat("global hub ifaces in same domain", domains.get(n2), equalTo(domains.get(n3)));
+      assertThat(
+          "n1 is disconnected, not connected to other interfaces",
+          domains.get(n1),
+          not(equalTo(domains.get(n2))));
     }
   }
 }
