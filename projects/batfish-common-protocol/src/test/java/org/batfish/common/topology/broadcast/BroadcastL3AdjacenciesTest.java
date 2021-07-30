@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -51,7 +52,7 @@ public class BroadcastL3AdjacenciesTest {
       // With no L1 topology, all 3 interfaces in same domain but not p2p domain.
       BroadcastL3Adjacencies adjacencies =
           BroadcastL3Adjacencies.create(
-              Layer1Topology.EMPTY,
+              Layer1Topologies.empty(),
               VxlanTopology.EMPTY,
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3));
       assertTrue(adjacencies.inSameBroadcastDomain(n1, n2));
@@ -64,11 +65,13 @@ public class BroadcastL3AdjacenciesTest {
     }
     {
       // With L1 topology, only connected interfaces in same domain.
+      Layer1Topology physical =
+          new Layer1Topology(
+              new Layer1Edge(
+                  n1.getHostname(), n1.getInterface(), n3.getHostname(), n3.getInterface()));
       BroadcastL3Adjacencies adjacencies =
           BroadcastL3Adjacencies.create(
-              new Layer1Topology(
-                  new Layer1Edge(
-                      n1.getHostname(), n1.getInterface(), n3.getHostname(), n3.getInterface())),
+              new Layer1Topologies(physical, Layer1Topology.EMPTY, physical, physical),
               VxlanTopology.EMPTY,
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3));
       assertTrue(adjacencies.inSameBroadcastDomain(n1, n3));
@@ -85,7 +88,7 @@ public class BroadcastL3AdjacenciesTest {
       i1.setEncapsulationVlan(4);
       BroadcastL3Adjacencies adjacencies =
           BroadcastL3Adjacencies.create(
-              Layer1Topology.EMPTY,
+              Layer1Topologies.empty(),
               VxlanTopology.EMPTY,
               ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2, c3.getHostname(), c3));
       assertTrue(adjacencies.inSameBroadcastDomain(n2, n3));

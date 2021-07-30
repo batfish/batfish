@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -50,14 +49,11 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 public final class HybridL3Adjacencies implements L3Adjacencies {
 
   public static HybridL3Adjacencies create(
-      Layer1Topology rawLayer1Topology,
-      Layer1Topology layer1LogicalTopology,
+      Layer1Topologies layer1Topologies,
       Layer2Topology layer2Topology,
       Map<String, Configuration> configurations) {
     Set<String> nodesWithL1Topology =
-        Stream.concat(
-                rawLayer1Topology.getGraph().edges().stream(),
-                layer1LogicalTopology.getGraph().edges().stream())
+        layer1Topologies.getCombinedL1().getGraph().edges().stream()
             .filter(
                 // Ignore border-to-ISP edges when computing the set of nodes for which users
                 // provided L1 topology. Batfish adds these edges during ISP modeling, and not
@@ -66,7 +62,7 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
     Map<NodeInterfacePair, NodeInterfacePair> physicalPointToPoint =
-        computePhysicalPointToPoint(layer1LogicalTopology);
+        computePhysicalPointToPoint(layer1Topologies.getActiveLogicalL1());
     Map<NodeInterfacePair, NodeInterfacePair> l3ToPhysical = computeL3ToPhysical(configurations);
     Multimap<NodeInterfacePair, NodeInterfacePair> physicalToL3 = computePhysicalToL3(l3ToPhysical);
     return new HybridL3Adjacencies(

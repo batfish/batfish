@@ -17,9 +17,10 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.topology.IpOwners;
 import org.batfish.common.topology.L3Adjacencies;
+import org.batfish.common.topology.Layer1Topologies;
+import org.batfish.common.topology.Layer1TopologiesFactory;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.TopologyProvider;
-import org.batfish.common.topology.TopologyUtil;
 import org.batfish.common.topology.TunnelTopology;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.Configuration;
@@ -78,15 +79,6 @@ public class IBatfishTestAdapter implements IBatfish {
     }
 
     @Override
-    public Optional<Layer1Topology> getLayer1LogicalTopology(NetworkSnapshot networkSnapshot) {
-      return getLayer1PhysicalTopology(networkSnapshot)
-          .map(
-              l1PhysicalTopology ->
-                  TopologyUtil.computeLayer1LogicalTopology(
-                      l1PhysicalTopology, _batfish.loadConfigurations(networkSnapshot)));
-    }
-
-    @Override
     public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
@@ -94,11 +86,6 @@ public class IBatfishTestAdapter implements IBatfish {
     @Nonnull
     @Override
     public TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Optional<Layer1Topology> getLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
@@ -126,13 +113,15 @@ public class IBatfishTestAdapter implements IBatfish {
     }
 
     @Override
-    public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
-      throw new UnsupportedOperationException();
+    public @Nonnull Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot) {
+      return Layer1TopologiesFactory.create(
+          getRawLayer1PhysicalTopology(networkSnapshot).orElse(Layer1Topology.EMPTY),
+          getSynthesizedLayer1Topology(networkSnapshot).orElse(Layer1Topology.EMPTY),
+          _batfish.loadConfigurations(networkSnapshot));
     }
 
-    @Nonnull
     @Override
-    public Optional<Layer1Topology> getSynthesizedLayer1Topology(NetworkSnapshot networkSnapshot) {
+    public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 

@@ -24,13 +24,13 @@ import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableValueGraph;
 import com.google.common.graph.ValueGraphBuilder;
 import java.util.Map;
-import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.topology.HybridL3Adjacencies;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
+import org.batfish.common.topology.Layer1Topologies;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.topology.Layer2Topology;
 import org.batfish.common.topology.TopologyContainer;
@@ -165,18 +165,18 @@ public final class FixedPointTopologyTest {
   }
 
   private TopologyContext getCallerTopologyContext(Map<String, Configuration> configs) {
-    Layer1Topology l1 = generateVxlanLayer1Topology();
-    Layer2Topology l2 = computeLayer2Topology(l1, VxlanTopology.EMPTY, configs);
-    L3Adjacencies adjacencies = HybridL3Adjacencies.create(l1, l1, l2, configs);
+    Layer1Topology raw = generateVxlanLayer1Topology();
+    Layer1Topologies l1 = new Layer1Topologies(raw, Layer1Topology.EMPTY, raw, raw);
+    Layer2Topology l2 = computeLayer2Topology(raw, VxlanTopology.EMPTY, configs);
+    L3Adjacencies adjacencies = HybridL3Adjacencies.create(l1, l2, configs);
     return TopologyContext.builder()
-        .setLayer1LogicalTopology(Optional.of(l1))
+        .setLayer1Topologies(l1)
         .setLayer3Topology(
             computeLayer3Topology(
-                computeRawLayer3Topology(HybridL3Adjacencies.create(l1, l1, l2, configs), configs),
+                computeRawLayer3Topology(HybridL3Adjacencies.create(l1, l2, configs), configs),
                 ImmutableSet.of()))
         .setL3Adjacencies(adjacencies)
         .setOspfTopology(OspfTopology.EMPTY)
-        .setRawLayer1PhysicalTopology(Optional.of(l1))
         .build();
   }
 
