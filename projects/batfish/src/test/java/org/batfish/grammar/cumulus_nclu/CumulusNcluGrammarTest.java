@@ -577,13 +577,13 @@ public final class CumulusNcluGrammarTest {
     Configuration c = parseConfig("cumulus_nclu_bgp_ip_neighbor");
     long internalAs = 65500L;
 
-    Prefix prefix = Prefix.parse("1.1.1.1/32");
+    Ip ip = Ip.parse("1.1.1.1");
     assertThat(
         c,
         hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(prefix, BgpNeighborMatchers.hasDescription("spam")))));
+            hasBgpProcess(hasActiveNeighbor(ip, BgpNeighborMatchers.hasDescription("spam")))));
     org.batfish.datamodel.BgpProcess p = c.getDefaultVrf().getBgpProcess();
-    BgpActivePeerConfig i1 = p.getActiveNeighbors().get(prefix);
+    BgpActivePeerConfig i1 = p.getActiveNeighbors().get(ip);
     assertThat(i1, hasRemoteAs(equalTo(ALL_AS_NUMBERS.difference(LongSpace.of(internalAs)))));
   }
 

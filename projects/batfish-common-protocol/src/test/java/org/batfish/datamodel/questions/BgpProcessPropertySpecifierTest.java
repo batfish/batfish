@@ -50,14 +50,14 @@ public class BgpProcessPropertySpecifierTest {
             .setPeerInterface(peerInterface)
             .setIpv4UnicastAddressFamily(v4afBuilder.setRouteReflectorClient(true).build())
             .build();
-    Prefix p32a = Prefix.parse("1.2.3.4/32");
-    Prefix p32b = Prefix.parse("1.2.3.5/32");
-    Prefix p30a = Prefix.parse("1.2.3.4/30");
+    Ip ipA = Ip.parse("1.2.3.4");
+    Ip ipB = Ip.parse("1.2.3.5");
+    Prefix p30a = Prefix.create(ipA, 30);
     Prefix p30b = Prefix.parse("1.2.3.8/30");
 
     // One active peer RRC
     BgpProcess hasActiveNeighbor = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
-    hasActiveNeighbor.setNeighbors(ImmutableSortedMap.of(p32a, activePeerWithRRC));
+    hasActiveNeighbor.setNeighbors(ImmutableSortedMap.of(ipA, activePeerWithRRC));
     assertTrue("has active rr client", isIpv4UnicastRouteReflector(hasActiveNeighbor));
 
     // One passive peer RRC
@@ -74,7 +74,7 @@ public class BgpProcessPropertySpecifierTest {
     // Mix
     BgpProcess hasNeighborMix = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
     hasNeighborMix.setNeighbors(
-        ImmutableSortedMap.of(p32a, activePeerWithoutRRC, p32b, activePeerWithRRC));
+        ImmutableSortedMap.of(ipA, activePeerWithoutRRC, ipB, activePeerWithRRC));
     hasNeighborMix.setPassiveNeighbors(
         ImmutableSortedMap.of(p30a, passivePeerWithoutRRC, p30b, passivePeerWithRRC));
     assertTrue(
@@ -82,7 +82,7 @@ public class BgpProcessPropertySpecifierTest {
 
     // Both inactive
     BgpProcess hasAllInactive = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
-    hasAllInactive.setNeighbors(ImmutableSortedMap.of(p32a, activePeerWithoutRRC));
+    hasAllInactive.setNeighbors(ImmutableSortedMap.of(ipA, activePeerWithoutRRC));
     hasAllInactive.setPassiveNeighbors(ImmutableSortedMap.of(p30a, passivePeerWithoutRRC));
     assertFalse("has multiple inactive rr clients", isIpv4UnicastRouteReflector(hasAllInactive));
   }

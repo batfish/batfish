@@ -116,7 +116,7 @@ public final class BgpPeerConfigurationAnswererTest {
             .build();
 
     BgpProcess process = new BgpProcess(Ip.ZERO, ConfigurationFormat.CISCO_IOS);
-    process.setNeighbors(ImmutableSortedMap.of(Prefix.create(Ip.parse("1.1.1.0"), 24), activePeer));
+    process.setNeighbors(ImmutableSortedMap.of(Ip.parse("1.1.1.0"), activePeer));
     process.setPassiveNeighbors(
         ImmutableSortedMap.of(Prefix.create(Ip.parse("1.1.1.0"), 24), passivePeer));
     process.setInterfaceNeighbors(ImmutableSortedMap.of("iface", unnumberedPeer));

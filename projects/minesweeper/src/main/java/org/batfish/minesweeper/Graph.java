@@ -685,8 +685,8 @@ public class Graph {
         continue;
       }
 
-      for (Entry<Prefix, BgpActivePeerConfig> entry2 : proc.getActiveNeighbors().entrySet()) {
-        Prefix remotePrefix = entry2.getKey();
+      for (Entry<Ip, BgpActivePeerConfig> entry2 : proc.getActiveNeighbors().entrySet()) {
+        Ip remoteIp = entry2.getKey();
         BgpActivePeerConfig localBgpConfig = entry2.getValue();
         if (localBgpConfig.getLocalAs() == null || localBgpConfig.getRemoteAsns().isEmpty()) {
           // Invalid config
@@ -703,8 +703,7 @@ public class Graph {
           Set<Ip> candidateIps = ipEntry.getValue();
           for (Ip candidateLocalIp : candidateIps) {
             // Check that it's not a self-edge and candidate's IP matches remote prefix
-            if (!localHostname.equals(candidateHostname)
-                && remotePrefix.containsIp(candidateLocalIp)) {
+            if (!localHostname.equals(candidateHostname) && remoteIp.equals(candidateLocalIp)) {
               // We have a neighbor match
               neighbors.put(localHostname, candidateHostname, localBgpConfig);
             }

@@ -453,22 +453,19 @@ public final class F5BigipImishGrammarTest {
         bgpProcess.getConfederation(),
         equalTo(new BgpConfederation(65010, ImmutableSet.of(65012L, 65013L))));
     {
-      BgpActivePeerConfig neighbor =
-          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.10/32"));
+      BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Ip.parse("10.0.1.10"));
       assertNotNull(neighbor);
       assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
       assertThat(neighbor.getLocalAs(), equalTo(65001L));
     }
     {
-      BgpActivePeerConfig neighbor =
-          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.2/32"));
+      BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Ip.parse("10.0.1.2"));
       assertNotNull(neighbor);
       assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
       assertThat(neighbor.getLocalAs(), equalTo(65001L));
     }
     {
-      BgpActivePeerConfig neighbor =
-          bgpProcess.getActiveNeighbors().get(Prefix.parse("10.0.1.3/32"));
+      BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Ip.parse("10.0.1.3"));
       assertNotNull(neighbor);
       assertThat(neighbor.getConfederationAsn(), equalTo(65010L));
       assertThat(neighbor.getLocalAs(), equalTo(65001L));
@@ -599,13 +596,8 @@ public final class F5BigipImishGrammarTest {
     Ip peer1Ip = Ip.parse("192.0.2.1");
     Ip peer2Ip = Ip.parse("192.0.2.2");
     Ip peer3Ip = Ip.parse("192.0.2.3");
-    Prefix peer1Prefix = peer1Ip.toPrefix();
-    Prefix peer2Prefix = peer2Ip.toPrefix();
-    Prefix peer3Prefix = peer3Ip.toPrefix();
 
-    assertThat(
-        c,
-        hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKeys(peer1Prefix, peer2Prefix, peer3Prefix)))));
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKeys(peer1Ip, peer2Ip, peer3Ip)))));
     RoutingPolicy rp1 =
         c.getRoutingPolicies().get(computeBgpPeerExportPolicyName("65501", peer1Ip));
     RoutingPolicy rp2 =
@@ -689,18 +681,18 @@ public final class F5BigipImishGrammarTest {
     assertThat(
         p.getActiveNeighbors(),
         hasKeys(
-            Prefix.parse("10.10.13.16/32"),
-            Prefix.parse("10.10.106.36/32"),
-            Prefix.parse("10.10.106.100/32"),
-            Prefix.parse("10.10.106.164/32"),
-            Prefix.parse("10.10.106.228/32")));
-    BgpActivePeerConfig neighbor16 = p.getActiveNeighbors().get(Prefix.parse("10.10.13.16/32"));
+            Ip.parse("10.10.13.16"),
+            Ip.parse("10.10.106.36"),
+            Ip.parse("10.10.106.100"),
+            Ip.parse("10.10.106.164"),
+            Ip.parse("10.10.106.228")));
+    BgpActivePeerConfig neighbor16 = p.getActiveNeighbors().get(Ip.parse("10.10.13.16"));
     assertThat(neighbor16.getRemoteAsns(), equalTo(LongSpace.of(33333)));
     assertThat(neighbor16.getDescription(), equalTo("agg1-dc1"));
     assertThat(neighbor16.getIpv4UnicastAddressFamily(), notNullValue());
     assertThat(neighbor16.getIpv4UnicastAddressFamily().getImportPolicy(), nullValue());
     assertThat(neighbor16.getIpv4UnicastAddressFamily().getExportPolicy(), notNullValue());
-    BgpActivePeerConfig neighbor36 = p.getActiveNeighbors().get(Prefix.parse("10.10.106.36/32"));
+    BgpActivePeerConfig neighbor36 = p.getActiveNeighbors().get(Ip.parse("10.10.106.36"));
     assertThat(neighbor36.getRemoteAsns(), equalTo(LongSpace.of(22222)));
     assertThat(neighbor36.getDescription(), equalTo("spine5-dc1"));
     assertThat(neighbor36.getIpv4UnicastAddressFamily(), notNullValue());
@@ -723,24 +715,13 @@ public final class F5BigipImishGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.strict("192.0.2.1/32"),
+                    Ip.parse("192.0.2.1"),
                     allOf(
                         hasDescription("Cool IPv4 BGP neighbor description"),
-                        hasIpv4UnicastAddressFamily(hasImportPolicy("MY_IPV4_IN")))))));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasLocalAs(123L)))));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.strict("192.0.2.1/32"), hasLocalIp(Ip.parse("192.0.2.2"))))));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasRemoteAs(456L)))));
+                        hasIpv4UnicastAddressFamily(hasImportPolicy("MY_IPV4_IN")),
+                        hasLocalAs(123L),
+                        hasLocalIp(Ip.parse("192.0.2.2")),
+                        hasRemoteAs(456L))))));
 
     //// generated routing policies
     String bgpProcessName = "123";
@@ -1312,23 +1293,23 @@ public final class F5BigipImishGrammarTest {
   public void testBgpNeighborUpdateSourceConversion() throws IOException {
     Configuration c = parseConfig("f5_bigip_imish_bgp_neighbor_update_source");
     BgpActivePeerConfig peer1 =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.1.10/32"));
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.1.10"));
     assertNotNull(peer1);
     assertThat(peer1.getLocalIp(), equalTo(Ip.parse("10.0.1.1")));
 
     BgpActivePeerConfig peer2 =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.2.10/32"));
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.2.10"));
     assertNotNull(peer2);
     assertThat(peer2.getLocalIp(), equalTo(Ip.parse("10.0.2.1")));
 
     BgpActivePeerConfig peer3 =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.3.10/32"));
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.3.10"));
     assertNotNull(peer3);
     // cannot infer a local IP for this neighbor since no interface in this subnet
     assertNull(peer3.getLocalIp());
 
     BgpActivePeerConfig peer4 =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.0.4.10/32"));
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.0.4.10"));
     assertNotNull(peer4);
     // get the default IP (i.e., an interface address in the same subnet)
     assertThat(peer4.getLocalIp(), equalTo(Ip.parse("10.0.4.1")));

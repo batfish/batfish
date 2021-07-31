@@ -234,7 +234,7 @@ final class AristaConversions {
   }
 
   @Nonnull
-  static Map<Prefix, BgpActivePeerConfig> getNeighbors(
+  static Map<Ip, BgpActivePeerConfig> getNeighbors(
       Configuration c,
       Vrf vrf,
       BgpProcess proc,
@@ -248,7 +248,7 @@ final class AristaConversions {
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), bgpVrf, e.getValue(), warnings))
         .collect(
             ImmutableMap.toImmutableMap(
-                e -> e.getKey().toPrefix(),
+                Entry::getKey,
                 e ->
                     (BgpActivePeerConfig)
                         AristaConversions.toBgpNeighbor(

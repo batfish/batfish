@@ -90,8 +90,8 @@ public class BgpProcessMatchers {
    * neighbor with specified prefix.
    */
   public static HasActiveNeighbor hasActiveNeighbor(
-      @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
-    return new HasActiveNeighbor(prefix, subMatcher);
+      @Nonnull Ip ip, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
+    return new HasActiveNeighbor(ip, subMatcher);
   }
 
   public static HasPassiveNeighbor hasPassiveNeighbor(
@@ -104,7 +104,7 @@ public class BgpProcessMatchers {
    * neighbors.
    */
   public static HasNeighbors hasNeighbors(
-      @Nonnull Matcher<? super Map<Prefix, BgpActivePeerConfig>> subMatcher) {
+      @Nonnull Matcher<? super Map<Ip, BgpActivePeerConfig>> subMatcher) {
     return new HasNeighbors(subMatcher);
   }
 

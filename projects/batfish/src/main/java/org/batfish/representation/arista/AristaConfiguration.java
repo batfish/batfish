@@ -1004,7 +1004,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     //    }
 
     // Process active neighbors first.
-    Map<Prefix, BgpActivePeerConfig> activeNeighbors =
+    Map<Ip, BgpActivePeerConfig> activeNeighbors =
         AristaConversions.getNeighbors(c, v, newBgpProcess, bgpGlobal, bgpVrf, _eosVxlan, _w);
     newBgpProcess.setNeighbors(ImmutableSortedMap.copyOf(activeNeighbors));
 
