@@ -445,14 +445,8 @@ public class EdgesAnswerer extends Answerer {
   @VisibleForTesting
   static Row layer1EdgeToRow(Layer1Edge layer1Edge) {
     RowBuilder row = Row.builder();
-    row.put(
-            COL_INTERFACE,
-            NodeInterfacePair.of(
-                layer1Edge.getNode1().getHostname(), layer1Edge.getNode1().getInterfaceName()))
-        .put(
-            COL_REMOTE_INTERFACE,
-            NodeInterfacePair.of(
-                layer1Edge.getNode2().getHostname(), layer1Edge.getNode2().getInterfaceName()));
+    row.put(COL_INTERFACE, layer1Edge.getNode1().asNodeInterfacePair())
+        .put(COL_REMOTE_INTERFACE, layer1Edge.getNode2().asNodeInterfacePair());
 
     return row.build();
   }
