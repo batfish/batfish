@@ -3,24 +3,14 @@ package org.batfish.common.topology;
 import static org.batfish.common.topology.TopologyUtil.isBorderToIspEdge;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Interface.Dependency;
-import org.batfish.datamodel.Interface.DependencyType;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /**
@@ -61,12 +51,9 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
                 l1Edge -> !isBorderToIspEdge(l1Edge, configurations))
             .map(l1Edge -> l1Edge.getNode1().getHostname())
             .collect(ImmutableSet.toImmutableSet());
-    Map<NodeInterfacePair, NodeInterfacePair> physicalPointToPoint =
-        computePhysicalPointToPoint(layer1Topologies.getActiveLogicalL1());
-    Map<NodeInterfacePair, NodeInterfacePair> l3ToPhysical = computeL3ToPhysical(configurations);
-    Multimap<NodeInterfacePair, NodeInterfacePair> physicalToL3 = computePhysicalToL3(l3ToPhysical);
-    return new HybridL3Adjacencies(
-        nodesWithL1Topology, layer2Topology, physicalPointToPoint, l3ToPhysical, physicalToL3);
+    PointToPointInterfaces pointToPointInterfaces =
+        PointToPointComputer.compute(layer1Topologies.getLogicalL1(), configurations);
+    return new HybridL3Adjacencies(nodesWithL1Topology, layer2Topology, pointToPointInterfaces);
   }
 
   @Override
@@ -81,16 +68,8 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
   @Override
   public @Nonnull Optional<NodeInterfacePair> pairedPointToPointL3Interface(
       NodeInterfacePair iface) {
-    NodeInterfacePair physical = _l3ToPhysical.get(iface);
-    if (physical == null) {
-      return Optional.empty();
-    }
-    NodeInterfacePair neighbor = _physicalPointToPoint.get(physical);
-    if (neighbor == null) {
-      return Optional.empty();
-    }
-    @Nullable NodeInterfacePair ret = null;
-    for (NodeInterfacePair l3 : _physicalToL3.get(neighbor)) {
+    NodeInterfacePair ret = null;
+    for (NodeInterfacePair l3 : _pointToPointInterfaces.pointToPointInterfaces(iface)) {
       if (l3 == null || !_layer2Topology.inSameBroadcastDomain(iface, l3)) {
         continue;
       } else if (ret != null) {
@@ -112,124 +91,32 @@ public final class HybridL3Adjacencies implements L3Adjacencies {
     HybridL3Adjacencies that = (HybridL3Adjacencies) o;
     return _layer2Topology.equals(that._layer2Topology)
         && _nodesWithL1Topology.equals(that._nodesWithL1Topology)
-        && _physicalPointToPoint.equals(that._physicalPointToPoint)
-        && _l3ToPhysical.equals(that._l3ToPhysical)
-        && _physicalToL3.equals(that._physicalToL3);
+        && _pointToPointInterfaces.equals(that._pointToPointInterfaces);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _nodesWithL1Topology, _layer2Topology, _physicalPointToPoint, _l3ToPhysical, _physicalToL3);
+    return Objects.hash(_nodesWithL1Topology, _layer2Topology, _pointToPointInterfaces);
   }
 
   @VisibleForTesting
   static HybridL3Adjacencies createForTesting(
       Set<String> nodesWithL1Topology,
       Layer2Topology layer2Topology,
-      Map<NodeInterfacePair, NodeInterfacePair> physicalPointToPoint,
-      Map<NodeInterfacePair, NodeInterfacePair> l3ToPhysical,
-      Multimap<NodeInterfacePair, NodeInterfacePair> physicalToL3) {
-    return new HybridL3Adjacencies(
-        nodesWithL1Topology, layer2Topology, physicalPointToPoint, l3ToPhysical, physicalToL3);
+      PointToPointInterfaces pointToPointInterfaces) {
+    return new HybridL3Adjacencies(nodesWithL1Topology, layer2Topology, pointToPointInterfaces);
   }
 
   private HybridL3Adjacencies(
       Set<String> nodesWithL1Topology,
       Layer2Topology layer2Topology,
-      Map<NodeInterfacePair, NodeInterfacePair> physicalPointToPoint,
-      Map<NodeInterfacePair, NodeInterfacePair> l3ToPhysical,
-      Multimap<NodeInterfacePair, NodeInterfacePair> physicalToL3) {
+      PointToPointInterfaces pointToPointInterfaces) {
     _nodesWithL1Topology = nodesWithL1Topology;
     _layer2Topology = layer2Topology;
-    _physicalPointToPoint = physicalPointToPoint;
-    _l3ToPhysical = l3ToPhysical;
-    _physicalToL3 = physicalToL3;
-  }
-
-  /**
-   * Computes the set of interfaces connected via point-to-point links given a layer-1 topology.
-   * Note that to be considered point-to-point, each interface can be connected to at most 1 other
-   * interface, merged and checked in both directions.
-   */
-  @VisibleForTesting
-  static Map<NodeInterfacePair, NodeInterfacePair> computePhysicalPointToPoint(
-      Layer1Topology layer1LogicalTopology) {
-    Map<NodeInterfacePair, NodeInterfacePair> pointToPoint = new HashMap<>();
-    for (Layer1Node n : layer1LogicalTopology.getGraph().nodes()) {
-      Set<Layer1Node> neighbors = layer1LogicalTopology.getGraph().adjacentNodes(n);
-      if (neighbors.size() != 1) {
-        // Not unique, so no point-to-point link.
-        continue;
-      }
-      Layer1Node neighbor = Iterables.getOnlyElement(neighbors);
-      Set<Layer1Node> neighborNeighbors = layer1LogicalTopology.getGraph().adjacentNodes(neighbor);
-      if (!neighborNeighbors.isEmpty() && !neighborNeighbors.equals(ImmutableSet.of(n))) {
-        // Neighbor has either too many neighbors or the wrong neighbor; empty is okay though.
-        // (Keep in mind: topology is directed, and may be asymmetric.)
-        continue;
-      }
-      NodeInterfacePair nip = NodeInterfacePair.of(n.getHostname(), n.getInterfaceName());
-      NodeInterfacePair neighborNip =
-          NodeInterfacePair.of(neighbor.getHostname(), neighbor.getInterfaceName());
-      @Nullable NodeInterfacePair previous = pointToPoint.put(nip, neighborNip);
-      assert previous == null || previous.equals(neighborNip); // sanity
-      previous = pointToPoint.put(neighborNip, nip);
-      assert previous == null || previous.equals(nip); // sanity
-    }
-    return ImmutableMap.copyOf(pointToPoint);
-  }
-
-  /**
-   * Computes a mapping between each interface and the physical interface (expected to be in the
-   * logical {@link Layer1Topology}) it corresponds to. The identity mapping for physical
-   * interfaces, a mapping from a subinterface to its parent for logical subinterfaces, and no
-   * mapping for virtual interfaces like VLANs/IRBs/etc. Virtual interfaces cannot be involved in
-   * point-to-point links.
-   */
-  @VisibleForTesting
-  static Map<NodeInterfacePair, NodeInterfacePair> computeL3ToPhysical(
-      Map<String, Configuration> configs) {
-    ImmutableMap.Builder<NodeInterfacePair, NodeInterfacePair> ret = ImmutableMap.builder();
-    for (Configuration c : configs.values()) {
-      for (Interface i : c.getAllInterfaces().values()) {
-        if (!i.getActive() || i.getSwitchport() || i.getAllAddresses().isEmpty()) {
-          continue;
-        }
-        NodeInterfacePair l3 = NodeInterfacePair.of(i);
-        if (i.getInterfaceType() == InterfaceType.PHYSICAL
-            || i.getInterfaceType().equals(InterfaceType.AGGREGATED)
-            || i.getInterfaceType().equals(InterfaceType.REDUNDANT)) {
-          ret.put(l3, l3);
-        } else {
-          i.getDependencies().stream()
-              .filter(d -> d.getType() == DependencyType.BIND)
-              .findFirst()
-              .map(Dependency::getInterfaceName)
-              .map(n -> c.getAllInterfaces().get(n))
-              .map(NodeInterfacePair::of)
-              .ifPresent(parent -> ret.put(l3, parent));
-        }
-      }
-    }
-    return ret.build();
-  }
-
-  /**
-   * Computes the reverse mapping to {@link #computeL3ToPhysical(Map)}. Note that a physical
-   * interface can have many different subinterfaces, so this returns a multiple mapping.
-   */
-  private static @Nonnull Multimap<NodeInterfacePair, NodeInterfacePair> computePhysicalToL3(
-      Map<NodeInterfacePair, NodeInterfacePair> l3ToPhysical) {
-    ImmutableMultimap.Builder<NodeInterfacePair, NodeInterfacePair> physicalToL3 =
-        ImmutableMultimap.builder();
-    l3ToPhysical.forEach((l3, phys) -> physicalToL3.put(phys, l3));
-    return physicalToL3.build();
+    _pointToPointInterfaces = pointToPointInterfaces;
   }
 
   private final Set<String> _nodesWithL1Topology;
   private final Layer2Topology _layer2Topology;
-  private final Map<NodeInterfacePair, NodeInterfacePair> _physicalPointToPoint;
-  private final Map<NodeInterfacePair, NodeInterfacePair> _l3ToPhysical;
-  private final Multimap<NodeInterfacePair, NodeInterfacePair> _physicalToL3;
+  private final PointToPointInterfaces _pointToPointInterfaces;
 }
