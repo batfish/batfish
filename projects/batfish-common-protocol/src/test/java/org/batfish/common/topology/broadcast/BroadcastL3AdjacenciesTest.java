@@ -77,9 +77,8 @@ public class BroadcastL3AdjacenciesTest {
       assertTrue(adjacencies.inSameBroadcastDomain(n1, n3));
       assertFalse(adjacencies.inSameBroadcastDomain(n2, n3));
       assertFalse(adjacencies.inSameBroadcastDomain(n2, n1));
-      // TODO
-      //      assertTrue(adjacencies.inSamePointToPointDomain(n1, n3));
-      //      assertTrue(adjacencies.inSamePointToPointDomain(n3, n1));
+      assertTrue(adjacencies.inSamePointToPointDomain(n1, n3));
+      assertTrue(adjacencies.inSamePointToPointDomain(n3, n1));
       assertFalse(adjacencies.inSamePointToPointDomain(n2, n3));
       assertFalse(adjacencies.inSamePointToPointDomain(n1, n2));
     }
@@ -94,9 +93,6 @@ public class BroadcastL3AdjacenciesTest {
       assertTrue(adjacencies.inSameBroadcastDomain(n2, n3));
       assertFalse(adjacencies.inSameBroadcastDomain(n1, n2));
       assertFalse(adjacencies.inSameBroadcastDomain(n1, n3));
-      // TODO
-      //      assertTrue(adjacencies.inSamePointToPointDomain(n1, n3));
-      //      assertTrue(adjacencies.inSamePointToPointDomain(n3, n1));
       assertFalse(adjacencies.inSamePointToPointDomain(n2, n3));
       assertFalse(adjacencies.inSamePointToPointDomain(n1, n2));
     }
