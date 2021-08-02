@@ -499,9 +499,10 @@ public class IncrementalDataPlanePluginTest {
     BgpPeerConfigId listener =
         new BgpPeerConfigId("node2", "~Vrf_1~", Prefix.parse("1.0.0.1/32"), false);
 
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setLocalIp(initiatorLocalIp)
             .setPeerAddress(Ip.parse("1.0.0.1"))
             .setEbgpMultihop(false)
             .setLocalAs(1L)
@@ -510,13 +511,15 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be reachable because it is only one hop away from the initiator
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        BgpTopologyUtils.initiateBgpSession(
+    List<BgpSessionInitiationResult> initiationResults =
+        BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
+            ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
-    assertTrue(bgpSessionInitiationResult.isSuccessful());
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        Iterables.getOnlyElement(initiationResults);
     assertThat(
         Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
         hasHops(contains(hasNodeName("node1"), hasNodeName("node2"))));
@@ -540,9 +543,10 @@ public class IncrementalDataPlanePluginTest {
     BgpPeerConfigId listener =
         new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
 
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setLocalIp(initiatorLocalIp)
             .setPeerAddress(Ip.parse("1.0.0.3"))
             .setEbgpMultihop(false)
             .setLocalAs(1L)
@@ -551,12 +555,15 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be not be reachable because it is two hops away from the initiator
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        BgpTopologyUtils.initiateBgpSession(
+    List<BgpSessionInitiationResult> initiationResults =
+        BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
+            ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        Iterables.getOnlyElement(initiationResults);
     assertFalse(bgpSessionInitiationResult.isSuccessful());
     assertThat(
         Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
@@ -581,9 +588,10 @@ public class IncrementalDataPlanePluginTest {
     BgpPeerConfigId listener =
         new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
 
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setLocalIp(initiatorLocalIp)
             .setPeerAddress(Ip.parse("1.0.0.3"))
             .setEbgpMultihop(true)
             .setLocalAs(1L)
@@ -592,12 +600,15 @@ public class IncrementalDataPlanePluginTest {
             .build();
 
     // the neighbor should be reachable because multi-hops are allowed
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        BgpTopologyUtils.initiateBgpSession(
+    List<BgpSessionInitiationResult> initiationResults =
+        BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
+            ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        Iterables.getOnlyElement(initiationResults);
     assertTrue(bgpSessionInitiationResult.isSuccessful());
     assertThat(
         Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
@@ -623,9 +634,10 @@ public class IncrementalDataPlanePluginTest {
     BgpPeerConfigId listener =
         new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
 
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setLocalIp(initiatorLocalIp)
             .setPeerAddress(Ip.parse("1.0.0.3"))
             .setEbgpMultihop(true)
             .setLocalAs(1L)
@@ -635,12 +647,15 @@ public class IncrementalDataPlanePluginTest {
 
     // the neighbor should not be reachable even though multihops are allowed as traceroute would be
     // denied in on node 3
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        BgpTopologyUtils.initiateBgpSession(
+    List<BgpSessionInitiationResult> initiationResults =
+        BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
+            ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        Iterables.getOnlyElement(initiationResults);
     assertFalse(bgpSessionInitiationResult.isSuccessful());
     assertThat(
         Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
@@ -666,9 +681,10 @@ public class IncrementalDataPlanePluginTest {
     BgpPeerConfigId listener =
         new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
 
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
     BgpActivePeerConfig source =
         BgpActivePeerConfig.builder()
-            .setLocalIp(Ip.parse("1.0.0.0"))
+            .setLocalIp(initiatorLocalIp)
             .setPeerAddress(Ip.parse("1.0.0.3"))
             .setEbgpMultihop(true)
             .setLocalAs(1L)
@@ -678,12 +694,15 @@ public class IncrementalDataPlanePluginTest {
 
     // neighbor should be reachable because ACL allows established connection back into node1 and
     // allows everything out
-    BgpSessionInitiationResult bgpSessionInitiationResult =
-        BgpTopologyUtils.initiateBgpSession(
+    List<BgpSessionInitiationResult> initiationResults =
+        BgpTopologyUtils.initiateBgpSessions(
             initiator,
             listener,
             source,
+            ImmutableSet.of(initiatorLocalIp),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
+    BgpSessionInitiationResult bgpSessionInitiationResult =
+        Iterables.getOnlyElement(initiationResults);
     assertTrue(bgpSessionInitiationResult.isSuccessful());
     assertThat(
         Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
