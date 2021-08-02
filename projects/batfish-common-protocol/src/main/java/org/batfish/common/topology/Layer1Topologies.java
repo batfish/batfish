@@ -119,8 +119,8 @@ public final class Layer1Topologies {
 
   @Override
   public int hashCode() {
-    return Objects.hash(
-        _synthesizedL1, _canonicalUserL1, _combinedL1, _logicalL1, _activeLogicalL1);
+    // _combinedL1 is redundant, since derived from others.
+    return Objects.hash(_synthesizedL1, _canonicalUserL1, _logicalL1, _activeLogicalL1);
   }
 
   /** Extra Layer-1 edges created during conversion (vendor-specific) or post-processing (ISPs). */
