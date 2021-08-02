@@ -143,7 +143,7 @@ public class BgpProcess implements Serializable {
    * A map of all non-dynamic bgp neighbors with which the router owning this process is configured
    * to peer, keyed by unique ID.
    */
-  @Nonnull private SortedMap<Prefix, BgpActivePeerConfig> _activeNeighbors;
+  @Nonnull private SortedMap<Ip, BgpActivePeerConfig> _activeNeighbors;
 
   /**
    * A map of all dynamic bgp neighbors with which the router owning this process is configured to
@@ -290,7 +290,7 @@ public class BgpProcess implements Serializable {
   /** Neighbor relationships configured for this BGP process. */
   @JsonProperty(PROP_ACTIVE_NEIGHBORS)
   @Nonnull
-  public SortedMap<Prefix, BgpActivePeerConfig> getActiveNeighbors() {
+  public SortedMap<Ip, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
   }
 
@@ -429,7 +429,7 @@ public class BgpProcess implements Serializable {
   }
 
   @JsonProperty(PROP_ACTIVE_NEIGHBORS)
-  public void setNeighbors(SortedMap<Prefix, BgpActivePeerConfig> neighbors) {
+  public void setNeighbors(SortedMap<Ip, BgpActivePeerConfig> neighbors) {
     _activeNeighbors = firstNonNull(neighbors, new TreeMap<>());
   }
 

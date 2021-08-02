@@ -443,22 +443,18 @@ public final class F5BigipStructuredGrammarTest {
         hasDefaultVrf(
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.strict("192.0.2.1/32"),
-                    hasDescription("Cool IPv4 BGP neighbor description")))));
+                    Ip.parse("192.0.2.1"), hasDescription("Cool IPv4 BGP neighbor description")))));
     assertThat(
         c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasLocalAs(123L)))));
+        hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("192.0.2.1"), hasLocalAs(123L)))));
     assertThat(
         c,
         hasDefaultVrf(
             hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.strict("192.0.2.1/32"), hasLocalIp(Ip.parse("192.0.2.2"))))));
+                hasActiveNeighbor(Ip.parse("192.0.2.1"), hasLocalIp(Ip.parse("192.0.2.2"))))));
     assertThat(
         c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.strict("192.0.2.1/32"), hasRemoteAs(456L)))));
+        hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("192.0.2.1"), hasRemoteAs(456L)))));
 
     //// generated routing policies
     String bgpProcessName = "/Common/my_bgp";
@@ -645,55 +641,48 @@ public final class F5BigipStructuredGrammarTest {
         c,
         hasDefaultVrf(
             hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.strict("10.0.0.2/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+                hasActiveNeighbor(Ip.parse("10.0.0.2"), hasLocalIp(Ip.parse("10.0.0.1"))))));
 
     // eBGP multihop should use update-source
     assertThat(
         c,
         hasDefaultVrf(
             hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.strict("10.0.1.2/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+                hasActiveNeighbor(Ip.parse("10.0.1.2"), hasLocalIp(Ip.parse("10.0.0.1"))))));
 
     // iBGP should use update-source
     assertThat(
         c,
         hasDefaultVrf(
             hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.strict("10.0.2.2/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+                hasActiveNeighbor(Ip.parse("10.0.2.2"), hasLocalIp(Ip.parse("10.0.0.1"))))));
 
     // iBGP should use interface IP when update-source is not declared
     assertThat(
         c,
         hasDefaultVrf(
             hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.strict("10.0.0.3/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+                hasActiveNeighbor(Ip.parse("10.0.0.3"), hasLocalIp(Ip.parse("10.0.0.1"))))));
 
     // iBGP should use interface IP when update-source is undefined
     assertThat(
         c,
         hasDefaultVrf(
             hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.strict("10.0.0.4/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+                hasActiveNeighbor(Ip.parse("10.0.0.4"), hasLocalIp(Ip.parse("10.0.0.1"))))));
 
     // iBGP should use interface IP when update-source has no IP
     assertThat(
         c,
         hasDefaultVrf(
             hasBgpProcess(
-                hasActiveNeighbor(
-                    Prefix.strict("10.0.0.5/32"), hasLocalIp(Ip.parse("10.0.0.1"))))));
+                hasActiveNeighbor(Ip.parse("10.0.0.5"), hasLocalIp(Ip.parse("10.0.0.1"))))));
 
     // iBGP should use null when no usable IP
     assertThat(
         c,
         hasDefaultVrf(
-            hasBgpProcess(
-                hasActiveNeighbor(Prefix.strict("10.0.3.2/32"), hasLocalIp(nullValue())))));
+            hasBgpProcess(hasActiveNeighbor(Ip.parse("10.0.3.2"), hasLocalIp(nullValue())))));
   }
 
   @Test

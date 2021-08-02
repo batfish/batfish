@@ -107,7 +107,6 @@ public class BgpTopologyUtilsTest {
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip2 = Ip.parse("2.2.2.2");
 
-    Prefix peer1PeerPrefix = ip2.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -119,7 +118,7 @@ public class BgpTopologyUtilsTest {
                     .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
                     .build())
             .build();
-    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip2, peer1));
 
     Prefix peer2PeerPrefix = Prefix.create(ip1, 24);
     BgpPassivePeerConfig peer2 =
@@ -157,7 +156,6 @@ public class BgpTopologyUtilsTest {
 
     Ip ip = Ip.parse("1.1.1.1");
 
-    Prefix peer1PeerPrefix = ip.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip)
@@ -169,7 +167,7 @@ public class BgpTopologyUtilsTest {
                     .setAddressFamilyCapabilities(AddressFamilyCapabilities.builder().build())
                     .build())
             .build();
-    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip, peer1));
 
     Map<Ip, Map<String, Set<String>>> ipOwners =
         ImmutableMap.of(ip, ImmutableMap.of(NODE1, ImmutableSet.of(DEFAULT_VRF_NAME)));
@@ -190,7 +188,6 @@ public class BgpTopologyUtilsTest {
     Ip ip2 = Ip.parse("1.1.1.2");
     Ip ip3 = Ip.parse("1.1.1.3");
 
-    Prefix peer1PeerPrefix = ip2.toPrefix();
     BgpActivePeerConfig peer1 =
         BgpActivePeerConfig.builder()
             .setLocalIp(ip1)
@@ -199,7 +196,7 @@ public class BgpTopologyUtilsTest {
             .setRemoteAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
-    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(peer1PeerPrefix, peer1));
+    _node1BgpProcess.setNeighbors(ImmutableSortedMap.of(ip2, peer1));
 
     Prefix prefixForPeer1 = Prefix.create(ip1, 24);
     BgpPassivePeerConfig.Builder passivePeerBuilder =

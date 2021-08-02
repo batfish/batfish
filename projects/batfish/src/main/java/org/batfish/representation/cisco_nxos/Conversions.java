@@ -214,7 +214,7 @@ final class Conversions {
   }
 
   @Nonnull
-  static Map<Prefix, BgpActivePeerConfig> getNeighbors(
+  static Map<Ip, BgpActivePeerConfig> getNeighbors(
       Configuration c,
       CiscoNxosConfiguration vsConfig,
       Vrf vrf,
@@ -227,7 +227,7 @@ final class Conversions {
         .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
         .collect(
             ImmutableMap.toImmutableMap(
-                e -> e.getKey().toPrefix(),
+                Entry::getKey,
                 e ->
                     (BgpActivePeerConfig)
                         Conversions.toBgpNeighbor(

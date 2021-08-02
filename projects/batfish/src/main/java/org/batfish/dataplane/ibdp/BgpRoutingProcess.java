@@ -410,7 +410,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return Streams.concat(
             _process.getActiveNeighbors().entrySet().stream()
                 .filter(e -> familyExtractor.apply(e.getValue()) != null)
-                .map(e -> new BgpPeerConfigId(_hostname, _vrfName, e.getKey(), false)),
+                .map(e -> new BgpPeerConfigId(_hostname, _vrfName, e.getKey().toPrefix(), false)),
             _process.getPassiveNeighbors().entrySet().stream()
                 .filter(e -> familyExtractor.apply(e.getValue()) != null)
                 .map(e -> new BgpPeerConfigId(_hostname, _vrfName, e.getKey(), true)),
@@ -1673,8 +1673,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       BgpAdvertisement advert, Map<Bgpv4Rib, RibDelta.Builder<Bgpv4Route>> ribDeltas) {
     Ip srcIp = advert.getSrcIp();
     // TODO: support passive and unnumbered bgp connections
-    Prefix srcPrefix = srcIp.toPrefix();
-    BgpPeerConfig neighbor = _process.getActiveNeighbors().get(srcPrefix);
+    BgpPeerConfig neighbor = _process.getActiveNeighbors().get(srcIp);
     assert neighbor != null; // invariant of being processed
 
     // Build a route based on the type of this advertisement
@@ -1804,8 +1803,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
                   Ip srcIp = advert.getSrcIp();
                   // TODO: support passive and unnumbered bgp connections
-                  Prefix srcPrefix = srcIp.toPrefix();
-                  BgpPeerConfig neighbor = _process.getActiveNeighbors().get(srcPrefix);
+                  BgpPeerConfig neighbor = _process.getActiveNeighbors().get(srcIp);
                   if (neighbor == null) {
                     return false;
                   }

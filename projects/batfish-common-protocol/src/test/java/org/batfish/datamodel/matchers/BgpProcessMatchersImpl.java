@@ -71,17 +71,16 @@ final class BgpProcessMatchersImpl {
   }
 
   static final class HasActiveNeighbor extends FeatureMatcher<BgpProcess, BgpActivePeerConfig> {
-    private final Prefix _prefix;
+    private final Ip _ip;
 
-    HasActiveNeighbor(
-        @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
-      super(subMatcher, "A BGP process with active neighbor " + prefix + ":", "neighbor " + prefix);
-      _prefix = prefix;
+    HasActiveNeighbor(@Nonnull Ip ip, @Nonnull Matcher<? super BgpActivePeerConfig> subMatcher) {
+      super(subMatcher, "A BGP process with active neighbor " + ip + ":", "neighbor " + ip);
+      _ip = ip;
     }
 
     @Override
     protected BgpActivePeerConfig featureValueOf(BgpProcess actual) {
-      return actual.getActiveNeighbors().get(_prefix);
+      return actual.getActiveNeighbors().get(_ip);
     }
   }
 
@@ -101,14 +100,13 @@ final class BgpProcessMatchersImpl {
     }
   }
 
-  static final class HasNeighbors
-      extends FeatureMatcher<BgpProcess, Map<Prefix, BgpActivePeerConfig>> {
-    HasNeighbors(@Nonnull Matcher<? super Map<Prefix, BgpActivePeerConfig>> subMatcher) {
+  static final class HasNeighbors extends FeatureMatcher<BgpProcess, Map<Ip, BgpActivePeerConfig>> {
+    HasNeighbors(@Nonnull Matcher<? super Map<Ip, BgpActivePeerConfig>> subMatcher) {
       super(subMatcher, "A BGP process with neighbors:", "neighbors");
     }
 
     @Override
-    protected Map<Prefix, BgpActivePeerConfig> featureValueOf(BgpProcess actual) {
+    protected Map<Ip, BgpActivePeerConfig> featureValueOf(BgpProcess actual) {
       return actual.getActiveNeighbors();
     }
   }

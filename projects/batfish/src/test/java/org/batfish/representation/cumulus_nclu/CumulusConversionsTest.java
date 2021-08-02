@@ -651,8 +651,7 @@ public final class CumulusConversionsTest {
 
     // there should be no generated default route
     assertThat(
-        newProc.getActiveNeighbors().get(peerIp.toPrefix()).getGeneratedRoutes(),
-        equalTo(ImmutableSet.of()));
+        newProc.getActiveNeighbors().get(peerIp).getGeneratedRoutes(), equalTo(ImmutableSet.of()));
   }
 
   @Test
@@ -690,7 +689,7 @@ public final class CumulusConversionsTest {
 
     // there should be a generated default route
     assertThat(
-        newProc.getActiveNeighbors().get(peerIp.toPrefix()).getGeneratedRoutes(),
+        newProc.getActiveNeighbors().get(peerIp).getGeneratedRoutes(),
         equalTo(ImmutableSet.of(GENERATED_DEFAULT_ROUTE)));
 
     // We test exact match with the constant REJECT_DEFAULT_ROUTE here. The constant is
@@ -736,7 +735,7 @@ public final class CumulusConversionsTest {
         peerConfigBuilder,
         new Warnings());
 
-    BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(peerIp.toPrefix());
+    BgpActivePeerConfig peerConfig = newProc.getActiveNeighbors().get(peerIp);
     assertTrue(peerConfig.getEbgpMultihop());
   }
 
@@ -1769,9 +1768,9 @@ public final class CumulusConversionsTest {
     addBgpNeighbor(
         c, new CumulusNcluConfiguration(), new BgpVrf(viVrf.getName()), neighbor, new Warnings());
 
-    Prefix peerPrefix = Prefix.parse("1.1.1.0/32");
-    assertTrue(bgpProc.getActiveNeighbors().containsKey(peerPrefix));
-    assertEquals(bgpProc.getActiveNeighbors().get(peerPrefix).getLocalIp(), ifaceAddress.getIp());
+    Ip peerIp = Ip.parse("1.1.1.0");
+    assertTrue(bgpProc.getActiveNeighbors().containsKey(peerIp));
+    assertEquals(bgpProc.getActiveNeighbors().get(peerIp).getLocalIp(), ifaceAddress.getIp());
   }
 
   @Test

@@ -1034,7 +1034,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.bgp.AddressFamily af =
           bgpProcess
               .getActiveNeighbors()
-              .get(Prefix.parse("192.168.0.2/32"))
+              .get(Ip.parse("192.168.0.2"))
               .getIpv4UnicastAddressFamily();
       RoutingPolicy bgpImportPolicy = c.getRoutingPolicies().get(af.getImportPolicy());
       RoutingPolicy bgpExportPolicy = c.getRoutingPolicies().get(af.getExportPolicy());
@@ -1065,10 +1065,7 @@ public final class CiscoNxosGrammarTest {
     // EVPN address family
     {
       org.batfish.datamodel.bgp.AddressFamily af =
-          bgpProcess
-              .getActiveNeighbors()
-              .get(Prefix.parse("192.168.0.3/32"))
-              .getEvpnAddressFamily();
+          bgpProcess.getActiveNeighbors().get(Ip.parse("192.168.0.3")).getEvpnAddressFamily();
       RoutingPolicy bgpImportPolicy = c.getRoutingPolicies().get(af.getImportPolicy());
       RoutingPolicy bgpExportPolicy = c.getRoutingPolicies().get(af.getExportPolicy());
 
@@ -1100,7 +1097,7 @@ public final class CiscoNxosGrammarTest {
       org.batfish.datamodel.bgp.AddressFamily af =
           bgpProcess
               .getActiveNeighbors()
-              .get(Prefix.parse("192.168.0.4/32"))
+              .get(Ip.parse("192.168.0.4"))
               .getIpv4UnicastAddressFamily();
       RoutingPolicy bgpImportPolicy = c.getRoutingPolicies().get(af.getImportPolicy());
       RoutingPolicy bgpExportPolicy = c.getRoutingPolicies().get(af.getExportPolicy());
@@ -1609,7 +1606,7 @@ public final class CiscoNxosGrammarTest {
                 .setImportRouteTarget(ExtendedCommunity.target(1, 3333).matchString())
                 .build());
     BgpPeerConfig peer =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("1.1.1.1/32"));
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("1.1.1.1"));
     assertThat(peer.getEvpnAddressFamily(), notNullValue());
     assertThat(peer.getEvpnAddressFamily().getL2VNIs(), equalTo(expectedL2Vnis));
     assertThat(peer.getEvpnAddressFamily().getL3VNIs(), equalTo(expectedL3Vnis));
@@ -7849,7 +7846,7 @@ public final class CiscoNxosGrammarTest {
                 c.getDefaultVrf()
                     .getBgpProcess()
                     .getActiveNeighbors()
-                    .get(Prefix.strict("192.0.2.2/32"))
+                    .get(Ip.parse("192.0.2.2"))
                     .getIpv4UnicastAddressFamily()
                     .getExportPolicy());
     assertRoutingPolicyPermitsRoute(exportPolicy, bgpRouteBuilder.build());

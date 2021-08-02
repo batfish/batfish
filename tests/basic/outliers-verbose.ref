@@ -3201,7 +3201,7 @@
             "multipathEquivalentAsPathMatchMode" : "EXACT_PATH",
             "multipathIbgp" : true,
             "neighbors" : {
-              "1.10.1.1/32" : {
+              "1.10.1.1" : {
                 "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
@@ -3228,7 +3228,7 @@
                 "peerAddress" : "1.10.1.1",
                 "remoteAsns" : "1"
               },
-              "3.2.2.2/32" : {
+              "3.2.2.2" : {
                 "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
@@ -3254,7 +3254,7 @@
                 "peerAddress" : "3.2.2.2",
                 "remoteAsns" : "666"
               },
-              "5.6.7.8/32" : {
+              "5.6.7.8" : {
                 "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
@@ -3280,7 +3280,7 @@
                 "peerAddress" : "5.6.7.8",
                 "remoteAsns" : "555"
               },
-              "10.12.11.2/32" : {
+              "10.12.11.2" : {
                 "class" : "org.batfish.datamodel.BgpActivePeerConfig",
                 "clusterId" : 16843009,
                 "defaultMetric" : 0,
