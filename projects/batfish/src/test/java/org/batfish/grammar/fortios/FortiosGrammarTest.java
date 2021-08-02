@@ -804,10 +804,9 @@ public final class FortiosGrammarTest {
     assertThat(bgpProcessDefaultVrf, hasMultipathEbgp(false));
     assertThat(bgpProcessDefaultVrf, hasMultipathIbgp(false));
 
-    Map<Prefix, BgpActivePeerConfig> defaultVrfNeighbors =
-        bgpProcessDefaultVrf.getActiveNeighbors();
-    assertThat(defaultVrfNeighbors, hasKeys(ip1.toPrefix()));
-    BgpActivePeerConfig neighbor1 = defaultVrfNeighbors.get(ip1.toPrefix());
+    Map<Ip, BgpActivePeerConfig> defaultVrfNeighbors = bgpProcessDefaultVrf.getActiveNeighbors();
+    assertThat(defaultVrfNeighbors, hasKeys(ip1));
+    BgpActivePeerConfig neighbor1 = defaultVrfNeighbors.get(ip1);
     assertThat(neighbor1.getLocalAs(), equalTo(1L));
     // port1 is the explicit update-source
     assertThat(neighbor1.getLocalIp(), equalTo(Ip.parse("10.10.10.1")));
@@ -846,9 +845,9 @@ public final class FortiosGrammarTest {
     org.batfish.datamodel.BgpProcess bgpProcessVrf5 = c.getVrfs().get(vrf5Name).getBgpProcess();
     assertThat(bgpProcessVrf5, hasRouterId(Ip.parse("1.1.1.1")));
 
-    Map<Prefix, BgpActivePeerConfig> vrf5Neighbors = bgpProcessVrf5.getActiveNeighbors();
-    assertThat(defaultVrfNeighbors, hasKeys(ip1.toPrefix()));
-    BgpActivePeerConfig neighbor2 = vrf5Neighbors.get(ip2.toPrefix());
+    Map<Ip, BgpActivePeerConfig> vrf5Neighbors = bgpProcessVrf5.getActiveNeighbors();
+    assertThat(vrf5Neighbors, hasKeys(ip2));
+    BgpActivePeerConfig neighbor2 = vrf5Neighbors.get(ip2);
     assertThat(neighbor2.getLocalAs(), equalTo(1L));
     // port2 is the inferred update-source (its network includes ip2)
     assertThat(neighbor2.getLocalIp(), equalTo(Ip.parse("11.11.11.1")));

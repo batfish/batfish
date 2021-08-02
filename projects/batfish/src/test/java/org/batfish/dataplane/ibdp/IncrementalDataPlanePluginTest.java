@@ -426,7 +426,7 @@ public class IncrementalDataPlanePluginTest {
         result._topologies.getBgpTopology().getGraph();
 
     // N2 has proper neighbor relationship
-    Set<Entry<Prefix, BgpActivePeerConfig>> n2Neighbors =
+    Set<Entry<Ip, BgpActivePeerConfig>> n2Neighbors =
         configs
             .get("n2")
             .getVrfs()
@@ -434,10 +434,11 @@ public class IncrementalDataPlanePluginTest {
             .getBgpProcess()
             .getActiveNeighbors()
             .entrySet();
-    Entry<Prefix, BgpActivePeerConfig> e = n2Neighbors.iterator().next();
+    Entry<Ip, BgpActivePeerConfig> e = n2Neighbors.iterator().next();
     assertThat(n2Neighbors, hasSize(1));
     assertThat(
-        bgpTopology.degree(new BgpPeerConfigId("n2", DEFAULT_VRF_NAME, e.getKey(), false)),
+        bgpTopology.degree(
+            new BgpPeerConfigId("n2", DEFAULT_VRF_NAME, e.getKey().toPrefix(), false)),
         equalTo(2));
 
     // N1 does not have a full session established, because it's not reachable
@@ -452,7 +453,8 @@ public class IncrementalDataPlanePluginTest {
     e = n2Neighbors.iterator().next();
     assertThat(n1Neighbors, hasSize(1));
     assertThat(
-        bgpTopology.degree(new BgpPeerConfigId("n1", DEFAULT_VRF_NAME, e.getKey(), false)),
+        bgpTopology.degree(
+            new BgpPeerConfigId("n1", DEFAULT_VRF_NAME, e.getKey().toPrefix(), false)),
         equalTo(0));
   }
 

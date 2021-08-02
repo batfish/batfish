@@ -6,7 +6,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.graph.MutableValueGraph;
@@ -43,7 +42,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
@@ -169,24 +167,28 @@ public final class BgpTopologyUtils {
             continue;
           }
 
-          // Active and dynamic peers
-          for (Entry<Prefix, ? extends BgpPeerConfig> entry :
-              Iterables.concat(
-                  proc.getActiveNeighbors().entrySet(), proc.getPassiveNeighbors().entrySet())) {
-            Prefix prefix = entry.getKey();
-            BgpPeerConfig bgpPeerConfig = entry.getValue();
-
-            if (!keepInvalid
-                && !bgpConfigPassesSanityChecks(bgpPeerConfig, hostname, vrfName, ipVrfOwners)) {
-              continue;
-            }
-
-            BgpPeerConfigId neighborID =
-                new BgpPeerConfigId(
-                    hostname, vrf.getName(), prefix, bgpPeerConfig instanceof BgpPassivePeerConfig);
-            graph.addNode(neighborID);
-          }
-
+          // Active peers: map of Ip to BgpActivePeerConfig
+          proc.getActiveNeighbors().entrySet().stream()
+              .filter(
+                  entry ->
+                      keepInvalid
+                          || bgpConfigPassesSanityChecks(
+                              entry.getValue(), hostname, vrfName, ipVrfOwners))
+              .forEach(
+                  entry ->
+                      graph.addNode(
+                          new BgpPeerConfigId(
+                              hostname, vrfName, entry.getKey().toPrefix(), false)));
+          // Dynamic peers: map of prefix to BgpPassivePeerConfig
+          proc.getPassiveNeighbors().entrySet().stream()
+              .filter(
+                  entry ->
+                      keepInvalid
+                          || bgpConfigPassesSanityChecks(
+                              entry.getValue(), hostname, vrfName, ipVrfOwners))
+              .forEach(
+                  entry ->
+                      graph.addNode(new BgpPeerConfigId(hostname, vrfName, entry.getKey(), true)));
           // Unnumbered BGP peers: map of interface name to BgpUnnumberedPeerConfig
           proc.getInterfaceNeighbors().entrySet().stream()
               .filter(

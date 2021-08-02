@@ -190,12 +190,11 @@ public class NxosBgpTest {
   @Test
   public void testBgpTagImportedRoutes() throws IOException {
     Configuration c = parseConfig("nxos_bgp_tag_imports");
-    Map<Prefix, BgpActivePeerConfig> neighbors =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    Map<Ip, BgpActivePeerConfig> neighbors = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder().setAsPath(AsPath.ofSingletonAsSets(65100L, 65101L));
 
-    BgpActivePeerConfig neighbor1 = neighbors.get(Prefix.parse("10.10.10.1/32"));
+    BgpActivePeerConfig neighbor1 = neighbors.get(Ip.parse("10.10.10.1"));
     RoutingPolicy importPolicy1 =
         c.getRoutingPolicies().get(neighbor1.getIpv4UnicastAddressFamily().getImportPolicy());
     {
@@ -221,7 +220,7 @@ public class NxosBgpTest {
     }
 
     // Second neighbor has no inbound route-map. Should permit all routes and set tag to latest AS
-    BgpActivePeerConfig neighbor2 = neighbors.get(Prefix.parse("10.10.10.2/32"));
+    BgpActivePeerConfig neighbor2 = neighbors.get(Ip.parse("10.10.10.2"));
     RoutingPolicy importPolicy2 =
         c.getRoutingPolicies().get(neighbor2.getIpv4UnicastAddressFamily().getImportPolicy());
     {
@@ -232,7 +231,7 @@ public class NxosBgpTest {
     }
 
     // Third neighbor has inbound prefix-list. Should permit 1.1.1.1/32 route, set tag to latest AS
-    BgpActivePeerConfig neighbor3 = neighbors.get(Prefix.parse("10.10.10.3/32"));
+    BgpActivePeerConfig neighbor3 = neighbors.get(Ip.parse("10.10.10.3"));
     RoutingPolicy importPolicy3 =
         c.getRoutingPolicies().get(neighbor3.getIpv4UnicastAddressFamily().getImportPolicy());
     {
@@ -254,7 +253,7 @@ public class NxosBgpTest {
             "bar",
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("2.2.2.2/32"),
+                    Ip.parse("2.2.2.2"),
                     allOf(
                         hasRemoteAs(2L),
                         hasLocalAs(1L),
@@ -266,7 +265,7 @@ public class NxosBgpTest {
             "bar",
             hasBgpProcess(
                 hasActiveNeighbor(
-                    Prefix.parse("3.3.3.3/32"),
+                    Ip.parse("3.3.3.3"),
                     hasIpv4UnicastAddressFamily(
                         hasAddressFamilyCapabilites(hasAllowRemoteAsOut(EXCEPT_FIRST)))))));
   }
@@ -292,7 +291,7 @@ public class NxosBgpTest {
     Configuration c = parseConfig("nxos-bgp-update-source-shutdown");
     BgpProcess p = c.getDefaultVrf().getBgpProcess();
     assertThat(p, notNullValue());
-    BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("1.2.3.5/32"));
+    BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Ip.parse("1.2.3.5"));
     assertThat(neighbor, notNullValue());
     assertThat(neighbor.getLocalIp(), equalTo(Ip.parse("1.2.3.4")));
   }

@@ -90,10 +90,12 @@ public final class NetworkConfigurations {
     if (id.getRemotePeerPrefix() == null) {
       return null;
     }
+    assert id.getRemotePeerPrefix().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH;
+    Ip peerIp = id.getRemotePeerPrefix().getStartIp();
     return getVrf(id.getHostname(), id.getVrfName())
         .map(Vrf::getBgpProcess)
         .map(BgpProcess::getActiveNeighbors)
-        .map(m -> m.get(id.getRemotePeerPrefix()))
+        .map(m -> m.get(peerIp))
         .orElse(null);
   }
 

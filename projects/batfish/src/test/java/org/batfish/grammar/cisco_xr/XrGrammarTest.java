@@ -1542,7 +1542,7 @@ public final class XrGrammarTest {
 
     // The BGP peer export policy also accepts and rejects the same prefixes.
     BgpActivePeerConfig bgpCfg =
-        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Prefix.parse("10.1.1.1/32"));
+        c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(Ip.parse("10.1.1.1"));
     assertThat(bgpCfg, notNullValue());
     RoutingPolicy bgpRpOut =
         c.getRoutingPolicies().get(bgpCfg.getIpv4UnicastAddressFamily().getExportPolicy());
@@ -2786,13 +2786,12 @@ public final class XrGrammarTest {
     // BGP peers with no import/export filters defined deny all routes in XR
     String hostname = "bgp-default-import-export";
     Configuration c = parseConfig(hostname);
-    Map<Prefix, BgpActivePeerConfig> peers = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
+    Map<Ip, BgpActivePeerConfig> peers = c.getDefaultVrf().getBgpProcess().getActiveNeighbors();
     Bgpv4Route route = Bgpv4Route.testBuilder().setNetwork(Prefix.parse("1.1.1.0/24")).build();
 
     // EBGP peers with unconfigured or undefined import/export policies should deny all routes
-    for (Prefix ebgpPeerPrefix :
-        ImmutableList.of(Prefix.parse("10.1.0.2/32"), Prefix.parse("10.1.0.3/32"))) {
-      BgpActivePeerConfig ebgpPeer = peers.get(ebgpPeerPrefix);
+    for (Ip ebgpPeerIp : ImmutableList.of(Ip.parse("10.1.0.2"), Ip.parse("10.1.0.3"))) {
+      BgpActivePeerConfig ebgpPeer = peers.get(ebgpPeerIp);
       RoutingPolicy importPolicy =
           c.getRoutingPolicies().get(ebgpPeer.getIpv4UnicastAddressFamily().getImportPolicy());
       RoutingPolicy exportPolicy =
@@ -2802,9 +2801,8 @@ public final class XrGrammarTest {
     }
 
     // IBGP peers with unconfigured or undefined import/export policies should permit all BGP routes
-    for (Prefix ibgpPeerPrefix :
-        ImmutableList.of(Prefix.parse("10.1.0.4/32"), Prefix.parse("10.1.0.5/32"))) {
-      BgpActivePeerConfig ibgpPeer = peers.get(ibgpPeerPrefix);
+    for (Ip ibgpPeerIp : ImmutableList.of(Ip.parse("10.1.0.4"), Ip.parse("10.1.0.5"))) {
+      BgpActivePeerConfig ibgpPeer = peers.get(ibgpPeerIp);
       RoutingPolicy exportPolicy =
           c.getRoutingPolicies().get(ibgpPeer.getIpv4UnicastAddressFamily().getExportPolicy());
       // Currently, there is no import policy in this case because import is completely unrestricted

@@ -866,15 +866,15 @@ public final class CiscoGrammarTest {
     assertThat(p, notNullValue());
     assertThat(p.getConfederation(), equalTo(new BgpConfederation(65100, ImmutableSet.of(65134L))));
     {
-      assertThat(p.getActiveNeighbors(), hasKey(Prefix.parse("192.168.123.2/32")));
-      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("192.168.123.2/32"));
+      assertThat(p.getActiveNeighbors(), hasKey(Ip.parse("192.168.123.2")));
+      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Ip.parse("192.168.123.2"));
       assertThat(neighbor.getConfederationAsn(), equalTo(65100L));
       assertThat(neighbor.getLocalAs(), equalTo(65112L));
       assertThat(neighbor.getRemoteAsns().enumerate(), contains(65112L));
     }
     {
-      assertThat(p.getActiveNeighbors(), hasKey(Prefix.parse("192.168.123.3/32")));
-      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Prefix.parse("192.168.123.3/32"));
+      assertThat(p.getActiveNeighbors(), hasKey(Ip.parse("192.168.123.3")));
+      BgpActivePeerConfig neighbor = p.getActiveNeighbors().get(Ip.parse("192.168.123.3"));
       assertThat(neighbor.getConfederationAsn(), equalTo(65100L));
       assertThat(neighbor.getLocalAs(), equalTo(65112L));
       assertThat(neighbor.getRemoteAsns().enumerate(), contains(65134L));
@@ -946,29 +946,29 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testIosBgpEnforceAsConversion() throws IOException {
-    Prefix peer = Prefix.parse("1.2.3.4/32");
+    Ip ip = Ip.parse("1.2.3.4");
     {
       Configuration c = parseConfig("ios-bgp-enforce-first-as-disabled");
       BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
-      assertThat(p.getActiveNeighbors(), hasKeys(peer));
-      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertThat(p.getActiveNeighbors(), hasKeys(ip));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(ip);
       assertFalse(n.getEnforceFirstAs());
     }
     {
       Configuration c = parseConfig("ios-bgp-enforce-first-as-explicit");
       BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
-      assertThat(p.getActiveNeighbors(), hasKeys(peer));
-      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertThat(p.getActiveNeighbors(), hasKeys(ip));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(ip);
       assertTrue(n.getEnforceFirstAs());
     }
     {
       Configuration c = parseConfig("ios-bgp-enforce-first-as-default");
       BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
-      assertThat(p.getActiveNeighbors(), hasKeys(peer));
-      BgpActivePeerConfig n = p.getActiveNeighbors().get(peer);
+      assertThat(p.getActiveNeighbors(), hasKeys(ip));
+      BgpActivePeerConfig n = p.getActiveNeighbors().get(ip);
       assertTrue(n.getEnforceFirstAs());
     }
   }
@@ -1034,9 +1034,9 @@ public final class CiscoGrammarTest {
             _folder);
 
     // Confirm that BGP peer on r1 is missing its local IP, as expected
-    Prefix r1NeighborPeerAddress = Prefix.parse("2.2.2.2/32");
+    Ip r1NeighborPeerAddress = Ip.parse("2.2.2.2");
     Configuration r1 = batfish.loadConfigurations(batfish.getSnapshot()).get("r1");
-    SortedMap<Prefix, BgpActivePeerConfig> r1Peers =
+    SortedMap<Ip, BgpActivePeerConfig> r1Peers =
         r1.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors();
     assertTrue(r1Peers.containsKey(r1NeighborPeerAddress));
     assertThat(r1Peers.get(r1NeighborPeerAddress).getLocalIp(), nullValue());
@@ -3677,7 +3677,7 @@ public final class CiscoGrammarTest {
               .get(DEFAULT_VRF_NAME)
               .getBgpProcess()
               .getActiveNeighbors()
-              .get(Prefix.parse("2.2.2.3/32"))
+              .get(Ip.parse("2.2.2.3"))
               .getLocalAs(),
           equalTo(4123456789L));
     }
@@ -5497,7 +5497,7 @@ public final class CiscoGrammarTest {
             .getDefaultVrf()
             .getBgpProcess()
             .getActiveNeighbors()
-            .get(Prefix.parse("1.1.1.1/32"))
+            .get(Ip.parse("1.1.1.1"))
             .getIpv4UnicastAddressFamily()
             .getAddressFamilyCapabilities()
             .getAdvertiseInactive());
@@ -5561,13 +5561,9 @@ public final class CiscoGrammarTest {
   public void testRenterBgpStanza() throws IOException {
     Configuration c = parseConfig("ios-bgp-reenter-process");
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.parse("2.2.2.3/32"), hasRemoteAs(3L)))));
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.3"), hasRemoteAs(3L)))));
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasBgpProcess(hasActiveNeighbor(Prefix.parse("2.2.2.4/32"), hasRemoteAs(4L)))));
+        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.4"), hasRemoteAs(4L)))));
   }
 
   @Test

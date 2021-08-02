@@ -95,7 +95,7 @@ public class BgpProcessConfigurationAnswererTest {
             .put(BgpProcessPropertySpecifier.MULTIPATH_IBGP, false)
             .put(
                 BgpProcessPropertySpecifier.NEIGHBORS,
-                ImmutableSet.of("2.2.2.2/32", "3.3.3.0/24", "iface"))
+                ImmutableSet.of("2.2.2.2", "3.3.3.0/24", "iface"))
             .put(BgpProcessPropertySpecifier.ROUTE_REFLECTOR, false)
             .put(BgpProcessPropertySpecifier.TIE_BREAKER, BgpTieBreaker.ARRIVAL_ORDER.toString())
             .build();

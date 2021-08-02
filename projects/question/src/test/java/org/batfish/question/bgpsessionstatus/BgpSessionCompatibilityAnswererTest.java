@@ -566,8 +566,9 @@ public class BgpSessionCompatibilityAnswererTest {
 
       // Add peer in the appropriate map in the BgpProcess
       if (id.getType() == BgpPeerConfigType.ACTIVE) {
-        bgpProc.setNeighbors(
-            ImmutableSortedMap.of(id.getRemotePeerPrefix(), (BgpActivePeerConfig) peer));
+        assert id.getRemotePeerPrefix().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH;
+        Ip remotePeerAddress = id.getRemotePeerPrefix().getStartIp();
+        bgpProc.setNeighbors(ImmutableSortedMap.of(remotePeerAddress, (BgpActivePeerConfig) peer));
       } else if (id.getType() == BgpPeerConfigType.DYNAMIC) {
         bgpProc.setPassiveNeighbors(
             ImmutableSortedMap.of(id.getRemotePeerPrefix(), (BgpPassivePeerConfig) peer));
