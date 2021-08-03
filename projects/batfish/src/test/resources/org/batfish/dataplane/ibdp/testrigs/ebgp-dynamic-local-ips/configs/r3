@@ -1,0 +1,50 @@
+!! IOS XR Configuration version = 6.2.2
+!
+hostname r3
+!
+interface Loopback0
+ description BGP router-id
+ ipv4 address 3.3.3.3 255.255.255.255
+!
+interface GigabitEthernet0/0/0/1
+ ipv4 address 13.13.13.1 255.255.255.252
+!
+prefix-set REDIST_STATIC
+  23.23.23.23/32
+end-set
+!
+route-policy REDIST_STATIC
+  if destination in REDIST_STATIC then
+    pass
+  else
+    drop
+  endif
+end-policy
+!
+route-policy allow-all
+  pass
+end-policy
+!
+router static
+ address-family ipv4 unicast
+  11.11.11.1/32 13.13.13.2
+  ! To redistribute into BGP
+  23.23.23.23/32 Null0
+ !
+!
+router bgp 65103
+ bgp router-id 3.3.3.3
+ address-family ipv4 unicast
+  redistribute static route-policy REDIST_STATIC
+ !
+ neighbor 11.11.11.1
+  remote-as 65101
+  ebgp-multihop 4
+  address-family ipv4 unicast
+  ! XR eBGP peers default deny imports and exports
+  route-policy allow-all in
+  route-policy allow-all out
+  !
+ !
+!
+end
