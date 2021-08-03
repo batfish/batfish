@@ -17,11 +17,21 @@ import org.junit.Test;
 
 public class InterfaceUtilTest {
   @Test
-  public void testMatchingInterfaceName() {
+  public void testMatchingInterfaceNameKnown() {
     Set<String> known = ImmutableSet.of("Ethernet1", "Ethernet2");
     assertThat(matchingInterfaceName("Ethernet1", known), equalTo(Optional.of("Ethernet1")));
     assertThat(matchingInterfaceName("ETHERNET1", known), equalTo(Optional.of("Ethernet1")));
     assertThat(matchingInterfaceName("Ethernet3", known), equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testMatchingInterfaceNameCanonicalized() {
+    Set<String> known = ImmutableSet.of("TenGigE1", "TenGigE1.5");
+    assertThat(matchingInterfaceName("Ethernet1", known), equalTo(Optional.empty()));
+    assertThat(
+        matchingInterfaceName("TenGigabitEthernet1", known), equalTo(Optional.of("TenGigE1")));
+    assertThat(
+        matchingInterfaceName("tengigabitethernet1", known), equalTo(Optional.of("TenGigE1")));
   }
 
   @Test
