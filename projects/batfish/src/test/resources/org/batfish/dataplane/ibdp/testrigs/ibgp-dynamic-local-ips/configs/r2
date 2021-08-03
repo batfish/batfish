@@ -1,0 +1,13 @@
+!! IOS XR Configuration version = 6.2.2
+!
+hostname r2
+!
+interface GigabitEthernet0/0/0/1
+ description r1
+ ipv4 address 11.11.11.2 255.255.255.252
+!
+interface GigabitEthernet0/0/0/2
+ description r3
+ ipv4 address 13.13.13.2 255.255.255.252
+!
+end

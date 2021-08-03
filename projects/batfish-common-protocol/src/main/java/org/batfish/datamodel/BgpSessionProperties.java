@@ -39,8 +39,8 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
  *   <li>For this session to be created, two configurations must be deemed compatible.
  *   <li>Some properties of the session are directional (such as head/tail IPs) and therefore must
  *       be reciprocal if the edge is reversed. Others are negotiated by devices and therefore must
- *       be equal in both directions. See {@link #from(BgpPeerConfig, BgpPeerConfig, boolean, long,
- *       long, ConfedSessionType)} for more details.
+ *       be equal in both directions. See {@link #from(BgpPeerConfig, Ip, BgpPeerConfig, boolean,
+ *       long, long, ConfedSessionType)} for more details.
  * </ul>
  */
 @ParametersAreNonnullByDefault
@@ -315,12 +315,12 @@ public final class BgpSessionProperties {
    */
   public static BgpSessionProperties from(
       BgpPeerConfig initiator,
+      Ip initiatorIp,
       BgpPeerConfig listener,
       boolean reverseDirection,
       long initiatorLocalAs,
       long listenerLocalAs,
       ConfedSessionType confedSessionType) {
-    Ip initiatorIp = initiator.getLocalIp();
     Ip listenerIp = listener.getLocalIp();
     if (listenerIp == null || Ip.AUTO.equals(listenerIp)) {
       // Determine listener's IP from initiator.
@@ -329,7 +329,6 @@ public final class BgpSessionProperties {
       assert initiator instanceof BgpActivePeerConfig;
       listenerIp = ((BgpActivePeerConfig) initiator).getPeerAddress();
     }
-    assert initiatorIp != null;
     assert listenerIp != null;
 
     SessionType sessionType = getSessionType(initiator);
@@ -368,9 +367,11 @@ public final class BgpSessionProperties {
 
     // Both local ASNs must be nonnull for BgpPeerConfig#hasCompatibleRemoteAsns to have passed.
     long initiatorLocalAs = checkNotNull(initiator.getLocalAs());
+    Ip initiatorLocalIp = checkNotNull(initiator.getLocalIp());
     long listenerLocalAs = checkNotNull(listener.getLocalAs());
     return from(
         initiator,
+        initiatorLocalIp,
         listener,
         reverseDirection,
         initiatorLocalAs,
