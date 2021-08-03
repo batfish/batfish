@@ -20,6 +20,7 @@ import static org.batfish.datamodel.routing_policy.statement.Statements.ExitReje
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAbfIpv4PolicyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST_LINE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.PREFIX_LIST;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -1169,10 +1170,15 @@ public class CiscoXrConversions {
     return new Ip6AccessList(name, lines);
   }
 
-  static IpAccessList toIpAccessList(Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups) {
+  public static String aclLineName(String aclName, String lineName) {
+    return String.format("%s: %s", aclName, lineName);
+  }
+
+  static IpAccessList toIpAccessList(
+      Ipv4AccessList eaList, Map<String, ObjectGroup> objectGroups, String filename) {
     List<AclLine> lines =
         eaList.getLines().stream()
-            .map(l -> toExprAclLine(l, objectGroups))
+            .map(l -> toExprAclLine(l, objectGroups, filename, eaList.getName()))
             .collect(ImmutableList.toImmutableList());
     String name = eaList.getName();
     return IpAccessList.builder()
@@ -1924,11 +1930,19 @@ public class CiscoXrConversions {
   }
 
   private static ExprAclLine toExprAclLine(
-      Ipv4AccessListLine line, Map<String, ObjectGroup> objectGroups) {
+      Ipv4AccessListLine line,
+      Map<String, ObjectGroup> objectGroups,
+      String filename,
+      String aclName) {
     return ExprAclLine.builder()
         .setAction(line.getAction())
         .setMatchCondition(toAclLineMatchExpr(line, objectGroups))
         .setName(line.getName())
+        .setVendorStructureId(
+            new VendorStructureId(
+                filename,
+                IPV4_ACCESS_LIST_LINE.getDescription(),
+                aclLineName(aclName, line.getName())))
         .build();
   }
 

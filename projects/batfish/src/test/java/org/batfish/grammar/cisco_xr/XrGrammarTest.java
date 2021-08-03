@@ -40,6 +40,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeAb
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchAnyName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeCommunitySetMatchEveryName;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.computeExtcommunitySetRtName;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.DYNAMIC_TEMPLATE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ETHERNET_SERVICES_ACCESS_LIST;
@@ -134,6 +135,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -149,6 +151,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -224,6 +227,7 @@ import org.batfish.representation.cisco_xr.AsPathSetVariable;
 import org.batfish.representation.cisco_xr.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco_xr.BridgeDomain;
 import org.batfish.representation.cisco_xr.CiscoXrConfiguration;
+import org.batfish.representation.cisco_xr.CiscoXrStructureType;
 import org.batfish.representation.cisco_xr.DfaRegexAsPathSetElem;
 import org.batfish.representation.cisco_xr.DistributeList;
 import org.batfish.representation.cisco_xr.DistributeList.DistributeListFilterType;
@@ -291,6 +295,7 @@ import org.batfish.representation.cisco_xr.XrRoutePolicyBooleanCommunityMatchesE
 import org.batfish.representation.cisco_xr.XrRoutePolicyDeleteCommunityStatement;
 import org.batfish.representation.cisco_xr.XrRoutePolicySetCommunity;
 import org.batfish.representation.cisco_xr.XrWildcardCommunitySetElem;
+import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -417,6 +422,18 @@ public final class XrGrammarTest {
               .build();
       assertThat(bdds.getPermitBdd(), equalTo(_aclToBdd.getHeaderSpaceToBDD().toBDD(expected)));
       assertThat(bdds.getDenyBdd(), isZero());
+    }
+
+    // test line VendorStructureIds
+    {
+      AclLine line = acl.getLines().get(0);
+      assertEquals(
+          Optional.of(
+              new VendorStructureId(
+                  "configs/acl",
+                  CiscoXrStructureType.IPV4_ACCESS_LIST_LINE.getDescription(),
+                  aclLineName(acl.getName(), line.getName()))),
+          line.getVendorStructureId());
     }
 
     assertThat(c.getIp6AccessLists(), hasKeys("aclv6"));
