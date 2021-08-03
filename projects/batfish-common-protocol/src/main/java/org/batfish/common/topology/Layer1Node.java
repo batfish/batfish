@@ -10,6 +10,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 @ParametersAreNonnullByDefault
 public final class Layer1Node implements Comparable<Layer1Node> {
@@ -33,6 +34,10 @@ public final class Layer1Node implements Comparable<Layer1Node> {
     // Guarantee hostname is canonical (lowercase)
     _hostname = hostname.toLowerCase();
     _interfaceName = interfaceName;
+  }
+
+  public @Nonnull NodeInterfacePair asNodeInterfacePair() {
+    return NodeInterfacePair.of(_hostname, _interfaceName);
   }
 
   @Override
