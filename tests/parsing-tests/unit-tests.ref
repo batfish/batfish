@@ -73678,6 +73678,188 @@
               "definitionLines" : "12-56",
               "numReferrers" : 0
             }
+          },
+          "ipv4 access-list line" : {
+            "DENY_ALL: 5 deny ipv4 any any icmp-off" : {
+              "definitionLines" : "10",
+              "numReferrers" : 1
+            },
+            "ICMP: 10 deny icmp any any administratively-prohibited" : {
+              "definitionLines" : "13",
+              "numReferrers" : 1
+            },
+            "ICMP: 100 deny icmp any any host-precedence-unreachable" : {
+              "definitionLines" : "22",
+              "numReferrers" : 1
+            },
+            "ICMP: 110 deny icmp any any host-redirect" : {
+              "definitionLines" : "23",
+              "numReferrers" : 1
+            },
+            "ICMP: 120 deny icmp any any host-tos-redirect" : {
+              "definitionLines" : "24",
+              "numReferrers" : 1
+            },
+            "ICMP: 130 deny icmp any any host-tos-unreachable" : {
+              "definitionLines" : "25",
+              "numReferrers" : 1
+            },
+            "ICMP: 140 deny icmp any any host-unknown" : {
+              "definitionLines" : "26",
+              "numReferrers" : 1
+            },
+            "ICMP: 150 deny icmp any any host-unreachable" : {
+              "definitionLines" : "27",
+              "numReferrers" : 1
+            },
+            "ICMP: 160 deny icmp any any information-reply" : {
+              "definitionLines" : "28",
+              "numReferrers" : 1
+            },
+            "ICMP: 170 deny icmp any any information-request" : {
+              "definitionLines" : "29",
+              "numReferrers" : 1
+            },
+            "ICMP: 180 deny icmp any any mask-reply" : {
+              "definitionLines" : "30",
+              "numReferrers" : 1
+            },
+            "ICMP: 190 deny icmp any any mask-request" : {
+              "definitionLines" : "31",
+              "numReferrers" : 1
+            },
+            "ICMP: 20 deny icmp any any alternate-address" : {
+              "definitionLines" : "14",
+              "numReferrers" : 1
+            },
+            "ICMP: 200 deny icmp any any mobile-redirect" : {
+              "definitionLines" : "32",
+              "numReferrers" : 1
+            },
+            "ICMP: 210 deny icmp any any net-redirect" : {
+              "definitionLines" : "33",
+              "numReferrers" : 1
+            },
+            "ICMP: 220 deny icmp any any net-tos-redirect" : {
+              "definitionLines" : "34",
+              "numReferrers" : 1
+            },
+            "ICMP: 230 deny icmp any any net-tos-unreachable" : {
+              "definitionLines" : "35",
+              "numReferrers" : 1
+            },
+            "ICMP: 240 deny icmp any any net-unreachable" : {
+              "definitionLines" : "36",
+              "numReferrers" : 1
+            },
+            "ICMP: 250 deny icmp any any network-unknown" : {
+              "definitionLines" : "37",
+              "numReferrers" : 1
+            },
+            "ICMP: 260 deny icmp any any no-room-for-option" : {
+              "definitionLines" : "38",
+              "numReferrers" : 1
+            },
+            "ICMP: 270 deny icmp any any option-missing" : {
+              "definitionLines" : "39",
+              "numReferrers" : 1
+            },
+            "ICMP: 280 deny icmp any any packet-too-big" : {
+              "definitionLines" : "40",
+              "numReferrers" : 1
+            },
+            "ICMP: 290 deny icmp any any parameter-problem" : {
+              "definitionLines" : "41",
+              "numReferrers" : 1
+            },
+            "ICMP: 30 deny icmp any any conversion-error" : {
+              "definitionLines" : "15",
+              "numReferrers" : 1
+            },
+            "ICMP: 300 deny icmp any any port-unreachable" : {
+              "definitionLines" : "42",
+              "numReferrers" : 1
+            },
+            "ICMP: 310 deny icmp any any precedence-unreachable" : {
+              "definitionLines" : "43",
+              "numReferrers" : 1
+            },
+            "ICMP: 320 deny icmp any any protocol-unreachable" : {
+              "definitionLines" : "44",
+              "numReferrers" : 1
+            },
+            "ICMP: 330 deny icmp any any reassembly-timeout" : {
+              "definitionLines" : "45",
+              "numReferrers" : 1
+            },
+            "ICMP: 340 deny icmp any any redirect" : {
+              "definitionLines" : "46",
+              "numReferrers" : 1
+            },
+            "ICMP: 350 deny icmp any any router-advertisement" : {
+              "definitionLines" : "47",
+              "numReferrers" : 1
+            },
+            "ICMP: 360 deny icmp any any router-solicitation" : {
+              "definitionLines" : "48",
+              "numReferrers" : 1
+            },
+            "ICMP: 370 deny icmp any any source-quench" : {
+              "definitionLines" : "49",
+              "numReferrers" : 1
+            },
+            "ICMP: 380 deny icmp any any source-route-failed" : {
+              "definitionLines" : "50",
+              "numReferrers" : 1
+            },
+            "ICMP: 390 deny icmp any any time-exceeded" : {
+              "definitionLines" : "51",
+              "numReferrers" : 1
+            },
+            "ICMP: 40 deny icmp any any dod-host-prohibited" : {
+              "definitionLines" : "16",
+              "numReferrers" : 1
+            },
+            "ICMP: 400 deny icmp any any timestamp-reply" : {
+              "definitionLines" : "52",
+              "numReferrers" : 1
+            },
+            "ICMP: 410 deny icmp any any timestamp-request" : {
+              "definitionLines" : "53",
+              "numReferrers" : 1
+            },
+            "ICMP: 420 deny icmp any any traceroute" : {
+              "definitionLines" : "54",
+              "numReferrers" : 1
+            },
+            "ICMP: 430 deny icmp any any ttl-exceeded" : {
+              "definitionLines" : "55",
+              "numReferrers" : 1
+            },
+            "ICMP: 440 deny icmp any any unreachable" : {
+              "definitionLines" : "56",
+              "numReferrers" : 1
+            },
+            "ICMP: 50 deny icmp any any dod-net-prohibited" : {
+              "definitionLines" : "17",
+              "numReferrers" : 1
+            },
+            "ICMP: 60 deny icmp any any echo" : {
+              "definitionLines" : "18",
+              "numReferrers" : 1
+            },
+            "ICMP: 70 deny icmp any any echo-reply" : {
+              "definitionLines" : "19",
+              "numReferrers" : 1
+            },
+            "ICMP: 80 deny icmp any any general-parameter-problem" : {
+              "definitionLines" : "20",
+              "numReferrers" : 1
+            },
+            "ICMP: 90 deny icmp any any host-isolated" : {
+              "definitionLines" : "21",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/ios_xr_bgp" : { },
@@ -79590,6 +79772,235 @@
             "MAP" : {
               "bgp inbound route-map" : [
                 6
+              ]
+            }
+          }
+        },
+        "configs/ios_xr_acl" : {
+          "ipv4 access-list line" : {
+            "DENY_ALL: 5 deny ipv4 any any icmp-off" : {
+              "ipv4 access-list line" : [
+                10
+              ]
+            },
+            "ICMP: 10 deny icmp any any administratively-prohibited" : {
+              "ipv4 access-list line" : [
+                13
+              ]
+            },
+            "ICMP: 100 deny icmp any any host-precedence-unreachable" : {
+              "ipv4 access-list line" : [
+                22
+              ]
+            },
+            "ICMP: 110 deny icmp any any host-redirect" : {
+              "ipv4 access-list line" : [
+                23
+              ]
+            },
+            "ICMP: 120 deny icmp any any host-tos-redirect" : {
+              "ipv4 access-list line" : [
+                24
+              ]
+            },
+            "ICMP: 130 deny icmp any any host-tos-unreachable" : {
+              "ipv4 access-list line" : [
+                25
+              ]
+            },
+            "ICMP: 140 deny icmp any any host-unknown" : {
+              "ipv4 access-list line" : [
+                26
+              ]
+            },
+            "ICMP: 150 deny icmp any any host-unreachable" : {
+              "ipv4 access-list line" : [
+                27
+              ]
+            },
+            "ICMP: 160 deny icmp any any information-reply" : {
+              "ipv4 access-list line" : [
+                28
+              ]
+            },
+            "ICMP: 170 deny icmp any any information-request" : {
+              "ipv4 access-list line" : [
+                29
+              ]
+            },
+            "ICMP: 180 deny icmp any any mask-reply" : {
+              "ipv4 access-list line" : [
+                30
+              ]
+            },
+            "ICMP: 190 deny icmp any any mask-request" : {
+              "ipv4 access-list line" : [
+                31
+              ]
+            },
+            "ICMP: 20 deny icmp any any alternate-address" : {
+              "ipv4 access-list line" : [
+                14
+              ]
+            },
+            "ICMP: 200 deny icmp any any mobile-redirect" : {
+              "ipv4 access-list line" : [
+                32
+              ]
+            },
+            "ICMP: 210 deny icmp any any net-redirect" : {
+              "ipv4 access-list line" : [
+                33
+              ]
+            },
+            "ICMP: 220 deny icmp any any net-tos-redirect" : {
+              "ipv4 access-list line" : [
+                34
+              ]
+            },
+            "ICMP: 230 deny icmp any any net-tos-unreachable" : {
+              "ipv4 access-list line" : [
+                35
+              ]
+            },
+            "ICMP: 240 deny icmp any any net-unreachable" : {
+              "ipv4 access-list line" : [
+                36
+              ]
+            },
+            "ICMP: 250 deny icmp any any network-unknown" : {
+              "ipv4 access-list line" : [
+                37
+              ]
+            },
+            "ICMP: 260 deny icmp any any no-room-for-option" : {
+              "ipv4 access-list line" : [
+                38
+              ]
+            },
+            "ICMP: 270 deny icmp any any option-missing" : {
+              "ipv4 access-list line" : [
+                39
+              ]
+            },
+            "ICMP: 280 deny icmp any any packet-too-big" : {
+              "ipv4 access-list line" : [
+                40
+              ]
+            },
+            "ICMP: 290 deny icmp any any parameter-problem" : {
+              "ipv4 access-list line" : [
+                41
+              ]
+            },
+            "ICMP: 30 deny icmp any any conversion-error" : {
+              "ipv4 access-list line" : [
+                15
+              ]
+            },
+            "ICMP: 300 deny icmp any any port-unreachable" : {
+              "ipv4 access-list line" : [
+                42
+              ]
+            },
+            "ICMP: 310 deny icmp any any precedence-unreachable" : {
+              "ipv4 access-list line" : [
+                43
+              ]
+            },
+            "ICMP: 320 deny icmp any any protocol-unreachable" : {
+              "ipv4 access-list line" : [
+                44
+              ]
+            },
+            "ICMP: 330 deny icmp any any reassembly-timeout" : {
+              "ipv4 access-list line" : [
+                45
+              ]
+            },
+            "ICMP: 340 deny icmp any any redirect" : {
+              "ipv4 access-list line" : [
+                46
+              ]
+            },
+            "ICMP: 350 deny icmp any any router-advertisement" : {
+              "ipv4 access-list line" : [
+                47
+              ]
+            },
+            "ICMP: 360 deny icmp any any router-solicitation" : {
+              "ipv4 access-list line" : [
+                48
+              ]
+            },
+            "ICMP: 370 deny icmp any any source-quench" : {
+              "ipv4 access-list line" : [
+                49
+              ]
+            },
+            "ICMP: 380 deny icmp any any source-route-failed" : {
+              "ipv4 access-list line" : [
+                50
+              ]
+            },
+            "ICMP: 390 deny icmp any any time-exceeded" : {
+              "ipv4 access-list line" : [
+                51
+              ]
+            },
+            "ICMP: 40 deny icmp any any dod-host-prohibited" : {
+              "ipv4 access-list line" : [
+                16
+              ]
+            },
+            "ICMP: 400 deny icmp any any timestamp-reply" : {
+              "ipv4 access-list line" : [
+                52
+              ]
+            },
+            "ICMP: 410 deny icmp any any timestamp-request" : {
+              "ipv4 access-list line" : [
+                53
+              ]
+            },
+            "ICMP: 420 deny icmp any any traceroute" : {
+              "ipv4 access-list line" : [
+                54
+              ]
+            },
+            "ICMP: 430 deny icmp any any ttl-exceeded" : {
+              "ipv4 access-list line" : [
+                55
+              ]
+            },
+            "ICMP: 440 deny icmp any any unreachable" : {
+              "ipv4 access-list line" : [
+                56
+              ]
+            },
+            "ICMP: 50 deny icmp any any dod-net-prohibited" : {
+              "ipv4 access-list line" : [
+                17
+              ]
+            },
+            "ICMP: 60 deny icmp any any echo" : {
+              "ipv4 access-list line" : [
+                18
+              ]
+            },
+            "ICMP: 70 deny icmp any any echo-reply" : {
+              "ipv4 access-list line" : [
+                19
+              ]
+            },
+            "ICMP: 80 deny icmp any any general-parameter-problem" : {
+              "ipv4 access-list line" : [
+                20
+              ]
+            },
+            "ICMP: 90 deny icmp any any host-isolated" : {
+              "ipv4 access-list line" : [
+                21
               ]
             }
           }
