@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ExprAclLine.REJECT_ALL;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.HopMatchers.hasNodeName;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasDisposition;
 import static org.batfish.datamodel.matchers.TraceMatchers.hasHops;
@@ -63,6 +64,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.Topology;
@@ -268,6 +270,78 @@ public class IncrementalDataPlanePluginTest {
     assertThat(r3Loopback0Prefix, in(r1Prefixes));
     // Check the other direction (r1loopback is accepted by r3)
     assertThat(r1Loopback0Prefix, in(r3Prefixes));
+  }
+
+  @Test
+  public void testEbgpDynamicLocalIps() throws IOException {
+    /*
+     * Setup:       11.11.11.0/30       13.13.13.0/30
+     *          r1 --------------- r2 ---------------- r3
+     *
+     * r1 and r3 have compatible BGP peers with peer addresses 13.13.13.1 and 11.11.11.1 respectively.
+     * Neither peer has an update-source configured, but r1 and r3 both have static routes for their
+     * respective peers' peer addresses:
+     * - r1 has static route for 13.13.13.1/32 via 11.11.11.2
+     * - r3 has static route for 11.11.11.1/32 via 13.13.13.2
+     *
+     * r1 and r3 also each have a static route to redistribute into BGP (21.21.21.21/32 and
+     * 23.23.23.23/32, respectively) to help prove their BGP session is active.
+     *
+     * r2 is empty except for interfaces facing r1 and r3 (no BGP config).
+     */
+    String testrigName = "ebgp-dynamic-local-ips";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
+        dp.getRibs();
+
+    Set<AbstractRoute> r1Routes = ribs.get("r1").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3Routes = ribs.get("r3").get(DEFAULT_VRF_NAME).getRoutes();
+
+    // r1 and r3's respective static routes were redistributed into BGP and reached each other
+    Prefix r1StaticPrefix = Prefix.parse("21.21.21.21/32");
+    Prefix r3StaticPrefix = Prefix.parse("23.23.23.23/32");
+    assertThat(
+        r1Routes, hasItem(allOf(hasProtocol(RoutingProtocol.BGP), hasPrefix(r3StaticPrefix))));
+    assertThat(
+        r3Routes, hasItem(allOf(hasProtocol(RoutingProtocol.BGP), hasPrefix(r1StaticPrefix))));
+  }
+
+  @Test
+  public void testIbgpDynamicLocalIps() throws IOException {
+    // See testEbgpDynamicLocalIps for setup. Only difference is peers are now iBGP.
+    String testrigName = "ibgp-dynamic-local-ips";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>> ribs =
+        dp.getRibs();
+
+    Set<AbstractRoute> r1Routes = ribs.get("r1").get(DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3Routes = ribs.get("r3").get(DEFAULT_VRF_NAME).getRoutes();
+
+    // r1 and r3's respective static routes were redistributed into BGP and reached each other
+    Prefix r1StaticPrefix = Prefix.parse("21.21.21.21/32");
+    Prefix r3StaticPrefix = Prefix.parse("23.23.23.23/32");
+    assertThat(
+        r1Routes, hasItem(allOf(hasProtocol(RoutingProtocol.IBGP), hasPrefix(r3StaticPrefix))));
+    assertThat(
+        r3Routes, hasItem(allOf(hasProtocol(RoutingProtocol.IBGP), hasPrefix(r1StaticPrefix))));
   }
 
   @Test
