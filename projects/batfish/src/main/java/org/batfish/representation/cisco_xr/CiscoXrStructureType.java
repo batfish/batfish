@@ -32,6 +32,7 @@ public enum CiscoXrStructureType implements StructureType {
   IPSEC_PROFILE("crypto ipsec profile"),
   IPSEC_TRANSFORM_SET("crypto ipsec transform-set"),
   IPV4_ACCESS_LIST("ipv4 access-list"),
+  IPV4_ACCESS_LIST_LINE("ipv4 access-list line"),
   IPV6_ACCESS_LIST("ipv6 access-list"),
   ISAKMP_POLICY("crypto isakmp policy"),
   ISAKMP_PROFILE("crypto isakmp profile"),

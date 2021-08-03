@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Comparator.naturalOrder;
 import static java.util.stream.Collectors.toCollection;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.representation.cisco_xr.CiscoXrConversions.aclLineName;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_AF_GROUP;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.BGP_NEIGHBOR_GROUP;
@@ -25,6 +26,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureType.INTERFACE
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPSEC_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPSEC_TRANSFORM_SET;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV4_ACCESS_LIST_LINE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.IP_ACCESS_LIST;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureType.ISAKMP_POLICY;
@@ -102,6 +104,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFAC
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.INTERFACE_STANDBY_TRACK;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
+import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.IPV4_ACCESS_LIST_LINE_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ISAKMP_POLICY_SELF_REF;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ISAKMP_PROFILE_KEYRING;
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.ISAKMP_PROFILE_SELF_REF;
@@ -3585,6 +3588,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     AccessListAddressSpecifier dstAddressSpecifier = toAccessListAddressSpecifier(ctx.dstipr);
     AccessListServiceSpecifier serviceSpecifier = computeExtendedAccessListServiceSpecifier(ctx);
     String name = getFullText(ctx).trim();
+
+    // reference tracking
+    {
+      int configLine = ctx.getStart().getLine();
+      String qualifiedName = aclLineName(_currentIpv4Acl.getName(), name);
+      _configuration.defineSingleLineStructure(IPV4_ACCESS_LIST_LINE, qualifiedName, configLine);
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST_LINE, qualifiedName, IPV4_ACCESS_LIST_LINE_SELF_REF, configLine);
+    }
+
     Ipv4AccessListLine line =
         _currentIpv4AclLine
             .setAction(action)
