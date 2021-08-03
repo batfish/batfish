@@ -1,14 +1,13 @@
 !! IOS XR Configuration version = 6.2.2
-!! Last configuration change at Wed Apr  7 16:22:27 2021 by cisco
 !
 hostname r2
 !
 interface GigabitEthernet0/0/0/1
- description border01
- ipv4 address 13.13.13.2 255.255.255.252
+ description r1
+ ipv4 address 11.11.11.2 255.255.255.252
 !
 interface GigabitEthernet0/0/0/2
- description border02
- ipv4 address 11.11.11.2 255.255.255.252
+ description r3
+ ipv4 address 13.13.13.2 255.255.255.252
 !
 end

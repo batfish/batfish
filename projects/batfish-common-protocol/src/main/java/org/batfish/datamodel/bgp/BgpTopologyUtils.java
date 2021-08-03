@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,6 +42,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.FibEntry;
 import org.batfish.datamodel.FibForward;
+import org.batfish.datamodel.FibNextVrf;
+import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.Interface;
@@ -56,6 +57,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
+import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /** Utility functions for computing BGP topology */
 public final class BgpTopologyUtils {
@@ -163,12 +165,20 @@ public final class BgpTopologyUtils {
 
       NetworkConfigurations networkConfigurations = NetworkConfigurations.of(configurations);
       /*
-       * First pass: identify all addresses "owned" by BgpNeighbors,
-       * add neighbor ids as vertices to the graph
+       * First pass: identify all addresses "owned" by BgpNeighbors, add neighbor ids as vertices to
+       * the graph; dynamically determine local IPs as needed
        */
       MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph =
           ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-      ImmutableSetMultimap.Builder<BgpPeerConfigId, Ip> dynamicLocalIps =
+      /*
+       * Multimap of active peers' BgpPeerConfigIds to all IPs that each peer may use as local IP
+       * when initiating a session. For a peer with an explicitly configured local IP, that IP is
+       * the only value associated with the peer in this map. Otherwise:
+       * - If FIBs are provided, the map contains all local IPs with which the peer may initiate,
+       *   as inferred by getPotentialSrcIps().
+       * - Else no IPs are associated with the peer.
+       */
+      ImmutableSetMultimap.Builder<BgpPeerConfigId, Ip> localIpsBuilder =
           ImmutableSetMultimap.builder();
       for (Configuration node : configurations.values()) {
         String hostname = node.getHostname();
@@ -179,8 +189,7 @@ public final class BgpTopologyUtils {
             // nothing to do if no bgp process on this VRF
             continue;
           }
-          Fib fib =
-              Optional.ofNullable(fibs.get(hostname)).map(byVrf -> byVrf.get(vrfName)).orElse(null);
+          Fib fib = fibs.getOrDefault(hostname, ImmutableMap.of()).get(vrfName);
 
           for (Entry<Ip, BgpActivePeerConfig> e : proc.getActiveNeighbors().entrySet()) {
             Ip peerAddress = e.getKey();
@@ -193,19 +202,11 @@ public final class BgpTopologyUtils {
                 new BgpPeerConfigId(hostname, vrfName, peerAddress.toPrefix(), false);
             graph.addNode(neighborId);
 
-            // If local IP is null, check for dynamically resolvable local IPs.
-            // These are IPs of interfaces that can be used to forward traffic to the peer address.
-            if (fib != null && config.getLocalIp() == null) {
-              fib.get(peerAddress).stream()
-                  .map(FibEntry::getAction)
-                  .filter(action -> action instanceof FibForward)
-                  .map(fibForward -> ((FibForward) fibForward).getInterfaceName())
-                  .map(forwardingIfaceName -> node.getActiveInterfaces().get(forwardingIfaceName))
-                  .filter(Objects::nonNull)
-                  .map(Interface::getConcreteAddress)
-                  .filter(Objects::nonNull)
-                  .map(ConcreteInterfaceAddress::getIp)
-                  .forEach(ip -> dynamicLocalIps.put(neighborId, ip));
+            if (config.getLocalIp() != null) {
+              localIpsBuilder.put(neighborId, config.getLocalIp());
+            } else if (fib != null) {
+              // No explicitly configured local IP. Check for dynamically resolvable local IPs.
+              localIpsBuilder.putAll(neighborId, getPotentialSrcIps(peerAddress, fib, node));
             }
           }
           // Dynamic peers: map of prefix to BgpPassivePeerConfig
@@ -241,6 +242,7 @@ public final class BgpTopologyUtils {
             receivers.computeIfAbsent(peer.getHostname(), name -> LinkedListMultimap.create());
         vrf.put(peer.getVrfName(), peer);
       }
+      SetMultimap<BgpPeerConfigId, Ip> localIps = localIpsBuilder.build();
       for (BgpPeerConfigId neighborId : graph.nodes()) {
         switch (neighborId.getType()) {
           case DYNAMIC:
@@ -253,7 +255,7 @@ public final class BgpTopologyUtils {
                 networkConfigurations,
                 ipVrfOwners,
                 receivers,
-                dynamicLocalIps.build(),
+                localIps.get(neighborId),
                 checkReachability,
                 tracerouteEngine);
             break;
@@ -277,21 +279,15 @@ public final class BgpTopologyUtils {
       NetworkConfigurations nc,
       Map<Ip, Map<String, Set<String>>> ipOwners,
       Map<String, Multimap<String, BgpPeerConfigId>> receivers,
-      SetMultimap<BgpPeerConfigId, Ip> dynamicLocalIps,
+      Set<Ip> potentialLocalIps,
       boolean checkReachability,
       TracerouteEngine tracerouteEngine) {
     BgpActivePeerConfig neighbor = nc.getBgpPointToPointPeerConfig(neighborId);
     if (neighbor == null
+        || potentialLocalIps.isEmpty()
         || neighbor.getLocalAs() == null
         || neighbor.getPeerAddress() == null
         || neighbor.getRemoteAsns().isEmpty()) {
-      return;
-    }
-    Set<Ip> potentialLocalIps =
-        Optional.ofNullable(neighbor.getLocalIp())
-            .map(localIp -> (Set<Ip>) ImmutableSet.of(localIp))
-            .orElseGet(() -> dynamicLocalIps.get(neighborId));
-    if (potentialLocalIps.isEmpty()) {
       return;
     }
     // Find nodes that own the neighbor's peer address
@@ -425,7 +421,8 @@ public final class BgpTopologyUtils {
    *
    * <ul>
    *   <li>is dynamic; or
-   *   <li>has no local IP (still viable because local IP may be determined dynamically); or
+   *   <li>has no local IP (still viable because local IP may be determined dynamically, or other
+   *       peers could initiate a session); or
    *   <li>has a local IP associated with the config's hostname, according to {@code ipOwners}
    * </ul>
    */
@@ -532,6 +529,45 @@ public final class BgpTopologyUtils {
     BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
     return candidate instanceof BgpUnnumberedPeerConfig
         && bgpCandidateHasCompatibleAs(neighbor, candidate);
+  }
+
+  /**
+   * Returns the potential source IPs of a packet with the given {@code dstIp} originating on the
+   * given {@link Configuration} in a VRF with the given {@link Fib}. Concretely, finds LPM routes
+   * for {@code dstIp} and returns the IPs of those routes' forwarding interfaces.
+   */
+  static Set<Ip> getPotentialSrcIps(Ip dstIp, Fib fib, Configuration c) {
+    return fib.get(dstIp).stream()
+        .map(FibEntry::getAction)
+        // Find forwarding interface for this FIB entry, if any
+        .map(
+            action ->
+                action.accept(
+                    new FibActionVisitor<String>() {
+                      @Override
+                      public String visitFibForward(FibForward fibForward) {
+                        return fibForward.getInterfaceName();
+                      }
+
+                      @Override
+                      public String visitFibNextVrf(FibNextVrf fibNextVrf) {
+                        // TODO Can BGP peers initiate via interfaces in other VRFs? If
+                        //  so, need to return such interfaces here.
+                        return null;
+                      }
+
+                      @Override
+                      public String visitFibNullRoute(FibNullRoute fibNullRoute) {
+                        return null;
+                      }
+                    }))
+        .filter(Objects::nonNull)
+        .map(forwardingIfaceName -> c.getActiveInterfaces().get(forwardingIfaceName))
+        .filter(Objects::nonNull)
+        .map(Interface::getConcreteAddress)
+        .filter(Objects::nonNull)
+        .map(ConcreteInterfaceAddress::getIp)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
