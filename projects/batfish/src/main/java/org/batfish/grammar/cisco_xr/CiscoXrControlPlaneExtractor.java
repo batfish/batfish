@@ -2347,16 +2347,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   @Override
   public void exitMldpafd_targeted_hello(Mldpafd_targeted_helloContext ctx) {
     assert _inMplsLdpAddressFamilyIpv4 != null;
-    CiscoXrStructureType type;
-    CiscoXrStructureUsage usage;
-    if (_inMplsLdpAddressFamilyIpv4) {
-      type = IPV4_ACCESS_LIST;
-      usage = MPLS_LDP_AF_IPV4_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
-    } else {
-      type = IPV6_ACCESS_LIST;
-      usage = MPLS_LDP_AF_IPV6_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+    if (ctx.name != null) {
+      CiscoXrStructureType type;
+      CiscoXrStructureUsage usage;
+      if (_inMplsLdpAddressFamilyIpv4) {
+        type = IPV4_ACCESS_LIST;
+        usage = MPLS_LDP_AF_IPV4_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+      } else {
+        type = IPV6_ACCESS_LIST;
+        usage = MPLS_LDP_AF_IPV6_DISCOVERY_TARGETED_HELLO_ACCEPT_FROM;
+      }
+      _configuration.referenceStructure(type, toString(ctx.name), usage, ctx.start.getLine());
     }
-    _configuration.referenceStructure(type, toString(ctx.name), usage, ctx.start.getLine());
   }
 
   @Override
