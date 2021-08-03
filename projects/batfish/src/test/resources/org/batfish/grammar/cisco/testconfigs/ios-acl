@@ -32,3 +32,8 @@ interface Ethernet2
  ip access-group AL_IF_UNDEF in
  ip access-group AL_IF_UNDEF out
 !
+access-list AL_standard standard
+  permit any
+access-list AL_extended extended
+  permit ip any any
+

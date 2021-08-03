@@ -173,6 +173,7 @@ import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePai
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborExportPolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.eigrpNeighborImportPolicyName;
 import static org.batfish.representation.cisco.CiscoConversions.BGP_VRF_LEAK_IGP_WEIGHT;
+import static org.batfish.representation.cisco.CiscoConversions.aclLineStructureName;
 import static org.batfish.representation.cisco.CiscoConversions.computeVrfExportImportPolicyName;
 import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
@@ -184,7 +185,9 @@ import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_POLICY
 import static org.batfish.representation.cisco.CiscoStructureType.INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
@@ -235,6 +238,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -254,6 +258,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -267,6 +272,7 @@ import org.batfish.common.util.IpsecUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
@@ -418,6 +424,7 @@ import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.VrfAddressFamily;
+import org.batfish.vendor.VendorStructureId;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -832,6 +839,40 @@ public final class CiscoGrammarTest {
         ccae,
         hasUndefinedReference(
             filename, IPV6_ACCESS_LIST, "AL6_UNDEF", ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
+  }
+
+  @Test
+  public void testIosAclLineVsids() throws IOException {
+    String hostname = "ios-acl";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // standard
+    {
+      IpAccessList acl = c.getIpAccessLists().get("AL_standard");
+      AclLine line = acl.getLines().get(0);
+      assertEquals(
+          Optional.of(
+              new VendorStructureId(
+                  filename,
+                  IPV4_ACCESS_LIST_STANDARD_LINE.getDescription(),
+                  aclLineStructureName(acl.getName(), line.getName()))),
+          line.getVendorStructureId());
+    }
+
+    // extended
+    {
+      IpAccessList acl = c.getIpAccessLists().get("AL_extended");
+      AclLine line = acl.getLines().get(0);
+      assertEquals(
+          Optional.of(
+              new VendorStructureId(
+                  filename,
+                  IPV4_ACCESS_LIST_EXTENDED_LINE.getDescription(),
+                  aclLineStructureName(acl.getName(), line.getName()))),
+          line.getVendorStructureId());
+    }
   }
 
   @Test
