@@ -330,7 +330,6 @@ public abstract class BgpPeerConfig implements Serializable {
     protected String _description;
     protected boolean _ebgpMultihop;
     protected boolean _enforceFirstAs;
-    protected String _exportPolicy;
     @Nullable protected Set<GeneratedRoute> _generatedRoutes;
     @Nullable protected String _group;
     @Nullable protected Long _localAs;
