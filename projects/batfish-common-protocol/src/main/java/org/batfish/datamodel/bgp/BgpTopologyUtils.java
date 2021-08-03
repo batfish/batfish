@@ -536,7 +536,7 @@ public final class BgpTopologyUtils {
    * given {@link Configuration} in a VRF with the given {@link Fib}. Concretely, finds LPM routes
    * for {@code dstIp} and returns the IPs of those routes' forwarding interfaces.
    */
-  static Set<Ip> getPotentialSrcIps(Ip dstIp, Fib fib, Configuration c) {
+  public static Set<Ip> getPotentialSrcIps(Ip dstIp, Fib fib, Configuration c) {
     return fib.get(dstIp).stream()
         .map(FibEntry::getAction)
         // Find forwarding interface for this FIB entry, if any
