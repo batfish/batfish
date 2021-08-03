@@ -594,6 +594,7 @@ public class IncrementalDataPlanePluginTest {
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs));
     BgpSessionInitiationResult bgpSessionInitiationResult =
         Iterables.getOnlyElement(initiationResults);
+    assertTrue(bgpSessionInitiationResult.isSuccessful());
     assertThat(
         Iterables.getOnlyElement(bgpSessionInitiationResult.getForwardTraces()),
         hasHops(contains(hasNodeName("node1"), hasNodeName("node2"))));
