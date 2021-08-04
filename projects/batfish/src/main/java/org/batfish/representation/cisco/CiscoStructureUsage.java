@@ -128,6 +128,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   IP_NAT_SOURCE_ACCESS_LIST("ip nat source dynamic access-list"),
   IP_NAT_SOURCE_POOL("ip nat source pool"),
   IP_LOCAL_POLICY_ROUTE_MAP("ip local policy route-map"),
+  IPV4_ACCESS_LIST_EXTENDED_LINE_SELF_REF("extended ipv4 access-list line"),
+  IPV4_ACCESS_LIST_STANDARD_LINE_SELF_REF("standard ipv4 access-list line"),
   IPV6_LOCAL_POLICY_ROUTE_MAP("ipv6 local policy route-map"),
   IP_TACACS_SOURCE_INTERFACE("ip tacacs source-interface"),
   IPSEC_PROFILE_ISAKMP_PROFILE("ipsec profile set isakmp-profile"),

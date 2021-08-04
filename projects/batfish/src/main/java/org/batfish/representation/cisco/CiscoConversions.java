@@ -811,20 +811,33 @@ public class CiscoConversions {
   }
 
   static IpAccessList toIpAccessList(
-      ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
+      ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups, String filename) {
+    String aclName = eaList.getName();
+    boolean isStandard = eaList.getParent() != null;
+    CiscoStructureType lineType =
+        isStandard
+            ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE
+            : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
     List<AclLine> lines =
         eaList.getLines().stream()
-            .map(l -> toIpAccessListLine(l, objectGroups))
+            .map(
+                l ->
+                    toIpAccessListLine(l, objectGroups)
+                        .setVendorStructureId(
+                            new VendorStructureId(
+                                filename,
+                                lineType.getDescription(),
+                                aclLineStructureName(aclName, l.getName())))
+                        .build())
             .collect(ImmutableList.toImmutableList());
     String sourceType =
-        eaList.getParent() != null
+        isStandard
             ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
             : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
-    String name = eaList.getName();
     return IpAccessList.builder()
-        .setName(name)
+        .setName(aclName)
         .setLines(lines)
-        .setSourceName(name)
+        .setSourceName(aclName)
         .setSourceType(sourceType)
         .build();
   }
@@ -1644,7 +1657,7 @@ public class CiscoConversions {
         .build();
   }
 
-  private static ExprAclLine toIpAccessListLine(
+  private static ExprAclLine.Builder toIpAccessListLine(
       ExtendedAccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
@@ -1670,8 +1683,7 @@ public class CiscoConversions {
     return ExprAclLine.builder()
         .setAction(line.getAction())
         .setMatchCondition(match)
-        .setName(line.getName())
-        .build();
+        .setName(line.getName());
   }
 
   private static Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {
@@ -1957,6 +1969,14 @@ public class CiscoConversions {
   public static @Nonnull String computeVrfExportImportPolicyName(
       String exportingVrf, String importingVrf) {
     return String.format("~vrfExportImport~%s~%s", exportingVrf, importingVrf);
+  }
+
+  /**
+   * The structure name of an ACL line for definition/reference tracking. All lines in a config are
+   * in the same namespace, so we have to qualify them with the name of the ACL.
+   */
+  public static @Nonnull String aclLineStructureName(String aclName, String lineName) {
+    return String.format("%s: %s", aclName, lineName);
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class
