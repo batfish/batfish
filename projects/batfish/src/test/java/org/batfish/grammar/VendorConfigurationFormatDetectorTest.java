@@ -96,10 +96,11 @@ public class VendorConfigurationFormatDetectorTest {
     String batfish = "#BATFISH_FORMAT: f5_bigip_structured\n";
     String withRancid = "#RANCID-CONTENT-TYPE: bigip\n";
     String withoutRancid = "#TMSH-VERSION: 1.0\nsys global-settings { }\n";
+    String withoutTmsh = "sys global-settings { }\nltm global-settings general { }\n";
 
-    assertThat(identifyConfigurationFormat(batfish), equalTo(F5_BIGIP_STRUCTURED));
-    assertThat(identifyConfigurationFormat(withRancid), equalTo(F5_BIGIP_STRUCTURED));
-    assertThat(identifyConfigurationFormat(withoutRancid), equalTo(F5_BIGIP_STRUCTURED));
+    for (String text : new String[] {batfish, withRancid, withoutRancid, withoutTmsh}) {
+      assertThat(text, identifyConfigurationFormat(text), equalTo(F5_BIGIP_STRUCTURED));
+    }
   }
 
   @Test
