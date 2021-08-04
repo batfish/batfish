@@ -42,7 +42,9 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern F5_HOSTNAME_PATTERN = Pattern.compile("(?m)^tmsh .*$");
   private static final Pattern F5_BIGIP_STRUCTURED_HEADER_PATTERN =
       Pattern.compile("(?m)^#TMSH-VERSION: .*$");
-  private static final Pattern F5_BIGIP_STRUCTURED_GLOBAL_SETTINGS_PATTERN =
+  private static final Pattern F5_BIGIP_STRUCTURED_LTM_GLOBAL_SETTINGS_PATTERN =
+      Pattern.compile("(?m)^ltm\\s+global-settings\\s*(general|rule)\\s*\\{.*$");
+  private static final Pattern F5_BIGIP_STRUCTURED_SYS_GLOBAL_SETTINGS_PATTERN =
       Pattern.compile("(?m)^sys\\s+global-settings\\s*\\{.*$");
   private static final Pattern METAMAKO_MOS_PATTERN =
       Pattern.compile("(?m)^! device: [^\\n]+ MOS-\\d+\\.\\d+\\.\\d+\\)$");
@@ -223,8 +225,11 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkF5() {
-    if (fileTextMatches(F5_BIGIP_STRUCTURED_HEADER_PATTERN)
-        && fileTextMatches(F5_BIGIP_STRUCTURED_GLOBAL_SETTINGS_PATTERN)) {
+    if (fileTextMatches(F5_BIGIP_STRUCTURED_SYS_GLOBAL_SETTINGS_PATTERN)
+        && (fileTextMatches(F5_BIGIP_STRUCTURED_HEADER_PATTERN)
+            || fileTextMatches(F5_BIGIP_STRUCTURED_LTM_GLOBAL_SETTINGS_PATTERN))) {
+      // "sys global-settings {" is a little generic to be the determiner. Use that plus the
+      // presence of either TMSH or "ltm global-settings {" to detect F5.
       return ConfigurationFormat.F5_BIGIP_STRUCTURED;
     }
     if (fileTextMatches(F5_HOSTNAME_PATTERN)) {
