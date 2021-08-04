@@ -125,23 +125,23 @@
         "extended ipv4 access-list line" : {
           "2001: permit icmp 10.100.0.0 0.0.255.255 any" : {
             "definitionLines" : "248",
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "2001: permit icmp any 10.100.0.0 0.0.255.255" : {
             "definitionLines" : "249",
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "LIMIT_PEER: permit ip 10.1.30.0 0.0.0.255 any" : {
             "definitionLines" : "240",
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "LIMIT_PEER: permit ip host 10.10.30.2 host 10.10.30.1" : {
             "definitionLines" : "241",
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "MATCH_ALL_BGP: permit ip any any" : {
             "definitionLines" : "243",
-            "numReferrers" : 0
+            "numReferrers" : 1
           }
         },
         "interface" : {
