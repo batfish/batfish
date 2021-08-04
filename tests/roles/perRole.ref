@@ -29,14 +29,10 @@
           "IpAccessList" : {
             "structureClassName" : "IpAccessList",
             "sameNamedStructures" : {
-              "103" : [
+              "101" : [
                 {
                   "nodes" : [
-                    "as1border1",
-                    "as2border1",
-                    "as2border2",
-                    "as3border1",
-                    "as3border2"
+                    "as1border1"
                   ],
                   "representativeElement" : "as1border1"
                 },
@@ -45,6 +41,94 @@
                     "as1border2"
                   ],
                   "representativeElement" : "as1border2"
+                },
+                {
+                  "nodes" : [
+                    "as2border1"
+                  ],
+                  "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border2"
+                },
+                {
+                  "nodes" : [
+                    "as3border1"
+                  ],
+                  "representativeElement" : "as3border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border2"
+                }
+              ],
+              "102" : [
+                {
+                  "nodes" : [
+                    "as1border1"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border2"
+                },
+                {
+                  "nodes" : [
+                    "as3border1"
+                  ],
+                  "representativeElement" : "as3border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border2"
+                }
+              ],
+              "103" : [
+                {
+                  "nodes" : [
+                    "as1border1"
+                  ],
+                  "representativeElement" : "as1border1"
+                },
+                {
+                  "nodes" : [
+                    "as1border2"
+                  ],
+                  "representativeElement" : "as1border2"
+                },
+                {
+                  "nodes" : [
+                    "as2border1"
+                  ],
+                  "representativeElement" : "as2border1"
+                },
+                {
+                  "nodes" : [
+                    "as2border2"
+                  ],
+                  "representativeElement" : "as2border2"
+                },
+                {
+                  "nodes" : [
+                    "as3border1"
+                  ],
+                  "representativeElement" : "as3border1"
+                },
+                {
+                  "nodes" : [
+                    "as3border2"
+                  ],
+                  "representativeElement" : "as3border2"
                 }
               ],
               "OUTSIDE_TO_INSIDE" : [
@@ -379,7 +463,37 @@
             "structureClassName" : "Ip6AccessList"
           },
           "IpAccessList" : {
-            "structureClassName" : "IpAccessList"
+            "structureClassName" : "IpAccessList",
+            "sameNamedStructures" : {
+              "102" : [
+                {
+                  "nodes" : [
+                    "as2dist1"
+                  ],
+                  "representativeElement" : "as2dist1"
+                },
+                {
+                  "nodes" : [
+                    "as2dist2"
+                  ],
+                  "representativeElement" : "as2dist2"
+                }
+              ],
+              "105" : [
+                {
+                  "nodes" : [
+                    "as2dist1"
+                  ],
+                  "representativeElement" : "as2dist1"
+                },
+                {
+                  "nodes" : [
+                    "as2dist2"
+                  ],
+                  "representativeElement" : "as2dist2"
+                }
+              ]
+            }
           },
           "IpsecPeerConfig" : {
             "structureClassName" : "IpsecPeerConfig"

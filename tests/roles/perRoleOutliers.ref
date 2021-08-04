@@ -147,9 +147,23 @@
                 "fragments" : [
                   {
                     "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                    "text" : "Matched line permit ip host 2.0.0.0 host 255.0.0.0"
+                    "text" : "Matched line "
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                    "text" : "permit ip host 2.0.0.0 host 255.0.0.0",
+                    "vendorStructureId" : {
+                      "filename" : "configs/as1border1.cfg",
+                      "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                      "structureType" : "extended ipv4 access-list line"
+                    }
                   }
                 ]
+              },
+              "vendorStructureId" : {
+                "filename" : "configs/as1border1.cfg",
+                "structureName" : "102: permit ip host 2.0.0.0 host 255.0.0.0",
+                "structureType" : "extended ipv4 access-list line"
               }
             },
             {
@@ -174,9 +188,23 @@
                 "fragments" : [
                   {
                     "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                    "text" : "Matched line permit ip host 2.128.0.0 host 255.255.0.0"
+                    "text" : "Matched line "
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                    "text" : "permit ip host 2.128.0.0 host 255.255.0.0",
+                    "vendorStructureId" : {
+                      "filename" : "configs/as1border1.cfg",
+                      "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                      "structureType" : "extended ipv4 access-list line"
+                    }
                   }
                 ]
+              },
+              "vendorStructureId" : {
+                "filename" : "configs/as1border1.cfg",
+                "structureName" : "102: permit ip host 2.128.0.0 host 255.255.0.0",
+                "structureType" : "extended ipv4 access-list line"
               }
             }
           ],
