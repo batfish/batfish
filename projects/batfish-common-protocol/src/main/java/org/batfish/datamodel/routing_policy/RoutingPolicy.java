@@ -202,7 +202,7 @@ public class RoutingPolicy implements Serializable {
    */
   public boolean processReadOnly(AbstractRouteDecorator inputRoute) {
     // arbitrarily choose OUT direction, BGP route builder.
-    return process(inputRoute, Bgpv4Route.builder(), null, Direction.OUT, null);
+    return process(inputRoute, Bgpv4Route.builder(), (EigrpProcess) null, Direction.OUT, null);
   }
 
   /** @return True if the policy accepts the route. */
@@ -230,6 +230,23 @@ public class RoutingPolicy implements Serializable {
       BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
     return process(
         inputRoute, outputRoute, null, null, direction, ribIntersectsPrefixSpaceEvaluator, null);
+  }
+
+  /** @return True if the policy accepts the route. */
+  public boolean process(
+      AbstractRouteDecorator inputRoute,
+      AbstractRouteBuilder<?, ?> outputRoute,
+      BgpSessionProperties bgpSessionProperties,
+      Direction direction,
+      BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
+    return process(
+        inputRoute,
+        outputRoute,
+        bgpSessionProperties,
+        null,
+        direction,
+        ribIntersectsPrefixSpaceEvaluator,
+        null);
   }
 
   public boolean process(
