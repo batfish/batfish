@@ -60884,9 +60884,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit icmp 10.100.0.0 0.0.255.255 any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit icmp 10.100.0.0 0.0.255.255 any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "2001: permit icmp 10.100.0.0 0.0.255.255 any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "2001: permit icmp 10.100.0.0 0.0.255.255 any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -60914,9 +60928,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit icmp any 10.100.0.0 0.0.255.255"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit icmp any 10.100.0.0 0.0.255.255",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "2001: permit icmp any 10.100.0.0 0.0.255.255",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "2001: permit icmp any 10.100.0.0 0.0.255.255",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -60948,9 +60976,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip 10.1.30.0 0.0.0.255 any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip 10.1.30.0 0.0.0.255 any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "LIMIT_PEER: permit ip 10.1.30.0 0.0.0.255 any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "LIMIT_PEER: permit ip 10.1.30.0 0.0.0.255 any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               },
               {
@@ -60975,9 +61017,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip host 10.10.30.2 host 10.10.30.1"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip host 10.10.30.2 host 10.10.30.1",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "LIMIT_PEER: permit ip host 10.10.30.2 host 10.10.30.1",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "LIMIT_PEER: permit ip host 10.10.30.2 host 10.10.30.1",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],
@@ -61009,9 +61065,23 @@
                   "fragments" : [
                     {
                       "class" : "org.batfish.datamodel.TraceElement$TextFragment",
-                      "text" : "Matched line permit ip any any"
+                      "text" : "Matched line "
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.TraceElement$LinkFragment",
+                      "text" : "permit ip any any",
+                      "vendorStructureId" : {
+                        "filename" : "configs/lhr-border-02.cfg",
+                        "structureName" : "MATCH_ALL_BGP: permit ip any any",
+                        "structureType" : "extended ipv4 access-list line"
+                      }
                     }
                   ]
+                },
+                "vendorStructureId" : {
+                  "filename" : "configs/lhr-border-02.cfg",
+                  "structureName" : "MATCH_ALL_BGP: permit ip any any",
+                  "structureType" : "extended ipv4 access-list line"
                 }
               }
             ],

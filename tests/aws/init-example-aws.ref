@@ -122,6 +122,28 @@
             "numReferrers" : 1
           }
         },
+        "extended ipv4 access-list line" : {
+          "2001: permit icmp 10.100.0.0 0.0.255.255 any" : {
+            "definitionLines" : "248",
+            "numReferrers" : 0
+          },
+          "2001: permit icmp any 10.100.0.0 0.0.255.255" : {
+            "definitionLines" : "249",
+            "numReferrers" : 0
+          },
+          "LIMIT_PEER: permit ip 10.1.30.0 0.0.0.255 any" : {
+            "definitionLines" : "240",
+            "numReferrers" : 0
+          },
+          "LIMIT_PEER: permit ip host 10.10.30.2 host 10.10.30.1" : {
+            "definitionLines" : "241",
+            "numReferrers" : 0
+          },
+          "MATCH_ALL_BGP: permit ip any any" : {
+            "definitionLines" : "243",
+            "numReferrers" : 0
+          }
+        },
         "interface" : {
           "Ethernet0/0" : {
             "definitionLines" : "124-127",
@@ -312,6 +334,33 @@
           "keyring-vpn-ba2e34a8-1" : {
             "isakmp profile keyring" : [
               79
+            ]
+          }
+        },
+        "extended ipv4 access-list line" : {
+          "2001: permit icmp 10.100.0.0 0.0.255.255 any" : {
+            "extended ipv4 access-list line" : [
+              248
+            ]
+          },
+          "2001: permit icmp any 10.100.0.0 0.0.255.255" : {
+            "extended ipv4 access-list line" : [
+              249
+            ]
+          },
+          "LIMIT_PEER: permit ip 10.1.30.0 0.0.0.255 any" : {
+            "extended ipv4 access-list line" : [
+              240
+            ]
+          },
+          "LIMIT_PEER: permit ip host 10.10.30.2 host 10.10.30.1" : {
+            "extended ipv4 access-list line" : [
+              241
+            ]
+          },
+          "MATCH_ALL_BGP: permit ip any any" : {
+            "extended ipv4 access-list line" : [
+              243
             ]
           }
         },

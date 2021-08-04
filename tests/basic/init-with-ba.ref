@@ -166,6 +166,32 @@
               "numReferrers" : 1
             }
           },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "131",
+              "numReferrers" : 0
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "132",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.0.0.0 host 255.0.0.0" : {
+              "definitionLines" : "133",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "definitionLines" : "134",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "135",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "136",
+              "numReferrers" : 0
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "definitionLines" : "54-57",
@@ -292,6 +318,28 @@
             "103" : {
               "definitionLines" : "140",
               "numReferrers" : 1
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "136",
+              "numReferrers" : 0
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "137",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.0.0.0 host 255.0.0.0" : {
+              "definitionLines" : "138",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "definitionLines" : "139",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "140",
+              "numReferrers" : 0
             }
           },
           "interface" : {
@@ -460,6 +508,48 @@
               "numReferrers" : 1
             }
           },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "144",
+              "numReferrers" : 0
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "145",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "146",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "147",
+              "numReferrers" : 0
+            },
+            "INSIDE_TO_AS1: deny   ip any any" : {
+              "definitionLines" : "133",
+              "numReferrers" : 0
+            },
+            "INSIDE_TO_AS1: permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0" : {
+              "definitionLines" : "132",
+              "numReferrers" : 0
+            },
+            "INSIDE_TO_AS1: permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255" : {
+              "definitionLines" : "131",
+              "numReferrers" : 0
+            },
+            "OUTSIDE_TO_INSIDE: deny   ip 2.0.0.0 0.255.255.255 any" : {
+              "definitionLines" : "135",
+              "numReferrers" : 0
+            },
+            "OUTSIDE_TO_INSIDE: deny   ip any host 2.128.1.101" : {
+              "definitionLines" : "136",
+              "numReferrers" : 0
+            },
+            "OUTSIDE_TO_INSIDE: permit ip any any" : {
+              "definitionLines" : "137",
+              "numReferrers" : 0
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "definitionLines" : "59-62",
@@ -584,6 +674,44 @@
               "numReferrers" : 1
             }
           },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "140",
+              "numReferrers" : 0
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "141",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "142",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "143",
+              "numReferrers" : 0
+            },
+            "INSIDE_TO_AS3: deny   ip any any" : {
+              "definitionLines" : "130",
+              "numReferrers" : 0
+            },
+            "INSIDE_TO_AS3: permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0" : {
+              "definitionLines" : "129",
+              "numReferrers" : 0
+            },
+            "INSIDE_TO_AS3: permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255" : {
+              "definitionLines" : "128",
+              "numReferrers" : 0
+            },
+            "OUTSIDE_TO_INSIDE: deny   ip 2.0.0.0 0.255.255.255 any" : {
+              "definitionLines" : "132",
+              "numReferrers" : 0
+            },
+            "OUTSIDE_TO_INSIDE: permit ip any any" : {
+              "definitionLines" : "133",
+              "numReferrers" : 0
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "definitionLines" : "56-59",
@@ -672,6 +800,16 @@
             "blocktelnet" : {
               "definitionLines" : "121-123",
               "numReferrers" : 2
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "blocktelnet: deny   tcp any any eq telnet" : {
+              "definitionLines" : "122",
+              "numReferrers" : 0
+            },
+            "blocktelnet: permit ip any any" : {
+              "definitionLines" : "123",
+              "numReferrers" : 0
             }
           },
           "interface" : {
@@ -770,6 +908,56 @@
               "numReferrers" : 1
             }
           },
+          "extended ipv4 access-list line" : {
+            "102: permit ip host 2.128.0.0 host 255.255.255.0" : {
+              "definitionLines" : "121",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.128.1.0 host 255.255.255.0" : {
+              "definitionLines" : "122",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "123",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "124",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "125",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "126",
+              "numReferrers" : 0
+            },
+            "RESTRICT_HOST_TRAFFIC_IN: deny   ip any any" : {
+              "definitionLines" : "114",
+              "numReferrers" : 0
+            },
+            "RESTRICT_HOST_TRAFFIC_IN: permit icmp any any" : {
+              "definitionLines" : "115",
+              "numReferrers" : 0
+            },
+            "RESTRICT_HOST_TRAFFIC_IN: permit ip 2.128.0.0 0.0.255.255 any" : {
+              "definitionLines" : "113",
+              "numReferrers" : 0
+            },
+            "RESTRICT_HOST_TRAFFIC_OUT: deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255" : {
+              "definitionLines" : "118",
+              "numReferrers" : 0
+            },
+            "RESTRICT_HOST_TRAFFIC_OUT: deny   ip any any" : {
+              "definitionLines" : "119",
+              "numReferrers" : 0
+            },
+            "RESTRICT_HOST_TRAFFIC_OUT: permit ip any 2.128.0.0 0.0.255.255" : {
+              "definitionLines" : "117",
+              "numReferrers" : 0
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "definitionLines" : "54-57",
@@ -844,6 +1032,28 @@
               "numReferrers" : 1
             }
           },
+          "extended ipv4 access-list line" : {
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "definitionLines" : "116",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "117",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "118",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "119",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "120",
+              "numReferrers" : 0
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "definitionLines" : "54-57",
@@ -912,6 +1122,28 @@
             "105" : {
               "definitionLines" : "117-120",
               "numReferrers" : 1
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "definitionLines" : "116",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "117",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "118",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "119",
+              "numReferrers" : 0
+            },
+            "105: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "120",
+              "numReferrers" : 0
             }
           },
           "interface" : {
@@ -998,6 +1230,32 @@
             "103" : {
               "definitionLines" : "129-130",
               "numReferrers" : 2
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "125",
+              "numReferrers" : 0
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "126",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.0.0.0 host 255.0.0.0" : {
+              "definitionLines" : "127",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "definitionLines" : "128",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "129",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "130",
+              "numReferrers" : 0
             }
           },
           "interface" : {
@@ -1118,6 +1376,32 @@
             "103" : {
               "definitionLines" : "127-128",
               "numReferrers" : 2
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "123",
+              "numReferrers" : 0
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "124",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.0.0.0 host 255.0.0.0" : {
+              "definitionLines" : "125",
+              "numReferrers" : 0
+            },
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "definitionLines" : "126",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "definitionLines" : "127",
+              "numReferrers" : 0
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "definitionLines" : "128",
+              "numReferrers" : 0
             }
           },
           "interface" : {
@@ -1309,6 +1593,38 @@
               ]
             }
           },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                131
+              ]
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                132
+              ]
+            },
+            "102: permit ip host 2.0.0.0 host 255.0.0.0" : {
+              "extended ipv4 access-list line" : [
+                133
+              ]
+            },
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "extended ipv4 access-list line" : [
+                134
+              ]
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                135
+              ]
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                136
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -1451,6 +1767,33 @@
             "as4_community" : {
               "route-map match community-list" : [
                 176
+              ]
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                136
+              ]
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                137
+              ]
+            },
+            "102: permit ip host 2.0.0.0 host 255.0.0.0" : {
+              "extended ipv4 access-list line" : [
+                138
+              ]
+            },
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "extended ipv4 access-list line" : [
+                139
+              ]
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                140
               ]
             }
           },
@@ -1646,6 +1989,58 @@
               ]
             }
           },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                144
+              ]
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                145
+              ]
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                146
+              ]
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                147
+              ]
+            },
+            "INSIDE_TO_AS1: deny   ip any any" : {
+              "extended ipv4 access-list line" : [
+                133
+              ]
+            },
+            "INSIDE_TO_AS1: permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0" : {
+              "extended ipv4 access-list line" : [
+                132
+              ]
+            },
+            "INSIDE_TO_AS1: permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255" : {
+              "extended ipv4 access-list line" : [
+                131
+              ]
+            },
+            "OUTSIDE_TO_INSIDE: deny   ip 2.0.0.0 0.255.255.255 any" : {
+              "extended ipv4 access-list line" : [
+                135
+              ]
+            },
+            "OUTSIDE_TO_INSIDE: deny   ip any host 2.128.1.101" : {
+              "extended ipv4 access-list line" : [
+                136
+              ]
+            },
+            "OUTSIDE_TO_INSIDE: permit ip any any" : {
+              "extended ipv4 access-list line" : [
+                137
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -1788,6 +2183,53 @@
               ]
             }
           },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                140
+              ]
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                141
+              ]
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                142
+              ]
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                143
+              ]
+            },
+            "INSIDE_TO_AS3: deny   ip any any" : {
+              "extended ipv4 access-list line" : [
+                130
+              ]
+            },
+            "INSIDE_TO_AS3: permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0" : {
+              "extended ipv4 access-list line" : [
+                129
+              ]
+            },
+            "INSIDE_TO_AS3: permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255" : {
+              "extended ipv4 access-list line" : [
+                128
+              ]
+            },
+            "OUTSIDE_TO_INSIDE: deny   ip 2.0.0.0 0.255.255.255 any" : {
+              "extended ipv4 access-list line" : [
+                132
+              ]
+            },
+            "OUTSIDE_TO_INSIDE: permit ip any any" : {
+              "extended ipv4 access-list line" : [
+                133
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -1915,6 +2357,18 @@
               ]
             }
           },
+          "extended ipv4 access-list line" : {
+            "blocktelnet: deny   tcp any any eq telnet" : {
+              "extended ipv4 access-list line" : [
+                122
+              ]
+            },
+            "blocktelnet: permit ip any any" : {
+              "extended ipv4 access-list line" : [
+                123
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -2035,6 +2489,68 @@
               ]
             }
           },
+          "extended ipv4 access-list line" : {
+            "102: permit ip host 2.128.0.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                121
+              ]
+            },
+            "102: permit ip host 2.128.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                122
+              ]
+            },
+            "105: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                123
+              ]
+            },
+            "105: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                124
+              ]
+            },
+            "105: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                125
+              ]
+            },
+            "105: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                126
+              ]
+            },
+            "RESTRICT_HOST_TRAFFIC_IN: deny   ip any any" : {
+              "extended ipv4 access-list line" : [
+                114
+              ]
+            },
+            "RESTRICT_HOST_TRAFFIC_IN: permit icmp any any" : {
+              "extended ipv4 access-list line" : [
+                115
+              ]
+            },
+            "RESTRICT_HOST_TRAFFIC_IN: permit ip 2.128.0.0 0.0.255.255 any" : {
+              "extended ipv4 access-list line" : [
+                113
+              ]
+            },
+            "RESTRICT_HOST_TRAFFIC_OUT: deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255" : {
+              "extended ipv4 access-list line" : [
+                118
+              ]
+            },
+            "RESTRICT_HOST_TRAFFIC_OUT: deny   ip any any" : {
+              "extended ipv4 access-list line" : [
+                119
+              ]
+            },
+            "RESTRICT_HOST_TRAFFIC_OUT: permit ip any 2.128.0.0 0.0.255.255" : {
+              "extended ipv4 access-list line" : [
+                117
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -2134,6 +2650,33 @@
               ]
             }
           },
+          "extended ipv4 access-list line" : {
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "extended ipv4 access-list line" : [
+                116
+              ]
+            },
+            "105: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                117
+              ]
+            },
+            "105: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                118
+              ]
+            },
+            "105: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                119
+              ]
+            },
+            "105: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                120
+              ]
+            }
+          },
           "interface" : {
             "Ethernet0/0" : {
               "interface" : [
@@ -2215,6 +2758,33 @@
             "dept_community" : {
               "route-map match community-list" : [
                 128
+              ]
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "extended ipv4 access-list line" : [
+                116
+              ]
+            },
+            "105: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                117
+              ]
+            },
+            "105: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                118
+              ]
+            },
+            "105: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                119
+              ]
+            },
+            "105: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                120
               ]
             }
           },
@@ -2303,6 +2873,38 @@
             "as2_community" : {
               "route-map match community-list" : [
                 162
+              ]
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                125
+              ]
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                126
+              ]
+            },
+            "102: permit ip host 2.0.0.0 host 255.0.0.0" : {
+              "extended ipv4 access-list line" : [
+                127
+              ]
+            },
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "extended ipv4 access-list line" : [
+                128
+              ]
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                129
+              ]
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                130
               ]
             }
           },
@@ -2438,6 +3040,38 @@
             "as2_community" : {
               "route-map match community-list" : [
                 155
+              ]
+            }
+          },
+          "extended ipv4 access-list line" : {
+            "101: permit ip host 1.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                123
+              ]
+            },
+            "101: permit ip host 1.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                124
+              ]
+            },
+            "102: permit ip host 2.0.0.0 host 255.0.0.0" : {
+              "extended ipv4 access-list line" : [
+                125
+              ]
+            },
+            "102: permit ip host 2.128.0.0 host 255.255.0.0" : {
+              "extended ipv4 access-list line" : [
+                126
+              ]
+            },
+            "103: permit ip host 3.0.1.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                127
+              ]
+            },
+            "103: permit ip host 3.0.2.0 host 255.255.255.0" : {
+              "extended ipv4 access-list line" : [
+                128
               ]
             }
           },
