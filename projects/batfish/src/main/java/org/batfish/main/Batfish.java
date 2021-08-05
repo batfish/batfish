@@ -173,7 +173,6 @@ import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceWrapperAsAnswerElement;
 import org.batfish.datamodel.isp_configuration.IspConfiguration;
 import org.batfish.datamodel.ospf.OspfTopologyUtils;
-import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -1000,19 +999,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _settings.getDataPlaneEngineName()));
     }
     return plugin;
-  }
-
-  @Override
-  public Environment getEnvironment() {
-    // TODO: delete entirely
-    return new Environment(
-        _settings.getSnapshotName(),
-        ImmutableSortedSet.of(),
-        ImmutableSortedSet.of(),
-        ImmutableSortedSet.of(),
-        null,
-        null,
-        null);
   }
 
   private SortedMap<String, BgpAdvertisementsByVrf> getEnvironmentBgpTables(
