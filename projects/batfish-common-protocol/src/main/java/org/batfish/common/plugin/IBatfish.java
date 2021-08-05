@@ -29,7 +29,6 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.identifiers.NetworkId;
@@ -80,8 +79,6 @@ public interface IBatfish extends IPluginConsumer {
   NetworkId getContainerName();
 
   DataPlanePlugin getDataPlanePlugin();
-
-  Environment getEnvironment();
 
   @Nonnull
   NetworkSnapshot getSnapshot();
