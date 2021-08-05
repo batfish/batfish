@@ -2495,6 +2495,18 @@ public final class FlatJuniperGrammarTest {
     assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
   }
 
+  /** Test for https://github.com/batfish/batfish/issues/7225. */
+  @Test
+  public void testNestedConfigWithSecretData() {
+    String hostname = "nested-config-with-secret-data";
+    Configuration c = parseConfig(hostname);
+    assertThat(c.getVrfs(), hasKey("VRF_NAME"));
+    Vrf v = c.getVrfs().get("VRF_NAME");
+    assertThat(v.getBgpProcess().getActiveNeighbors(), hasKey(Ip.parse("8.8.8.8")));
+    BgpActivePeerConfig peer = v.getBgpProcess().getActiveNeighbors().get(Ip.parse("8.8.8.8"));
+    assertThat(peer, allOf(hasLocalAs(1L), hasRemoteAs(60951L)));
+  }
+
   @Test
   public void testNestedConfigStructureDef() throws IOException {
     String hostname = "nested-config-structure-def";
