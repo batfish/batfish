@@ -37,7 +37,6 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.batfish.datamodel.ospf.OspfTopology;
-import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.vxlan.VxlanTopology;
 import org.batfish.datamodel.vxlan.VxlanTopologyUtils;
@@ -207,11 +206,6 @@ public class IBatfishTestAdapter implements IBatfish {
 
   @Override
   public DataPlanePlugin getDataPlanePlugin() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Environment getEnvironment() {
     throw new UnsupportedOperationException();
   }
 

@@ -2469,14 +2469,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
-          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), _objectGroups));
+          .put(
+              saList.getName(),
+              toIpAccessList(saList.toExtendedAccessList(), _objectGroups, _filename));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups, _filename);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -3048,6 +3050,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.WCCP_GROUP_LIST,
         CiscoStructureUsage.WCCP_REDIRECT_LIST,
         CiscoStructureUsage.WCCP_SERVICE_LIST);
+    markConcreteStructure(CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE);
+    markConcreteStructure(CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE);
 
     markCommunityLists(
         CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY,
