@@ -135,8 +135,6 @@ public class FileBasedStorage implements StorageProvider {
   private static final String RELPATH_DATA_PLANE = "dp";
   private static final String RELPATH_SERIALIZED_ENVIRONMENT_BGP_TABLES = "bgp_processed";
   private static final String RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER = "bgp_answer";
-  private static final String RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS =
-      "external_bgp_announcements.json";
   private static final String RELPATH_PARSE_ANSWER_PATH = "parse_answer";
   private static final String RELPATH_VENDOR_SPECIFIC_CONFIG_DIR = "vendor";
   private static final String RELPATH_AWS_ACCOUNTS_DIR = "accounts";

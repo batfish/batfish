@@ -320,7 +320,7 @@ public class BatfishTest {
                 BgpAdvertisement.builder()
                     .setType(BgpAdvertisementType.EBGP_SENT)
                     .setNetwork(Prefix.strict("4.0.0.0/8"))
-                    .setNextHopIp(Ip.parse("10.14.22.4"))
+                    .setNextHopIp(Ip.parse("1.1.1.1"))
                     .setSrcIp(Ip.parse("10.14.22.4"))
                     .setDstNode("as1border2")
                     .setDstIp(Ip.parse("10.14.22.1"))
@@ -344,7 +344,7 @@ public class BatfishTest {
                 Bgpv4Route.builder()
                     .setProtocol(RoutingProtocol.BGP)
                     .setNetwork(Prefix.strict("4.0.0.0/8"))
-                    .setNextHopIp(Ip.parse("10.14.22.4"))
+                    .setNextHopIp(Ip.parse("10.14.22.4")) // policy has next-hop peer-address
                     .setReceivedFromIp(Ip.parse("10.14.22.4"))
                     .setSrcProtocol(RoutingProtocol.BGP)
                     .setOriginType(OriginType.EGP)
