@@ -1583,7 +1583,9 @@ public class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path =
         getSnapshotInputObjectPath(
-            snapshot.getNetwork(), snapshot.getSnapshot(), RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
+            snapshot.getNetwork(),
+            snapshot.getSnapshot(),
+            BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS);
     if (!Files.exists(path)) {
       return Optional.empty();
     }
