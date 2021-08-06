@@ -47,6 +47,7 @@ public class TestrigText {
     private Map<String, byte[]> _awsBytes;
     private Map<String, byte[]> _bgpTablesBytes;
     private Map<String, byte[]> _configurationBytes;
+    private byte[] _externalBgpAnnouncementsBytes;
     private Map<String, byte[]> _hostsBytes;
     private Map<String, byte[]> _iptablesFilesBytes;
     private byte[] _layer1TopologyBytes;
@@ -58,6 +59,7 @@ public class TestrigText {
       testrigText.setAwsBytes(_awsBytes);
       testrigText.setBgpTablesBytes(_bgpTablesBytes);
       testrigText.setConfigurationBytes(_configurationBytes);
+      testrigText.setExternalBgpAnnouncements(_externalBgpAnnouncementsBytes);
       testrigText.setHostsBytes(_hostsBytes);
       testrigText.setIptablesFilesBytes(_iptablesFilesBytes);
       testrigText.setLayer1TopologyBytes(_layer1TopologyBytes);
@@ -161,6 +163,18 @@ public class TestrigText {
               .next();
       return this;
     }
+
+    public @Nonnull Builder setExternalBgpAnnouncements(String testrigResourcePrefix) {
+      _externalBgpAnnouncementsBytes =
+          readTestrigResources(
+                  testrigResourcePrefix,
+                  null,
+                  ImmutableList.of(BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS))
+              .values()
+              .iterator()
+              .next();
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -170,6 +184,7 @@ public class TestrigText {
   private Map<String, byte[]> _awsBytes;
   private Map<String, byte[]> _bgpTablesBytes;
   private Map<String, byte[]> _configurationBytes;
+  private byte[] _externalBgpAnnouncementBytes;
   private Map<String, byte[]> _hostsBytes;
   private Map<String, byte[]> _iptablesFilesBytes;
   private byte[] _layer1TopologyBytes;
@@ -186,6 +201,10 @@ public class TestrigText {
 
   public Map<String, byte[]> getConfigurationBytes() {
     return _configurationBytes;
+  }
+
+  public @Nullable byte[] getExternalBgpAnnouncementBytes() {
+    return _externalBgpAnnouncementBytes;
   }
 
   public Map<String, byte[]> getHostsBytes() {
@@ -218,6 +237,10 @@ public class TestrigText {
 
   public void setConfigurationBytes(Map<String, byte[]> configurationText) {
     _configurationBytes = configurationText;
+  }
+
+  public void setExternalBgpAnnouncements(byte[] externalBgpAnnouncementsBytes) {
+    _externalBgpAnnouncementBytes = externalBgpAnnouncementsBytes;
   }
 
   public void setHostsBytes(Map<String, byte[]> hostsBytes) {

@@ -170,6 +170,7 @@ public class BatfishTestUtils {
     Map<String, byte[]> awsBytes = testrigText.getAwsBytes();
     Map<String, byte[]> bgpTablesBytes = testrigText.getBgpTablesBytes();
     Map<String, byte[]> configurationBytes = testrigText.getConfigurationBytes();
+    byte[] externalBgpAnnouncementsBytes = testrigText.getExternalBgpAnnouncementBytes();
     Map<String, byte[]> hostsBytes = testrigText.getHostsBytes();
     Map<String, byte[]> iptablesFilesBytes = testrigText.getIptablesFilesBytes();
     byte[] layer1TopologyBytes = testrigText.getLayer1TopologyBytes();
@@ -196,6 +197,14 @@ public class BatfishTestUtils {
     writeTemporarySnapshotInputFiles(awsBytes, RELPATH_AWS_CONFIGS_DIR, storage, TEST_SNAPSHOT);
     writeTemporarySnapshotInputFiles(
         bgpTablesBytes, RELPATH_ENVIRONMENT_BGP_TABLES, storage, TEST_SNAPSHOT);
+    if (externalBgpAnnouncementsBytes != null) {
+      writeTemporarySnapshotInputFiles(
+          ImmutableMap.of(
+              BfConsts.RELPATH_EXTERNAL_BGP_ANNOUNCEMENTS, externalBgpAnnouncementsBytes),
+          "",
+          storage,
+          TEST_SNAPSHOT);
+    }
     writeTemporarySnapshotInputFiles(hostsBytes, RELPATH_HOST_CONFIGS_DIR, storage, TEST_SNAPSHOT);
     writeTemporarySnapshotInputFiles(iptablesFilesBytes, "iptables", storage, TEST_SNAPSHOT);
     if (layer1TopologyBytes != null) {

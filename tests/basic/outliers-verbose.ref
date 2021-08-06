@@ -3565,7 +3565,7 @@
                   "stubType" : "NONE"
                 }
               },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
               "processId" : "1",
               "referenceBandwidth" : 1.0E8,
               "routerId" : "1.1.1.1",

@@ -120,6 +120,14 @@ public final class Names {
     return String.format("~BGP_PEER_IMPORT_POLICY_EVPN:%s:%s~", vrf, peer);
   }
 
+  public static String generatedOspfDefaultRouteGenerationPolicyName(String vrf, String proc) {
+    return String.format("~OSPF_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrf, proc);
+  }
+
+  public static String generatedOspfExportPolicyName(String vrf, String proc) {
+    return String.format("~OSPF_EXPORT_POLICY:%s:%s~", vrf, proc);
+  }
+
   public static String generatedOspfInboundDistributeListName(
       String vrf, String procName, long areaNum, String ifaceName) {
     return String.format(

@@ -61617,8 +61617,8 @@
               }
             ]
           },
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~"
+          "~OSPF_EXPORT_POLICY:default:1~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default:1~"
           },
           "~RESOLUTION_POLICY~" : {
             "name" : "~RESOLUTION_POLICY~",
@@ -61835,7 +61835,7 @@
                     "stubType" : "NONE"
                   }
                 },
-                "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+                "exportPolicy" : "~OSPF_EXPORT_POLICY:default:1~",
                 "processId" : "1",
                 "referenceBandwidth" : 1.0E8,
                 "routerId" : "10.10.255.8",
