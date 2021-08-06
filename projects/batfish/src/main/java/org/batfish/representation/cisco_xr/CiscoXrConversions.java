@@ -1418,8 +1418,7 @@ public class CiscoXrConversions {
       return null;
     }
     String filterName = distributeList.getFilterName();
-    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
-        || distributeList.getFilterType() == DistributeListFilterType.PREFIX_LIST) {
+    if (distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST) {
       if (c.getRouteFilterLists().containsKey(filterName)) {
         String rpName =
             generatedOspfInboundDistributeListName(vrfName, procName, areaNum, ifaceName);
