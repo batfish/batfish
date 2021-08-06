@@ -4,6 +4,15 @@ options {
     tokenVocab = CheckPointGatewayLexer;
 }
 
+a_interface: INTERFACE interface_name ai;
+
+ai: ai_vlan;
+
+ai_vlan: VLAN vlan_id;
+
+// 2-4094
+vlan_id: uint16;
+
 s_interface: INTERFACE interface_name si;
 
 si
