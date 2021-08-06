@@ -232,23 +232,6 @@ public class RoutingPolicy implements Serializable {
         inputRoute, outputRoute, null, null, direction, ribIntersectsPrefixSpaceEvaluator, null);
   }
 
-  /** @return True if the policy accepts the route. */
-  public boolean process(
-      AbstractRouteDecorator inputRoute,
-      AbstractRouteBuilder<?, ?> outputRoute,
-      BgpSessionProperties bgpSessionProperties,
-      Direction direction,
-      BiFunction<RibExpr, PrefixSpace, Boolean> ribIntersectsPrefixSpaceEvaluator) {
-    return process(
-        inputRoute,
-        outputRoute,
-        bgpSessionProperties,
-        null,
-        direction,
-        ribIntersectsPrefixSpaceEvaluator,
-        null);
-  }
-
   public boolean process(
       @Nonnull AbstractRouteDecorator inputRoute,
       @Nonnull AbstractRouteBuilder<?, ?> outputRoute,

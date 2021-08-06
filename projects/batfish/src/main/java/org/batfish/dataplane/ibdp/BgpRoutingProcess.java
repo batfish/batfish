@@ -1805,7 +1805,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             : null;
 
     // TODO Figure out whether transformedOutgoingRoute ought to have an annotation
-    return ipv4ImportPolicy.process(
+    return ipv4ImportPolicy.processBgpRoute(
         inputRoute, outputRouteBuilder, bgpSessionProperties, IN, ribExprEvaluator);
   }
 
