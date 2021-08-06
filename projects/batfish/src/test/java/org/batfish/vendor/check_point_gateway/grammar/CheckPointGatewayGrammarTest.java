@@ -672,21 +672,21 @@ public class CheckPointGatewayGrammarTest {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("bond2.2");
       assertTrue(iface.getActive());
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("2.2.2.1/24")));
-      assertThat(iface.getVlan(), equalTo(2));
+      assertThat(iface.getEncapsulationVlan(), equalTo(2));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
     }
     {
       // bond3.3 is on, but bond3 is off
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("bond3.3");
       assertFalse(iface.getActive());
-      assertThat(iface.getVlan(), equalTo(3));
+      assertThat(iface.getEncapsulationVlan(), equalTo(3));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth10.4092");
       assertTrue(iface.getActive());
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.10.1/24")));
-      assertThat(iface.getVlan(), equalTo(4092));
+      assertThat(iface.getEncapsulationVlan(), equalTo(4092));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
     }
     {
@@ -694,13 +694,13 @@ public class CheckPointGatewayGrammarTest {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth11.4093");
       assertFalse(iface.getActive());
       assertThat(iface.getAddress(), equalTo(ConcreteInterfaceAddress.parse("11.11.11.1/24")));
-      assertThat(iface.getVlan(), equalTo(4093));
+      assertThat(iface.getEncapsulationVlan(), equalTo(4093));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
     }
     {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("eth12.4094");
       assertFalse(iface.getActive());
-      assertThat(iface.getVlan(), equalTo(4094));
+      assertThat(iface.getEncapsulationVlan(), equalTo(4094));
       assertThat(iface.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
     }
   }

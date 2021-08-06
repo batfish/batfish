@@ -192,7 +192,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     }
 
     if (iface.getVlanId() != null) {
-      newIface.setVlan(iface.getVlanId());
+      newIface.setEncapsulationVlan(iface.getVlanId());
     }
     if (iface.getParentInterface() != null) {
       assert _interfaces.containsKey(iface.getParentInterface());
