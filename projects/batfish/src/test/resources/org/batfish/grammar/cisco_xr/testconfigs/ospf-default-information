@@ -1,0 +1,47 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname ospf-default-information
+!
+interface GigabitEthernet0/0/0/1
+ no shutdown
+!
+interface GigabitEthernet0/0/0/2
+ no shutdown
+!
+interface GigabitEthernet0/0/0/3
+ no shutdown
+!
+interface GigabitEthernet0/0/0/4
+ no shutdown
+!
+route-policy RP
+end-policy
+!
+router ospf 1
+  router-id 1.1.1.1
+  default-information originate
+  area 1
+    interface GigabitEthernet0/0/0/1
+!
+router ospf 2
+  router-id 1.1.1.1
+  default-information originate always metric 10 metric-type 2 route-policy RP
+  default-information originate metric 12 metric-type 1
+  area 1
+    interface GigabitEthernet0/0/0/2
+!
+router ospf 3
+  router-id 1.1.1.1
+  default-information originate always metric 10 metric-type 2
+  no default-information originate
+  area 1
+    interface GigabitEthernet0/0/0/3
+!
+router ospf 4
+  router-id 1.1.1.1
+  default-information originate metric 12 metric-type 1
+  no default-information originate
+  default-information originate always metric 10 route-policy RP
+  area 1
+    interface GigabitEthernet0/0/0/4
+!
