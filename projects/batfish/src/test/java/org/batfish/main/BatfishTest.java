@@ -56,8 +56,10 @@ import org.batfish.common.topology.Layer1Node;
 import org.batfish.common.topology.Layer1Topology;
 import org.batfish.common.util.isp.IspModelingUtils.ModeledNodes;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
+import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -75,6 +77,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.TestQuestion;
@@ -292,6 +295,67 @@ public class BatfishTest {
                             .setDstVrf("default")
                             .setClusterList(ImmutableSortedSet.of())
                             .build())))));
+  }
+
+  @Test
+  public void testInitSnapshotWithExternalBgpAnnouncements() throws IOException {
+    String snapshotResourcePrefix = "org/batfish/main/snapshots/external_bgp_announcements";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setExternalBgpAnnouncements(snapshotResourcePrefix)
+                .setConfigurationFiles(snapshotResourcePrefix, "as1border2.cfg")
+                .build(),
+            _folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+
+    // is the data read as expected?
+    Set<BgpAdvertisement> externalBgpAnnouncements =
+        batfish.loadExternalBgpAnnouncements(
+            batfish.getSnapshot(), batfish.loadConfigurations(batfish.getSnapshot()));
+    assertThat(
+        externalBgpAnnouncements,
+        equalTo(
+            ImmutableSet.of(
+                BgpAdvertisement.builder()
+                    .setType(BgpAdvertisementType.EBGP_SENT)
+                    .setNetwork(Prefix.strict("4.0.0.0/8"))
+                    .setNextHopIp(Ip.parse("1.1.1.1"))
+                    .setSrcIp(Ip.parse("10.14.22.4"))
+                    .setDstNode("as1border2")
+                    .setDstIp(Ip.parse("10.14.22.1"))
+                    .setSrcProtocol(RoutingProtocol.AGGREGATE)
+                    .setOriginType(OriginType.EGP)
+                    .setLocalPreference(0L)
+                    .setMed(20L)
+                    .setOriginatorIp(Ip.ZERO)
+                    .setAsPath(AsPath.of(AsSet.of(1239)))
+                    .setCommunities(ImmutableSortedSet.of(StandardCommunity.parse("262145")))
+                    .setSrcVrf("default")
+                    .setDstVrf("default")
+                    .setClusterList(ImmutableSortedSet.of())
+                    .build())));
+
+    // is the data processed (including import policies) as expected?
+    assertThat(
+        batfish.loadDataPlane(batfish.getSnapshot()).getBgpRoutes().get("as1border2", "default"),
+        equalTo(
+            ImmutableSet.of(
+                Bgpv4Route.builder()
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setNetwork(Prefix.strict("4.0.0.0/8"))
+                    .setNextHopIp(Ip.parse("10.14.22.4")) // policy has next-hop peer-address
+                    .setReceivedFromIp(Ip.parse("10.14.22.4"))
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setOriginType(OriginType.EGP)
+                    .setLocalPreference(350L) // the value specified in the import policy
+                    .setMetric(20L)
+                    .setOriginatorIp(Ip.ZERO)
+                    .setAsPath(AsPath.of(AsSet.of(1239)))
+                    .setCommunities(ImmutableSortedSet.of(StandardCommunity.parse("262145")))
+                    .setClusterList(ImmutableSortedSet.of())
+                    .setAdmin(20)
+                    .build())));
   }
 
   @Test
